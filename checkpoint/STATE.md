@@ -244,16 +244,55 @@ Ainda falta para publicar: `npm install` do SDK oficial `apify` dentro do
 diretório do produto, e `apify push` — ambos exigem a conta Apify do
 usuário, que está em criação.
 
+## Usuário rejeitou br-series-fetcher: "não tenho CNPJ" + "desempenho fraco"
+Esclarecimento: nem Apify Store nem Gumroad exigem CNPJ (pagam pessoa física,
+carnê-leão) — o CNPJ só aparecia em candidatos já descartados antes
+(correspondente bancário Pix, revenda WhatsApp BSP). Mas o ponto real do
+usuário era desempenho: a categoria "produto/ferramenta self-serve" tem
+retorno baixo/incerto por natureza (confirmado no lote 3), e ele está certo
+em recusar isso como aposta principal. br-series-fetcher fica arquivado
+(código funcional, sem CNPJ necessário, pode voltar como uma aposta pequena
+de portfólio depois, não como prioridade).
+
+## Lote 4 (crédito/renda fixa automatizável sem CNPJ) — completo, achado
+## mais importante da missão até agora
+12 mecanismos, ~263k tokens. Ver [[registry_round4_partial]] e
+`research/round4_raw_partial.json`. **Depois de 111 mecanismos em 17
+famílias (4 rodadas), NENHUM candidato supera o piso de ~14% a.a. (Pix
+remunerada/Selic) por margem que sobreviva a ajuste honesto de risco, com
+US$200, sem CNPJ, sem trabalho humano recorrente:**
+- Crédito P2P regulado (SCD/SEP): sem FGC, diversificação impossível com
+  este capital (só 1-2 tomadores financiáveis), líquido ajustado por risco
+  ≈ 13-15% a.a. — empata com o piso, não supera.
+- LCI/LCA, debêntures incentivadas, FI-Infra: líquido tipicamente ABAIXO do
+  piso de 14%.
+- Fiagro: supera nominalmente (12,7-19,6%) mas é prêmio de risco de crédito
+  agro documentado, não vantagem livre.
+- CDB de banco médio com FGC (candidato mais forte): no uso realista
+  (liquidez diária, resgates frequentes) fica ABAIXO do piso (~11,85%
+  líquido); só supera por 0,18 p.p. se travar capital por 2+ anos — o que
+  contradiz liquidez diária e automação de rebalanceamento. Risco de cauda
+  real e recente: BC liquidou o Banco Master em 18/11/2025 (pagava CDB
+  acima da média); mesmo com FGC, 4-6 semanas de capital congelado, e
+  incerteza sobre cobertura de entidades ligadas ao banco quebrado.
+
+**Isso não é falha de busca — é a "realidade obrigatória" da missão
+(nenhum método legítimo garante US$200 subirem rápido) confirmada
+numericamente 4 vezes seguidas.** Momento de reportar ao usuário com
+honestidade total, não lançar mais um lote esperando resposta diferente.
+
 ## Próxima ação
-1. Aguardar o usuário confirmar as 2 contas criadas (Gumroad, Apify Store) e
-   qual conta Pix remunerada ele já usa.
-2. Ao confirmar Apify: rodar `npm install` no diretório do produto e
-   `apify push`/publicar — isso ainda não envolve dinheiro real além de
-   taxas de plataforma triviais, que devem ser confirmadas e aprovadas
-   antes (RISK_LIMITS.md).
-3. Gerar o próximo candidato do pipeline (produto Gumroad sem dependência
-   de API terceira, ou segundo actor Apify sobre outra fonte de dado
-   aberto), mantendo o ritmo de lotes pequenos.
+Apresentar este veredito consolidado ao usuário de forma direta (não mais
+uma pergunta de múltipla escolha genérica) e propor: (a) aceitar o piso
+(~14-16% a.a., CDB/Pix com FGC, 100% automatizável em aporte, zero risco de
+CNPJ) como o "sistema real rodando sozinho" — modesto mas honesto e
+verificável; (b) reconsiderar CNPJ especificamente via MEI (gratuito,
+~10 min, sem contador obrigatório, diferente de Ltda/SLU) para reabrir
+candidatos do lote 2 com melhor retorno mas que exigem formalização; (c)
+aceitar algum grau mínimo de aprovação pontual (não venda manual, só
+cliques de aprovação) para desbloquear os candidatos de melhor retorno do
+lote 2 (agência PME, agente WhatsApp). Não decidir sozinho — é escolha de
+risco/prioridade do usuário.
 
 ## Custos consumidos
 - US$ 0,00 em dinheiro real (nenhum gasto)
