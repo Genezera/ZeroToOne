@@ -1,0 +1,13 @@
+{
+  "name": "zerotoone",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sistema autonomo de crescimento de capital (US$200) - ledger, risk-gate, product pipeline",
+  "scripts": {
+    "test": "node --test \"system/test/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
