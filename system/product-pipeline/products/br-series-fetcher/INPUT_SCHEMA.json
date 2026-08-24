@@ -1,0 +1,40 @@
+{
+  "title": "BR Series Fetcher — entrada",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "seriesCodes": {
+      "title": "Códigos de série SGS/BCB",
+      "type": "array",
+      "description": "Códigos de série do Sistema Gerenciador de Séries Temporais do Banco Central (ex.: 11 = Selic diária, 12 = CDI diária, 1 = Dólar PTAX venda, 433 = IPCA mensal, 432 = Meta Selic). Consulte o catálogo oficial em https://www3.bcb.gov.br/sgspub para outros códigos.",
+      "editor": "json",
+      "prefill": [11, 12, 1]
+    },
+    "mode": {
+      "title": "Modo",
+      "type": "string",
+      "description": "\"latest\" busca os últimos N valores de cada série. \"range\" busca um intervalo de datas (fatiado automaticamente em blocos anuais).",
+      "editor": "select",
+      "enum": ["latest", "range"],
+      "default": "latest"
+    },
+    "lastN": {
+      "title": "Últimos N valores (modo latest)",
+      "type": "integer",
+      "default": 30,
+      "minimum": 1,
+      "maximum": 3650
+    },
+    "startDate": {
+      "title": "Data inicial (modo range, formato AAAA-MM-DD)",
+      "type": "string",
+      "editor": "textfield"
+    },
+    "endDate": {
+      "title": "Data final (modo range, formato AAAA-MM-DD)",
+      "type": "string",
+      "editor": "textfield"
+    }
+  },
+  "required": ["seriesCodes", "mode"]
+}

@@ -29,8 +29,12 @@ hash, detecção de adulteração, e todos os bloqueios do risk-gate (sem
 aprovação, acima do limite, alavancagem, hard stop).
 
 ## product-pipeline/
-Ainda não implementado — próximo passo. Vai gerar candidatos a produtos/
-ferramentas digitais para publicação em marketplaces self-serve.
+Primeiro candidato construído e testado: `br-series-fetcher` (actor Apify
+que busca séries do Banco Central — Selic, CDI, câmbio, IPCA — com
+fatiamento automático de intervalo e retry validado). Ver
+`product-pipeline/README.md` para a estratégia de portfólio e o histórico
+(incluindo um candidato abortado por conflito de termos de uso, antes de
+qualquer código de produção ser escrito em cima dele).
 
 ## Uso
 Módulos ESM (`.mjs`), sem dependências externas. Requer Node.js (testado com

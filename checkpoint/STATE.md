@@ -216,17 +216,44 @@ passando via `npm test`):
 - `checkpoint/risk_limits.json` — espelho legível-por-máquina dos limites.
 - Git inicializado em `C:\Users\Renan\ZeroToOne` (versionamento real).
 
+## Primeiro produto do pipeline: br-series-fetcher (construído, testado, NÃO publicado)
+Enquanto o usuário cria as contas (Gumroad, Apify Store), construí o
+primeiro candidato real: `system/product-pipeline/products/br-series-fetcher/`
+— actor Apify que busca séries do SGS/Banco Central (Selic, CDI, câmbio,
+IPCA) com fatiamento automático de intervalo (contorna o limite de volume
+que o BCB passou a aplicar em março/2025) e retry que valida a FORMA da
+resposta, não só o status HTTP (pego em produção nesta sessão: a API do BCB
+devolveu 200 com corpo não-array uma vez, transitoriamente — o teste pegou
+isso e o retry foi corrigido para tratar).
+
+**Decisão adversarial importante durante a construção**: a primeira ideia
+era agregar a BrasilAPI (CEP/CNPJ). Abortei antes de escrever código de
+produção porque a BrasilAPI proíbe explicitamente "requisições em loop" nos
+seus termos — incompatível com um actor de consulta em lote. Migrei para os
+dados abertos oficiais do Banco Central (dadosabertos.bcb.gov.br), sem essa
+restrição documentada. Isso é exatamente o tipo de ataque adversarial que a
+missão pede — aplicado durante a construção, não só na pesquisa.
+
+Testes: 6/6 passando, incluindo 4 testes de integração contra a API real do
+BCB (não mocks) — um deles prova o valor-agregado central (busca >365 dias,
+concatena 3+ blocos, sem duplicar/desordenar datas). Ver
+`system/product-pipeline/README.md` para a estratégia de portfólio completa
+e `products/br-series-fetcher/README.md` para o texto de listagem.
+
+Ainda falta para publicar: `npm install` do SDK oficial `apify` dentro do
+diretório do produto, e `apify push` — ambos exigem a conta Apify do
+usuário, que está em criação.
+
 ## Próxima ação
-1. Pedir ao usuário para criar (setup único, não recorrente) as duas
-   primeiras contas do piloto: Gumroad (venda de download digital, signup
-   rápido) e Apify Store (publicar um actor de automação). Eu não posso
-   criar contas nem inserir senha — regra da minha plataforma.
-2. Em paralelo, construir `system/product-pipeline/` — gerar o primeiro
-   candidato real de produto/actor para publicação assim que as contas
-   existirem.
-3. Confirmar/reaproveitar conta Pix remunerada já existente do usuário
-   (Nubank/Mercado Pago/PicPay) como piso de caixa ocioso — perguntar qual
-   ele já tem, não recriar do zero.
+1. Aguardar o usuário confirmar as 2 contas criadas (Gumroad, Apify Store) e
+   qual conta Pix remunerada ele já usa.
+2. Ao confirmar Apify: rodar `npm install` no diretório do produto e
+   `apify push`/publicar — isso ainda não envolve dinheiro real além de
+   taxas de plataforma triviais, que devem ser confirmadas e aprovadas
+   antes (RISK_LIMITS.md).
+3. Gerar o próximo candidato do pipeline (produto Gumroad sem dependência
+   de API terceira, ou segundo actor Apify sobre outra fonte de dado
+   aberto), mantendo o ritmo de lotes pequenos.
 
 ## Custos consumidos
 - US$ 0,00 em dinheiro real (nenhum gasto)

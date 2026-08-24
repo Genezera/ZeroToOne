@@ -1,0 +1,7 @@
+{
+  "actorSpecification": 1,
+  "name": "br-series-fetcher",
+  "version": "0.1",
+  "buildTag": "latest",
+  "environmentVariables": {}
+}
