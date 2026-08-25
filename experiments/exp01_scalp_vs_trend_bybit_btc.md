@@ -80,6 +80,32 @@ aparece: não existe, com as ferramentas e o capital disponíveis hoje, uma
 estratégia de trading rápido e frequente que gere lucro líquido consistente
 para um operador de varejo.**
 
+## Resultado 3 — Reversão à média (tentativa honesta de achar o positivo)
+O usuário perguntou, com razão, por que eu só estava "batendo nos
+negativos" em vez de achar o positivo. Resposta: tentei, de forma
+adaptativa e documentada, um terceiro tipo de estratégia (nenhuma repetição
+das duas primeiras) — reversão à média via Bandas de Bollinger + RSI, que
+estruturalmente tende a ter win rate mais alto (comprar barato, vender
+caro, com mais frequência de acerto), mais alinhado ao que foi pedido.
+
+| Variante | Trades | Win rate | Lucro líquido (6mo) | Profit factor | Comissão paga |
+|---|---|---|---|---|---|
+| v1 (alvo 1,5x ATR / stop 2,0x ATR) | 1.273 | **52,9%** (>50%!) | -56,1% | 0,56 | US$131 (65% do capital) |
+| v2 (alvo 2,5x ATR / stop 1,0x ATR, tentando corrigir) | 1.556 | 31,4% | -62,0% | 0,57 | US$147 (73% do capital) |
+
+Achado real e específico: a v1 CONSEGUIU o win rate alto pedido (52,9%,
+maioria dos trades ganha!) — mas perdeu de qualquer jeito, porque a perda
+média (-US$0,43) era quase o dobro do ganho médio (US$0,22). Tentei
+corrigir isso invertendo a relação risco/retorno na v2 (alvo maior, stop
+menor) — só piorou: o stop mais apertado passou a ser atingido por ruído
+comum do mercado antes da reversão acontecer, derrubando o win rate para
+31%. As duas formas de mexer nesse botão pioram uma coisa para melhorar
+outra — não existe um ajuste que resolve os dois ao mesmo tempo nesse
+ativo/timeframe. E em ambas, o fator decisivo continua sendo o mesmo: mais
+de 1.200 trades em 6 meses geram US$130-147 de comissão sobre US$200 de
+capital — de 65% a 73% do capital inteiro consumido só em taxa de operação,
+antes mesmo de julgar se o sinal é bom ou ruim.
+
 ## Próximo experimento pré-registrado (se o usuário quiser continuar por
 ## esta via, em vez de aceitar o piso de renda fixa)
 Testar, com o MESMO rigor (pré-registro, out-of-sample, múltiplas janelas),
