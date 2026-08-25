@@ -314,13 +314,29 @@ rejeitado nas 2 janelas, tendência lenta só "funciona" com curve-fit). Não
 existe, com ferramentas e capital de US$200 hoje, uma estratégia de trading
 rápido/frequente com lucro líquido consistente para varejo.
 
+## Varredura ampla (11 moedas) — CONFIRMAÇÃO FINAL, 17 backtests reais no total
+Usuário pediu para não focar só em BTC / achar "a oportunidade que ninguém
+explorou". Recusei a moldura de "moeda secreta vai bombar" (é aposta, não
+estratégia — mesmo padrão que AurumOS já refutou). Testei honestamente:
+mesma estratégia de reversão à média em 11 moedas líquidas diferentes
+(BTC, ETH, SOL, XRP, BNB, ADA, LINK, AVAX, LTC, DOGE, PEPE), mesma janela.
+**11 de 11 negativas, faixa estreita -56% a -76%.** Consistência = evidência
+de causa estrutural (custo de transação × frequência de trade), não azar
+de ativo específico. Ver [[exp01_scalp_vs_trend_bybit_btc]] (atualizado) e
+ledger `research` (17 entradas de backtest agora).
+
+**17 backtests reais rodados nesta sessão, mais AurumOS (9,8M sinais) e 111
+mecanismos de pesquisa de mesa — toda evidência aponta na mesma direção
+para trading rápido/frequente de varejo: sem vantagem líquida.**
+
 ## Próxima ação
-Reportar isso ao usuário de forma completa e honesta (feito). Próximo passo
-pré-registrado se ele quiser continuar por essa via: varredura de
-estratégias de tendência de médio prazo com correção para múltiplas
-comparações — tecnicamente viável, mas é pesquisa quantitativa de verdade,
-e a expectativa honesta é mais uma confirmação de ausência de vantagem, não
-uma descoberta. Alternativa: aceitar o sistema de composição diária
+Reportar a varredura completa ao usuário (feito). Se ele quiser continuar
+por essa via financeira, os únicos caminhos genuinamente não testados
+ainda são: (a) mercado feito de verdade (spread capture bidirecional, não
+aposta direcional — exigiria conectar ao order book ao vivo, projeto de
+engenharia maior, não um backtest de tarde); (b) funding-rate arbitrage
+(pagamento a cada 8h, não por minuto/segundo — já mapeado com risco
+jurídico CVM para BR). Alternativa: aceitar o sistema de composição diária
 (~14-16% a.a., verificado, zero risco de ruína) como o "sistema real
 rodando sozinho" — ainda não construído fisicamente, só desenhado.
 

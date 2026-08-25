@@ -106,6 +106,39 @@ de 1.200 trades em 6 meses geram US$130-147 de comissão sobre US$200 de
 capital — de 65% a 73% do capital inteiro consumido só em taxa de operação,
 antes mesmo de julgar se o sinal é bom ou ruim.
 
+## Resultado 4 — Varredura ampla: 11 moedas diferentes, mesma estratégia
+O usuário pediu para não focar só em BTC e "procurar a oportunidade
+definitiva que ninguém explorou". Distinção importante feita ao usuário:
+"a moeda secreta que vai bombar" é aposta, não estratégia — é o mesmo
+padrão de "informação privilegiada"/"chegar primeiro" que o AurumOS já
+testou (9,8M sinais, incluindo whale-watch e radar de novas listagens) sem
+achar nada. O que É testável honestamente: será que o problema é
+específico do BTC, ou é estrutural? Rodei a mesma estratégia de reversão à
+média (v1) em 10 outras moedas líquidas, mesma janela de 6 meses:
+
+| Moeda | Trades | Win rate | Lucro líquido | Profit factor | Comissão paga |
+|---|---|---|---|---|---|
+| BTC | 1.273 | 52,9% | -56,1% | 0,56 | US$131 |
+| ETH | 1.245 | 52,8% | -75,1% | 0,54 | US$115 |
+| SOL | 1.191 | 52,4% | -73,1% | 0,59 | US$120 |
+| XRP | 1.684 | 39,0% | -69,3% | 0,58 | US$132 |
+| BNB | 1.184 | 51,6% | -69,2% | 0,48 | US$136 |
+| ADA | 1.704 | 37,4% | -68,4% | 0,66 | US$121 |
+| LINK | 1.477 | 44,8% | -75,5% | 0,58 | US$128 |
+| AVAX | 1.501 | 45,4% | -75,7% | 0,59 | US$125 |
+| LTC | 1.153 | 53,9% | -68,7% | 0,51 | US$127 |
+| DOGE | 1.818 | 35,3% | -73,5% | 0,60 | US$126 |
+| PEPE | 1.775 | 38,0% | -68,8% | 0,70 | US$129 |
+
+**11 de 11 moedas, negativas, numa faixa estreita (-56% a -76%).** Essa
+consistência é o achado em si: se o problema fosse específico de um ativo
+(azar, evento pontual), esperaríamos resultados espalhados — alguns
+positivos, alguns negativos. Em vez disso, todo mundo perde por volta do
+mesmo tanto, porque o mecanismo de perda é o mesmo em todos: ~1.200-1.800
+trades em 6 meses × ~0,1% de custo por operação (entrada+saída) × sinal sem
+vantagem suficiente para superar isso = perda estrutural, previsível,
+independente do ativo escolhido.
+
 ## Próximo experimento pré-registrado (se o usuário quiser continuar por
 ## esta via, em vez de aceitar o piso de renda fixa)
 Testar, com o MESMO rigor (pré-registro, out-of-sample, múltiplas janelas),
