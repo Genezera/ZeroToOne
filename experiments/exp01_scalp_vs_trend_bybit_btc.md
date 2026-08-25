@@ -139,6 +139,38 @@ trades em 6 meses × ~0,1% de custo por operação (entrada+saída) × sinal sem
 vantagem suficiente para superar isso = perda estrutural, previsível,
 independente do ativo escolhido.
 
+## Resultado 5 — Reduzir frequência no mesmo ativo (BTC), timeframe 1h
+Usuário pediu para mudar e continuar procurando. Hipótese testada: a lógica
+de reversão à média tinha sinal genuíno (win rate 52-57% em várias
+tentativas) mas era destruída pela frequência de trade. Reduzi a
+frequência drasticamente (5min → 1h) mantendo a mesma lógica de entrada:
+
+| Variante | Trades (24mo) | Win rate | Lucro líquido | Profit factor | Comissão paga |
+|---|---|---|---|---|---|
+| 1h, alvo 1,5x/stop 2,0x ATR | 449 (~0,6/dia) | 56,1% | **-36,7%** | 0,76 | US$47,5 (24% do capital) |
+| 1h, alvo 2,0x/stop 1,5x ATR (invertido) | 497 (~0,7/dia) | 43,5% | **-45,6%** | 0,71 | US$48,0 (24% do capital) |
+
+**Este é o melhor resultado de todos os 19 backtests reais rodados nesta
+sessão** — ainda negativo, mas profit factor de 0,76 é o mais próximo de 1
+alcançado, e a comissão caiu de 65-73% do capital (nos testes de 5min) para
+24% (aqui). Confirma o diagnóstico: reduzir frequência reduz o dano, mas
+não inverte o sinal — o "edge" bruto da lógica BB+RSI, mesmo no seu melhor
+ajuste, não é positivo o suficiente para virar lucro líquido depois de
+qualquer nível realista de custo de transação neste ativo/estratégia.
+
+## Resumo de todos os 19 backtests reais desta sessão
+- 3 arquiteturas de estratégia (tendência lenta, scalp de momentum,
+  reversão à média)
+- 11 ativos diferentes (BTC, ETH, SOL, XRP, BNB, ADA, LINK, AVAX, LTC,
+  DOGE, PEPE)
+- 3 timeframes (5min, 15min, 1h) e 2 configurações de risco/retorno
+- **Nenhuma combinação testada produziu lucro líquido positivo e robusto.**
+  A tendência lenta (SMA50/200) teve o único resultado positivo bruto
+  (+93,8%/36mo), mas colapsou para -15,2% fora da amostra — não é confiável.
+- O melhor resultado genuinamente "ao vivo" (não dependente de sorte de
+  período) foi reversão à média em 1h: ainda -36,7%, mas com trajetória de
+  melhora clara ao reduzir frequência.
+
 ## Próximo experimento pré-registrado (se o usuário quiser continuar por
 ## esta via, em vez de aceitar o piso de renda fixa)
 Testar, com o MESMO rigor (pré-registro, out-of-sample, múltiplas janelas),
