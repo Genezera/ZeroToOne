@@ -329,16 +329,39 @@ ledger `research` (17 entradas de backtest agora).
 mecanismos de pesquisa de mesa — toda evidência aponta na mesma direção
 para trading rápido/frequente de varejo: sem vantagem líquida.**
 
+## Sistema de market making em SHADOW — CONSTRUÍDO, TESTADO, RODANDO
+Usuário aprovou construir a última avenida de "ganho frequente" não
+testada: market making de verdade (spread capture, não direção de preço).
+Ver `system/market-maker/README.md`.
+
+- `inventory.mjs`, `quoting-engine.mjs`, `fill-simulator.mjs`: lógica pura,
+  16/16 testes passando. Trava de risco embutida (nunca cota do lado que
+  aumenta posição no limite; sem parâmetro de PnL/histórico — estruturalmente
+  impossível virar martingale, garantia testada).
+- `shadow-runner.mjs`: conecta no WebSocket PÚBLICO da Bybit (sem conta,
+  sem chave de API, sem dinheiro real), verificado manualmente com dados
+  reais de BTC fluindo corretamente. Registra cada fill simulado e
+  snapshots periódicos no ledger `shadow` (`ledger/ledger.shadow.jsonl`).
+  Reconecta sozinho com backoff. Kill switch simulado no mesmo limite de
+  RISK_LIMITS.md (-US$10).
+- **Rodando em background agora** (task b0ndm5sgk, spread 3bps, snapshot a
+  cada 2min, símbolo BTCUSDT), coletando evidência real continuamente.
+- **Limitação honesta que precisa ser lembrada sempre**: fill simulado
+  assume prioridade de fila favorável — resultado positivo aqui é evidência
+  fraca, não prova. Precisa validar contra fills reais em demo/testnet
+  antes de qualquer dinheiro real, e amostra estatística suficiente
+  (Snowball exigia >=25 episódios) antes de qualquer veredito.
+
 ## Próxima ação
-Reportar a varredura completa ao usuário (feito). Se ele quiser continuar
-por essa via financeira, os únicos caminhos genuinamente não testados
-ainda são: (a) mercado feito de verdade (spread capture bidirecional, não
-aposta direcional — exigiria conectar ao order book ao vivo, projeto de
-engenharia maior, não um backtest de tarde); (b) funding-rate arbitrage
-(pagamento a cada 8h, não por minuto/segundo — já mapeado com risco
-jurídico CVM para BR). Alternativa: aceitar o sistema de composição diária
-(~14-16% a.a., verificado, zero risco de ruína) como o "sistema real
-rodando sozinho" — ainda não construído fisicamente, só desenhado.
+1. Deixar o shadow runner acumular dados reais por um período (horas/dias,
+   não minutos) antes de tirar qualquer conclusão — resistir à tentação de
+   julgar com poucos fills.
+2. Verificar periodicamente `ledger/ledger.shadow.jsonl` e o log do
+   processo em background para acompanhar netWorth/fills.
+3. Em paralelo, o sistema de composição diária (~14-16% a.a., verificado,
+   zero risco de ruína) segue como o único resultado positivo *real* até
+   agora — ainda não construído fisicamente, só desenhado. Vale construir
+   também, não é mutuamente exclusivo com o shadow de market making.
 
 ## Custos consumidos
 - US$ 0,00 em dinheiro real (nenhum gasto)
