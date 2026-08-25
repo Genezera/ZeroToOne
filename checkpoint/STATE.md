@@ -281,18 +281,48 @@ US$200, sem CNPJ, sem trabalho humano recorrente:**
 numericamente 4 vezes seguidas.** Momento de reportar ao usuário com
 honestidade total, não lançar mais um lote esperando resposta diferente.
 
+## Usuário pediu trading rápido/frequente ("centavos, minutos, segundos",
+## win rate alto, sempre no verde) + autorização para trabalhar sozinho
+Recusei explicitamente implementar "se ficar no vermelho, se esforçar mais
+para voltar ao verde" — é martingale/perseguir prejuízo, proibido desde o
+início da missão pelo próprio usuário. Cliente confirmou estar liberado a
+decidir e agir sozinho ("vou tomar um banho"). Sem trade real/dinheiro real
+sem aprovação — mantido.
+
+## Experimento 1 — RODADO DE VERDADE, veredito REJEITADO (3ª confirmação
+## independente da mesma conclusão)
+Usei a plataforma trader-dev (já autenticada, dados reais Bybit BTC
+perpétuo) para testar ao vivo exatamente o que foi pedido. Ver
+[[exp01_scalp_vs_trend_bybit_btc]] e ledger `research` (5 entradas,
+hash-chain íntegro, `system/ledger/ledger.research.jsonl`).
+
+- **Scalp EMA9/21+RSI+ATR 15m** (a estratégia pedida: rápida, frequente):
+  -38,5% em 4 meses, -67,3% em 12 meses. Win rate ~25-26%. 529-1605 trades.
+  Comissão real sozinha consumiu 33-67% do capital. Rejeitada nas duas
+  janelas — não é falta de sorte, é estrutural (alta frequência × sem edge
+  suficiente × comissão real).
+- **SMA50/200 4h** (comparação, lenta): +93,8% em 36 meses parece ótimo, MAS
+  dividido em treino (2023-08 a 2025-02: +84,8%) e teste out-of-sample
+  (2025-02 a 2026-08: **-15,2%**) — inverte de sinal. Mesma armadilha que o
+  Snowball já documentou (100% consistente → 15% fora da amostra). Mesmo no
+  período bom, drawdown de 47% (long no vermelho, não "sempre verde").
+
+**Isso é a 3ª confirmação independente da mesma conclusão** (AurumOS: 9,8M
+sinais, 0 aprovados; pesquisa desta sessão: 111 mecanismos, 17 famílias,
+nada bate o piso de 14%; agora: backtest ao vivo, 5 testes reais, scalp
+rejeitado nas 2 janelas, tendência lenta só "funciona" com curve-fit). Não
+existe, com ferramentas e capital de US$200 hoje, uma estratégia de trading
+rápido/frequente com lucro líquido consistente para varejo.
+
 ## Próxima ação
-Apresentar este veredito consolidado ao usuário de forma direta (não mais
-uma pergunta de múltipla escolha genérica) e propor: (a) aceitar o piso
-(~14-16% a.a., CDB/Pix com FGC, 100% automatizável em aporte, zero risco de
-CNPJ) como o "sistema real rodando sozinho" — modesto mas honesto e
-verificável; (b) reconsiderar CNPJ especificamente via MEI (gratuito,
-~10 min, sem contador obrigatório, diferente de Ltda/SLU) para reabrir
-candidatos do lote 2 com melhor retorno mas que exigem formalização; (c)
-aceitar algum grau mínimo de aprovação pontual (não venda manual, só
-cliques de aprovação) para desbloquear os candidatos de melhor retorno do
-lote 2 (agência PME, agente WhatsApp). Não decidir sozinho — é escolha de
-risco/prioridade do usuário.
+Reportar isso ao usuário de forma completa e honesta (feito). Próximo passo
+pré-registrado se ele quiser continuar por essa via: varredura de
+estratégias de tendência de médio prazo com correção para múltiplas
+comparações — tecnicamente viável, mas é pesquisa quantitativa de verdade,
+e a expectativa honesta é mais uma confirmação de ausência de vantagem, não
+uma descoberta. Alternativa: aceitar o sistema de composição diária
+(~14-16% a.a., verificado, zero risco de ruína) como o "sistema real
+rodando sozinho" — ainda não construído fisicamente, só desenhado.
 
 ## Custos consumidos
 - US$ 0,00 em dinheiro real (nenhum gasto)
