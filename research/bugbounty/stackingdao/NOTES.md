@@ -109,6 +109,50 @@ isso é bom processo, não fracasso). Ainda há mais contratos no escopo do
 programa (13 total, li os 10 mais relevantes para custódia de fundos) e
 outros programas na Immunefi para tentar depois.
 
+## Rodada 2 — revisão da fila do scanner automático (2026-08-26)
+Scanner automático (`system/bugbounty-scanner`) gerou 3 candidatos novos em
+`queue.jsonl`, todos revisados nesta rodada:
+
+1. **`set-token-uri` (auth_arg_inconsistency)** — verdict: **confirmado**
+   (a inconsistência tx-sender/contract-caller é real, já documentada acima),
+   mas confidence alta que NÃO é elegível — só metadado (URI), sem fundos
+   envolvidos. Nenhum relatório escrito (não se encaixa nas categorias que o
+   programa paga).
+2. **`deposit` (unguarded_transfer)** — verdict: **falso_positivo**,
+   confidence alta. `(stx-transfer? stx-amount tx-sender .stx-reserve)`
+   (linha 38) já passa `tx-sender` como o próprio argumento `sender` — a VM
+   Clarity só permite mover fundos de quem é `tx-sender` (ou do próprio
+   contrato sob `as-contract`), então não existe caminho para debitar
+   fundos de terceiros. Análise autocontida, sem depender de outro arquivo.
+3. **`init-withdraw` (unguarded_transfer)** — verdict: **falso_positivo**,
+   confidence **média** (não alta). A única transferência de valor chama
+   `.ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract
+   none` com `sender=tx-sender` (linha 49). O padrão SIP-010 deste mesmo
+   protocolo (confirmado em `ststx-token.clar` linha 44:
+   `(asserts! (is-eq tx-sender sender) ...)`) garante que só o dono dos
+   tokens pode movê-los. **Não consegui baixar `ststxbtc-token-v2.clar`
+   para confirmar byte a byte** — a API pública da Hiro (`api.hiro.so`)
+   está bloqueada pela política de egress deste ambiente nesta sessão
+   (403 no proxy, confirmado via `$HTTPS_PROXY/__agentproxy/status`). Por
+   isso a confidence ficou em média, não alta, apesar do argumento sender
+   ser sempre `tx-sender` dentro da própria função (o que já limita o
+   dano mesmo no pior cenário).
+
+Nenhum item desta rodada gerou rascunho de relatório — todos foram
+falso_positivo ou confirmado-mas-não-elegível (metadado, não fundos).
+
+## O que falta
+- `ststxbtc-token-v2.clar`, `ststxbtc-data-v1.clar`,
+  `ststxbtc-withdraw-nft-v2.clar` ainda não foram baixados (bloqueio de
+  rede desta sessão específica — tentar de novo em outra sessão/ambiente
+  onde api.hiro.so não esteja bloqueado, para fechar com confidence alta
+  o item `init-withdraw`).
+- `dao.clar` e os demais contratos já baixados no diretório ainda não
+  foram lidos linha a linha nesta rodada (só reconfirmados os pontos
+  relevantes para os 3 candidatos da fila).
+- Programa StackingDAO ainda tem mais superfície a revisar; outros
+  programas Immunefi ainda não iniciados.
+
 ## Honestidade
 Isso é trabalho de segurança real, não instantâneo. Pode levar sessões
 inteiras e ainda assim não confirmar nada — é exatamente o padrão descrito
