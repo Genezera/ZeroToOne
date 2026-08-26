@@ -2,10 +2,10 @@
 
 Dois estágios, custo bem diferente, ligados por um repositório GitHub
 compartilhado (`https://github.com/Genezera/ZeroToOne`, privado). O
-Estágio 1 cobre dois programas/linguagens diferentes com o mesmo desenho.
+Estágio 1 cobre três programas e cinco linguagens com o mesmo desenho.
 
 ## Estágio 1 — Scanner local (grátis, roda sozinho, sem IA)
-`scan-runner.mjs` roda duas varreduras independentes:
+`scan-runner.mjs` roda uma varredura por linguagem/plataforma:
 
 **Clarity (StackingDAO, Immunefi):** busca código-fonte atualizado dos
 contratos rastreados (`targets.mjs`) via API pública da Hiro, roda
@@ -14,31 +14,50 @@ heurísticas de texto (`heuristics.mjs` — ex.: inconsistência entre
 sem checagem de auth visível), e persiste os `.clar` neste repositório
 (código pequeno o bastante para valer a pena guardar como evidência).
 
-**JavaScript/TypeScript (Vercel Open Source, HackerOne):** busca lista de
-arquivos + conteúdo bruto de repositórios rastreados (`targets-js.mjs`) via
-API pública do GitHub (sem conta/token), roda heurísticas de texto
-(`heuristics-js.mjs` — `eval`/`new Function`, `exec`/`execSync` com
-comando montado por interpolação, regex com quantificador aninhado/ReDoS).
-Repos JS/TS são grandes demais para persistir no git — só o texto do
-achado (com trecho de contexto) vai para a fila; um cache de SHA de blob
-por arquivo (`scanner-seen-js-shas.json`) evita rebuscar/rescanear arquivo
-que não mudou. Ver `research/bugbounty/vercel-open-source/NOTES.md` para
-por que este repo foi escolhido primeiro.
+**JavaScript/TypeScript (Vercel Open Source, HackerOne):**
+`targets-js.mjs` + `heuristics-js.mjs` — `eval`/`new Function`,
+`exec`/`execSync` com comando montado por interpolação, regex com
+quantificador aninhado/ReDoS. Ver
+`research/bugbounty/vercel-open-source/NOTES.md`.
 
-Ambas as varreduras só gravam na fila compartilhada
+**Go, Kotlin/Java e Swift/ObjC (Block Open Source, Bugcrowd — ex-Square):**
+`targets-go.mjs`/`heuristics-go.mjs` (injeção de comando via shell, TLS
+inseguro, `math/rand` em contexto de segredo — mesma família do `gosec`),
+`targets-jvm.mjs`/`heuristics-jvm.mjs` (bypass de validação TLS,
+exposição de ponte JS em WebView, injeção de comando — classes de bug
+Android já pagas em programas reais), `targets-swift.mjs`/
+`heuristics-swift.mjs` (bypass de validação TLS em URLSession, ponte JS
+insegura em WKWebView). Ver
+`research/bugbounty/block-open-source/NOTES.md` para por que "Square Open
+Source" só aparece sob o nome Block, numa plataforma diferente
+(Bugcrowd, não HackerOne).
+
+Todas as linguagens buscam via API pública do GitHub (sem conta/token) e
+usam `heuristics-shared.mjs` (`hardcoded_secret` — valor literal atribuído
+a campo tipo api_key/secret/password/token, filtrando placeholders óbvios)
+além da heurística específica da linguagem. Repos não-Clarity são grandes
+demais para persistir no git — só o texto do achado (com trecho de
+contexto) vai para a fila; um cache de SHA de blob por arquivo
+(`scanner-seen-repo-shas.json`, compartilhado entre todas as linguagens)
+evita rebuscar/rescanear arquivo que não mudou.
+
+Todas as varreduras só gravam na fila compartilhada
 (`research/bugbounty/queue.jsonl`) o que for **genuinamente novo**
 (controle de duplicidade via `scanner-seen.json`). Se achar algo novo,
 faz commit + push automaticamente.
 
 Testado contra código real: no lado Clarity, acha exatamente o achado real
 confirmado (`set-token-uri`) e não gera ruído nos contratos já confirmados
-seguros; no lado JS/TS, roda contra o código real de `vercel/flags` sem
-quebrar e sem falso-positivo óbvio (divisão matemática não é confundida
-com regex, por exemplo) — ver `system/bugbounty-scanner/test/`.
+seguros; nas outras 4 linguagens, roda contra o código real de
+`vercel/flags`, `cashapp/hermit`, `cashapp/misk`, `square/wire`,
+`afterpay/sdk-android`, `cashapp/cash-app-pay-android-sdk`,
+`afterpay/sdk-ios` e `cashapp/cash-app-pay-ios-sdk` (1.049 arquivos,
+0 erros) sem quebrar e sem falso-positivo óbvio — ver
+`system/bugbounty-scanner/test/` (37 testes).
 
 Automação: tarefa do Windows Task Scheduler `ZeroToOne_BugBountyScanner`,
-diária às 7h15 — mesma tarefa cobre os dois estágios/linguagens, não há
-tarefa separada por linguagem.
+diária às 7h15 — mesma tarefa cobre todos os estágios/linguagens, não há
+tarefa separada por linguagem ou plataforma.
 
 ## Estágio 2 — Agente de nuvem (custo real, só quando há trabalho)
 Routine "ZeroToOne Bug Bounty Analyst" (`trig_01QQeYvKRi9qJD4QkzkbqsSe`,
