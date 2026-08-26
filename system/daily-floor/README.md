@@ -2,9 +2,17 @@
 
 O único mecanismo, de 111+ pesquisados e 19+ backtests reais, com retorno
 líquido positivo E verificado: parquear o capital na melhor conta
-remunerada/CDB disponível (garantia FGC, sem CNPJ, sem trabalho humano
+remunerada disponível (garantia FGC, sem CNPJ, sem trabalho humano
 recorrente). Modesto (~US$0,08-0,10/dia sobre US$200), mas real e composto
 diariamente — nunca fica no vermelho por definição do próprio produto.
+
+**Regra de liquidez total (2026-08-26, RISK_LIMITS.md)**: o usuário precisa
+poder ter o capital inteiro disponível a qualquer momento. As três contas em
+`accounts.mjs` (Nubank, Mercado Pago, PicPay) são contas remuneradas com
+liquidez D+0/D+1 — passam nessa regra. Isso também DESQUALIFICA
+retroativamente uma alternativa encontrada na pesquisa (CDB de banco médio
+só supera o piso segurando 2+ anos) mesmo tendo taxa nominal melhor —
+liquidez trava, então não serve, independente do retorno.
 
 ## Peças
 - `tax.mjs` — tabela regressiva de IR sobre renda fixa (pura, testada).

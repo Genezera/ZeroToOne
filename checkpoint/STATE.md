@@ -379,6 +379,22 @@ reinício. Verificado rodando de ponta a ponta via `Start-ScheduledTask`
 pedir). Gatilho de repetição por horário (`-Once -RepetitionInterval`)
 funciona sem elevação e cumpre o mesmo papel de "sempre religar".
 
+## Regra nova (2026-08-26): liquidez total, sempre
+Usuário confirmou requisito permanente: precisa poder parar tudo e ter o
+capital inteiro disponível a qualquer momento. Adicionado a
+RISK_LIMITS.md/risk_limits.json (`requireInstantLiquidity`,
+`maxLockupDays: 0`) e **aplicado de verdade no código**: `risk-gate.mjs`
+agora exige `lockupDays` explícito em toda chamada de dinheiro real e
+bloqueia qualquer valor > 0 — nunca assume liquidez por padrão. 11/11
+testes do risk-gate passando (2 novos cobrindo a regra).
+
+Efeito retroativo: desqualifica o achado "CDB de banco médio supera o piso
+segurando 2+ anos" do lote 4 (retorno melhor, mas trava capital — não
+serve mais). O `daily-floor` (contas remuneradas D+0/D+1) já atendia essa
+regra por construção, confirmado no README. Market-maker: sacar de
+exchange cripto para conta real NÃO é instantâneo — fricção documentada,
+a medir antes de qualquer dinheiro real ali.
+
 ## Próxima ação
 1. Deixar ambos acumulando e reportar quando houver amostra que preste no
    market-maker (o daily-floor já não precisa de "amostra" — é

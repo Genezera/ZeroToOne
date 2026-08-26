@@ -38,7 +38,7 @@ function sumRealizedLosses({ onlyToday }) {
  * do usuário no chat, repassada por quem chama esta função — nunca inferida,
  * nunca assumida como "já aprovado antes".
  */
-export function checkRealMoneyAction({ env, amountUsd, description, approvedByUser }) {
+export function checkRealMoneyAction({ env, amountUsd, description, approvedByUser, lockupDays }) {
   const limits = loadLimits();
   const checks = [];
   let allowed = true;
@@ -46,6 +46,16 @@ export function checkRealMoneyAction({ env, amountUsd, description, approvedByUs
   if (approvedByUser !== true) {
     allowed = false;
     checks.push('BLOQUEADO: nenhuma ação com dinheiro real é permitida sem approvedByUser === true, confirmado explicitamente pelo usuário no chat.');
+  }
+
+  if (limits.requireInstantLiquidity) {
+    if (typeof lockupDays !== 'number' || !Number.isFinite(lockupDays) || lockupDays < 0) {
+      allowed = false;
+      checks.push('BLOQUEADO: lockupDays não informado ou inválido — regra de liquidez total exige declarar explicitamente quantos dias o capital ficaria travado (0 = liquidez imediata).');
+    } else if (lockupDays > (limits.maxLockupDays ?? 0)) {
+      allowed = false;
+      checks.push(`BLOQUEADO: mecanismo trava o capital por ${lockupDays} dia(s), acima do máximo permitido (${limits.maxLockupDays ?? 0}). Regra de liquidez total (o usuário precisa poder ter tudo disponível a qualquer momento) elimina qualquer trava, mesmo que o retorno pareça melhor.`);
+    }
   }
 
   if (limits.leverageAllowed === false && description && /alavanc|leverage|margin/i.test(description)) {

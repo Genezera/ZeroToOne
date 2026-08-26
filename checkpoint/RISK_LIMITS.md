@@ -17,6 +17,19 @@ last_confirmed: 2026-08-23
   ação por ação
 - Sizing pós-validação: fractional Kelly conservador, limitado por estes tetos —
   o sistema nunca pode aumentar sozinho seus próprios limites máximos
+- **Liquidez total, sempre** (regra confirmada em 2026-08-26): o usuário precisa
+  poder decidir, a qualquer momento, parar tudo e ter o capital inteiro
+  disponível. Isso elimina automaticamente, sem exceção: CDB/LCI/LCA/CRI/CRA com
+  carência ou prazo de resgate; qualquer posição travada até vencimento; qualquer
+  mecanismo cujo retorno só apareça se o capital ficar parado por um prazo
+  mínimo (ex.: o CDB de banco médio só supera o piso de 14% segurando 2+ anos —
+  **isso está desqualificado por esta regra**, mesmo sendo "positivo" em termos
+  de taxa anualizada). Contas remuneradas com liquidez D+0/D+1 (Nubank, Mercado
+  Pago, PicPay) atendem. Capital em exchange de cripto NÃO atende plenamente —
+  sacar de exchange para conta bancária real no Brasil não é instantâneo
+  (confirmação de blockchain + possível retenção de compliance) — tratar como
+  fricção real a ser medida antes de qualquer dinheiro real em mecanismos desse
+  tipo, não como "líquido" por padrão.
 
 # O que isso bloqueia por padrão
 

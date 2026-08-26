@@ -6,6 +6,8 @@
   "leverageAllowed": false,
   "withdrawalApiKeysAllowed": false,
   "requireExplicitApprovalForRealMoney": true,
+  "requireInstantLiquidity": true,
+  "maxLockupDays": 0,
   "environments": ["research", "simulation", "paper", "shadow", "canary", "production", "audit"],
   "note": "Espelho legível-por-máquina de checkpoint/RISK_LIMITS.md. Só o usuário (Renan) pode editar este arquivo. Nenhum agente ou código deve escrever neste arquivo automaticamente."
 }

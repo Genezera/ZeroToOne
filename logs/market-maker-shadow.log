@@ -3,3 +3,48 @@
 [2026-08-26T18:15:46.652Z] NENHUM dinheiro real envolvido. NENHUMA ordem real é enviada. Isso só observa o mercado real e simula.
 [2026-08-26T18:15:46.652Z] Conectando em wss://stream.bybit.com/v5/public/linear ...
 [2026-08-26T18:15:47.712Z] Conectado. Inscrevendo em orderbook e trades públicos (sem autenticação, sem dinheiro real).
+[2026-08-26T18:17:47.155Z] snapshot mid=78513.75 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:19:47.195Z] snapshot mid=78509.05 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:21:47.325Z] snapshot mid=78548.95 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:23:47.365Z] snapshot mid=78477.05 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:25:47.356Z] snapshot mid=78486.95 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:27:47.357Z] snapshot mid=78426.25 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:29:47.448Z] snapshot mid=78432.55 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:31:47.468Z] snapshot mid=78408.05 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:33:47.768Z] snapshot mid=78405.15 pos=0.000000 netWorth=$0.0000 fills=0 feesPaid=$0.0000
+[2026-08-26T18:35:12.389Z] FILL buy 0.000255 @ 78359.64 | pos=0.000255
+[2026-08-26T18:35:12.396Z] FILL buy 0.000255 @ 78348.80 | pos=0.000510
+[2026-08-26T18:35:47.768Z] snapshot mid=78368.35 pos=0.000510 netWorth=$0.0032 fills=2 feesPaid=$0.0040
+[2026-08-26T18:37:48.279Z] snapshot mid=78372.05 pos=0.000510 netWorth=$0.0051 fills=2 feesPaid=$0.0040
+[2026-08-26T18:39:48.420Z] snapshot mid=78342.55 pos=0.000510 netWorth=$-0.0100 fills=2 feesPaid=$0.0040
+[2026-08-26T18:39:55.976Z] FILL sell 0.000255 @ 78347.09 | pos=0.000255
+[2026-08-26T18:39:55.983Z] FILL sell 0.000255 @ 78360.03 | pos=-0.000000
+[2026-08-26T18:39:59.744Z] FILL buy 0.000255 @ 78329.85 | pos=0.000255
+[2026-08-26T18:39:59.745Z] FILL buy 0.000255 @ 78322.02 | pos=0.000510
+[2026-08-26T18:39:59.746Z] FILL buy 0.000255 @ 78314.18 | pos=0.000766
+[2026-08-26T18:39:59.747Z] FILL sell 0.000255 @ 78341.26 | pos=0.000510
+[2026-08-26T18:39:59.751Z] FILL buy 0.000255 @ 78302.09 | pos=0.000766
+[2026-08-26T18:39:59.752Z] FILL buy 0.000255 @ 78294.26 | pos=0.001021
+[2026-08-26T18:39:59.753Z] FILL buy 0.000255 @ 78286.42 | pos=0.001276
+[2026-08-26T18:39:59.754Z] FILL buy 0.000255 @ 78278.59 | pos=0.001531
+[2026-08-26T18:39:59.755Z] FILL buy 0.000255 @ 78270.75 | pos=0.001787
+[2026-08-26T18:39:59.756Z] FILL buy 0.000255 @ 78262.92 | pos=0.002042
+[2026-08-26T18:39:59.756Z] FILL buy 0.000255 @ 78255.09 | pos=0.002297
+[2026-08-26T18:39:59.757Z] FILL sell 0.000255 @ 78294.26 | pos=0.002042
+[2026-08-26T18:39:59.758Z] FILL sell 0.000255 @ 78302.09 | pos=0.001787
+[2026-08-26T18:39:59.759Z] FILL sell 0.000255 @ 78309.93 | pos=0.001531
+[2026-08-26T18:39:59.761Z] FILL sell 0.000255 @ 78274.10 | pos=0.001276
+[2026-08-26T18:39:59.761Z] FILL sell 0.000255 @ 78281.93 | pos=0.001021
+[2026-08-26T18:39:59.762Z] FILL sell 0.000255 @ 78289.76 | pos=0.000765
+[2026-08-26T18:39:59.763Z] FILL sell 0.000255 @ 78300.84 | pos=0.000510
+[2026-08-26T18:39:59.790Z] FILL sell 0.000255 @ 78308.27 | pos=0.000254
+[2026-08-26T18:39:59.791Z] FILL sell 0.000255 @ 78316.10 | pos=-0.000001
+[2026-08-26T18:41:48.430Z] snapshot mid=78277.15 pos=-0.000001 netWorth=$-0.0221 fills=24 feesPaid=$0.0480
+[2026-08-26T18:43:48.531Z] snapshot mid=78240.05 pos=-0.000001 netWorth=$-0.0221 fills=24 feesPaid=$0.0480
+[2026-08-26T18:45:48.581Z] snapshot mid=78272.45 pos=-0.000001 netWorth=$-0.0221 fills=24 feesPaid=$0.0480
+[2026-08-26T18:47:48.622Z] snapshot mid=78364.05 pos=-0.000001 netWorth=$-0.0223 fills=24 feesPaid=$0.0480
+[2026-08-26T18:49:48.857Z] snapshot mid=78343.05 pos=-0.000001 netWorth=$-0.0222 fills=24 feesPaid=$0.0480
+[2026-08-26T18:51:48.997Z] snapshot mid=78360.05 pos=-0.000001 netWorth=$-0.0222 fills=24 feesPaid=$0.0480
+[2026-08-26T18:53:49.058Z] snapshot mid=78399.85 pos=-0.000001 netWorth=$-0.0223 fills=24 feesPaid=$0.0480
+[2026-08-26T18:55:49.139Z] snapshot mid=78401.45 pos=-0.000001 netWorth=$-0.0223 fills=24 feesPaid=$0.0480
+[2026-08-26T18:57:49.658Z] snapshot mid=78436.45 pos=-0.000001 netWorth=$-0.0223 fills=24 feesPaid=$0.0480
