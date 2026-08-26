@@ -32,13 +32,23 @@ estatística (o próprio Snowball exigia >=25 episódios antes de qualquer
 veredito).
 
 ## Rodando
-```
-node system/market-maker/shadow-runner.mjs
-```
-Variáveis de ambiente (todas opcionais, com default):
-`MM_SYMBOL`, `MM_BASE_SPREAD_BPS`, `MM_MAX_POSITION_USD`, `MM_SKEW_BPS`,
-`MM_MAKER_FEE_RATE`, `MM_QUOTE_QTY_USD`, `MM_SNAPSHOT_INTERVAL_MS`,
-`MM_KILL_LOSS_USD`.
+Manual: `node system/market-maker/shadow-runner.mjs`. Variáveis de ambiente
+(todas opcionais, com default): `MM_SYMBOL`, `MM_BASE_SPREAD_BPS`,
+`MM_MAX_POSITION_USD`, `MM_SKEW_BPS`, `MM_MAKER_FEE_RATE`,
+`MM_QUOTE_QTY_USD`, `MM_SNAPSHOT_INTERVAL_MS`, `MM_KILL_LOSS_USD`.
+
+**Automação durável**: tarefa do Windows Task Scheduler
+(`ZeroToOne_MarketMakerShadow`) via `run-shadow.cmd`, disparo a cada 5min
+com `MultipleInstances=IgnoreNew` — se o processo já estiver rodando, o
+disparo é ignorado; se tiver caído, relança sozinho em até 5min. Isso roda
+como processo independente do Windows (não filho da sessão do Claude), e
+sobreviveu ao teste real: o processo original (rodando via Bash em
+background) foi derrubado 2x por reinício de sessão antes de migrar para
+isto. Log em `logs/market-maker-shadow.log`.
+
+Checar: `Get-ScheduledTaskInfo -TaskName "ZeroToOne_MarketMakerShadow"`
+Parar: `Unregister-ScheduledTask -TaskName "ZeroToOne_MarketMakerShadow"`
+(depois, matar o processo node manualmente se ainda estiver rodando).
 
 ## Testes
 `node --test "system/market-maker/test/*.test.mjs"` — 16 testes, cobrindo

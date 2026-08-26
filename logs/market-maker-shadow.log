@@ -1,0 +1,5 @@
+[26/08/2026 15:15:46,57] Iniciando shadow market maker 
+[2026-08-26T18:15:46.650Z] Iniciando shadow market maker: BTCUSDT | spread base=3bps | posição máx=$200 | taxa maker=0.01% | kill switch=-$10
+[2026-08-26T18:15:46.652Z] NENHUM dinheiro real envolvido. NENHUMA ordem real é enviada. Isso só observa o mercado real e simula.
+[2026-08-26T18:15:46.652Z] Conectando em wss://stream.bybit.com/v5/public/linear ...
+[2026-08-26T18:15:47.712Z] Conectado. Inscrevendo em orderbook e trades públicos (sem autenticação, sem dinheiro real).

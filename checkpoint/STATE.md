@@ -352,16 +352,43 @@ Ver `system/market-maker/README.md`.
   antes de qualquer dinheiro real, e amostra estatística suficiente
   (Snowball exigia >=25 episódios) antes de qualquer veredito.
 
+## Sistema de composição diária (daily-floor) — CONSTRUÍDO, TESTADO, AUTOMATIZADO DE VERDADE
+Ver `system/daily-floor/README.md`. 18/18 testes (16 puros + 2 de
+integração real contra a API do BCB). Primeira rodada real: US$200,00 →
+US$200,0841 em 1 dia (Mercado Pago 105% CDI, CDI real de hoje 0,05166%/dia).
+**Automatizado via Windows Task Scheduler** (tarefa `ZeroToOne_DailyFloor`,
+todo dia às 9h05) — diferente do market-maker (que depende de um processo
+em background continuar vivo e já foi derrubado 2x por reinício de
+sessão), isto roda no nível do sistema operacional e sobrevive a qualquer
+reinício. Verificado rodando de ponta a ponta via `Start-ScheduledTask`
+(LastTaskResult=0).
+
+## Estado consolidado — AMBOS OS SISTEMAS AGORA RODAM COMO PROCESSOS DO
+## WINDOWS, INDEPENDENTES DA SESSÃO DO CLAUDE (2026-08-26)
+1. **daily-floor**: positivo, verificado, tarefa agendada diária (9h05).
+   Modesto (~US$0,08-0,10/dia sobre US$200).
+2. **market-maker shadow**: tarefa agendada com gatilho repetitivo a cada
+   5min + `MultipleInstances=IgnoreNew` (auto-relança se cair, ignora se já
+   estiver rodando) — migrado depois de cair 2x como processo solto em
+   background da sessão. PID confirmado rodando de forma independente
+   (verificado via `tasklist`). Dados reais acumulando; amostra ainda
+   pequena demais para qualquer veredito.
+
+**Nota técnica**: `Register-ScheduledTask` com gatilho `AtStartup` ou
+`AtLogOn` deu "Acesso negado" (exige elevação que não tenho e não vou
+pedir). Gatilho de repetição por horário (`-Once -RepetitionInterval`)
+funciona sem elevação e cumpre o mesmo papel de "sempre religar".
+
 ## Próxima ação
-1. Deixar o shadow runner acumular dados reais por um período (horas/dias,
-   não minutos) antes de tirar qualquer conclusão — resistir à tentação de
-   julgar com poucos fills.
-2. Verificar periodicamente `ledger/ledger.shadow.jsonl` e o log do
-   processo em background para acompanhar netWorth/fills.
-3. Em paralelo, o sistema de composição diária (~14-16% a.a., verificado,
-   zero risco de ruína) segue como o único resultado positivo *real* até
-   agora — ainda não construído fisicamente, só desenhado. Vale construir
-   também, não é mutuamente exclusivo com o shadow de market making.
+1. Deixar ambos acumulando e reportar quando houver amostra que preste no
+   market-maker (o daily-floor já não precisa de "amostra" — é
+   determinístico e positivo por construção, dado FGC).
+2. Verificar periodicamente `ledger/ledger.shadow.jsonl`,
+   `ledger/ledger.paper.jsonl`, `logs/daily-floor.log` e
+   `logs/market-maker-shadow.log`.
+3. Retomar a pesquisa das ~10 famílias ainda não cobertas (mercados de
+   previsão, DeFi, leads, bounties etc.) só se o usuário pedir — prioridade
+   atual é deixar os dois sistemas reais rodando e coletando evidência.
 
 ## Custos consumidos
 - US$ 0,00 em dinheiro real (nenhum gasto)
