@@ -429,11 +429,45 @@ verdade**: o push seguinte (checkpoint/README) disparou uma SEGUNDA
 sessão automaticamente (`cse_01DgJnXaBJvca4T6sxqa8HNc`), sem qualquer
 ação manual — evento real, não só o cron de segurança.
 
+## Rodada de teste do agente de nuvem — CONCLUÍDA
+As 3 sessões disparadas (1 manual + 2 por webhook real de push) revisaram
+os 3 candidatos pendentes com rigor genuíno (uma delas até achou e leu um
+laudo de auditoria profissional de terceiros via WebSearch quando a API
+principal foi bloqueada pela política de rede da nuvem). Resultado: 2
+falsos positivos (garantia da própria linguagem Clarity: `stx-transfer?`
+só move fundos de `tx-sender`, nível de consenso, não precisa de checagem
+extra), 1 real mas não-pagável (mesmo achado de `set-token-uri` já
+documentado). Nenhum relatório rascunhado. Conflito de git entre as 3
+sessões concorrentes foi resolvido corretamente por elas mesmas (diff
+contra base comum, merge seguro). Pipeline validado de ponta a ponta.
+
+## Decisão: verificação de identidade do Immunefi PAUSADA (2026-08-26)
+Tentamos verificar a conta (pré-requisito pra submeter relatórios) via
+Human Passport (grátis, mas baseado em pontos — precisa de 25). Carteira
+Exodus conectada com sucesso (endereço EVM verificado). Stamps grátis
+coletados: Discord 2,8 + LinkedIn 1,5 + Google 0,5 + Steam 2,8 = **7,6 de
+25 pontos** — GitHub falhou (atividade insuficiente, só 1 dia de commit,
+precisa de 30). O resto das opções gratuitas se esgotou; as que sobram
+exigem documento oficial, biometria, ou taxa em ETH (que nem temos, só
+BNB/BSC). A alternativa "Skin in the game" (pagar pra pular a pontuação)
+custa **US$100 em USDC — metade do capital da missão inteira e 10x o
+limite máximo por experimento (US$10) do RISK_LIMITS.md**.
+
+**Decisão**: NÃO gastar isso agora, sem nenhum bug confirmado pra
+submeter. Pausar a verificação de identidade. O pipeline automático
+(scanner local + agente de nuvem) continua rodando de graça, sozinho, sem
+depender disso. Revisitar a verificação SÓ quando/se o pipeline confirmar
+um bug real e pagável — nesse momento a conta de custo-benefício muda
+completamente (US$100 pra destravar um bounty de milhares faz sentido;
+US$100 especulativo sem nada pra submeter, não).
+
 ## Próxima ação
-1. Checar o resultado da rodada de teste do agente de nuvem
-   (`RemoteTrigger action:"get_run_log"` com o session_id acima).
-2. Deixar os três sistemas acumulando e reportar quando houver amostra que
-   preste no market-maker, ou quando o bug bounty confirmar algo.
+1. Deixar os três sistemas acumulando sozinhos — nenhuma ação pendente
+   agora, nem minha nem do usuário.
+2. Se o bug bounty confirmar algo pagável: revisitar a verificação de
+   identidade do Immunefi (Human Passport com mais Stamps, ou pagar os
+   US$100 — pedir aprovação explícita antes de qualquer gasto real,
+   mesmo que o achado pareça justificar).
 3. Verificar periodicamente `ledger/ledger.shadow.jsonl`,
    `ledger/ledger.paper.jsonl`, `logs/daily-floor.log`,
    `logs/market-maker-shadow.log`, `logs/bugbounty-scanner.log`, e a
