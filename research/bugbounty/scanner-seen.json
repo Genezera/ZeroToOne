@@ -1,0 +1,5 @@
+[
+  "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer",
+  "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::init-withdraw::unguarded_transfer",
+  "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency"
+]
