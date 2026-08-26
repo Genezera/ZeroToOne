@@ -1,6 +1,6 @@
 # system/ — infraestrutura de execução da missão ZeroToOne
 
-Código real, testado, sem mocks. Duas peças construídas até agora:
+Código real, testado, sem mocks.
 
 ## ledger/
 Ledger append-only, encadeado por hash (`ledger.mjs`). Um arquivo
@@ -8,8 +8,8 @@ Ledger append-only, encadeado por hash (`ledger.mjs`). Um arquivo
 `shadow`, `canary`, `production`, `audit`) — nunca misturar PnL fictício com
 dinheiro real. `verifyChain()` detecta adulteração de qualquer entrada já
 gravada. Os arquivos `.jsonl` reais ficam em `../ledger/` (fora deste
-diretório, ver `.gitignore` — dados de ledger não são versionados como
-código, mas devem ser copiados para backup periodicamente).
+diretório) e SÃO versionados no git junto com o código — trilha de
+auditoria com histórico completo, não só o estado atual.
 
 ## risk-gate/
 Trava de risco obrigatória (`risk-gate.mjs`) antes de qualquer ação com
@@ -36,8 +36,32 @@ fatiamento automático de intervalo e retry validado). Ver
 (incluindo um candidato abortado por conflito de termos de uso, antes de
 qualquer código de produção ser escrito em cima dele).
 
+## market-maker/
+Shadow test de market making contra o WebSocket público da Bybit (dados
+reais, zero dinheiro real, zero conta necessária). Ver
+`market-maker/README.md` — trava de risco anti-martingale embutida na
+própria assinatura da função de cotação. Rodando em background,
+acumulando evidência real desde 2026-08-25.
+
+## daily-floor/
+O único mecanismo com retorno líquido positivo E verificado até agora:
+composição diária na melhor conta remunerada/CDB real (FGC, sem CNPJ, sem
+trabalho humano recorrente). Ver `daily-floor/README.md`. **Automatizado
+de verdade** via Windows Task Scheduler (tarefa `ZeroToOne_DailyFloor`,
+todo dia às 9h05) — sobrevive a reinícios de sessão, ao contrário do
+market-maker (que depende de um processo em background continuar vivo).
+
 ## Uso
-Módulos ESM (`.mjs`), sem dependências externas. Requer Node.js (testado com
-v24.18). Variáveis de ambiente `ZERO2ONE_LEDGER_DIR` e
-`ZERO2ONE_RISK_LIMITS_PATH` permitem apontar para diretórios/arquivos
-alternativos (usado pelos testes para isolamento; não definir em produção).
+Módulos ESM (`.mjs`), sem dependências externas (exceto `apify` dentro de
+`product-pipeline/products/br-series-fetcher/`, ainda não instalado).
+Requer Node.js (testado com v24.18). Variáveis de ambiente
+`ZERO2ONE_LEDGER_DIR` e `ZERO2ONE_RISK_LIMITS_PATH` permitem apontar para
+diretórios/arquivos alternativos (usado pelos testes para isolamento; não
+definir em produção).
+
+## Rodar todos os testes
+`node --test "system/**/test/*.test.mjs"` cobre ledger, risk-gate,
+market-maker (16) e daily-floor (18) — mais `br-series-fetcher/test` e o
+`npm test` da raiz para risk-gate/ledger. Total: 59+ testes reais nesta
+árvore, incluindo múltiplas chamadas de integração contra APIs reais
+(BCB, Bybit).
