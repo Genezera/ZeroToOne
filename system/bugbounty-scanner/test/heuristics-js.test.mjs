@@ -64,7 +64,7 @@ test('findReDoSRisk NÃO confunde divisão matemática com regex', () => {
   assert.equal(findReDoSRisk(src, 'x.js').length, 0);
 });
 
-test('scanJsSource combina as três heurísticas e roda sem quebrar em código limpo', () => {
+test('scanJsSource combina as quatro heurísticas e roda sem quebrar em código limpo', () => {
   const src = `
     export function safeAdd(a, b) {
       return a + b;

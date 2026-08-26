@@ -3,6 +3,8 @@
 // de certificado TLS, exposição de ponte JavaScript no WebView, injeção
 // de comando via Runtime/ProcessBuilder.
 
+import { findHardcodedSecrets } from './heuristics-shared.mjs';
+
 function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
 }
@@ -93,5 +95,6 @@ export function scanJvmSource(source, filename) {
     ...findTrustManagerBypass(source, filename),
     ...findWebViewJsBridge(source, filename),
     ...findJvmCommandInjection(source, filename),
+    ...findHardcodedSecrets(source, filename),
   ];
 }

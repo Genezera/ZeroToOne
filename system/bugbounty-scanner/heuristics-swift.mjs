@@ -2,6 +2,8 @@
 // conhecidas em bug bounty mobile: bypass de validação de certificado TLS
 // em URLSession, e ponte JS insegura em WKWebView.
 
+import { findHardcodedSecrets } from './heuristics-shared.mjs';
+
 function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
 }
@@ -65,5 +67,6 @@ export function scanSwiftSource(source, filename) {
   return [
     ...findSwiftTLSBypass(source, filename),
     ...findWKWebViewJsBridge(source, filename),
+    ...findHardcodedSecrets(source, filename),
   ];
 }

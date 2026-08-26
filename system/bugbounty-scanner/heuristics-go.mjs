@@ -3,6 +3,8 @@
 // checagens do gosec: G204 injeção de comando via shell, G404 uso de
 // math/rand em contexto de segurança, G402 TLS inseguro).
 
+import { findHardcodedSecrets } from './heuristics-shared.mjs';
+
 function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
 }
@@ -90,5 +92,6 @@ export function scanGoSource(source, filename) {
     ...findGoCommandInjection(source, filename),
     ...findGoInsecureTLS(source, filename),
     ...findGoWeakRandomForSecrets(source, filename),
+    ...findHardcodedSecrets(source, filename),
   ];
 }

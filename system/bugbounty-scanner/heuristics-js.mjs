@@ -5,6 +5,8 @@
 // inventadas — mas aqui é regex simples sobre texto, então falso-positivo
 // é esperado e aceitável: é triagem, não veredito.
 
+import { findHardcodedSecrets } from './heuristics-shared.mjs';
+
 function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
 }
@@ -91,5 +93,6 @@ export function scanJsSource(source, filename) {
     ...findEvalUsage(source, filename),
     ...findCommandInjectionRisk(source, filename),
     ...findReDoSRisk(source, filename),
+    ...findHardcodedSecrets(source, filename),
   ];
 }
