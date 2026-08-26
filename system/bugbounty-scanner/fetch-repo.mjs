@@ -1,19 +1,42 @@
 // Busca lista de arquivos e código-fonte real de repositórios GitHub
 // públicos via API pública (sem conta, sem token — só limitada pelo rate
-// limit anônimo do GitHub). Usado para repos JS/TS de programas de bug
-// bounty hospedados na HackerOne (ex.: Vercel Open Source).
+// limit anônimo do GitHub). Genérico por linguagem — usado para todos os
+// alvos JS/TS, Go, Kotlin/Java e Swift/ObjC deste projeto.
 
-const EXCLUDED_DIR = /(^|\/)(node_modules|dist|build|\.next|out|coverage|\.turbo|\.git)(\/|$)/;
-const TEST_FILE = /\.(test|spec)\.[jt]sx?$/;
-const TEST_DIR = /(^|\/)(test|tests|__tests__|fixtures)(\/|$)/;
-const SOURCE_EXT = /\.(js|jsx|ts|tsx|mjs|cjs)$/;
+const EXCLUDED_DIR = /(^|\/)(node_modules|dist|build|\.next|out|coverage|\.turbo|\.git|vendor|Pods|\.gradle|target)(\/|$)/;
+const TEST_FILE_JS = /\.(test|spec)\.[jt]sx?$/;
+const TEST_DIR = /(^|\/)(test|tests|__tests__|fixtures|testdata)(\/|$)/i;
+const TEST_FILE_JVM = /(Test|Tests)\.(kt|java)$/;
+const TEST_FILE_GO = /_test\.go$/;
+const TEST_FILE_SWIFT = /(Tests?|Spec)\.(swift|m)$/;
+
+const SOURCE_EXT_JS = /\.(js|jsx|ts|tsx|mjs|cjs)$/;
+const SOURCE_EXT_GO = /\.go$/;
+const SOURCE_EXT_JVM = /\.(kt|kts|java)$/;
+const SOURCE_EXT_SWIFT = /\.(swift|m|h)$/;
+
+function isScannable(path, ext, testFile) {
+  if (!ext.test(path)) return false;
+  if (EXCLUDED_DIR.test(path)) return false;
+  if (TEST_DIR.test(path)) return false;
+  if (testFile.test(path)) return false;
+  return true;
+}
 
 export function isScannableFile(path) {
-  if (!SOURCE_EXT.test(path)) return false;
-  if (EXCLUDED_DIR.test(path)) return false;
-  if (TEST_FILE.test(path)) return false;
-  if (TEST_DIR.test(path)) return false;
-  return true;
+  return isScannable(path, SOURCE_EXT_JS, TEST_FILE_JS);
+}
+
+export function isScannableGoFile(path) {
+  return isScannable(path, SOURCE_EXT_GO, TEST_FILE_GO);
+}
+
+export function isScannableJvmFile(path) {
+  return isScannable(path, SOURCE_EXT_JVM, TEST_FILE_JVM);
+}
+
+export function isScannableSwiftFile(path) {
+  return isScannable(path, SOURCE_EXT_SWIFT, TEST_FILE_SWIFT);
 }
 
 export async function listRepoFiles(owner, repo, branch, pathPrefixes) {

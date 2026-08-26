@@ -14,8 +14,14 @@ import { TARGETS } from './targets.mjs';
 import { fetchContractSource } from './fetch.mjs';
 import { scanSource } from './heuristics.mjs';
 import { JS_TARGETS } from './targets-js.mjs';
-import { listRepoFiles, fetchRawFile, isScannableFile } from './fetch-js.mjs';
+import { GO_TARGETS } from './targets-go.mjs';
+import { JVM_TARGETS } from './targets-jvm.mjs';
+import { SWIFT_TARGETS } from './targets-swift.mjs';
+import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile } from './fetch-repo.mjs';
 import { scanJsSource } from './heuristics-js.mjs';
+import { scanGoSource } from './heuristics-go.mjs';
+import { scanJvmSource } from './heuristics-jvm.mjs';
+import { scanSwiftSource } from './heuristics-swift.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,8 +29,8 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
 const SEEN_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen.json');
-const JS_SHAS_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-js-shas.json');
-const MAX_JS_FILES_PER_TARGET = 200;
+const REPO_SHAS_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-repo-shas.json');
+const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
   return `${f.program}::${f.file}::${f.function}::${f.type}`;
@@ -39,30 +45,30 @@ function saveSeen(seen) {
   writeFileSync(SEEN_PATH, JSON.stringify([...seen].sort(), null, 2), 'utf8');
 }
 
-function loadJsShas() {
-  if (!existsSync(JS_SHAS_PATH)) return {};
-  return JSON.parse(readFileSync(JS_SHAS_PATH, 'utf8'));
+function loadRepoShas() {
+  if (!existsSync(REPO_SHAS_PATH)) return {};
+  return JSON.parse(readFileSync(REPO_SHAS_PATH, 'utf8'));
 }
 
-function saveJsShas(shas) {
-  writeFileSync(JS_SHAS_PATH, JSON.stringify(shas, null, 2), 'utf8');
+function saveRepoShas(shas) {
+  writeFileSync(REPO_SHAS_PATH, JSON.stringify(shas, null, 2), 'utf8');
 }
 
 function log(msg) {
   console.log(`[${new Date().toISOString()}] ${msg}`);
 }
 
-// Varre os repositórios JS/TS rastreados (targets-js.mjs). Não persiste o
-// código-fonte no git (repos JS/TS são grandes demais para isso, diferente
-// dos contratos Clarity) — só o texto dos achados (com trecho de contexto)
-// vai para a fila. Usa cache de SHA de blob por arquivo para não rebuscar
-// nem rescanear arquivo que não mudou desde a última rodada.
-async function runJsScan(seen, newFindings) {
-  const jsShas = loadJsShas();
+// Varre uma lista de repositórios GitHub de UMA linguagem (targets já traz
+// program/platform/maxBountyUsd/pathPrefixes). Reutilizado para JS/TS, Go,
+// Kotlin/Java e Swift/ObjC — só muda o filtro de arquivo e a função de
+// heurística. Não persiste o código-fonte no git (repos grandes demais) —
+// só o texto do achado (com trecho de contexto) vai para a fila. Cache de
+// SHA de blob por arquivo evita rebuscar/rescanear o que não mudou.
+async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas) {
   let filesChecked = 0;
   let fetchErrors = 0;
 
-  for (const target of JS_TARGETS) {
+  for (const target of targets) {
     let files;
     try {
       files = await listRepoFiles(target.owner, target.repo, target.branch, target.pathPrefixes);
@@ -71,17 +77,17 @@ async function runJsScan(seen, newFindings) {
       fetchErrors++;
       continue;
     }
-    files = files.filter((f) => isScannableFile(f.path));
-    if (files.length > MAX_JS_FILES_PER_TARGET) {
-      log(`AVISO: ${target.owner}/${target.repo} tem ${files.length} arquivos rastreáveis, cortando para os primeiros ${MAX_JS_FILES_PER_TARGET} (não silencioso — registrado aqui).`);
-      files = files.slice(0, MAX_JS_FILES_PER_TARGET);
+    files = files.filter((f) => isScannable(f.path));
+    if (files.length > MAX_FILES_PER_TARGET) {
+      log(`AVISO: ${target.owner}/${target.repo} tem ${files.length} arquivos rastreáveis, cortando para os primeiros ${MAX_FILES_PER_TARGET} (não silencioso — registrado aqui).`);
+      files = files.slice(0, MAX_FILES_PER_TARGET);
     }
 
     const repoKey = `${target.owner}/${target.repo}`;
-    jsShas[repoKey] = jsShas[repoKey] || {};
+    repoShas[repoKey] = repoShas[repoKey] || {};
 
     for (const file of files) {
-      if (jsShas[repoKey][file.path] === file.sha) continue; // sem mudança desde a última rodada
+      if (repoShas[repoKey][file.path] === file.sha) continue; // sem mudança desde a última rodada
       let source;
       try {
         source = await fetchRawFile(target.owner, target.repo, target.branch, file.path);
@@ -91,9 +97,9 @@ async function runJsScan(seen, newFindings) {
         continue;
       }
       filesChecked++;
-      jsShas[repoKey][file.path] = file.sha;
+      repoShas[repoKey][file.path] = file.sha;
 
-      const findings = scanJsSource(source, `${repoKey}/${file.path}`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd }));
+      const findings = scanFn(source, `${repoKey}/${file.path}`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd }));
       for (const f of findings) {
         const fp = fingerprint(f);
         if (seen.has(fp)) continue;
@@ -103,7 +109,6 @@ async function runJsScan(seen, newFindings) {
     }
   }
 
-  saveJsShas(jsShas);
   return { filesChecked, fetchErrors };
 }
 
@@ -140,8 +145,15 @@ export async function runScan() {
     }
   }
 
-  const jsResult = await runJsScan(seen, newFindings);
-  fetchErrors += jsResult.fetchErrors;
+  const repoShas = loadRepoShas();
+  const jsResult = await runLanguageScan(JS_TARGETS, isScannableFile, scanJsSource, seen, newFindings, repoShas);
+  const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas);
+  const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas);
+  const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas);
+  saveRepoShas(repoShas);
+
+  const repoFilesChecked = jsResult.filesChecked + goResult.filesChecked + jvmResult.filesChecked + swiftResult.filesChecked;
+  fetchErrors += jsResult.fetchErrors + goResult.fetchErrors + jvmResult.fetchErrors + swiftResult.fetchErrors;
 
   if (newFindings.length > 0) {
     for (const f of newFindings) {
@@ -153,13 +165,14 @@ export async function runScan() {
   appendEntry('research', {
     type: 'bugbounty_scan',
     contractsChecked,
-    jsFilesChecked: jsResult.filesChecked,
+    repoFilesChecked,
+    byLanguage: { js: jsResult.filesChecked, go: goResult.filesChecked, jvm: jvmResult.filesChecked, swift: swiftResult.filesChecked },
     fetchErrors,
     newFindingsCount: newFindings.length,
-    programs: [...TARGETS.map((t) => t.program), ...JS_TARGETS.map((t) => t.program)],
+    programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS].map((t) => t.program))],
   });
 
-  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${jsResult.filesChecked} arquivos JS/TS checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila.`);
+  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila.`);
 
   if (newFindings.length > 0) {
     try {
