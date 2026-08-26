@@ -421,7 +421,13 @@ repo — só a instalação dá acesso real, a autorização OAuth sozinha não)
 
 Disparei uma rodada de teste manual (`RemoteTrigger action:"run"`,
 session_id `cse_014E5i7hcrecDdH3u8gEp14E`) para validar o pipeline
-completo contra os 3 itens pendentes reais na fila.
+completo contra os 3 itens pendentes reais na fila — confirmado fazendo
+investigação real (lendo NOTES.md, código, buscando contratos
+relacionados via API do Hiro para verificar a cadeia de chamada, não só
+respondendo de forma superficial). **Webhook confirmado funcionando de
+verdade**: o push seguinte (checkpoint/README) disparou uma SEGUNDA
+sessão automaticamente (`cse_01DgJnXaBJvca4T6sxqa8HNc`), sem qualquer
+ação manual — evento real, não só o cron de segurança.
 
 ## Próxima ação
 1. Checar o resultado da rodada de teste do agente de nuvem
