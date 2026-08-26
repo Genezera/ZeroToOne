@@ -13,6 +13,9 @@ import { execSync } from 'node:child_process';
 import { TARGETS } from './targets.mjs';
 import { fetchContractSource } from './fetch.mjs';
 import { scanSource } from './heuristics.mjs';
+import { JS_TARGETS } from './targets-js.mjs';
+import { listRepoFiles, fetchRawFile, isScannableFile } from './fetch-js.mjs';
+import { scanJsSource } from './heuristics-js.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,6 +23,8 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
 const SEEN_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen.json');
+const JS_SHAS_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-js-shas.json');
+const MAX_JS_FILES_PER_TARGET = 200;
 
 function fingerprint(f) {
   return `${f.program}::${f.file}::${f.function}::${f.type}`;
@@ -34,8 +39,72 @@ function saveSeen(seen) {
   writeFileSync(SEEN_PATH, JSON.stringify([...seen].sort(), null, 2), 'utf8');
 }
 
+function loadJsShas() {
+  if (!existsSync(JS_SHAS_PATH)) return {};
+  return JSON.parse(readFileSync(JS_SHAS_PATH, 'utf8'));
+}
+
+function saveJsShas(shas) {
+  writeFileSync(JS_SHAS_PATH, JSON.stringify(shas, null, 2), 'utf8');
+}
+
 function log(msg) {
   console.log(`[${new Date().toISOString()}] ${msg}`);
+}
+
+// Varre os repositórios JS/TS rastreados (targets-js.mjs). Não persiste o
+// código-fonte no git (repos JS/TS são grandes demais para isso, diferente
+// dos contratos Clarity) — só o texto dos achados (com trecho de contexto)
+// vai para a fila. Usa cache de SHA de blob por arquivo para não rebuscar
+// nem rescanear arquivo que não mudou desde a última rodada.
+async function runJsScan(seen, newFindings) {
+  const jsShas = loadJsShas();
+  let filesChecked = 0;
+  let fetchErrors = 0;
+
+  for (const target of JS_TARGETS) {
+    let files;
+    try {
+      files = await listRepoFiles(target.owner, target.repo, target.branch, target.pathPrefixes);
+    } catch (err) {
+      log(`ERRO listando árvore de ${target.owner}/${target.repo}: ${err.message}`);
+      fetchErrors++;
+      continue;
+    }
+    files = files.filter((f) => isScannableFile(f.path));
+    if (files.length > MAX_JS_FILES_PER_TARGET) {
+      log(`AVISO: ${target.owner}/${target.repo} tem ${files.length} arquivos rastreáveis, cortando para os primeiros ${MAX_JS_FILES_PER_TARGET} (não silencioso — registrado aqui).`);
+      files = files.slice(0, MAX_JS_FILES_PER_TARGET);
+    }
+
+    const repoKey = `${target.owner}/${target.repo}`;
+    jsShas[repoKey] = jsShas[repoKey] || {};
+
+    for (const file of files) {
+      if (jsShas[repoKey][file.path] === file.sha) continue; // sem mudança desde a última rodada
+      let source;
+      try {
+        source = await fetchRawFile(target.owner, target.repo, target.branch, file.path);
+      } catch (err) {
+        log(`ERRO buscando ${repoKey}/${file.path}: ${err.message}`);
+        fetchErrors++;
+        continue;
+      }
+      filesChecked++;
+      jsShas[repoKey][file.path] = file.sha;
+
+      const findings = scanJsSource(source, `${repoKey}/${file.path}`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd }));
+      for (const f of findings) {
+        const fp = fingerprint(f);
+        if (seen.has(fp)) continue;
+        seen.add(fp);
+        newFindings.push({ ...f, status: 'pending', foundAt: new Date().toISOString() });
+      }
+    }
+  }
+
+  saveJsShas(jsShas);
+  return { filesChecked, fetchErrors };
 }
 
 export async function runScan() {
@@ -71,6 +140,9 @@ export async function runScan() {
     }
   }
 
+  const jsResult = await runJsScan(seen, newFindings);
+  fetchErrors += jsResult.fetchErrors;
+
   if (newFindings.length > 0) {
     for (const f of newFindings) {
       appendFileSync(QUEUE_PATH, JSON.stringify(f) + '\n', 'utf8');
@@ -81,12 +153,13 @@ export async function runScan() {
   appendEntry('research', {
     type: 'bugbounty_scan',
     contractsChecked,
+    jsFilesChecked: jsResult.filesChecked,
     fetchErrors,
     newFindingsCount: newFindings.length,
-    programs: TARGETS.map((t) => t.program),
+    programs: [...TARGETS.map((t) => t.program), ...JS_TARGETS.map((t) => t.program)],
   });
 
-  log(`Varredura completa: ${contractsChecked} contratos checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila.`);
+  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${jsResult.filesChecked} arquivos JS/TS checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila.`);
 
   if (newFindings.length > 0) {
     try {
