@@ -395,16 +395,43 @@ regra por construção, confirmado no README. Market-maker: sacar de
 exchange cripto para conta real NÃO é instantâneo — fricção documentada,
 a medir antes de qualquer dinheiro real ali.
 
+## Terceiro sistema automatizado: pipeline de bug bounty (2026-08-26)
+Usuário pediu automação completa do bug bounty, minimizando custo — só
+"pensar" (IA de verdade) quando houver um candidato genuíno, ficar em
+standby o resto do tempo. Construído em dois estágios, ver
+`system/bugbounty-scanner/README.md`:
+
+1. **Scanner local** (grátis, Windows Task Scheduler, diário 7h15) — busca
+   código real, roda heurísticas de texto, só grava na fila o que for
+   novo. Testado: acha exatamente o achado real de hoje (`set-token-uri`),
+   não gera ruído nos contratos já confirmados seguros.
+2. **Agente de nuvem** (custo real, só quando há trabalho) — routine
+   `trig_01QQeYvKRi9qJD4QkzkbqsSe`
+   (https://claude.ai/code/routines/trig_01QQeYvKRi9qJD4QkzkbqsSe),
+   disparada por **webhook de push no GitHub** (evento real, não só
+   relógio) + cron diário de segurança (11h15 UTC). Primeiro passo do
+   agente: checar se há pendente; se não, encerra na hora (custo mínimo).
+
+**Infraestrutura nova que isso exigiu**: repositório GitHub privado criado
+(`https://github.com/Genezera/ZeroToOne`, via `gh` CLI já autenticado como
+Genezera) — histórico local inteiro enviado. Usuário conectou GitHub App
+do Claude em https://claude.ai/customize/connectors (dois passos
+necessários: autorização OAuth E instalação do GitHub App com acesso ao
+repo — só a instalação dá acesso real, a autorização OAuth sozinha não).
+
+Disparei uma rodada de teste manual (`RemoteTrigger action:"run"`,
+session_id `cse_014E5i7hcrecDdH3u8gEp14E`) para validar o pipeline
+completo contra os 3 itens pendentes reais na fila.
+
 ## Próxima ação
-1. Deixar ambos acumulando e reportar quando houver amostra que preste no
-   market-maker (o daily-floor já não precisa de "amostra" — é
-   determinístico e positivo por construção, dado FGC).
-2. Verificar periodicamente `ledger/ledger.shadow.jsonl`,
-   `ledger/ledger.paper.jsonl`, `logs/daily-floor.log` e
-   `logs/market-maker-shadow.log`.
-3. Retomar a pesquisa das ~10 famílias ainda não cobertas (mercados de
-   previsão, DeFi, leads, bounties etc.) só se o usuário pedir — prioridade
-   atual é deixar os dois sistemas reais rodando e coletando evidência.
+1. Checar o resultado da rodada de teste do agente de nuvem
+   (`RemoteTrigger action:"get_run_log"` com o session_id acima).
+2. Deixar os três sistemas acumulando e reportar quando houver amostra que
+   preste no market-maker, ou quando o bug bounty confirmar algo.
+3. Verificar periodicamente `ledger/ledger.shadow.jsonl`,
+   `ledger/ledger.paper.jsonl`, `logs/daily-floor.log`,
+   `logs/market-maker-shadow.log`, `logs/bugbounty-scanner.log`, e a
+   página da routine para o histórico do agente de nuvem.
 
 ## Custos consumidos
 - US$ 0,00 em dinheiro real (nenhum gasto)
