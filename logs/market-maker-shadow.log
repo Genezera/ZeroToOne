@@ -80,3 +80,5 @@
 [2026-08-26T19:35:52.929Z] snapshot mid=78421.05 pos=-0.000256 netWorth=$0.0107 fills=35 feesPaid=$0.0700
 [2026-08-26T19:37:53.119Z] snapshot mid=78390.95 pos=-0.000256 netWorth=$0.0184 fills=35 feesPaid=$0.0700
 [2026-08-26T19:39:53.360Z] snapshot mid=78364.15 pos=-0.000256 netWorth=$0.0252 fills=35 feesPaid=$0.0700
+[2026-08-26T19:41:54.350Z] snapshot mid=78364.15 pos=-0.000256 netWorth=$0.0252 fills=35 feesPaid=$0.0700
+[2026-08-26T19:43:54.440Z] snapshot mid=78360.05 pos=-0.000256 netWorth=$0.0263 fills=35 feesPaid=$0.0700

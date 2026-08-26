@@ -47,17 +47,67 @@ contrato ainda não lido — possivelmente `stacking-dao-core-btc-v3`
 (13KB, só li as primeiras 100 linhas) ou um dos contratos `stacker-N`
 (ainda não baixados) que interagem com PoX stacking de verdade.
 
-## Próximo passo (não feito ainda)
-1. Ler `stacking-dao-core-btc-v3.clar` por completo (faltam ~250 linhas).
-2. Baixar e ler `stacker-1` a `stacker-10` (ou os stackers atualmente
-   ativos) — são os candidatos mais prováveis a chamar
-   `return-stx-from-stacking`/`return-stx-from-staking-split`.
-3. Confirmar se existe um caminho onde `stx-amount` chega até essas
-   funções sem ser derivado de um valor específico daquele `tx-sender`
-   (ex.: um parâmetro livre que o usuário escolhe, não um valor lido de um
-   map indexado por endereço do usuário).
-4. Só depois de um caminho de chamada completo e verificado, considerar
-   isso um achado de verdade — nada disso é confirmado ainda.
+## Atualização — li stacking-dao-core-btc-v3.clar por completo (359 linhas)
+Padrão confirmado no resto do código: toda vez que o CORE quer que a
+RESERVA pague um usuário, a chamada vem envolvida em `(as-contract
+(contract-call? reserve ...))` — isso faz `tx-sender`, dentro da chamada
+aninhada, virar o PRÓPRIO CONTRATO que está chamando (não a pessoa que
+assinou a transação original). Isso é o idioma padrão de Clarity para "aja
+como o contrato, não como quem chamou".
+
+`return-stx-from-stacking`/`return-stx-from-staking-split` NÃO são
+chamadas nem por `stacking-dao-core-btc-v3` nem por
+`stacking-dao-core-ststxbtc-v1` (os dois arquivos que já li por completo).
+Isso são funções para DEVOLVER à reserva o STX que foi retirado para
+stacking de verdade (PoX) — quem provavelmente chama isso são os
+contratos `stacker-N`, que ainda não baixei.
+
+**Hipótese refinada**: se o `stacker-N` que chama `return-stx-from-stacking`
+envolver a chamada em `as-contract` (mesmo padrão do resto do código), o
+`tx-sender` vira o próprio stacker (correto — ele devolve do próprio saldo,
+onde estava guardando o STX retirado). Se ALGUM caminho chamar essa função
+SEM `as-contract`, o `tx-sender` seria quem assinou a transação de fora
+(possivelmente um keeper/bot automatizado, ou pior, um usuário comum) — aí
+sim seria um bug real. **Ainda não sei qual dos dois casos é verdade.**
+
+## RESOLVIDO — não é bug
+Baixei e li `stacker-1.clar`. Linha 179: `(try! (as-contract
+(contract-call? reserve-contract return-stx-from-stacking stx-amount)))` —
+a chamada ESTÁ envolvida em `as-contract`, então `tx-sender` dentro de
+`return-stx-from-stacking` corretamente vira o próprio stacker (não um
+terceiro). E `stx-amount` (linha 173) é `(stx-get-balance (as-contract
+tx-sender))` — o próprio saldo do stacker, não um valor arbitrário
+controlado por usuário. **Desenho seguro, confirmado por evidência direta,
+não é vulnerabilidade.**
+
+## Achado real, mas de severidade baixa (provavelmente não elegível)
+`ststx-token.clar`, função `set-token-uri` (linha 61-66): usa `(contract-call?
+.dao check-is-protocol tx-sender)` — é a ÚNICA função de todo o código lido
+que usa `tx-sender` em vez de `contract-caller` para essa checagem (todas
+as outras ~25 funções administrativas do resto do código usam
+`contract-caller` consistentemente). Isso é uma inconsistência real, mas
+`set-token-uri` só altera uma string de metadado (URI do token) — não
+mexe em fundos, não permite mintar/queimar/roubar nada. Não se encaixa em
+nenhuma das categorias de severidade do programa (roubo de fundos,
+congelamento, mintagem não autorizada, insolvência). Provavelmente
+"informational", não elegível para recompensa, mas vale reportar como
+observação de qualidade de código.
+
+## Resto do código lido (10 contratos, ~40KB de Clarity)
+`signer-admin-v1.clar`, `stbtc-reserve.clar` (mesmo padrão seguro do
+stx-reserve), `data-stx-v2.clar` (cálculo de taxa de câmbio stSTX/STX,
+sem problema óbvio à primeira vista) — nenhum problema de severidade
+alta encontrado nesta primeira passada.
+
+## Status honesto depois desta rodada
+Nenhuma vulnerabilidade crítica/alta confirmada ainda. Isso é normal e
+esperado — bate exatamente com a pesquisa sobre bug bounty (maioria não
+acha nada nas primeiras tentativas). O trabalho real foi feito: código
+real lido com cuidado, uma hipótese séria investigada e corretamente
+descartada com evidência (não "desisti", "verifiquei e estava errado" —
+isso é bom processo, não fracasso). Ainda há mais contratos no escopo do
+programa (13 total, li os 10 mais relevantes para custódia de fundos) e
+outros programas na Immunefi para tentar depois.
 
 ## Honestidade
 Isso é trabalho de segurança real, não instantâneo. Pode levar sessões
