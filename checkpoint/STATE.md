@@ -514,3 +514,41 @@ pra Vercel e Block Open Source.
 estava desativada (efeito colateral de uma rodada anterior de "pare tudo
 agora" sem ressalva) — reativada como parte do Lote 2, já que é
 pré-requisito óbvio pro "centro de operações" funcionar sozinho.
+
+## Painel visual + Lote 3 concluídos (2026-08-28)
+Usuário pediu explicitamente um painel visual "completamente
+personalizado, com efeitos, animações incríveis, profissional" mostrando o
+sistema em tempo real, além de continuar até tudo funcional. Construído:
+
+- **`generate-dashboard.mjs`**: painel HTML autocontido (`research/
+  bugbounty/dashboard.html`), regenerado a cada rodada — tema "Centro de
+  Sinais" (estação de sinal/radar, paleta e tipografia específicas,
+  validadas contra os critérios de acessibilidade do skill de dataviz, não
+  o clichê "hacker verde-neon"). Publicado como Artifact
+  (https://claude.ai/code/artifact/f16d79bf-96b6-48f2-9f0b-59dc9ddb7d71) —
+  documentado com honestidade que é um INSTANTÂNEO daquele momento, não
+  dado ao vivo (repo é privado, página pública não pode ler sem expor
+  credencial). O arquivo local sim reflete sempre a última rodada.
+- **Lote 3 (dependência/CVE via OSV.dev)**: `dep-scanner.mjs`. Confirmado
+  ao vivo contra a API real: npm/Go/Maven suportados, **CocoaPods/SwiftPM
+  NÃO** (erro "invalid ecosystem") — Swift fica fora deste módulo por
+  limitação real da fonte, não escolha. Achado real e verdadeiro
+  confirmado: `cashapp/hermit` (Block Open Source) usa
+  `github.com/cloudflare/circl@v1.3.8` e `golang.org/x/crypto@v0.54.0`,
+  ambos com vulnerabilidade publicada (GHSA-2x5j-vhc8-9cwm, GO-2026-5932).
+  Dois bugs reais pegos e corrigidos durante a validação: (1) reusar
+  `pathPrefixes` da varredura de código perdia quase todo manifesto real
+  (manifesto fica na raiz do módulo, fora da pasta restrita escolhida pra
+  heurística) — corrigido, varredura de dependência agora ignora
+  `pathPrefixes`; (2) `wire-gradle-plugin/src/test/projects/*/build.gradle`
+  gerava falso-positivo (fixture de teste de compatibilidade de plugin,
+  não dependência real) — corrigido com exclusão de diretório de teste,
+  coberto por teste novo.
+- 72 testes passando no total. Rate limit anônimo do GitHub (60/hora)
+  esgotado pelos meus próprios testes repetidos em sequência nesta sessão
+  — não é bug, reseta sozinho, cadência real (1x/dia) nunca chega perto
+  disso.
+
+Faltam: Lote 4 (agente de nuvem — cadeia de chamada + conformidade de
+escopo + template de relatório pronto-pra-copiar), Lote 5 (descoberta
+automática de alvo), Lote 6 (digest de notícias/CVE, menor prioridade).

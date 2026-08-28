@@ -66,6 +66,33 @@ por linguagem/programa, quantos itens estão pendentes vs. já revisados na
 fila, e os últimos vereditos. Lotes futuros (cross-referência de
 dependência/CVE, descoberta de alvo) só adicionam sua própria seção aqui.
 
+Também há um painel visual completo (`generate-dashboard.mjs`) —
+`research/bugbounty/dashboard.html`, regenerado a cada rodada, autocontido
+(abre local via `file://`, sem servidor). É um INSTANTÂNEO daquele momento,
+não uma página com dado ao vivo (o repositório é privado — uma página
+publicada não tem como ler o repo sem expor credencial). Pra ver sempre a
+versão mais recente, abra o arquivo local depois de cada rodada.
+
+**Cross-referência de dependência conhecida vulnerável** (`dep-scanner.mjs`,
+via OSV.dev, API pública sem conta/token): acha manifesto com versão EXATA
+(nunca faixa de semver) — `package-lock.json` (npm), `go.mod` (Go, formato
+já fixa versão), `build.gradle`/`.kts` (Maven, só padrão literal
+`"grupo:artefato:versão"`, sem resolver catálogo/variável) — consulta em
+lote (`POST /v1/querybatch`) e só busca detalhe completo do que bateu.
+Acha exatamente o mesmo tipo de manifesto em QUALQUER pasta do repositório
+(não só as pastas escolhidas pra heurística de código — a maioria dos
+manifestos fica na raiz de cada módulo, fora do escopo restrito de
+`pathPrefixes`), excluindo diretório de teste/fixture (achado real do dia:
+`wire-gradle-plugin/src/test/projects/*/build.gradle` gerava falso-positivo
+— fixture de teste de compatibilidade, não dependência real do produto —
+corrigido e coberto por teste). **Swift/CocoaPods fica de fora**:
+confirmado ao vivo que "CocoaPods"/"SwiftPM" não são ecossistemas
+suportados pelo OSV.dev — limitação real da fonte de dado, documentada,
+não escondida. Achado vira `known_vulnerable_dependency` na MESMA fila/
+pipeline de sempre. Validado com achado real: `cashapp/hermit` usa
+`github.com/cloudflare/circl@v1.3.8` e `golang.org/x/crypto@v0.54.0`, ambos
+com vulnerabilidade publicada real (GHSA-2x5j-vhc8-9cwm, GO-2026-5932).
+
 Testado contra código real: no lado Clarity, acha exatamente o achado real
 confirmado (`set-token-uri`) e não gera ruído nos contratos já confirmados
 seguros; nas outras 4 linguagens, roda contra o código real de
