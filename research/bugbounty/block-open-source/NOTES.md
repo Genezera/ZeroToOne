@@ -104,9 +104,61 @@ enviar relatório pagável — só relevante se/quando o scanner achar algo
 elegível de verdade.
 
 ## O que falta
-- Nenhuma vulnerabilidade candidata ainda (normal/esperado).
 - Se quiser ampliar depois: `wire-kotlin-generator`/`wire-java-generator`/
   `wire-swift-generator` (codegen, não runtime) ficaram de fora do escopo
   do `wire` por serem menos sensíveis (rodam em build-time, não em
   produção com input de rede não confiável) — podem entrar numa v2 se
   valer a pena.
+
+## Rodada 2026-08-28 — 6 candidatos de `dep-scanner.mjs` (novo, cross-ref OSV.dev)
+Primeiros achados reais do programa — todos **falso_positivo**, em duas
+famílias de causa raiz.
+
+**1) `cashapp/hermit/go.mod`: circl@v1.3.8 (GHSA-2x5j-vhc8-9cwm) e
+x/crypto@v0.54.0 (GO-2026-5932).** O `dep-scanner.mjs` só faz cross-
+referência de versão exata contra o OSV.dev — não verifica se o código
+vulnerável é de fato alcançável a partir do que o alvo realmente chama.
+Para checar isso cloneiei `cashapp/hermit` e `sassoftware/go-rpmutils`
+(`git clone` público, sem conta/token) e segui a cadeia de import
+manualmente: as duas dependências entram como indiretas via
+`github.com/ProtonMail/go-crypto`, exigido só por `go-rpmutils`
+(`go.mod:7`) e usado apenas nos arquivos `verify*.go`/`signatures.go`
+desse pacote (verificação de assinatura PGP de RPM, função exportada
+`rpmutils.Verify`). O hermit (`archive/archive.go:615`) só chama
+`rpmutils.ReadRpm` + `PayloadReader` para extrair conteúdo do RPM — nunca
+`rpmutils.Verify` — e `ReadRpm` vive em `rpmutils.go`, que não importa
+nada de cripto. Confirmado por grep completo no repo do hermit: nenhuma
+chamada a `rpmutils.Verify` em lugar nenhum. Ou seja: o código vulnerável
+é compilado no binário (Go compila por pacote), mas não é exercido por
+nenhum fluxo do hermit — sem input de atacante alcançando a função
+vulnerável, não há exploração via uso normal da ferramenta.
+
+**2) `square/wire`: kotlin-gradle-plugin em 4 versões antigas
+(GHSA-r937-wjx7-w2jp / CVE-2026-53914), todas em
+`wire-gradle-plugin/src/test/projects/*/build.gradle`.** São fixtures de
+teste de integração do próprio wire-gradle-plugin (para validar
+compatibilidade contra várias versões antigas do plugin Kotlin de
+propósito) — nunca dependência runtime do que o Wire publica. Confirmei
+o advisory (GitHub Advisory GHSA-r937-wjx7-w2jp): vetor CVSS
+`AV:L/AC:H/PR:H` — exige acesso local, alta complexidade E privilégio
+alto já concedido na máquina que roda o build. Nem no cenário mais
+favorável há vetor remoto/de rede via este código, e ainda por cima é
+código de teste nunca exposto a terceiros.
+
+**Padrão a reter para próximos achados `known_vulnerable_dependency`**:
+versão no manifesto batendo com CVE do OSV.dev não basta — sempre
+verificar (a) se o import que carrega a dependência vulnerável é
+efetivamente usado pelo código do alvo (clonar os repos envolvidos
+quando necessário) e (b) se o arquivo do manifesto é código de teste/
+fixture vs. dependência runtime real, e (c) os pré-requisitos de
+exploração do próprio advisory (vetor CVSS) — não confiar só na
+severidade "vulnerabilidade conhecida" sem checar alcançabilidade.
+
+Observação lateral (não virou candidato, registrar para não esquecer):
+o hermit extrai pacotes RPM (`extractRpmPackage`) sem chamar nenhuma
+verificação de assinatura do go-rpmutils — não investiguei se há
+checksum/assinatura verificada em outra camada (ex. no manifesto de
+download). Não afirmo que seja uma falha; só é um ponto a olhar com mais
+tempo antes de virar candidato de verdade.
+
+Fila: 0 pendentes após esta rodada.
