@@ -132,7 +132,13 @@ export async function runDependencyScan(targets, repoShas) {
   for (const target of targets) {
     let files;
     try {
-      files = await listRepoFiles(target.owner, target.repo, target.branch, target.pathPrefixes);
+      // Propositalmente SEM target.pathPrefixes: manifesto de dependência
+      // quase sempre mora na raiz de cada módulo, não dentro das pastas
+      // restritas escolhidas pra escanear código-fonte (ex.: "packages/"
+      // no vercel/flags) — reusar o mesmo prefixo estreito perderia quase
+      // todo manifesto real. O filtro por nome de arquivo logo abaixo já
+      // mantém isso barato (só busca conteúdo do que bate no nome).
+      files = await listRepoFiles(target.owner, target.repo, target.branch);
     } catch (err) {
       fetchErrors++;
       continue;
