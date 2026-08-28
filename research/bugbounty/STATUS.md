@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-28T21:22:48.208Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-28T21:25:03.031Z.
 
 ## Alvos ativos
 
@@ -18,13 +18,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **2**
-- Já revisados: 3
+- Pendentes (aguardando o agente de nuvem): **0**
+- Já revisados: 9
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
-| unguarded_transfer | StackingDAO | falso_positivo | 2026-08-26T20:14:07.131Z |
-| unguarded_transfer | StackingDAO | falso_positivo | 2026-08-26T20:14:07.131Z |
-| auth_arg_inconsistency | StackingDAO | confirmado | 2026-08-26T20:13:55.473Z |
+| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.856Z |
+| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.856Z |
+| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.856Z |
+| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.855Z |
+| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:17:45.347Z |

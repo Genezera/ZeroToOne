@@ -13,6 +13,20 @@
       "falsePositive": 2,
       "other": 0,
       "fpRate": 1
+    },
+    "known_vulnerable_dependency::go": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::jvm": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
     }
   },
   "byTypeProgram": {
@@ -27,6 +41,13 @@
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::Block Open Source": {
+      "reviewed": 6,
+      "confirmed": 0,
+      "falsePositive": 6,
       "other": 0,
       "fpRate": 1
     }
