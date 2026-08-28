@@ -24,6 +24,7 @@ import { scanJvmSource } from './heuristics-jvm.mjs';
 import { scanSwiftSource } from './heuristics-swift.mjs';
 import { deriveLanguage, historicalConfidenceFor, loadStats, runVerdictStats } from './verdict-stats.mjs';
 import { generateStatusDashboard } from './status-dashboard.mjs';
+import { generateDashboard } from './generate-dashboard.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,7 @@ const STATS_JSON_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.json');
 const STATS_MD_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.md');
 const VERDICTS_SNAPSHOT_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-verdicts.json');
 const STATUS_PATH = path.join(BUGBOUNTY_DIR, 'STATUS.md');
+const DASHBOARD_PATH = path.join(BUGBOUNTY_DIR, 'dashboard.html');
 const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
@@ -197,11 +199,21 @@ export async function runScan() {
     });
   }
 
+  const scanTimestamp = new Date().toISOString();
   generateStatusDashboard({
     queuePath: QUEUE_PATH,
     targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
     statusPath: STATUS_PATH,
-    lastScanAt: new Date().toISOString(),
+    lastScanAt: scanTimestamp,
+  });
+
+  generateDashboard({
+    queuePath: QUEUE_PATH,
+    statsJsonPath: STATS_JSON_PATH,
+    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
+    outputPath: DASHBOARD_PATH,
+    lastScanSummary: { contractsChecked, repoFilesChecked, fetchErrors },
+    lastScanAt: scanTimestamp,
   });
 
   appendEntry('research', {
