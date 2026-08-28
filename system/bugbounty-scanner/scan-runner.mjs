@@ -26,7 +26,7 @@ import { deriveLanguage, historicalConfidenceFor, loadStats, runVerdictStats } f
 import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
 import { runDependencyScan } from './dep-scanner.mjs';
-import { appendEntry } from '../ledger/ledger.mjs';
+import { appendEntry, readLedger } from '../ledger/ledger.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -38,7 +38,7 @@ const STATS_JSON_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.json');
 const STATS_MD_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.md');
 const VERDICTS_SNAPSHOT_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-verdicts.json');
 const STATUS_PATH = path.join(BUGBOUNTY_DIR, 'STATUS.md');
-const DASHBOARD_PATH = path.join(BUGBOUNTY_DIR, 'dashboard.html');
+const DASHBOARD_DIR = path.join(BUGBOUNTY_DIR, 'dashboard');
 const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
@@ -215,21 +215,6 @@ export async function runScan() {
   }
 
   const scanTimestamp = new Date().toISOString();
-  generateStatusDashboard({
-    queuePath: QUEUE_PATH,
-    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
-    statusPath: STATUS_PATH,
-    lastScanAt: scanTimestamp,
-  });
-
-  generateDashboard({
-    queuePath: QUEUE_PATH,
-    statsJsonPath: STATS_JSON_PATH,
-    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
-    outputPath: DASHBOARD_PATH,
-    lastScanSummary: { contractsChecked, repoFilesChecked, fetchErrors },
-    lastScanAt: scanTimestamp,
-  });
 
   appendEntry('research', {
     type: 'bugbounty_scan',
@@ -242,6 +227,25 @@ export async function runScan() {
     newFindingsCount: newFindings.length,
     newlyReviewedCount: verdictResult.newlyReviewed.length,
     programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS].map((t) => t.program))],
+  });
+
+  generateStatusDashboard({
+    queuePath: QUEUE_PATH,
+    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
+    statusPath: STATUS_PATH,
+    lastScanAt: scanTimestamp,
+  });
+
+  // Lê o ledger DEPOIS de gravar o resumo desta rodada, pra a atividade
+  // já aparecer no próprio painel gerado agora (não só na próxima rodada).
+  generateDashboard({
+    queuePath: QUEUE_PATH,
+    statsJsonPath: STATS_JSON_PATH,
+    ledgerEntries: readLedger('research'),
+    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
+    outputDir: DASHBOARD_DIR,
+    lastScanSummary: { contractsChecked, repoFilesChecked, manifestsChecked: depResult.filesChecked, fetchErrors },
+    lastScanAt: scanTimestamp,
   });
 
   log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) + ${depResult.filesChecked} manifesto(s) de dependência checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila (${depResult.findings.length} de dependência conhecida), ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s).`);

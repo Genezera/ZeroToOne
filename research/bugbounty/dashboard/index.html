@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Centro de Sinais — Visão geral</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ground: #0b0f17;
+  --surface: #131a26;
+  --surface-2: #1b2433;
+  --border: #232d3d;
+  --ink: #e8ecf2;
+  --ink-muted: #8996ab;
+  --ink-faint: #5c6b82;
+  --accent: #f5943d;
+  --accent-glow: rgba(245, 148, 61, 0.25);
+  --good: #5ec9a6;
+  --critical: #ff5c5c;
+  --info: #6e8cff;
+  --font-display: 'Big Shoulders', 'Arial Narrow', sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--ground); color: var(--ink); font-family: var(--font-body); min-height: 100vh; }
+a { color: inherit; }
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+@media (max-width: 760px) { .shell { grid-template-columns: 1fr; } }
+
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 18px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+@media (max-width: 760px) { .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); } }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: 0.01em; margin-bottom: 2px; }
+.brand-eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.pulse-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 6px; box-shadow: 0 0 0 0 var(--accent-glow); animation: pulse 2.4s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-glow); } 70% { box-shadow: 0 0 0 8px rgba(245,148,61,0); } 100% { box-shadow: 0 0 0 0 rgba(245,148,61,0); } }
+@media (prefers-reduced-motion: reduce) { .pulse-dot { animation: none; } }
+
+.nav { list-style: none; margin: 22px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+@media (max-width: 760px) { .nav { flex-direction: row; flex-wrap: wrap; margin-top: 14px; } }
+.nav a { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 7px; font-size: 13.5px; color: var(--ink-muted); text-decoration: none; transition: background 0.12s ease, color 0.12s ease; }
+.nav a:hover { background: var(--surface-2); color: var(--ink); }
+.nav a[aria-current="page"] { background: var(--surface-2); color: var(--accent); font-weight: 600; }
+.nav-icon { font-family: var(--font-mono); font-size: 11px; opacity: 0.7; }
+
+.sidebar-foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); line-height: 1.6; }
+
+.main { padding: 36px 40px 60px; max-width: 1180px; }
+@media (max-width: 760px) { .main { padding: 24px 18px 48px; } }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 4vw, 42px); letter-spacing: 0.01em; margin: 0 0 6px; text-wrap: balance; }
+.page-sub { color: var(--ink-muted); font-size: 14.5px; max-width: 70ch; margin: 0 0 28px; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin: 0 0 4px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 28px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; opacity: 0; animation: rise 0.5s ease forwards; animation-delay: calc(var(--i, 0) * 0.05s); }
+.tile-value { font-family: var(--font-display); font-weight: 700; font-size: 34px; font-variant-numeric: tabular-nums; line-height: 1; }
+.tile-label { font-size: 11.5px; color: var(--ink-muted); margin-top: 5px; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 20px; }
+.panel-sub { color: var(--ink-faint); font-size: 12.5px; margin-bottom: 16px; }
+
+.chip { font-family: var(--font-mono); font-size: 10.5px; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.02em; white-space: nowrap; }
+.chip-info { background: rgba(110,140,255,0.15); color: var(--info); }
+.chip-good { background: rgba(94,201,166,0.15); color: var(--good); }
+.chip-critical { background: rgba(255,92,92,0.15); color: var(--critical); }
+.chip-muted { background: rgba(137,150,171,0.15); color: var(--ink-muted); }
+.chip-accent { background: rgba(245,148,61,0.15); color: var(--accent); }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; opacity: 0; animation: rise 0.45s ease forwards; animation-delay: calc(var(--i, 0) * 0.03s); transition: transform 0.15s ease, border-color 0.15s ease; }
+.card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.card-eyebrow { font-family: var(--font-mono); font-size: 10.5px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+.card-title { font-family: var(--font-mono); font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; }
+.card-meta { font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+.card-kv { font-size: 11px; color: var(--ink-muted); margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.filters select, .filters input { background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); font-family: var(--font-mono); font-size: 12px; padding: 7px 10px; border-radius: 6px; }
+.filters .count { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); align-self: center; margin-left: auto; }
+
+.finding-list { display: flex; flex-direction: column; gap: 10px; }
+.finding { background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--ink-faint); border-radius: 8px; padding: 14px 16px; opacity: 0; animation: rise 0.4s ease forwards; animation-delay: calc(var(--i, 0) * 0.02s); }
+.finding[data-verdict="confirmado"] { border-left-color: var(--info); }
+.finding[data-verdict="falso_positivo"] { border-left-color: var(--good); }
+.finding[data-status="pending"] { border-left-color: var(--accent); }
+.finding-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.finding-type { font-weight: 600; font-size: 14.5px; }
+.finding-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
+.finding-meta { font-size: 12px; color: var(--ink-muted); margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.finding-file { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; overflow-wrap: anywhere; }
+.finding-note { font-size: 12.5px; color: var(--ink-muted); margin-top: 8px; line-height: 1.5; }
+.finding-reasoning { font-size: 12.5px; color: var(--ink); margin-top: 8px; line-height: 1.5; background: var(--surface); border-radius: 6px; padding: 10px 12px; border: 1px solid var(--border); }
+.finding-reasoning-label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 4px; }
+
+.timeline { position: relative; padding-left: 22px; }
+.timeline::before { content: ''; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 1px; background: var(--border); }
+.timeline-item { position: relative; padding-bottom: 20px; opacity: 0; animation: rise 0.4s ease forwards; animation-delay: calc(var(--i, 0) * 0.03s); }
+.timeline-item::before { content: ''; position: absolute; left: -22px; top: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ground); }
+.timeline-item[data-kind="verdict"]::before { background: var(--info); }
+.timeline-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+.timeline-title { font-size: 13.5px; font-weight: 500; margin-top: 2px; }
+.timeline-body { font-size: 12px; color: var(--ink-muted); margin-top: 3px; }
+
+.bar-row { display: grid; grid-template-columns: 1.3fr 2fr auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.bar-row:last-child { border-bottom: none; }
+.bar-label { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-lang { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-faint); }
+.bar-track { height: 8px; background: var(--surface); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; width: var(--pct); transform: scaleX(0); transform-origin: left; transition: transform 0.8s cubic-bezier(.16,1,.3,1); transition-delay: calc(var(--i, 0) * 0.06s); }
+.bar-fill.show { transform: scaleX(1); }
+.bar-value { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bar-n { color: var(--ink-faint); }
+
+.empty { color: var(--ink-faint); font-size: 13px; padding: 14px 0; }
+footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--ink-faint); line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
+    <div class="brand">Centro de Sinais</div>
+    <ul class="nav"><li><a href="index.html" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="targets.html"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="queue.html"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="activity.html"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="stats.html"><span class="nav-icon">▲</span>Estatística</a></li></ul>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-28 21:45 UTC</div>
+  </aside>
+  <main class="main">
+    <h1>Visão geral</h1>
+    <div class="page-sub">13 contrato(s) Clarity, 0 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 0 erro(s) de busca.</div>
+    
+    <div class="tiles">
+      <div class="tile" style="--i:0"><div class="tile-value" data-countup="9">0</div><div class="tile-label">Alvos ativos</div></div>
+      <div class="tile" style="--i:1"><div class="tile-value" data-countup="3">0</div><div class="tile-label">Programas</div></div>
+      <div class="tile" style="--i:2"><div class="tile-value" data-countup="5">0</div><div class="tile-label">Linguagens</div></div>
+      <div class="tile" style="--i:3"><div class="tile-value" data-countup="15">0</div><div class="tile-label">Rodadas registradas</div></div>
+      <div class="tile" style="--i:4"><div class="tile-value" data-countup="0">0</div><div class="tile-label">Sinais pendentes</div></div>
+      <div class="tile" style="--i:5"><div class="tile-value" data-countup="9">0</div><div class="tile-label">Já revisados</div></div>
+    </div>
+    <div class="panel">
+      <h2>Últimos achados</h2>
+      <div class="panel-sub"><a href="queue.html">Ver a fila completa →</a></div>
+      <div class="finding-list">
+  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">2026-08-28 21:20 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20</div>
+    <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">2026-08-28 21:20 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10</div>
+    <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">2026-08-28 21:20 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20</div>
+    <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">2026-08-28 21:20 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21</div>
+    <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">2026-08-28 21:17 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Go</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">cashapp/hermit/go.mod — golang.org/x/crypto@v0.54.0</div>
+    <div class="finding-note">Dependência golang.org/x/crypto@v0.54.0 (Go) tem vulnerabilidade PUBLICADA e CONHECIDA: GO-2026-5932 — The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues. (+ 1 outra(s) vulnerabilidade(s) na mesma dependência)</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftware/go-rpmutils (go-rpmutils/go.mod:7) e usado apenas nos arquivos verify*.go/signatures.go do pacote rpmutils (verificação de assinatura PGP, função exportada Verify). Confirmei por clone direto de cashapp/hermit e sassoftware/go-rpmutils que o hermit usa exclusivamente rpmutils.ReadRpm + PayloadReader (archive/archive.go:615) para extrair pacotes RPM — nunca chama rpmutils.Verify, e ReadRpm (rpmutils.go) não importa openpgp/ProtonMail em nenhum ponto. O advisory GO-2026-5932 é sobre o pacote golang.org/x/crypto/openpgp especificamente (não usado nem indiretamente por hermit — quem usa openpgp é o go-crypto do ProtonMail, um fork/substituto, não o x/crypto/openpgp original); mesmo essa parte compilando por transitividade, não há caminho de execução no hermit que a alcance.</div>
+  </div>
+  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">2026-08-28 21:17 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Go</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">cashapp/hermit/go.mod — github.com/cloudflare/circl@v1.3.8</div>
+    <div class="finding-note">Dependência github.com/cloudflare/circl@v1.3.8 (Go) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-2x5j-vhc8-9cwm — CIRCL-Fourq: Missing and wrong validation can lead to incorrect results. (+ 3 outra(s) vulnerabilidade(s) na mesma dependência)</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github.com/ProtonMail/go-crypto (go-rpmutils/go.mod:7), que só é importado pelos arquivos verify.go, verify_v3.go, verify_v4.go, verify_nov3.go e signatures.go do pacote rpmutils — todos voltados a verificação de assinatura PGP de RPM (função exportada rpmutils.Verify). O hermit, porém, só chama rpmutils.ReadRpm e rpm.PayloadReader (archive/archive.go:615) para extrair o conteúdo do pacote RPM; ReadRpm está em rpmutils.go, que não importa ProtonMail/go-crypto nem nada de cripto, e nenhum arquivo do hermit chama rpmutils.Verify (grep completo por &quot;rpmutils.&quot; e &quot;.Verify(&quot; no repo não achou nenhuma chamada de verificação de assinatura). Como Go compila por pacote, o código vulnerável do circl acaba linkado no binário (a dependência é real), mas nunca é executado por nenhum fluxo do hermit — não há input controlável por atacante que alcance a função vulnerável via uso normal da ferramenta.</div>
+  </div></div>
+    </div>
+    <div class="panel">
+      <h2>Atividade recente</h2>
+      <div class="panel-sub"><a href="activity.html">Ver o histórico completo →</a></div>
+      <div class="timeline">
+    <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-08-28 21:45 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="scan">
+      <div class="timeline-time">2026-08-28 21:25 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 6 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
+    </div>
+    <div class="timeline-item" style="--i:2" data-kind="verdict">
+      <div class="timeline-time">2026-08-28 21:25 UTC</div>
+      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
+    </div>
+    <div class="timeline-item" style="--i:3" data-kind="verdict">
+      <div class="timeline-time">2026-08-28 21:25 UTC</div>
+      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
+    </div>
+    <div class="timeline-item" style="--i:4" data-kind="verdict">
+      <div class="timeline-time">2026-08-28 21:25 UTC</div>
+      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
+    </div>
+    <div class="timeline-item" style="--i:5" data-kind="verdict">
+      <div class="timeline-time">2026-08-28 21:25 UTC</div>
+      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
+    </div></div>
+    </div>
+    <div class="panel">
+      <h2>Heurísticas mais ruidosas</h2>
+      <div class="panel-sub"><a href="stats.html">Ver estatística completa →</a></div>
+      
+  <div class="bar-row" style="--i:0">
+    <div class="bar-label">unguarded_transfer <span class="bar-lang">Clarity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(2)</span></div>
+  </div>
+  <div class="bar-row" style="--i:1">
+    <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Go</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(2)</span></div>
+  </div>
+  <div class="bar-row" style="--i:2">
+    <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Kotlin/Java</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(4)</span></div>
+  </div>
+  <div class="bar-row" style="--i:3">
+    <div class="bar-label">auth_arg_inconsistency <span class="bar-lang">Clarity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:0%; background:var(--good)"></div></div>
+    <div class="bar-value">0% <span class="bar-n">(1)</span></div>
+  </div>
+    </div>
+    <footer class="page-footer">Gerado automaticamente por <code>generate-dashboard.mjs</code> a cada rodada do scanner. Instantâneo deste momento — não é uma página com dado ao vivo (o repositório é privado). Pra ver sempre a versão mais recente, abra os arquivos locais em <code>research/bugbounty/dashboard/</code>.</footer>
+  </main>
+</div>
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-countup]').forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-countup'), 10) || 0;
+    if (reduce) { el.textContent = target; return; }
+    var start = null, dur = 800;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min(1, (ts - start) / dur);
+      el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+  requestAnimationFrame(function () {
+    document.querySelectorAll('.bar-fill').forEach(function (el) { el.classList.add('show'); });
+  });
+})();
+
+</script>
+</body>
+</html>
