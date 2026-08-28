@@ -552,3 +552,57 @@ sistema em tempo real, além de continuar até tudo funcional. Construído:
 Faltam: Lote 4 (agente de nuvem — cadeia de chamada + conformidade de
 escopo + template de relatório pronto-pra-copiar), Lote 5 (descoberta
 automática de alvo), Lote 6 (digest de notícias/CVE, menor prioridade).
+
+## Painel reconstruído + Lotes 4, 5, 6 concluídos — TODOS OS LOTES DO
+## PIVÔ CONCLUÍDOS (2026-08-28)
+Usuário rejeitou o painel de página única ("não é centro de sinais, eu
+quero completamente algo completamente detalhado") e pediu pra seguir por
+todos os lotes restantes sem pausar pra reportar, só ao final. Executado:
+
+**Painel reconstruído como site multi-página** (`generate-dashboard.mjs`):
+5 páginas ligadas em `research/bugbounty/dashboard/` — Visão geral, Alvos
+(card por repositório com escopo/teto), Fila completa (TODO achado, com
+filtro por status/programa/linguagem e o raciocínio integral de cada
+revisão, sem truncar), Atividade ao vivo (histórico cronológico completo
+do ledger — toda rodada de scan, todo veredito, toda descoberta, todo
+digest, desde o início da sessão), Estatística. Mantém o tema "Centro de
+Sinais" (paleta/tipografia já validadas), só muito mais profundo.
+
+**Lote 4**: `research/bugbounty/reports/TEMPLATE.md` criado (checklist de
+revisão humana, categoria mapeada ao que o programa paga de verdade,
+cadeia de chamada, evidência, passo a passo). Prompt do agente de nuvem
+atualizado via `RemoteTrigger` — generalizado além de Clarity/Immunefi
+(cobre os 3 programas/5 linguagens), exige confirmação de alcançabilidade
+pra achado de dependência (não só presença no manifesto — usa o caso real
+do circl/hermit desta sessão como exemplo no próprio prompt), registra
+`filesRead` como trilha de auditoria, usa o template novo.
+
+**Lote 5**: `discover-targets.mjs`/`discovery-runner.mjs`. Rodada real:
+194 alvos com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 186
+ainda não rastreados — inclui exatamente os outros 16 repos do Vercel que
+eu tinha escolhido manualmente não rastrear. Só sugere
+(`discovered-targets.json`), nunca escreve em `targets-*.mjs` sozinho.
+Tarefa agendada própria `ZeroToOne_TargetDiscovery`, semanal (domingo
+10h), isolada da diária pra não estourar limite de taxa do GitHub.
+
+**Lote 6**: `cve-digest.mjs`/`digest-runner.mjs`, roda na mesma tarefa
+semanal. Cruza GitHub Security Advisories só contra pacote que o
+dep-scanner já achou vulnerável (não feed geral). Rodada real: achou 10
+advisories reais pra `golang.org/x/crypto`, vários **críticos** (bypass de
+autenticação SSH) que o OSV.dev sozinho não tinha capturado — sinal
+genuinamente complementar. Nunca escreve heurística nova sozinho, só gera
+`security-digest.md` pra decisão manual.
+
+91 testes passando no total. Todos os 6 lotes do plano de pivô
+(`C:\Users\Renan\.claude\plans\snuggly-mixing-sketch.md`) estão concluídos
+e validados com dado real — não é código nunca testado, cada módulo rodou
+de verdade contra os 3 programas reais pelo menos uma vez nesta sessão.
+
+## Estado consolidado do centro de operações (2026-08-28, fim de sessão)
+4 tarefas agendadas do Windows, janela oculta (VBS wrapper), sobrevivem a
+reinício: `ZeroToOne_BugBountyScanner` (diária 9h — scanner + retro-
+alimentação + dependência/CVE + painel), `ZeroToOne_TargetDiscovery`
+(semanal, domingo 10h — descoberta de alvo + digest de segurança).
+`ZeroToOne_DailyFloor`/`ZeroToOne_MarketMakerShadow` seguem arquivados/
+desativados (pivô pra 100% bug bounty). Nada pendente de ação — o sistema
+roda sozinho a partir daqui.
