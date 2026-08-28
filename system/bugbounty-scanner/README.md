@@ -46,6 +46,26 @@ Todas as varreduras só gravam na fila compartilhada
 (controle de duplicidade via `scanner-seen.json`). Se achar algo novo,
 faz commit + push automaticamente.
 
+**Retroalimentação de veredito** (`verdict-stats.mjs`): a cada rodada,
+recalcula a taxa de falso-positivo por tipo×linguagem e tipo×programa a
+partir de tudo que já foi revisado em `queue.jsonl` (`research/bugbounty/
+heuristic-stats.md`/`.json`), e anexa um campo `historicalConfidence` em
+achados NOVOS do mesmo tipo/linguagem quando já há amostra suficiente
+(mínimo 5 revisados — nunca com base em 1-2 pontos de dado). Como
+`queue.jsonl` reescreve a linha de cada item em vez de só adicionar, uma
+revisão de veredito não deixaria rastro histórico nenhum sem isso — por
+isso todo item recém-revisado ou com veredito mudado desde a última rodada
+(`scanner-seen-verdicts.json` guarda o snapshot anterior) também vira uma
+entrada `bugbounty_verdict` no ledger `research` (auditável,
+`verifyChain('research')` continua íntegro). Tudo registrado em arquivo
+simples, revisável a olho — nunca um modelo caixa-preta.
+
+**Painel do centro de operações** (`status-dashboard.mjs`):
+`research/bugbounty/STATUS.md`, regenerado a cada rodada — alvos ativos
+por linguagem/programa, quantos itens estão pendentes vs. já revisados na
+fila, e os últimos vereditos. Lotes futuros (cross-referência de
+dependência/CVE, descoberta de alvo) só adicionam sua própria seção aqui.
+
 Testado contra código real: no lado Clarity, acha exatamente o achado real
 confirmado (`set-token-uri`) e não gera ruído nos contratos já confirmados
 seguros; nas outras 4 linguagens, roda contra o código real de
