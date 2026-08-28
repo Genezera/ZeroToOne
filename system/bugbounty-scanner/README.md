@@ -103,8 +103,33 @@ seguros; nas outras 4 linguagens, roda contra o código real de
 `system/bugbounty-scanner/test/` (37 testes).
 
 Automação: tarefa do Windows Task Scheduler `ZeroToOne_BugBountyScanner`,
-diária às 7h15 — mesma tarefa cobre todos os estágios/linguagens, não há
+diária às 9h — mesma tarefa cobre todos os estágios/linguagens, não há
 tarefa separada por linguagem ou plataforma.
+
+## Estágio 0 — Descoberta automática de alvo (semanal, tarefa própria)
+`discover-targets.mjs` + `discovery-runner.mjs`: rebusca
+`hackerone_data.json`/`bugcrowd_data.json` do mesmo dataset público
+`arkadiyt/bounty-targets-data`, extrai TODO alvo `github.com/...` em
+escopo de QUALQUER programa com recompensa real (não só os 3 já
+rastreados), compara contra os 5 `targets-*.mjs` e escreve
+`research/bugbounty/discovered-targets.json` com o que for genuinamente
+novo (tamanho, linguagem, estrelas, última atividade, programa/plataforma
+de origem). **Só sugere — nunca escreve em `targets-*.mjs` sozinho**: esses
+arquivos são escritos à mão com comentário explicando o porquê de cada
+escolha, e curadoria de escopo pra monorepo grande exige julgamento humano.
+Primeira rodada real: 194 candidatos com recompensa real no dataset
+inteiro, 186 ainda não rastreados por nós — inclui exatamente os outros 16
+repositórios do Vercel Open Source que eu tinha escolhido manualmente não
+rastrear (grande demais ou já muito escrutinado), agora disponíveis pra
+revisão.
+
+Tarefa agendada **própria e semanal** (`ZeroToOne_TargetDiscovery`,
+domingo 10h) — isolada da tarefa diária de propósito, porque buscar
+metadado do GitHub (tamanho/linguagem/atividade) de dezenas de candidatos
+novos por rodada consome bem mais do limite de 60 req/hora da API anônima
+do que o scan diário sozinho consumiria. Teto de 30 buscas de metadado por
+rodada, com o que sobrar ficando registrado (não escondido) pra próxima
+rodada.
 
 ## Estágio 2 — Agente de nuvem (custo real, só quando há trabalho)
 Routine "ZeroToOne Bug Bounty Analyst" (`trig_01QQeYvKRi9qJD4QkzkbqsSe`,
