@@ -1,0 +1,94 @@
+<!--
+TEMPLATE de rascunho de relatório de bug bounty — todo relatório novo
+gerado pelo agente de nuvem deve seguir exatamente esta estrutura,
+salvo em research/bugbounty/reports/<program-slug>-<finding-id-curto>.md
+
+REGRAS ANTES DE GERAR (o agente de nuvem confere isso, não pula):
+1. O achado precisa mapear pra uma categoria que o PRÓPRIO PROGRAMA declara
+   como elegível (ver NOTES.md do programa em research/bugbounty/<program>/
+   — StackingDAO, por exemplo, só paga roubo de fundos, congelamento,
+   mintagem não autorizada ou insolvência; metadado/cosmético NUNCA é
+   elegível). Se não mapear, NÃO gera relatório — atualiza o veredito em
+   queue.jsonl como "confirmado, não elegível" e para por aí.
+2. O achado precisa ter cadeia de chamada CONFIRMADA (não só "o código
+   parece suspeito isolado") — se a vulnerabilidade depende de outro
+   arquivo/função pra ser explorável de verdade, esse arquivo precisa ter
+   sido lido e citado como evidência. Achado de dependência vulnerável
+   (known_vulnerable_dependency) precisa confirmar ALCANÇABILIDADE — o
+   código vulnerável da dependência precisa ser de fato chamado pelo
+   projeto, não só estar presente no grafo de dependências.
+3. Nunca é rascunho final — todo relatório carrega o aviso de revisão
+   humana obrigatória no topo, sempre.
+-->
+
+# ⚠️ RASCUNHO — REVISÃO HUMANA OBRIGATÓRIA ANTES DE ENVIAR
+
+Este relatório foi gerado por IA a partir de análise de código-fonte
+público. **Não foi enviado a nenhuma plataforma.** Antes de copiar/colar e
+enviar, confira:
+
+- [ ] Escopo confirmado — o ativo afetado está no escopo do programa AGORA
+      (escopo pode mudar; reconfirme na página do programa antes de enviar)
+- [ ] Categoria confirmada — bate com uma categoria que o programa
+      declara como elegível para recompensa (não é metadado/cosmético)
+- [ ] Evidência conferida — os trechos de código abaixo realmente
+      existem no arquivo/linha citados (não foi paráfrase/alucinação)
+- [ ] Não é duplicata — checado contra relatórios já enviados por você
+      a este programa
+
+---
+
+## Título
+`{{título curto e específico — ex.: "Bypass de autorização em X permite Y"}}`
+
+## Programa / Plataforma
+`{{programa}}` via `{{plataforma}}` — {{URL do programa}}
+
+## Categoria / Severidade declarada
+`{{categoria exata como o programa a nomeia}}` — confirmada contra
+`research/bugbounty/{{program-slug}}/NOTES.md`, seção de categorias
+elegíveis.
+
+## Ativo afetado
+- Repositório: `{{owner/repo}}`
+- Arquivo: `{{caminho/do/arquivo}}`
+- Linha(s): `{{linha(s)}}`
+- Commit/branch no momento da análise: `{{branch}}` (verificar SHA atual
+  antes de enviar — o código pode ter mudado desde a varredura)
+
+## Resumo
+{{2-4 frases: o que é o problema, por que importa, para quem}}
+
+## Cadeia de chamada confirmada
+{{Lista dos arquivos lidos pra confirmar que isso é explorável de
+verdade — não só o arquivo onde o padrão foi encontrado. Ex.:
+"arquivo A (linha X) chama função em arquivo B (linha Y), que não valida
+Z antes de [ação sensível]." Se for achado de dependência: confirmar que
+o código vulnerável é de fato invocado pelo fluxo do programa, citando a
+função exportada vulnerável E o ponto de chamada real no projeto.}}
+
+## Passo a passo de reprodução
+1. {{passo}}
+2. {{passo}}
+3. {{passo}}
+
+## Evidência
+```
+{{trecho de código real, citado com caminho:linha}}
+```
+
+{{Se aplicável: saída de comando, resultado de trace, referência externa
+(ex.: ID da vulnerabilidade em GHSA/CVE/OSV para achado de dependência).}}
+
+## Impacto
+{{O que um atacante ganha de verdade — concreto, não genérico. Se for
+achado de dependência, citar o CVSS/severidade do advisory original.}}
+
+## Correção sugerida
+{{Mudança concreta e mínima que resolveria — não genérico tipo "validar
+input".}}
+
+---
+*Gerado automaticamente em {{timestamp}} a partir do achado `{{id}}` na
+fila (`research/bugbounty/queue.jsonl`). Ver histórico completo do
+veredito em `ledger/ledger.research.jsonl`.*
