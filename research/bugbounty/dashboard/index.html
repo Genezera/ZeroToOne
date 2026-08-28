@@ -100,6 +100,9 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin
 .timeline-item { position: relative; padding-bottom: 20px; opacity: 0; animation: rise 0.4s ease forwards; animation-delay: calc(var(--i, 0) * 0.03s); }
 .timeline-item::before { content: ''; position: absolute; left: -22px; top: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ground); }
 .timeline-item[data-kind="verdict"]::before { background: var(--info); }
+.timeline-item[data-kind="discovery"]::before { background: var(--good); }
+.timeline-item[data-kind="digest"]::before { background: var(--critical); }
+.timeline-body a { color: var(--accent); }
 .timeline-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
 .timeline-title { font-size: 13.5px; font-weight: 500; margin-top: 2px; }
 .timeline-body { font-size: 12px; color: var(--ink-muted); margin-top: 3px; }
@@ -124,17 +127,17 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
     <div class="brand">Centro de Sinais</div>
     <ul class="nav"><li><a href="index.html" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="targets.html"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="queue.html"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="activity.html"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="stats.html"><span class="nav-icon">▲</span>Estatística</a></li></ul>
-    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-28 21:45 UTC</div>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-28 21:53 UTC</div>
   </aside>
   <main class="main">
     <h1>Visão geral</h1>
-    <div class="page-sub">13 contrato(s) Clarity, 0 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 0 erro(s) de busca.</div>
+    <div class="page-sub">13 contrato(s) Clarity, 0 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 3 erro(s) de busca.</div>
     
     <div class="tiles">
       <div class="tile" style="--i:0"><div class="tile-value" data-countup="9">0</div><div class="tile-label">Alvos ativos</div></div>
       <div class="tile" style="--i:1"><div class="tile-value" data-countup="3">0</div><div class="tile-label">Programas</div></div>
       <div class="tile" style="--i:2"><div class="tile-value" data-countup="5">0</div><div class="tile-label">Linguagens</div></div>
-      <div class="tile" style="--i:3"><div class="tile-value" data-countup="15">0</div><div class="tile-label">Rodadas registradas</div></div>
+      <div class="tile" style="--i:3"><div class="tile-value" data-countup="16">0</div><div class="tile-label">Rodadas registradas</div></div>
       <div class="tile" style="--i:4"><div class="tile-value" data-countup="0">0</div><div class="tile-label">Sinais pendentes</div></div>
       <div class="tile" style="--i:5"><div class="tile-value" data-countup="9">0</div><div class="tile-label">Já revisados</div></div>
     </div>
@@ -244,29 +247,29 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="panel-sub"><a href="activity.html">Ver o histórico completo →</a></div>
       <div class="timeline">
     <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-08-28 21:53 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 3 erro(s) de busca.</div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="digest">
+      <div class="timeline-time">2026-08-28 21:51 UTC</div>
+      <div class="timeline-title">Digest de segurança — 16 advisory(s) em 3 pacote(s) observado(s)</div>
+      <div class="timeline-body">Ver <a href="../security-digest.md">security-digest.md</a> pra decisão manual sobre heurística nova.</div>
+    </div>
+    <div class="timeline-item" style="--i:2" data-kind="discovery">
+      <div class="timeline-time">2026-08-28 21:49 UTC</div>
+      <div class="timeline-title">Descoberta de alvo — 186 candidato(s) novo(s)</div>
+      <div class="timeline-body">194 alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 156 ficou pra próxima rodada. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
+    </div>
+    <div class="timeline-item" style="--i:3" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:45 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="scan">
+    <div class="timeline-item" style="--i:4" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 6 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
-    </div>
-    <div class="timeline-item" style="--i:2" data-kind="verdict">
-      <div class="timeline-time">2026-08-28 21:25 UTC</div>
-      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
-    </div>
-    <div class="timeline-item" style="--i:3" data-kind="verdict">
-      <div class="timeline-time">2026-08-28 21:25 UTC</div>
-      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
-    </div>
-    <div class="timeline-item" style="--i:4" data-kind="verdict">
-      <div class="timeline-time">2026-08-28 21:25 UTC</div>
-      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
     <div class="timeline-item" style="--i:5" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>

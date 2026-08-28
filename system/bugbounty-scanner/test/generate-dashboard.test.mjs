@@ -77,6 +77,20 @@ test('página de atividade mostra a rodada do scanner e o veredito, mas ignora t
   assert.ok(pages['activity.html'].includes('explicação'));
 });
 
+test('página de atividade também mostra rodada de descoberta e de digest', () => {
+  const ledgerWithMore = [
+    ...ledgerEntries,
+    { type: 'bugbounty_discovery', ts: '2026-08-28T21:49:16.893Z', totalCandidatesInDatasets: 194, newCandidatesFound: 186, truncatedCount: 156 },
+    { type: 'bugbounty_digest', ts: '2026-08-28T21:51:46.971Z', watchedPackagesCount: 3, totalAdvisories: 16 },
+  ];
+  const data = buildDashboardData({ queueEntries, ledgerEntries: ledgerWithMore, stats, targetLists, lastScanSummary: null, lastScanAt: null });
+  const pages = renderDashboardPages(data);
+  assert.ok(pages['activity.html'].includes('Descoberta de alvo'));
+  assert.ok(pages['activity.html'].includes('186 candidato'));
+  assert.ok(pages['activity.html'].includes('Digest de segurança'));
+  assert.ok(pages['activity.html'].includes('16 advisory'));
+});
+
 test('página de estatística mostra as duas quebras (linguagem e programa)', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null });
   const pages = renderDashboardPages(data);

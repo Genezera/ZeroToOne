@@ -131,6 +131,20 @@ do que o scan diário sozinho consumiria. Teto de 30 buscas de metadado por
 rodada, com o que sobrar ficando registrado (não escondido) pra próxima
 rodada.
 
+## Digest de segurança (mesma tarefa semanal)
+`cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
+Advisories (GHSA, API pública, sem conta) **só dos pacotes que o
+`dep-scanner.mjs` já achou vulnerável pelo menos uma vez** — não é feed
+geral de CVE (seria majoritariamente ruído), é sinal focado no que já
+sabemos que usamos. Escreve `research/bugbounty/security-digest.md`, só
+pra decisão manual (ou de revisão por IA numa rodada futura) sobre criar
+heurística nova — **nunca escreve detecção sozinho sem revisão**, mesmo
+espírito anti-fabricação do resto do projeto. Validado ao vivo: achou 10
+advisories reais pra `golang.org/x/crypto` (vários **críticos**, incluindo
+bypass de autenticação SSH), a maioria que o cruzamento por versão exata
+do OSV.dev sozinho não tinha capturado — sinal genuinamente complementar,
+não redundante.
+
 ## Estágio 2 — Agente de nuvem (custo real, só quando há trabalho)
 Routine "ZeroToOne Bug Bounty Analyst" (`trig_01QQeYvKRi9qJD4QkzkbqsSe`,
 https://claude.ai/code/routines/trig_01QQeYvKRi9qJD4QkzkbqsSe), sessão de

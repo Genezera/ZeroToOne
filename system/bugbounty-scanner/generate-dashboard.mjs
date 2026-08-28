@@ -194,6 +194,9 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin
 .timeline-item { position: relative; padding-bottom: 20px; opacity: 0; animation: rise 0.4s ease forwards; animation-delay: calc(var(--i, 0) * 0.03s); }
 .timeline-item::before { content: ''; position: absolute; left: -22px; top: 3px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ground); }
 .timeline-item[data-kind="verdict"]::before { background: var(--info); }
+.timeline-item[data-kind="discovery"]::before { background: var(--good); }
+.timeline-item[data-kind="digest"]::before { background: var(--critical); }
+.timeline-body a { color: var(--accent); }
 .timeline-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
 .timeline-title { font-size: 13.5px; font-weight: 500; margin-top: 2px; }
 .timeline-body { font-size: 12px; color: var(--ink-muted); margin-top: 3px; }
@@ -501,6 +504,22 @@ function timelineItem(entry, i) {
       <div class="timeline-body">${esc(entry.program)} (${esc(LANGUAGE_LABEL[entry.language] || entry.language)})${entry.reasoning ? ' — ' + esc(entry.reasoning.slice(0, 220)) + (entry.reasoning.length > 220 ? '…' : '') : ''}</div>
     </div>`;
   }
+  if (entry.type === 'bugbounty_discovery') {
+    return `
+    <div class="timeline-item" style="--i:${i}" data-kind="discovery">
+      <div class="timeline-time">${esc(fmtTime(entry.ts))}</div>
+      <div class="timeline-title">Descoberta de alvo — ${entry.newCandidatesFound ?? 0} candidato(s) novo(s)</div>
+      <div class="timeline-body">${entry.totalCandidatesInDatasets ?? 0} alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd)${entry.truncatedCount ? `, ${entry.truncatedCount} ficou pra próxima rodada` : ''}. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
+    </div>`;
+  }
+  if (entry.type === 'bugbounty_digest') {
+    return `
+    <div class="timeline-item" style="--i:${i}" data-kind="digest">
+      <div class="timeline-time">${esc(fmtTime(entry.ts))}</div>
+      <div class="timeline-title">Digest de segurança — ${entry.totalAdvisories ?? 0} advisory(s) em ${entry.watchedPackagesCount ?? 0} pacote(s) observado(s)</div>
+      <div class="timeline-body">Ver <a href="../security-digest.md">security-digest.md</a> pra decisão manual sobre heurística nova.</div>
+    </div>`;
+  }
   return '';
 }
 
@@ -573,7 +592,8 @@ export function renderDashboardPages(data) {
 export function generateDashboard({ queuePath, statsJsonPath, ledgerEntries, targetLists, outputDir, lastScanSummary, lastScanAt }) {
   const queueEntries = loadQueue(queuePath);
   const stats = loadJson(statsJsonPath, { byTypeLanguage: {}, byTypeProgram: {} });
-  const relevantLedger = (ledgerEntries || []).filter((e) => e.type === 'bugbounty_scan' || e.type === 'bugbounty_verdict');
+  const RELEVANT_TYPES = new Set(['bugbounty_scan', 'bugbounty_verdict', 'bugbounty_discovery', 'bugbounty_digest']);
+  const relevantLedger = (ledgerEntries || []).filter((e) => RELEVANT_TYPES.has(e.type));
   const data = buildDashboardData({ queueEntries, ledgerEntries: relevantLedger, stats, targetLists, lastScanSummary, lastScanAt });
   const pages = renderDashboardPages(data);
 
