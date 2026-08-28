@@ -1,10 +1,6 @@
 [
   "Block Open Source::cashapp/hermit/go.mod::github.com/cloudflare/circl@v1.3.8::known_vulnerable_dependency",
   "Block Open Source::cashapp/hermit/go.mod::golang.org/x/crypto@v0.54.0::known_vulnerable_dependency",
-  "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21::known_vulnerable_dependency",
-  "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20::known_vulnerable_dependency",
-  "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10::known_vulnerable_dependency",
-  "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20::known_vulnerable_dependency",
   "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer",
   "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::init-withdraw::unguarded_transfer",
   "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency"

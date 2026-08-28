@@ -49,6 +49,7 @@ export function isDependencyManifest(path) {
   const base = path.split('/').pop();
   if (!DEPENDENCY_MANIFEST_NAMES.has(base)) return false;
   if (EXCLUDED_DIR.test(path)) return false;
+  if (TEST_DIR.test(path)) return false; // ex.: fixture de teste de plugin Gradle não é dependência real do produto
   return true;
 }
 
