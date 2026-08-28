@@ -1,0 +1,489 @@
+{
+  "generatedAt": "2026-08-28T21:49:16.889Z",
+  "totalCandidatesInDatasets": 194,
+  "newCandidatesFound": 186,
+  "truncatedCount": 156,
+  "note": "AVISO: 156 candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — aparecem em rodadas futuras.",
+  "discovered": [
+    {
+      "owner": "nitrojs",
+      "repo": "nitro",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 26800,
+      "pushedAt": "2026-08-28T20:49:29Z",
+      "stars": 11152,
+      "archived": false
+    },
+    {
+      "owner": "nuxt",
+      "repo": "nuxt",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 148313,
+      "pushedAt": "2026-08-28T21:48:45Z",
+      "stars": 60803,
+      "archived": false
+    },
+    {
+      "owner": "sveltejs",
+      "repo": "svelte",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "JavaScript",
+      "sizeKb": 122243,
+      "pushedAt": "2026-08-28T20:34:55Z",
+      "stars": 88012,
+      "archived": false
+    },
+    {
+      "owner": "vercel-labs",
+      "repo": "agent-skills",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "JavaScript",
+      "sizeKb": 11299,
+      "pushedAt": "2026-08-28T13:36:31Z",
+      "stars": 30588,
+      "archived": false
+    },
+    {
+      "owner": "vercel-labs",
+      "repo": "skills",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 1609,
+      "pushedAt": "2026-08-18T20:28:34Z",
+      "stars": 29897,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "ai",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 367973,
+      "pushedAt": "2026-08-28T21:47:23Z",
+      "stars": 26474,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "async-sema",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 46,
+      "pushedAt": "2024-04-18T16:16:16Z",
+      "stars": 659,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "chat",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 14983,
+      "pushedAt": "2026-08-28T17:31:34Z",
+      "stars": 2325,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "eve",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 51623,
+      "pushedAt": "2026-08-28T21:44:02Z",
+      "stars": 4855,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "ms",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 446,
+      "pushedAt": "2026-05-20T22:24:50Z",
+      "stars": 5544,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "next.js",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "JavaScript",
+      "sizeKb": 2547450,
+      "pushedAt": "2026-08-28T21:15:50Z",
+      "stars": 141975,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "swr",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 8324,
+      "pushedAt": "2026-08-23T11:35:07Z",
+      "stars": 32476,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "turborepo",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "Rust",
+      "sizeKb": 830394,
+      "pushedAt": "2026-08-28T21:37:12Z",
+      "stars": 31028,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "vercel",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 256078,
+      "pushedAt": "2026-08-28T17:05:49Z",
+      "stars": 16161,
+      "archived": false
+    },
+    {
+      "owner": "vercel",
+      "repo": "workflow",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 90891,
+      "pushedAt": "2026-08-28T21:42:15Z",
+      "stars": 2355,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "noble-cctp",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 1187,
+      "pushedAt": "2026-06-18T21:34:55Z",
+      "stars": 23,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "aptos-cctp",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Move",
+      "sizeKb": 734,
+      "pushedAt": "2026-08-04T22:40:45Z",
+      "stars": 9,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "arc-node",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Rust",
+      "sizeKb": 2488,
+      "pushedAt": "2026-08-28T10:44:07Z",
+      "stars": 163,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "arc-remote-signer",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 439,
+      "pushedAt": "2026-08-21T03:05:06Z",
+      "stars": 9,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "buidl-wallet-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Solidity",
+      "sizeKb": 2968,
+      "pushedAt": "2026-06-29T18:33:02Z",
+      "stars": 19,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "evm-cctp-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Solidity",
+      "sizeKb": 1911,
+      "pushedAt": "2026-06-18T21:33:08Z",
+      "stars": 227,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "evm-cpn-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Solidity",
+      "sizeKb": 290,
+      "pushedAt": "2026-06-25T01:13:37Z",
+      "stars": 3,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "evm-gateway-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Solidity",
+      "sizeKb": 3393,
+      "pushedAt": "2026-01-23T18:57:40Z",
+      "stars": 10,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "evm-xreserve-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Solidity",
+      "sizeKb": 1427,
+      "pushedAt": "2026-06-18T21:31:03Z",
+      "stars": 2,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "malachite",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Rust",
+      "sizeKb": 7570,
+      "pushedAt": "2026-08-27T21:29:17Z",
+      "stars": 443,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "noble-fiattokenfactory",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 2172,
+      "pushedAt": "2026-06-18T21:37:50Z",
+      "stars": 9,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "solana-cctp-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Rust",
+      "sizeKb": 33819,
+      "pushedAt": "2026-06-18T21:08:23Z",
+      "stars": 51,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "solana-gateway-contracts",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 18748,
+      "pushedAt": "2026-06-18T21:11:54Z",
+      "stars": 3,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "stablecoin-aptos",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "Move",
+      "sizeKb": 168,
+      "pushedAt": "2026-07-30T16:40:45Z",
+      "stars": 6,
+      "archived": false
+    },
+    {
+      "owner": "circlefin",
+      "repo": "stablecoin-evm",
+      "programs": [
+        {
+          "program": "Circle BBP",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/circle-bbp"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 2912,
+      "pushedAt": "2026-08-12T20:25:11Z",
+      "stars": 796,
+      "archived": false
+    }
+  ]
+}
