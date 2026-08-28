@@ -1,0 +1,5 @@
+{
+  "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency": "confirmado",
+  "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer": "falso_positivo",
+  "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::init-withdraw::unguarded_transfer": "falso_positivo"
+}

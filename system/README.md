@@ -36,20 +36,25 @@ fatiamento automático de intervalo e retry validado). Ver
 (incluindo um candidato abortado por conflito de termos de uso, antes de
 qualquer código de produção ser escrito em cima dele).
 
-## market-maker/
-Shadow test de market making contra o WebSocket público da Bybit (dados
-reais, zero dinheiro real, zero conta necessária). Ver
-`market-maker/README.md` — trava de risco anti-martingale embutida na
-própria assinatura da função de cotação. Rodando em background,
-acumulando evidência real desde 2026-08-25.
+## market-maker/ (ARQUIVADO)
+Shadow test de market making — ver nota de arquivamento em
+`market-maker/README.md`. Projeto mudou de foco pra 100% bug bounty
+(2026-08-28); código mantido como histórico, sem execução automática.
 
-## daily-floor/
-O único mecanismo com retorno líquido positivo E verificado até agora:
-composição diária na melhor conta remunerada/CDB real (FGC, sem CNPJ, sem
-trabalho humano recorrente). Ver `daily-floor/README.md`. **Automatizado
-de verdade** via Windows Task Scheduler (tarefa `ZeroToOne_DailyFloor`,
-todo dia às 9h05) — sobrevive a reinícios de sessão, ao contrário do
-market-maker (que depende de um processo em background continuar vivo).
+## daily-floor/ (ARQUIVADO)
+Composição diária na melhor conta remunerada — ver nota de arquivamento em
+`daily-floor/README.md`. Foi o único mecanismo com retorno positivo E
+verificado da fase de crescimento de capital; mantido como histórico.
+
+## bugbounty-scanner/
+Foco único do projeto a partir de 2026-08-28. Scanner estático
+multi-linguagem (Clarity, JS/TS, Go, Kotlin/Java, Swift/ObjC) contra 3
+programas reais (StackingDAO/Immunefi, Vercel/HackerOne, Block Open
+Source/Bugcrowd), mais retroalimentação de veredito, cross-referência de
+dependência/CVE, descoberta automática de alvo e um agente de nuvem que
+lê código de verdade e rascunha relatório pronto pra copiar/colar (nunca
+envia — regra da plataforma). Ver `bugbounty-scanner/README.md` para a
+arquitetura completa.
 
 ## Uso
 Módulos ESM (`.mjs`), sem dependências externas (exceto `apify` dentro de

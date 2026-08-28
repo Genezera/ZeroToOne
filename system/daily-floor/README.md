@@ -1,5 +1,13 @@
 # daily-floor/ — o único resultado positivo real, automatizado de verdade
 
+> **ARQUIVADO (2026-08-28)**: o projeto ZeroToOne mudou de foco para 100%
+> caça de bug bounty, por decisão explícita do usuário. Este módulo não
+> recebe mais manutenção nem execução automática — a tarefa agendada
+> `ZeroToOne_DailyFloor` já está desativada. Código mantido como
+> referência histórica (funcionou, foi o único mecanismo positivo E
+> verificado entre 111+ mecanismos pesquisados). Pode ser reativado no
+> futuro se o usuário pedir explicitamente.
+
 O único mecanismo, de 111+ pesquisados e 19+ backtests reais, com retorno
 líquido positivo E verificado: parquear o capital na melhor conta
 remunerada disponível (garantia FGC, sem CNPJ, sem trabalho humano

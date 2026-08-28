@@ -1,5 +1,13 @@
 # market-maker/ — shadow test de market making (dados reais, zero dinheiro real)
 
+> **ARQUIVADO (2026-08-28)**: o projeto ZeroToOne mudou de foco para 100%
+> caça de bug bounty, por decisão explícita do usuário. Este módulo não
+> recebe mais manutenção nem execução automática — a tarefa agendada
+> `ZeroToOne_MarketMakerShadow` já está desativada e o processo foi
+> encerrado. Código mantido como referência histórica (amostra real
+> coletada, mas nunca chegou a tamanho suficiente para um veredito). Pode
+> ser reativado no futuro se o usuário pedir explicitamente.
+
 Última avenida ainda não testada para "ganho frequente": em vez de apostar
 na direção do preço (testado exaustivamente em `experiments/exp01_*`, 19
 backtests, todos negativos), cotar compra e venda ao mesmo tempo e lucrar

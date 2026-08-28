@@ -1,0 +1,34 @@
+{
+  "byTypeLanguage": {
+    "auth_arg_inconsistency::clarity": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
+    "unguarded_transfer::clarity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    }
+  },
+  "byTypeProgram": {
+    "auth_arg_inconsistency::StackingDAO": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
+    "unguarded_transfer::StackingDAO": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    }
+  }
+}

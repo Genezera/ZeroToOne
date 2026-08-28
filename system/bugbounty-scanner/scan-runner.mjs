@@ -22,6 +22,8 @@ import { scanJsSource } from './heuristics-js.mjs';
 import { scanGoSource } from './heuristics-go.mjs';
 import { scanJvmSource } from './heuristics-jvm.mjs';
 import { scanSwiftSource } from './heuristics-swift.mjs';
+import { deriveLanguage, historicalConfidenceFor, loadStats, runVerdictStats } from './verdict-stats.mjs';
+import { generateStatusDashboard } from './status-dashboard.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +32,10 @@ const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
 const SEEN_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen.json');
 const REPO_SHAS_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-repo-shas.json');
+const STATS_JSON_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.json');
+const STATS_MD_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.md');
+const VERDICTS_SNAPSHOT_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-verdicts.json');
+const STATUS_PATH = path.join(BUGBOUNTY_DIR, 'STATUS.md');
 const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
@@ -64,7 +70,7 @@ function log(msg) {
 // heurística. Não persiste o código-fonte no git (repos grandes demais) —
 // só o texto do achado (com trecho de contexto) vai para a fila. Cache de
 // SHA de blob por arquivo evita rebuscar/rescanear o que não mudou.
-async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas) {
+async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas, language, priorStats) {
   let filesChecked = 0;
   let fetchErrors = 0;
 
@@ -99,12 +105,13 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       filesChecked++;
       repoShas[repoKey][file.path] = file.sha;
 
-      const findings = scanFn(source, `${repoKey}/${file.path}`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd }));
+      const findings = scanFn(source, `${repoKey}/${file.path}`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd, language }));
       for (const f of findings) {
         const fp = fingerprint(f);
         if (seen.has(fp)) continue;
         seen.add(fp);
-        newFindings.push({ ...f, status: 'pending', foundAt: new Date().toISOString() });
+        const historicalConfidence = historicalConfidenceFor(priorStats, f.type, language);
+        newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
       }
     }
   }
@@ -116,6 +123,7 @@ export async function runScan() {
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
   const seen = loadSeen();
   const newFindings = [];
+  const priorStats = loadStats(STATS_JSON_PATH);
   let contractsChecked = 0;
   let fetchErrors = 0;
 
@@ -135,21 +143,22 @@ export async function runScan() {
       contractsChecked++;
       writeFileSync(path.join(dir, `${contractName}.clar`), source, 'utf8');
 
-      const findings = scanSource(source, `${contractName}.clar`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd }));
+      const findings = scanSource(source, `${contractName}.clar`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd, language: 'clarity' }));
       for (const f of findings) {
         const fp = fingerprint(f);
         if (seen.has(fp)) continue;
         seen.add(fp);
-        newFindings.push({ ...f, status: 'pending', foundAt: new Date().toISOString() });
+        const historicalConfidence = historicalConfidenceFor(priorStats, f.type, 'clarity');
+        newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
       }
     }
   }
 
   const repoShas = loadRepoShas();
-  const jsResult = await runLanguageScan(JS_TARGETS, isScannableFile, scanJsSource, seen, newFindings, repoShas);
-  const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas);
-  const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas);
-  const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas);
+  const jsResult = await runLanguageScan(JS_TARGETS, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats);
+  const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats);
+  const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats);
+  const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats);
   saveRepoShas(repoShas);
 
   const repoFilesChecked = jsResult.filesChecked + goResult.filesChecked + jvmResult.filesChecked + swiftResult.filesChecked;
@@ -162,6 +171,39 @@ export async function runScan() {
   }
   saveSeen(seen);
 
+  // Retroalimentação de veredito: recalcula estatística de falso-positivo
+  // (agora já refletindo tanto os achados novos de hoje quanto qualquer
+  // revisão feita pelo agente de nuvem desde a última rodada), grava uma
+  // entrada no ledger por item recém-revisado/com veredito mudado (fonte
+  // de verdade histórica, já que queue.jsonl reescreve a linha em vez de
+  // só adicionar), e regenera o painel do centro de operações.
+  const verdictResult = runVerdictStats({
+    queuePath: QUEUE_PATH,
+    statsJsonPath: STATS_JSON_PATH,
+    statsMdPath: STATS_MD_PATH,
+    snapshotPath: VERDICTS_SNAPSHOT_PATH,
+  });
+  for (const entry of verdictResult.newlyReviewed) {
+    appendEntry('research', {
+      type: 'bugbounty_verdict',
+      id: entry.id,
+      findingType: entry.type,
+      language: deriveLanguage(entry),
+      program: entry.program,
+      platform: entry.platform,
+      verdict: entry.verdict,
+      confidence: entry.confidence,
+      reasoning: entry.reasoning,
+    });
+  }
+
+  generateStatusDashboard({
+    queuePath: QUEUE_PATH,
+    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
+    statusPath: STATUS_PATH,
+    lastScanAt: new Date().toISOString(),
+  });
+
   appendEntry('research', {
     type: 'bugbounty_scan',
     contractsChecked,
@@ -169,10 +211,11 @@ export async function runScan() {
     byLanguage: { js: jsResult.filesChecked, go: goResult.filesChecked, jvm: jvmResult.filesChecked, swift: swiftResult.filesChecked },
     fetchErrors,
     newFindingsCount: newFindings.length,
+    newlyReviewedCount: verdictResult.newlyReviewed.length,
     programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS].map((t) => t.program))],
   });
 
-  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila.`);
+  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila, ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s).`);
 
   if (newFindings.length > 0) {
     try {

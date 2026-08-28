@@ -482,3 +482,35 @@ US$100 especulativo sem nada pra submeter, não).
 
 ## Resultados
 Ver [[registry_round1_partial]] e [[registry_round2_partial]].
+
+## PIVÔ TOTAL: projeto muda para 100% bug bounty (2026-08-28)
+Decisão explícita do usuário: abandonar os sistemas de crescimento de
+capital (`daily-floor`, `market-maker`) — ambos arquivados (código mantido
+como histórico, tarefas agendadas desativadas, ver notas de arquivamento
+em cada README). Todo esforço futuro vai para o pipeline de bug bounty,
+que vira um "centro de operações" totalmente automatizado.
+
+Requisitos confirmados: (1) aprendizado = retroalimentação de veredito
+(registrada/revisável, não caixa-preta) + base de conhecimento de CVEs
+reais + IA que rastreia cadeia de chamada entre arquivos, não só arquivo
+isolado; (2) descoberta automática de alvo novo (não mais só curadoria
+manual); (3) só análise estática + revisão por IA, **sem teste
+dinâmico/execução de código** (risco de violar regra de programa); (4)
+respeito rigoroso ao escopo/categoria elegível que cada empresa declara;
+(5) relatórios gerados pela IA precisam ficar completos o bastante pro
+usuário só copiar/colar/enviar (envio em si é manual — IA não pode
+submeter, regra da plataforma).
+
+Plano completo (6 lotes) em `C:\Users\Renan\.claude\plans\snuggly-mixing-sketch.md`
+(arquivo local, fora do repo git). Lote 1 (arquivar) e Lote 2 (id/language
+estáveis, `verdict-stats.mjs`, painel `STATUS.md`, ledger de veredito,
+reativar tarefa agendada) aprovados e em execução nesta sessão. Lotes 3-6
+(dependência/CVE via OSV.dev, agente de nuvem com cadeia de chamada +
+template de relatório, descoberta de alvo, digest de notícias/CVE) cada um
+volta pra alinhamento próprio antes de construir, mesmo padrão já usado
+pra Vercel e Block Open Source.
+
+**Achado operacional durante o pivô**: a tarefa `ZeroToOne_BugBountyScanner`
+estava desativada (efeito colateral de uma rodada anterior de "pare tudo
+agora" sem ressalva) — reativada como parte do Lote 2, já que é
+pré-requisito óbvio pro "centro de operações" funcionar sozinho.

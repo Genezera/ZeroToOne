@@ -22,3 +22,14 @@ To https://github.com/Genezera/ZeroToOne.git
    ec3d1dd..2fd3446  master -> master
 [28/08/2026  9:00:02,81] Iniciando scanner de bug bounty 
 ^C[28/08/2026 11:21:56,32] Iniciando scanner de bug bounty 
+[2026-08-28T14:22:45.095Z] Varredura completa: 13 contratos Clarity + 0 arquivos (JS/TS+Go+JVM+Swift) checados, 0 erros de busca, 0 achados NOVOS na fila.
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-scanner.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-repo-shas.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'system/bugbounty-scanner/run-scan-hidden.vbs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'system/daily-floor/run-daily-hidden.vbs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'system/market-maker/run-shadow-hidden.vbs', LF will be replaced by CRLF the next time Git touches it
+To https://github.com/Genezera/ZeroToOne.git
+   2fd3446..20ea30b  master -> master
