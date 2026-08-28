@@ -229,7 +229,8 @@
     "util/url.go": "1abe3b3db4427891c12ddcc6d4e65f30145c95f0",
     "util/vfs.go": "37b95511c1ba995176abc5c3eb73eb6063d0c4b5",
     "vfs/copy.go": "75237ce7432df1fc1e87425eb077b519558125f3",
-    "vfs/memory.go": "60453be4b2badfc4ebf526343461fc031bd4abe6"
+    "vfs/memory.go": "60453be4b2badfc4ebf526343461fc031bd4abe6",
+    "go.mod": "f21cc485ae49b4f3d1720339fa8589ced8b9c865"
   },
   "cashapp/misk": {
     "misk-core/build.gradle.kts": "9e68482ad82c66a595a2c92fbaa32533d6f0b448",

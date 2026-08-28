@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-28T21:11:31.153Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-28T21:17:45.352Z.
 
 ## Alvos ativos
 
@@ -18,7 +18,7 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **0**
+- Pendentes (aguardando o agente de nuvem): **2**
 - Já revisados: 3
 
 ### Últimos vereditos

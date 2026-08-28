@@ -25,6 +25,7 @@ import { scanSwiftSource } from './heuristics-swift.mjs';
 import { deriveLanguage, historicalConfidenceFor, loadStats, runVerdictStats } from './verdict-stats.mjs';
 import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
+import { runDependencyScan } from './dep-scanner.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -161,10 +162,24 @@ export async function runScan() {
   const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats);
   const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats);
   const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats);
+
+  // Cross-referência de dependência conhecida vulnerável (OSV.dev) — roda
+  // nos mesmos alvos JS/Go/JVM já rastreados (reusa pathPrefixes e
+  // repoShas, sem alvo/cache novo). Swift fica de fora: CocoaPods/SwiftPM
+  // não são ecossistemas suportados pelo OSV.dev (confirmado ao vivo).
+  const depResult = await runDependencyScan([...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS], repoShas);
+  for (const f of depResult.findings) {
+    const fp = fingerprint(f);
+    if (seen.has(fp)) continue;
+    seen.add(fp);
+    const historicalConfidence = historicalConfidenceFor(priorStats, f.type, f.language);
+    newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
+  }
+
   saveRepoShas(repoShas);
 
   const repoFilesChecked = jsResult.filesChecked + goResult.filesChecked + jvmResult.filesChecked + swiftResult.filesChecked;
-  fetchErrors += jsResult.fetchErrors + goResult.fetchErrors + jvmResult.fetchErrors + swiftResult.fetchErrors;
+  fetchErrors += jsResult.fetchErrors + goResult.fetchErrors + jvmResult.fetchErrors + swiftResult.fetchErrors + depResult.fetchErrors;
 
   if (newFindings.length > 0) {
     for (const f of newFindings) {
@@ -221,13 +236,15 @@ export async function runScan() {
     contractsChecked,
     repoFilesChecked,
     byLanguage: { js: jsResult.filesChecked, go: goResult.filesChecked, jvm: jvmResult.filesChecked, swift: swiftResult.filesChecked },
+    manifestsChecked: depResult.filesChecked,
+    knownVulnDependenciesFound: depResult.findings.length,
     fetchErrors,
     newFindingsCount: newFindings.length,
     newlyReviewedCount: verdictResult.newlyReviewed.length,
     programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS].map((t) => t.program))],
   });
 
-  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila, ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s).`);
+  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) + ${depResult.filesChecked} manifesto(s) de dependência checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila (${depResult.findings.length} de dependência conhecida), ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s).`);
 
   if (newFindings.length > 0) {
     try {

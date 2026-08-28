@@ -39,6 +39,19 @@ export function isScannableSwiftFile(path) {
   return isScannable(path, SOURCE_EXT_SWIFT, TEST_FILE_SWIFT);
 }
 
+const DEPENDENCY_MANIFEST_NAMES = new Set(['package-lock.json', 'go.mod', 'build.gradle', 'build.gradle.kts']);
+
+/** Manifesto de dependência com versão EXATA (nunca faixa/range) — só isso
+ * dá pra bater contra CVE real sem chute. package.json sozinho (sem
+ * lockfile) fica de fora de propósito: tem faixa de versão (^1.2.3), não
+ * versão resolvida. */
+export function isDependencyManifest(path) {
+  const base = path.split('/').pop();
+  if (!DEPENDENCY_MANIFEST_NAMES.has(base)) return false;
+  if (EXCLUDED_DIR.test(path)) return false;
+  return true;
+}
+
 export async function listRepoFiles(owner, repo, branch, pathPrefixes) {
   const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
   const res = await fetch(url, { headers: { 'User-Agent': 'ZeroToOne-bugbounty-scanner' } });

@@ -1,4 +1,6 @@
 [
+  "Block Open Source::cashapp/hermit/go.mod::github.com/cloudflare/circl@v1.3.8::known_vulnerable_dependency",
+  "Block Open Source::cashapp/hermit/go.mod::golang.org/x/crypto@v0.54.0::known_vulnerable_dependency",
   "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer",
   "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::init-withdraw::unguarded_transfer",
   "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency"
