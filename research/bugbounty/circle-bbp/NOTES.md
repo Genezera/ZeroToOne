@@ -362,3 +362,68 @@ de destinatário de fundos e verificação de assinatura multisig):
 `deep-read-log.json` atualizado com os 4 arquivos acima (mais
 `RecipientAddressLib.sol`, lido por necessidade de rastreio de cadeia).
 Nenhum item novo adicionado à fila — resultado normal desta rodada.
+
+## Rodada 2026-08-29 (push automático) — fila vazia, `evm-cpn-contracts` (PaymentSettlement V1 + Rescuable)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). Clone raso
+de `circlefin/evm-cpn-contracts` via `add_repo`+`git clone` pra cobrir 2
+dos 3 arquivos do orçamento desta rodada (o terceiro foi
+`afterpay/sdk-ios/.../CheckoutV3ViewController.swift`, ver NOTES.md do
+Block Open Source):
+
+- `src/PaymentSettlement.sol` (V1, nunca lido — só a V2 tinha sido
+  auditada em rodada anterior) — comparei linha a linha contra o padrão já
+  validado de `PaymentSettlementV2.sol`: ciclo de nonce
+  `_validateAndMarkNonce` marca o nonce como usado ANTES de validar
+  `validAfter`/`validBefore`/`payee`/`fee`/`amount`, mas isso é seguro
+  porque qualquer `revert()` subsequente desfaz TODA a transação
+  (incluindo o nonce marcado) — semântica atômica do EVM, não uma corrida
+  real. Verifiquei com atenção o valor aprovado via Permit2: `execute()`
+  exige `payerData.permit.permitted.amount == intent.value + intent.maxFee`
+  (o teto assinado pelo payer) mas só puxa `intent.value + fee` de fato
+  (`_pullViaPermit2` usa `requestedAmount: intent.value + fee` como
+  `SignatureTransferDetails`) — isso é o padrão correto de "aprovar o
+  teto, puxar o valor real" do Permit2 (o próprio Permit2 garante
+  `requestedAmount <= permitted.amount`), e o teto (`intent.maxFee`) já
+  está amarrado criptograficamente dentro do hash witness assinado pelo
+  payer (`_hashPayerPaymentIntent`), então não há como o attester substituir
+  esse valor depois do fato. `onlyAttester` + checagem redundante
+  `_msgSender() != intent.attester` (o attester specifico assinado no
+  intent, não qualquer attester da allowlist) — mesmo padrão já validado
+  na V2. Nenhuma falha de autorização/corrida/validação encontrada — é
+  essencialmente a mesma lógica seguramente desenhada da V2, sem gap novo
+  introduzido na V1.
+- `src/utils/Rescuable.sol` — padrão clássico de "rescue" de tokens presos
+  (mesmo padrão já usado em outros contratos ERC20 da própria Circle,
+  ex. USDC): `onlyRescuer` modifier bem implementado
+  (`_msgSender() != _rescuer`), `updateRescuer`/`removeRescuer` restritos a
+  `onlyOwner` (via `Ownable2Step`, troca de dono em duas etapas, resistente
+  a erro de digitação de endereço). `rescueERC20`/`rescueNative` só movem o
+  saldo que estiver PARADO no contrato entre transações — rastreei
+  `PaymentSettlement.execute()`/`cancel()`: todo valor puxado via Permit2
+  é distribuído integralmente na mesma transação (puxa `value+fee`,
+  distribui `fee` pro beneficiary e `value` pro payee, sem sobra
+  matemática), então não há fundo "em trânsito" de usuário que o rescuer
+  possa desviar em condições normais de operação — o rescue só alcança
+  tokens enviados por engano/diretamente ao contrato. Nenhuma falha de
+  lógica encontrada.
+
+Comparação adicional (mesmo orçamento, arquivo do outro programa): a
+leitura de `CheckoutV3ViewController.swift` (Afterpay iOS, ver NOTES.md do
+Block Open Source) foi puxada por comparação direta com um achado
+`inconclusivo` já registrado nessa missão no lado Android
+(`AfterpayCheckoutV2Activity.kt` — ponte JS sem checagem de host em
+navegações subsequentes). A V3 do iOS usa o mesmo padrão que já tinha sido
+identificado como "mais seguro" na análise Android (confirmação
+server-to-server via `performConfirmationRequest`/`ppaConfirmToken` antes
+de finalizar) — não é um gap novo, é consistente com o padrão já
+estabelecido como mitigação.
+
+`deep-read-log.json` atualizado (agora 3 arquivos lidos em
+`circlefin/evm-cpn-contracts`: `PaymentSettlementV2.sol`,
+`PaymentSettlement.sol`, `Rescuable.sol`). Nenhum item novo adicionado à
+fila — resultado normal. Sugestão pra próxima rodada: `src/utils/
+Configurable.sol`/`src/utils/Pausable.sol` (mesmo repo, ainda não lidos) ou
+voltar ao refund flow multi-assinatura (`requireDestinationRefundSig`) de
+`PaymentSettlementV2.sol`, que a rodada anterior já tinha sinalizado como
+merecendo uma segunda leitura mais focada.

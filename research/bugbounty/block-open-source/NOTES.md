@@ -1148,3 +1148,59 @@ atualizado com os 3 arquivos acima (total agora: 46 arquivos lidos em
 (`wire-schema/`/`wire-compiler/`, ainda intocado) já que `cashapp/misk` está
 ficando escasso em arquivos auth/crypto/session ainda não lidos dentro do
 `pathPrefixes` autorizado.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `afterpay/sdk-ios` (CheckoutV3ViewController, comparação direta com o achado Android)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). Tentei
+`square/wire` primeiro (`wire-runtime/`, `wire-schema/`, `wire-compiler/`,
+único pathPrefix autorizado do alvo) — clone raso confirmado, mas nenhum
+arquivo no escopo autorizado tem `auth/session/crypto/token/login/
+password/admin/permission/access` no nome (é uma biblioteca de
+serialização de protobuf, sem superfície de autenticação própria) — sem
+candidato óbvio por nome de arquivo, então redirecionei o orçamento desta
+rodada pra um alvo com uma pista concreta: o achado `ai_deep_read_finding`
+já registrado (`inconclusivo`, confiança baixa) em
+`afterpay/sdk-android/.../AfterpayCheckoutV2Activity.kt` (ponte JS
+`Android.postMessage` sem `shouldOverrideUrlLoading`/allowlist de host em
+navegações subsequentes da WebView, ao contrário da V3 que exige
+confirmação server-to-server via `performConfirmationRequest`) — vale
+checar se o SDK iOS tem o mesmo gap.
+
+1 arquivo lido (nunca lido antes, `afterpay/sdk-ios`, `Sources/` já
+autorizado no alvo):
+- `Sources/Afterpay/Checkout/CheckoutV3ViewController.swift` — rastreei o
+  fluxo completo: `viewDidAppear` valida o host da URL inicial contra
+  `CheckoutHost.validSet` (enum fechado, comparação exata, não é
+  sufixo/prefixo — confirmado relendo `CheckoutHost.swift`, já lido em
+  rodada anterior) antes de carregar qualquer coisa. O SDK iOS NÃO usa
+  ponte JS (`WKScriptMessageHandler`/`userContentController.add`) — a
+  detecção de conclusão é só via `decidePolicyFor navigationAction`,
+  parseando query params (`status`/`orderToken`/`ppaConfirmToken`) de
+  QUALQUER URL para onde a WebView navegue (`Completion.init?(url:)` não
+  reverifica o host da URL de navegação, só a inicial) — isso É o mesmo
+  tipo de gap estrutural já anotado no Android (falta de allowlist de host
+  em navegações subsequentes). MAS, ao contrário do `AfterpayCheckoutV2Activity.kt`
+  do Android (que finaliza direto com `complete()`/`RESULT_OK` sem
+  confirmação), o iOS V3 (assim como o Android V3) SEMPRE chama
+  `performConfirmationRequest()` — uma requisição POST real contra
+  `configuration.v3CheckoutConfirmationUrl` (API real da Afterpay) levando
+  `ppaConfirmToken` — antes de reportar sucesso pro app consumidor. Esse é
+  exatamente o padrão que a própria análise Android já tinha identificado
+  como a mitigação que torna a V3 mais segura que a V2/Express. Ou seja:
+  o código iOS V3 é consistente com o padrão já estabelecido como seguro,
+  não introduz um gap novo — a mesma limitação de escopo já documentada no
+  achado Android (não dá pra confirmar/refutar se o backend da Afterpay
+  valida `ppaConfirmToken` de forma que resista a um token forjado, sem
+  sair do repositório público) se aplica igualmente aqui, mas não é uma
+  regressão específica do iOS. Não abri item novo na fila — a pista que
+  motivou a leitura já estava coberta pelo raciocínio do achado Android
+  existente (mesma família, mesma conclusão), abrir um segundo item
+  `inconclusivo` idêntico seria inflar a fila sem informação nova.
+
+`deep-read-log.json` atualizado (agora 7 arquivos em `afterpay/sdk-ios`).
+Nenhum item novo adicionado à fila — resultado normal desta rodada.
+Sugestão pra próxima rodada: `afterpay/sdk-ios/Sources/Afterpay/ApiV3.swift`
+(nunca lido — como o SDK autentica/assina as chamadas de API V3) ou
+`square/wire` `wire-schema/`/`wire-compiler/` sem filtro de nome (ler por
+julgamento de entry-point de parsing de dado não confiável, já que o filtro
+de nome não achou candidato ali).

@@ -90,7 +90,8 @@
     "Sources/Afterpay/CashApp/CashAppPayCheckout.swift",
     "Sources/Afterpay/Checkout/CheckoutV2Message.swift",
     "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
-    "Sources/Afterpay/Checkout/CheckoutHost.swift"
+    "Sources/Afterpay/Checkout/CheckoutHost.swift",
+    "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift"
   ],
   "circlefin/evm-cctp-contracts": [
     "src/MessageTransmitter.sol",
@@ -125,6 +126,8 @@
     "src/modules/x-reserve/Blocklistable.sol"
   ],
   "circlefin/evm-cpn-contracts": [
-    "src/PaymentSettlementV2.sol"
+    "src/PaymentSettlementV2.sol",
+    "src/PaymentSettlement.sol",
+    "src/utils/Rescuable.sol"
   ]
 }
