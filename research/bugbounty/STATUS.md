@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T01:24:04.829Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T01:26:40.847Z.
 
 ## Alvos ativos
 
@@ -18,15 +18,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **15**
-- Já revisados: 9
+- Pendentes (aguardando o agente de nuvem): **0**
+- Já revisados: 24
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
-| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.856Z |
-| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.856Z |
-| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.856Z |
-| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:20:26.855Z |
-| known_vulnerable_dependency | Block Open Source | falso_positivo | 2026-08-28T21:17:45.347Z |
+| ssrf_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:20.456Z |
+| prototype_pollution_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:18.004Z |
+| ssrf_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:16.075Z |
+| prototype_pollution_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:08.323Z |
+| ssrf_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:07.708Z |
