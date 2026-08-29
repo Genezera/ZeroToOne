@@ -23,5 +23,15 @@
   "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk": "falso_positivo",
   "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk": "falso_positivo",
   "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::ssrf_risk": "falso_positivo",
-  "Block Open Source::afterpay/sdk-android::BootstrapJavascriptInterface.postMessage::ai_deep_read_finding": "inconclusivo"
+  "Block Open Source::afterpay/sdk-android::BootstrapJavascriptInterface.postMessage::ai_deep_read_finding": "inconclusivo",
+  "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk": "falso_positivo",
+  "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:116::unchecked_call_return": "falso_positivo",
+  "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:135::unchecked_call_return": "falso_positivo",
+  "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol::run::reentrancy_risk": "falso_positivo",
+  "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol::run::reentrancy_risk": "falso_positivo",
+  "Circle BBP::circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol::line:69::delegatecall_risk": "falso_positivo",
+  "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding": "confirmado",
+  "Block Open Source::misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt::getQueryStringWithHints::ai_deep_read_finding": "falso_positivo",
+  "Circle BBP::circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol::withdraw_attestation_reparse::ai_deep_read_finding": "falso_positivo",
+  "Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::DirectoryRoot.resolve::path_traversal_risk": "confirmado"
 }

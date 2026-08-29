@@ -42,12 +42,40 @@
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::kotlin": {
+    "reentrancy_risk::solidity": {
+      "reviewed": 3,
+      "confirmed": 0,
+      "falsePositive": 3,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unchecked_call_return::solidity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "delegatecall_risk::solidity": {
       "reviewed": 1,
       "confirmed": 0,
-      "falsePositive": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::kotlin": {
+      "reviewed": 3,
+      "confirmed": 1,
+      "falsePositive": 1,
       "other": 1,
-      "fpRate": 0
+      "fpRate": 0.3333333333333333
+    },
+    "ai_deep_read_finding::solidity": {
+      "reviewed": 2,
+      "confirmed": 1,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.5
     }
   },
   "byTypeProgram": {
@@ -86,12 +114,40 @@
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::Block Open Source": {
+    "reentrancy_risk::Circle BBP": {
+      "reviewed": 3,
+      "confirmed": 0,
+      "falsePositive": 3,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unchecked_call_return::Circle BBP": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "delegatecall_risk::Circle BBP": {
       "reviewed": 1,
       "confirmed": 0,
-      "falsePositive": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::Block Open Source": {
+      "reviewed": 3,
+      "confirmed": 1,
+      "falsePositive": 1,
       "other": 1,
-      "fpRate": 0
+      "fpRate": 0.3333333333333333
+    },
+    "ai_deep_read_finding::Circle BBP": {
+      "reviewed": 2,
+      "confirmed": 1,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.5
     }
   }
 }

@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T06:13:11.502Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T12:06:34.522Z.
 
 ## Alvos ativos
 
@@ -24,14 +24,14 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 ## Fila de bug bounty
 
 - Pendentes (aguardando o agente de nuvem): **0**
-- Já revisados: 33
+- Já revisados: 35
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
+| ai_deep_read_finding | Block Open Source | confirmado | 2026-08-29T12:02:27.000Z |
 | delegatecall_risk | Circle BBP | falso_positivo | 2026-08-29T05:56:29.407Z |
 | reentrancy_risk | Circle BBP | falso_positivo | 2026-08-29T05:56:14.275Z |
 | reentrancy_risk | Circle BBP | falso_positivo | 2026-08-29T05:56:14.066Z |
-| unchecked_call_return | Circle BBP | falso_positivo | 2026-08-29T05:56:03.487Z |
 | unchecked_call_return | Circle BBP | falso_positivo | 2026-08-29T05:56:03.487Z |

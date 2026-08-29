@@ -80,7 +80,16 @@
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/AnyMessage.kt",
-    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt"
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/CommonSchemaLoader.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Linker.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/CoreLoader.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/ProtoFile.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/ProtoParser.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/SyntaxReader.kt",
+    "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/SchemaLoader.kt",
+    "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/Roots.kt"
   ],
   "afterpay/sdk-android": [
     "afterpay/src/main/kotlin/com/afterpay/android/cashapp/AfterpayCashAppJwt.kt",

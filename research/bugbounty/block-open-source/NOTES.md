@@ -1324,3 +1324,75 @@ Nenhum achado novo (`ai_deep_read_finding`) nesta rodada. `deep-read-
 log.json` atualizado com os 7 arquivos acima. Sugestão pra próxima
 rodada: continua valendo `square/wire` (`wire-schema/`/`wire-compiler/`,
 parsing de `.proto`) — ainda não atacado por nenhuma rodada.
+
+## Rodada 2026-08-29 (push automático) — fila vazia, `square/wire` (wire-schema, import resolution) — ACHADO CONFIRMADO
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada (34 revisados, 0
+pendentes). Peguei finalmente a sugestão acumulada de várias rodadas
+anteriores: `square/wire` `wire-schema/`. Clone raso com sparse-checkout
+(`git clone --depth 1 --filter=blob:none --sparse`, público, sem
+conta/token, não persistido) restrito a `wire-schema/` e `wire-compiler/`
+(pathPrefix do alvo). Como nenhum arquivo tem auth/session/crypto/token/
+login/password/admin/permission/access no nome (biblioteca de
+serialização, sem essas categorias por natureza — mesma conclusão de
+rodadas anteriores sobre `wire-runtime`), segui julgamento de
+especialista: a superfície mais sensível de um carregador de schema é a
+resolução de `import` de arquivos `.proto` não confiáveis — a mesma classe
+de bug que causa path traversal em outros formatos com diretiva de
+include/import (Webpack resolve, `extends` de config YAML, etc.).
+
+**Achado (`ai_deep_read_finding`), já revisado na mesma rodada, verdict
+`confirmado`, confidence `média`**: `DirectoryRoot.resolve` (`Root.kt:129-
+137`) monta `rootDirectory / import` e só checa `fileSystem.exists`, sem
+validar que o resultado continua dentro de `rootDirectory`. Rastreei a
+cadeia completa: o `import` vem sem NENHUMA sanitização direto da string
+entre aspas de `import "X";` no `.proto` (`ProtoParser.kt:117-129` via
+`SyntaxReader.readQuotedString()`, que aceita qualquer caractere), passa
+por `ProtoFile.imports` sem validação (`ProtoFile.kt:26`), e é usado por
+`Linker.getFileLinker` (`Linker.kt:91-100`) — chamado para QUALQUER import
+de tipo efetivamente referenciado, não um modo opcional — que delega pra
+`CommonSchemaLoader.load` (`CommonSchemaLoader.kt:135-161`), que itera
+`protoPathRoots` chamando `resolve` em cada um. Fui até a implementação
+real do operador `/` na biblioteca `square/okio` (clonada publicamente
+também) pra confirmar, em vez de assumir: `commonResolve`
+(`okio/internal/Path.kt:206-218`) faz
+`if (child.isAbsolute || child.volumeLetter != null) return child` —
+ou seja, um `import "/etc/passwd";` ignora `rootDirectory` por completo —
+e para travessia relativa, o operador `/` usa `normalize=false` por
+padrão (doc de `Path.kt:202`), então segmentos `..` não são colapsados
+pelo Okio mas continuam literais no `Path`, que a JVM/NIO real resolve
+naturalmente ao ler o arquivo (escapando de `rootDirectory` de qualquer
+jeito).
+
+Diferença importante em relação aos ~6 achados anteriores deste programa
+que viraram `falso_positivo` por não-exploração (hermit+circl,
+`VitessQueryHintHandler`, `FakeCallerAuthenticator`, etc.): naqueles
+casos, o sink perigoso só era alcançável via uma dependência raramente
+usada, uma classe marcada explicitamente "unsafe for production", ou uma
+API que nenhum chamador real do repositório invocava com dado externo.
+Aqui, o sink é a MESMA função central de resolução de import usada por
+QUALQUER compilação normal de um `.proto` com import de tipo referenciado
+— não exige nenhuma configuração incomum, flag insegura, ou dependência
+desatualizada. A única variável é se o conteúdo do `.proto` compilado
+(fonte ou dependência de terceiro via `protoPath`, uso documentado e
+comum do Wire) pode ser influenciado por alguém não confiável — cenário
+plausível, mas que não dá pra confirmar 100% sem uma integração/vítima
+concreta fora do próprio `square/wire`. Por isso `confidence: 'média'`
+(a cadeia de código e a semântica do Okio estão 100% confirmadas linha
+por linha; o que falta é um cenário de vítima real específico).
+
+Categoria bate com o critério do programa (path traversal / leitura de
+arquivo arbitrário, código de produção, não é metadado/cosmético/teste)
+— relatório gerado em
+`research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`.
+
+`deep-read-log.json` atualizado com 12 arquivos novos de `square/wire`
+(9 de `wire-schema` + confirmação cruzada em `square/okio`, registrada só
+como nota no relatório, não como chave separada no log já que não é um
+alvo do scanner). Sugestão pra próxima rodada: revisar se
+`wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin` (as camadas de
+CLI/plugin que efetivamente configuram `protoPath` a partir de input do
+usuário/build) adicionam alguma sanitização própria antes de chamar
+`SchemaLoader.initRoots` que eu não tenha visto ainda restrito a
+`wire-schema/` — isso mudaria a avaliação de confiança pra cima ou pra
+baixo dependendo do que existir lá.
