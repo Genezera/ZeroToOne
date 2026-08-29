@@ -22,5 +22,10 @@
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift"
+  ],
+  "square/wire": [
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/AnyMessage.kt",
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt"
   ]
 }

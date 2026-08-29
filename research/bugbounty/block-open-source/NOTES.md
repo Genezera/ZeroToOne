@@ -304,3 +304,62 @@ Nenhum achado novo. `deep-read-log.json` atualizado (chaves novas:
 `NetworkManager.swift`/`StateMachine.swift` do `cash-app-pay-ios-sdk`
 (comparar com o fluxo Android já auditado) ou `square/wire`
 (desserialização de protobuf, ainda não coberta).
+
+## Rodada 2026-08-29 (2) — fila vazia, leitura profunda em square/wire (wire-runtime)
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada.
+
+Leitura profunda: clonei `square/wire` via `git clone --depth 1` (público,
+sem conta/token). Nenhum arquivo em `wire-runtime/src/commonMain` tem
+auth/session/crypto/token/login/password/admin/permission/access no nome
+(é uma lib de serialização protobuf, não tem essas categorias por
+natureza) — segui o julgamento de especialista sugerido na rodada
+anterior: a superfície mais sensível de uma lib de serialização é o
+próprio parser de bytes não confiáveis (entrada de rede/arquivo), então
+priorizei o núcleo do decoder e o caminho de resolução dinâmica de tipo
+(`Any`), que em outras linguagens/libs (Java, .NET) é a classe de bug que
+vira RCE via desserialização insegura.
+
+3 arquivos lidos por completo:
+- `wire-runtime/.../ProtoReader.kt` — parser central de bytes varint/
+  length-delimited/fixed32/fixed64 de um `BufferedSource` não confiável.
+  Verifiquei especificamente proteção contra recursão maliciosa (mensagens
+  aninhadas ou grupos aninhados profundamente, um vetor clássico de DoS em
+  parsers de protobuf): `beginMessage()` e `skipGroup()` incrementam
+  `recursionDepth` e checam contra `RECURSION_LIMIT = 100` em ambos os
+  caminhos, lançando `IOException` antes de estourar a pilha — não há
+  caminho de recursão que escape dessa checagem (grupos aninhados chamam
+  `skipGroup` recursivamente com o mesmo guard). Leitura de varint32/64
+  tem limite de shift explícito (`shift < 64` / loop de 5 iterações extra
+  para descartar bits altos de varint32>32bits, comportamento documentado,
+  igual à implementação oficial do Google). Todo `read*` valida
+  `remainingInLimit()`/`source.require()` antes de consumir bytes —
+  comprimento negativo é rejeitado (`requireNonNegativeLength`) e
+  comprimento maior que o restante do buffer lança `EOFException` em vez
+  de alocar/ler além do limite. Sem falha de lógica encontrada.
+- `wire-runtime/.../AnyMessage.kt` — implementação de `google.protobuf.Any`
+  (tipo genérico que carrega um type URL + bytes). Verifiquei se `unpack`/
+  `decode` resolvem o tipo dinamicamente a partir do `typeUrl` vindo dos
+  bytes (o que seria o padrão de polymorphic/insecure deserialization que
+  vira gadget chain em outras libs). Não é o caso: `decode()` só extrai
+  `typeUrl` (string) e `value` (bytes) sem interpretar nenhum dos dois —
+  a resolução do tipo real é sempre feita pelo código chamador, que passa
+  um `ProtoAdapter<T>` explícito e conhecido em tempo de compilação para
+  `unpack(adapter)`/`unpackOrNull(adapter)`; o método só compara
+  `typeUrl == adapter.typeUrl` (post-decode) antes de decodificar com esse
+  adapter fixo. Nenhuma reflection/carregamento de classe por nome vindo
+  dos bytes. Sem falha encontrada.
+- `wire-runtime/.../internal/RuntimeMessageAdapter.kt` — adapter genérico
+  usado por reflection/binding em runtime para mensagens Wire. `decode()`
+  usa `fields[tag]` (mapa de bindings construído a partir da classe da
+  mensagem, em tempo de compilação/inicialização) para decidir como
+  interpretar cada tag lida do stream — não há caminho onde um `tag`
+  vindo dos bytes de entrada dispare criação de instância de classe
+  arbitrária ou reflection sobre nome vindo do payload; tags desconhecidas
+  vão para `addUnknownField` (armazenadas como bytes brutos, não
+  executadas). Sem falha encontrada.
+
+Nenhum achado novo adicionado à fila. `deep-read-log.json` atualizado com
+`square/wire`. Próxima rodada: `NetworkManager.swift`/`StateMachine.swift`
+do `cash-app-pay-ios-sdk` (comparar com o fluxo Android já auditado) ou
+`afterpay/sdk-android`/`afterpay/sdk-ios`.
