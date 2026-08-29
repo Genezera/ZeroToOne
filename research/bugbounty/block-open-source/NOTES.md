@@ -448,3 +448,58 @@ Nenhum achado novo. `deep-read-log.json` atualizado (só a chave
 `cashapp/cash-app-pay-ios-sdk`, ganhou mais uma entrada). Único arquivo do
 trio Network/State/Facade do `cash-app-pay-ios-sdk` que falta agora é
 `StateMachine.swift` — próxima rodada.
+
+---
+
+## Rodada 2026-08-29 (5) — fila vazia, leitura profunda em afterpay/sdk-ios
+
+Fila sem itens `pending` no início desta rodada. Clonado `afterpay/sdk-ios`
+via `git clone --depth 1` (público, sem conta/token) — repo ainda não tinha
+entrada em `deep-read-log.json`. Nenhum arquivo em `Sources/` tem auth/
+session/crypto/token/login/password/admin/permission/access no nome
+(mesma ausência já observada em rodadas anteriores para este SDK), então
+segui julgamento próprio: o equivalente iOS do fluxo JWT+WebView do Cash
+App Pay já auditado no lado Android (`AfterpayCashAppJwt.kt`, rodada
+anterior), pra confirmar se a mesma conclusão vale.
+
+6 arquivos lidos por completo:
+- `Sources/Afterpay/Helpers/JWT.swift` — `JWT.decode()` faz parse do
+  payload sem verificar assinatura (idêntico ao Android). Rastreei a
+  cadeia completa: `CashAppSigningResponse.decodeJwtToken()` chama
+  `JWT.decode` só sobre o `jwtToken` retornado por
+  `CashAppPayCheckout.signPayment` (`CashAppPayCheckout.swift:73`), que é
+  resposta HTTPS de `cashAppSigningURL` — endpoint do próprio backend da
+  Afterpay, nunca input de usuário/deep link/postMessage. O payload
+  decodificado (`amount`, `redirectUrl`, `externalMerchantId`) só alimenta
+  `CashAppSigningData`, dado local de UX; a autorização real usa o `jwt`
+  bruto (não decodificado) reenviado para
+  `CashAppPayCheckout.validateOrder`/`checkoutV3Confirm`, endpoints
+  também da Afterpay — verificação de assinatura, se existir, é
+  responsabilidade do backend. Mesma conclusão do Android: sem canal de
+  injeção, não suspeito o bastante para virar candidato.
+- `Sources/Afterpay/CashApp/CashAppSigningResponse.swift`,
+  `Sources/Afterpay/CashApp/CashAppPayCheckout.swift` — confirmaram a
+  cadeia acima (ponto de origem do `jwtToken` e uso do `jwt` bruto na
+  validação).
+- `Sources/Afterpay/Checkout/CheckoutV2Message.swift` — parse de mensagens
+  vindas do WebView do checkout (`Codable` customizado, switch sobre tipo
+  declarado). Decode estruturado e tipado (`ShippingAddress`,
+  `ShippingOption`, etc.), sem `eval`/interpretação de string arbitrária;
+  tipo desconhecido cai em `default: payload = nil` (fail-safe, não
+  fail-open). Sem falha encontrada.
+- `Sources/Afterpay/Checkout/CheckoutWebViewController.swift` — antes de
+  carregar `checkoutUrl` no WKWebView, valida
+  `CheckoutHost.validSet.contains(host)` e cancela com
+  `.invalidURL` caso contrário (linha 71-76). Verifiquei
+  `CheckoutHost.swift`: é um enum fechado (`CaseIterable`) com 8 hosts
+  literais fixos da própria Afterpay/Clearpay (produção + sandbox,
+  US/UK/EU) — nenhum bypass por subdomínio/case/porta, comparação é
+  igualdade exata de string do `host` extraído via `URLComponents`. Sem
+  falha encontrada.
+
+Nenhum achado novo adicionado à fila. `deep-read-log.json` atualizado com
+`afterpay/sdk-ios`. Com isso, todos os 7 repos do programa já receberam ao
+menos uma rodada de leitura profunda. Próxima rodada: aprofundar em
+`misk-hibernate/`/`misk-jdbc/` (SQL injection via Hibernate/JDBC, ainda
+não coberto) ou `cash-app-pay-ios-sdk` (`StateMachine.swift`, único
+arquivo do trio Network/State/Facade ainda não lido).
