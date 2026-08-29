@@ -235,5 +235,10 @@
     "src/utils/Configurable.sol",
     "src/utils/Pausable.sol",
     "src/factory/Create2Factory.sol"
+  ],
+  "circlefin/stablecoin-evm": [
+    "contracts/minting/MintController.sol",
+    "contracts/minting/Controller.sol",
+    "contracts/v1/Blacklistable.sol"
   ]
 }

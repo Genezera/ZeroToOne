@@ -1160,3 +1160,55 @@ relatório.
 
 Leitura profunda proativa desta rodada não foi neste programa (ver
 `block-open-source/NOTES.md`).
+
+## Rodada 2026-08-29 (segunda passagem) — achado do denylist bypass chegou a `human_ready`
+
+Retomei o achado `Withdrawals.sol::initiateWithdrawal_withdraw`, que já
+estava em `reproduced_local` (PoC Foundry passando) da rodada anterior,
+mas travado em `scope_verified` por `DeploymentEvidence.confidence`
+`unverified`. Nesta rodada:
+
+- Busquei o endereço real de deploy em mainnet via `WebSearch` (não
+  consegui bater direto em `developers.circle.com` — `EGRESS_BLOCKED`
+  pelo proxy desta sessão). Encontrei
+  `0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE`, corroborado por 3 fontes
+  públicas independentes: docs oficiais da Circle (via snippet
+  indexado), docs oficiais da Polygon citando o mesmo endereço como o
+  `GatewayWallet` oficial multi-chain da Circle, e o padrão de vanity
+  address `0x7777777` que o próprio `README.md` deste repositório define
+  para o contrato Wallet em Production/Mainnet (bate exatamente com o
+  prefixo do endereço encontrado). Registrei `DeploymentEvidence` com
+  `confidence=medium` (não `high`: sem verificação direta de bytecode
+  on-chain, Etherscan/RPC seguem bloqueados por egress) — a transição
+  `reproduced_local -> scope_verified` foi aceita.
+- Reinstalei Foundry (`forge`/`cast`/`anvil` v1.0.0) e `solc` 0.8.29 do
+  zero neste ambiente efêmero (via releases oficiais no GitHub, mesmo
+  contorno da rodada anterior — `binaries.soliditylang.org` e RPC
+  público continuam bloqueados por egress) e **re-executei a PoC do
+  zero** (não reaproveitei só a alegação da rodada anterior):
+  `test/wallet/DenylistWithdrawalBypass.t.sol`, 2 testes, ambos `PASS`
+  (`test_denylistedAddressCannotDeposit` confirma que a modifier
+  funciona no depósito; `test_denylistedDepositorCanStillWithdrawFullBalance`
+  confirma o bug — o depositor denylistado sai com 100% do saldo que
+  havia depositado). Saída real anexada ao rascunho de relatório.
+- Atualizei `research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`
+  com a seção "Prova de conceito executável" completa (código do teste +
+  comando + saída literal) e com o endereço/evidência de deploy, e
+  registrei `record-report` + transição `scope_verified -> human_ready`
+  — aceita. Este é o primeiro achado desta pesquisa a chegar em
+  `human_ready`: rascunho pronto para revisão humana antes de qualquer
+  envio real.
+
+Leitura profunda proativa desta rodada: 3 arquivos em
+`circlefin/stablecoin-evm` (repositório do token USDC principal, ainda
+não coberto no `deep-read-log.json`, `asset_type: SMART_CONTRACT`,
+`eligible_for_bounty: true`, `max_severity: critical`) —
+`contracts/minting/MintController.sol`, `contracts/minting/Controller.sol`,
+`contracts/v1/Blacklistable.sol`. Nada digno de nota: ao contrário do
+`GatewayWallet` (onde o padrão `notDenylisted` tinha uma exceção real em
+`Withdrawals.sol`), aqui o padrão equivalente (`notBlacklisted`) está
+aplicado de forma consistente em `mint`/`transfer`/`transferFrom`/
+`approve` em `FiatTokenV1.sol` e `FiatTokenV2.sol` (confirmado via
+`grep -n "notBlacklisted"` nos dois arquivos) — controle de acesso
+`onlyOwner`/`onlyController`/`onlyBlacklister` também consistente. Não
+criei finding novo — resultado normal e válido de leitura profunda.
