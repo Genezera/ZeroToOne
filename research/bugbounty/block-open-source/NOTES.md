@@ -1548,3 +1548,39 @@ ainda não lidos. Escolhidos:
 
 `deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
 (append). Nenhuma entrada nova em `queue.jsonl`. Resultado normal.
+
+## Rodada 2026-08-29 (push automático) — fila vazia, leitura profunda em misk-admin/misk-crypto
+
+`queue.jsonl` sem itens `pending` (35 revisados, 0 pendentes) no disparo
+desta rodada — o próprio push que disparou foi o commit "no achado" da
+rodada anterior (misk-config/misk-mcp/misk-tokens). Sparse-clone raso de
+`cashapp/misk` (`git clone --filter=blob:none --sparse --depth 1`, todos os
+módulos dos `pathPrefixes` autorizados + `misk-admin`/`misk-tokens`/
+`misk-config`) pra listar arquivos ainda não lidos com auth/session/crypto/
+token/login/password/admin/permission/access no nome (77 candidatos
+restantes, a maioria teste/testFixtures). Escolhidos 3 arquivos de produção
+(`src/main`) do módulo `misk-admin` (endpoints do dashboard administrativo,
+nunca lidos por nenhuma rodada anterior) + 1 de `misk-crypto`:
+
+1. `misk-admin/.../metadata/database/DatabaseQueryMetadataAction.kt` —
+   endpoint `GET /api/v1/database/query/metadata`, protegido por
+   `@AdminDashboardAccess`, só devolve a lista de `DatabaseQueryMetadata`
+   já registrada via injeção (metadados, não executa query nenhuma). Sem
+   achado.
+2. `misk-admin/.../metadata/database/DatabaseTabIndexAction.kt` — página
+   HTML estática do dashboard ("Database Beta"), também atrás de
+   `@AdminDashboardAccess`, sem lógica de execução de SQL neste arquivo
+   (só renderiza um link pra aba antiga). Sem achado.
+3. `misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt` — só uma
+   interface (`getBucketName`/`getBucketRegion`), sem implementação nem
+   lógica. Nada a investigar.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão
+pra próxima rodada: continuar em `misk-admin` (`HibernateDatabaseQueryDynamicAction.kt`/
+`HibernateDatabaseQueryStaticAction.kt`, já mencionados na revisão do achado
+`VitessQueryHintHandler` mas nunca lidos por si só numa rodada de leitura
+profunda dedicada — endpoint admin que de fato executa query dinâmica é a
+superfície mais sensível ainda não coberta) ou `misk-hibernate/`/
+`misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado repetidamente em
+rodadas anteriores e ainda não atacado de fato).

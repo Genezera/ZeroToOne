@@ -68,7 +68,10 @@
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFileMetadata.kt",
     "misk-config/src/main/kotlin/misk/resources/OnePasswordResourceLoaderBackend.kt",
     "misk-mcp/src/main/kotlin/misk/mcp/action/McpServerSessions.kt",
-    "misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt"
+    "misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseTabIndexAction.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
