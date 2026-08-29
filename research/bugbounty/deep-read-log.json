@@ -61,7 +61,11 @@
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFile.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/S3KeySource.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpEncrypterProvider.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/Session.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/SessionFactoryService.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ExternalDataKeys.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFileMetadata.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",

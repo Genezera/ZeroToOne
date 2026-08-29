@@ -1482,3 +1482,32 @@ Escolhi os 3 arquivos de `misk-crypto/` ainda não lidos:
 
 `deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
 (append). Resultado normal — a maioria das rodadas não acha nada.
+
+## Rodada — fila vazia, leitura profunda em misk-hibernate/misk-crypto (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Leitura profunda proativa:
+sparse-clone local de `cashapp/misk` (`git clone --filter=blob:none
+--sparse`, `sparse-checkout set misk misk-crypto misk-core misk-inject
+misk-hibernate misk-jdbc misk-actions misk-api`) pra listar o que ainda
+faltava com auth/session/crypto/token/login/password/admin/permission/
+access no caminho. Escolhidos:
+
+1. `misk-hibernate/src/main/kotlin/misk/hibernate/Session.kt` — interface
+   `Session` (save/load/delete/target/disableChecks) + extensão
+   `allowCrossShardTransactions()`. O `SET transaction_mode` é uma string
+   literal fixa (`'multi'`/`'unspecified'`), nunca interpolação de dado
+   externo — sem injeção de SQL. Reset do transaction_mode acontece em
+   `Synchronization.afterCompletion`, com try/catch próprio; pior caso é
+   log de erro, não vazamento de modo entre transações sem aviso. Sem
+   achado.
+2. `misk-hibernate/src/main/kotlin/misk/hibernate/SessionFactoryService.kt`
+   — bootstrap do Hibernate (registro de listeners, datasource, dialect,
+   `SecretColumn`/`JsonColumn`/`ProtoColumn` type adapters). Configuração
+   de infraestrutura, nenhum dado de request de usuário passa por aqui.
+   Sem achado.
+3. `misk-crypto/src/main/kotlin/misk/crypto/ExternalDataKeys.kt` e
+   `misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/
+   PgpKeyJsonFileMetadata.kt` — uma anotação `@Qualifier` e uma data class
+   de 3 campos (`name`/`email`/`comment`), sem lógica nenhuma. Sem achado.
+
+`deep-read-log.json` atualizado com os 4 arquivos novos de `cashapp/misk`
+(append). Nenhuma entrada nova em `queue.jsonl`. Resultado normal.
