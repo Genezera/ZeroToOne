@@ -809,3 +809,57 @@ função irmã; `spec-extension/cookies.ts` — re-export puro de
 `@edge-runtime/cookies`, zero lógica própria); ver NOTES.md do Vercel
 Open Source. `deep-read-log.json` atualizado com o arquivo de
 `buidl-wallet-contracts`. Nenhum item novo na fila — resultado normal.
+
+## Rodada 2026-08-29 (rotina automática, fila vazia) — `Attestable.sol`/`DomainManageable.sol` de `evm-xreserve-contracts`
+
+`queue.jsonl` sem itens `pending` no início desta rodada. Clonado
+`circlefin/evm-xreserve-contracts` via `git clone --depth 1` (público, sem
+conta/token) — alvo com poucos arquivos cobertos em `deep-read-log.json`
+até agora (só `Withdrawal.sol`/`Blocklistable.sol`/
+`NoValidationAttestationLib.sol`/`TokenSupport.sol`). Escolhi o módulo de
+verificação multi-assinatura de attesters (`Attestable.sol`, nunca lido
+neste repo — diferente do `Attestable.sol` já auditado em
+`evm-cctp-contracts`, é uma implementação própria e mais sofisticada,
+com transição gradual de threshold/attesters), por ser a superfície de
+maior valor (verificação de assinatura ERC-1271) ainda não coberta neste
+alvo especificamente.
+
+2 arquivos lidos por completo:
+- `src/modules/remote-domain-depositor/Attestable.sol` — multisig
+  m-de-n de attesters com "dual-validity" durante transição de
+  configuração (threshold ou remoção de attester tem um delay em blocos
+  onde config antiga E nova continuam válidas). Rastreei
+  `_isValidSignatureHelper` com ceticismo específico sobre 3 pontos
+  clássicos de bug em verificação multi-assinatura: (1) contagem exata de
+  assinaturas — `numSignatures` deve bater EXATAMENTE com o threshold
+  ativo (corrente ou anterior durante o delay), não `>=`, então não dá
+  pra inflar o número de assinaturas pra colar num dos dois thresholds
+  válidos por acidente; (2) ordem estritamente crescente de endereço
+  recuperado (`_recoveredAttester <= _latestAttesterAddress` rejeita),
+  que previne duplicata de assinatura da mesma chave contando como dois
+  attesters distintos — inclusive o caso de `ECDSA.recover` retornar
+  `address(0)` em assinatura malformada é pego por essa mesma checagem
+  (0 <= 0); (3) o "grace period" de attester sendo desabilitado
+  (`attestersValidUntilBlock`) é limpo corretamente por `_enableAttester`
+  se o mesmo attester for reabilitado antes do delay expirar (`delete`
+  explícito). `_validateSignatureThreshold` impede threshold acima do
+  número de attesters persistentes E abaixo do mínimo (`MIN_SIGNATURE_THRESHOLD
+  = 2`). Nenhuma falha de lógica encontrada — design bem comentado e
+  consistente com o padrão já validado em outras libs de attestation
+  desta missão.
+- `src/modules/remote-domain-depositor/DomainManageable.sol` — lido como
+  suporte, porque `Attestable` herda dele para os modifiers
+  `onlyDomainManager`/`onlyOwner` usados em `enableAttester`/
+  `disableAttester`/`setSignatureThreshold`. `domainManager` só é
+  alterável via `onlyOwner` (`updateDomainManager`); `domainPauser` via
+  `onlyDomainManager` (`updateDomainPauser`) — hierarquia de papéis
+  consistente (owner > domainManager > domainPauser), sem inversão. Sem
+  achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`evm-xreserve-contracts`
+ganhou 2 arquivos, agora 6 no total). Sugestão pra próxima rodada:
+`src/RemoteDomainDepositor.sol` (o contrato principal que orquestra
+depósito cross-chain, ainda não lido neste alvo) ou revisitar o refund
+flow multi-assinatura de `PaymentSettlementV2.sol` (`requireDestinationRefundSig`),
+sinalizado há várias rodadas como merecendo uma segunda leitura mais
+focada.

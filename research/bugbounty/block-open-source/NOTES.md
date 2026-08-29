@@ -1636,3 +1636,41 @@ ainda não lidos. Escolhidos 3 arquivos:
 achado #1). Um item novo em `queue.jsonl` (achado #1, já investigado e
 resolvido nesta mesma rodada — falso_positivo). Sem relatório gerado (não
 elegível — sem alcançabilidade confirmada).
+
+## Rodada 2026-08-29 (rotina automática, fila vazia) — `cache/http.go` (hermit) + `HTTPRequest.swift` (cash-app-pay-ios-sdk)
+
+`queue.jsonl` sem itens `pending` no início desta rodada. Clonados via
+`git clone --depth 1` (público, sem conta/token) `cashapp/hermit` e
+`cashapp/cash-app-pay-ios-sdk` — os dois alvos do programa com menos
+arquivos cobertos em `deep-read-log.json`. Nenhum arquivo novo em nenhum
+dos dois tinha auth/session/crypto/token/login/password/admin/permission/
+access no nome (mesma ausência já observada em rodadas anteriores para
+estes repos), então segui julgamento de especialista sobre o fluxo de rede
+mais sensível ainda não coberto.
+
+2 arquivos lidos por completo:
+- `hermit/cache/http.go` — implementação HTTP de `PackageSource`
+  (`Download`/`ETag`/`Validate`). Verifiquei checksum: `downloadHTTP`
+  calcula SHA-256 do corpo baixado via `io.TeeReader` e rejeita
+  (`errors.Errorf`) se não bater com o `checksum` esperado ANTES do
+  `os.Rename` que move pro cache definitivo — sem janela onde um arquivo
+  com checksum errado fique disponível como se fosse válido. Também
+  conferi `cache.Path`/`BasePath` (`cache/cache.go`, lido em conjunto):
+  o nome do arquivo em disco é `hash[:2]/hash-basename`, onde `hash` é
+  `util.Hash(url, checksum)` (não controlável só pelo atacante) e
+  `basename` é `filepath.Base(url)` — `filepath.Base` sempre descarta
+  qualquer componente de diretório, incluindo `../`, então não há como
+  a URL do manifesto (definida pelos próprios mantenedores de pacotes
+  hermit, não input de rede em runtime) escapar do diretório de cache via
+  path traversal. Sem achado.
+- `cash-app-pay-ios-sdk/Sources/PayKit/Services/Networking/HTTPRequest.swift`
+  — struct trivial (`urlRequest`/`retryPolicy`/`handler`), sem lógica
+  própria de rede/auth para auditar; é só um envelope de request usado
+  pelo `RESTService.swift` já lido em rodada anterior.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`cashapp/hermit`
+ganhou `cache/http.go` e `cache/cache.go`; `cashapp/cash-app-pay-ios-sdk`
+ganhou `HTTPRequest.swift`). Sugestão pra próxima rodada: `misk-hibernate/`/
+`misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado há várias
+rodadas e ainda não atacado de fato) ou os arquivos restantes de
+`cash-app-pay-ios-sdk`/`square/wire` ainda não lidos.
