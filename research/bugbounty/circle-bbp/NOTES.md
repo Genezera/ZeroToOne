@@ -193,3 +193,42 @@ achado.
 `deep-read-log.json` atualizado. Ponto em aberto da rodada anterior
 (cobertura de `notDenylisted` em `GatewayWallet.sol`/`GatewayMinter.sol`,
 ainda não lidos) continua válido pra próxima rodada.
+
+## Rodada seguinte (2026-08-29, mesmo dia) — achado novo: gap de denylist em `Withdrawals.sol`
+
+Persegui o ponto em aberto deixado acima. Lendo `Withdrawals.sol`,
+`Deposits.sol`, `Delegation.sol`, `Burns.sol`, `Mints.sol`,
+`GatewayCommon.sol` e `GatewayWallet.sol` (todos de
+`circlefin/evm-gateway-contracts`, branch `master`) e cruzando com
+`grep -rln "notDenylisted" src/` no clone completo:
+
+**Achado (`ai_deep_read_finding`, já investigado e revisado nesta mesma
+rodada — verdict `confirmado`, confidence `média`):**
+`Withdrawals.sol::initiateWithdrawal` e `Withdrawals.sol::withdraw` não
+têm `notDenylisted` em nenhuma das duas, enquanto TODO o resto do
+contrato aplica esse modifier a qualquer operação relacionada a fundos —
+inclusive `Delegation.sol::addDelegate/removeDelegate`, que nem move
+fundos diretamente. `Mints.sol::gatewayMint` (o pagamento simétrico do
+lado mint) checa denylist tanto do chamador quanto do destinatário do
+mint. `withdraw()` paga tokens ERC-20 reais direto pro `msg.sender`
+(`safeTransfer`, linha 113) sem nenhuma checagem de denylist em todo o
+caminho. Ou seja: um endereço denylistado depois de já ter depositado
+consegue sacar seu saldo `available` livremente, contornando o
+congelamento de compliance. Confidence `média` (não `alta`) porque não
+tenho como confirmar 100% que isso não é uma exceção deliberada de design
+(ex.: "sempre permitir reaver saldo já depositado mesmo denylistado
+depois") sem acesso à documentação/issue tracker interno da Circle — mas
+o padrão consistente no resto do contrato (inclusive delegação, que não
+move fundos) torna essa hipótese pouco provável.
+
+Isso É elegível para relatório: é uma falha real de controle de acesso
+em contrato de produção que move fundos, não metadado/cosmético — bate
+com o critério geral (tratar como achado de segurança de verdade, nunca
+cosmético) aplicado aos outros programas HackerOne/Bugcrowd desta missão.
+Rascunho salvo em
+`research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`.
+
+Burns.sol também não tem `notDenylisted`, mas isso é defensável: é
+chamado pelo operador pra reduzir saldo/queimar tokens já
+comprometidos por um mint em outra chain (débito, não paga fundos pro
+usuário) — não abri achado pra esse.

@@ -74,10 +74,19 @@
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
-    "src/libs/WebAuthnLib.sol"
+    "src/libs/WebAuthnLib.sol",
+    "src/msca/6900/v0.8/modules/validation/SingleSignerValidationModule.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/BaseWeightedMultisigPlugin.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
-    "src/modules/wallet/ContractSignersAllowlist.sol"
+    "src/modules/wallet/ContractSignersAllowlist.sol",
+    "src/modules/wallet/Withdrawals.sol",
+    "src/modules/wallet/Deposits.sol",
+    "src/modules/wallet/Delegation.sol",
+    "src/modules/wallet/Burns.sol",
+    "src/modules/minter/Mints.sol",
+    "src/GatewayCommon.sol",
+    "src/GatewayWallet.sol"
   ]
 }
