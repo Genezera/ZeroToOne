@@ -131,11 +131,13 @@
     "src/modules/minter/Mints.sol",
     "src/GatewayCommon.sol",
     "src/GatewayWallet.sol",
-    "src/GatewayMinter.sol"
+    "src/GatewayMinter.sol",
+    "src/lib/AttestationLib.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
-    "src/modules/x-reserve/Blocklistable.sol"
+    "src/modules/x-reserve/Blocklistable.sol",
+    "src/lib/NoValidationAttestationLib.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",

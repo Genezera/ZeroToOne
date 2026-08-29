@@ -505,3 +505,48 @@ AttestationLib.sol`/`src/lib/BurnIntentLib.sol` de `evm-gateway-contracts`
 é onde uma falha de verificação de assinatura teria mais impacto) ou
 `evm-xreserve-contracts` (só 2 arquivos lidos até agora, superfície ainda
 pouco coberta).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, seguindo a sugestão da rodada anterior (`NoValidationAttestationLib` + `AttestationLib`)
+
+Fila sem itens `pending` no início. Puxei o fio deixado pela rodada
+anterior: `evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol`
+(nunca lida como arquivo isolado, embora seu uso dentro de `Withdrawal.sol`
+já tivesse sido comentado de passagem antes) chamou atenção justamente
+pelo nome/comentário — "Identical to Gateway's AttestationLib but skips
+validation for gas optimization... Only use this when the attestation
+payload has already been validated (e.g., by gatewayMint)". Uma lib que
+pula validação estrutural/assinatura sob uma suposição implícita é
+exatamente o tipo de coisa que merece ceticismo genuíno, não aceitar o
+comentário de cara. Virou item novo em `queue.jsonl`
+(`ai_deep_read_finding`) e investiguei na mesma rodada.
+
+Arquivos lidos (2 novos, clonados publicamente via `git clone` — um em
+cada um dos dois repositórios do programa):
+- `evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol`
+- `evm-gateway-contracts/src/lib/AttestationLib.sol` (a versão validada,
+  pra comparar campo a campo)
+
+Rastreei a cadeia cruzando os dois repositórios: `Withdrawal.sol::withdraw()`
+passa a MESMA variável `attestationPayload` (bytes calldata, não mutada)
+primeiro pra `gatewayMint()` (que chama `_verifyAttestationSignature` —
+assinatura ECDSA sobre `keccak256(attestation)` dos bytes brutos completos,
+não uma reencodificação — e só depois `AttestationLib.cursor()`, que
+reverte se a estrutura/magic number não bater) e só DEPOIS reparseia os
+mesmos bytes com `NoValidationAttestationLib`. Comparei os offsets/lógica
+de slicing das duas libs: idênticos (mesmas constantes de
+`Attestations.sol`), a única diferença é que a versão sem validação não
+rejeita magic number desconhecido — inofensivo aqui porque o payload já
+passou pela checagem estrita antes de chegar nesse ponto. Confirmei também
+(grep) que `NoValidationAttestationLib` só é usada por `Withdrawal.sol`,
+não há caminho alternativo que a chame sem passar por `gatewayMint` antes.
+**Verdict: falso_positivo, confidence alta** — suspeita legítima pelo
+nome/comentário do arquivo, mas a precondição que o próprio comentário
+exige é genuinamente garantida pelo único call site existente. Reforça
+(com verificação byte-a-byte desta vez, não só inferência) a conclusão já
+registrada sobre `Withdrawal.sol` numa rodada anterior.
+
+`deep-read-log.json` atualizado (`evm-xreserve-contracts` agora com 3
+arquivos, `evm-gateway-contracts` com 11). Nenhum relatório escrito
+(verdict falso_positivo). `BurnIntentLib.sol` (verificação EIP-712 de burn
+intents) segue como sugestão pendente pra uma rodada futura — não coberta
+ainda.
