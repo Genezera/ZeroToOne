@@ -27,5 +27,10 @@
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/AnyMessage.kt",
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt"
+  ],
+  "afterpay/sdk-android": [
+    "afterpay/src/main/kotlin/com/afterpay/android/cashapp/AfterpayCashAppJwt.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/WebView.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV2Activity.kt"
   ]
 }

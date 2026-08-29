@@ -363,3 +363,60 @@ Nenhum achado novo adicionado à fila. `deep-read-log.json` atualizado com
 `square/wire`. Próxima rodada: `NetworkManager.swift`/`StateMachine.swift`
 do `cash-app-pay-ios-sdk` (comparar com o fluxo Android já auditado) ou
 `afterpay/sdk-android`/`afterpay/sdk-ios`.
+
+---
+
+## Rodada 2026-08-29 (3) — fila vazia, leitura profunda em afterpay/sdk-android
+
+Fila sem itens `pending` no início desta rodada. Cloneados `afterpay/sdk-android`,
+`afterpay/sdk-ios`, `cashapp/cash-app-pay-ios-sdk` (`git clone --depth 1`,
+público) só para localizar arquivos por nome/keyword — nenhum ainda no
+`deep-read-log.json`. `afterpay/sdk-ios` e `cash-app-pay-ios-sdk` não têm
+nenhum arquivo com auth/session/crypto/token/login/password/admin/permission/
+access no nome; `afterpay/sdk-android` tinha 1 (`CheckoutV3Tokens.kt`, mas é
+só um data class de request/response sem lógica). Optei por julgamento
+próprio sobre o fluxo Cash App Pay embutido no SDK do Afterpay (superfície de
+JWT + WebView bridge), que a busca por nome de arquivo não teria achado
+sozinha.
+
+3 arquivos lidos em `afterpay/sdk-android`:
+- `afterpay/.../cashapp/AfterpayCashAppJwt.kt` — `AfterpayCashAppJwt.decode()`
+  faz parse do payload do JWT (`jwtToken` retornado por
+  `AfterpayCashAppSigningResponse`) SEM verificar a assinatura. À primeira
+  vista parece o padrão clássico "JWT não verificado", mas rastreei a cadeia
+  completa em `AfterpayCashAppCheckout.kt`: o JWT nunca vem de input do
+  usuário/deep link/webview — vem direto da resposta HTTPS de
+  `Afterpay.environment.cashAppPaymentSigningUrl`, um endpoint do próprio
+  backend da Afterpay (`signPayment(token)`), chamado pelo próprio SDK. O
+  campo decodificado (`amount`) só é usado para popular `AfterpayCashApp`
+  (dado exibido/local); a decisão de autorização de pagamento de verdade
+  acontece depois, em `validatePayment`, que reenvia o `jwt` bruto (não o
+  payload decodificado) para outro endpoint da Afterpay
+  (`cashAppPaymentValidationUrl`) — ou seja, a verificação de assinatura,
+  se existir, é responsabilidade do backend, não do client. Sem canal para
+  um atacante injetar um JWT arbitrário nesse fluxo (não há deep link nem
+  postMessage entregando `jwtToken` de fora). Classificado como não
+  suspeito o bastante para virar candidato — não adicionado à fila.
+- `afterpay/.../internal/WebView.kt` — só define uma extension function
+  que concatena a string de user-agent. Nada para auditar.
+- `afterpay/.../view/AfterpayCheckoutV2Activity.kt` — usa
+  `addJavascriptInterface(javascriptInterface, "Android")` com JS habilitado
+  (padrão que a heurística `webview_js_bridge_exposure` marcaria). Verifiquei
+  o escopo real: a bridge só é registrada em `bootstrapWebView`, que carrega
+  APENAS uma URL fixa do próprio recurso de string do app
+  (`R.string.afterpay_url_checkout_express`, domínio da Afterpay) e nunca
+  navega para outra URL depois — não há `loadUrl` adicional nem
+  `shouldOverrideUrlLoading` permissivo redirecionando para conteúdo externo.
+  A segunda WebView (`checkoutWebView`, criada em `onCreateWindow` para
+  pop-ups/iframes do checkout, onde conteúdo de terceiro poderia aparecer)
+  NÃO recebe `addJavascriptInterface` — a bridge fica isolada da superfície
+  que carrega conteúdo variável. `allowFileAccess = false` em ambas as
+  WebViews, fechando o vetor clássico file://+JS-interface. O handler
+  `postMessage` também faz parse estruturado (`Json.decodeFromString` em
+  tipos selados), não `eval` de string arbitrária. Sem falha de lógica
+  encontrada; escopo da bridge parece corretamente restrito a conteúdo
+  primeiro-partido fixo.
+
+Nenhum achado novo adicionado à fila nesta rodada. `deep-read-log.json`
+atualizado. Próxima rodada: `square/wire` (wire-runtime) ou completar
+`afterpay/sdk-ios` / `cash-app-pay-ios-sdk` (ainda não tocados).
