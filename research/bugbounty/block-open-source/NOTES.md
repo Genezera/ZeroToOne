@@ -199,3 +199,46 @@ Nenhum achado novo adicionado à fila. Próxima rodada: continuar em
 `cashapp/misk` (`misk-hibernate/`, `misk-jdbc/` para SQL injection via
 Hibernate/JDBC) ou passar para os SDKs mobile (Afterpay/Cash App Pay —
 ainda não tocados pela leitura profunda).
+
+## Rodada 2026-08-29 — fila vazia, leitura profunda em cashapp/cash-app-pay-android-sdk
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada — nenhuma
+revisão de veredito necessária.
+
+Leitura profunda: clonei via `git clone` (raso, sem conta) os 6 repos do
+Block Open Source ainda não cobertos por leitura profunda
+(`square/wire`, `afterpay/sdk-android`, `cashapp/cash-app-pay-android-sdk`,
+`afterpay/sdk-ios`, `cashapp/cash-app-pay-ios-sdk`, `cashapp/hermit`) para
+localizar arquivos com auth/session/crypto/token/login/password/admin/
+permission/access no nome. Achados por nome de arquivo foram escassos
+(`wire` e `hermit` não têm nenhum arquivo com essas palavras-chave) — optei
+por julgamento de especialista sobre o fluxo mais sensível encontrado:
+`cash-app-pay-android-sdk` tem um fluxo de autorização real (grant/OAuth-like
+via redirect mobile) mesmo sem "auth" no nome do arquivo principal.
+
+3+1 arquivos lidos por completo em `cash-app-pay-android-sdk`:
+- `core/.../impl/CashAppPayImpl.kt` (606 linhas, orquestrador central do
+  SDK) — `authorizeCustomerRequest` abre uma `Intent` com a URL de
+  `customerData.authFlowTriggers.mobileUrl`. Essa URL vem inteiramente da
+  resposta do backend da Cash App (via `networkManager`), nunca de input
+  do app consumidor ou de deep link externo — não há superfície de
+  open-redirect/deep-link-hijack controlável pelo lado cliente aqui.
+  Gerenciamento de estado (`Authorizing`/`Refreshing`/polling) e
+  verificação de expiração de token (`isAuthTokenExpired`) parecem
+  consistentes, sem race óbvia (single-thread manager serializa as
+  operações por `ThreadPurpose`).
+- `core/.../network/adapters/PiiStringClearTextAdapter.kt` +
+  `core/.../network/MoshiProvider.kt` — investiguei se o adapter "ClearText"
+  (que deliberadamente NÃO redige PII) poderia vazar para logging/analytics
+  por engano. Confirmado que não: `NetworkManagerImpl` usa
+  `provideDefault()` (clear text, default `redactPii=false`) só para as
+  chamadas reais à API — necessário, já que o PII precisa chegar ao
+  backend sem redação — enquanto `PayKitAnalyticsEventDispatcherImpl` passa
+  explicitamente `redactPii = true`. Separação correta, sem vazamento.
+- `core/.../models/response/Grant.kt` — só um data class de modelo
+  (id/status/type/action/expires_at), sem lógica para auditar.
+
+Nenhum achado novo. `deep-read-log.json` atualizado. Próxima rodada:
+`square/wire` (wire-runtime — desserialização de protobuf não confiável é
+a superfície mais promissora ainda não lida) ou os SDKs iOS (Afterpay/Cash
+App Pay).

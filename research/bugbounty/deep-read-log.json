@@ -8,5 +8,11 @@
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
     "misk/src/main/kotlin/misk/security/authz/MiskCallerAuthenticator.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/CiphertextFormat.kt"
+  ],
+  "cashapp/cash-app-pay-android-sdk": [
+    "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
+    "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringClearTextAdapter.kt",
+    "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
+    "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt"
   ]
 }
