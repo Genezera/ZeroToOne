@@ -162,3 +162,40 @@ download). Não afirmo que seja uma falha; só é um ponto a olhar com mais
 tempo antes de virar candidato de verdade.
 
 Fila: 0 pendentes após esta rodada.
+
+## Leitura profunda proativa (2026-08-29) — primeira rodada tocando Block, 0 achados
+Fila estava com 0 pendentes (o push que disparou esta rodada era o próprio
+commit de revisão anterior, do Vercel). `deep-read-log.json` só tinha
+entradas de `vercel/flags` — nenhum repo do Block Open Source havia sido
+lido na leitura profunda ainda. Cloneados via `git clone --depth 1`
+(público, sem conta/token): `cashapp/misk`, `cashapp/cash-app-pay-android-sdk`,
+`afterpay/sdk-android`, `cashapp/cash-app-pay-ios-sdk`, `afterpay/sdk-ios`
+(só para listar arquivos por nome/keyword, não persistidos no repo).
+3 arquivos lidos, priorizando auth/crypto em `cashapp/misk` (maior
+superfície de segurança dos alvos JVM):
+- `misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt` — lógica
+  central de autorização do framework (`isAuthorized`). Revisada com
+  ceticismo: nega por padrão quando não há requisito de serviço/capability
+  configurado, `allowAnyService` respeita a lista de exclusão
+  (`excludeFromAllowAnyService`), a factory recusa criar o interceptor sem
+  anotação de acesso registrada (falha explícita, não fail-open). O flag
+  `caller.allowAll` que dá bypass total é setado por quem implementa
+  `MiskCallerAuthenticator` na aplicação consumidora, não pelo próprio
+  misk — fora do escopo do que este repo controla. Sem falha de lógica
+  encontrada.
+- `misk/src/main/kotlin/misk/security/authz/MiskCallerAuthenticator.kt` —
+  só uma interface (`getAuthenticatedCaller(): MiskCaller?`), sem lógica
+  para auditar.
+- `misk-crypto/src/main/kotlin/misk/crypto/CiphertextFormat.kt` — formato
+  de serialização de ciphertext+AAD do misk-crypto (Tink). `serialize`/
+  `deserialize` estão `@Deprecated` (movidos para
+  `squareup/cash-ciphertext-format`, fora do escopo deste repo).
+  `deserialize` valida que o AAD serializado bate com o `context` esperado
+  antes de aceitar — é checagem de consistência adicional, não substitui a
+  autenticação real (Tink AEAD já autentica ciphertext+AAD juntos). Sem
+  falha encontrada.
+
+Nenhum achado novo adicionado à fila. Próxima rodada: continuar em
+`cashapp/misk` (`misk-hibernate/`, `misk-jdbc/` para SQL injection via
+Hibernate/JDBC) ou passar para os SDKs mobile (Afterpay/Cash App Pay —
+ainda não tocados pela leitura profunda).
