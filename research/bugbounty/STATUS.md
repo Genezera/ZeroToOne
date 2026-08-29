@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T01:27:31.547Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T05:56:40.233Z.
 
 ## Alvos ativos
 
@@ -15,10 +15,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | jvm | Block Open Source | Bugcrowd | cashapp/cash-app-pay-android-sdk |
 | swift | Block Open Source | Bugcrowd | afterpay/sdk-ios |
 | swift | Block Open Source | Bugcrowd | cashapp/cash-app-pay-ios-sdk |
+| solidity | Circle BBP | HackerOne | circlefin/evm-cctp-contracts |
+| solidity | Circle BBP | HackerOne | circlefin/evm-gateway-contracts |
+| solidity | Circle BBP | HackerOne | circlefin/buidl-wallet-contracts |
+| solidity | Circle BBP | HackerOne | circlefin/evm-xreserve-contracts |
+| solidity | Circle BBP | HackerOne | circlefin/evm-cpn-contracts |
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **0**
+- Pendentes (aguardando o agente de nuvem): **6**
 - Já revisados: 24
 
 ### Últimos vereditos

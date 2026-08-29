@@ -9,11 +9,13 @@ const TEST_DIR = /(^|\/)(test|tests|__tests__|fixtures|testdata)(\/|$)/i;
 const TEST_FILE_JVM = /(Test|Tests)\.(kt|java)$/;
 const TEST_FILE_GO = /_test\.go$/;
 const TEST_FILE_SWIFT = /(Tests?|Spec)\.(swift|m)$/;
+const TEST_FILE_SOLIDITY = /\.t\.sol$/; // convenção Foundry: MeuContrato.t.sol
 
 const SOURCE_EXT_JS = /\.(js|jsx|ts|tsx|mjs|cjs)$/;
 const SOURCE_EXT_GO = /\.go$/;
 const SOURCE_EXT_JVM = /\.(kt|kts|java)$/;
 const SOURCE_EXT_SWIFT = /\.(swift|m|h)$/;
+const SOURCE_EXT_SOLIDITY = /\.sol$/;
 
 function isScannable(path, ext, testFile) {
   if (!ext.test(path)) return false;
@@ -37,6 +39,10 @@ export function isScannableJvmFile(path) {
 
 export function isScannableSwiftFile(path) {
   return isScannable(path, SOURCE_EXT_SWIFT, TEST_FILE_SWIFT);
+}
+
+export function isScannableSolidityFile(path) {
+  return isScannable(path, SOURCE_EXT_SOLIDITY, TEST_FILE_SOLIDITY);
 }
 
 const DEPENDENCY_MANIFEST_NAMES = new Set(['package-lock.json', 'go.mod', 'build.gradle', 'build.gradle.kts']);

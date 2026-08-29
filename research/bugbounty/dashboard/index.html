@@ -130,120 +130,120 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
     <div class="brand">Centro de Sinais</div>
     <ul class="nav"><li><a href="#index" data-nav="index" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="#targets" data-nav="targets"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="#queue" data-nav="queue"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="#activity" data-nav="activity"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="#stats" data-nav="stats"><span class="nav-icon">▲</span>Estatística</a></li></ul>
-    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-29 01:27 UTC</div>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-29 05:56 UTC</div>
   </aside>
   <main class="main">
     <section class="page" id="page-index" data-page="index">
     <h1>Visão geral</h1>
-    <div class="page-sub">13 contrato(s) Clarity, 0 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 14 erro(s) de busca.</div>
+    <div class="page-sub">13 contrato(s) Clarity, 229 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 0 erro(s) de busca.</div>
     
     <div class="tiles">
-      <div class="tile" style="--i:0"><div class="tile-value" data-countup="9">0</div><div class="tile-label">Alvos ativos</div></div>
-      <div class="tile" style="--i:1"><div class="tile-value" data-countup="3">0</div><div class="tile-label">Programas</div></div>
-      <div class="tile" style="--i:2"><div class="tile-value" data-countup="5">0</div><div class="tile-label">Linguagens</div></div>
-      <div class="tile" style="--i:3"><div class="tile-value" data-countup="22">0</div><div class="tile-label">Rodadas registradas</div></div>
-      <div class="tile" style="--i:4"><div class="tile-value" data-countup="0">0</div><div class="tile-label">Sinais pendentes</div></div>
+      <div class="tile" style="--i:0"><div class="tile-value" data-countup="14">0</div><div class="tile-label">Alvos ativos</div></div>
+      <div class="tile" style="--i:1"><div class="tile-value" data-countup="4">0</div><div class="tile-label">Programas</div></div>
+      <div class="tile" style="--i:2"><div class="tile-value" data-countup="6">0</div><div class="tile-label">Linguagens</div></div>
+      <div class="tile" style="--i:3"><div class="tile-value" data-countup="23">0</div><div class="tile-label">Rodadas registradas</div></div>
+      <div class="tile" style="--i:4"><div class="tile-value" data-countup="6">0</div><div class="tile-label">Sinais pendentes</div></div>
       <div class="tile" style="--i:5"><div class="tile-value" data-countup="24">0</div><div class="tile-label">Já revisados</div></div>
     </div>
     <div class="panel">
       <h2>Últimos achados</h2>
       <div class="panel-sub"><a href="#queue">Ver a fila completa →</a></div>
       <div class="finding-list">
-  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:0" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">2026-08-29 01:13 UTC</div>
+      <div class="finding-type">delegatecall_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
       
     </div>
-    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts — line:99</div>
-    <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;attempt++) { try { const response = await options.fetch(`${options.host}/v1/ingest`, { method: &#39;POST&#39;,&quot;</div>
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrão do achado em fetch-datafile.ts: `options.host` vem de `IngestOptions`, preenchido a partir do host default hardcoded `https://flags.vercel.com` (`normalized-options.ts:139`) ou de configuração explícita do integrador do SDK. Nenhuma requisição de usuário externo alcança esse valor dentro deste pacote. Sem controle de host por atacante, não há SSRF.</div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol — line:69</div>
+    <div class="finding-note">to.delegatecall(...) — to não aparenta ser constant/immutable; se o endereço vier de estado mutável ou argumento não confiável, risco de colisão de storage layout ou execução de código arbitrário no contexto deste contrato. Contexto: &quot;xt-line avoid-low-level-calls (bool success, bytes memory returnData) = to.delegatecall(data); if (!success) { // bubble up revert r&quot;</div>
+    
   </div>
-  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:1" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
-      <div class="finding-type">prototype_pollution_risk</div>
-      <div class="finding-time">2026-08-29 01:13 UTC</div>
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
       
     </div>
-    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/evaluate.ts — line:677</div>
-    <div class="finding-note">for...in atribuindo em [key] sem checagem visível contra __proto__/constructor/prototype — risco de poluição de protótipo se a chave vier de entrada externa. Contexto: &quot;const results: Record&lt;string, EvaluationResult&lt;T&gt;&gt; = {}; for (const key in flags) { const flag = flags[key]!;&quot;</div>
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`bulkEvaluate(flags: Record&lt;string, BulkEvaluationInput&lt;T&gt;&gt;, ...)` itera `for (const key in flags)` sobre um Record cujas chaves são identificadores de flags declarados pelo desenvolvedor no próprio código-fonte (via `flag()`), não JSON desserializado de uma requisição externa. Mesmo argumento do achado do adapter-vercel: a atribuição `results[key] = evaluate(...)` é flat/single-level sobre um objeto `{}` recém-criado — não é um merge recursivo, então mesmo uma chave `__proto__` hipotética não causaria poluição do `Object.prototype` global.</div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol — run</div>
+    <div class="finding-note">Função run faz chamada externa (.call) e escreve estado DEPOIS da chamada — violação do padrão checks-effects-interactions, risco de reentrância clássica (padrão do hack da The DAO). Confirmar se há guard (nonReentrant/modifier de lock) antes de reportar. Contexto: &quot;(bool success, bytes memory result) = DETERMINISTIC_DEPLOYMENT_FACTORY.call(callData); if (!success) { revert Dep&quot;</div>
+    
   </div>
-  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:2" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">2026-08-29 01:13 UTC</div>
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
       
     </div>
-    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts — line:35</div>
-    <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;{ once: true }); } try { const res = await options.fetch(`${options.host}/v1/datafile`, { headers: {&quot;</div>
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.host` é passado pelo `Controller` interno (`this.options.host`), cujo valor default é hardcoded em `normalized-options.ts:139` como `https://flags.vercel.com`. Só é sobrescrito por opções de construção do client SDK definidas pelo próprio desenvolvedor que integra a biblioteca (ex.: testes apontando para outro ambiente) — não há nenhum caminho de código dentro deste pacote que preencha `host` a partir de uma requisição HTTP recebida de um usuário não confiável. Sem controle de host por atacante, não há SSRF.</div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol — run</div>
+    <div class="finding-note">Função run faz chamada externa (.call) e escreve estado DEPOIS da chamada — violação do padrão checks-effects-interactions, risco de reentrância clássica (padrão do hack da The DAO). Confirmar se há guard (nonReentrant/modifier de lock) antes de reportar. Contexto: &quot;(bool success, bytes memory result) = DETERMINISTIC_DEPLOYMENT_FACTORY.call(callData); if (!success) { revert Dep&quot;</div>
+    
   </div>
-  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:3" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
-      <div class="finding-type">prototype_pollution_risk</div>
-      <div class="finding-time">2026-08-29 01:13 UTC</div>
+      <div class="finding-type">unchecked_call_return</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
       
     </div>
-    <div class="finding-file">vercel/flags/packages/adapter-vercel/src/index.ts — line:74</div>
-    <div class="finding-note">for...in atribuindo em [key] sem checagem visível contra __proto__/constructor/prototype — risco de poluição de protótipo se a chave vier de entrada externa. Contexto: &quot;); const out: Record&lt;string, unknown&gt; = {}; for (const key in results) { const r = results[key]!&quot;</div>
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`results` é o retorno de `flagsClient.bulkEvaluate()`, chamado com `flags` derivado de declarações de flag feitas pelo próprio desenvolvedor no código (`flag()` do SDK) — as chaves não vêm de JSON externo desserializado nem de requisição de usuário. Além disso, mesmo que uma chave fosse `__proto__`, a atribuição é um único nível flat (`out[key] = ...` sobre um objeto `{}` criado ali mesmo) — isso no máximo alteraria o protótipo daquele objeto local `out`, não o `Object.prototype` global; não é o padrão de merge recursivo que caracteriza poluição de protótipo real e explorável. Cadeia de chamada rastreada: `bulkDecide` (chamado pelo motor `flags` interno com flags declaradas em código) → `flagsClient.bulkEvaluate` → `evaluate.ts:bulkEvaluate` (ver achado separado abaixo).</div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:116</div>
+    <div class="finding-note">gatewayWalletProxy.call(...) sem capturar/checar o retorno booleano — falha da chamada externa passa despercebida. Padrão seguro: (bool ok, ) = gatewayWalletProxy.call(...); require(ok, ...). Contexto: &quot;(bool allowlisterSuccess, bytes memory allowlisterReturnData) = gatewayWalletProxy.call(updateAllowlisterCallData); require(&quot;</div>
+    
   </div>
-  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:4" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">2026-08-29 01:13 UTC</div>
+      <div class="finding-type">unchecked_call_return</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
       
     </div>
-    <div class="finding-file">vercel/flags/packages/adapter-statsig/src/provider/index.ts — line:157</div>
-    <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;l = &#39;/console/v1/gates&#39;; do { const response = await fetch(`https://statsigapi.net${suffix}`, { method: &#39;GE&quot;</div>
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://statsigapi.net`; `suffix` inicia como constante `/console/v1/gates` e depois só é atualizado por `body.pagination?.nextPage`, valor retornado pela própria API oficial da Statsig. Sem controle de host, não há SSRF.</div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:135</div>
+    <div class="finding-note">gatewayWalletProxy.call(...) sem capturar/checar o retorno booleano — falha da chamada externa passa despercebida. Padrão seguro: (bool ok, ) = gatewayWalletProxy.call(...); require(ok, ...). Contexto: &quot;(bool batchSignerSuccess, bytes memory batchSignerReturnData) = gatewayWalletProxy.call(addBatchSignerCallData); require(batchSigner&quot;</div>
+    
   </div>
-  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:5" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">2026-08-29 01:13 UTC</div>
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
       
     </div>
-    <div class="finding-file">vercel/flags/packages/adapter-statsig/src/provider/index.ts — line:192</div>
-    <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;console/v1/experiments&#39;; do { const response = await fetch(`https://statsigapi.net${suffix}`, { method: &#39;GE&quot;</div>
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:157 — `getExperiments` usa o mesmo host fixo `https://statsigapi.net`, mesma lógica de paginação via `nextPage` retornado pela própria API oficial. Sem controle de host, não há SSRF.</div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — run</div>
+    <div class="finding-note">Função run faz chamada externa (.call) e escreve estado DEPOIS da chamada — violação do padrão checks-effects-interactions, risco de reentrância clássica (padrão do hack da The DAO). Confirmar se há guard (nonReentrant/modifier de lock) antes de reportar. Contexto: &quot;(bool upgradeSuccess, bytes memory upgradeReturnData) = gatewayWalletProxy.call(upgradeCallData); require(upgradeSuccess, string(abi.encodePacked(&quot;</div>
+    
   </div></div>
     </div>
     <div class="panel">
@@ -251,19 +251,19 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="panel-sub"><a href="#activity">Ver o histórico completo →</a></div>
       <div class="timeline">
     <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-08-29 05:56 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 6 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 229 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 229). </div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:27 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="scan">
+    <div class="timeline-item" style="--i:2" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:26 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
-    </div>
-    <div class="timeline-item" style="--i:2" data-kind="scan">
-      <div class="timeline-time">2026-08-29 01:24 UTC</div>
-      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
-      <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
     <div class="timeline-item" style="--i:3" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:24 UTC</div>
@@ -271,14 +271,14 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
     <div class="timeline-item" style="--i:4" data-kind="scan">
-      <div class="timeline-time">2026-08-29 01:17 UTC</div>
-      <div class="timeline-title">Rodada do scanner — 15 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-time">2026-08-29 01:24 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
     <div class="timeline-item" style="--i:5" data-kind="scan">
-      <div class="timeline-time">2026-08-29 00:54 UTC</div>
-      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
-      <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
+      <div class="timeline-time">2026-08-29 01:17 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 15 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div></div>
     </div>
     <div class="panel">
@@ -314,7 +314,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
   </section>
 <section class="page" id="page-targets" data-page="targets">
     <h1>Alvos ativos</h1>
-    <div class="page-sub">9 repositórios/contratos sob varredura contínua, agrupados por linguagem.</div>
+    <div class="page-sub">14 repositórios/contratos sob varredura contínua, agrupados por linguagem.</div>
     <div class="panel"><h2>Clarity</h2><div class="panel-sub">1 alvo(s)</div><div class="card-grid">
         <div class="card" style="--i:0">
           <div class="card-eyebrow">Immunefi</div>
@@ -396,6 +396,51 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
             <span>teto US$5000</span>
             <span>escopo: Sources/</span>
           </div>
+        </div></div></div><div class="panel"><h2>solidity</h2><div class="panel-sub">5 alvo(s)</div><div class="card-grid">
+        <div class="card" style="--i:0">
+          <div class="card-eyebrow">HackerOne</div>
+          <div class="card-title">circlefin/evm-cctp-contracts</div>
+          <div class="card-meta">Circle BBP · branch master</div>
+          <div class="card-kv">
+            <span>teto não publicado</span>
+            <span>escopo: repositório inteiro</span>
+          </div>
+        </div>
+        <div class="card" style="--i:1">
+          <div class="card-eyebrow">HackerOne</div>
+          <div class="card-title">circlefin/evm-gateway-contracts</div>
+          <div class="card-meta">Circle BBP · branch master</div>
+          <div class="card-kv">
+            <span>teto não publicado</span>
+            <span>escopo: repositório inteiro</span>
+          </div>
+        </div>
+        <div class="card" style="--i:2">
+          <div class="card-eyebrow">HackerOne</div>
+          <div class="card-title">circlefin/buidl-wallet-contracts</div>
+          <div class="card-meta">Circle BBP · branch master</div>
+          <div class="card-kv">
+            <span>teto não publicado</span>
+            <span>escopo: repositório inteiro</span>
+          </div>
+        </div>
+        <div class="card" style="--i:3">
+          <div class="card-eyebrow">HackerOne</div>
+          <div class="card-title">circlefin/evm-xreserve-contracts</div>
+          <div class="card-meta">Circle BBP · branch master</div>
+          <div class="card-kv">
+            <span>teto não publicado</span>
+            <span>escopo: repositório inteiro</span>
+          </div>
+        </div>
+        <div class="card" style="--i:4">
+          <div class="card-eyebrow">HackerOne</div>
+          <div class="card-title">circlefin/evm-cpn-contracts</div>
+          <div class="card-meta">Circle BBP · branch main</div>
+          <div class="card-kv">
+            <span>teto não publicado</span>
+            <span>escopo: repositório inteiro</span>
+          </div>
         </div></div></div>
   </section>
 <section class="page" id="page-queue" data-page="queue">
@@ -404,12 +449,108 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     
     <div class="filters">
       <select id="f-status"><option value="">Todo status</option><option value="pending">Pendente</option><option value="reviewed">Revisado</option></select>
-      <select id="f-program"><option value="">Todo programa</option><option value="Block Open Source">Block Open Source</option><option value="StackingDAO">StackingDAO</option><option value="Vercel Open Source">Vercel Open Source</option></select>
-      <select id="f-language"><option value="">Toda linguagem</option><option value="clarity">Clarity</option><option value="go">Go</option><option value="js">JS/TS</option><option value="jvm">Kotlin/Java</option></select>
+      <select id="f-program"><option value="">Todo programa</option><option value="Block Open Source">Block Open Source</option><option value="Circle BBP">Circle BBP</option><option value="StackingDAO">StackingDAO</option><option value="Vercel Open Source">Vercel Open Source</option></select>
+      <select id="f-language"><option value="">Toda linguagem</option><option value="clarity">Clarity</option><option value="go">Go</option><option value="js">JS/TS</option><option value="jvm">Kotlin/Java</option><option value="solidity">solidity</option></select>
       <span class="count" id="f-count"></span>
     </div>
     <div class="finding-list" id="finding-list">
-  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:0" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">delegatecall_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
+      
+    </div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol — line:69</div>
+    <div class="finding-note">to.delegatecall(...) — to não aparenta ser constant/immutable; se o endereço vier de estado mutável ou argumento não confiável, risco de colisão de storage layout ou execução de código arbitrário no contexto deste contrato. Contexto: &quot;xt-line avoid-low-level-calls (bool success, bytes memory returnData) = to.delegatecall(data); if (!success) { // bubble up revert r&quot;</div>
+    
+  </div>
+  <div class="finding" style="--i:1" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
+      
+    </div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol — run</div>
+    <div class="finding-note">Função run faz chamada externa (.call) e escreve estado DEPOIS da chamada — violação do padrão checks-effects-interactions, risco de reentrância clássica (padrão do hack da The DAO). Confirmar se há guard (nonReentrant/modifier de lock) antes de reportar. Contexto: &quot;(bool success, bytes memory result) = DETERMINISTIC_DEPLOYMENT_FACTORY.call(callData); if (!success) { revert Dep&quot;</div>
+    
+  </div>
+  <div class="finding" style="--i:2" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
+      
+    </div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol — run</div>
+    <div class="finding-note">Função run faz chamada externa (.call) e escreve estado DEPOIS da chamada — violação do padrão checks-effects-interactions, risco de reentrância clássica (padrão do hack da The DAO). Confirmar se há guard (nonReentrant/modifier de lock) antes de reportar. Contexto: &quot;(bool success, bytes memory result) = DETERMINISTIC_DEPLOYMENT_FACTORY.call(callData); if (!success) { revert Dep&quot;</div>
+    
+  </div>
+  <div class="finding" style="--i:3" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">unchecked_call_return</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:116</div>
+    <div class="finding-note">gatewayWalletProxy.call(...) sem capturar/checar o retorno booleano — falha da chamada externa passa despercebida. Padrão seguro: (bool ok, ) = gatewayWalletProxy.call(...); require(ok, ...). Contexto: &quot;(bool allowlisterSuccess, bytes memory allowlisterReturnData) = gatewayWalletProxy.call(updateAllowlisterCallData); require(&quot;</div>
+    
+  </div>
+  <div class="finding" style="--i:4" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">unchecked_call_return</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:135</div>
+    <div class="finding-note">gatewayWalletProxy.call(...) sem capturar/checar o retorno booleano — falha da chamada externa passa despercebida. Padrão seguro: (bool ok, ) = gatewayWalletProxy.call(...); require(ok, ...). Contexto: &quot;(bool batchSignerSuccess, bytes memory batchSignerReturnData) = gatewayWalletProxy.call(addBatchSignerCallData); require(batchSigner&quot;</div>
+    
+  </div>
+  <div class="finding" style="--i:5" data-status="pending" data-verdict="" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">2026-08-29 05:56 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-accent">pendente</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — run</div>
+    <div class="finding-note">Função run faz chamada externa (.call) e escreve estado DEPOIS da chamada — violação do padrão checks-effects-interactions, risco de reentrância clássica (padrão do hack da The DAO). Confirmar se há guard (nonReentrant/modifier de lock) antes de reportar. Contexto: &quot;(bool upgradeSuccess, bytes memory upgradeReturnData) = gatewayWalletProxy.call(upgradeCallData); require(upgradeSuccess, string(abi.encodePacked(&quot;</div>
+    
+  </div>
+  <div class="finding" style="--i:6" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -425,7 +566,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;attempt++) { try { const response = await options.fetch(`${options.host}/v1/ingest`, { method: &#39;POST&#39;,&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrão do achado em fetch-datafile.ts: `options.host` vem de `IngestOptions`, preenchido a partir do host default hardcoded `https://flags.vercel.com` (`normalized-options.ts:139`) ou de configuração explícita do integrador do SDK. Nenhuma requisição de usuário externo alcança esse valor dentro deste pacote. Sem controle de host por atacante, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:7" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">prototype_pollution_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -441,7 +582,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">for...in atribuindo em [key] sem checagem visível contra __proto__/constructor/prototype — risco de poluição de protótipo se a chave vier de entrada externa. Contexto: &quot;const results: Record&lt;string, EvaluationResult&lt;T&gt;&gt; = {}; for (const key in flags) { const flag = flags[key]!;&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`bulkEvaluate(flags: Record&lt;string, BulkEvaluationInput&lt;T&gt;&gt;, ...)` itera `for (const key in flags)` sobre um Record cujas chaves são identificadores de flags declarados pelo desenvolvedor no próprio código-fonte (via `flag()`), não JSON desserializado de uma requisição externa. Mesmo argumento do achado do adapter-vercel: a atribuição `results[key] = evaluate(...)` é flat/single-level sobre um objeto `{}` recém-criado — não é um merge recursivo, então mesmo uma chave `__proto__` hipotética não causaria poluição do `Object.prototype` global.</div>
   </div>
-  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:8" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -457,7 +598,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;{ once: true }); } try { const res = await options.fetch(`${options.host}/v1/datafile`, { headers: {&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.host` é passado pelo `Controller` interno (`this.options.host`), cujo valor default é hardcoded em `normalized-options.ts:139` como `https://flags.vercel.com`. Só é sobrescrito por opções de construção do client SDK definidas pelo próprio desenvolvedor que integra a biblioteca (ex.: testes apontando para outro ambiente) — não há nenhum caminho de código dentro deste pacote que preencha `host` a partir de uma requisição HTTP recebida de um usuário não confiável. Sem controle de host por atacante, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:9" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">prototype_pollution_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -473,7 +614,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">for...in atribuindo em [key] sem checagem visível contra __proto__/constructor/prototype — risco de poluição de protótipo se a chave vier de entrada externa. Contexto: &quot;); const out: Record&lt;string, unknown&gt; = {}; for (const key in results) { const r = results[key]!&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`results` é o retorno de `flagsClient.bulkEvaluate()`, chamado com `flags` derivado de declarações de flag feitas pelo próprio desenvolvedor no código (`flag()` do SDK) — as chaves não vêm de JSON externo desserializado nem de requisição de usuário. Além disso, mesmo que uma chave fosse `__proto__`, a atribuição é um único nível flat (`out[key] = ...` sobre um objeto `{}` criado ali mesmo) — isso no máximo alteraria o protótipo daquele objeto local `out`, não o `Object.prototype` global; não é o padrão de merge recursivo que caracteriza poluição de protótipo real e explorável. Cadeia de chamada rastreada: `bulkDecide` (chamado pelo motor `flags` interno com flags declaradas em código) → `flagsClient.bulkEvaluate` → `evaluate.ts:bulkEvaluate` (ver achado separado abaixo).</div>
   </div>
-  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:10" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -489,7 +630,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;l = &#39;/console/v1/gates&#39;; do { const response = await fetch(`https://statsigapi.net${suffix}`, { method: &#39;GE&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://statsigapi.net`; `suffix` inicia como constante `/console/v1/gates` e depois só é atualizado por `body.pagination?.nextPage`, valor retornado pela própria API oficial da Statsig. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:11" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -505,7 +646,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;console/v1/experiments&#39;; do { const response = await fetch(`https://statsigapi.net${suffix}`, { method: &#39;GE&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:157 — `getExperiments` usa o mesmo host fixo `https://statsigapi.net`, mesma lógica de paginação via `nextPage` retornado pela própria API oficial. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:6" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:12" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -521,7 +662,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;talCount = -1; while (true) { const response = await fetch( `https://api.split.io/internal/api/v2/splits/ws&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.split.io`; `workspaceId`/`environmentId`/`offset` são config do desenvolvedor ou contadores locais. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:7" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:13" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -537,7 +678,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;ta.count; offset += 100) { const paginatedRes = await fetch( `${host}/api/projects/${options.projectId}/fe&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:65 (paginação); `offset` é numérico e calculado localmente. Mesma reasoning: host vem de configuração do desenvolvedor (self-hosted override), não de entrada externa.</div>
   </div>
-  <div class="finding" style="--i:8" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:14" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -553,7 +694,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;earer ${options.personalApiKey}`, }; const res = await fetch( `${host}/api/projects/${options.projectId}/featur&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`host` vem de `options.appHost` (parâmetro explícito da função exportada) ou de `getAppHost()`, que lê `process.env.POSTHOG_HOST` — ambos são configuração do desenvolvedor que integra o SDK (suporte a instâncias PostHog self-hosted), não dado de requisição de usuário. Mesmo raciocínio do growthbook: não é a biblioteca vercel/flags que expõe esse valor a um chamador não confiável. Confiança &#39;média&#39; pelo mesmo motivo (depende de má integração por terceiros, não do código do próprio pacote).</div>
   </div>
-  <div class="finding" style="--i:9" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:15" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -569,7 +710,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;tions.projectId}/flags`; do { const response = await fetch( `https://api.optimizely.com/flags/v1${suffix}`,&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.optimizely.com`; `suffix` é construído a partir de `options.projectId` (config do desenvolvedor) e depois só de `next_url` retornado pela própria API oficial da Optimizely (paginação). Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:10" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:16" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -585,7 +726,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;ns.flagKey}/variations`; do { const response = await fetch( `https://api.optimizely.com/flags/v1${suffix}`,&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/padrão do achado line:77 — `getVariationsForFlag` também usa o host fixo `https://api.optimizely.com`, com `flagKey` vindo dos próprios dados retornados pela API oficial. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:11" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:17" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -601,7 +742,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;&#39;LD-API-Version&#39;: &#39;20240415&#39;, }; const res = await fetch( `https://app.launchdarkly.com/api/v2/flags/${opti&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://app.launchdarkly.com`; só `options.projectKey` (config do desenvolvedor) entra no path. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:12" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:18" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -617,7 +758,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;talCount; offset += 100) { const paginatedRes = await fetch( `https://app.launchdarkly.com/api/v2/flags/${&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma função/arquivo do achado line:54 — paginação do mesmo endpoint fixo `https://app.launchdarkly.com`, `offset` é um número calculado localmente (loop `for`), não entrada externa. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:13" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:19" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:13 UTC</div>
@@ -633,7 +774,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;piHost}/api/v1/features${qs}`; const response = await fetch(url, { method: &#39;GET&#39;, headers: {&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.appApiHost` é um parâmetro de configuração explícito da função exportada `getProviderData`, documentado como &quot;Override the application API host for self-hosted users&quot; — é o desenvolvedor que integra o SDK quem decide (tipicamente via env var no próprio código-servidor dele) se sobrescreve o host padrão `https://api.growthbook.io`. Essa função não é um endpoint HTTP exposto pelo pacote; não há nenhum caminho dentro de `vercel/flags` que pegue esse valor de uma requisição de um usuário não confiável — é comportamento pretendido para suportar instâncias GrowthBook self-hosted. Confiança &#39;média&#39; (não &#39;alta&#39;) porque a exploração dependeria de um consumidor do SDK repassar entrada não confiável para essa opção, o que é um erro de uso do integrador, não uma vulnerabilidade no código do vercel/flags em si.</div>
   </div>
-  <div class="finding" style="--i:14" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+  <div class="finding" style="--i:20" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
     <div class="finding-head">
       <div class="finding-type">ssrf_risk</div>
       <div class="finding-time">2026-08-29 01:12 UTC</div>
@@ -649,7 +790,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;ARIATE&#39;) { try { const mvResponse = await fetch( `https://api.flagsmith.com/api/v1/flags/$&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.flagsmith.com` (hardcoded, não interpolado) — só o feature id (`flag.feature.id`, vindo da própria resposta anterior da API oficial da Flagsmith) entra no path. Não há nenhuma variável de host nem qualquer dado de entrada externa/não confiável influenciando o destino da requisição. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:15" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:21" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -665,7 +806,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:16" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:22" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -681,7 +822,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:17" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:23" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -697,7 +838,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:18" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:24" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -713,7 +854,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:19" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+  <div class="finding" style="--i:25" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:17 UTC</div>
@@ -729,7 +870,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência golang.org/x/crypto@v0.54.0 (Go) tem vulnerabilidade PUBLICADA e CONHECIDA: GO-2026-5932 — The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues. (+ 1 outra(s) vulnerabilidade(s) na mesma dependência)</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftware/go-rpmutils (go-rpmutils/go.mod:7) e usado apenas nos arquivos verify*.go/signatures.go do pacote rpmutils (verificação de assinatura PGP, função exportada Verify). Confirmei por clone direto de cashapp/hermit e sassoftware/go-rpmutils que o hermit usa exclusivamente rpmutils.ReadRpm + PayloadReader (archive/archive.go:615) para extrair pacotes RPM — nunca chama rpmutils.Verify, e ReadRpm (rpmutils.go) não importa openpgp/ProtonMail em nenhum ponto. O advisory GO-2026-5932 é sobre o pacote golang.org/x/crypto/openpgp especificamente (não usado nem indiretamente por hermit — quem usa openpgp é o go-crypto do ProtonMail, um fork/substituto, não o x/crypto/openpgp original); mesmo essa parte compilando por transitividade, não há caminho de execução no hermit que a alcance.</div>
   </div>
-  <div class="finding" style="--i:20" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+  <div class="finding" style="--i:26" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:17 UTC</div>
@@ -745,7 +886,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência github.com/cloudflare/circl@v1.3.8 (Go) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-2x5j-vhc8-9cwm — CIRCL-Fourq: Missing and wrong validation can lead to incorrect results. (+ 3 outra(s) vulnerabilidade(s) na mesma dependência)</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github.com/ProtonMail/go-crypto (go-rpmutils/go.mod:7), que só é importado pelos arquivos verify.go, verify_v3.go, verify_v4.go, verify_nov3.go e signatures.go do pacote rpmutils — todos voltados a verificação de assinatura PGP de RPM (função exportada rpmutils.Verify). O hermit, porém, só chama rpmutils.ReadRpm e rpm.PayloadReader (archive/archive.go:615) para extrair o conteúdo do pacote RPM; ReadRpm está em rpmutils.go, que não importa ProtonMail/go-crypto nem nada de cripto, e nenhum arquivo do hermit chama rpmutils.Verify (grep completo por &quot;rpmutils.&quot; e &quot;.Verify(&quot; no repo não achou nenhuma chamada de verificação de assinatura). Como Go compila por pacote, o código vulnerável do circl acaba linkado no binário (a dependência é real), mas nunca é executado por nenhum fluxo do hermit — não há input controlável por atacante que alcance a função vulnerável via uso normal da ferramenta.</div>
   </div>
-  <div class="finding" style="--i:21" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:27" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">unguarded_transfer</div>
       <div class="finding-time">2026-08-26 20:14 UTC</div>
@@ -761,7 +902,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">deposit faz uma transferência sem nenhuma checagem de autorização visível no corpo da função (pode estar em outro lugar, ex. trait/decorator — confirmar manualmente).</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A linha 38 é (stx-transfer? stx-amount tx-sender .stx-reserve) — o argumento &#39;sender&#39; passado é literalmente tx-sender, não um principal arbitrário. stx-transfer? é uma primitiva nativa da VM Clarity que só permite mover fundos quando o sender do argumento é o próprio tx-sender (ou o contrato em execução, sob as-contract) — é uma garantia de nível de linguagem/consenso, não algo que o contrato precise checar separadamente. Um depositante só pode mover o próprio STX para a reserva; não existe caminho para debitar fundos de terceiros. Nenhum arquivo externo foi necessário para esta conclusão.</div>
   </div>
-  <div class="finding" style="--i:22" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:28" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">unguarded_transfer</div>
       <div class="finding-time">2026-08-26 20:14 UTC</div>
@@ -777,7 +918,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">init-withdraw faz uma transferência sem nenhuma checagem de autorização visível no corpo da função (pode estar em outro lugar, ex. trait/decorator — confirmar manualmente).</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A única transferência de valor é (contract-call? .ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract none), onde sender=tx-sender (linha 49). O contrato irmão já baixado, ststx-token.clar (linha 44), mostra que a função transfer padrão SIP-010 deste protocolo faz (asserts! (is-eq tx-sender sender) ...) — só o dono dos tokens pode movê-los. Não consegui baixar ststxbtc-token-v2.clar para confirmar byte a byte porque api.hiro.so está bloqueado pela política de egress deste ambiente (403 no proxy) nesta sessão; por isso confidence=média, não alta. Mesmo no pior cenário, o argumento sender passado por init-withdraw é sempre tx-sender — a função nunca nomeia outra conta, então não há caminho de exploração dentro desta função mesmo que a suposição sobre o token não se confirme.</div>
   </div>
-  <div class="finding" style="--i:23" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:29" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">auth_arg_inconsistency</div>
       <div class="finding-time">2026-08-26 20:13 UTC</div>
@@ -799,19 +940,19 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="page-sub">Toda rodada de varredura e todo veredito registrado no ledger encadeado por hash (research/ledger.research.jsonl) — histórico auditável, nunca sobrescrito.</div>
     <div class="panel"><div class="timeline">
     <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-08-29 05:56 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 6 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 229 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 229). </div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:27 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="scan">
+    <div class="timeline-item" style="--i:2" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:26 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
-    </div>
-    <div class="timeline-item" style="--i:2" data-kind="scan">
-      <div class="timeline-time">2026-08-29 01:24 UTC</div>
-      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
-      <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
     <div class="timeline-item" style="--i:3" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:24 UTC</div>
@@ -819,44 +960,44 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
     <div class="timeline-item" style="--i:4" data-kind="scan">
+      <div class="timeline-time">2026-08-29 01:24 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
+    </div>
+    <div class="timeline-item" style="--i:5" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:17 UTC</div>
       <div class="timeline-title">Rodada do scanner — 15 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:5" data-kind="scan">
+    <div class="timeline-item" style="--i:6" data-kind="scan">
       <div class="timeline-time">2026-08-29 00:54 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:6" data-kind="scan">
+    <div class="timeline-item" style="--i:7" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:53 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 3 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:7" data-kind="digest">
+    <div class="timeline-item" style="--i:8" data-kind="digest">
       <div class="timeline-time">2026-08-28 21:51 UTC</div>
       <div class="timeline-title">Digest de segurança — 16 advisory(s) em 3 pacote(s) observado(s)</div>
       <div class="timeline-body">Ver <a href="../security-digest.md">security-digest.md</a> pra decisão manual sobre heurística nova.</div>
     </div>
-    <div class="timeline-item" style="--i:8" data-kind="discovery">
+    <div class="timeline-item" style="--i:9" data-kind="discovery">
       <div class="timeline-time">2026-08-28 21:49 UTC</div>
       <div class="timeline-title">Descoberta de alvo — 186 candidato(s) novo(s)</div>
       <div class="timeline-body">194 alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 156 ficou pra próxima rodada. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
     </div>
-    <div class="timeline-item" style="--i:9" data-kind="scan">
+    <div class="timeline-item" style="--i:10" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:45 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:10" data-kind="scan">
+    <div class="timeline-item" style="--i:11" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 6 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
-    </div>
-    <div class="timeline-item" style="--i:11" data-kind="verdict">
-      <div class="timeline-time">2026-08-28 21:25 UTC</div>
-      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
     <div class="timeline-item" style="--i:12" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
@@ -876,89 +1017,94 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="timeline-item" style="--i:15" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Block Open Source (Go) — Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftwa…</div>
+      <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
     <div class="timeline-item" style="--i:16" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Go) — Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftwa…</div>
+    </div>
+    <div class="timeline-item" style="--i:17" data-kind="verdict">
+      <div class="timeline-time">2026-08-28 21:25 UTC</div>
+      <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Go) — Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github…</div>
     </div>
-    <div class="timeline-item" style="--i:17" data-kind="scan">
+    <div class="timeline-item" style="--i:18" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:22 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:18" data-kind="scan">
+    <div class="timeline-item" style="--i:19" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:21 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 6 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:19" data-kind="scan">
+    <div class="timeline-item" style="--i:20" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:20 UTC</div>
       <div class="timeline-title">Rodada do scanner — 4 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 273 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:20" data-kind="scan">
+    <div class="timeline-item" style="--i:21" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:17 UTC</div>
       <div class="timeline-title">Rodada do scanner — 2 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 1 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:21" data-kind="scan">
+    <div class="timeline-item" style="--i:22" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:11 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:22" data-kind="scan">
+    <div class="timeline-item" style="--i:23" data-kind="scan">
       <div class="timeline-time">2026-08-28 20:42 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:23" data-kind="scan">
+    <div class="timeline-item" style="--i:24" data-kind="scan">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 3 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:24" data-kind="verdict">
+    <div class="timeline-item" style="--i:25" data-kind="verdict">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Veredito: unguarded_transfer <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A única transferência de valor é (contract-call? .ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract none), onde sender=tx-sender (linha 49). O contrato irmão já baixado, ststx-token.clar (linha 44), most…</div>
     </div>
-    <div class="timeline-item" style="--i:25" data-kind="verdict">
+    <div class="timeline-item" style="--i:26" data-kind="verdict">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Veredito: unguarded_transfer <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A linha 38 é (stx-transfer? stx-amount tx-sender .stx-reserve) — o argumento &#39;sender&#39; passado é literalmente tx-sender, não um principal arbitrário. stx-transfer? é uma primitiva nativa da VM Clarity que só permite mover…</div>
     </div>
-    <div class="timeline-item" style="--i:26" data-kind="verdict">
+    <div class="timeline-item" style="--i:27" data-kind="verdict">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Veredito: auth_arg_inconsistency <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A inconsistência é real: set-token-uri (linha 61-66) usa (contract-call? .dao check-is-protocol tx-sender), enquanto todas as outras ~25 funções administrativas do código lido (incluindo as 8 em stacking-dao-core-ststxbt…</div>
     </div>
-    <div class="timeline-item" style="--i:27" data-kind="scan">
+    <div class="timeline-item" style="--i:28" data-kind="scan">
       <div class="timeline-time">2026-08-28 14:22 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:28" data-kind="scan">
+    <div class="timeline-item" style="--i:29" data-kind="scan">
       <div class="timeline-time">2026-08-27 12:00 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:29" data-kind="scan">
+    <div class="timeline-item" style="--i:30" data-kind="scan">
       <div class="timeline-time">2026-08-26 21:49 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). </div>
     </div>
-    <div class="timeline-item" style="--i:30" data-kind="scan">
+    <div class="timeline-item" style="--i:31" data-kind="scan">
       <div class="timeline-time">2026-08-26 21:44 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). </div>
     </div>
-    <div class="timeline-item" style="--i:31" data-kind="scan">
+    <div class="timeline-item" style="--i:32" data-kind="scan">
       <div class="timeline-time">2026-08-26 21:26 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados. </div>
     </div>
-    <div class="timeline-item" style="--i:32" data-kind="scan">
+    <div class="timeline-item" style="--i:33" data-kind="scan">
       <div class="timeline-time">2026-08-26 20:14 UTC</div>
       <div class="timeline-title">Rodada do scanner — 3 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados. </div>

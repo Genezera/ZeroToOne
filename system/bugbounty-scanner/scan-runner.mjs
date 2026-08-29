@@ -17,11 +17,13 @@ import { JS_TARGETS } from './targets-js.mjs';
 import { GO_TARGETS } from './targets-go.mjs';
 import { JVM_TARGETS } from './targets-jvm.mjs';
 import { SWIFT_TARGETS } from './targets-swift.mjs';
-import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile } from './fetch-repo.mjs';
+import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
+import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile } from './fetch-repo.mjs';
 import { scanJsSource } from './heuristics-js.mjs';
 import { scanGoSource } from './heuristics-go.mjs';
 import { scanJvmSource } from './heuristics-jvm.mjs';
 import { scanSwiftSource } from './heuristics-swift.mjs';
+import { scanSoliditySource } from './heuristics-solidity.mjs';
 import { deriveLanguage, historicalConfidenceFor, loadStats, runVerdictStats } from './verdict-stats.mjs';
 import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
@@ -163,6 +165,7 @@ export async function runScan() {
   const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats);
   const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats);
   const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats);
+  const solidityResult = await runLanguageScan(SOLIDITY_TARGETS, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats);
 
   // Cross-referência de dependência conhecida vulnerável (OSV.dev) — roda
   // nos mesmos alvos JS/Go/JVM já rastreados (reusa pathPrefixes e
@@ -179,8 +182,8 @@ export async function runScan() {
 
   saveRepoShas(repoShas);
 
-  const repoFilesChecked = jsResult.filesChecked + goResult.filesChecked + jvmResult.filesChecked + swiftResult.filesChecked;
-  fetchErrors += jsResult.fetchErrors + goResult.fetchErrors + jvmResult.fetchErrors + swiftResult.fetchErrors + depResult.fetchErrors;
+  const repoFilesChecked = jsResult.filesChecked + goResult.filesChecked + jvmResult.filesChecked + swiftResult.filesChecked + solidityResult.filesChecked;
+  fetchErrors += jsResult.fetchErrors + goResult.fetchErrors + jvmResult.fetchErrors + swiftResult.fetchErrors + solidityResult.fetchErrors + depResult.fetchErrors;
 
   if (newFindings.length > 0) {
     for (const f of newFindings) {
@@ -221,18 +224,18 @@ export async function runScan() {
     type: 'bugbounty_scan',
     contractsChecked,
     repoFilesChecked,
-    byLanguage: { js: jsResult.filesChecked, go: goResult.filesChecked, jvm: jvmResult.filesChecked, swift: swiftResult.filesChecked },
+    byLanguage: { js: jsResult.filesChecked, go: goResult.filesChecked, jvm: jvmResult.filesChecked, swift: swiftResult.filesChecked, solidity: solidityResult.filesChecked },
     manifestsChecked: depResult.filesChecked,
     knownVulnDependenciesFound: depResult.findings.length,
     fetchErrors,
     newFindingsCount: newFindings.length,
     newlyReviewedCount: verdictResult.newlyReviewed.length,
-    programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS].map((t) => t.program))],
+    programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS, ...SOLIDITY_TARGETS].map((t) => t.program))],
   });
 
   generateStatusDashboard({
     queuePath: QUEUE_PATH,
-    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
+    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS, solidity: SOLIDITY_TARGETS },
     statusPath: STATUS_PATH,
     lastScanAt: scanTimestamp,
   });
@@ -243,7 +246,7 @@ export async function runScan() {
     queuePath: QUEUE_PATH,
     statsJsonPath: STATS_JSON_PATH,
     ledgerEntries: readLedger('research'),
-    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
+    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS, solidity: SOLIDITY_TARGETS },
     outputPath: DASHBOARD_PATH,
     lastScanSummary: { contractsChecked, repoFilesChecked, manifestsChecked: depResult.filesChecked, fetchErrors },
     lastScanAt: scanTimestamp,
