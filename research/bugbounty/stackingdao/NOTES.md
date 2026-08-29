@@ -207,3 +207,22 @@ Restam para próximas rodadas: `stbtc-token.clar`, `data-stbtc-v1.clar`,
 não via deep-read-log) — e os 3 contratos SIP-010/NFT auxiliares que
 seguem bloqueados por rede (`ststxbtc-token-v2`, `ststxbtc-data-v1`,
 `ststxbtc-withdraw-nft-v2`).
+
+## Rodada 2026-08-29 (push automático, máquina de estados v2)
+
+Migração pro novo schema (`system/bugbounty-scanner/state-machine.mjs`)
+herdou `set-token-uri` (auth_arg_inconsistency) em `corroborated_static`.
+Mesma conclusão já documentada várias rodadas atrás (confirmado mas não
+elegível — só metadado de URI, sem fundos/privilégio envolvidos): fechado
+formalmente como `false_positive` no novo state machine, com reasoning
+explicando que o fechamento é por falta de impacto elegível, não porque
+a inconsistência tx-sender/contract-caller não exista de fato.
+
+Tentei de novo baixar `ststxbtc-token-v2.clar` (pendência de rede há
+várias rodadas): `api.hiro.so` continua bloqueado nesta sessão (CONNECT
+403 do agent-proxy). Também tentei achar um mirror em GitHub do
+protocolo StackingDAO (não achei nenhum org/repo público óbvio — os
+contratos parecem só existir on-chain via Hiro, sem fonte GitHub
+espelhada conhecida) — não vou adivinhar URLs de repositório às cegas.
+Continua bloqueado; sem novo progresso nesta rodada além do fechamento
+do item já mencionado.

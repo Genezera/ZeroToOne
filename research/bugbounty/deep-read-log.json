@@ -135,6 +135,12 @@
     "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutCompletion.kt",
     "afterpay/src/main/kotlin/com/afterpay/android/model/CheckoutV3Tokens.kt"
   ],
+  "vercel/chat": [
+    "packages/adapter-slack/src/webhook/verify.ts",
+    "packages/adapter-twilio/src/webhook/verify.ts",
+    "packages/adapter-messenger/src/index.ts",
+    "examples/nextjs-chat/src/app/api/modal-callback/[token]/route.ts"
+  ],
   "afterpay/sdk-ios": [
     "Sources/Afterpay/Helpers/JWT.swift",
     "Sources/Afterpay/CashApp/CashAppSigningResponse.swift",

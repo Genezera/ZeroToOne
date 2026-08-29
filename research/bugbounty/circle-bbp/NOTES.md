@@ -1000,3 +1000,72 @@ adicionado à fila — resultado normal. A sugestão restante da rodada
 anterior (refund flow multi-assinatura de `PaymentSettlementV2.sol`,
 `requireDestinationRefundSig`) continua pendente — já sinalizada há várias
 rodadas, candidata forte pra próxima.
+
+## Rodada 2026-08-29 (push automático, máquina de estados v2) — refund flow revisitado, sem achado; Withdrawals.sol continua bloqueado por rede
+
+Migração pro schema v2 (`system/bugbounty-scanner/state-machine.mjs` +
+SQLite local) trouxe 3 findings herdados em `corroborated_static` e 1 em
+`inconclusive` do schema antigo. Processados nesta rodada:
+
+- **`set-token-uri` (StackingDAO, não deste programa)** — fechado como
+  `false_positive` no novo schema (mesma conclusão já registrada há
+  várias rodadas: inconsistência de código real, mas sem impacto
+  financeiro elegível). Ver NOTES.md do StackingDAO.
+- **`Withdrawals.sol::initiateWithdrawal/withdraw` (ausência de
+  `notDenylisted`)** — tentei montar a PoC executável exigida pelo fluxo
+  Solidity: `forge` não estava instalado, e tanto
+  `curl -L https://foundry.paradigm.xyz` quanto o fork RPC público
+  (`ethereum.publicnode.com`) retornaram CONNECT 403 do agent-proxy
+  deste ambiente (bloqueio de política de egress desta sessão
+  específica, mesmo padrão já visto antes com `api.hiro.so` no
+  StackingDAO — confirmado via `$HTTPS_PROXY/__agentproxy/status`).
+  Registrei a validação como `not_applicable` com o motivo real (não é
+  limitação do tipo de achado — Solidity TEM validador definido no
+  sistema — é limitação de rede desta sessão). A transição pra
+  `reproduced_local` foi recusada corretamente pela máquina de estados;
+  o finding permanece em `corroborated_static`, achado ainda válido e
+  pendente de PoC real numa sessão com acesso de rede liberado.
+
+**Revisitei a sugestão pendente há várias rodadas**: o fluxo de refund
+multi-assinatura de `PaymentSettlementV2.sol` (`requireDestinationRefundSig`).
+Desta vez consegui baixar o arquivo certo (branch `main`, não `master` —
+o `raw.githubusercontent.com` com `master` devolvia 404; `git ls-remote`
+confirmou que o branch padrão é `main`). Li `refund()` (linha 529),
+`_validateRefund` (812), `_checkAndComputeCumulativeRefund` (929) e
+`_applyRefundStateAndEmit` (949) linha a linha, com ceticismo ativo em
+duas hipóteses:
+
+1. **Será que dá pra pular a assinatura do incentive provider quando
+   `requireDestinationRefundSig=true` mas o caso não é de incentivo
+   (`isIncentiveCase=false`)?** Não — `incentiveCap` é sempre
+   `payeeSettlementAmount - payerAmount`; se `isIncentiveCase` é falso,
+   `incentiveCap` é 0, e `_checkAndComputeCumulativeRefund` reverte
+   (`RefundExceedsCeiling`) se `incentiveProviderRefundAmount > 0`. Não
+   há como extrair valor de incentivo sem que `isIncentiveCase` seja
+   verdadeiro, então a checagem de assinatura correspondente sempre
+   dispara quando há valor real em jogo.
+2. **Os caps (`payerCap`/`incentiveCap`) usados pra validar o refund são
+   recalculados a partir do `intent` passado pelo chamador — dá pra
+   inflar artificialmente passando `payerAmount`/`payeeSettlementAmount`
+   maiores que o pagamento original?** Não — `_validateRefund` (linha
+   821-829) recalcula `recordHash` a partir dos campos do `intent` e
+   exige que bata exatamente com `_paymentRecordHashes[nonce]` (gravado
+   no `execute()` original, fora deste arquivo mas já confirmado em
+   rodada anterior). Qualquer valor divergente do que foi de fato
+   executado reverte com `InvalidPaymentRecord`.
+
+`refund()` tem `nonReentrant` e usa Permit2 (`_pullViaPermit2`) com
+checagem de saldo antes/depois (`InvalidAmount` se o valor recebido não
+bater), então sem superfície de reentrância nem de "pull" que credite
+menos do que o esperado. `onlyAttester` + `intent.attester ==
+_msgSender()` mantém o attester como parte confiável do modelo (papel
+permissionado, não atacante externo) — a ausência de assinatura do
+payer quando `requireDestinationRefundSig=false` é decisão de design
+explícita do protocolo, não uma falha de autorização.
+
+**Sem achado.** Considero esta sugestão pendente FECHADA — não vou
+mais sinalizá-la como prioridade pra próximas rodadas, a menos que
+surja um ângulo novo. `deep-read-log.json` não precisou de entrada nova
+(o arquivo já constava da rodada anterior; esta foi uma releitura mais
+profunda e cética do mesmo arquivo, focada especificamente no fluxo que
+tinha ficado pendente).

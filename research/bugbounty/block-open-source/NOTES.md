@@ -1674,3 +1674,29 @@ ganhou `HTTPRequest.swift`). Sugestão pra próxima rodada: `misk-hibernate/`/
 `misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado há várias
 rodadas e ainda não atacado de fato) ou os arquivos restantes de
 `cash-app-pay-ios-sdk`/`square/wire` ainda não lidos.
+
+## Rodada 2026-08-29 (push automático, máquina de estados v2)
+
+Migração pro novo schema herdou 2 findings deste programa:
+`wire-schema/Root.kt::DirectoryRoot.resolve` (path traversal, `square/wire`)
+em `corroborated_static`, e `AfterpayCheckoutV2Activity`
+(`BootstrapJavascriptInterface`) em `inconclusive` (ambos já com reasoning
+consistente da rodada anterior, sem mudança de veredito).
+
+Para o achado de `square/wire`: registrei deployment evidence (repo
+`square/wire`, commit HEAD atual `d7afcda...`, confidence `unverified` —
+é uma biblioteca de compilação consumida por terceiros via Gradle/Maven,
+não um serviço com endpoint/deploy próprio identificável; o vetor real
+depende de qual consumidor de `protoPath` aponta pra `.proto` de origem
+não confiável, o que está fora do próprio repositório). Tentei
+`reproduced_local` (sem validador de PoC pra Kotlin ainda — recusado
+corretamente, como esperado) e depois `scope_verified` direto (também
+recusado — a máquina de estados não permite pular `reproduced_local`,
+mesmo pra achados sem validador disponível). Fica em `corroborated_static`,
+achado real e bem documentado, mas sem caminho formal pra avançar até o
+sistema ganhar um validador Kotlin/JVM (Fase 2/4) ou uma forma de deploy
+evidence não-`unverified` fazer sentido pra bibliotecas (não serviços).
+
+**Leitura profunda proativa desta rodada foi em `vercel/chat`** (repo
+novo, ainda não coberto, tier 2 do programa Vercel Open Source — ver
+NOTES.md de `vercel-open-source`), não neste programa.
