@@ -420,3 +420,31 @@ sozinha.
 Nenhum achado novo adicionado à fila nesta rodada. `deep-read-log.json`
 atualizado. Próxima rodada: `square/wire` (wire-runtime) ou completar
 `afterpay/sdk-ios` / `cash-app-pay-ios-sdk` (ainda não tocados).
+
+---
+
+## Rodada 2026-08-29 (4) — fila vazia, `NetworkManager.swift` do cash-app-pay-ios-sdk
+
+Fila sem itens `pending`. Esta rodada rodou em paralelo com a rodada
+anterior (disparo por push repetido no mesmo dia) — ao sincronizar,
+`square/wire` (ProtoReader.kt/AnyMessage.kt/RuntimeMessageAdapter.kt) e
+`afterpay/sdk-android` (JWT/WebView bridge) já tinham sido cobertos por
+essa outra rodada, então não repeti a leitura. Único arquivo novo lido
+aqui, ainda não registrado no log:
+
+- `cash-app-pay-ios-sdk/Sources/PayKit/NetworkManager.swift` — completa a
+  comparação com o `NetworkManagerImpl.kt` do Android (já auditado). O
+  `baseURL` vem de `endpoint.baseURL`, um `switch` fechado sobre 3 hosts
+  hardcoded (`api.cash.app`/`sandbox.api.cash.app`/`api.cashstaging.app`)
+  — nenhum componente de host vem de entrada externa, sem superfície de
+  SSRF. O header `Authorization: Client <clientID>` usa o `clientID`
+  fornecido pelo integrador na inicialização do SDK, não algo vindo de
+  rede. `parseResponseData` decodifica a resposta em cascata
+  (`CustomerRequestWrapper` → `APIErrorWrapper` → `IntegrationErrorWrapper`
+  → `UnexpectedErrorWrapper`) só com `Codable`/`try?` padrão do Swift, sem
+  reflection ou tipo dinâmico perigoso. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (só a chave
+`cashapp/cash-app-pay-ios-sdk`, ganhou mais uma entrada). Único arquivo do
+trio Network/State/Facade do `cash-app-pay-ios-sdk` que falta agora é
+`StateMachine.swift` — próxima rodada.
