@@ -146,3 +146,30 @@ endereço recuperado (previne duplicata) e todos precisam estar na
 allowlist de `enabledAttesters`. Nenhuma falha de lógica encontrada — é
 código de produção já em uso há anos (ponte oficial de USDC), esperado que
 esteja bem auditado. Nenhuma entrada nova adicionada à fila.
+
+### Addendum (rodada separada, mesmo dia) — 3 arquivos extras, sem sobreposição
+Rodando a mesma investigação de forma independente, também rastreei a
+cadeia de autorização do achado `delegatecall_risk` (item 6 acima) até a
+ponta e aproveitei pra ler 3 arquivos de auth ainda não cobertos no
+`deep-read-log.json` (sem sobrepor os do `evm-cctp-contracts` acima):
+- `buidl-wallet-contracts/src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol`
+  — fecha o loop de autorização do delegatecall: confirma que
+  `installPlugin`/`uninstallPlugin`/`execute`/`executeBatch`/
+  `upgradeToAndCall` estão todos listados no `pluginManifest()` (linhas
+  200-209) como protegidos por `runtimeValidationFunctions`, e que
+  `runtimeValidationFunction` (linha 144-159) exige
+  `sender == owner || sender == self` antes de qualquer efeito. Verificação
+  de assinatura via `SignatureChecker.isValidSignatureNow` (ecrecover ou
+  EIP-1271), sem comparação insegura/timing. Sem achado.
+- `evm-gateway-contracts/src/modules/common/Denylist.sol` e
+  `evm-gateway-contracts/src/modules/wallet/ContractSignersAllowlist.sol`
+  — ambos `Ownable2StepUpgradeable` + storage EIP-7201, modifiers
+  `onlyDenylister`/`onlyContractSignersAllowlister` corretos, sem gap de
+  ordem de checagem. Sem achado.
+
+Ponto em aberto pra próxima rodada (não confirmado, fora do orçamento
+desta): verificar se `notDenylisted` é de fato aplicado em todos os
+caminhos de transferência/depósito/saque de `GatewayWallet.sol`/
+`GatewayMinter.sol` (ainda não lidos) — se algum caminho de movimentação
+de fundos esquecer o modifier, um endereço denylistado poderia continuar
+operando.

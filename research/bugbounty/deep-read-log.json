@@ -62,5 +62,12 @@
     "src/MessageTransmitter.sol",
     "src/roles/Attestable.sol",
     "src/v2/BaseMessageTransmitter.sol"
+  ],
+  "circlefin/buidl-wallet-contracts": [
+    "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol"
+  ],
+  "circlefin/evm-gateway-contracts": [
+    "src/modules/common/Denylist.sol",
+    "src/modules/wallet/ContractSignersAllowlist.sol"
   ]
 }
