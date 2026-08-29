@@ -11,7 +11,9 @@
     "misk/src/main/kotlin/misk/security/authz/AccessAnnotationEntry.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/RealPgpDecrypter.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/KeyManager.kt",
-    "misk/src/main/kotlin/misk/security/authz/AccessControlModule.kt"
+    "misk/src/main/kotlin/misk/security/authz/AccessControlModule.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KeyResolver.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ExternalKeyResolver.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -27,7 +29,8 @@
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
-    "Sources/PayKit/NetworkManager.swift"
+    "Sources/PayKit/NetworkManager.swift",
+    "Sources/PayKit/StateMachine.swift"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",

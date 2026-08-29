@@ -671,3 +671,47 @@ próxima rodada: `StateMachine.swift` do `cash-app-pay-ios-sdk` (ainda não
 lido) e/ou os arquivos ainda não lidos de `misk-crypto` relacionados a
 resolução de chave (`KeyResolver.kt`, `ExternalKeyResolver.kt`,
 `LocalConfigKeyResolver.kt`).
+
+## Rodada 2026-08-29T02:xxZ — push automático (fila vazia), leitura profunda proativa
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada. Segui a
+sugestão da rodada anterior: 3 arquivos novos lidos (clonados via
+`git clone --depth 1` com sparse-checkout, repos não persistidos
+localmente), registrados em `deep-read-log.json`:
+
+- `cashapp/cash-app-pay-ios-sdk`: `Sources/PayKit/StateMachine.swift` —
+  máquina de estados do fluxo de checkout via deep link. Verifiquei com
+  cuidado a transição de `.redirecting`/`.readyToAuthorize` para `.polling`
+  disparada por `NotificationCenter` ao receber `CashAppPay.RedirectNotification`
+  (linha 39-53): o closure ignora completamente o payload da notificação — a
+  transição depende só do *nome* da notificação ter sido postado, não de
+  nenhum dado de URL/estado carregado nela. Cheguei a suspeitar de um
+  possível problema de "confused deputy" (app malicioso disparando a
+  notificação pra forçar polling prematuro), mas `NotificationCenter.default`
+  é local ao processo do próprio app anfitrião — não é um canal
+  inter-processo (isso seria um Darwin notification ou URL scheme handler),
+  então nenhum outro app no dispositivo consegue postar nela. Além disso,
+  mesmo que a transição fosse forçada, `.polling` só dispara
+  `retrieveCustomerRequest(id:)` contra a API real da Cash App usando o
+  `id` do `CustomerRequest` já emitido pelo servidor — nenhuma aprovação é
+  fabricada localmente. Sem cadeia de exploração viável. Verdict: não
+  gerou entrada em `queue.jsonl` (não chegou a ser "genuinamente
+  suspeito" o bastante depois de ler `CashAppPay.swift` junto, que mostrou
+  que o `Notification.Name` é só `"CashAppPayRedirect"`, sem payload).
+- `cashapp/misk`: `misk-crypto/src/main/kotlin/misk/crypto/KeyResolver.kt`
+  (interface pura, `getKeyByAlias`) e
+  `misk-crypto/src/main/kotlin/misk/crypto/ExternalKeyResolver.kt`
+  (implementação que busca chaves Tink de fontes externas registradas,
+  ex. S3). Nada suspeito: iteração sequencial sobre `externalKeySources`
+  até achar a chave, exceção clara se nenhuma fonte tiver a chave, só loga
+  `key_name` (alias, não o material da chave) em sucesso. Sem lógica de
+  autorização aqui — quem pode registrar um `ExternalKeySource` é decisão
+  do módulo Guice do serviço, fora do escopo deste arquivo.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 3 arquivos acima.
+Sugestão pra próxima rodada: `LocalConfigKeyResolver.kt` (ainda não lido,
+mesma família de `misk-crypto`) e/ou os handlers de `application(_:open:)`
+reais nos apps de exemplo do `cash-app-pay-ios-sdk`/`sdk-android` que
+efetivamente parseiam a URL de redirect (fora de `Sources/`, então fora do
+escopo de bounty atual — só pra entender o fluxo completo).
