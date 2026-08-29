@@ -285,3 +285,30 @@ literalmente no nome):
 
 `deep-read-log.json` atualizado com os 3 arquivos. Nenhum item novo
 adicionado à fila nesta rodada — resultado normal.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `evm-cctp-contracts` (attestation V2 + proxy admin)
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada. Leitura
+profunda cobriu 2 dos 3 arquivos do orçamento desta rodada (o terceiro foi
+`misk-jdbc/TraditionalSchemaMigrator.kt`, ver NOTES.md do Block Open
+Source), ambos em `circlefin/evm-cctp-contracts`, ainda não cobertos no
+`deep-read-log.json`:
+
+- `src/roles/v2/AttestableV2.sol` — contrato trivial: só adiciona um
+  storage gap (`uint256[20] private __gap`, padrão OpenZeppelin de
+  upgradeable contracts) e repassa o construtor pra `Attestable`, sem
+  lógica própria nova. Nada a auditar além do que `Attestable.sol` já
+  cobriu em rodada anterior. Sem achado.
+- `src/proxy/AdminUpgradableProxy.sol` — fork declarado do
+  `TransparentUpgradeableProxy` da OpenZeppelin (padrão EIP-1967, slot de
+  admin fixo/validado no constructor). Modificações documentadas no
+  próprio NatSpec do fork (remoção do modifier `ifAdmin` em `admin()`/
+  `implementation()`, tornando-os `view` puros) só afetam quem pode LER
+  o endereço do admin/implementação — não afetam quem pode ESCREVER
+  (`changeAdmin`/`upgradeTo`/`upgradeToAndCall` continuam com `ifAdmin`
+  intacto). Padrão de proxy administrativo extremamente batido e já
+  auditado por terceiros (é literalmente um fork do contrato mais usado
+  do espaço). Sem achado.
+
+Nenhum item novo adicionado à fila. `deep-read-log.json` atualizado com
+os 2 arquivos acima.

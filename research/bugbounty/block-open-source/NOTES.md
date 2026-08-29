@@ -919,3 +919,30 @@ pra próxima rodada: `misk-jdbc/.../TraditionalSchemaMigrator.kt`/
 lugar plausível pra SQL montado dinamicamente) ou
 `wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt`
 (sugestão da rodada anterior, ainda não atacada).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `TraditionalSchemaMigrator.kt`
+
+`queue.jsonl` sem itens `pending`. Peguei a sugestão da rodada anterior:
+`misk-jdbc/src/main/kotlin/misk/jdbc/TraditionalSchemaMigrator.kt` (266
+linhas, clone raso público de `cashapp/misk` restrito às pastas em
+escopo). Rastreei o caminho de execução de SQL:
+`applyAll(author, appliedMigrations)` roda cada migração pendente via
+`migrationStatement.addBatch(migrationSql)` (SQL bruto, sem
+parametrização) — mas `migrationSql` vem de
+`resourceLoader.utf8(migration.path)`, ou seja, um arquivo de recurso do
+classpath empacotado pelo próprio time que usa o framework no build
+(`migrations_resource` configurado no `DataSourceConfig`), nunca dado de
+requisição HTTP. O único parâmetro realmente "externo" da função,
+`author`, é validado por regex (`\w+`, comentário explícito "Prevent SQL
+injection") E, mais importante, inserido via `PreparedStatement` com bind
+parameter (`?`) no INSERT em `schema_version` — dupla proteção, nenhuma
+concatenação de string com dado externo. Mesmo padrão de "sink perigoso
+mas só alcançável por dado confiável de configuração/build-time" já visto
+em `VitessQueryHintHandler` (rodada anterior) e no CVE do
+`cloudflare/circl` via `cashapp/hermit`. Sem achado.
+
+Nenhum item novo adicionado à fila. `deep-read-log.json` atualizado com o
+arquivo acima. Sugestão pra próxima rodada: `DeclarativeSchemaMigrator.kt`
+(par do arquivo lido agora, mesma pasta, ainda não coberto) ou
+`wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt`
+(sugestão acumulada de duas rodadas, ainda não atacada).
