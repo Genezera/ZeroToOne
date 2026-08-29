@@ -17,22 +17,33 @@ REGRAS ANTES DE GERAR (o agente de nuvem confere isso, não pula):
    (known_vulnerable_dependency) precisa confirmar ALCANÇABILIDADE — o
    código vulnerável da dependência precisa ser de fato chamado pelo
    projeto, não só estar presente no grafo de dependências.
-3. Nunca é rascunho final — todo relatório carrega o aviso de revisão
+3. Para achado Solidity (reentrancy_risk, unchecked_call_return,
+   tx_origin_auth_risk, delegatecall_risk): sempre que a leitura de código
+   não refutar de cara, escreva e RODE uma prova de conceito executável de
+   verdade (Foundry, fork local — ver seção "Prova de conceito executável"
+   abaixo) antes de decidir o veredito. Princípio de menor impacto: a PoC
+   prova o mínimo necessário, nunca precisa demonstrar drenagem completa.
+   NUNCA rede real, NUNCA conta/chave privada com fundo real — só contas
+   geradas localmente (`makeAddr`/`vm.deal`), financiadas apenas dentro do
+   fork.
+4. Nunca é rascunho final — todo relatório carrega o aviso de revisão
    humana obrigatória no topo, sempre.
 -->
 
 # ⚠️ RASCUNHO — REVISÃO HUMANA OBRIGATÓRIA ANTES DE ENVIAR
 
 Este relatório foi gerado por IA a partir de análise de código-fonte
-público. **Não foi enviado a nenhuma plataforma.** Antes de copiar/colar e
-enviar, confira:
+público (e, quando aplicável, prova de conceito executada localmente
+contra um fork — nunca contra o sistema real). **Não foi enviado a
+nenhuma plataforma.** Antes de copiar/colar e enviar, confira:
 
 - [ ] Escopo confirmado — o ativo afetado está no escopo do programa AGORA
       (escopo pode mudar; reconfirme na página do programa antes de enviar)
 - [ ] Categoria confirmada — bate com uma categoria que o programa
       declara como elegível para recompensa (não é metadado/cosmético)
-- [ ] Evidência conferida — os trechos de código abaixo realmente
-      existem no arquivo/linha citados (não foi paráfrase/alucinação)
+- [ ] Evidência conferida — os trechos de código e a saída da prova de
+      conceito (quando houver) realmente existem/rodaram como descrito
+      (não foi paráfrase/alucinação)
 - [ ] Não é duplicata — checado contra relatórios já enviados por você
       a este programa
 
@@ -67,10 +78,20 @@ Z antes de [ação sensível]." Se for achado de dependência: confirmar que
 o código vulnerável é de fato invocado pelo fluxo do programa, citando a
 função exportada vulnerável E o ponto de chamada real no projeto.}}
 
+## Pré-requisitos
+{{O mínimo necessário pra reproduzir — ex.: "2 contas de teste próprias,
+sem privilégio especial" ou, pra contrato, "fork local, sem conta/fundo
+real, endereço gerado localmente (Foundry makeAddr)". Nunca dado ou conta
+de usuário real.}}
+
 ## Passo a passo de reprodução
 1. {{passo}}
 2. {{passo}}
 3. {{passo}}
+
+## Resultado atual vs. esperado
+- **Atual:** {{o que o código realmente faz hoje}}
+- **Esperado:** {{o que deveria acontecer se estivesse correto}}
 
 ## Evidência
 ```
@@ -80,9 +101,24 @@ função exportada vulnerável E o ponto de chamada real no projeto.}}
 {{Se aplicável: saída de comando, resultado de trace, referência externa
 (ex.: ID da vulnerabilidade em GHSA/CVE/OSV para achado de dependência).}}
 
+## Prova de conceito executável (Solidity — quando aplicável)
+{{SÓ preencher esta seção se um teste Foundry de verdade foi escrito e
+rodado contra um FORK LOCAL (nunca rede real, nunca conta/chave privada
+com fundo real). Inclua:
+- O código do teste Solidity (`.t.sol` completo ou trecho relevante)
+- O comando exato rodado, ex.: `forge test --fork-url <RPC público>
+  --match-test test_X -vvv`
+- A saída REAL do `forge test` (PASS/FAIL + trace relevante) — cole o
+  resultado literal, nunca parafraseado
+Se a PoC FALHOU (ex.: um modifier bloqueou o ataque que a leitura de
+código sugeria), isso é evidência forte de falso-positivo — documente
+aqui mesmo assim, é informação real e valiosa, não descarte.}}
+
 ## Impacto
-{{O que um atacante ganha de verdade — concreto, não genérico. Se for
-achado de dependência, citar o CVSS/severidade do advisory original.}}
+{{O que um atacante ganha de verdade — concreto, não genérico, baseado no
+que a prova de conceito (quando existir) realmente demonstrou, não
+especulação. Se for achado de dependência, citar o CVSS/severidade do
+advisório original.}}
 
 ## Correção sugerida
 {{Mudança concreta e mínima que resolveria — não genérico tipo "validar

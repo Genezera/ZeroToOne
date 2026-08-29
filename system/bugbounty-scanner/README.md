@@ -129,6 +129,26 @@ Automação: tarefa do Windows Task Scheduler `ZeroToOne_BugBountyScanner`,
 diária às 9h — mesma tarefa cobre todos os estágios/linguagens, não há
 tarefa separada por linguagem ou plataforma.
 
+## Prova de conceito executável (Solidity, via Foundry fork local)
+Diferente de só ler código, o agente de nuvem agora escreve e RODA um
+exploit de verdade contra achado Solidity plausível: instala o Foundry
+(`curl -L https://foundry.paradigm.xyz | bash`, sem conta), faz **fork
+local** de um RPC público sem conta (`https://ethereum.publicnode.com`
+confirmado funcionando — testado nesta sessão contra o mainnet real,
+leu o `totalSupply` real do USDC pra validar o mecanismo) e roda
+`forge test --fork-url ... -vvv`. Isso nunca transmite transação pra rede
+real e nunca usa conta/chave privada com fundo real — só endereço gerado
+localmente (`makeAddr`) financiado apenas dentro do fork
+(`vm.deal`), mesmo princípio de "duas contas próprias, sem tocar dado
+real" que um caçador de bug bounty web usa, adaptado pra contrato.
+Princípio de menor impacto: a PoC só precisa provar o mínimo necessário
+(ex.: "a chamada reentrante é aceita antes da atualização de estado"),
+nunca precisa demonstrar drenagem completa de fundos. Se a PoC FALHAR
+(um `require`/`modifier` bloqueou o ataque que a leitura sugeria), isso
+vira evidência forte de falso-positivo, documentada como tal — não
+descartada. Ver `research/bugbounty/reports/TEMPLATE.md`, seção "Prova de
+conceito executável".
+
 ## Solidity (Circle BBP, HackerOne — emissora do USDC)
 `targets-solidity.mjs` + `heuristics-solidity.mjs` — o primeiro alvo
 descoberto pelo próprio módulo de descoberta automática (Lote 5), não
