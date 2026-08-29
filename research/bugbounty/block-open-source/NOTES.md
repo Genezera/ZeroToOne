@@ -1426,3 +1426,32 @@ centrais de rede/autenticação restantes desses mesmos alvos:
 entrada nova em `queue.jsonl` — nada suspeito o bastante para justificar
 `ai_deep_read_finding` nesta rodada. Resultado normal (a maioria das
 rodadas não acha nada).
+
+## Rodada — fila vazia, follow-up do achado em square/wire (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Segui a sugestão deixada na
+rodada anterior sobre o achado confirmado de path traversal em
+`DirectoryRoot.resolve` (`wire-schema`): verificar se as camadas de
+CLI/plugin que montam `protoPath` a partir de input do usuário adicionam
+alguma sanitização própria antes de chegar em `SchemaLoader`/`WireRun`.
+
+Lidos: `wire-compiler/src/main/java/com/squareup/wire/WireCompiler.kt`
+(entrypoint `main`/`forArgs` do CLI — `--proto_path=` vai direto pra
+`protoPaths: List<String>` e vira `Location` sem nenhuma validação de
+caminho) e `wire-gradle-plugin/src/main/kotlin/com/squareup/wire/gradle/
+WireTask.kt` (a Gradle Task real — `protoInput`/`sourceInput` viram
+`Location` via `toLocations()` e são passados direto pro `WireRun(...)`,
+também sem sanitização). Também espiei `wire-gradle-plugin/.../Move.kt`
+(diretiva de refactor `move{}` do DSL) — é config do desenvolvedor no
+build script, não superfície de ataque, sem relação.
+
+Conclusão: nenhuma camada acima de `wire-schema` adiciona proteção contra
+o `import` malicioso dentro do `.proto` — a mitigação (se existir) teria
+que estar em como o build resolve as dependências que alimentam
+`protoPath`, o que já era a avaliação do relatório original. Isso não
+muda o veredito nem a `confidence: 'média'` do relatório existente
+(`block-open-source-wire-directoryroot-resolve.md`) — só confirma que não
+há uma camada de sanitização que eu tenha deixado passar. Não gera nova
+entrada na fila (é confirmação do achado já reportado, não achado novo).
+
+`deep-read-log.json` atualizado com os 3 arquivos novos de `square/wire`
+(append).

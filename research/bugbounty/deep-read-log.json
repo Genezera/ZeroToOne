@@ -2,7 +2,9 @@
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
     "packages/flags/src/lib/verify-access.ts",
-    "packages/flags/src/lib/crypto.ts"
+    "packages/flags/src/lib/crypto.ts",
+    "packages/flags/src/next/create-flags-discovery-endpoint.ts",
+    "packages/flags/src/next/overrides.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -92,7 +94,10 @@
     "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/ProtoParser.kt",
     "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/SyntaxReader.kt",
     "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/SchemaLoader.kt",
-    "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/Roots.kt"
+    "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/Roots.kt",
+    "wire-compiler/src/main/java/com/squareup/wire/WireCompiler.kt",
+    "wire-gradle-plugin/src/main/kotlin/com/squareup/wire/gradle/WireTask.kt",
+    "wire-gradle-plugin/src/main/kotlin/com/squareup/wire/gradle/Move.kt"
   ],
   "afterpay/sdk-android": [
     "afterpay/src/main/kotlin/com/afterpay/android/cashapp/AfterpayCashAppJwt.kt",
