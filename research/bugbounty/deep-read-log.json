@@ -157,7 +157,10 @@
     "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
     "src/libs/RecipientAddressLib.sol",
     "src/paymaster/v1/permissioned/SponsorPaymaster.sol",
-    "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol"
+    "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol",
+    "src/account/v1/ECDSAAccount.sol",
+    "src/msca/6900/v0.7/account/BaseMSCA.sol",
+    "src/msca/6900/v0.7/managers/PluginExecutor.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

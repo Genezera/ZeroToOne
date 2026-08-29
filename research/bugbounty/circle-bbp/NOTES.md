@@ -726,3 +726,50 @@ Conclusão: nenhum achado novo. `deep-read-log.json` atualizado com os 3
 arquivos (2 em `circlefin/evm-cctp-contracts`, 1 em
 `circlefin/buidl-wallet-contracts`). Resultado normal — a maioria das
 rodadas não acha nada.
+
+## Rodada (2026-08-29, disparada por push) — fila vazia, leitura profunda em
+   buidl-wallet-contracts (núcleo de conta ERC-4337/6900, não-MSCA e MSCA)
+Fila com 0 pendentes (35/35 revisados). Escolhi 3 arquivos ainda não lidos
+do `buidl-wallet-contracts`, priorizando o núcleo de autenticação/execução
+que ainda faltava (`account/`, `managers/`) em vez de mais plugins:
+1. `src/account/v1/ECDSAAccount.sol` — conta não-MSCA de dono único
+   (EOA). `_validateSignature` (caminho ERC-4337 via EntryPoint) e
+   `isValidSignature` (EIP-1271, com `getReplaySafeMessageHash` pra evitar
+   replay cross-account) checam a assinatura contra `owner()` via
+   `SignatureChecker.isValidSignatureNow` — sem gap. `_authorizeUpgrade`
+   (UUPS) tem `onlyOwner`. Sem achado.
+2. `src/msca/6900/v0.7/account/BaseMSCA.sol` — o contrato-base de toda
+   conta MSCA (6900), o coração do roteamento de autorização: `fallback`
+   só pula `_processPreRuntimeHooksAndValidation` quando
+   `msg.sender == address(ENTRY_POINT)` (correto — EntryPoint já validou
+   via `validateUserOp`/`userOpValidationFunction` antes de chamar);
+   chamada direta de qualquer outro endereço (inclusive self-call) sempre
+   passa pelos hooks de runtime validation. `onlyFromEntryPointOrSelf`
+   (usado em `withdrawDepositTo`) checa `msg.sender` contra
+   `address(ENTRY_POINT)` ou `address(this)` — sem gap.
+   `_authenticateAndAuthorizeUserOp` roda os pre-hooks antes da função de
+   validação principal e reverte se `unpackedValidationData.authorizer`
+   vier fora de `{address(0), address(1)}` — sem bypass óbvio.
+3. `src/msca/6900/v0.7/managers/PluginExecutor.sol` — a lib que implementa
+   `executeFromPlugin`/`executeFromPluginToExternal`, os dois pontos que
+   `BaseMSCA` expõe SEM nenhum modifier de acesso próprio (a função
+   externa em si não tem `onlyPlugin` ou equivalente). Confirmei que o
+   controle de acesso real está dentro da lib: `executeFromPlugin` checa
+   `walletStorage.permittedPluginCalls[msg.sender][selector]` — como
+   `msg.sender` aqui é necessariamente quem chamou a função externa
+   diretamente (não é spoofável via delegatecall, a MSCA não faz
+   delegatecall pra dentro dessas funções), só um plugin já instalado E
+   explicitamente permitido pra aquele seletor passa. Mesmo padrão em
+   `executeFromPluginToExternal` (`permittedExternalCalls[callingPlugin][target]`
+   + bloqueio de chamar `address(this)` ou outro plugin via
+   `ERC165Checker.supportsInterface(target, type(IPlugin).interfaceId)`).
+   Não verifiquei se `uninstallPlugin` (em `PluginManager.sol`, ainda não
+   lido) de fato limpa `permittedPluginCalls`/`permittedExternalCalls` ao
+   desinstalar — ponto em aberto pra próxima rodada, mas não é evidência
+   de bug, só um gap de cobertura de leitura.
+
+Conclusão: nenhum achado novo. Código consistente com o padrão de
+referência ERC-6900 já visto nos outros contratos deste repo
+(`SingleOwnerMSCA`, `SponsorPaymaster`, etc.) — controle de acesso via
+`msg.sender` direto em todos os pontos checados, sem inconsistência entre
+checagem e efeito. `deep-read-log.json` atualizado com os 3 arquivos.
