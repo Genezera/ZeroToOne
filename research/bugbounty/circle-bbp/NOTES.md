@@ -173,3 +173,23 @@ caminhos de transferência/depósito/saque de `GatewayWallet.sol`/
 `GatewayMinter.sol` (ainda não lidos) — se algum caminho de movimentação
 de fundos esquecer o modifier, um endereço denylistado poderia continuar
 operando.
+
+## Rodada 2026-08-29 — leitura profunda proativa (WebAuthnLib.sol)
+
+Sem itens `pending` na fila. Leitura profunda desta rodada incluiu
+`buidl-wallet-contracts/src/libs/WebAuthnLib.sol` (verificação de
+assinatura WebAuthn/passkey secp256r1, usada pelo `WeightedWebauthnMultisigPlugin`).
+É um fork declarado do webauthn-sol da Coinbase e do p256-verifier do
+Daimo, ambos já extensivamente auditados. Revisão da função `verify()`:
+guarda de maleabilidade de assinatura presente (`s > n/2` rejeitado),
+checagem de tipo `"webauthn.get"` e do challenge via slice+hash, checagem
+da flag "User Present" (e "User Verified" quando exigido), fallback correto
+entre o precompile RIP-7212 e a lib FCL_ecdsa. As omissões de verificação
+(origin, rpIdHash, contador de assinatura, extensões, backup state) são
+documentadas explicitamente no NatSpec como decisões de design assumidas,
+não lacunas acidentais. Nenhuma falha de lógica nova encontrada — sem
+achado.
+
+`deep-read-log.json` atualizado. Ponto em aberto da rodada anterior
+(cobertura de `notDenylisted` em `GatewayWallet.sol`/`GatewayMinter.sol`,
+ainda não lidos) continua válido pra próxima rodada.

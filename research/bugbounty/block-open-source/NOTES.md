@@ -840,3 +840,27 @@ esse serviço não está neste repositório.
 linhas, sem lógica) — nada a investigar.
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado.
+
+## Rodada 2026-08-29 (continuação) — misk-crypto (PGP/KeyReader)
+
+Mesma rodada de fila vazia (ver acima), 2 arquivos adicionais do orçamento
+de leitura profunda desta sessão (o terceiro foi `WebAuthnLib.sol` do
+Circle BBP, ver NOTES.md daquele programa):
+
+- `misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpDecrypterProvider.kt`
+  — decifra a chave privada PGP via envelope KMS (`KmsEnvelopeAead`) e
+  constrói o `PGPSecretKeyRingCollection`; usa
+  `JcePBESecretKeyDecryptorBuilder().build(null)` (sem passphrase) para
+  extrair as subchaves — consistente com o modelo: a proteção real é o
+  envelope KMS, não uma senha PGP adicional. Sem checagem de autorização
+  ausente ou comparação insegura. Sem achado.
+- `misk-crypto/src/main/kotlin/misk/crypto/KeyReader.kt` — tem um caminho
+  `readCleartextKey()` que lê uma chave em texto puro quando `kms_uri` é
+  nulo na config, com só um `logger.warn` e um `TODO` explícito no próprio
+  código dos mantenedores ("Implement a clean check to throw if we are
+  running in prod or staging"). Não é achado novo: é limitação já
+  documentada pelos próprios autores, depende de escolha de configuração
+  do operador (não é dado controlável por atacante). Não abri candidato.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
+arquivos acima.

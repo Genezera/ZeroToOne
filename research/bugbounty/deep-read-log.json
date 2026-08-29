@@ -23,7 +23,9 @@
     "misk-mcp/src/main/kotlin/misk/mcp/internal/McpServerSessionContext.kt",
     "misk/src/main/kotlin/misk/security/authz/FakeCallerAuthenticator.kt",
     "misk/src/main/kotlin/misk/security/keys/KeyService.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/ServiceKeys.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/ServiceKeys.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpDecrypterProvider.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KeyReader.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -71,7 +73,8 @@
     "src/v2/BaseMessageTransmitter.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
-    "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol"
+    "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
+    "src/libs/WebAuthnLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
