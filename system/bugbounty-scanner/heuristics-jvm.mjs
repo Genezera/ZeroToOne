@@ -90,11 +90,57 @@ export function findJvmCommandInjection(source, filename) {
   return findings;
 }
 
+/**
+ * Statement.execute/executeQuery/executeUpdate com SQL montado por
+ * concatenação — risco de injeção SQL. PreparedStatement com placeholder
+ * (chamado sem argumento de string montada) não é sinalizado.
+ */
+export function findJvmSqlInjectionRisk(source, filename) {
+  const findings = [];
+  const regex = /\.(executeQuery|executeUpdate|execute)\s*\(\s*("(?:[^"\\]|\\.)*"\s*\+|[a-zA-Z_$][\w$.]*\s*\+)/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    findings.push({
+      type: 'sql_injection_risk',
+      file: filename,
+      function: `line:${lineAt(source, match.index)}`,
+      severity: 'a_investigar',
+      note: `.${match[1]}(...) com SQL montado por concatenação — risco de injeção se alguma parte vier de entrada não confiável. Padrão seguro seria PreparedStatement com placeholder (?) e setString/setInt. Contexto: "${contextSnippet(source, match.index)}"`,
+    });
+  }
+  return findings;
+}
+
+/**
+ * ObjectInputStream.readObject() — desserialização Java nativa é insegura
+ * por design se o dado de entrada não for 100% confiável (permite
+ * execução de código via gadget chain, classe de vulnerabilidade bem
+ * documentada).
+ */
+export function findJvmInsecureDeserialization(source, filename) {
+  const findings = [];
+  // Java instancia com "new"; Kotlin não usa "new" — cobre os dois.
+  const regex = /(?:new\s+)?ObjectInputStream\s*\(/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    findings.push({
+      type: 'insecure_deserialization',
+      file: filename,
+      function: `line:${lineAt(source, match.index)}`,
+      severity: 'a_investigar',
+      note: `ObjectInputStream — desserialização Java nativa é insegura por design se a entrada não for 100% confiável (risco de execução de código via gadget chain). Confirmar origem do dado antes de reportar. Contexto: "${contextSnippet(source, match.index)}"`,
+    });
+  }
+  return findings;
+}
+
 export function scanJvmSource(source, filename) {
   return [
     ...findTrustManagerBypass(source, filename),
     ...findWebViewJsBridge(source, filename),
     ...findJvmCommandInjection(source, filename),
+    ...findJvmSqlInjectionRisk(source, filename),
+    ...findJvmInsecureDeserialization(source, filename),
     ...findHardcodedSecrets(source, filename),
   ];
 }

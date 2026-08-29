@@ -88,11 +88,85 @@ export function findReDoSRisk(source, filename) {
   return findings;
 }
 
+/**
+ * `for...in` atribuindo em `alvo[chave] = ...` sem checagem visível contra
+ * `__proto__`/`constructor`/`prototype` — padrão clássico de poluição de
+ * protótipo quando a chave vem de entrada externa (ex.: corpo de
+ * requisição JSON.parse'd, merge/extend recursivo de config).
+ */
+export function findPrototypePollutionRisk(source, filename) {
+  const findings = [];
+  const forInRegex = /for\s*\(\s*(?:const|let|var)?\s*(\w+)\s+in\s+/g;
+  let match;
+  while ((match = forInRegex.exec(source))) {
+    const varName = match[1];
+    const window = source.slice(match.index, Math.min(source.length, match.index + 400));
+    const assignRegex = new RegExp(`\\[\\s*${varName}\\s*\\]\\s*=`);
+    if (assignRegex.test(window) && !/__proto__|hasOwnProperty|Object\.hasOwn/.test(window)) {
+      findings.push({
+        type: 'prototype_pollution_risk',
+        file: filename,
+        function: `line:${lineAt(source, match.index)}`,
+        severity: 'a_investigar',
+        note: `for...in atribuindo em [${varName}] sem checagem visível contra __proto__/constructor/prototype — risco de poluição de protótipo se a chave vier de entrada externa. Contexto: "${contextSnippet(source, match.index)}"`,
+      });
+    }
+  }
+  return findings;
+}
+
+/**
+ * fetch/axios/http(s).get com URL montada por interpolação/variável (não
+ * string literal fixa) — risco de SSRF se a parte variável vier de entrada
+ * não confiável e não houver allowlist de destino.
+ */
+export function findSsrfRisk(source, filename) {
+  const findings = [];
+  const regex = /\b(fetch|axios\.get|axios\.post|axios\.request|http\.get|https\.get)\s*\(\s*(`[^`]*\$\{[^}]*\}[^`]*`|[a-zA-Z_$][\w$.]*\s*[,)])/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    findings.push({
+      type: 'ssrf_risk',
+      file: filename,
+      function: `line:${lineAt(source, match.index)}`,
+      severity: 'a_investigar',
+      note: `${match[1]}(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: "${contextSnippet(source, match.index)}"`,
+    });
+  }
+  return findings;
+}
+
+/**
+ * fs.readFile/writeFile/unlink/createReadStream com caminho montado por
+ * interpolação/concatenação, sem path.normalize/resolve/join visível por
+ * perto — risco de path traversal (ex.: "../../etc/passwd" via entrada).
+ */
+export function findPathTraversalRisk(source, filename) {
+  const findings = [];
+  const regex = /\bfs\.(readFile|readFileSync|writeFile|writeFileSync|unlink|unlinkSync|createReadStream|createWriteStream)\s*\(\s*(`[^`]*\$\{[^}]*\}[^`]*`|[a-zA-Z_$][\w$.]*\s*\+|["'][^"']*["']\s*\+)/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    const context = contextSnippet(source, match.index, 100);
+    if (/path\.(normalize|resolve|join)/.test(context)) continue; // guard visível por perto
+    findings.push({
+      type: 'path_traversal_risk',
+      file: filename,
+      function: `line:${lineAt(source, match.index)}`,
+      severity: 'a_investigar',
+      note: `fs.${match[1]}(...) com caminho montado por interpolação/concatenação, sem path.normalize/resolve/join visível por perto — risco de path traversal se alguma parte vier de entrada não confiável. Contexto: "${context}"`,
+    });
+  }
+  return findings;
+}
+
 export function scanJsSource(source, filename) {
   return [
     ...findEvalUsage(source, filename),
     ...findCommandInjectionRisk(source, filename),
     ...findReDoSRisk(source, filename),
+    ...findPrototypePollutionRisk(source, filename),
+    ...findSsrfRisk(source, filename),
+    ...findPathTraversalRisk(source, filename),
     ...findHardcodedSecrets(source, filename),
   ];
 }

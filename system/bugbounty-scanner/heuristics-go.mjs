@@ -87,11 +87,57 @@ export function findGoWeakRandomForSecrets(source, filename) {
   return findings;
 }
 
+/**
+ * db.Query/QueryRow/Exec com SQL montado por fmt.Sprintf ou concatenação
+ * — risco de injeção SQL. Uso com placeholder ($1/?) e argumentos
+ * separados (padrão seguro do database/sql) não é sinalizado.
+ */
+export function findGoSqlInjectionRisk(source, filename) {
+  const findings = [];
+  const regex = /\.(Query|QueryContext|QueryRow|QueryRowContext|Exec|ExecContext)\s*\(\s*(fmt\.Sprintf\(|["'][^"']*["']\s*\+|[a-zA-Z_][\w.]*\s*\+)/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    findings.push({
+      type: 'sql_injection_risk',
+      file: filename,
+      function: `line:${lineAt(source, match.index)}`,
+      severity: 'a_investigar',
+      note: `.${match[1]}(...) com SQL montado por Sprintf/concatenação — risco de injeção se alguma parte vier de entrada não confiável. Padrão seguro seria placeholder ($1/?) com argumento separado. Contexto: "${contextSnippet(source, match.index)}"`,
+    });
+  }
+  return findings;
+}
+
+/**
+ * os.Open/os.ReadFile/ioutil.ReadFile/os.Create com caminho montado por
+ * concatenação/Sprintf, sem filepath.Clean visível por perto — risco de
+ * path traversal.
+ */
+export function findGoPathTraversalRisk(source, filename) {
+  const findings = [];
+  const regex = /\b(os\.Open|os\.ReadFile|ioutil\.ReadFile|os\.Create|os\.OpenFile)\s*\(\s*(fmt\.Sprintf\(|["'][^"']*["']\s*\+|[a-zA-Z_][\w.]*\s*\+)/g;
+  let match;
+  while ((match = regex.exec(source))) {
+    const context = contextSnippet(source, match.index, 100);
+    if (/filepath\.Clean/.test(context)) continue; // guard visível por perto
+    findings.push({
+      type: 'path_traversal_risk',
+      file: filename,
+      function: `line:${lineAt(source, match.index)}`,
+      severity: 'a_investigar',
+      note: `${match[1]}(...) com caminho montado por Sprintf/concatenação, sem filepath.Clean visível por perto — risco de path traversal se alguma parte vier de entrada não confiável. Contexto: "${context}"`,
+    });
+  }
+  return findings;
+}
+
 export function scanGoSource(source, filename) {
   return [
     ...findGoCommandInjection(source, filename),
     ...findGoInsecureTLS(source, filename),
     ...findGoWeakRandomForSecrets(source, filename),
+    ...findGoSqlInjectionRisk(source, filename),
+    ...findGoPathTraversalRisk(source, filename),
     ...findHardcodedSecrets(source, filename),
   ];
 }

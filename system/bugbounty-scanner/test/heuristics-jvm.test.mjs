@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findTrustManagerBypass, findWebViewJsBridge, findJvmCommandInjection, scanJvmSource } from '../heuristics-jvm.mjs';
+import { findTrustManagerBypass, findWebViewJsBridge, findJvmCommandInjection, findJvmSqlInjectionRisk, findJvmInsecureDeserialization, scanJvmSource } from '../heuristics-jvm.mjs';
 
 test('findTrustManagerBypass acha checkServerTrusted com corpo vazio', () => {
   const src = `
@@ -63,4 +63,23 @@ test('scanJvmSource roda sem quebrar em código limpo', () => {
     }
   `;
   assert.equal(scanJvmSource(src, 'clean.kt').length, 0);
+});
+
+test('findJvmSqlInjectionRisk acha executeQuery com SQL concatenado', () => {
+  const src = `val rs = stmt.executeQuery("SELECT * FROM users WHERE id = " + userId)`;
+  const findings = findJvmSqlInjectionRisk(src, 'x.kt');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'sql_injection_risk');
+});
+
+test('findJvmSqlInjectionRisk NÃO sinaliza PreparedStatement.executeQuery() sem argumento', () => {
+  const src = `val rs = preparedStmt.executeQuery()`;
+  assert.equal(findJvmSqlInjectionRisk(src, 'x.kt').length, 0);
+});
+
+test('findJvmInsecureDeserialization acha new ObjectInputStream', () => {
+  const src = `val ois = ObjectInputStream(socket.getInputStream()); val obj = ois.readObject()`;
+  const findings = findJvmInsecureDeserialization(src, 'x.java');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'insecure_deserialization');
 });

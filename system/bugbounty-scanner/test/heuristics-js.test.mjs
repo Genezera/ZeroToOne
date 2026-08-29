@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findEvalUsage, findCommandInjectionRisk, findReDoSRisk, scanJsSource } from '../heuristics-js.mjs';
+import { findEvalUsage, findCommandInjectionRisk, findReDoSRisk, findPrototypePollutionRisk, findSsrfRisk, findPathTraversalRisk, scanJsSource } from '../heuristics-js.mjs';
 
 test('findEvalUsage acha eval() e new Function()', () => {
   const src = `
@@ -64,7 +64,7 @@ test('findReDoSRisk NÃO confunde divisão matemática com regex', () => {
   assert.equal(findReDoSRisk(src, 'x.js').length, 0);
 });
 
-test('scanJsSource combina as quatro heurísticas e roda sem quebrar em código limpo', () => {
+test('scanJsSource combina as sete heurísticas e roda sem quebrar em código limpo', () => {
   const src = `
     export function safeAdd(a, b) {
       return a + b;
@@ -73,4 +73,67 @@ test('scanJsSource combina as quatro heurísticas e roda sem quebrar em código 
   `;
   const findings = scanJsSource(src, 'clean.ts');
   assert.equal(findings.length, 0);
+});
+
+test('findPrototypePollutionRisk acha for...in atribuindo por chave sem guarda contra __proto__', () => {
+  const src = `
+    function merge(target, source) {
+      for (const key in source) {
+        target[key] = source[key];
+      }
+      return target;
+    }
+  `;
+  const findings = findPrototypePollutionRisk(src, 'x.js');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'prototype_pollution_risk');
+});
+
+test('findPrototypePollutionRisk NÃO sinaliza quando já guarda contra __proto__', () => {
+  const src = `
+    function merge(target, source) {
+      for (const key in source) {
+        if (key === '__proto__' || key === 'constructor') continue;
+        target[key] = source[key];
+      }
+    }
+  `;
+  assert.equal(findPrototypePollutionRisk(src, 'x.js').length, 0);
+});
+
+test('findSsrfRisk acha fetch com destino montado por template literal interpolado', () => {
+  const src = `
+    async function proxy(userUrl) {
+      return fetch(\`https://\${userUrl}/data\`);
+    }
+  `;
+  const findings = findSsrfRisk(src, 'x.js');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'ssrf_risk');
+});
+
+test('findSsrfRisk NÃO sinaliza fetch com string literal fixa', () => {
+  const src = `fetch('https://api.example.com/data')`;
+  assert.equal(findSsrfRisk(src, 'x.js').length, 0);
+});
+
+test('findPathTraversalRisk acha fs.readFile com caminho concatenado sem guard de path', () => {
+  const src = `
+    function read(userFilename) {
+      return fs.readFile('/uploads/' + userFilename, cb);
+    }
+  `;
+  const findings = findPathTraversalRisk(src, 'x.js');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'path_traversal_risk');
+});
+
+test('findPathTraversalRisk NÃO sinaliza quando path.normalize/resolve/join está por perto', () => {
+  const src = `
+    function read(userFilename) {
+      const safePath = path.join(UPLOAD_DIR, path.normalize(userFilename));
+      return fs.readFile(safePath + '', cb);
+    }
+  `;
+  assert.equal(findPathTraversalRisk(src, 'x.js').length, 0);
 });

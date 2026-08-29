@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findGoCommandInjection, findGoInsecureTLS, findGoWeakRandomForSecrets, scanGoSource } from '../heuristics-go.mjs';
+import { findGoCommandInjection, findGoInsecureTLS, findGoWeakRandomForSecrets, findGoSqlInjectionRisk, findGoPathTraversalRisk, scanGoSource } from '../heuristics-go.mjs';
 
 test('findGoCommandInjection acha exec.Command("sh","-c", Sprintf(...))', () => {
   const src = `
@@ -53,4 +53,31 @@ test('scanGoSource roda sem quebrar em código limpo', () => {
     }
   `;
   assert.equal(scanGoSource(src, 'clean.go').length, 0);
+});
+
+test('findGoSqlInjectionRisk acha Query com SQL montado por Sprintf', () => {
+  const src = `rows, err := db.Query(fmt.Sprintf("SELECT * FROM users WHERE id = %s", userId))`;
+  const findings = findGoSqlInjectionRisk(src, 'x.go');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'sql_injection_risk');
+});
+
+test('findGoSqlInjectionRisk NÃO sinaliza Query com placeholder e argumento separado', () => {
+  const src = `rows, err := db.Query("SELECT * FROM users WHERE id = $1", userId)`;
+  assert.equal(findGoSqlInjectionRisk(src, 'x.go').length, 0);
+});
+
+test('findGoPathTraversalRisk acha os.Open com caminho concatenado sem filepath.Clean', () => {
+  const src = `f, err := os.Open("/uploads/" + userFilename)`;
+  const findings = findGoPathTraversalRisk(src, 'x.go');
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].type, 'path_traversal_risk');
+});
+
+test('findGoPathTraversalRisk NÃO sinaliza quando filepath.Clean está por perto', () => {
+  const src = `
+    safePath := filepath.Clean(filepath.Join(uploadDir, userFilename))
+    f, err := os.Open(safePath + "")
+  `;
+  assert.equal(findGoPathTraversalRisk(src, 'x.go').length, 0);
 });
