@@ -1116,3 +1116,35 @@ pelo código. `deep-read-log.json` atualizado com os 3 arquivos acima
 rodada, ainda de pé: `misk-jdbc/JDBCSession.kt`/`misk-jdbc/Session.kt`
 (nunca lidos) ou expandir pra `square/wire` (`wire-schema/`/
 `wire-compiler/`, ainda intocado, mesmo pathPrefix já autorizado no alvo).
+
+## Rodada 2026-08-29 (push automático, 3ª leitura do dia) — fila vazia, leitura profunda em misk-jdbc/Session + HibernateInjectorAccess
+
+`queue.jsonl` seguia sem itens `pending` (33 revisados, 0 pendentes). Clone
+raso com sparse-checkout de `cashapp/misk` (`misk-jdbc/`, `misk-hibernate/`,
+`misk-crypto/`, `misk/src/main/kotlin/misk/security/`) pra achar arquivo
+com `session`/`access` no nome ainda fora de `deep-read-log.json`.
+
+3 arquivos lidos por completo (nunca lidos antes):
+- `misk-jdbc/Session.kt` — só a interface `Session` (KDoc de hooks
+  pre-commit/post-commit/rollback/close), zero lógica.
+- `misk-jdbc/JDBCSession.kt` — implementação concreta de `Session` sobre
+  `java.sql.Connection`. É só um registro de hooks (`ConcurrentHashMap`/
+  `ConcurrentLinkedQueue`) disparados por quem gerencia a transação
+  externamente; não há controle de acesso, autenticação ou segredo
+  manuseado aqui — é infraestrutura de callback de transação JDBC pura.
+  Nada a auditar quanto a autorização.
+- `misk-hibernate/HibernateInjectorAccess.kt` — expõe o `Injector` do Guice
+  pro Hibernate via uma extensão (`ServiceRegistry.injector`) usada por
+  `UserType`s customizados (ex.: `SecretColumnType`, já auditado em rodada
+  anterior) pra resolver dependências como o Tink/Moshi. Não há checagem de
+  autorização própria pra auditar — é só wiring de DI interno ao processo,
+  sem superfície de entrada externa.
+
+Nenhum achado novo nesta rodada — resultado normal, os 3 arquivos eram
+infraestrutura de baixo nível (hooks de transação, wiring de DI) sem lógica
+de autorização/criptografia própria para criticar. `deep-read-log.json`
+atualizado com os 3 arquivos acima (total agora: 46 arquivos lidos em
+`cashapp/misk`). Sugestão pra próxima rodada: expandir pra `square/wire`
+(`wire-schema/`/`wire-compiler/`, ainda intocado) já que `cashapp/misk` está
+ficando escasso em arquivos auth/crypto/session ainda não lidos dentro do
+`pathPrefixes` autorizado.
