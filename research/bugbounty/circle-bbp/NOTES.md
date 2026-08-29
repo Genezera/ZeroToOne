@@ -726,3 +726,277 @@ Conclusão: nenhum achado novo. `deep-read-log.json` atualizado com os 3
 arquivos (2 em `circlefin/evm-cctp-contracts`, 1 em
 `circlefin/buidl-wallet-contracts`). Resultado normal — a maioria das
 rodadas não acha nada.
+
+## Rodada (2026-08-29, disparada por push) — fila vazia, leitura profunda em
+   buidl-wallet-contracts (núcleo de conta ERC-4337/6900, não-MSCA e MSCA)
+Fila com 0 pendentes (35/35 revisados). Escolhi 3 arquivos ainda não lidos
+do `buidl-wallet-contracts`, priorizando o núcleo de autenticação/execução
+que ainda faltava (`account/`, `managers/`) em vez de mais plugins:
+1. `src/account/v1/ECDSAAccount.sol` — conta não-MSCA de dono único
+   (EOA). `_validateSignature` (caminho ERC-4337 via EntryPoint) e
+   `isValidSignature` (EIP-1271, com `getReplaySafeMessageHash` pra evitar
+   replay cross-account) checam a assinatura contra `owner()` via
+   `SignatureChecker.isValidSignatureNow` — sem gap. `_authorizeUpgrade`
+   (UUPS) tem `onlyOwner`. Sem achado.
+2. `src/msca/6900/v0.7/account/BaseMSCA.sol` — o contrato-base de toda
+   conta MSCA (6900), o coração do roteamento de autorização: `fallback`
+   só pula `_processPreRuntimeHooksAndValidation` quando
+   `msg.sender == address(ENTRY_POINT)` (correto — EntryPoint já validou
+   via `validateUserOp`/`userOpValidationFunction` antes de chamar);
+   chamada direta de qualquer outro endereço (inclusive self-call) sempre
+   passa pelos hooks de runtime validation. `onlyFromEntryPointOrSelf`
+   (usado em `withdrawDepositTo`) checa `msg.sender` contra
+   `address(ENTRY_POINT)` ou `address(this)` — sem gap.
+   `_authenticateAndAuthorizeUserOp` roda os pre-hooks antes da função de
+   validação principal e reverte se `unpackedValidationData.authorizer`
+   vier fora de `{address(0), address(1)}` — sem bypass óbvio.
+3. `src/msca/6900/v0.7/managers/PluginExecutor.sol` — a lib que implementa
+   `executeFromPlugin`/`executeFromPluginToExternal`, os dois pontos que
+   `BaseMSCA` expõe SEM nenhum modifier de acesso próprio (a função
+   externa em si não tem `onlyPlugin` ou equivalente). Confirmei que o
+   controle de acesso real está dentro da lib: `executeFromPlugin` checa
+   `walletStorage.permittedPluginCalls[msg.sender][selector]` — como
+   `msg.sender` aqui é necessariamente quem chamou a função externa
+   diretamente (não é spoofável via delegatecall, a MSCA não faz
+   delegatecall pra dentro dessas funções), só um plugin já instalado E
+   explicitamente permitido pra aquele seletor passa. Mesmo padrão em
+   `executeFromPluginToExternal` (`permittedExternalCalls[callingPlugin][target]`
+   + bloqueio de chamar `address(this)` ou outro plugin via
+   `ERC165Checker.supportsInterface(target, type(IPlugin).interfaceId)`).
+   Não verifiquei se `uninstallPlugin` (em `PluginManager.sol`, ainda não
+   lido) de fato limpa `permittedPluginCalls`/`permittedExternalCalls` ao
+   desinstalar — ponto em aberto pra próxima rodada, mas não é evidência
+   de bug, só um gap de cobertura de leitura.
+
+Conclusão: nenhum achado novo. Código consistente com o padrão de
+referência ERC-6900 já visto nos outros contratos deste repo
+(`SingleOwnerMSCA`, `SponsorPaymaster`, etc.) — controle de acesso via
+`msg.sender` direto em todos os pontos checados, sem inconsistência entre
+checagem e efeito. `deep-read-log.json` atualizado com os 3 arquivos.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, fechando o ponto em aberto de `PluginManager.sol`
+
+`queue.jsonl` sem `pending`. Li `buidl-wallet-contracts/src/msca/6900/
+v0.7/managers/PluginManager.sol` (nunca lido isoladamente antes),
+justamente pra fechar o ponto que a rodada anterior deixou em aberto:
+"`uninstallPlugin` de fato limpa `permittedPluginCalls`/
+`permittedExternalCalls` ao desinstalar?".
+
+Confirmado que sim: `uninstall()` reconstrói o `pluginManifest` (do
+parâmetro `config` ou, se vazio, chamando `IPlugin(plugin).pluginManifest()`
+de novo) e primeiro valida que `keccak256(abi.encode(pluginManifest))`
+bate com o hash gravado no install — ou seja, não dá pra passar um
+manifest diferente/menor pra escapar de limpar alguma permissão que foi
+concedida de fato. Com o hash validado, o loop de uninstall zera
+`permittedPluginCalls[plugin][selector]` pra cada seletor do manifest e
+`permittedExternalCalls[plugin][addr].addressPermitted`/`.anySelector`/
+`.selectors[...]` pra cada external call permitido, espelhando exatamente
+o que o `install()` setou. Sem gap — ponto fechado, sem achado.
+
+`install()`/`uninstall()` em si só têm o modifier `onlyDelegated` (exige
+`address(this) != SELF`, i.e., só roda via delegatecall a partir da conta,
+nunca chamando a lib diretamente) — a autorização de QUEM pode disparar
+esse delegatecall (dono/self) já tinha sido validada em rodada anterior
+dentro de `BaseMSCA`/`SingleOwnerMSCA` (`_authenticateAndAuthorizeUserOp`,
+`onlyFromEntryPointOrSelf`), então a cadeia de autorização completa (quem
+pode instalar/desinstalar → o que fica limpo ao desinstalar) está fechada
+sem lacuna encontrada.
+
+Também li, no mesmo orçamento de 3 arquivos, dois pontos de
+`vercel/flags` sem relação com este programa (`sdk-keys.ts` — só parsing
+de string, `isValidSdkKey` nem é usado em lugar nenhum além da própria
+função irmã; `spec-extension/cookies.ts` — re-export puro de
+`@edge-runtime/cookies`, zero lógica própria); ver NOTES.md do Vercel
+Open Source. `deep-read-log.json` atualizado com o arquivo de
+`buidl-wallet-contracts`. Nenhum item novo na fila — resultado normal.
+
+## Rodada 2026-08-29 (rotina automática, fila vazia) — `Attestable.sol`/`DomainManageable.sol` de `evm-xreserve-contracts`
+
+`queue.jsonl` sem itens `pending` no início desta rodada. Clonado
+`circlefin/evm-xreserve-contracts` via `git clone --depth 1` (público, sem
+conta/token) — alvo com poucos arquivos cobertos em `deep-read-log.json`
+até agora (só `Withdrawal.sol`/`Blocklistable.sol`/
+`NoValidationAttestationLib.sol`/`TokenSupport.sol`). Escolhi o módulo de
+verificação multi-assinatura de attesters (`Attestable.sol`, nunca lido
+neste repo — diferente do `Attestable.sol` já auditado em
+`evm-cctp-contracts`, é uma implementação própria e mais sofisticada,
+com transição gradual de threshold/attesters), por ser a superfície de
+maior valor (verificação de assinatura ERC-1271) ainda não coberta neste
+alvo especificamente.
+
+2 arquivos lidos por completo:
+- `src/modules/remote-domain-depositor/Attestable.sol` — multisig
+  m-de-n de attesters com "dual-validity" durante transição de
+  configuração (threshold ou remoção de attester tem um delay em blocos
+  onde config antiga E nova continuam válidas). Rastreei
+  `_isValidSignatureHelper` com ceticismo específico sobre 3 pontos
+  clássicos de bug em verificação multi-assinatura: (1) contagem exata de
+  assinaturas — `numSignatures` deve bater EXATAMENTE com o threshold
+  ativo (corrente ou anterior durante o delay), não `>=`, então não dá
+  pra inflar o número de assinaturas pra colar num dos dois thresholds
+  válidos por acidente; (2) ordem estritamente crescente de endereço
+  recuperado (`_recoveredAttester <= _latestAttesterAddress` rejeita),
+  que previne duplicata de assinatura da mesma chave contando como dois
+  attesters distintos — inclusive o caso de `ECDSA.recover` retornar
+  `address(0)` em assinatura malformada é pego por essa mesma checagem
+  (0 <= 0); (3) o "grace period" de attester sendo desabilitado
+  (`attestersValidUntilBlock`) é limpo corretamente por `_enableAttester`
+  se o mesmo attester for reabilitado antes do delay expirar (`delete`
+  explícito). `_validateSignatureThreshold` impede threshold acima do
+  número de attesters persistentes E abaixo do mínimo (`MIN_SIGNATURE_THRESHOLD
+  = 2`). Nenhuma falha de lógica encontrada — design bem comentado e
+  consistente com o padrão já validado em outras libs de attestation
+  desta missão.
+- `src/modules/remote-domain-depositor/DomainManageable.sol` — lido como
+  suporte, porque `Attestable` herda dele para os modifiers
+  `onlyDomainManager`/`onlyOwner` usados em `enableAttester`/
+  `disableAttester`/`setSignatureThreshold`. `domainManager` só é
+  alterável via `onlyOwner` (`updateDomainManager`); `domainPauser` via
+  `onlyDomainManager` (`updateDomainPauser`) — hierarquia de papéis
+  consistente (owner > domainManager > domainPauser), sem inversão. Sem
+  achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`evm-xreserve-contracts`
+ganhou 2 arquivos, agora 6 no total). Sugestão pra próxima rodada:
+`src/RemoteDomainDepositor.sol` (o contrato principal que orquestra
+depósito cross-chain, ainda não lido neste alvo) ou revisitar o refund
+flow multi-assinatura de `PaymentSettlementV2.sol` (`requireDestinationRefundSig`),
+sinalizado há várias rodadas como merecendo uma segunda leitura mais
+focada.
+
+## Rodada 2026-08-29 (push automático seguinte, fila vazia) — fecha o ponto em aberto de `RemoteDomainDepositor.sol`/`DepositToRemote.sol` + `WithdrawalDelay.sol` + `Create2Factory.sol`
+
+`queue.jsonl` sem `pending`. Segui a sugestão explícita deixada na rodada
+anterior e li 4 arquivos (orçamento de 3 + 1 trivial de bônus):
+
+- `evm-xreserve-contracts/src/RemoteDomainDepositor.sol` — o contrato
+  principal, mas é só casca fina: `initialize()` (chama os inicializadores
+  de `Attestable`/`DomainManageable`/`Ownable2Step`/`UUPSUpgradeable`) e
+  `_authorizeUpgrade` com `onlyOwner`. Nenhuma lógica de negócio própria.
+- `evm-xreserve-contracts/src/modules/x-reserve/DepositToRemote.sol` — a
+  função `depositToRemote` de fato (`nonReentrant`, valida inputs —
+  pausado global/por domínio, domínio remoto registrado, token suportado,
+  blocklist, remote token registrado — depois `safeTransferFrom`, emite
+  `DepositedToRemote` ANTES do external call, deposita no `GatewayWallet`,
+  e só então dispara `IRemoteDomainHookExecutor.executeHook` se um
+  executor estiver configurado pro domínio). Cadeia rastreada com foco em
+  reentrância: `nonReentrant` cobre a função externa inteira, e tanto
+  `remoteDomainDepositor` quanto `remoteDomainHookExecutor` só podem ser
+  configurados por endereços administrativos (não são passados pelo
+  chamador do depósito), então não há vetor de hook executor arbitrário
+  controlado por atacante. Sem achado.
+- `evm-gateway-contracts/src/modules/wallet/WithdrawalDelay.sol` — módulo
+  isolado de delay de saque (storage EIP-7201). `updateWithdrawalDelay` é
+  `onlyOwner` e é um parâmetro GLOBAL (não por usuário); testei a hipótese
+  de uma corrida entre mudar o delay e uma retirada já iniciada — não
+  existe, porque `withdrawableAtBlocks[token][depositor]` é gravado como
+  um block number absoluto no momento do `initiate` (em `Withdrawals.sol`,
+  já lido em rodada anterior), não recalculado dinamicamente a partir do
+  delay atual em `_ensureWithdrawable`. Sem achado.
+- `evm-cpn-contracts/src/factory/Create2Factory.sol` (bônus, fechava o
+  último `.sol` não-teste do repo) — `deploy`/`deployAndMultiCall` ambos
+  `onlyOwner` (`Ownable2Step`); `deployAndMultiCall` faz múltiplas
+  chamadas ao contrato recém-implantado no mesmo tx, mas só o owner pode
+  disparar, e falha de qualquer call individual reverte a transação
+  inteira (bubble do erro original via assembly). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (`evm-xreserve-contracts`
+agora 8 arquivos, `evm-gateway-contracts` agora 16, `evm-cpn-contracts`
+agora 6 — todos os `.sol` não-teste desse repo estão lidos). Sugestão pra
+próxima rodada: revisitar o refund flow multi-assinatura de
+`PaymentSettlementV2.sol` (`requireDestinationRefundSig`, ainda pendente
+de segunda leitura focada há várias rodadas) ou `evm-gateway-contracts/
+src/modules/wallet/Balances.sol`/`Batches.sol` (núcleo de contabilidade
+da wallet, ainda não lidos isoladamente).
+
+## Rodada seguinte (fila vazia) — sem achado
+Fila continuava em 0 pendentes. Leitura profunda proativa em 3 arquivos
+não lidos ainda, priorizando contratos principais/controle de acesso
+ainda não cobertos isoladamente:
+- `evm-xreserve-contracts/src/xReserve.sol` — contrato principal do
+  x-reserve (herda `Withdrawal`+`Domain`, cuja lógica de fundo já tinha
+  sido lida em rodadas anteriores). É bem fino: `initialize` só encadeia
+  os inicializadores dos módulos; `_authorizeUpgrade` é `onlyOwner`
+  (padrão UUPS correto); `updateDomainManager`/
+  `setPersistentSignatureBufferDelay` são `onlyOwner`;
+  `setUnlimitedAllowances` é deliberadamente pública (comentário no
+  próprio código admite isso) mas só reaprova o `GatewayWallet` a gastar
+  tokens PRÓPRIOS do próprio contrato — não move fundos de terceiros nem
+  eleva privilégio. Sem achado.
+- `evm-gateway-contracts/src/GatewayMinter.sol` — já constava no log
+  (lido em rodada anterior); reli pra conferir: é só o `initialize` que
+  encadeia `GatewayCommon`+`Mints` (ambos já auditados isoladamente, com
+  o achado confirmado de denylist em `Withdrawals.sol` sendo do lado
+  wallet, não minter). Sem achado novo.
+- `evm-cctp-contracts/src/roles/Ownable.sol` +
+  `src/roles/Ownable2Step.sol` — fork direto do OpenZeppelin (só mudou a
+  versão do Solidity de 0.8→0.7.6 e removeu `renounceOwnership`); padrão
+  two-step de transferência de ownership implementado corretamente
+  (`_pendingOwner` é limpo em `_transferOwnership`, `acceptOwnership`
+  confere `pendingOwner() == msg.sender`). Sem desvio do upstream, sem
+  achado.
+
+A sugestão da rodada anterior (refund flow de `PaymentSettlementV2.sol` e
+`Balances.sol`/`Batches.sol` de `evm-gateway-contracts`) ainda não foi
+atendida — continua como prioridade pra próxima rodada de leitura
+profunda neste programa.
+
+## Rodada 2026-08-29 (disparada por push, fila vazia) — `Balances.sol` (gateway), `MessageTransmitterV2.sol` (cctp), `StandardExecutor.sol` (buidl-wallet) — sem achado
+
+`queue.jsonl` sem itens `pending` (36/36 revisados). Segui parte da
+sugestão pendente da rodada anterior (`Balances.sol` do
+`evm-gateway-contracts`) e completei o orçamento de 3 com dois arquivos
+"núcleo" de alto valor ainda não lidos isoladamente em outros dois alvos
+do mesmo programa (nenhum dos três tem auth/session/crypto/token/login/
+password/admin/permission/access literalmente no nome, então priorizei
+por criticidade real: contabilidade de fundos, verificação de attestation
+cross-chain, e execução arbitrária de conta):
+
+- `evm-gateway-contracts/src/modules/wallet/Balances.sol` — a lib de
+  contabilidade interna (`availableBalances`/`withdrawingBalances`, EIP-7201)
+  usada por `Deposits`/`Withdrawals`/`Burns`/`Mints`, todos já auditados
+  antes. Ceticismo aplicado especificamente em `_moveBalanceToWithdrawing`
+  (subtrai de `available` sem checagem explícita `value <= available` antes
+  de subtrair) e `_reduceBalance` (prioriza `available` antes de
+  `withdrawing`): ambas seguras porque Solidity `^0.8.29` reverte
+  automaticamente em underflow (panic 0x11) — não há como um valor maior
+  que o saldo disponível silenciosamente virar um número gigante. Nenhuma
+  das duas tem gap de controle de acesso próprio (são `internal`, só
+  chamadas pelos módulos que já fazem a checagem de autorização/denylist
+  na função externa — exceto o gap já confirmado e reportado em
+  `Withdrawals.sol`, que é anterior a esta lib, não nela). Sem achado novo.
+- `evm-cctp-contracts/src/v2/MessageTransmitterV2.sol` — o contrato
+  concreto (não só a base `BaseMessageTransmitter` já lida antes) que
+  implementa `sendMessage`/`receiveMessage`/`_validateReceivedMessage` pro
+  CCTP V2. Confirmei a mesma ordem de checagens já validada na V1
+  (`Attestable`/`MessageTransmitter`): assinaturas → formato → domínio de
+  destino → `destinationCaller` (só exige `msg.sender` bater se o campo for
+  não-zero, comportamento documentado, não um gap) → versão → nonce não
+  usado, e o nonce é marcado como usado (`usedNonces[_nonce] = NONCE_USED`)
+  ANTES de chamar `IMessageHandlerV2(_recipient).handleReceive*Message`
+  (padrão CEI correto, sem reentrância de replay de nonce). `initialize()`
+  reivindica o nonce zero (`usedNonces[bytes32(0)] = NONCE_USED`) de
+  propósito, consistente com o padrão da V1. Sem achado.
+- `buidl-wallet-contracts/src/msca/6900/v0.7/managers/StandardExecutor.sol`
+  — a lib que implementa de fato `execute`/`executeBatch` (chamada
+  arbitrária a partir da conta MSCA). Não tem controle de acesso próprio
+  (é `internal`, sem modifier) — confirma o design já validado em rodada
+  anterior (`BaseMSCA.sol`): a autorização de quem pode disparar `execute`
+  vive inteiramente na função externa que embrulha esta lib (via
+  `_authenticateAndAuthorizeUserOp`/`onlyFromEntryPointOrSelf`), não aqui.
+  O único controle nesta lib é `TargetIsPlugin` — reverte se `target`
+  responde `supportsInterface(IPlugin)` como true, forçando chamadas a
+  plugins a passar pelo caminho `PluginExecutor` (com checagem de
+  `permittedExternalCalls`) em vez de `execute` direto. Considerei se um
+  plugin malicioso que não implementa ERC165 corretamente poderia escapar
+  dessa checagem e ser chamado via `execute` sem hooks — sim, tecnicamente,
+  mas só instalar esse plugin já exige autorização de owner/self (mesma
+  cadeia de autorização de instalação já validada em rodada anterior via
+  `PluginManager.sol`), então não é um vetor de escalada pra um atacante
+  sem essa autorização prévia. Sem achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum item novo
+adicionado à fila — resultado normal. A sugestão restante da rodada
+anterior (refund flow multi-assinatura de `PaymentSettlementV2.sol`,
+`requireDestinationRefundSig`) continua pendente — já sinalizada há várias
+rodadas, candidata forte pra próxima.

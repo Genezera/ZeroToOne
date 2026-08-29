@@ -160,3 +160,50 @@ na pesquisa sobre bug bounty (90% dos iniciantes não ganham nada, e mesmo
 para quem ganha, o primeiro achado leva semanas). Não vou reportar isto ao
 Immunefi até ter uma cadeia de chamada completa e uma prova de conceito
 real.
+
+## Rodada 3 — leitura profunda proativa (2026-08-29)
+Fila do scanner estava vazia. Li por completo, pela primeira vez linha a
+linha nesta missão, `dao.clar` (contrato raiz — admins/contracts, checks
+`check-is-admin`/`check-is-protocol`), `signer-admin-v1.clar` (registro de
+admin compartilhado dos signer-manager) e `stacker-2.clar` (contrato
+"admin" prioritário por nome/função crítica).
+
+Levantei uma hipótese real em `stacker-2.clar`: `initiate-stacking` envolve
+a chamada a `reserve-contract.request-stx-to-stack` em `(as-contract ...)`,
+mas `stack-increase` faz a MESMA chamada sem `as-contract` — mesmo padrão,
+tratamento inconsistente. Investiguei a fundo (rastreei
+`request-stx-to-stack` em `stx-reserve-v2.clar`) e **refutei**: essa função
+usa exclusivamente `contract-caller` (nunca `tx-sender`) tanto para
+autorização quanto para o destinatário dos fundos, e `contract-caller`
+não muda com `as-contract` (só `tx-sender` muda) — logo o destinatário é
+sempre o stacker correto, com ou sem `as-contract`. Inconsistência
+estilística inofensiva, não vulnerabilidade. Registrado em `queue.jsonl`
+como `falso_positivo`, confidence alta, cadeia de chamada 100% fechada
+sem depender de nenhum arquivo externo.
+
+`dao.clar` e `signer-admin-v1.clar`: nenhum achado — padrão de autorização
+consistente com o resto do código já revisado (DAO-gated via
+`check-is-protocol`/`check-is-admin`, sem lacunas óbvias).
+
+## Rodada 4 — leitura profunda proativa (2026-08-29)
+Fila do scanner novamente vazia (0 pendentes). Li por completo
+`stacker-3.clar`, `stacker-4.clar` e `stacker-5.clar` (ainda não lidos
+nesta missão). Resultado: são bit-a-bit idênticos a `stacker-1.clar`
+(confirmado via `diff`, sem nenhuma diferença) — mesmas 4 funções
+públicas (`initiate-stacking`, `stack-increase`, `stack-extend`,
+`return-stx`), mesmo padrão de autorização (`check-is-protocol`/
+`check-is-enabled` via `.dao`) e mesmo uso de `as-contract` em
+`return-stx`/`initiate-stacking`. `stack-increase` repete o mesmo padrão
+"sem `as-contract`" já investigado e refutado em `stacker-2.clar` (rodada
+3): a função chamada na reserva (`request-stx-to-stack`) usa exclusivamente
+`contract-caller`, nunca `tx-sender`, então o resultado é idêntico com ou
+sem `as-contract`. Nenhum achado novo — atualizado `deep-read-log.json`.
+
+Com isso, todos os 5 contratos `stacker-N` (1 a 5) e os contratos raiz
+(`dao`, `signer-admin-v1`) já foram lidos linha a linha nesta missão.
+Restam para próximas rodadas: `stbtc-token.clar`, `data-stbtc-v1.clar`,
+`data-stx-v2.clar` (já visto en passant, não linha a linha),
+`stacking-dao-core-ststxbtc-v1.clar` (já lido via investigação da fila,
+não via deep-read-log) — e os 3 contratos SIP-010/NFT auxiliares que
+seguem bloqueados por rede (`ststxbtc-token-v2`, `ststxbtc-data-v1`,
+`ststxbtc-withdraw-nft-v2`).

@@ -1,10 +1,20 @@
 {
+  "StackingDAO": [
+    "dao.clar",
+    "signer-admin-v1.clar",
+    "stacker-2.clar",
+    "stacker-3.clar",
+    "stacker-4.clar",
+    "stacker-5.clar"
+  ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
     "packages/flags/src/lib/verify-access.ts",
     "packages/flags/src/lib/crypto.ts",
     "packages/flags/src/next/create-flags-discovery-endpoint.ts",
-    "packages/flags/src/next/overrides.ts"
+    "packages/flags/src/next/overrides.ts",
+    "packages/vercel-flags-core/src/utils/sdk-keys.ts",
+    "packages/flags/src/spec-extension/cookies.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -61,7 +71,17 @@
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFile.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/S3KeySource.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpEncrypterProvider.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/Session.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/SessionFactoryService.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ExternalDataKeys.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFileMetadata.kt",
+    "misk-config/src/main/kotlin/misk/resources/OnePasswordResourceLoaderBackend.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/action/McpServerSessions.kt",
+    "misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseTabIndexAction.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -77,13 +97,16 @@
     "github/http.go",
     "util/url.go",
     "github/url.go",
-    "cache/github.go"
+    "cache/github.go",
+    "cache/http.go",
+    "cache/cache.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
     "Sources/PayKit/NetworkManager.swift",
     "Sources/PayKit/StateMachine.swift",
-    "Sources/PayKit/Services/Networking/RESTService.swift"
+    "Sources/PayKit/Services/Networking/RESTService.swift",
+    "Sources/PayKit/Services/Networking/HTTPRequest.swift"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
@@ -120,7 +143,8 @@
     "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
     "Sources/Afterpay/Checkout/CheckoutHost.swift",
     "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift",
-    "Sources/Afterpay/ApiV3.swift"
+    "Sources/Afterpay/ApiV3.swift",
+    "Sources/Afterpay/CashApp/CashAppSigningResult.swift"
   ],
   "circlefin/evm-cctp-contracts": [
     "src/MessageTransmitter.sol",
@@ -135,7 +159,10 @@
     "src/v2/BaseTokenMessenger.sol",
     "src/messages/v2/BurnMessageV2.sol",
     "src/TokenMessenger.sol",
-    "src/roles/v2/Denylistable.sol"
+    "src/roles/v2/Denylistable.sol",
+    "src/roles/Ownable.sol",
+    "src/roles/Ownable2Step.sol",
+    "src/v2/MessageTransmitterV2.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -147,7 +174,12 @@
     "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
     "src/libs/RecipientAddressLib.sol",
     "src/paymaster/v1/permissioned/SponsorPaymaster.sol",
-    "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol"
+    "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol",
+    "src/account/v1/ECDSAAccount.sol",
+    "src/msca/6900/v0.7/account/BaseMSCA.sol",
+    "src/msca/6900/v0.7/managers/PluginExecutor.sol",
+    "src/msca/6900/v0.7/managers/PluginManager.sol",
+    "src/msca/6900/v0.7/managers/StandardExecutor.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
@@ -164,18 +196,27 @@
     "src/lib/BurnIntentLib.sol",
     "src/lib/BurnIntents.sol",
     "src/lib/TransferSpecLib.sol",
-    "src/modules/common/TokenSupport.sol"
+    "src/modules/common/TokenSupport.sol",
+    "src/modules/wallet/WithdrawalDelay.sol",
+    "src/modules/wallet/Balances.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
     "src/modules/x-reserve/Blocklistable.sol",
-    "src/lib/NoValidationAttestationLib.sol"
+    "src/lib/NoValidationAttestationLib.sol",
+    "src/modules/x-reserve/TokenSupport.sol",
+    "src/modules/remote-domain-depositor/Attestable.sol",
+    "src/modules/remote-domain-depositor/DomainManageable.sol",
+    "src/RemoteDomainDepositor.sol",
+    "src/modules/x-reserve/DepositToRemote.sol",
+    "src/xReserve.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
     "src/PaymentSettlement.sol",
     "src/utils/Rescuable.sol",
     "src/utils/Configurable.sol",
-    "src/utils/Pausable.sol"
+    "src/utils/Pausable.sol",
+    "src/factory/Create2Factory.sol"
   ]
 }

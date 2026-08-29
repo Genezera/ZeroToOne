@@ -1482,3 +1482,195 @@ Escolhi os 3 arquivos de `misk-crypto/` ainda não lidos:
 
 `deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
 (append). Resultado normal — a maioria das rodadas não acha nada.
+
+## Rodada — fila vazia, leitura profunda em misk-hibernate/misk-crypto (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Leitura profunda proativa:
+sparse-clone local de `cashapp/misk` (`git clone --filter=blob:none
+--sparse`, `sparse-checkout set misk misk-crypto misk-core misk-inject
+misk-hibernate misk-jdbc misk-actions misk-api`) pra listar o que ainda
+faltava com auth/session/crypto/token/login/password/admin/permission/
+access no caminho. Escolhidos:
+
+1. `misk-hibernate/src/main/kotlin/misk/hibernate/Session.kt` — interface
+   `Session` (save/load/delete/target/disableChecks) + extensão
+   `allowCrossShardTransactions()`. O `SET transaction_mode` é uma string
+   literal fixa (`'multi'`/`'unspecified'`), nunca interpolação de dado
+   externo — sem injeção de SQL. Reset do transaction_mode acontece em
+   `Synchronization.afterCompletion`, com try/catch próprio; pior caso é
+   log de erro, não vazamento de modo entre transações sem aviso. Sem
+   achado.
+2. `misk-hibernate/src/main/kotlin/misk/hibernate/SessionFactoryService.kt`
+   — bootstrap do Hibernate (registro de listeners, datasource, dialect,
+   `SecretColumn`/`JsonColumn`/`ProtoColumn` type adapters). Configuração
+   de infraestrutura, nenhum dado de request de usuário passa por aqui.
+   Sem achado.
+3. `misk-crypto/src/main/kotlin/misk/crypto/ExternalDataKeys.kt` e
+   `misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/
+   PgpKeyJsonFileMetadata.kt` — uma anotação `@Qualifier` e uma data class
+   de 3 campos (`name`/`email`/`comment`), sem lógica nenhuma. Sem achado.
+
+`deep-read-log.json` atualizado com os 4 arquivos novos de `cashapp/misk`
+(append). Nenhuma entrada nova em `queue.jsonl`. Resultado normal.
+
+## Rodada — fila vazia, leitura profunda em misk-config/misk-mcp/misk-tokens (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados, incluindo o achado confirmado
+de path traversal em `square/wire` já reportado em rodada anterior — ver
+`research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`).
+Clone raso (`git clone --depth 1`) de `cashapp/misk` para continuar a
+varredura de arquivos com auth/session/crypto/token/password no caminho
+ainda não lidos. Escolhidos:
+
+1. `misk-config/src/main/kotlin/misk/resources/OnePasswordResourceLoaderBackend.kt`
+   — `ResourceLoader.Backend` que roda `op read` via `ProcessBuilder`
+   (sem shell, exec direto — sem risco de shell injection clássico).
+   `path`/`account` viram argv separados de `op`; o valor do secret-ref
+   sempre é prefixado com `op:` literal antes de virar argumento, então
+   não dá pra injetar uma flag `-`/`--` no lugar do secret-ref. `account`
+   vai cru pro argv após `--account`, mas isso é o comportamento normal
+   do parser de flags do `op`, não uma falha do misk. `path` vem de
+   configuração de recurso (carregada no bootstrap do serviço, não de
+   request de usuário), então não há alcançabilidade por atacante externo
+   mesmo se houvesse alguma falha de parsing no `op`. Sem achado.
+2. `misk-mcp/src/main/kotlin/misk/mcp/action/McpServerSessions.kt` —
+   3 funções de extensão (`currentServerSession`, `currentClientConnection`,
+   `ServerSession.handleMessage`) que só leem do `CoroutineContext` e
+   lançam erro se não houver sessão/conexão no contexto. Nenhuma lógica de
+   autenticação ou controle de acesso aqui — é só um accessor de contexto.
+   Sem achado.
+3. `misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt` — typealias
+   pra `wisp.token.TokenGenerator` (já lido, `RealTokenGenerator.kt`) +
+   interface `TokenGenerator2` com tabela de canonicalização Crockford
+   Base32 (mapeia `o`/`O`→`0`, `i`/`I`/`l`/`L`→`1` etc.) usada só pra
+   normalizar tokens digitados manualmente por humano antes de comparar —
+   não é geração/validação de token em si, é só canonicalização de string
+   pra melhorar UX de digitação. Sem lógica de segurança quebrada. Sem
+   achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
+(append). Nenhuma entrada nova em `queue.jsonl`. Resultado normal.
+
+## Rodada 2026-08-29 (push automático) — fila vazia, leitura profunda em misk-admin/misk-crypto
+
+`queue.jsonl` sem itens `pending` (35 revisados, 0 pendentes) no disparo
+desta rodada — o próprio push que disparou foi o commit "no achado" da
+rodada anterior (misk-config/misk-mcp/misk-tokens). Sparse-clone raso de
+`cashapp/misk` (`git clone --filter=blob:none --sparse --depth 1`, todos os
+módulos dos `pathPrefixes` autorizados + `misk-admin`/`misk-tokens`/
+`misk-config`) pra listar arquivos ainda não lidos com auth/session/crypto/
+token/login/password/admin/permission/access no nome (77 candidatos
+restantes, a maioria teste/testFixtures). Escolhidos 3 arquivos de produção
+(`src/main`) do módulo `misk-admin` (endpoints do dashboard administrativo,
+nunca lidos por nenhuma rodada anterior) + 1 de `misk-crypto`:
+
+1. `misk-admin/.../metadata/database/DatabaseQueryMetadataAction.kt` —
+   endpoint `GET /api/v1/database/query/metadata`, protegido por
+   `@AdminDashboardAccess`, só devolve a lista de `DatabaseQueryMetadata`
+   já registrada via injeção (metadados, não executa query nenhuma). Sem
+   achado.
+2. `misk-admin/.../metadata/database/DatabaseTabIndexAction.kt` — página
+   HTML estática do dashboard ("Database Beta"), também atrás de
+   `@AdminDashboardAccess`, sem lógica de execução de SQL neste arquivo
+   (só renderiza um link pra aba antiga). Sem achado.
+3. `misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt` — só uma
+   interface (`getBucketName`/`getBucketRegion`), sem implementação nem
+   lógica. Nada a investigar.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão
+pra próxima rodada: continuar em `misk-admin` (`HibernateDatabaseQueryDynamicAction.kt`/
+`HibernateDatabaseQueryStaticAction.kt`, já mencionados na revisão do achado
+`VitessQueryHintHandler` mas nunca lidos por si só numa rodada de leitura
+profunda dedicada — endpoint admin que de fato executa query dinâmica é a
+superfície mais sensível ainda não coberta) ou `misk-hibernate/`/
+`misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado repetidamente em
+rodadas anteriores e ainda não atacado de fato).
+
+## Rodada 2026-08-29 (push automático, disparo #2) — fila vazia, leitura profunda em afterpay/sdk-ios
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada (36 revisados, 0
+pendentes — o próprio push que disparou foi o commit da rodada anterior de
+`misk-admin`/`misk-crypto`). Clonado publicamente (`git clone --depth 1`)
+`afterpay/sdk-ios` e `circlefin/evm-xreserve-contracts` (repos com poucos
+arquivos já lidos: 8 e 3 respectivamente) pra buscar candidatos com
+auth/session/crypto/token/login/password/admin/permission/access no nome
+ainda não lidos. Escolhidos 3 arquivos:
+
+1. `Sources/Afterpay/Helpers/JWT.swift` — `JWT.decode` indexa
+   `segments[1]` sem checar `segments.count` (crash em token malformado) e
+   nunca verifica a assinatura do JWT (só decodifica o payload). Rastreei
+   a cadeia completa: único call site é
+   `CashAppSigningResponse.decodeJwtToken()`, chamado só dentro de
+   `CashAppPayCheckout.signPayment`, que decodifica a resposta HTTP do
+   próprio endpoint de assinatura da Afterpay/Cash App
+   (`cashAppSigningURL`, vindo de `Configuration.environment` — nunca
+   fornecido por merchant/usuário). O payload decodificado só é usado pra
+   prefill de UI; a decisão financeira real acontece depois, do lado do
+   servidor, quando o JWT original (não o payload) é reenviado inteiro via
+   `checkoutV3Confirm` pro backend validar a assinatura antes de cobrar.
+   **Verdict: falso_positivo** (defeito de código real — vale nota pro
+   mantenedor — mas sem alcançabilidade por atacante externo dentro do
+   escopo deste SDK). Ver entrada `JWT.decode::ai_deep_read_finding` em
+   `queue.jsonl`.
+2. `Sources/Afterpay/Checkout/CheckoutWebViewController.swift` (fluxo V1,
+   iOS) — ao contrário do achado já confirmado em
+   `AfterpayCheckoutV2Activity.kt` (Android), aqui **há** validação de
+   host (`CheckoutHost.validSet.contains(host)`, linha 71) antes de
+   carregar a URL, e a `WKWebView` não registra nenhuma ponte JS
+   (`WKUserContentController`/`addScriptMessageHandler`) — o resultado do
+   checkout é extraído só de query params da URL de navegação
+   (`decidePolicyFor navigationAction`/`navigationResponse`), não de uma
+   interface JS exposta. Sem achado — reforça que o padrão problemático da
+   V2 Android (bridge JS sem allowlist de host) não se repete no
+   equivalente iOS deste fluxo.
+3. `circlefin/evm-xreserve-contracts/src/modules/x-reserve/TokenSupport.sol`
+   — `addSupportedToken`/`_setUnlimitedAllowances` concede allowance
+   ilimitada (`forceApprove(..., type(uint256).max)`) pro `gatewayWallet`/
+   `tokenMessenger`/`tokenMessengerV2` sempre que um token novo é
+   suportado, mas a função é `onlyOwner` — allowance ilimitada é o design
+   esperado pra um contrato de reserva/bridge administrado pelo owner, não
+   uma falha de autorização. Sem achado.
+
+`deep-read-log.json` atualizado com os arquivos acima (mais
+`CashAppSigningResponse.swift`/`CashAppPayCheckout.swift`/
+`CashAppSigningResult.swift`, lidos pra rastrear a cadeia de chamada do
+achado #1). Um item novo em `queue.jsonl` (achado #1, já investigado e
+resolvido nesta mesma rodada — falso_positivo). Sem relatório gerado (não
+elegível — sem alcançabilidade confirmada).
+
+## Rodada 2026-08-29 (rotina automática, fila vazia) — `cache/http.go` (hermit) + `HTTPRequest.swift` (cash-app-pay-ios-sdk)
+
+`queue.jsonl` sem itens `pending` no início desta rodada. Clonados via
+`git clone --depth 1` (público, sem conta/token) `cashapp/hermit` e
+`cashapp/cash-app-pay-ios-sdk` — os dois alvos do programa com menos
+arquivos cobertos em `deep-read-log.json`. Nenhum arquivo novo em nenhum
+dos dois tinha auth/session/crypto/token/login/password/admin/permission/
+access no nome (mesma ausência já observada em rodadas anteriores para
+estes repos), então segui julgamento de especialista sobre o fluxo de rede
+mais sensível ainda não coberto.
+
+2 arquivos lidos por completo:
+- `hermit/cache/http.go` — implementação HTTP de `PackageSource`
+  (`Download`/`ETag`/`Validate`). Verifiquei checksum: `downloadHTTP`
+  calcula SHA-256 do corpo baixado via `io.TeeReader` e rejeita
+  (`errors.Errorf`) se não bater com o `checksum` esperado ANTES do
+  `os.Rename` que move pro cache definitivo — sem janela onde um arquivo
+  com checksum errado fique disponível como se fosse válido. Também
+  conferi `cache.Path`/`BasePath` (`cache/cache.go`, lido em conjunto):
+  o nome do arquivo em disco é `hash[:2]/hash-basename`, onde `hash` é
+  `util.Hash(url, checksum)` (não controlável só pelo atacante) e
+  `basename` é `filepath.Base(url)` — `filepath.Base` sempre descarta
+  qualquer componente de diretório, incluindo `../`, então não há como
+  a URL do manifesto (definida pelos próprios mantenedores de pacotes
+  hermit, não input de rede em runtime) escapar do diretório de cache via
+  path traversal. Sem achado.
+- `cash-app-pay-ios-sdk/Sources/PayKit/Services/Networking/HTTPRequest.swift`
+  — struct trivial (`urlRequest`/`retryPolicy`/`handler`), sem lógica
+  própria de rede/auth para auditar; é só um envelope de request usado
+  pelo `RESTService.swift` já lido em rodada anterior.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`cashapp/hermit`
+ganhou `cache/http.go` e `cache/cache.go`; `cashapp/cash-app-pay-ios-sdk`
+ganhou `HTTPRequest.swift`). Sugestão pra próxima rodada: `misk-hibernate/`/
+`misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado há várias
+rodadas e ainda não atacado de fato) ou os arquivos restantes de
+`cash-app-pay-ios-sdk`/`square/wire` ainda não lidos.
