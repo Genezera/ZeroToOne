@@ -64,15 +64,25 @@ test('findReDoSRisk NÃO confunde divisão matemática com regex', () => {
   assert.equal(findReDoSRisk(src, 'x.js').length, 0);
 });
 
-test('scanJsSource combina as sete heurísticas e roda sem quebrar em código limpo', () => {
+test('scanJsSource combina as sete heurísticas + AST e roda sem quebrar em código limpo', async () => {
   const src = `
     export function safeAdd(a, b) {
       return a + b;
     }
     export const ID_RE = /^[a-zA-Z0-9_-]+$/;
   `;
-  const findings = scanJsSource(src, 'clean.ts');
+  const findings = await scanJsSource(src, 'clean.ts');
   assert.equal(findings.length, 0);
+});
+
+test('scanJsSource inclui achado de fluxo de dado rastreado por AST', async () => {
+  const src = `
+    function handler(req) {
+      exec("ping " + req.query.host);
+    }
+  `;
+  const findings = await scanJsSource(src, 'x.js');
+  assert.ok(findings.some((f) => f.type === 'tainted_data_flow'));
 });
 
 test('findPrototypePollutionRisk acha for...in atribuindo por chave sem guarda contra __proto__', () => {

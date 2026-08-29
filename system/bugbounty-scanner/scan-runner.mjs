@@ -108,7 +108,8 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       filesChecked++;
       repoShas[repoKey][file.path] = file.sha;
 
-      const findings = scanFn(source, `${repoKey}/${file.path}`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd, language }));
+      const scanned = await scanFn(source, `${repoKey}/${file.path}`); // await funciona pra scanFn síncrona ou assíncrona (ex.: scanJsSource usa AST)
+      const findings = scanned.map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd, language }));
       for (const f of findings) {
         const fp = fingerprint(f);
         if (seen.has(fp)) continue;

@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Sistema autonomo de crescimento de capital (US$200) - ledger, risk-gate, product pipeline",
+  "description": "ZeroToOne - centro de operacoes automatizado de bug bounty (pivo de 2026-08-28; ledger/risk-gate da fase anterior mantidos como historico)",
   "scripts": {
-    "test": "node --test \"system/test/*.test.mjs\""
+    "test": "node --test \"system/**/test/*.test.mjs\""
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "tree-sitter-javascript": "^0.25.0",
+    "tree-sitter-typescript": "^0.23.2",
     "web-tree-sitter": "^0.26.13"
   }
 }

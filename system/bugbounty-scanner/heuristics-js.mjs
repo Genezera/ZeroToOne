@@ -6,6 +6,7 @@
 // é esperado e aceitável: é triagem, não veredito.
 
 import { findHardcodedSecrets } from './heuristics-shared.mjs';
+import { findTaintedDataFlow } from './heuristics-js-ast.mjs';
 
 function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
@@ -159,7 +160,13 @@ export function findPathTraversalRisk(source, filename) {
   return findings;
 }
 
-export function scanJsSource(source, filename) {
+/** Assíncrona porque inclui a passada de AST (heuristics-js-ast.mjs, web-
+ * tree-sitter carrega WASM na primeira chamada). As demais heurísticas
+ * continuam síncronas/regex — o AST é uma camada A MAIS, não substitui:
+ * mais lenta, mais precisa, achado tipo `tainted_data_flow` é evidência
+ * mais forte que os `*_risk` baseados em texto. */
+export async function scanJsSource(source, filename) {
+  const astFindings = await findTaintedDataFlow(source, filename).catch(() => []);
   return [
     ...findEvalUsage(source, filename),
     ...findCommandInjectionRisk(source, filename),
@@ -168,5 +175,6 @@ export function scanJsSource(source, filename) {
     ...findSsrfRisk(source, filename),
     ...findPathTraversalRisk(source, filename),
     ...findHardcodedSecrets(source, filename),
+    ...astFindings,
   ];
 }
