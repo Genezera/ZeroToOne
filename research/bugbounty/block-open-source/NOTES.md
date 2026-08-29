@@ -715,3 +715,53 @@ mesma família de `misk-crypto`) e/ou os handlers de `application(_:open:)`
 reais nos apps de exemplo do `cash-app-pay-ios-sdk`/`sdk-android` que
 efetivamente parseiam a URL de redirect (fora de `Sources/`, então fora do
 escopo de bounty atual — só pra entender o fluxo completo).
+
+## Rodada 2026-08-29T0x — push automático (fila vazia), leitura profunda proativa
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada (25
+revisados, 0 pendentes). Segui a sugestão da rodada anterior + sparse-clone
+de `cashapp/misk` (`git clone --depth 1 --filter=blob:none --sparse`, só
+`misk/src/main/kotlin/misk/security` + `misk-crypto/src/main/kotlin`, não
+persistido no repo) pra listar arquivos ainda não lidos com auth/crypto/
+token/cert/permission no nome.
+
+3 arquivos lidos por completo:
+- `misk-crypto/.../LocalConfigKeyResolver.kt` — `getKeyByAlias` busca a
+  chave por nome numa lista local e preenche `kms_uri` com o default só
+  quando o tipo não é `HYBRID_ENCRYPT` (que usa outro mecanismo de chave,
+  não KMS simétrico). Sem lógica de autorização/comparação insegura; é
+  puro lookup + fallback de config. Sem falha encontrada.
+- `misk/.../security/csp/ContentSecurityPolicyInterceptor.kt` — interceptor
+  HTTP que seta o header `Content-Security-Policy` a partir de
+  `rules: List<String>`. As regras vêm da anotação `@ContentSecurityPolicy`
+  aplicada pelo desenvolvedor da aplicação consumidora no próprio código-
+  fonte (`action.function.findAnnotation<ContentSecurityPolicy>()`), nunca
+  de entrada de requisição — não há caminho pra um atacante controlar o
+  CSP emitido. Sem falha encontrada.
+- `misk/.../security/cert/X509CertificateExtensions.kt` — `isSignedBy`
+  chama `cert.verify(key)` e só captura `SignatureException`/
+  `InvalidKeyException` pra retornar `false`; `verify()` também pode lançar
+  `CertificateException`/`NoSuchAlgorithmException`/`NoSuchProviderException`
+  (ex.: certificado malformado ou algoritmo de assinatura não suportado
+  pelo provider), que propagariam sem tratamento em vez de virar `false`.
+  Investiguei se isso é explorável: busquei todos os usos de `isSignedBy`/
+  `isSelfSigned` no repo (`grep -rn` no clone completo) e só aparecem nos
+  próprios testes do arquivo (`X509CertificateExtensionsTest.kt`) — misk
+  não usa essas extensions em nenhuma lógica interna de validação de
+  cadeia de certificado. É uma extension function pública exposta pra quem
+  importar a lib, mas sem um caminho de chamada real dentro deste
+  repositório que decida "confiar" com base num `catch` ausente virando
+  exceção não tratada (o efeito mais provável de uma exceção não capturada
+  aqui é fail-closed — a chamada propaga e quebra o fluxo do chamador, não
+  silenciosamente retorna `true`). Não abri candidato: falta de robustez
+  potencial (exceções não cobertas), mas nenhuma cadeia de chamada real
+  neste repo a torna uma vulnerabilidade demonstrável — ficaria
+  especulativo demais para `ai_deep_read_finding`.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão
+pra próxima rodada: `misk-hibernate/`/`misk-jdbc/` (SQL injection via
+Hibernate/JDBC, ainda não coberto — sinalizado em rodadas anteriores e
+ainda não atacado de fato) ou os handlers `application(_:open:)`/deep-link
+reais nos apps de exemplo dos SDKs mobile (fora do escopo de bounty, só
+pra entender o fluxo completo de ponta a ponta).
