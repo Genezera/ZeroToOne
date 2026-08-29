@@ -765,3 +765,49 @@ Hibernate/JDBC, ainda não coberto — sinalizado em rodadas anteriores e
 ainda não atacado de fato) ou os handlers `application(_:open:)`/deep-link
 reais nos apps de exemplo dos SDKs mobile (fora do escopo de bounty, só
 pra entender o fluxo completo de ponta a ponta).
+
+## Rodada 2026-08-29 (push automático) — fila vazia, leitura profunda proativa
+
+`queue.jsonl` sem itens `pending` (31 revisados, 0 pendentes) no disparo
+desta rodada (push no `master`). Segui a fila de sugestões acumulada de
+rodadas anteriores e ampliei pra área ainda não coberta em `cashapp/misk`:
+geração de token e sessão MCP (novo módulo `misk-mcp`, ainda sem entrada
+no log). Sparse-clone rasteado (`--filter=blob:none --sparse`, não
+persistido) só para listar arquivos com auth/session/crypto/token/login/
+password/admin/permission/access no nome ainda não lidos, via
+`git ls-tree`.
+
+4 arquivos lidos por completo (via `raw.githubusercontent.com`, repo não
+persistido localmente):
+- `misk-tokens/.../RealTokenGenerator.kt` — a classe nova,
+  `RealTokenGenerator2`, gera token pegando bytes de `SecureRandom` e
+  aplicando `and 31.toByte()` (mantém só os 5 bits baixos de cada byte)
+  antes de indexar `indexToChar`. Isso é a técnica correta e não
+  enviesada pra sortear de um alfabeto de 32 símbolos a partir de bytes
+  aleatórios (32 é potência de 2 — sem "modulo bias"), e a fonte de
+  aleatoriedade é `SecureRandom`, não `java.util.Random`/`Math.random`.
+  Sem falha. A classe antiga `RealTokenGenerator` só delega pra
+  `wisp.token.RealTokenGenerator()` (não lida ainda, candidato pra
+  próxima rodada só pra confirmar que é a mesma implementação).
+- `misk-mcp/.../action/McpSessionId.kt` — só lê o header HTTP
+  `Mcp-Session-Id` e lança exceção se ausente; nenhuma lógica de geração/
+  validação aqui, é um acessor read-only action-scoped.
+- `misk-mcp/.../McpSessionHandler.kt` — é só uma `interface` (contrato)
+  com Javadoc detalhado dizendo que a implementação real deve gerar ID
+  "cryptographically secure" e validar expiração/estado — misk não
+  fornece uma implementação de produção neste repositório (só um fake de
+  teste em `testFixtures/`, fora do escopo de bounty). Sem implementação
+  real pra auditar, não há vulnerabilidade a confirmar dentro do próprio
+  `cashapp/misk`; o risco (se algum) estaria em quem implementa a
+  interface no serviço consumidor, fora deste repo.
+- `misk-mcp/.../internal/McpServerSessionContext.kt` — duas `data class`
+  que só envelopam `ServerSession`/`ClientConnection` do SDK MCP oficial
+  pra disponibilizar no `CoroutineContext`; nenhuma lógica própria.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 4 arquivos acima. Sugestão
+pra próxima rodada: `misk-hibernate/`/`misk-jdbc/` continua pendente
+(mesma sugestão de rodadas anteriores, ainda não atacada); ou
+`wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt` (a
+implementação real por trás do `RealTokenGenerator` antigo, delegada mas
+não lida ainda).

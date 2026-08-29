@@ -16,7 +16,11 @@
     "misk-crypto/src/main/kotlin/misk/crypto/ExternalKeyResolver.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/LocalConfigKeyResolver.kt",
     "misk/src/main/kotlin/misk/security/csp/ContentSecurityPolicyInterceptor.kt",
-    "misk/src/main/kotlin/misk/security/cert/X509CertificateExtensions.kt"
+    "misk/src/main/kotlin/misk/security/cert/X509CertificateExtensions.kt",
+    "misk-tokens/src/main/kotlin/misk/tokens/RealTokenGenerator.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/action/McpSessionId.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/McpSessionHandler.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/internal/McpServerSessionContext.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
