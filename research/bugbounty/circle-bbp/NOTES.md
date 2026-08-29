@@ -312,3 +312,53 @@ Source), ambos em `circlefin/evm-cctp-contracts`, ainda não cobertos no
 
 Nenhum item novo adicionado à fila. `deep-read-log.json` atualizado com
 os 2 arquivos acima.
+
+## Rodada 2026-08-29 (disparo por push no repo, fila vazia) — `ColdStorageAddressBookPlugin` + multisig v0.7/v0.8
+
+`queue.jsonl` sem itens `pending` (33/33 já `reviewed`) no disparo desta
+rodada. Leitura profunda proativa cobriu 4 arquivos novos de
+`circlefin/buidl-wallet-contracts`, escolhidos por serem os pontos de
+controle de acesso/autorização mais valiosos ainda não lidos (autorização
+de destinatário de fundos e verificação de assinatura multisig):
+
+- `src/msca/6900/v0.7/plugins/v1_0_0/addressbook/ColdStorageAddressBookPlugin.sol`
+  — hook de pré-validação que restringe `execute`/`executeBatch` a uma
+  allowlist de destinatários (`_allowedRecipients`, por conta). Segui a
+  cadeia até `src/libs/RecipientAddressLib.sol` (não estava no orçamento
+  de 3, mas foi necessário pra fechar o raciocínio — decodifica o
+  "recipient" da calldata pra ERC20/721/1155). Ponto que investiguei a
+  fundo por suspeita de bypass: `approve`/`increaseAllowance`/
+  `setApprovalForAll` são decodificados e o **spender** é tratado como se
+  fosse o "recipient" e validado contra a mesma allowlist — a princípio
+  parecia poder ser um jeito de dar approve pra um spender arbitrário sem
+  checagem, mas não é: `RecipientAddressLib.getERC20TokenRecipient` (e as
+  variantes ERC721/1155) tratam explicitamente `approve`/
+  `increaseAllowance`/`setApprovalForAll` com o mesmo offset de endereço
+  do "recipient", ou seja, o spender de uma aprovação TAMBÉM precisa estar
+  na allowlist — design correto (impede dar approve pra endereço não
+  autorizado como forma de desviar fundos depois). `target` (o contrato
+  chamado) não é ele mesmo restrito à allowlist, só o "recipient"/spender
+  decodificado da calldata — isso é uma limitação de design assumida (a
+  proteção é sobre para onde valor/allowance pode ir, não sobre quais
+  contratos a conta pode chamar), não uma falha nova; qualquer bypass via
+  contrato malicioso em `target` exigiria que a conta já tivesse allowance
+  prévia concedida a esse contrato pra outro token, o que não é algo que
+  este plugin introduz. Sem achado (confidence não chegou a um nível que
+  justificasse abrir item na fila — ceticismo aplicado, hipótese de bypass
+  refutada).
+- `src/msca/6900/v0.7/plugins/v1_0_0/multisig/WeightedWebauthnMultisigPlugin.sol`
+  e `src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol`
+  (a versão v0.8 mais nova do mesmo mecanismo) — revisei `checkNSignatures`
+  em ambos: o loop `while (accumulatedWeight < thresholdWeight)` acumula
+  peso mesmo de assinaturas inválidas/fora de ordem, mas isso é seguro
+  porque `success`/`firstFailure` só são setados uma vez (guard
+  `if (response.success)`) e nunca desfeitos — ou seja, qualquer falha
+  individual invalida o lote inteiro no retorno final, independente de
+  quanto peso foi acumulado. Sem loop infinito (cada iteração consome 65
+  bytes da assinatura, limitado pelo tamanho do calldata). Sem
+  reentrância (`view`/`pure`, sem chamada externa mutável). Nenhuma falha
+  de lógica encontrada em nenhum dos dois.
+
+`deep-read-log.json` atualizado com os 4 arquivos acima (mais
+`RecipientAddressLib.sol`, lido por necessidade de rastreio de cadeia).
+Nenhum item novo adicionado à fila — resultado normal desta rodada.

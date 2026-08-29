@@ -82,7 +82,11 @@
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
     "src/libs/WebAuthnLib.sol",
     "src/msca/6900/v0.8/modules/validation/SingleSignerValidationModule.sol",
-    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/BaseWeightedMultisigPlugin.sol"
+    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/BaseWeightedMultisigPlugin.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/addressbook/ColdStorageAddressBookPlugin.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/WeightedWebauthnMultisigPlugin.sol",
+    "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
+    "src/libs/RecipientAddressLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
