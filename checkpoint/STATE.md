@@ -639,6 +639,30 @@ verdade:
 arquivados). `npm test` corrigido pra rodar tudo (`system/**/test/`), não
 só `system/test/`.
 
+## Circle BBP (Solidity) + verificação do painel (2026-08-29)
+Usuário pediu pra tratar os alvos descobertos da melhor maneira e
+verificar se tudo reflete no painel. A descoberta automática já tinha
+achado um programa NOVO real: **Circle BBP** (emissora do USDC), 15 repos
+em escopo na HackerOne, `evm-cctp-contracts` confirmado
+`eligible_for_bounty: true, max_severity: critical`. Construído
+`heuristics-solidity.mjs` (4 classes bem estabelecidas: reentrância,
+retorno de chamada não checado, `tx.origin`, `delegatecall` de risco — 9
+testes) e `targets-solidity.mjs` com os 5 repos Solidity menores/mais
+tratáveis do programa. Rodada real: **6 candidatos genuínos** em
+`evm-gateway-contracts`/`buidl-wallet-contracts` — nota honesta no
+NOTES.md que a maioria está em script de deploy (ameaça bem menor que
+contrato de produção). Conflito de merge real em `queue.jsonl` (não só
+arquivo gerado) resolvido preservando os dois lados — os 6 achados
+Solidity E um achado genuíno do agente de nuvem (leitura profunda achou
+gap real de WebView no Afterpay V2, marcado `inconclusivo` com honestidade
+sobre o que não dá pra confirmar sem sair do escopo).
+
+Verificação do painel: confirmado via inspeção direta que TUDO reflete
+corretamente (14 alvos, 4 programas, 6 linguagens, os 6 achados Solidity
+com detalhe completo, atividade cronológica completa). Adicionada
+transição suave entre seções (fade+slide, respeitando
+prefers-reduced-motion) — antes trocava abrupto.
+
 ## Estado consolidado do centro de operações (2026-08-28, fim de sessão)
 4 tarefas agendadas do Windows, janela oculta (VBS wrapper), sobrevivem a
 reinício: `ZeroToOne_BugBountyScanner` (diária 9h — scanner + retro-
