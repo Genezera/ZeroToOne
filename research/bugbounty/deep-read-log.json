@@ -10,13 +10,15 @@
     "misk-crypto/src/main/kotlin/misk/crypto/CiphertextFormat.kt",
     "misk/src/main/kotlin/misk/security/authz/AccessAnnotationEntry.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/pgp/RealPgpDecrypter.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/KeyManager.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/KeyManager.kt",
+    "misk/src/main/kotlin/misk/security/authz/AccessControlModule.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
     "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringClearTextAdapter.kt",
     "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
-    "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt"
+    "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt",
+    "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt"
   ],
   "cashapp/hermit": [
     "redact/redact.go",
@@ -39,7 +41,8 @@
     "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutActivity.kt",
     "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV3Activity.kt",
     "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutMessage.kt",
-    "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutCompletion.kt"
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutCompletion.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/model/CheckoutV3Tokens.kt"
   ],
   "afterpay/sdk-ios": [
     "Sources/Afterpay/Helpers/JWT.swift",

@@ -633,3 +633,41 @@ mesmo tipo de pergunta sobre navegação pós-load não foi verificada lá
 também. Sugestão pra próxima rodada de verdade: `misk-hibernate/`/
 `misk-jdbc/` (SQL injection via Hibernate/JDBC, ainda não coberto) ou
 `StateMachine.swift` do `cash-app-pay-ios-sdk`.
+
+## Rodada 2026-08-29T01:38Z — fila vazia (0 pendentes), leitura profunda proativa
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada (24
+revisados, 0 pendentes — ver `STATUS.md`). Rodada inteira foi leitura
+profunda proativa, seguindo a sugestão deixada na rodada anterior.
+
+3 arquivos novos lidos (nenhum ainda no `deep-read-log.json`), escolhidos
+por nome com termo auth/token/access:
+- `cashapp/cash-app-pay-android-sdk`:
+  `core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt`
+  — data class Moshi pura (mobileUrl, qrCodeImageUrl, qrCodeSvgUrl,
+  refreshesAt), sem lógica nenhuma. Nada a investigar.
+- `afterpay/sdk-android`:
+  `afterpay/src/main/kotlin/com/afterpay/android/model/CheckoutV3Tokens.kt`
+  — data class `@Serializable` pura (token, singleUseCardToken,
+  ppaConfirmToken), sem lógica nenhuma. Nada a investigar.
+- `cashapp/misk`: `misk/src/main/kotlin/misk/security/authz/AccessControlModule.kt`
+  — módulo Guice que só registra os bindings de `AccessInterceptor.Factory`
+  e `AccessAnnotationEntry` (já lidos e avaliados em rodada anterior); é
+  fiação de DI, sem lógica de decisão própria. Nada a investigar.
+
+Também explorei (via `grep`, não leitura completa, não contabilizado no
+`deep-read-log.json`) `misk-jdbc/TraditionalSchemaMigrator.kt` e
+`BaseSchemaMigrator.kt` seguindo a sugestão anterior de checar SQLi em
+migração de schema: o único `Statement`/`addBatch` executa o conteúdo dos
+próprios arquivos de migração `.sql` empacotados no classpath da aplicação
+(recurso do próprio repo/deploy, não entrada de usuário em runtime) — não é
+superfície de SQL injection alcançável por um atacante externo. Não conta
+como leitura completa desta rodada; fica como candidato descartado (não
+"a investigar") em vez de pendência para a próxima.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado normal.
+`deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão pra
+próxima rodada: `StateMachine.swift` do `cash-app-pay-ios-sdk` (ainda não
+lido) e/ou os arquivos ainda não lidos de `misk-crypto` relacionados a
+resolução de chave (`KeyResolver.kt`, `ExternalKeyResolver.kt`,
+`LocalConfigKeyResolver.kt`).
