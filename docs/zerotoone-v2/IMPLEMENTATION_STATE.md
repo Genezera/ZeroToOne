@@ -192,11 +192,90 @@ cenários (mesmo ambiente sem export; ambiente novo com export).
   regenerados em cima do resultado sem quebrar, confirmando que os
   consumidores existentes continuam funcionando durante a transição.
 
-## Fases 2-5
+## Fase 3 — primeira vertical completa (revalidação dos 2 casos obrigatórios)
 
-Não iniciadas. Dependem da Fase 1 estar concluída (schema normalizado,
-persistência real e sandbox são pré-requisito para adapters SARIF,
-dedup, verticais de validação e workbench).
+**Status: concluída em 2026-08-30** para os 2 casos que o prompt mestre
+nomeia explicitamente como obrigatórios de revalidação.
+
+### Extensão da máquina de estados: `known_duplicate`
+Faltava um estado pra "o código faz exatamente o que foi lido, mas já é
+publicamente conhecido/aceito — não é novo". `false_positive` não servia
+(o comportamento é real, não um erro de detecção). Novo estado terminal,
+com precondição própria: exige `knownIssueSource` citando título + tipo
+de fonte (`public_audit`/`advisory`/`issue`/`changelog`) + url ou quote —
+nunca "parece conhecido" sem citação rastreável. Mapeia pro verdict
+legado `falso_positivo` nos exports v1 (mesmo sinal prático: não é lead
+a perseguir). 4 testes novos.
+
+### Caso 1 — Circle BBP, `Withdrawals.sol` (denylist bypass no saque)
+Resultado: **`known_duplicate`**, não `scope_verified`. Encontrado e lido
+por completo (24 páginas, extração real via `pypdf`) o relatório PÚBLICO
+de auditoria da ChainSecurity pra Circle Gateway (08/07/2025) —
+`Withdrawals.sol` estava explicitamente no escopo revisado (commit
+`5b5446f5...`), e a seção 8.1 ("Notes", definida no próprio relatório
+como achados que não exigem correção) documenta textualmente: "denylisted
+users can still withdraw their tokens from the wallet contract" — o
+EXATO comportamento identificado de forma independente por este sistema,
+só que já conhecido pela Circle e pela ChainSecurity mais de um ano
+antes. Circle Gateway está em produção real desde agosto de 2025 (7
+chains). Relatório-rascunho atualizado com aviso "NÃO ENVIAR" e a citação
+completa. Cadeia de código da leitura original permanece correta — só a
+conclusão sobre novidade mudou.
+
+### Caso 2 — Block Open Source, `wire-schema` (path traversal em import de `.proto`)
+Resultado: **`human_ready`** — primeiro achado do sistema inteiro a
+chegar honestamente a esse estado sob a máquina v2. Checagem de
+duplicata: nenhum advisory/issue do `square/wire` cobre este caminho
+específico (PR #3657 relacionado só toca o lado de escrita do arquivo
+gerado). Prova de conceito executável de verdade: programa Java usando o
+JAR real de `okio-jvm` 3.12.0 (baixado do Maven Central — bytecode de
+produção real, não reimplementação), sem precisar compilar o wire-schema
+inteiro (evitaria um build Gradle multiplataforma) — confirma que
+`Path.resolve(String)` (mecanismo exato de `DirectoryRoot.resolve`)
+permite tanto import relativo com `..` quanto import absoluto escaparem
+da raiz protegida, com leitura real de conteúdo de arquivo fora dela.
+Grau de evidência subiu de E2 (cadeia de código) pra E3 (reprodução
+determinística local). Bug pego rodando a própria PoC: um `startsWith()`
+ingênuo pra checar "escapou" dava falso-negativo pro caso relativo,
+porque a string ainda contém `..` de forma literal (Okio não normaliza
+por padrão) — o sinal real é a resolução do sistema operacional em
+`fileSystem.exists()`/leitura, não a aparência da string. Corrigido antes
+de registrar o resultado. Escopo confirmado (`square/wire` em escopo
+real do Bugcrowd), elegibilidade de recompensa por ativo não exposta
+pelo dataset (confidence "low" — precisa confirmação manual antes de
+enviar, sinalizado no próprio relatório).
+
+### Verificação
+- `npm test`: **225/225 passando**.
+- `verifyChain('research')`: válido, **147 entradas** (143 do fim da
+  Fase 1 corrigida + 4 desta rodada: reproduced_local, scope_verified e
+  human_ready do caso Block, known_duplicate do caso Circle).
+- Estado real da fila hoje: 33 `false_positive`, 1 `inconclusive`, 1
+  `known_duplicate`, 1 `corroborated_static` (StackingDAO, não tocado
+  nesta rodada), **1 `human_ready`** (pronto pra revisão humana de
+  verdade, não um rascunho especulativo).
+- PoC compilada e rodada de verdade (`javac`/`java` reais, JDK 21 local,
+  dependência real do Maven Central) — não simulada nem descrita como se
+  tivesse rodado.
+
+### O que ficou de fora desta rodada
+- **StackingDAO `set-token-uri`** (o 3º item em `corroborated_static`) —
+  não revalidado ainda; candidato natural pro próximo lote. Impacto
+  baixo (só metadado), então prioridade menor que os 2 casos já feitos.
+- Checagem de duplicata pros outros 33 `false_positive`/1 `inconclusive`
+  não foi refeita — eram refutados por motivo técnico (não-exploração),
+  não por questão de novidade, então o gate de duplicata não muda o
+  resultado deles.
+
+## Fases 2, 4 e 5
+
+Não iniciadas. Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL,
+benchmark de detector, quarentena do `ssrf_risk`) e Fase 4 (validadores
+web/API/mobile) ficam mais valiosas depois de mais verticais completas
+como a da Fase 3 confirmarem o padrão. Fase 5 (outcomes reais de
+plataforma, calibrador, ranking de alvo) depende de pelo menos um envio
+real acontecer primeiro — e isso agora existe: o achado do Block Open
+Source está pronto pra revisão humana de verdade.
 
 ## Bloqueios externos conhecidos
 

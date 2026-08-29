@@ -1674,3 +1674,23 @@ ganhou `HTTPRequest.swift`). Sugestão pra próxima rodada: `misk-hibernate/`/
 `misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado há várias
 rodadas e ainda não atacado de fato) ou os arquivos restantes de
 `cash-app-pay-ios-sdk`/`square/wire` ainda não lidos.
+
+## Rodada 2026-08-30 (Fase 3, ZeroToOne v2) — primeira vertical completa alcança `human_ready`
+
+O achado `wire-schema/.../Root.kt::DirectoryRoot.resolve::path_traversal_risk`
+foi levado até o fim da vertical do plano v2: (1) checagem de duplicata —
+nenhum advisory/issue público do `square/wire` cobre este caminho
+específico (o PR #3657 relacionado só toca o lado de escrita do arquivo
+gerado, não o de leitura do import); (2) prova de conceito executável de
+verdade — programa Java usando o JAR real de `okio-jvm` 3.12.0 (Maven
+Central), reproduzindo `DirectoryRoot.resolve` fora do wire-schema
+inteiro, confirmando que import relativo com `..` e import absoluto
+escapam da raiz protegida (leitura real de conteúdo fora dela); (3)
+escopo confirmado (`square/wire` em escopo real do programa, elegibilidade
+de recompensa por ativo não exposta pelo dataset do Bugcrowd —
+confidence "low", precisa confirmação manual antes de enviar); (4)
+vínculo com o artefato publicado real (`wire-compiler`/plugins Gradle e
+Maven). Estado final: **`human_ready`** — primeiro achado do sistema
+inteiro (qualquer programa) a chegar honestamente a esse estado sob a
+máquina de estados v2. Relatório atualizado com a PoC completa em
+`research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`.

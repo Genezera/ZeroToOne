@@ -20,9 +20,10 @@ export const STATES = [
   'resolved',
   'false_positive',
   'inconclusive',
+  'known_duplicate',
 ];
 
-const TERMINAL_STATES = new Set(['false_positive', 'duplicate', 'informative', 'rejected', 'paid', 'resolved']);
+const TERMINAL_STATES = new Set(['false_positive', 'duplicate', 'informative', 'rejected', 'paid', 'resolved', 'known_duplicate']);
 
 function ok(reason) {
   return { ok: true, reason };
@@ -114,6 +115,20 @@ for (const from of REFUTABLE_FROM) {
   PRECONDITIONS[`${from}->inconclusive`] = (f, ctx = {}) => {
     if (!f.reasoning || f.reasoning.trim().length < 10) return fail('precisa de reasoning explicando a incerteza');
     return ok('marcado inconclusivo com justificativa — nunca "confirmado" por otimismo');
+  };
+  // Diferente de false_positive: o comportamento de código é REAL e bate
+  // com o que foi lido — só não é novo. Exige citar ONDE já foi
+  // divulgado (auditoria pública, advisory, issue, changelog) — nunca
+  // "parece conhecido" sem fonte, seção 6.16 da auditoria externa.
+  PRECONDITIONS[`${from}->known_duplicate`] = (f, ctx = {}) => {
+    const src = ctx.knownIssueSource;
+    if (!src || !src.title || !src.sourceType) {
+      return fail('precisa de knownIssueSource citando título e tipo da fonte (public_audit|advisory|issue|changelog) — nunca "parece já conhecido" sem citação verificável');
+    }
+    if (!src.url && !src.quote) {
+      return fail('knownIssueSource precisa de url ou quote — a fonte tem que ser rastreável, não só afirmada');
+    }
+    return ok(`comportamento real, mas já divulgado publicamente em "${src.title}" (${src.sourceType}) — não é novo, não é elegível para recompensa`);
   };
 }
 

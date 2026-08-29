@@ -1000,3 +1000,23 @@ adicionado à fila — resultado normal. A sugestão restante da rodada
 anterior (refund flow multi-assinatura de `PaymentSettlementV2.sol`,
 `requireDestinationRefundSig`) continua pendente — já sinalizada há várias
 rodadas, candidata forte pra próxima.
+
+## Rodada 2026-08-30 (Fase 3, ZeroToOne v2) — checagem de duplicata/novidade no achado de denylist do `Withdrawals.sol`
+
+O achado `Withdrawals.sol::initiateWithdrawal_withdraw` (denylist não
+aplicado no saque, marcado `confirmado` na fila v1 / `corroborated_static`
+no banco v2) foi levado adiante na primeira vertical completa do plano
+v2 — e refutado como **não-novo**, não pela leitura de código estar
+errada, mas por já estar publicamente documentado: o relatório PÚBLICO
+de auditoria da ChainSecurity pra Circle Gateway (08/07/2025), com
+`Withdrawals.sol` explicitamente em escopo, descreve exatamente esse
+comportamento na seção 8.1 ("Notes" — achados que não exigem correção),
+tratando-o como característica de design aceita, não bug. Circle Gateway
+está em produção real desde agosto de 2025 (7 chains). Estado final:
+`known_duplicate`. Rascunho de relatório atualizado com a citação
+completa e marcado "NÃO ENVIAR" — `research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`.
+
+Isso é o primeiro caso real, nesta missão, de um achado tecnicamente
+correto (o código faz o que foi descrito) mas descartado por falta de
+novidade — exatamente o tipo de checagem que faltava antes de qualquer
+achado chegar perto de virar um relatório enviado de verdade.

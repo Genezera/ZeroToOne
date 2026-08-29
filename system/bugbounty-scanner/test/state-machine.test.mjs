@@ -6,12 +6,35 @@ function finding(state, overrides = {}) {
   return { id: 'x', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
 }
 
-test('todos os 14 estados do prompt mestre existem', () => {
+test('todos os 14 estados do prompt mestre existem, mais known_duplicate (extensão desta sessão)', () => {
   assert.deepEqual([...STATES].sort(), [
     'candidate', 'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready',
     'submitted', 'triaged', 'duplicate', 'informative', 'rejected', 'paid', 'resolved',
-    'false_positive', 'inconclusive',
+    'false_positive', 'inconclusive', 'known_duplicate',
   ].sort());
+});
+
+test('known_duplicate exige knownIssueSource com título+tipo+url/quote — nunca "parece conhecido" sem citação', () => {
+  const f = finding('corroborated_static');
+  assert.equal(transition(f, 'known_duplicate', {}).ok, false);
+  assert.equal(transition(f, 'known_duplicate', { knownIssueSource: { title: 'X' } }).ok, false, 'falta sourceType e url/quote');
+  assert.equal(transition(f, 'known_duplicate', { knownIssueSource: { title: 'X', sourceType: 'public_audit' } }).ok, false, 'falta url ou quote');
+  const good = transition(f, 'known_duplicate', {
+    knownIssueSource: { title: 'ChainSecurity Circle Gateway audit, seção 8.1', sourceType: 'public_audit', url: 'https://circle.com/...' },
+  });
+  assert.equal(good.ok, true);
+});
+
+test('known_duplicate é alcançável de qualquer estado não-terminal, como false_positive/inconclusive', () => {
+  const src = { knownIssueSource: { title: 'advisory X', sourceType: 'advisory', quote: 'trecho citado' } };
+  for (const s of ['candidate', 'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready']) {
+    assert.equal(transition(finding(s), 'known_duplicate', src).ok, true, `${s} -> known_duplicate deveria ser permitido`);
+  }
+});
+
+test('known_duplicate é terminal — nenhuma transição sai dele', () => {
+  assert.equal(isTerminal('known_duplicate'), true);
+  assert.equal(transition(finding('known_duplicate'), 'candidate', {}).ok, false);
 });
 
 test('estado desconhecido é rejeitado', () => {
@@ -101,6 +124,6 @@ test('nenhuma transição sai de um estado terminal', () => {
 });
 
 test('validTransitionsFrom lista exatamente as transições programadas', () => {
-  assert.deepEqual(validTransitionsFrom('candidate').sort(), ['corroborated_static', 'false_positive', 'inconclusive'].sort());
+  assert.deepEqual(validTransitionsFrom('candidate').sort(), ['corroborated_static', 'false_positive', 'inconclusive', 'known_duplicate'].sort());
   assert.deepEqual(validTransitionsFrom('paid'), []);
 });

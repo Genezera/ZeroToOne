@@ -151,6 +151,17 @@ test('exportFindingsToQueueLines: candidate vira status=pending sem verdict; fal
   });
 });
 
+test('exportFindingsToQueueLines: known_duplicate mapeia pro verdict "falso_positivo" legado (não é lead a perseguir, mesmo o código sendo real)', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { ...SAMPLE, id: 'a', state: 'known_duplicate', reasoning: 'já divulgado em auditoria pública' });
+    const [line] = exportFindingsToQueueLines(db).map((l) => JSON.parse(l));
+    assert.equal(line.verdict, 'falso_positivo');
+    assert.equal(line.state, 'known_duplicate');
+    closeDb(db);
+  });
+});
+
 test('exportFindingsToQueueLines: estados pós-candidate que não são terminal-negativo mapeiam pro verdict "confirmado" legado', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);

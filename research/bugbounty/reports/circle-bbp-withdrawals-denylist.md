@@ -1,19 +1,35 @@
-# ⚠️ RASCUNHO — REVISÃO HUMANA OBRIGATÓRIA ANTES DE ENVIAR
+# 🛑 FECHADO — NÃO ENVIAR — comportamento já divulgado publicamente
 
-Este relatório foi gerado por IA a partir de análise de código-fonte
-público. **Não foi enviado a nenhuma plataforma.** Antes de copiar/colar e
-enviar, confira:
+**Este achado foi investigado até o fim e refutado como não-novo em
+30/08/2026.** Estado no sistema: `known_duplicate` (não
+`human_ready`/`confirmado`). Não envie este rascunho a nenhuma
+plataforma — o restante deste arquivo é mantido como registro histórico
+da investigação, não como relatório pronto pra copiar/colar.
 
-- [ ] Escopo confirmado — o ativo afetado está no escopo do programa AGORA
-      (escopo pode mudar; reconfirme na página do programa antes de enviar)
-- [ ] Categoria confirmada — bate com uma categoria que o programa
-      declara como elegível para recompensa (não é metadado/cosmético)
-- [ ] Evidência conferida — os trechos de código abaixo realmente
-      existem no arquivo/linha citados (não foi paráfrase/alucinação)
-- [ ] Não é duplicata — checado contra relatórios já enviados por você
-      a este programa
+**Por quê:** o relatório PÚBLICO de auditoria da ChainSecurity pra Circle
+Gateway ("PUBLIC Code Assessment of the Circle Gateway Smart Contracts",
+08/07/2025) tinha `Withdrawals.sol` explicitamente no escopo revisado
+(commit `5b5446f5c622901acaea6a875b022425eecb0c13`) e documenta, na seção
+8.1 ("Denylist on GatewayWallet and GatewayMinter"):
+
+> "The GatewayWallet prevents denylisted accounts from depositing tokens
+> into the contract, updating delegations, or bridging (including
+> same-chain transfers) tokens. However, denylisted users can still
+> withdraw their tokens from the wallet contract."
+
+Isso é exatamente o comportamento que este relatório descreve abaixo —
+mas já era conhecido pela Circle e pela ChainSecurity mais de um ano
+antes desta varredura, tratado como característica de design aceita (a
+seção 8 do relatório é "Notes", definida ali como achados que "não
+exigem correção imediata"), não como vulnerabilidade. Fonte completa:
+https://6778953.fs1.hubspotusercontent-na1.net/hubfs/6778953/CCTP/%5BPublic%5D%20%5BChainSecurity%5D%20Circle_Gateway_audit.pdf
+
+A cadeia de código identificada abaixo continua correta e bem
+verificada — só a conclusão sobre novidade/elegibilidade mudou.
 
 ---
+
+## Investigação original (mantida como registro — NÃO enviar)
 
 ## Título
 Denylist (freeze de compliance) não é aplicado no caminho de saque permissionless de `GatewayWallet`, permitindo que um endereço congelado retire fundos já depositados
