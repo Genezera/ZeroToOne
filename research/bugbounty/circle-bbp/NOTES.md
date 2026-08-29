@@ -550,3 +550,42 @@ arquivos, `evm-gateway-contracts` com 11). Nenhum relatório escrito
 (verdict falso_positivo). `BurnIntentLib.sol` (verificação EIP-712 de burn
 intents) segue como sugestão pendente pra uma rodada futura — não coberta
 ainda.
+
+## Rodada — fila vazia, leitura profunda no BurnIntentLib pendente (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Cobri a sugestão deixada na
+rodada anterior: cloneu `circlefin/evm-gateway-contracts` (branch master)
+e `circlefin/evm-cpn-contracts` (branch main) via `git clone` público pra
+localizar `BurnIntentLib.sol` (estava em `evm-gateway-contracts/src/lib/`,
+não em `evm-cpn-contracts`).
+
+Lidos (3 novos, todos crypto/EIP-712, escopo `evm-gateway-contracts`):
+1. `src/lib/BurnIntentLib.sol` — encode/validate/hash de `BurnIntent` e
+   `BurnIntentSet`. Validação estrutural (magic number, comprimento
+   declarado vs real, bounds por elemento em sets) segue o mesmo padrão já
+   auditado em `AttestationLib.sol`. `getTypedDataHash`/
+   `_getBurnIntentTypedDataHash` montam o hash EIP-712 via assembly
+   (`BURN_INTENT_TYPEHASH` + campos + hash do `TransferSpec` aninhado).
+2. `src/lib/BurnIntents.sol` — definição de struct/typehash/offsets. Os
+   typehashes (`BURN_INTENT_TYPEHASH`, `BURN_INTENT_SET_TYPEHASH`) batem
+   com a assinatura de campos comentada no arquivo (conferi a ordem dos
+   campos manualmente, sem recomputar o keccak256 — não executei nada).
+3. `src/lib/TransferSpecLib.sol` — a lib de mais baixo nível, usada tanto
+   por `AttestationLib` quanto por `BurnIntentLib`. `getTypedDataHash`
+   usa assembly com `staticcall` ao precompile de identidade (endereço
+   `4`) pra copiar 320 bytes de campos contíguos da view de memória
+   direto pro buffer de hash — eficiente, mas incomum o bastante pra
+   merecer ceticismo. Verifiquei: o ponteiro de memória livre
+   (`mload(0x40)`) nunca é avançado após os `mstore`/`staticcall`, mas
+   isso é seguro aqui porque o buffer é consumido pelo `keccak256` dentro
+   do mesmo bloco assembly, antes de qualquer outro código Solidity rodar
+   — não há corrupção de estado porque nada mais reutiliza essa região de
+   memória "não reservada" antes do hash já ter sido calculado e copiado
+   pro retorno.
+
+Também conferi (grep em `Burns.sol`, já lido antes) que `maxBlockHeight`
+do burn intent É checado contra `block.number` antes de honrar o burn
+(`IntentExpiredAtIndex` se expirado) — não há brecha de replay óbvia por
+esse ângulo.
+
+Nenhum achado. `deep-read-log.json` atualizado com os 3 arquivos novos de
+`evm-gateway-contracts` (agora 14 arquivos cobertos nesse alvo).

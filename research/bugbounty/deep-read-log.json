@@ -149,7 +149,10 @@
     "src/GatewayCommon.sol",
     "src/GatewayWallet.sol",
     "src/GatewayMinter.sol",
-    "src/lib/AttestationLib.sol"
+    "src/lib/AttestationLib.sol",
+    "src/lib/BurnIntentLib.sol",
+    "src/lib/BurnIntents.sol",
+    "src/lib/TransferSpecLib.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
