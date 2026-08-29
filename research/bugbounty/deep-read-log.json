@@ -192,7 +192,8 @@
     "src/lib/BurnIntentLib.sol",
     "src/lib/BurnIntents.sol",
     "src/lib/TransferSpecLib.sol",
-    "src/modules/common/TokenSupport.sol"
+    "src/modules/common/TokenSupport.sol",
+    "src/modules/wallet/WithdrawalDelay.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
@@ -200,13 +201,16 @@
     "src/lib/NoValidationAttestationLib.sol",
     "src/modules/x-reserve/TokenSupport.sol",
     "src/modules/remote-domain-depositor/Attestable.sol",
-    "src/modules/remote-domain-depositor/DomainManageable.sol"
+    "src/modules/remote-domain-depositor/DomainManageable.sol",
+    "src/RemoteDomainDepositor.sol",
+    "src/modules/x-reserve/DepositToRemote.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
     "src/PaymentSettlement.sol",
     "src/utils/Rescuable.sol",
     "src/utils/Configurable.sol",
-    "src/utils/Pausable.sol"
+    "src/utils/Pausable.sol",
+    "src/factory/Create2Factory.sol"
   ]
 }

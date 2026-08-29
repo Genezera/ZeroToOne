@@ -863,3 +863,48 @@ depósito cross-chain, ainda não lido neste alvo) ou revisitar o refund
 flow multi-assinatura de `PaymentSettlementV2.sol` (`requireDestinationRefundSig`),
 sinalizado há várias rodadas como merecendo uma segunda leitura mais
 focada.
+
+## Rodada 2026-08-29 (push automático seguinte, fila vazia) — fecha o ponto em aberto de `RemoteDomainDepositor.sol`/`DepositToRemote.sol` + `WithdrawalDelay.sol` + `Create2Factory.sol`
+
+`queue.jsonl` sem `pending`. Segui a sugestão explícita deixada na rodada
+anterior e li 4 arquivos (orçamento de 3 + 1 trivial de bônus):
+
+- `evm-xreserve-contracts/src/RemoteDomainDepositor.sol` — o contrato
+  principal, mas é só casca fina: `initialize()` (chama os inicializadores
+  de `Attestable`/`DomainManageable`/`Ownable2Step`/`UUPSUpgradeable`) e
+  `_authorizeUpgrade` com `onlyOwner`. Nenhuma lógica de negócio própria.
+- `evm-xreserve-contracts/src/modules/x-reserve/DepositToRemote.sol` — a
+  função `depositToRemote` de fato (`nonReentrant`, valida inputs —
+  pausado global/por domínio, domínio remoto registrado, token suportado,
+  blocklist, remote token registrado — depois `safeTransferFrom`, emite
+  `DepositedToRemote` ANTES do external call, deposita no `GatewayWallet`,
+  e só então dispara `IRemoteDomainHookExecutor.executeHook` se um
+  executor estiver configurado pro domínio). Cadeia rastreada com foco em
+  reentrância: `nonReentrant` cobre a função externa inteira, e tanto
+  `remoteDomainDepositor` quanto `remoteDomainHookExecutor` só podem ser
+  configurados por endereços administrativos (não são passados pelo
+  chamador do depósito), então não há vetor de hook executor arbitrário
+  controlado por atacante. Sem achado.
+- `evm-gateway-contracts/src/modules/wallet/WithdrawalDelay.sol` — módulo
+  isolado de delay de saque (storage EIP-7201). `updateWithdrawalDelay` é
+  `onlyOwner` e é um parâmetro GLOBAL (não por usuário); testei a hipótese
+  de uma corrida entre mudar o delay e uma retirada já iniciada — não
+  existe, porque `withdrawableAtBlocks[token][depositor]` é gravado como
+  um block number absoluto no momento do `initiate` (em `Withdrawals.sol`,
+  já lido em rodada anterior), não recalculado dinamicamente a partir do
+  delay atual em `_ensureWithdrawable`. Sem achado.
+- `evm-cpn-contracts/src/factory/Create2Factory.sol` (bônus, fechava o
+  último `.sol` não-teste do repo) — `deploy`/`deployAndMultiCall` ambos
+  `onlyOwner` (`Ownable2Step`); `deployAndMultiCall` faz múltiplas
+  chamadas ao contrato recém-implantado no mesmo tx, mas só o owner pode
+  disparar, e falha de qualquer call individual reverte a transação
+  inteira (bubble do erro original via assembly). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (`evm-xreserve-contracts`
+agora 8 arquivos, `evm-gateway-contracts` agora 16, `evm-cpn-contracts`
+agora 6 — todos os `.sol` não-teste desse repo estão lidos). Sugestão pra
+próxima rodada: revisitar o refund flow multi-assinatura de
+`PaymentSettlementV2.sol` (`requireDestinationRefundSig`, ainda pendente
+de segunda leitura focada há várias rodadas) ou `evm-gateway-contracts/
+src/modules/wallet/Balances.sol`/`Batches.sol` (núcleo de contabilidade
+da wallet, ainda não lidos isoladamente).
