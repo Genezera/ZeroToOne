@@ -628,3 +628,47 @@ não interface):
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os 3
 arquivos.
+
+## Rodada 2026-08-29 (follow-up do ponto em aberto da rodada anterior) — fila vazia, sem achado
+
+Fila (`queue.jsonl`) sem itens `pending`. Esta rodada fechou o ponto que a
+rodada anterior deixou explicitamente em aberto: "o split de valor
+(`amountOne`/`amountTwo`) em `TokenMinterV2.mint()` é derivado só de dado
+atestado, ou existe algum argumento não-atestado que influencia o total
+mintado?"
+
+Rastreei a cadeia completa a partir de `TokenMessengerV2.handleReceive*Message`
+(únicos pontos de entrada de mint, gated por `onlyLocalMessageTransmitter` +
+`onlyRemoteTokenMessenger`, ambos exigindo que a mensagem já tenha passado
+pela verificação de atestação no `MessageTransmitter`):
+
+1. `src/v2/TokenMessengerV2.sol` — `_handleReceiveMessage` chama
+   `_validatedReceivedMessage(_msg)`, que extrai `_amount` e `_fee`
+   exclusivamente via `_msg._getAmount()` / `_msg._getFeeExecuted()` — campos
+   do próprio `BurnMessageV2` já atestado (assinado off-chain e verificado
+   pelo `MessageTransmitter` antes de chegar aqui). Valida
+   `_fee < _amount` e `_fee <= _msg._getMaxFee()` (maxFee também é campo
+   atestado, fixado pelo depositante no domínio de origem em
+   `depositForBurn`/`depositForBurnWithHook`). Em seguida chama
+   `_mintAndWithdraw(_remoteDomain, _burnToken, _mintRecipient, _amount - _fee, _fee)`
+   — `_mintRecipient` também vem só do campo atestado da mensagem
+   (`_getMintRecipient().toAddress()`), nunca de um argumento de chamada
+   separado controlável por quem invoca `handleReceiveFinalizedMessage`.
+2. `src/v2/BaseTokenMessenger.sol` — `_mintAndWithdraw` passa
+   `_amount` (destinatário: `_mintRecipient`, do campo atestado) e `_fee`
+   (destinatário: `feeRecipient`, endereço de governança setado via
+   `onlyOwner`, nunca vindo da mensagem) direto pro `ITokenMinterV2.mint(...)`
+   já lido na rodada anterior. Nenhum dos dois "lados" do split é derivado de
+   dado não-atestado — `amountOne = amount - fee` e `amountTwo = fee`, ambos
+   funções puras dos campos assinados da mensagem.
+3. `src/messages/v2/BurnMessageV2.sol` — confirma o layout de bytes fixo do
+   formato (`amount` no índice 68, `maxFee` no 132, `feeExecuted` no 164),
+   sem campo dinâmico antes desses que pudesse deslocar a leitura.
+
+Conclusão: **sem achado** — o ponto em aberto está fechado. O split de mint
+em `TokenMinterV2`/`TokenMessengerV2` não introduz superfície de ataque nova
+em relação ao v1; `feeRecipient` é confiável por design (governança), e
+`amount`/`fee`/`mintRecipient` são todos campos atestados, verificados contra
+`maxFee` também atestado. `deep-read-log.json` atualizado com os 3 arquivos
+novos (`TokenMessengerV2.sol`, `BaseTokenMessenger.sol`, `BurnMessageV2.sol`)
+em `circlefin/evm-cctp-contracts`.
