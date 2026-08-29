@@ -1511,3 +1511,40 @@ access no caminho. Escolhidos:
 
 `deep-read-log.json` atualizado com os 4 arquivos novos de `cashapp/misk`
 (append). Nenhuma entrada nova em `queue.jsonl`. Resultado normal.
+
+## Rodada — fila vazia, leitura profunda em misk-config/misk-mcp/misk-tokens (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados, incluindo o achado confirmado
+de path traversal em `square/wire` já reportado em rodada anterior — ver
+`research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`).
+Clone raso (`git clone --depth 1`) de `cashapp/misk` para continuar a
+varredura de arquivos com auth/session/crypto/token/password no caminho
+ainda não lidos. Escolhidos:
+
+1. `misk-config/src/main/kotlin/misk/resources/OnePasswordResourceLoaderBackend.kt`
+   — `ResourceLoader.Backend` que roda `op read` via `ProcessBuilder`
+   (sem shell, exec direto — sem risco de shell injection clássico).
+   `path`/`account` viram argv separados de `op`; o valor do secret-ref
+   sempre é prefixado com `op:` literal antes de virar argumento, então
+   não dá pra injetar uma flag `-`/`--` no lugar do secret-ref. `account`
+   vai cru pro argv após `--account`, mas isso é o comportamento normal
+   do parser de flags do `op`, não uma falha do misk. `path` vem de
+   configuração de recurso (carregada no bootstrap do serviço, não de
+   request de usuário), então não há alcançabilidade por atacante externo
+   mesmo se houvesse alguma falha de parsing no `op`. Sem achado.
+2. `misk-mcp/src/main/kotlin/misk/mcp/action/McpServerSessions.kt` —
+   3 funções de extensão (`currentServerSession`, `currentClientConnection`,
+   `ServerSession.handleMessage`) que só leem do `CoroutineContext` e
+   lançam erro se não houver sessão/conexão no contexto. Nenhuma lógica de
+   autenticação ou controle de acesso aqui — é só um accessor de contexto.
+   Sem achado.
+3. `misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt` — typealias
+   pra `wisp.token.TokenGenerator` (já lido, `RealTokenGenerator.kt`) +
+   interface `TokenGenerator2` com tabela de canonicalização Crockford
+   Base32 (mapeia `o`/`O`→`0`, `i`/`I`/`l`/`L`→`1` etc.) usada só pra
+   normalizar tokens digitados manualmente por humano antes de comparar —
+   não é geração/validação de token em si, é só canonicalização de string
+   pra melhorar UX de digitação. Sem lógica de segurança quebrada. Sem
+   achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
+(append). Nenhuma entrada nova em `queue.jsonl`. Resultado normal.

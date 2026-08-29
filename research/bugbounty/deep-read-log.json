@@ -65,7 +65,10 @@
     "misk-hibernate/src/main/kotlin/misk/hibernate/Session.kt",
     "misk-hibernate/src/main/kotlin/misk/hibernate/SessionFactoryService.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/ExternalDataKeys.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFileMetadata.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFileMetadata.kt",
+    "misk-config/src/main/kotlin/misk/resources/OnePasswordResourceLoaderBackend.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/action/McpServerSessions.kt",
+    "misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
