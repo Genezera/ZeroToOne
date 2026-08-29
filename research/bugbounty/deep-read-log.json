@@ -51,7 +51,12 @@
     "misk-jdbc/src/main/kotlin/misk/jdbc/JDBCSession.kt",
     "misk-jdbc/src/main/kotlin/misk/jdbc/Session.kt",
     "misk-hibernate/src/main/kotlin/misk/hibernate/HibernateInjectorAccess.kt",
-    "misk-hibernate/src/main/kotlin/misk/hibernate/advisorylocks/HibernateSessionLocks.kt"
+    "misk-hibernate/src/main/kotlin/misk/hibernate/advisorylocks/HibernateSessionLocks.kt",
+    "misk/src/main/kotlin/misk/security/cert/X500Name.kt",
+    "misk/src/main/kotlin/misk/security/ssl/ClientCertAnnotations.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/CryptoModule.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ExternalKeySource.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFile.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -63,7 +68,9 @@
   "cashapp/hermit": [
     "redact/redact.go",
     "github/api.go",
-    "github/http.go"
+    "github/http.go",
+    "util/url.go",
+    "github/url.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",

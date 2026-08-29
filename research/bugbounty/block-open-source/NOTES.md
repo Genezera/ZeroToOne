@@ -1261,3 +1261,66 @@ próxima rodada: `square/wire` `wire-schema/`/`wire-compiler/` sem filtro
 de nome (ainda pendente de rodadas anteriores — parsing de schema
 `.proto` não confiável é a superfície mais promissora ainda não coberta
 neste programa).
+
+## Rodada 2026-08-29 (7) — fila vazia, leitura profunda em cashapp/misk (cert/ssl) e cashapp/hermit (url)
+
+Fila sem itens `pending` no início desta rodada (push do commit de revisão
+anterior). Clone raso (`git clone --depth 1`, sparse-checkout restrito a
+`misk/src/main/kotlin/misk/security/*` e `misk-crypto/src/main/kotlin/
+misk/crypto/*`) de `cashapp/misk` pra listar o que faltava em
+`security/cert`, `security/ssl` e `crypto/` — e clone raso completo de
+`cashapp/hermit` (pequeno) pra achar arquivos com `token`/`credential` no
+conteúdo (nenhum arquivo do hermit tem essas palavras no *nome*, então
+busquei por conteúdo desta vez em vez de nome de arquivo).
+
+5 arquivos novos em `cashapp/misk`:
+- `misk/src/main/kotlin/misk/security/cert/X500Name.kt` — parser
+  hand-rolled de Distinguished Name X.500 (usado para popular
+  `ClientCertSubject`/`ClientCertIssuer` a partir do cert do cliente).
+  Rastreei caractere por caractere buscando bypass de autorização (RDN
+  multivalorado com `+` não é tratado como separador — vira parte literal
+  do valor, ex. `CN=John+UID=1` vira CN="John+UID=1" inteiro — é uma
+  falha de parsing, mas conservadora: nunca faz um atacante "ganhar" um
+  atributo que não deveria, só perde granularidade). De qualquer forma,
+  igual ao caso já documentado do `MiskCallerAuthenticator`: o próprio
+  misk não usa este `X500Name` pra decidir autorização — é só o modelo
+  de dados exposto via `@ActionScoped`; a decisão de confiar (ou não) no
+  CN/OU fica inteiramente no serviço consumidor, fora deste repo. Mesmo
+  se o parsing tivesse um bug explorável, não haveria fluxo real dentro
+  de `cashapp/misk` pra confirmá-lo (mesmo padrão "falso positivo por
+  não-exploração" já usado antes nesta investigação). Não virou candidato.
+- `misk/src/main/kotlin/misk/security/ssl/ClientCertAnnotations.kt` — só
+  3 anotações Guice `@Qualifier`, sem lógica.
+- `misk-crypto/src/main/kotlin/misk/crypto/CryptoModule.kt` — módulo de
+  wiring Guice que liga cada `KeyType` configurado ao provider Tink
+  certo. Sem branch de decisão de segurança própria (delega pro Tink/
+  BouncyCastle); as extensions `Mac.verifyMac`/`Aead.encrypt` no final do
+  arquivo zeram o buffer de plaintext depois de usar (`fill(0)`) — boa
+  prática, não bug.
+- `misk-crypto/.../ExternalKeySource.kt` e `.../pgp/internal/
+  PgpKeyJsonFile.kt` — interface e data class triviais, sem lógica.
+
+2 arquivos novos em `cashapp/hermit`:
+- `github/url.go` — `AuthenticatedURLRewriter` anexa um token (`x-access-
+  token:<token>@github.com/...`) numa URL HTTPS do GitHub, mas só quando
+  `isGitHubHTTPSURL` confirma host EXATO `github.com` (sem bypass de
+  subdomínio) E o `RepoMatcher` (glob configurado pelo próprio usuário via
+  `ghTokenAuth.Match` em `app/main.go:241`) aprova o owner/repo. Cadeia de
+  chamada: `matcher`/`token` vêm de configuração local do usuário, nunca
+  de uma fonte de rede não confiável — não há caminho para um atacante
+  externo forçar `matcher` a aprovar um repo que ele não deveria, nem
+  para injetar um `token` diferente. Considerei o cenário clássico de
+  vazamento de credencial via redirect cross-host (github.com →
+  codeload.github.com em downloads de archive), mas (a) ambos os hosts
+  são da própria GitHub/Microsoft, não um terceiro, e (b) essa URL nem é
+  usada para archive download, é reescrita de URL de `git clone`/fonte de
+  pacote. Sem exploração real identificada.
+- `util/url.go` — `StripURLError`, helper de 6 linhas que desembrulha
+  `*url.Error` pra evitar vazar a URL original (com credencial embutida)
+  na mensagem de erro padrão do Go. Isso é uma mitigação de segurança já
+  existente, não um bug.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada. `deep-read-
+log.json` atualizado com os 7 arquivos acima. Sugestão pra próxima
+rodada: continua valendo `square/wire` (`wire-schema/`/`wire-compiler/`,
+parsing de `.proto`) — ainda não atacado por nenhuma rodada.
