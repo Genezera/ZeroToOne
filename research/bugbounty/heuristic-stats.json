@@ -27,6 +27,20 @@
       "falsePositive": 4,
       "other": 0,
       "fpRate": 1
+    },
+    "ssrf_risk::js": {
+      "reviewed": 13,
+      "confirmed": 0,
+      "falsePositive": 13,
+      "other": 0,
+      "fpRate": 1
+    },
+    "prototype_pollution_risk::js": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
     }
   },
   "byTypeProgram": {
@@ -48,6 +62,20 @@
       "reviewed": 6,
       "confirmed": 0,
       "falsePositive": 6,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ssrf_risk::Vercel Open Source": {
+      "reviewed": 13,
+      "confirmed": 0,
+      "falsePositive": 13,
+      "other": 0,
+      "fpRate": 1
+    },
+    "prototype_pollution_risk::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
       "other": 0,
       "fpRate": 1
     }

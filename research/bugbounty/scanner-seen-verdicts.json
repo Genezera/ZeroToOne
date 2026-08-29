@@ -7,5 +7,20 @@
   "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21::known_vulnerable_dependency": "falso_positivo",
   "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20::known_vulnerable_dependency": "falso_positivo",
   "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10::known_vulnerable_dependency": "falso_positivo",
-  "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20::known_vulnerable_dependency": "falso_positivo"
+  "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20::known_vulnerable_dependency": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-flagsmith/src/provider/index.ts::line:86::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:157::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:54::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:81::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:65::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-split/src/provider/index.ts::line:63::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:157::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:192::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_pollution_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk": "falso_positivo",
+  "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::ssrf_risk": "falso_positivo"
 }

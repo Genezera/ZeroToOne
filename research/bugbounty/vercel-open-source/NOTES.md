@@ -96,3 +96,60 @@ repositório (não específico de Clarity).
 - Verificação de identidade da HackerOne (Veriff) ainda em andamento pelo
   usuário — nenhum relatório pode ser enviado de verdade até isso resolver,
   independente do que o scanner encontrar.
+
+## Rodada de revisão (2026-08-29) — 15 achados de ssrf_risk/prototype_pollution_risk, todos falso_positivo
+O scanner foi ampliado (heurísticas v2, ver commit anterior) com
+`ssrf_risk` (fetch com URL interpolada) e `prototype_pollution_risk`
+(`for...in` + atribuição indexada sem checagem de `__proto__`). Rodou
+sobre os adapters de terceiros em `packages/adapter-*` e sobre
+`vercel-flags-core`, gerando 15 candidatos — 13 SSRF + 2 prototype
+pollution. Todos revisados individualmente com leitura do código real
+(via `raw.githubusercontent.com`, repo não persistido localmente) e
+rastreamento da cadeia de chamada; nenhum sobreviveu:
+
+- **SSRF (13 achados, 11 arquivos):** em `adapter-flagsmith`,
+  `adapter-launchdarkly`, `adapter-optimizely`, `adapter-split`,
+  `adapter-statsig` o host do `fetch()` é uma string fixa hardcoded (API
+  oficial de cada provedor) — só path/query são interpolados, com IDs de
+  configuração do desenvolvedor ou valores de paginação retornados pela
+  própria API oficial. Sem controle de host, não há SSRF.
+  Em `adapter-growthbook` e `adapter-posthog` o host *é* configurável
+  (`appApiHost`/`appHost`), mas isso é uma feature documentada e
+  intencional para suportar instâncias self-hosted desses provedores —
+  o valor é passado explicitamente pelo desenvolvedor que integra o SDK
+  (tipicamente de uma env var no código dele), não de uma requisição de
+  usuário não confiável dentro deste pacote. Marcado confiança 'média'
+  (não 'alta') por esses dois, porque a exploração dependeria de um mau
+  uso do integrador, não de um bug no `vercel/flags`.
+  Em `vercel-flags-core` (`fetch-datafile.ts`, `ingest.ts`) o host é
+  `this.options.host`, com default hardcoded `https://flags.vercel.com`
+  (`normalized-options.ts:139`), só sobrescrito por opções de construção
+  do client definidas pelo integrador — mesmo raciocínio.
+- **Prototype pollution (2 achados):** em `adapter-vercel/src/index.ts`
+  e `vercel-flags-core/src/evaluate.ts`, o `for...in`/`for` itera sobre
+  objetos cujas chaves são identificadores de flags declarados pelo
+  desenvolvedor no próprio código-fonte (via `flag()`), nunca JSON
+  desserializado de entrada externa. Mesmo hipoteticamente, a atribuição
+  é flat/single-level sobre um objeto `{}` recém-criado — não é o padrão
+  de merge recursivo que causa poluição real do `Object.prototype`
+  global.
+
+Conclusão prática: a heurística v2 de SSRF tem taxa de falso-positivo
+alta quando aplicada a bibliotecas cliente que chamam APIs de terceiros
+com host fixo ou host configurável por design (padrão comum em SDKs de
+feature flag) — vale considerar restringir a heurística para só marcar
+quando o host (não só o path) é claramente derivado de uma fonte de
+entrada de usuário final (request headers, query params, body), não de
+qualquer variável.
+
+## Leitura profunda proativa (2026-08-29)
+3 arquivos novos lidos (nenhum lido antes, registrados em
+`deep-read-log.json`), priorizando auth/crypto: `vercel-flags-core/src/
+controller/auth.ts` (resolução de token SDK key / OIDC), `flags/src/lib/
+verify-access.ts` e `flags/src/lib/crypto.ts` (JWE de acesso/overrides,
+usado para proteger o endpoint `.well-known/vercel/flags`). Nenhum
+problema encontrado: `crypto.ts` separa claims de propósito (`pur`) por
+tipo de token para evitar confusão entre encrypt/decrypt de finalidades
+diferentes (já documentado no topo do arquivo), usa AEAD (JWE
+`A256GCM` via `jose`) — decriptação autenticada, sem superfície óbvia de
+timing attack. Nenhum achado novo adicionado à fila nesta rodada.
