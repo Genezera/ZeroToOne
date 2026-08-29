@@ -765,3 +765,720 @@ Hibernate/JDBC, ainda não coberto — sinalizado em rodadas anteriores e
 ainda não atacado de fato) ou os handlers `application(_:open:)`/deep-link
 reais nos apps de exemplo dos SDKs mobile (fora do escopo de bounty, só
 pra entender o fluxo completo de ponta a ponta).
+
+## Rodada 2026-08-29 (push automático) — fila vazia, leitura profunda proativa
+
+`queue.jsonl` sem itens `pending` (31 revisados, 0 pendentes) no disparo
+desta rodada (push no `master`). Segui a fila de sugestões acumulada de
+rodadas anteriores e ampliei pra área ainda não coberta em `cashapp/misk`:
+geração de token e sessão MCP (novo módulo `misk-mcp`, ainda sem entrada
+no log). Sparse-clone rasteado (`--filter=blob:none --sparse`, não
+persistido) só para listar arquivos com auth/session/crypto/token/login/
+password/admin/permission/access no nome ainda não lidos, via
+`git ls-tree`.
+
+4 arquivos lidos por completo (via `raw.githubusercontent.com`, repo não
+persistido localmente):
+- `misk-tokens/.../RealTokenGenerator.kt` — a classe nova,
+  `RealTokenGenerator2`, gera token pegando bytes de `SecureRandom` e
+  aplicando `and 31.toByte()` (mantém só os 5 bits baixos de cada byte)
+  antes de indexar `indexToChar`. Isso é a técnica correta e não
+  enviesada pra sortear de um alfabeto de 32 símbolos a partir de bytes
+  aleatórios (32 é potência de 2 — sem "modulo bias"), e a fonte de
+  aleatoriedade é `SecureRandom`, não `java.util.Random`/`Math.random`.
+  Sem falha. A classe antiga `RealTokenGenerator` só delega pra
+  `wisp.token.RealTokenGenerator()` (não lida ainda, candidato pra
+  próxima rodada só pra confirmar que é a mesma implementação).
+- `misk-mcp/.../action/McpSessionId.kt` — só lê o header HTTP
+  `Mcp-Session-Id` e lança exceção se ausente; nenhuma lógica de geração/
+  validação aqui, é um acessor read-only action-scoped.
+- `misk-mcp/.../McpSessionHandler.kt` — é só uma `interface` (contrato)
+  com Javadoc detalhado dizendo que a implementação real deve gerar ID
+  "cryptographically secure" e validar expiração/estado — misk não
+  fornece uma implementação de produção neste repositório (só um fake de
+  teste em `testFixtures/`, fora do escopo de bounty). Sem implementação
+  real pra auditar, não há vulnerabilidade a confirmar dentro do próprio
+  `cashapp/misk`; o risco (se algum) estaria em quem implementa a
+  interface no serviço consumidor, fora deste repo.
+- `misk-mcp/.../internal/McpServerSessionContext.kt` — duas `data class`
+  que só envelopam `ServerSession`/`ClientConnection` do SDK MCP oficial
+  pra disponibilizar no `CoroutineContext`; nenhuma lógica própria.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 4 arquivos acima. Sugestão
+pra próxima rodada: `misk-hibernate/`/`misk-jdbc/` continua pendente
+(mesma sugestão de rodadas anteriores, ainda não atacada); ou
+`wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt` (a
+implementação real por trás do `RealTokenGenerator` antigo, delegada mas
+não lida ainda).
+
+## Rodada 2026-08-29 — leitura profunda proativa (cashapp/misk)
+3 arquivos novos lidos (nenhum estava no log ainda):
+`misk/src/main/kotlin/misk/security/authz/FakeCallerAuthenticator.kt`,
+`misk/src/main/kotlin/misk/security/keys/KeyService.kt`,
+`misk-crypto/src/main/kotlin/misk/crypto/ServiceKeys.kt`.
+
+`FakeCallerAuthenticator` chamou atenção primeiro por confiar cegamente em
+headers HTTP (`X-Forwarded-Service`/`X-Forwarded-User`/
+`X-Forwarded-Capabilities`) pra autenticar o caller — exatamente o padrão
+de bypass de autenticação real se algum serviço em produção o usasse por
+engano. A própria classe já se autodeclara `/** ... Unsafe for production
+use. */`. Rastreei todos os usos no repo (`grep -rln
+"FakeCallerAuthenticator" misk --include="*.kt"`, clone raso completo do
+módulo `misk/`): as únicas referências ficam em `misk/src/test/kotlin/...`
+(`TestWebActionModule.kt`, `AuthenticationTest.kt` e outros testes) — nunca
+é o binding padrão de nenhum módulo de produção do framework. Cada serviço
+que usa misk precisa fornecer sua própria implementação real de
+`MiskCallerAuthenticator`; o framework não instala esta classe sozinho.
+`falso_positivo` por não-exploração (mesmo padrão do caso hermit/circl já
+documentado): código perigoso existe e é público, mas nenhum fluxo real
+deste repositório o alcança em produção. Não abri candidato na fila — é
+puramente especulativo sem um serviço concreto que faça o bind errado, e
+esse serviço não está neste repositório.
+
+`KeyService.kt` e `ServiceKeys.kt` são interface/anotação triviais (poucas
+linhas, sem lógica) — nada a investigar.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado.
+
+## Rodada 2026-08-29 (continuação) — misk-crypto (PGP/KeyReader)
+
+Mesma rodada de fila vazia (ver acima), 2 arquivos adicionais do orçamento
+de leitura profunda desta sessão (o terceiro foi `WebAuthnLib.sol` do
+Circle BBP, ver NOTES.md daquele programa):
+
+- `misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpDecrypterProvider.kt`
+  — decifra a chave privada PGP via envelope KMS (`KmsEnvelopeAead`) e
+  constrói o `PGPSecretKeyRingCollection`; usa
+  `JcePBESecretKeyDecryptorBuilder().build(null)` (sem passphrase) para
+  extrair as subchaves — consistente com o modelo: a proteção real é o
+  envelope KMS, não uma senha PGP adicional. Sem checagem de autorização
+  ausente ou comparação insegura. Sem achado.
+- `misk-crypto/src/main/kotlin/misk/crypto/KeyReader.kt` — tem um caminho
+  `readCleartextKey()` que lê uma chave em texto puro quando `kms_uri` é
+  nulo na config, com só um `logger.warn` e um `TODO` explícito no próprio
+  código dos mantenedores ("Implement a clean check to throw if we are
+  running in prod or staging"). Não é achado novo: é limitação já
+  documentada pelos próprios autores, depende de escolha de configuração
+  do operador (não é dado controlável por atacante). Não abri candidato.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
+arquivos acima.
+
+## Rodada 2026-08-29 (push automático, 2ª parte) — fila vazia, ataquei finalmente `misk-hibernate`/`misk-jdbc`
+
+`queue.jsonl` continuava sem itens `pending` no disparo desta rodada.
+Segui a sugestão acumulada de várias rodadas anteriores (nunca atacada de
+fato): `misk-hibernate/`/`misk-jdbc` — onde SQL injection viveria, se
+existisse, no framework interno de acesso a banco do `cashapp/misk`.
+Sparse-clone raso (`--filter=blob:none --sparse`, não persistido) restrito
+a `misk-hibernate/` e `misk-jdbc/` pra listar o código de produção (excluí
+`src/test/` e `src/testFixtures/`).
+
+3 arquivos novos lidos por completo (registrados em `deep-read-log.json`):
+- `misk-hibernate/.../ReflectionQueryFactory.kt` (1119 linhas) — o coração
+  do DSL de query dinâmica do misk (`@Constraint`/`@Select`/`@Order`,
+  proxy dinâmico via `InvocationHandler`). Toda construção de predicado
+  passa pela API JPA `CriteriaBuilder`/`Path.get(segment)` — nunca
+  concatenação de string SQL. `dynamicAddConstraint`/`dynamicAddOrder`
+  (usados por `HibernateDatabaseQueryDynamicAction`, um endpoint HTTP
+  `@AdminDashboardAccess` que aceita `path` vindo do corpo da requisição)
+  também resolvem o path via `Path.get()`, parametrizado e seguro — um
+  path inválido só lança `IllegalArgumentException`, não vira SQL
+  injetável. Sem falha.
+- `misk-hibernate/.../vitess/VitessQueryHintHandler.kt` (47 linhas) —
+  **achado genuíno de defeito de código**: `getQueryStringWithHints`
+  monta o comentário `/*vt+ ... */` concatenando o texto do hint direto
+  na query, sem escapar `*/` — uma string de hint contendo `*/` fecha o
+  comentário cedo e o restante vira SQL executado (comment-breakout
+  injection clássica). Adicionei como `ai_deep_read_finding` e já revisei
+  na mesma rodada: **verdict `falso_positivo` (confidence alta), mas por
+  não-exploração, não por ausência do defeito**. Rastreei a cadeia
+  completa: esse handler só é chamado por `VitessDialect.getQueryHintString`
+  (hook SPI do Hibernate) com a string acumulada de `Query.addQueryHint`;
+  o único chamador real de `addQueryHint` neste repo é
+  `Query.kt:114 allowScatter()`, com hint **estático hardcoded**
+  (`VitessQueryHints.allowScatter()`), nunca dado de requisição — as duas
+  web actions que expõem query dinâmica via HTTP só encaminham dado pra
+  `dynamicAddConstraint`/`dynamicAddOrder` (seguros, ver acima), nunca pra
+  hints. Mesmo padrão já confirmado nesta missão com cashapp/hermit+circl:
+  sink vulnerável real, mas nenhum fluxo do próprio repo alcança ele com
+  dado não confiável — só um app consumidor que chamasse
+  `.queryHint(userInput)` com dado de usuário introduziria o bug, e isso
+  seria uso indevido de terceiros, não uma falha do `cashapp/misk`. Vale
+  como nota de hardening pro mantenedor (escapar/rejeitar `*/` no hint),
+  mas não é uma vulnerabilidade demonstrável dentro do escopo do programa.
+- `misk-jdbc/.../JdbcExtensions.kt` (35 linhas) — só helpers de mapeamento
+  de `ResultSet` (`.map`, `.uniqueString`, etc.), nenhuma construção de
+  SQL. Sem falha.
+
+`deep-read-log.json` atualizado com os 3 arquivos acima; `STATUS.md` e
+`dashboard/index.html` regenerados (32 revisados / 0 pendentes). Sugestão
+pra próxima rodada: `misk-jdbc/.../TraditionalSchemaMigrator.kt`/
+`DeclarativeSchemaMigrator.kt` (migração de schema, ainda não lida, outro
+lugar plausível pra SQL montado dinamicamente) ou
+`wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt`
+(sugestão da rodada anterior, ainda não atacada).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `TraditionalSchemaMigrator.kt`
+
+`queue.jsonl` sem itens `pending`. Peguei a sugestão da rodada anterior:
+`misk-jdbc/src/main/kotlin/misk/jdbc/TraditionalSchemaMigrator.kt` (266
+linhas, clone raso público de `cashapp/misk` restrito às pastas em
+escopo). Rastreei o caminho de execução de SQL:
+`applyAll(author, appliedMigrations)` roda cada migração pendente via
+`migrationStatement.addBatch(migrationSql)` (SQL bruto, sem
+parametrização) — mas `migrationSql` vem de
+`resourceLoader.utf8(migration.path)`, ou seja, um arquivo de recurso do
+classpath empacotado pelo próprio time que usa o framework no build
+(`migrations_resource` configurado no `DataSourceConfig`), nunca dado de
+requisição HTTP. O único parâmetro realmente "externo" da função,
+`author`, é validado por regex (`\w+`, comentário explícito "Prevent SQL
+injection") E, mais importante, inserido via `PreparedStatement` com bind
+parameter (`?`) no INSERT em `schema_version` — dupla proteção, nenhuma
+concatenação de string com dado externo. Mesmo padrão de "sink perigoso
+mas só alcançável por dado confiável de configuração/build-time" já visto
+em `VitessQueryHintHandler` (rodada anterior) e no CVE do
+`cloudflare/circl` via `cashapp/hermit`. Sem achado.
+
+Nenhum item novo adicionado à fila. `deep-read-log.json` atualizado com o
+arquivo acima. Sugestão pra próxima rodada: `DeclarativeSchemaMigrator.kt`
+(par do arquivo lido agora, mesma pasta, ainda não coberto) ou
+`wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt`
+(sugestão acumulada de duas rodadas, ainda não atacada).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `DeclarativeSchemaMigrator.kt` + `wisp/wisp-token` + cadeia de acesso admin/metadata
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada. Peguei as duas
+sugestões acumuladas da rodada anterior e complementei com uma terceira
+frente (cadeia `AllMetadataAccess`/`AdminDashboardAccess`), todas via clone
+raso público (`git clone --depth 1`, não persistido) de `cashapp/misk`.
+
+**1) `misk-jdbc/.../DeclarativeSchemaMigrator.kt`** (par do
+`TraditionalSchemaMigrator.kt` já lido) — `applyAll()` chama
+`spirit.diff(dsn, sqlFiles)` e executa (`stmt.execute`) cada linha do DDL
+gerado pela ferramenta de diff `Spirit`. Mesmo padrão já confirmado nas
+duas rodadas anteriores: `sqlFiles` vem de `resourceLoader.utf8(it.filename)`
+(arquivos `.sql` de migração empacotados no classpath, build-time, nunca
+requisição HTTP), e `dsn` é montado com credenciais da própria config do
+serviço (`config.username`/`password`/`host`), não dado externo. Parâmetro
+`author` sequer é usado no corpo da função (diferente do irmão
+`Traditional`, que o valida e usa em bind parameter) — não é falha de
+segurança, só código morto/inconsistência entre os dois migradores. Sem
+achado.
+
+**2) `wisp/wisp-token/.../RealTokenGenerator.kt` + `TokenGenerator.kt`**
+(interface) — confirma a suspeita da rodada anterior: é a implementação
+"antiga" duplicada, marcada `@Deprecated` apontando pra migrar para
+`misk.tokens.RealTokenGenerator` (já lido e aprovado numa rodada bem
+anterior). Mesmíssima técnica seguro-e-correta: `SecureRandom` + `and
+31.toByte()` (5 bits baixos de cada byte, 32 é potência de 2 → sem modulo
+bias) indexando um alfabeto Base32 de Crockford de 32 símbolos. Doc do
+`TokenGenerator` confirma 125 bits de entropia pra 25 caracteres (5
+bits/char × 25), bate com a implementação. Sem achado.
+
+**3) Cadeia `AllMetadataAccess`/`AdminDashboardAccess`/`ConfigMetadata`**
+(motivado por notar que `misk-admin/.../metadata/` tinha vários arquivos
+com "access"/"admin" no nome ainda não lidos) — segui a cadeia completa:
+`AllMetadataAction` (`GET /api/{id}/metadata`) expõe TODO metadata
+registrado via `Map<String, Provider<Metadata>>` (inclui `ConfigMetadata`,
+que pode conter YAML de config bruto não redigido em modo
+`UNSAFE_LEAK_MISK_SECRETS`) atrás de um único gate: `@AllMetadataAccess`.
+Isso é uma anotação DIFERENTE de `@AdminDashboardAccess` (usada só pra
+renderizar o link do menu na dashboard) — ou seja, a proteção real de
+"quem pode ler os dados" depende de quem instala `AllMetadataModule`
+conceder `AccessAnnotationEntry<AllMetadataAccess>` deliberadamente restrito
+(o próprio KDoc do arquivo já avisa: exemplo de uso é
+`services = listOf("internal_security_scraper_service")`, não usuário
+humano comum). Cheguei a suspeitar de bypass de controle de acesso
+granular (Config tab vs. endpoint agregado), mas concluí que não é uma
+vulnerabilidade do framework: (a) o modo default de `ConfigDashboardTabModule`
+é `SAFE` (só JVM info, nada sensível) e o próprio KDoc do módulo grita "DO
+NOT change default of SAFE until redaction... is added" — o modo
+`UNSAFE_LEAK_MISK_SECRETS` é opt-in explícito e documentado como
+perigoso; (b) a separação de anotações (`AllMetadataAccess` !=
+`AdminDashboardAccess`) é justamente o mecanismo que permite ao operador
+NÃO conceder a mesma capability pras duas coisas — é o app consumidor que
+decide o binding de `AccessAnnotationEntry`, fora do controle deste repo.
+Nenhuma escalação de privilégio latente no próprio `cashapp/misk`: é um
+design com poder amplo mas claramente documentado e seguro por padrão. Não
+abri candidato — especulativo demais sem um binding real de app consumidor
+associando as duas anotações incorretamente (mesma classe de "não-exploração"
+já documentada várias vezes nesta missão). Arquivos lidos nesta
+sub-investigação: `AdminDashboardAccess.kt`, `Authenticated.kt` (anotação,
+não a lógica — já lida antes em `AccessInterceptor.kt`),
+`NoAdminDashboardDatabaseAccess.kt`, `AllMetadataAccess.kt`,
+`AllMetadataAction.kt`, `AllMetadataModule.kt`, `ConfigMetadataAction.kt`,
+`ConfigMetadata.kt`, `ConfigDashboardTabModule.kt`.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 12 arquivos acima (todos em
+`cashapp/misk`, incluindo os 2 do `wisp/wisp-token`, que compartilham a
+mesma chave de repo no log). Sugestão pra próxima rodada: `StateMachine.swift`
+já foi coberto; o que resta em `misk` é sobretudo módulos de dashboard/UI
+(`misk-admin/.../web/dashboard/`, `web/v2/`) que são majoritariamente
+HTML/rendering, baixa prioridade — melhor recomeçar por
+`misk-hibernate/vitess/VitessQueryHintHandler.kt` (nota de hardening já
+identificada, sugerir ao mantenedor via issue não é escopo desta missão
+mas vale registrar) ou expandir a leitura pra `square/wire`
+(`wire-schema/`/`wire-compiler/`, ainda não tocados — só `wire-runtime` foi
+lido).
+
+## Rodada 2026-08-29 (push automático) — fila vazia, leitura profunda em misk-hibernate/misk-crypto (SecretColumn)
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada (33 revisados, 0
+pendentes). Sparse-clone raso de `cashapp/misk` (`git clone` com
+`sparse-checkout` limitado aos `pathPrefixes` autorizados, não persistido)
+pra listar arquivos com auth/crypto/token/admin/permission/access/secret no
+nome ainda não presentes em `deep-read-log.json`. Escolhi a família
+`SecretColumn` (criptografia de coluna de banco via Hibernate `UserType`) —
+nunca lida antes e é a peça que efetivamente liga `misk-crypto` a
+`misk-hibernate`, sugestão implícita das rodadas anteriores que só tinham
+tocado `misk-crypto` isoladamente.
+
+3 arquivos lidos por completo:
+- `misk-hibernate/.../SecretColumnType.kt` — `UserType` customizado que
+  criptografa/decriptografa um campo `ByteArray` transparentemente via Tink
+  (`AeadKeyManager`/`DeterministicAeadKeyManager`, escolhido por
+  `indexable`). Critiquei com ceticismo: `nullSafeSet`/`nullSafeGet`
+  cifram/decifram em toda escrita/leitura de linha; `disassemble`/`assemble`
+  também cifram antes de guardar em cache de 2º nível (o KDoc do método
+  confirma essa é a intenção — nunca plaintext em cache). Verifiquei o
+  `associatedData` (AAD) passado ao Tink: é sempre `null` (viraem
+  `byteArrayOf()` só no caso determinístico) — ou seja, o ciphertext não é
+  vinculado a nenhum contexto (linha/tabela/coluna), então em tese um
+  ciphertext de uma linha poderia ser copiado manualmente para outra linha
+  da mesma coluna/chave e decifraria "corretamente" sem erro de
+  autenticação. Não abri candidato: isso exigiria que o atacante já tivesse
+  acesso de escrita direta ao banco (fora do modelo de ameaça de uma
+  aplicação — quem tem `UPDATE` direto na tabela já tem acesso equivalente
+  ou maior que o que essa criptografia protege, que é "dado em repouso no
+  disco/backup", não "banco comprometido em runtime"), e é uma limitação de
+  design documentada implicitamente pelo próprio uso de Tink puro sem
+  camada de AAD contextual — não um bug introduzido por este código
+  especificamente (mesmo padrão em bibliotecas ORM equivalentes). Registrado
+  aqui como nota de hardening, não candidato.
+- `misk-hibernate/.../SecretColumn.kt` — só a anotação (`keyName`,
+  `indexable`) com KDoc extenso explicando o trade-off
+  determinístico-vs-não-determinístico; sem lógica própria.
+- `misk-crypto/.../internal/KeyProviders.kt` — providers Guice
+  (`AeadEnvelopeProvider`, `DeterministicAeadProvider`, `MacProvider`,
+  `DigitalSignatureSignerProvider/VerifierProvider`, `HybridEncryptProvider`/
+  `HybridDecryptProvider`, `StreamingAeadProvider`) que só chamam
+  `readKey(key)` (leitura de keyset Tink já lida em rodadas anteriores via
+  `KeyReader.kt`/`KeyResolver.kt`) e expõem a primitiva certa via a factory
+  correspondente do Tink. Nenhuma lógica de derivação/comparação própria,
+  delega tudo pro Tink. Sem falha encontrada.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão
+pra próxima rodada: `misk-jdbc/JDBCSession.kt`/`misk-jdbc/Session.kt` (ainda
+não cobertos, mesma superfície JDBC das migrações já auditadas) ou
+`square/wire` (`wire-schema/`/`wire-compiler/`, ainda intocado).
+
+## Rodada 2026-08-29 (push automático, 2ª leitura do dia) — fila vazia, leitura profunda em misk-crypto/pgp + KMS wiring
+
+`queue.jsonl` seguia sem itens `pending` (33 revisados, 0 pendentes) —
+mesmo estado da rodada anterior no mesmo dia. Clone raso de `cashapp/misk`
+pra achar arquivo com auth/crypto/token/admin/permission/access no nome
+ainda fora de `deep-read-log.json`, restrito aos `pathPrefixes` do alvo
+(`misk/`, `misk-core/`, `misk-crypto/`, `misk-inject/`, `misk-hibernate/`,
+`misk-jdbc/` — `misk-admin/`, `misk-tokens/`, `misk-mcp/`, `misk-redis/` e
+`wisp/` ficaram de fora por não estarem no escopo declarado do alvo,
+mesmo aparecendo no grep de nome de arquivo).
+
+3 arquivos lidos por completo (todos em `misk-crypto/`, nunca lidos antes):
+- `pgp/RealPgpEncrypter.kt` — implementação de `PgpEncrypter` via
+  Bouncy Castle. Critiquei a escolha de cifra: usa `PGPEncryptedData.CAST5`
+  (bloco de 64 bits, cifra datada mas ainda é o *default* histórico do
+  padrão OpenPGP/RFC 4880, não uma escolha custom fraca desta lib) com
+  `SecureRandom` de verdade e chave de sessão gerada internamente pelo
+  Bouncy Castle por mensagem (não há reuso de IV/chave visível — a API do
+  BC não expõe controle de IV aqui). `setWithIntegrityPacket(true)` está
+  ligado (protege contra maleabilidade). Não é uma escolha ideal (RFC 4880bis
+  recomenda AES), mas é uma limitação de biblioteca/protocolo padrão, não um
+  bug introduzido por este arquivo — mesmo racional do achado anterior
+  (`SecretColumnType.kt`, sem AAD contextual): nota de hardening, não
+  candidato.
+- `pgp/PgpEncoder.kt` — só as interfaces `PgpEncrypter`/`PgpDecrypter` com
+  KDoc; zero lógica.
+- `KmsClientModule.kt` — módulos Guice finos (`AwsKmsClientModule`,
+  `GcpKmsClientModule`) que só repassam `credentialsPath` (ou usam
+  credenciais default do ambiente) pro construtor do `KmsClient` do Tink.
+  Nenhuma lógica de validação/comparação própria pra auditar; delega tudo
+  pro SDK oficial da nuvem/Tink.
+
+Nenhum achado novo nesta rodada — resultado normal, dois arquivos eram
+puramente estruturais (interface/módulo Guice) e o terceiro (`RealPgpEncrypter`)
+tem uma escolha de algoritmo datada mas não uma falha de lógica introduzida
+pelo código. `deep-read-log.json` atualizado com os 3 arquivos acima
+(total agora: 43 arquivos lidos em `cashapp/misk`). Sugestão pra próxima
+rodada, ainda de pé: `misk-jdbc/JDBCSession.kt`/`misk-jdbc/Session.kt`
+(nunca lidos) ou expandir pra `square/wire` (`wire-schema/`/
+`wire-compiler/`, ainda intocado, mesmo pathPrefix já autorizado no alvo).
+
+## Rodada 2026-08-29 (push automático, 3ª leitura do dia) — fila vazia, leitura profunda em misk-jdbc/Session + HibernateInjectorAccess
+
+`queue.jsonl` seguia sem itens `pending` (33 revisados, 0 pendentes). Clone
+raso com sparse-checkout de `cashapp/misk` (`misk-jdbc/`, `misk-hibernate/`,
+`misk-crypto/`, `misk/src/main/kotlin/misk/security/`) pra achar arquivo
+com `session`/`access` no nome ainda fora de `deep-read-log.json`.
+
+3 arquivos lidos por completo (nunca lidos antes):
+- `misk-jdbc/Session.kt` — só a interface `Session` (KDoc de hooks
+  pre-commit/post-commit/rollback/close), zero lógica.
+- `misk-jdbc/JDBCSession.kt` — implementação concreta de `Session` sobre
+  `java.sql.Connection`. É só um registro de hooks (`ConcurrentHashMap`/
+  `ConcurrentLinkedQueue`) disparados por quem gerencia a transação
+  externamente; não há controle de acesso, autenticação ou segredo
+  manuseado aqui — é infraestrutura de callback de transação JDBC pura.
+  Nada a auditar quanto a autorização.
+- `misk-hibernate/HibernateInjectorAccess.kt` — expõe o `Injector` do Guice
+  pro Hibernate via uma extensão (`ServiceRegistry.injector`) usada por
+  `UserType`s customizados (ex.: `SecretColumnType`, já auditado em rodada
+  anterior) pra resolver dependências como o Tink/Moshi. Não há checagem de
+  autorização própria pra auditar — é só wiring de DI interno ao processo,
+  sem superfície de entrada externa.
+
+Nenhum achado novo nesta rodada — resultado normal, os 3 arquivos eram
+infraestrutura de baixo nível (hooks de transação, wiring de DI) sem lógica
+de autorização/criptografia própria para criticar. `deep-read-log.json`
+atualizado com os 3 arquivos acima (total agora: 46 arquivos lidos em
+`cashapp/misk`). Sugestão pra próxima rodada: expandir pra `square/wire`
+(`wire-schema/`/`wire-compiler/`, ainda intocado) já que `cashapp/misk` está
+ficando escasso em arquivos auth/crypto/session ainda não lidos dentro do
+`pathPrefixes` autorizado.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `afterpay/sdk-ios` (CheckoutV3ViewController, comparação direta com o achado Android)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). Tentei
+`square/wire` primeiro (`wire-runtime/`, `wire-schema/`, `wire-compiler/`,
+único pathPrefix autorizado do alvo) — clone raso confirmado, mas nenhum
+arquivo no escopo autorizado tem `auth/session/crypto/token/login/
+password/admin/permission/access` no nome (é uma biblioteca de
+serialização de protobuf, sem superfície de autenticação própria) — sem
+candidato óbvio por nome de arquivo, então redirecionei o orçamento desta
+rodada pra um alvo com uma pista concreta: o achado `ai_deep_read_finding`
+já registrado (`inconclusivo`, confiança baixa) em
+`afterpay/sdk-android/.../AfterpayCheckoutV2Activity.kt` (ponte JS
+`Android.postMessage` sem `shouldOverrideUrlLoading`/allowlist de host em
+navegações subsequentes da WebView, ao contrário da V3 que exige
+confirmação server-to-server via `performConfirmationRequest`) — vale
+checar se o SDK iOS tem o mesmo gap.
+
+1 arquivo lido (nunca lido antes, `afterpay/sdk-ios`, `Sources/` já
+autorizado no alvo):
+- `Sources/Afterpay/Checkout/CheckoutV3ViewController.swift` — rastreei o
+  fluxo completo: `viewDidAppear` valida o host da URL inicial contra
+  `CheckoutHost.validSet` (enum fechado, comparação exata, não é
+  sufixo/prefixo — confirmado relendo `CheckoutHost.swift`, já lido em
+  rodada anterior) antes de carregar qualquer coisa. O SDK iOS NÃO usa
+  ponte JS (`WKScriptMessageHandler`/`userContentController.add`) — a
+  detecção de conclusão é só via `decidePolicyFor navigationAction`,
+  parseando query params (`status`/`orderToken`/`ppaConfirmToken`) de
+  QUALQUER URL para onde a WebView navegue (`Completion.init?(url:)` não
+  reverifica o host da URL de navegação, só a inicial) — isso É o mesmo
+  tipo de gap estrutural já anotado no Android (falta de allowlist de host
+  em navegações subsequentes). MAS, ao contrário do `AfterpayCheckoutV2Activity.kt`
+  do Android (que finaliza direto com `complete()`/`RESULT_OK` sem
+  confirmação), o iOS V3 (assim como o Android V3) SEMPRE chama
+  `performConfirmationRequest()` — uma requisição POST real contra
+  `configuration.v3CheckoutConfirmationUrl` (API real da Afterpay) levando
+  `ppaConfirmToken` — antes de reportar sucesso pro app consumidor. Esse é
+  exatamente o padrão que a própria análise Android já tinha identificado
+  como a mitigação que torna a V3 mais segura que a V2/Express. Ou seja:
+  o código iOS V3 é consistente com o padrão já estabelecido como seguro,
+  não introduz um gap novo — a mesma limitação de escopo já documentada no
+  achado Android (não dá pra confirmar/refutar se o backend da Afterpay
+  valida `ppaConfirmToken` de forma que resista a um token forjado, sem
+  sair do repositório público) se aplica igualmente aqui, mas não é uma
+  regressão específica do iOS. Não abri item novo na fila — a pista que
+  motivou a leitura já estava coberta pelo raciocínio do achado Android
+  existente (mesma família, mesma conclusão), abrir um segundo item
+  `inconclusivo` idêntico seria inflar a fila sem informação nova.
+
+`deep-read-log.json` atualizado (agora 7 arquivos em `afterpay/sdk-ios`).
+Nenhum item novo adicionado à fila — resultado normal desta rodada.
+Sugestão pra próxima rodada: `afterpay/sdk-ios/Sources/Afterpay/ApiV3.swift`
+(nunca lido — como o SDK autentica/assina as chamadas de API V3) ou
+`square/wire` `wire-schema/`/`wire-compiler/` sem filtro de nome (ler por
+julgamento de entry-point de parsing de dado não confiável, já que o filtro
+de nome não achou candidato ali).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `cashapp/misk` (HibernateSessionLocks)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). 1 dos 3
+arquivos do orçamento desta rodada foi aqui (os outros 2 foram
+`circlefin/evm-cctp-contracts` — TokenMinter/TokenController, ver NOTES.md
+do Circle BBP):
+
+- `misk-hibernate/src/main/kotlin/misk/hibernate/advisorylocks/HibernateSessionLocks.kt`
+  (nunca lido — helpers de lock consultivo Postgres/MySQL usados por
+  código que precisa de exclusão mútua distribuída). Revisei os 4
+  caminhos (`tryAcquireLock`/`tryReleaseLock` × Postgres/MySQL): MySQL
+  valida `lockKey.length <= 64` antes de usar (sem truncamento silencioso
+  que pudesse causar colisão de lock entre chaves diferentes); Postgres
+  usa `hashtext(:lockKey)` pra converter string em `bigint` (limitação
+  documentada do próprio Postgres — só aceita bigint/2×int4 pra advisory
+  lock — colisão de hash de 32 bits é teoricamente possível mas é o
+  padrão estabelecido, não uma falha introduzida aqui). Retorno de
+  `RELEASE_LOCK`/`GET_LOCK` tratado explicitamente pros 3 casos possíveis
+  (`0`/`1`/`null`), sem fallback silencioso que mascare "lock já era de
+  outra sessão". Não há superfície de autenticação/autorização própria
+  aqui — é infraestrutura de locking, sem controle de acesso a auditar; o
+  único risco teórico (colisão de hash de 32 bits no Postgres) é uma
+  limitação de design do Postgres em si, aceita pela própria
+  documentação do banco, não um bug do código do misk.
+
+`deep-read-log.json` atualizado (agora 47 arquivos lidos em
+`cashapp/misk`). Nenhum item novo adicionado à fila — resultado normal.
+Sugestão pra próxima rodada: `afterpay/sdk-ios/Sources/Afterpay/ApiV3.swift`
+(sugestão pendente da rodada anterior, ainda não lida).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `afterpay/sdk-ios/ApiV3.swift`
+
+`queue.jsonl` sem itens `pending`. 1 dos 3 arquivos do orçamento desta
+rodada foi aqui (os outros 2 foram `circlefin/evm-cpn-contracts` e
+`circlefin/evm-gateway-contracts`, ver NOTES.md do Circle BBP), seguindo a
+sugestão pendente de rodada anterior:
+
+- `Sources/Afterpay/ApiV3.swift` (nunca lido — como o SDK envia/decodifica
+  chamadas de API V3, hipótese era que aqui estaria a assinatura/
+  autenticação das requisições). Na prática o arquivo é só um wrapper
+  genérico de request/response: monta `URLRequest` com header
+  `X-Afterpay-SDK` (metadado de versão, não segredo), decodifica JSON com
+  formatador de data customizado, e mapeia erro HTTP genérico
+  (`ApiError`/`NetworkError`) pro tipo `Result` do Swift. Não há lógica de
+  assinatura, token, ou credencial aqui — é infraestrutura HTTP pura, sem
+  superfície de autenticação própria a auditar. A pergunta real (como o
+  token `ppaConfirmToken`/JWT é assinado e verificado pelo backend da
+  Afterpay) permanece fora do escopo do repositório público, como já
+  documentado nas rodadas anteriores sobre `CheckoutV3ViewController.swift`.
+
+`deep-read-log.json` atualizado (agora 8 arquivos em `afterpay/sdk-ios`).
+Nenhum item novo adicionado à fila — resultado normal. Sugestão pra
+próxima rodada: `square/wire` `wire-schema/`/`wire-compiler/` sem filtro
+de nome (ainda pendente de rodadas anteriores — parsing de schema
+`.proto` não confiável é a superfície mais promissora ainda não coberta
+neste programa).
+
+## Rodada 2026-08-29 (7) — fila vazia, leitura profunda em cashapp/misk (cert/ssl) e cashapp/hermit (url)
+
+Fila sem itens `pending` no início desta rodada (push do commit de revisão
+anterior). Clone raso (`git clone --depth 1`, sparse-checkout restrito a
+`misk/src/main/kotlin/misk/security/*` e `misk-crypto/src/main/kotlin/
+misk/crypto/*`) de `cashapp/misk` pra listar o que faltava em
+`security/cert`, `security/ssl` e `crypto/` — e clone raso completo de
+`cashapp/hermit` (pequeno) pra achar arquivos com `token`/`credential` no
+conteúdo (nenhum arquivo do hermit tem essas palavras no *nome*, então
+busquei por conteúdo desta vez em vez de nome de arquivo).
+
+5 arquivos novos em `cashapp/misk`:
+- `misk/src/main/kotlin/misk/security/cert/X500Name.kt` — parser
+  hand-rolled de Distinguished Name X.500 (usado para popular
+  `ClientCertSubject`/`ClientCertIssuer` a partir do cert do cliente).
+  Rastreei caractere por caractere buscando bypass de autorização (RDN
+  multivalorado com `+` não é tratado como separador — vira parte literal
+  do valor, ex. `CN=John+UID=1` vira CN="John+UID=1" inteiro — é uma
+  falha de parsing, mas conservadora: nunca faz um atacante "ganhar" um
+  atributo que não deveria, só perde granularidade). De qualquer forma,
+  igual ao caso já documentado do `MiskCallerAuthenticator`: o próprio
+  misk não usa este `X500Name` pra decidir autorização — é só o modelo
+  de dados exposto via `@ActionScoped`; a decisão de confiar (ou não) no
+  CN/OU fica inteiramente no serviço consumidor, fora deste repo. Mesmo
+  se o parsing tivesse um bug explorável, não haveria fluxo real dentro
+  de `cashapp/misk` pra confirmá-lo (mesmo padrão "falso positivo por
+  não-exploração" já usado antes nesta investigação). Não virou candidato.
+- `misk/src/main/kotlin/misk/security/ssl/ClientCertAnnotations.kt` — só
+  3 anotações Guice `@Qualifier`, sem lógica.
+- `misk-crypto/src/main/kotlin/misk/crypto/CryptoModule.kt` — módulo de
+  wiring Guice que liga cada `KeyType` configurado ao provider Tink
+  certo. Sem branch de decisão de segurança própria (delega pro Tink/
+  BouncyCastle); as extensions `Mac.verifyMac`/`Aead.encrypt` no final do
+  arquivo zeram o buffer de plaintext depois de usar (`fill(0)`) — boa
+  prática, não bug.
+- `misk-crypto/.../ExternalKeySource.kt` e `.../pgp/internal/
+  PgpKeyJsonFile.kt` — interface e data class triviais, sem lógica.
+
+2 arquivos novos em `cashapp/hermit`:
+- `github/url.go` — `AuthenticatedURLRewriter` anexa um token (`x-access-
+  token:<token>@github.com/...`) numa URL HTTPS do GitHub, mas só quando
+  `isGitHubHTTPSURL` confirma host EXATO `github.com` (sem bypass de
+  subdomínio) E o `RepoMatcher` (glob configurado pelo próprio usuário via
+  `ghTokenAuth.Match` em `app/main.go:241`) aprova o owner/repo. Cadeia de
+  chamada: `matcher`/`token` vêm de configuração local do usuário, nunca
+  de uma fonte de rede não confiável — não há caminho para um atacante
+  externo forçar `matcher` a aprovar um repo que ele não deveria, nem
+  para injetar um `token` diferente. Considerei o cenário clássico de
+  vazamento de credencial via redirect cross-host (github.com →
+  codeload.github.com em downloads de archive), mas (a) ambos os hosts
+  são da própria GitHub/Microsoft, não um terceiro, e (b) essa URL nem é
+  usada para archive download, é reescrita de URL de `git clone`/fonte de
+  pacote. Sem exploração real identificada.
+- `util/url.go` — `StripURLError`, helper de 6 linhas que desembrulha
+  `*url.Error` pra evitar vazar a URL original (com credencial embutida)
+  na mensagem de erro padrão do Go. Isso é uma mitigação de segurança já
+  existente, não um bug.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada. `deep-read-
+log.json` atualizado com os 7 arquivos acima. Sugestão pra próxima
+rodada: continua valendo `square/wire` (`wire-schema/`/`wire-compiler/`,
+parsing de `.proto`) — ainda não atacado por nenhuma rodada.
+
+## Rodada 2026-08-29 (push automático) — fila vazia, `square/wire` (wire-schema, import resolution) — ACHADO CONFIRMADO
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada (34 revisados, 0
+pendentes). Peguei finalmente a sugestão acumulada de várias rodadas
+anteriores: `square/wire` `wire-schema/`. Clone raso com sparse-checkout
+(`git clone --depth 1 --filter=blob:none --sparse`, público, sem
+conta/token, não persistido) restrito a `wire-schema/` e `wire-compiler/`
+(pathPrefix do alvo). Como nenhum arquivo tem auth/session/crypto/token/
+login/password/admin/permission/access no nome (biblioteca de
+serialização, sem essas categorias por natureza — mesma conclusão de
+rodadas anteriores sobre `wire-runtime`), segui julgamento de
+especialista: a superfície mais sensível de um carregador de schema é a
+resolução de `import` de arquivos `.proto` não confiáveis — a mesma classe
+de bug que causa path traversal em outros formatos com diretiva de
+include/import (Webpack resolve, `extends` de config YAML, etc.).
+
+**Achado (`ai_deep_read_finding`), já revisado na mesma rodada, verdict
+`confirmado`, confidence `média`**: `DirectoryRoot.resolve` (`Root.kt:129-
+137`) monta `rootDirectory / import` e só checa `fileSystem.exists`, sem
+validar que o resultado continua dentro de `rootDirectory`. Rastreei a
+cadeia completa: o `import` vem sem NENHUMA sanitização direto da string
+entre aspas de `import "X";` no `.proto` (`ProtoParser.kt:117-129` via
+`SyntaxReader.readQuotedString()`, que aceita qualquer caractere), passa
+por `ProtoFile.imports` sem validação (`ProtoFile.kt:26`), e é usado por
+`Linker.getFileLinker` (`Linker.kt:91-100`) — chamado para QUALQUER import
+de tipo efetivamente referenciado, não um modo opcional — que delega pra
+`CommonSchemaLoader.load` (`CommonSchemaLoader.kt:135-161`), que itera
+`protoPathRoots` chamando `resolve` em cada um. Fui até a implementação
+real do operador `/` na biblioteca `square/okio` (clonada publicamente
+também) pra confirmar, em vez de assumir: `commonResolve`
+(`okio/internal/Path.kt:206-218`) faz
+`if (child.isAbsolute || child.volumeLetter != null) return child` —
+ou seja, um `import "/etc/passwd";` ignora `rootDirectory` por completo —
+e para travessia relativa, o operador `/` usa `normalize=false` por
+padrão (doc de `Path.kt:202`), então segmentos `..` não são colapsados
+pelo Okio mas continuam literais no `Path`, que a JVM/NIO real resolve
+naturalmente ao ler o arquivo (escapando de `rootDirectory` de qualquer
+jeito).
+
+Diferença importante em relação aos ~6 achados anteriores deste programa
+que viraram `falso_positivo` por não-exploração (hermit+circl,
+`VitessQueryHintHandler`, `FakeCallerAuthenticator`, etc.): naqueles
+casos, o sink perigoso só era alcançável via uma dependência raramente
+usada, uma classe marcada explicitamente "unsafe for production", ou uma
+API que nenhum chamador real do repositório invocava com dado externo.
+Aqui, o sink é a MESMA função central de resolução de import usada por
+QUALQUER compilação normal de um `.proto` com import de tipo referenciado
+— não exige nenhuma configuração incomum, flag insegura, ou dependência
+desatualizada. A única variável é se o conteúdo do `.proto` compilado
+(fonte ou dependência de terceiro via `protoPath`, uso documentado e
+comum do Wire) pode ser influenciado por alguém não confiável — cenário
+plausível, mas que não dá pra confirmar 100% sem uma integração/vítima
+concreta fora do próprio `square/wire`. Por isso `confidence: 'média'`
+(a cadeia de código e a semântica do Okio estão 100% confirmadas linha
+por linha; o que falta é um cenário de vítima real específico).
+
+Categoria bate com o critério do programa (path traversal / leitura de
+arquivo arbitrário, código de produção, não é metadado/cosmético/teste)
+— relatório gerado em
+`research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`.
+
+`deep-read-log.json` atualizado com 12 arquivos novos de `square/wire`
+(9 de `wire-schema` + confirmação cruzada em `square/okio`, registrada só
+como nota no relatório, não como chave separada no log já que não é um
+alvo do scanner). Sugestão pra próxima rodada: revisar se
+`wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin` (as camadas de
+CLI/plugin que efetivamente configuram `protoPath` a partir de input do
+usuário/build) adicionam alguma sanitização própria antes de chamar
+`SchemaLoader.initRoots` que eu não tenha visto ainda restrito a
+`wire-schema/` — isso mudaria a avaliação de confiança pra cima ou pra
+baixo dependendo do que existir lá.
+
+## Rodada — fila vazia, leitura profunda em cash-app-pay-android-sdk, hermit e cash-app-pay-ios-sdk (2026-08-29)
+`queue.jsonl` não tinha nenhum item `pending` nesta rodada (35/35 já
+revisados). Leitura profunda proativa: nenhum arquivo com auth/session/
+crypto/token/login/password/admin/permission/access no nome ficou sem ler
+nos alvos JVM/Swift/Go do programa que ainda tinham poucos arquivos no log
+(`cash-app-pay-android-sdk`, `cash-app-pay-ios-sdk`, `hermit` — todos com
+5 ou menos arquivos lidos até aqui). Ampliei o critério para os arquivos
+centrais de rede/autenticação restantes desses mesmos alvos:
+
+1. `cash-app-pay-android-sdk/core/.../impl/NetworkManagerImpl.kt` —
+   implementação real do `NetworkManager` (a interface já tinha sido lida
+   antes). Monta `Authorization: Client $clientId` (o client ID do
+   integrador, não é segredo de sessão) em toda chamada; sem interpolação
+   de dado de usuário na URL além de `requestId` vindo da própria resposta
+   do servidor CashApp. Sem achado.
+2. `hermit/cache/github.go` — caminho de download de release privado do
+   GitHub via cliente autenticado (`ghclient`). Owner/repo/tag/asset vêm
+   de um regex que só casa `https://github.com/...`; a chamada real usa a
+   API oficial do GitHub (já confirmado em `github/api.go`, lido em rodada
+   anterior), não construção de URL livre — sem SSRF óbvio. Sem achado.
+3. `cash-app-pay-ios-sdk/Sources/PayKit/Services/Networking/RESTService.swift`
+   — camada de retry sobre `URLSession`, sem lógica de auth própria (o
+   header de auth é montado em `NetworkManager.swift`, já lido). Sem
+   achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos novos (append). Nenhuma
+entrada nova em `queue.jsonl` — nada suspeito o bastante para justificar
+`ai_deep_read_finding` nesta rodada. Resultado normal (a maioria das
+rodadas não acha nada).
+
+## Rodada — fila vazia, follow-up do achado em square/wire (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Segui a sugestão deixada na
+rodada anterior sobre o achado confirmado de path traversal em
+`DirectoryRoot.resolve` (`wire-schema`): verificar se as camadas de
+CLI/plugin que montam `protoPath` a partir de input do usuário adicionam
+alguma sanitização própria antes de chegar em `SchemaLoader`/`WireRun`.
+
+Lidos: `wire-compiler/src/main/java/com/squareup/wire/WireCompiler.kt`
+(entrypoint `main`/`forArgs` do CLI — `--proto_path=` vai direto pra
+`protoPaths: List<String>` e vira `Location` sem nenhuma validação de
+caminho) e `wire-gradle-plugin/src/main/kotlin/com/squareup/wire/gradle/
+WireTask.kt` (a Gradle Task real — `protoInput`/`sourceInput` viram
+`Location` via `toLocations()` e são passados direto pro `WireRun(...)`,
+também sem sanitização). Também espiei `wire-gradle-plugin/.../Move.kt`
+(diretiva de refactor `move{}` do DSL) — é config do desenvolvedor no
+build script, não superfície de ataque, sem relação.
+
+Conclusão: nenhuma camada acima de `wire-schema` adiciona proteção contra
+o `import` malicioso dentro do `.proto` — a mitigação (se existir) teria
+que estar em como o build resolve as dependências que alimentam
+`protoPath`, o que já era a avaliação do relatório original. Isso não
+muda o veredito nem a `confidence: 'média'` do relatório existente
+(`block-open-source-wire-directoryroot-resolve.md`) — só confirma que não
+há uma camada de sanitização que eu tenha deixado passar. Não gera nova
+entrada na fila (é confirmação do achado já reportado, não achado novo).
+
+`deep-read-log.json` atualizado com os 3 arquivos novos de `square/wire`
+(append).
+
+## Rodada — fila vazia, leitura profunda em misk-crypto (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Leitura profunda proativa:
+`cashapp/misk` já tinha a maior parte de `misk-crypto/` e `misk/security/
+authz/` cobertos em rodadas anteriores; sparse-clone local (`git clone
+--filter=blob:none --no-checkout`, `sparse-checkout set misk-crypto misk
+misk-actions misk-api misk-admin`) para listar o que faltava com auth/
+session/crypto/token/login/password/admin/permission/access no caminho.
+Escolhi os 3 arquivos de `misk-crypto/` ainda não lidos:
+
+1. `misk-crypto/src/main/kotlin/misk/crypto/S3KeySource.kt` —
+   `ExternalKeySource` que busca keysets Tink de um bucket S3. O path do
+   objeto (`objectPath`) é montado só a partir do `alias` (vem de
+   `@ExternalDataKeys allKeyAliases`, config estática do serviço, não de
+   request/dado externo) e da região do próprio serviço — não há
+   interpolação de dado de usuário no bucket/key, então sem SSRF/path
+   traversal/IDOR óbvio no acesso ao S3. Sem achado.
+2. `misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/
+   PgpEncrypterProvider.kt` — espelho do `PgpDecrypterProvider.kt` (já
+   lido antes), só carrega a chave pública PGP configurada e escolhe a
+   subkey de encryption. Nada de input externo. Sem achado.
+3. `misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt` — só data
+   classes de configuração (`CryptoConfig`, `Key`, `KeyType`), sem lógica.
+   Sem achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
+(append). Resultado normal — a maioria das rodadas não acha nada.

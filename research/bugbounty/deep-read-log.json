@@ -2,7 +2,9 @@
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
     "packages/flags/src/lib/verify-access.ts",
-    "packages/flags/src/lib/crypto.ts"
+    "packages/flags/src/lib/crypto.ts",
+    "packages/flags/src/next/create-flags-discovery-endpoint.ts",
+    "packages/flags/src/next/overrides.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -16,29 +18,89 @@
     "misk-crypto/src/main/kotlin/misk/crypto/ExternalKeyResolver.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/LocalConfigKeyResolver.kt",
     "misk/src/main/kotlin/misk/security/csp/ContentSecurityPolicyInterceptor.kt",
-    "misk/src/main/kotlin/misk/security/cert/X509CertificateExtensions.kt"
+    "misk/src/main/kotlin/misk/security/cert/X509CertificateExtensions.kt",
+    "misk-tokens/src/main/kotlin/misk/tokens/RealTokenGenerator.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/action/McpSessionId.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/McpSessionHandler.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/internal/McpServerSessionContext.kt",
+    "misk/src/main/kotlin/misk/security/authz/FakeCallerAuthenticator.kt",
+    "misk/src/main/kotlin/misk/security/keys/KeyService.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ServiceKeys.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpDecrypterProvider.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KeyReader.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/ReflectionQueryFactory.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt",
+    "misk-jdbc/src/main/kotlin/misk/jdbc/JdbcExtensions.kt",
+    "misk-jdbc/src/main/kotlin/misk/jdbc/TraditionalSchemaMigrator.kt",
+    "misk-jdbc/src/main/kotlin/misk/jdbc/DeclarativeSchemaMigrator.kt",
+    "wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt",
+    "wisp/wisp-token/src/main/kotlin/wisp/token/TokenGenerator.kt",
+    "misk-api/src/main/kotlin/misk/web/dashboard/AdminDashboardAccess.kt",
+    "misk-actions/src/main/kotlin/misk/security/authz/Authenticated.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/NoAdminDashboardDatabaseAccess.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/AllMetadataAccess.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/AllMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/AllMetadataModule.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigMetadata.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigDashboardTabModule.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/SecretColumnType.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/SecretColumn.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/internal/KeyProviders.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/RealPgpEncrypter.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/PgpEncoder.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KmsClientModule.kt",
+    "misk-jdbc/src/main/kotlin/misk/jdbc/JDBCSession.kt",
+    "misk-jdbc/src/main/kotlin/misk/jdbc/Session.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/HibernateInjectorAccess.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/advisorylocks/HibernateSessionLocks.kt",
+    "misk/src/main/kotlin/misk/security/cert/X500Name.kt",
+    "misk/src/main/kotlin/misk/security/ssl/ClientCertAnnotations.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/CryptoModule.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ExternalKeySource.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpKeyJsonFile.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/S3KeySource.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/PgpEncrypterProvider.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
     "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringClearTextAdapter.kt",
     "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
     "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt",
-    "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt"
+    "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt",
+    "core/src/main/java/app/cash/paykit/core/impl/NetworkManagerImpl.kt"
   ],
   "cashapp/hermit": [
     "redact/redact.go",
     "github/api.go",
-    "github/http.go"
+    "github/http.go",
+    "util/url.go",
+    "github/url.go",
+    "cache/github.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
     "Sources/PayKit/NetworkManager.swift",
-    "Sources/PayKit/StateMachine.swift"
+    "Sources/PayKit/StateMachine.swift",
+    "Sources/PayKit/Services/Networking/RESTService.swift"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/AnyMessage.kt",
-    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt"
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/CommonSchemaLoader.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Linker.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/CoreLoader.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/ProtoFile.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/ProtoParser.kt",
+    "wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/SyntaxReader.kt",
+    "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/SchemaLoader.kt",
+    "wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/Roots.kt",
+    "wire-compiler/src/main/java/com/squareup/wire/WireCompiler.kt",
+    "wire-gradle-plugin/src/main/kotlin/com/squareup/wire/gradle/WireTask.kt",
+    "wire-gradle-plugin/src/main/kotlin/com/squareup/wire/gradle/Move.kt"
   ],
   "afterpay/sdk-android": [
     "afterpay/src/main/kotlin/com/afterpay/android/cashapp/AfterpayCashAppJwt.kt",
@@ -56,6 +118,64 @@
     "Sources/Afterpay/CashApp/CashAppPayCheckout.swift",
     "Sources/Afterpay/Checkout/CheckoutV2Message.swift",
     "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
-    "Sources/Afterpay/Checkout/CheckoutHost.swift"
+    "Sources/Afterpay/Checkout/CheckoutHost.swift",
+    "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift",
+    "Sources/Afterpay/ApiV3.swift"
+  ],
+  "circlefin/evm-cctp-contracts": [
+    "src/MessageTransmitter.sol",
+    "src/roles/Attestable.sol",
+    "src/v2/BaseMessageTransmitter.sol",
+    "src/roles/v2/AttestableV2.sol",
+    "src/proxy/AdminUpgradableProxy.sol",
+    "src/TokenMinter.sol",
+    "src/roles/TokenController.sol",
+    "src/v2/TokenMinterV2.sol",
+    "src/v2/TokenMessengerV2.sol",
+    "src/v2/BaseTokenMessenger.sol",
+    "src/messages/v2/BurnMessageV2.sol",
+    "src/TokenMessenger.sol",
+    "src/roles/v2/Denylistable.sol"
+  ],
+  "circlefin/buidl-wallet-contracts": [
+    "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
+    "src/libs/WebAuthnLib.sol",
+    "src/msca/6900/v0.8/modules/validation/SingleSignerValidationModule.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/BaseWeightedMultisigPlugin.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/addressbook/ColdStorageAddressBookPlugin.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/WeightedWebauthnMultisigPlugin.sol",
+    "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
+    "src/libs/RecipientAddressLib.sol",
+    "src/paymaster/v1/permissioned/SponsorPaymaster.sol",
+    "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol"
+  ],
+  "circlefin/evm-gateway-contracts": [
+    "src/modules/common/Denylist.sol",
+    "src/modules/wallet/ContractSignersAllowlist.sol",
+    "src/modules/wallet/Withdrawals.sol",
+    "src/modules/wallet/Deposits.sol",
+    "src/modules/wallet/Delegation.sol",
+    "src/modules/wallet/Burns.sol",
+    "src/modules/minter/Mints.sol",
+    "src/GatewayCommon.sol",
+    "src/GatewayWallet.sol",
+    "src/GatewayMinter.sol",
+    "src/lib/AttestationLib.sol",
+    "src/lib/BurnIntentLib.sol",
+    "src/lib/BurnIntents.sol",
+    "src/lib/TransferSpecLib.sol",
+    "src/modules/common/TokenSupport.sol"
+  ],
+  "circlefin/evm-xreserve-contracts": [
+    "src/modules/x-reserve/Withdrawal.sol",
+    "src/modules/x-reserve/Blocklistable.sol",
+    "src/lib/NoValidationAttestationLib.sol"
+  ],
+  "circlefin/evm-cpn-contracts": [
+    "src/PaymentSettlementV2.sol",
+    "src/PaymentSettlement.sol",
+    "src/utils/Rescuable.sol",
+    "src/utils/Configurable.sol",
+    "src/utils/Pausable.sol"
   ]
 }

@@ -91,10 +91,638 @@ nota. Nenhum veredito próprio aqui — aguardando a revisão cética do
 agente de nuvem, mesmo processo dos outros achados.
 
 ## O que falta
-- Revisão do agente de nuvem dos 6 candidatos (pendente no momento desta
-  nota).
 - Verificar se a conta HackerOine existente do usuário (mesma conta do
   Vercel Open Source) já cobre este programa ou se precisa de aceite de
   termo separado.
 - Considerar expandir pra Go do mesmo programa (`arc-remote-signer`,
   `noble-cctp`, `noble-fiattokenfactory`) — reusa scanner Go existente.
+
+## Revisão do agente de nuvem — rodada 2026-08-29 (6 candidatos)
+Todos os 6 candidatos pendentes desta rodada foram investigados com rastreio
+de cadeia de chamada completo (clone local via `git clone` público de
+`evm-gateway-contracts` e `buidl-wallet-contracts`) e revertidos como
+**falso_positivo**, confirmando a suspeita já registrada na nota acima:
+
+- 3 achados (`reentrancy_risk` em `004_UpgradeGatewayWallet.sol::run`,
+  `reentrancy_risk` em `103_DeployColdStorageAddressBookPlugin.s.sol::run`,
+  `reentrancy_risk` em `104_DeployWeightedWebauthnMultisigPlugin.s.sol::run`)
+  são scripts Foundry de deploy/upgrade (`is Script`), executados só pelo
+  deployer/owner confiável via `vm.startBroadcast(...)` com a própria chave
+  — não são contrato on-chain persistente exposto a terceiros, então o
+  modelo de ameaça de reentrância clássico não se aplica. A "escrita após
+  chamada externa" que a heurística pegou é sempre variável local do
+  script, nunca storage de contrato.
+- 2 achados (`unchecked_call_return` em `004_UpgradeGatewayWallet.sol`,
+  linhas 116 e 135) são falso positivo simples: o retorno booleano de cada
+  `.call(...)` É capturado e checado com `require(...)` logo em seguida —
+  a heurística aparentemente não olhou as linhas seguintes à chamada.
+- 1 achado (`delegatecall_risk` em `buidl-wallet-contracts/src/utils/
+  ExecutionUtils.sol:69`) é o mais interessante de investigar mas também
+  falso positivo: é uma função de biblioteca genérica (`to` é parâmetro por
+  definição). Rastreei os 3 call sites reais (`BaseMSCA.sol:228,238`,
+  `UpgradableMSCA.sol:71`) — todos usam `address(PLUGIN_MANAGER)`, que é
+  `immutable`, fixado uma única vez no constructor. Não é delegatecall para
+  endereço controlável por atacante; é o padrão intencional do ERC-6900
+  (modular account delegando para seu próprio Plugin Manager fixo), com
+  autorização (`validateNativeFunction`) nas funções externas que o
+  acionam.
+
+Nenhum relatório escrito nesta rodada (0 confirmado).
+
+## Leitura profunda proativa — rodada 2026-08-29
+3 arquivos novos lidos em `circlefin/evm-cctp-contracts` (núcleo do CCTP,
+ainda não coberto no deep-read-log): `src/MessageTransmitter.sol`,
+`src/roles/Attestable.sol`, `src/v2/BaseMessageTransmitter.sol` —
+justamente o caminho de verificação de assinatura de attestation e
+liberação de mensagem cross-chain (`receiveMessage`/
+`_verifyAttestationSignatures`), a superfície de maior valor do programa
+inteiro (se quebrada, permitiria mintagem forjada de USDC ponte).
+Ordem de checagens em `receiveMessage` confirmada correta (verifica
+assinaturas → formato → domain → destinationCaller → version → nonce não
+usado → **marca nonce como usado antes** da chamada externa
+`handleReceiveMessage` — padrão CEI correto, sem reentrância de nonce).
+Multisig de attesters em `Attestable.sol` exige ordem crescente de
+endereço recuperado (previne duplicata) e todos precisam estar na
+allowlist de `enabledAttesters`. Nenhuma falha de lógica encontrada — é
+código de produção já em uso há anos (ponte oficial de USDC), esperado que
+esteja bem auditado. Nenhuma entrada nova adicionada à fila.
+
+### Addendum (rodada separada, mesmo dia) — 3 arquivos extras, sem sobreposição
+Rodando a mesma investigação de forma independente, também rastreei a
+cadeia de autorização do achado `delegatecall_risk` (item 6 acima) até a
+ponta e aproveitei pra ler 3 arquivos de auth ainda não cobertos no
+`deep-read-log.json` (sem sobrepor os do `evm-cctp-contracts` acima):
+- `buidl-wallet-contracts/src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol`
+  — fecha o loop de autorização do delegatecall: confirma que
+  `installPlugin`/`uninstallPlugin`/`execute`/`executeBatch`/
+  `upgradeToAndCall` estão todos listados no `pluginManifest()` (linhas
+  200-209) como protegidos por `runtimeValidationFunctions`, e que
+  `runtimeValidationFunction` (linha 144-159) exige
+  `sender == owner || sender == self` antes de qualquer efeito. Verificação
+  de assinatura via `SignatureChecker.isValidSignatureNow` (ecrecover ou
+  EIP-1271), sem comparação insegura/timing. Sem achado.
+- `evm-gateway-contracts/src/modules/common/Denylist.sol` e
+  `evm-gateway-contracts/src/modules/wallet/ContractSignersAllowlist.sol`
+  — ambos `Ownable2StepUpgradeable` + storage EIP-7201, modifiers
+  `onlyDenylister`/`onlyContractSignersAllowlister` corretos, sem gap de
+  ordem de checagem. Sem achado.
+
+Ponto em aberto pra próxima rodada (não confirmado, fora do orçamento
+desta): verificar se `notDenylisted` é de fato aplicado em todos os
+caminhos de transferência/depósito/saque de `GatewayWallet.sol`/
+`GatewayMinter.sol` (ainda não lidos) — se algum caminho de movimentação
+de fundos esquecer o modifier, um endereço denylistado poderia continuar
+operando.
+
+## Rodada 2026-08-29 — leitura profunda proativa (WebAuthnLib.sol)
+
+Sem itens `pending` na fila. Leitura profunda desta rodada incluiu
+`buidl-wallet-contracts/src/libs/WebAuthnLib.sol` (verificação de
+assinatura WebAuthn/passkey secp256r1, usada pelo `WeightedWebauthnMultisigPlugin`).
+É um fork declarado do webauthn-sol da Coinbase e do p256-verifier do
+Daimo, ambos já extensivamente auditados. Revisão da função `verify()`:
+guarda de maleabilidade de assinatura presente (`s > n/2` rejeitado),
+checagem de tipo `"webauthn.get"` e do challenge via slice+hash, checagem
+da flag "User Present" (e "User Verified" quando exigido), fallback correto
+entre o precompile RIP-7212 e a lib FCL_ecdsa. As omissões de verificação
+(origin, rpIdHash, contador de assinatura, extensões, backup state) são
+documentadas explicitamente no NatSpec como decisões de design assumidas,
+não lacunas acidentais. Nenhuma falha de lógica nova encontrada — sem
+achado.
+
+`deep-read-log.json` atualizado. Ponto em aberto da rodada anterior
+(cobertura de `notDenylisted` em `GatewayWallet.sol`/`GatewayMinter.sol`,
+ainda não lidos) continua válido pra próxima rodada.
+
+## Rodada seguinte (2026-08-29, mesmo dia) — achado novo: gap de denylist em `Withdrawals.sol`
+
+Persegui o ponto em aberto deixado acima. Lendo `Withdrawals.sol`,
+`Deposits.sol`, `Delegation.sol`, `Burns.sol`, `Mints.sol`,
+`GatewayCommon.sol` e `GatewayWallet.sol` (todos de
+`circlefin/evm-gateway-contracts`, branch `master`) e cruzando com
+`grep -rln "notDenylisted" src/` no clone completo:
+
+**Achado (`ai_deep_read_finding`, já investigado e revisado nesta mesma
+rodada — verdict `confirmado`, confidence `média`):**
+`Withdrawals.sol::initiateWithdrawal` e `Withdrawals.sol::withdraw` não
+têm `notDenylisted` em nenhuma das duas, enquanto TODO o resto do
+contrato aplica esse modifier a qualquer operação relacionada a fundos —
+inclusive `Delegation.sol::addDelegate/removeDelegate`, que nem move
+fundos diretamente. `Mints.sol::gatewayMint` (o pagamento simétrico do
+lado mint) checa denylist tanto do chamador quanto do destinatário do
+mint. `withdraw()` paga tokens ERC-20 reais direto pro `msg.sender`
+(`safeTransfer`, linha 113) sem nenhuma checagem de denylist em todo o
+caminho. Ou seja: um endereço denylistado depois de já ter depositado
+consegue sacar seu saldo `available` livremente, contornando o
+congelamento de compliance. Confidence `média` (não `alta`) porque não
+tenho como confirmar 100% que isso não é uma exceção deliberada de design
+(ex.: "sempre permitir reaver saldo já depositado mesmo denylistado
+depois") sem acesso à documentação/issue tracker interno da Circle — mas
+o padrão consistente no resto do contrato (inclusive delegação, que não
+move fundos) torna essa hipótese pouco provável.
+
+Isso É elegível para relatório: é uma falha real de controle de acesso
+em contrato de produção que move fundos, não metadado/cosmético — bate
+com o critério geral (tratar como achado de segurança de verdade, nunca
+cosmético) aplicado aos outros programas HackerOne/Bugcrowd desta missão.
+Rascunho salvo em
+`research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`.
+
+Burns.sol também não tem `notDenylisted`, mas isso é defensável: é
+chamado pelo operador pra reduzir saldo/queimar tokens já
+comprometidos por um mint em outra chain (débito, não paga fundos pro
+usuário) — não abri achado pra esse.
+
+## Rodada 2026-08-29 (rotina semanal automática) — fila vazia, leitura profunda nos dois alvos ainda intocados
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada (todos os
+33 itens já `reviewed`, incluindo o achado de denylist acima). Leitura
+profunda proativa cobriu os dois únicos alvos de `targets-solidity.mjs`
+que ainda não tinham nenhuma entrada em `deep-read-log.json`:
+`circlefin/evm-xreserve-contracts` e `circlefin/evm-cpn-contracts`
+(clonados publicamente via `git clone`, sem conta/token).
+
+Arquivos lidos (3, priorizando movimentação de fundos e controle de
+acesso, já que nenhum tem "auth/session/crypto/token/login/password"
+literalmente no nome):
+- `evm-xreserve-contracts/src/modules/x-reserve/Withdrawal.sol` — função
+  `withdraw()` pública (sem role própria, o controle de acesso real está
+  na verificação de assinatura do attestor dentro de `gatewayMint`,
+  padrão já validado em `Attestable.sol`). Rastreei a validação de hook
+  data (`_validateAndProcessHookData`): checa pausa global, domínio
+  remoto registrado/não pausado, `_ensureNotBlocklisted` do depositante
+  remoto, token remoto registrado, e restringe `forwardingContract` a um
+  allowlist fixo de 3 endereços (`tokenMessenger`, `tokenMessengerV2`,
+  `address(this)`) antes de qualquer forwarding. No caminho de
+  "xReserve forwarding" (`_processXReserveForwarding`), o parâmetro
+  `from` do `depositToRemote` é hardcoded para `address(this)` (não vem
+  do calldata decodificado) — não há como desviar fundos de terceiros
+  por aí. Nenhum problema encontrado.
+- `evm-xreserve-contracts/src/modules/x-reserve/Blocklistable.sol` —
+  mesmo padrão de `Denylist.sol` já revisado em `evm-gateway-contracts`
+  (role `blocklister` separada, `onlyBlocklister`/`onlyOwner`,
+  `_ensureNotBlocklisted` chamado de fato dentro de `Withdrawal.sol`
+  antes de processar o saque, ao contrário do gap encontrado em
+  `Withdrawals.sol` do gateway). Nenhum problema.
+- `evm-cpn-contracts/src/PaymentSettlementV2.sol` (Circle Payments
+  Network — não estava na lista de alvos do dashboard/`targets-*.mjs`
+  antes, mas é o mesmo repo `circlefin/evm-cpn-contracts` já listado em
+  `targets-solidity.mjs`) — contrato grande e cuidadosamente desenhado:
+  ciclo de vida de nonce (`Unused → Executed → Refunded` ou
+  `→ Cancelled`) impede replay, `onlyAttester` + checagem extra
+  `_msgSender() != intent.attester` amarra o chamador ao attester
+  assinado no intent, valores pull via Permit2 witness transfer (o
+  próprio Permit2 verifica a assinatura do dono dos fundos amarrada ao
+  hash do intent específico — não há caminho de mover fundos de alguém
+  que não assinou), tetos de reembolso cumulativo (`payerCap`/
+  `incentiveCap`) checados antes de qualquer transferência. Não achei
+  nenhuma falha de autorização/corrida/validação faltando numa primeira
+  leitura cuidadosa. Nenhum problema encontrado — mas é um contrato
+  denso o bastante que vale uma segunda leitura futura mais focada nos
+  fluxos de `refund()` com múltiplas assinaturas condicionais
+  (`requireDestinationRefundSig`), que não dei tanta atenção quanto
+  `execute()`.
+
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum item novo
+adicionado à fila nesta rodada — resultado normal.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `evm-cctp-contracts` (attestation V2 + proxy admin)
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada. Leitura
+profunda cobriu 2 dos 3 arquivos do orçamento desta rodada (o terceiro foi
+`misk-jdbc/TraditionalSchemaMigrator.kt`, ver NOTES.md do Block Open
+Source), ambos em `circlefin/evm-cctp-contracts`, ainda não cobertos no
+`deep-read-log.json`:
+
+- `src/roles/v2/AttestableV2.sol` — contrato trivial: só adiciona um
+  storage gap (`uint256[20] private __gap`, padrão OpenZeppelin de
+  upgradeable contracts) e repassa o construtor pra `Attestable`, sem
+  lógica própria nova. Nada a auditar além do que `Attestable.sol` já
+  cobriu em rodada anterior. Sem achado.
+- `src/proxy/AdminUpgradableProxy.sol` — fork declarado do
+  `TransparentUpgradeableProxy` da OpenZeppelin (padrão EIP-1967, slot de
+  admin fixo/validado no constructor). Modificações documentadas no
+  próprio NatSpec do fork (remoção do modifier `ifAdmin` em `admin()`/
+  `implementation()`, tornando-os `view` puros) só afetam quem pode LER
+  o endereço do admin/implementação — não afetam quem pode ESCREVER
+  (`changeAdmin`/`upgradeTo`/`upgradeToAndCall` continuam com `ifAdmin`
+  intacto). Padrão de proxy administrativo extremamente batido e já
+  auditado por terceiros (é literalmente um fork do contrato mais usado
+  do espaço). Sem achado.
+
+Nenhum item novo adicionado à fila. `deep-read-log.json` atualizado com
+os 2 arquivos acima.
+
+## Rodada 2026-08-29 (disparo por push no repo, fila vazia) — `ColdStorageAddressBookPlugin` + multisig v0.7/v0.8
+
+`queue.jsonl` sem itens `pending` (33/33 já `reviewed`) no disparo desta
+rodada. Leitura profunda proativa cobriu 4 arquivos novos de
+`circlefin/buidl-wallet-contracts`, escolhidos por serem os pontos de
+controle de acesso/autorização mais valiosos ainda não lidos (autorização
+de destinatário de fundos e verificação de assinatura multisig):
+
+- `src/msca/6900/v0.7/plugins/v1_0_0/addressbook/ColdStorageAddressBookPlugin.sol`
+  — hook de pré-validação que restringe `execute`/`executeBatch` a uma
+  allowlist de destinatários (`_allowedRecipients`, por conta). Segui a
+  cadeia até `src/libs/RecipientAddressLib.sol` (não estava no orçamento
+  de 3, mas foi necessário pra fechar o raciocínio — decodifica o
+  "recipient" da calldata pra ERC20/721/1155). Ponto que investiguei a
+  fundo por suspeita de bypass: `approve`/`increaseAllowance`/
+  `setApprovalForAll` são decodificados e o **spender** é tratado como se
+  fosse o "recipient" e validado contra a mesma allowlist — a princípio
+  parecia poder ser um jeito de dar approve pra um spender arbitrário sem
+  checagem, mas não é: `RecipientAddressLib.getERC20TokenRecipient` (e as
+  variantes ERC721/1155) tratam explicitamente `approve`/
+  `increaseAllowance`/`setApprovalForAll` com o mesmo offset de endereço
+  do "recipient", ou seja, o spender de uma aprovação TAMBÉM precisa estar
+  na allowlist — design correto (impede dar approve pra endereço não
+  autorizado como forma de desviar fundos depois). `target` (o contrato
+  chamado) não é ele mesmo restrito à allowlist, só o "recipient"/spender
+  decodificado da calldata — isso é uma limitação de design assumida (a
+  proteção é sobre para onde valor/allowance pode ir, não sobre quais
+  contratos a conta pode chamar), não uma falha nova; qualquer bypass via
+  contrato malicioso em `target` exigiria que a conta já tivesse allowance
+  prévia concedida a esse contrato pra outro token, o que não é algo que
+  este plugin introduz. Sem achado (confidence não chegou a um nível que
+  justificasse abrir item na fila — ceticismo aplicado, hipótese de bypass
+  refutada).
+- `src/msca/6900/v0.7/plugins/v1_0_0/multisig/WeightedWebauthnMultisigPlugin.sol`
+  e `src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol`
+  (a versão v0.8 mais nova do mesmo mecanismo) — revisei `checkNSignatures`
+  em ambos: o loop `while (accumulatedWeight < thresholdWeight)` acumula
+  peso mesmo de assinaturas inválidas/fora de ordem, mas isso é seguro
+  porque `success`/`firstFailure` só são setados uma vez (guard
+  `if (response.success)`) e nunca desfeitos — ou seja, qualquer falha
+  individual invalida o lote inteiro no retorno final, independente de
+  quanto peso foi acumulado. Sem loop infinito (cada iteração consome 65
+  bytes da assinatura, limitado pelo tamanho do calldata). Sem
+  reentrância (`view`/`pure`, sem chamada externa mutável). Nenhuma falha
+  de lógica encontrada em nenhum dos dois.
+
+`deep-read-log.json` atualizado com os 4 arquivos acima (mais
+`RecipientAddressLib.sol`, lido por necessidade de rastreio de cadeia).
+Nenhum item novo adicionado à fila — resultado normal desta rodada.
+
+## Rodada 2026-08-29 (push automático) — fila vazia, `evm-cpn-contracts` (PaymentSettlement V1 + Rescuable)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). Clone raso
+de `circlefin/evm-cpn-contracts` via `add_repo`+`git clone` pra cobrir 2
+dos 3 arquivos do orçamento desta rodada (o terceiro foi
+`afterpay/sdk-ios/.../CheckoutV3ViewController.swift`, ver NOTES.md do
+Block Open Source):
+
+- `src/PaymentSettlement.sol` (V1, nunca lido — só a V2 tinha sido
+  auditada em rodada anterior) — comparei linha a linha contra o padrão já
+  validado de `PaymentSettlementV2.sol`: ciclo de nonce
+  `_validateAndMarkNonce` marca o nonce como usado ANTES de validar
+  `validAfter`/`validBefore`/`payee`/`fee`/`amount`, mas isso é seguro
+  porque qualquer `revert()` subsequente desfaz TODA a transação
+  (incluindo o nonce marcado) — semântica atômica do EVM, não uma corrida
+  real. Verifiquei com atenção o valor aprovado via Permit2: `execute()`
+  exige `payerData.permit.permitted.amount == intent.value + intent.maxFee`
+  (o teto assinado pelo payer) mas só puxa `intent.value + fee` de fato
+  (`_pullViaPermit2` usa `requestedAmount: intent.value + fee` como
+  `SignatureTransferDetails`) — isso é o padrão correto de "aprovar o
+  teto, puxar o valor real" do Permit2 (o próprio Permit2 garante
+  `requestedAmount <= permitted.amount`), e o teto (`intent.maxFee`) já
+  está amarrado criptograficamente dentro do hash witness assinado pelo
+  payer (`_hashPayerPaymentIntent`), então não há como o attester substituir
+  esse valor depois do fato. `onlyAttester` + checagem redundante
+  `_msgSender() != intent.attester` (o attester specifico assinado no
+  intent, não qualquer attester da allowlist) — mesmo padrão já validado
+  na V2. Nenhuma falha de autorização/corrida/validação encontrada — é
+  essencialmente a mesma lógica seguramente desenhada da V2, sem gap novo
+  introduzido na V1.
+- `src/utils/Rescuable.sol` — padrão clássico de "rescue" de tokens presos
+  (mesmo padrão já usado em outros contratos ERC20 da própria Circle,
+  ex. USDC): `onlyRescuer` modifier bem implementado
+  (`_msgSender() != _rescuer`), `updateRescuer`/`removeRescuer` restritos a
+  `onlyOwner` (via `Ownable2Step`, troca de dono em duas etapas, resistente
+  a erro de digitação de endereço). `rescueERC20`/`rescueNative` só movem o
+  saldo que estiver PARADO no contrato entre transações — rastreei
+  `PaymentSettlement.execute()`/`cancel()`: todo valor puxado via Permit2
+  é distribuído integralmente na mesma transação (puxa `value+fee`,
+  distribui `fee` pro beneficiary e `value` pro payee, sem sobra
+  matemática), então não há fundo "em trânsito" de usuário que o rescuer
+  possa desviar em condições normais de operação — o rescue só alcança
+  tokens enviados por engano/diretamente ao contrato. Nenhuma falha de
+  lógica encontrada.
+
+Comparação adicional (mesmo orçamento, arquivo do outro programa): a
+leitura de `CheckoutV3ViewController.swift` (Afterpay iOS, ver NOTES.md do
+Block Open Source) foi puxada por comparação direta com um achado
+`inconclusivo` já registrado nessa missão no lado Android
+(`AfterpayCheckoutV2Activity.kt` — ponte JS sem checagem de host em
+navegações subsequentes). A V3 do iOS usa o mesmo padrão que já tinha sido
+identificado como "mais seguro" na análise Android (confirmação
+server-to-server via `performConfirmationRequest`/`ppaConfirmToken` antes
+de finalizar) — não é um gap novo, é consistente com o padrão já
+estabelecido como mitigação.
+
+`deep-read-log.json` atualizado (agora 3 arquivos lidos em
+`circlefin/evm-cpn-contracts`: `PaymentSettlementV2.sol`,
+`PaymentSettlement.sol`, `Rescuable.sol`). Nenhum item novo adicionado à
+fila — resultado normal. Sugestão pra próxima rodada: `src/utils/
+Configurable.sol`/`src/utils/Pausable.sol` (mesmo repo, ainda não lidos) ou
+voltar ao refund flow multi-assinatura (`requireDestinationRefundSig`) de
+`PaymentSettlementV2.sol`, que a rodada anterior já tinha sinalizado como
+merecendo uma segunda leitura mais focada.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `evm-cctp-contracts` (TokenMinter + TokenController)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). 2 dos 3
+arquivos do orçamento desta rodada foram aqui (o terceiro foi
+`cashapp/misk/.../HibernateSessionLocks.kt`, ver NOTES.md do Block Open
+Source):
+
+- `src/TokenMinter.sol` + `src/roles/TokenController.sol` (nunca lidos —
+  única peça do CCTP "core" ainda não coberta: mint/burn de USDC ponte).
+  `mint()`/`burn()` só aceitam chamada de `localTokenMessenger`
+  (`onlyLocalTokenMessenger`, comparação direta de `msg.sender`), e esse
+  endereço só pode ser setado uma vez por `onlyOwner`
+  (`addLocalTokenMessenger` reverte se já setado; precisa
+  `removeLocalTokenMessenger` antes de trocar — sem race de
+  front-running que importe, ambas são `onlyOwner`). O docstring de
+  `mint()` menciona "minterAllowance", mas não existe esse mapping dentro
+  deste arquivo — confirmado que essa checagem vive no próprio contrato
+  do token (USDC/FiatTokenV2 tem seu sistema próprio de `minterAllowance`
+  quando concede o papel de "minter" pro `TokenMinter`), não é uma
+  omissão deste código, é responsabilidade de outro contrato fora deste
+  repo. `TokenController` (linkTokenPair/unlinkTokenPair/
+  setMaxBurnAmountPerMessage) é só acessível por `onlyTokenController`
+  (endereço separado do `owner`, setado via construtor/`_setTokenController`,
+  sempre validado não-zero). Nenhuma falha de autorização encontrada —
+  este é o contrato "core" do CCTP, o mais auditado/exposto de todo o
+  programa (é a ponte oficial de USDC), então esse resultado negativo é
+  esperado, não é evidência fraca.
+
+`deep-read-log.json` atualizado (agora 7 arquivos em
+`circlefin/evm-cctp-contracts`). Nenhum item novo adicionado à fila —
+resultado normal. Sugestão pra próxima rodada: `src/utils/Configurable.sol`/
+`src/utils/Pausable.sol` de `evm-cpn-contracts` (sugestão já pendente da
+rodada anterior) ou `GatewayMinter.sol` de `evm-gateway-contracts`
+(também já sinalizado, ainda não lido).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `evm-cpn-contracts` (Configurable/Pausable) + `evm-gateway-contracts` (GatewayMinter)
+
+`queue.jsonl` sem itens `pending` (0 pendentes). 3 arquivos do orçamento
+desta rodada foram aqui (o 4º foi `afterpay/sdk-ios/ApiV3.swift`, ver
+NOTES.md do Block Open Source), seguindo as sugestões pendentes das
+rodadas anteriores:
+
+- `src/utils/Configurable.sol` e `src/utils/Pausable.sol`
+  (`evm-cpn-contracts`, nunca lidos) — dois roles administrativos
+  (`configurator`/`pauser`) desenhados como abstract contracts genéricos,
+  herdados por `PaymentSettlement*`. Ambos seguem o mesmo padrão já
+  validado em `Rescuable.sol`: role dedicado só pode ser trocado por
+  `onlyOwner` (via `Ownable2Step`, troca de dono em duas etapas), o
+  modifier de cada role (`onlyConfigurator`/`onlyPauser`) compara
+  `_msgSender()` direto contra o endereço armazenado, sem desvio.
+  `_setPauser`/`_setConfigurator` revertem em `SamePauser`/
+  `SameConfigurator` se o novo endereço for igual ao atual (evita evento
+  redundante, não é uma falha). `pause()`/`unpause()` só mudam estado
+  quando `whenNotPaused`/`whenPaused` bate, sem caminho pra ficar preso
+  num estado inconsistente. Nenhuma falha de autorização encontrada — é
+  boilerplate de controle de acesso correto, mesmo padrão do resto do
+  programa.
+- `src/GatewayMinter.sol` (`evm-gateway-contracts`, nunca lido) — contrato
+  fino que só orquestra `initialize()` (via `reinitializer(2)`,
+  `_disableInitializers()` no constructor pra bloquear inicialização
+  direta da implementação, só a proxy pode inicializar) chamando
+  `__GatewayCommon_init`/`__Mints_init`. Toda a lógica de mint de verdade
+  já vive em `Mints.sol`, que já tinha sido lida numa rodada anterior
+  (registrado em `deep-read-log.json` antes desta rodada) — não há lógica
+  nova aqui além da checagem de tamanho de array
+  (`MismatchedLengthTokenAndTokenMintAuthorities`) entre
+  `supportedTokens_` e `tokenMintAuthorities_`, que está correta. Nenhuma
+  falha encontrada.
+
+`deep-read-log.json` atualizado (agora 5 arquivos em `evm-cpn-contracts`,
+10 em `evm-gateway-contracts`). Nenhum item novo adicionado à fila —
+resultado normal desta rodada. Sugestão pra próxima rodada: `src/lib/
+AttestationLib.sol`/`src/lib/BurnIntentLib.sol` de `evm-gateway-contracts`
+(verificação de assinatura EIP-712 dos intents de burn/mint — nunca lidos,
+é onde uma falha de verificação de assinatura teria mais impacto) ou
+`evm-xreserve-contracts` (só 2 arquivos lidos até agora, superfície ainda
+pouco coberta).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, seguindo a sugestão da rodada anterior (`NoValidationAttestationLib` + `AttestationLib`)
+
+Fila sem itens `pending` no início. Puxei o fio deixado pela rodada
+anterior: `evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol`
+(nunca lida como arquivo isolado, embora seu uso dentro de `Withdrawal.sol`
+já tivesse sido comentado de passagem antes) chamou atenção justamente
+pelo nome/comentário — "Identical to Gateway's AttestationLib but skips
+validation for gas optimization... Only use this when the attestation
+payload has already been validated (e.g., by gatewayMint)". Uma lib que
+pula validação estrutural/assinatura sob uma suposição implícita é
+exatamente o tipo de coisa que merece ceticismo genuíno, não aceitar o
+comentário de cara. Virou item novo em `queue.jsonl`
+(`ai_deep_read_finding`) e investiguei na mesma rodada.
+
+Arquivos lidos (2 novos, clonados publicamente via `git clone` — um em
+cada um dos dois repositórios do programa):
+- `evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol`
+- `evm-gateway-contracts/src/lib/AttestationLib.sol` (a versão validada,
+  pra comparar campo a campo)
+
+Rastreei a cadeia cruzando os dois repositórios: `Withdrawal.sol::withdraw()`
+passa a MESMA variável `attestationPayload` (bytes calldata, não mutada)
+primeiro pra `gatewayMint()` (que chama `_verifyAttestationSignature` —
+assinatura ECDSA sobre `keccak256(attestation)` dos bytes brutos completos,
+não uma reencodificação — e só depois `AttestationLib.cursor()`, que
+reverte se a estrutura/magic number não bater) e só DEPOIS reparseia os
+mesmos bytes com `NoValidationAttestationLib`. Comparei os offsets/lógica
+de slicing das duas libs: idênticos (mesmas constantes de
+`Attestations.sol`), a única diferença é que a versão sem validação não
+rejeita magic number desconhecido — inofensivo aqui porque o payload já
+passou pela checagem estrita antes de chegar nesse ponto. Confirmei também
+(grep) que `NoValidationAttestationLib` só é usada por `Withdrawal.sol`,
+não há caminho alternativo que a chame sem passar por `gatewayMint` antes.
+**Verdict: falso_positivo, confidence alta** — suspeita legítima pelo
+nome/comentário do arquivo, mas a precondição que o próprio comentário
+exige é genuinamente garantida pelo único call site existente. Reforça
+(com verificação byte-a-byte desta vez, não só inferência) a conclusão já
+registrada sobre `Withdrawal.sol` numa rodada anterior.
+
+`deep-read-log.json` atualizado (`evm-xreserve-contracts` agora com 3
+arquivos, `evm-gateway-contracts` com 11). Nenhum relatório escrito
+(verdict falso_positivo). `BurnIntentLib.sol` (verificação EIP-712 de burn
+intents) segue como sugestão pendente pra uma rodada futura — não coberta
+ainda.
+
+## Rodada — fila vazia, leitura profunda no BurnIntentLib pendente (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Cobri a sugestão deixada na
+rodada anterior: cloneu `circlefin/evm-gateway-contracts` (branch master)
+e `circlefin/evm-cpn-contracts` (branch main) via `git clone` público pra
+localizar `BurnIntentLib.sol` (estava em `evm-gateway-contracts/src/lib/`,
+não em `evm-cpn-contracts`).
+
+Lidos (3 novos, todos crypto/EIP-712, escopo `evm-gateway-contracts`):
+1. `src/lib/BurnIntentLib.sol` — encode/validate/hash de `BurnIntent` e
+   `BurnIntentSet`. Validação estrutural (magic number, comprimento
+   declarado vs real, bounds por elemento em sets) segue o mesmo padrão já
+   auditado em `AttestationLib.sol`. `getTypedDataHash`/
+   `_getBurnIntentTypedDataHash` montam o hash EIP-712 via assembly
+   (`BURN_INTENT_TYPEHASH` + campos + hash do `TransferSpec` aninhado).
+2. `src/lib/BurnIntents.sol` — definição de struct/typehash/offsets. Os
+   typehashes (`BURN_INTENT_TYPEHASH`, `BURN_INTENT_SET_TYPEHASH`) batem
+   com a assinatura de campos comentada no arquivo (conferi a ordem dos
+   campos manualmente, sem recomputar o keccak256 — não executei nada).
+3. `src/lib/TransferSpecLib.sol` — a lib de mais baixo nível, usada tanto
+   por `AttestationLib` quanto por `BurnIntentLib`. `getTypedDataHash`
+   usa assembly com `staticcall` ao precompile de identidade (endereço
+   `4`) pra copiar 320 bytes de campos contíguos da view de memória
+   direto pro buffer de hash — eficiente, mas incomum o bastante pra
+   merecer ceticismo. Verifiquei: o ponteiro de memória livre
+   (`mload(0x40)`) nunca é avançado após os `mstore`/`staticcall`, mas
+   isso é seguro aqui porque o buffer é consumido pelo `keccak256` dentro
+   do mesmo bloco assembly, antes de qualquer outro código Solidity rodar
+   — não há corrupção de estado porque nada mais reutiliza essa região de
+   memória "não reservada" antes do hash já ter sido calculado e copiado
+   pro retorno.
+
+Também conferi (grep em `Burns.sol`, já lido antes) que `maxBlockHeight`
+do burn intent É checado contra `block.number` antes de honrar o burn
+(`IntentExpiredAtIndex` se expirado) — não há brecha de replay óbvia por
+esse ângulo.
+
+Nenhum achado. `deep-read-log.json` atualizado com os 3 arquivos novos de
+`evm-gateway-contracts` (agora 14 arquivos cobertos nesse alvo).
+
+## Rodada 2026-08-29 (rotina automática seguinte) — fila vazia, 3 arquivos novos, sem achado
+
+Fila (`queue.jsonl`) sem itens `pending`. Leitura profunda proativa desta
+rodada: 3 arquivos ainda não cobertos em `deep-read-log.json`, priorizando
+os que faltavam nos alvos Solidity de `targets-solidity.mjs` (contrato real,
+não interface):
+
+1. `evm-gateway-contracts/src/modules/common/TokenSupport.sol` — módulo de
+   lista de tokens suportados. `addSupportedToken` é `onlyOwner`,
+   irreversível por design (documentado no próprio comentário — "once
+   supported, tokens cannot be un-supported"). Sem gap de controle de
+   acesso.
+2. `evm-cctp-contracts/src/v2/TokenMinterV2.sol` — a versão V2 de `mint()`
+   divide o mint entre dois destinatários (`recipientOne`/`recipientTwo`,
+   padrão de fee split do CCTP V2). Comparei com `TokenMinter.sol` (v1,
+   já lido antes): nem v1 nem v2 aplicam rate-limit (`onlyWithinBurnLimit`)
+   no mint — só `burn()` tem esse limite. Isso é consistente entre as
+   duas versões, não é uma regressão introduzida pela V2: o modelo de
+   confiança é `onlyLocalTokenMessenger` (só o TokenMessenger, depois de
+   validar a mensagem cross-chain assinada, pode chamar mint). Não
+   persegui mais fundo se `TokenMessengerV2`/`BaseTokenMessenger` derivam
+   `amountOne`/`amountTwo` corretamente da mensagem atestada — isso fica
+   como ponto em aberto pra rodada futura (esses dois arquivos já estão
+   em `deep-read-log.json`, mas vale reler com este ângulo específico:
+   "o split de valor é derivado só de dado assinado, ou existe algum
+   argumento não-atestado que influencia `amountOne+amountTwo`?").
+3. `buidl-wallet-contracts/src/paymaster/v1/permissioned/SponsorPaymaster.sol`
+   — paymaster ERC-4337 que exige assinatura de um "verifying signer"
+   (offchain, controlado pela Circle) autorizado via `EnumerableSet`
+   gerenciado por `onlyOwner`. `getHash` inclui `block.chainid` e
+   `address(this)` (domain separation correta), `parsePaymasterAndData`
+   faz slicing de calldata com offsets fixos consistentes com o comentário
+   do formato. Usa `ECDSA.tryRecover` (não reverte em assinatura
+   inválida, retorna `SIG_VALIDATION_FAILED` corretamente em vez de
+   travar). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os 3
+arquivos.
+
+## Rodada 2026-08-29 (follow-up do ponto em aberto da rodada anterior) — fila vazia, sem achado
+
+Fila (`queue.jsonl`) sem itens `pending`. Esta rodada fechou o ponto que a
+rodada anterior deixou explicitamente em aberto: "o split de valor
+(`amountOne`/`amountTwo`) em `TokenMinterV2.mint()` é derivado só de dado
+atestado, ou existe algum argumento não-atestado que influencia o total
+mintado?"
+
+Rastreei a cadeia completa a partir de `TokenMessengerV2.handleReceive*Message`
+(únicos pontos de entrada de mint, gated por `onlyLocalMessageTransmitter` +
+`onlyRemoteTokenMessenger`, ambos exigindo que a mensagem já tenha passado
+pela verificação de atestação no `MessageTransmitter`):
+
+1. `src/v2/TokenMessengerV2.sol` — `_handleReceiveMessage` chama
+   `_validatedReceivedMessage(_msg)`, que extrai `_amount` e `_fee`
+   exclusivamente via `_msg._getAmount()` / `_msg._getFeeExecuted()` — campos
+   do próprio `BurnMessageV2` já atestado (assinado off-chain e verificado
+   pelo `MessageTransmitter` antes de chegar aqui). Valida
+   `_fee < _amount` e `_fee <= _msg._getMaxFee()` (maxFee também é campo
+   atestado, fixado pelo depositante no domínio de origem em
+   `depositForBurn`/`depositForBurnWithHook`). Em seguida chama
+   `_mintAndWithdraw(_remoteDomain, _burnToken, _mintRecipient, _amount - _fee, _fee)`
+   — `_mintRecipient` também vem só do campo atestado da mensagem
+   (`_getMintRecipient().toAddress()`), nunca de um argumento de chamada
+   separado controlável por quem invoca `handleReceiveFinalizedMessage`.
+2. `src/v2/BaseTokenMessenger.sol` — `_mintAndWithdraw` passa
+   `_amount` (destinatário: `_mintRecipient`, do campo atestado) e `_fee`
+   (destinatário: `feeRecipient`, endereço de governança setado via
+   `onlyOwner`, nunca vindo da mensagem) direto pro `ITokenMinterV2.mint(...)`
+   já lido na rodada anterior. Nenhum dos dois "lados" do split é derivado de
+   dado não-atestado — `amountOne = amount - fee` e `amountTwo = fee`, ambos
+   funções puras dos campos assinados da mensagem.
+3. `src/messages/v2/BurnMessageV2.sol` — confirma o layout de bytes fixo do
+   formato (`amount` no índice 68, `maxFee` no 132, `feeExecuted` no 164),
+   sem campo dinâmico antes desses que pudesse deslocar a leitura.
+
+Conclusão: **sem achado** — o ponto em aberto está fechado. O split de mint
+em `TokenMinterV2`/`TokenMessengerV2` não introduz superfície de ataque nova
+em relação ao v1; `feeRecipient` é confiável por design (governança), e
+`amount`/`fee`/`mintRecipient` são todos campos atestados, verificados contra
+`maxFee` também atestado. `deep-read-log.json` atualizado com os 3 arquivos
+novos (`TokenMessengerV2.sol`, `BaseTokenMessenger.sol`, `BurnMessageV2.sol`)
+em `circlefin/evm-cctp-contracts`.
+
+## Rodada 2026-08-29 (leitura profunda em TokenMessenger v1, Denylistable e SingleOwnerMSCA) — fila vazia, sem achado
+
+`queue.jsonl` sem `pending` (35/35 revisados). Leitura profunda proativa:
+listei via `git ls-tree` (clone raso local) os arquivos `.sol` de todos os
+alvos `targets-solidity.mjs` ainda não lidos com auth/owner/role/access/
+admin/permission/control no caminho, e escolhi os 3 mais relevantes por
+serem código de produção (não `test/`) ainda em aberto:
+
+1. `evm-cctp-contracts/src/TokenMessenger.sol` — o `TokenMessenger` v1
+   (a versão v2 já tinha sido lida em rodada anterior, mas o v1 nunca
+   tinha sido aberto diretamente, só citado por comparação). Mesmo padrão
+   de controle de acesso do v2: `handleReceiveMessage` gated por
+   `onlyLocalMessageTransmitter` + `onlyRemoteTokenMessenger`;
+   `addRemoteTokenMessenger`/`removeRemoteTokenMessenger`/`addLocalMinter`/
+   `removeLocalMinter` são `onlyOwner`. Único ponto que vale nota:
+   `replaceDepositForBurn` deriva `_originalMsgSender` diretamente dos
+   bytes de `originalMessage` fornecidos pelo chamador (não de storage) e
+   exige `msg.sender == _originalMsgSender` — à primeira vista pareceria
+   forjável (qualquer um poderia montar um `originalMessage` com o próprio
+   endereço como sender), mas a segurança real vem de
+   `localMessageTransmitter.replaceMessage(originalMessage, originalAttestation, ...)`
+   exigir uma attestation válida (assinatura off-chain dos signers da
+   Circle) sobre esse exato `originalMessage` — sem attestation real
+   não há como passar. Padrão já confiável, documentado, não é bug novo.
+2. `evm-cctp-contracts/src/roles/v2/Denylistable.sol` — controle de
+   denylist padrão (`onlyDenylister` separado de `onlyOwner`, que só o
+   Owner pode trocar via `updateDenylister`). `notDenylistedCallers`
+   checa `msg.sender` e, se diferente, `tx.origin` — padrão idêntico ao
+   usado no FiatToken real da Circle. Sem gap.
+3. `buidl-wallet-contracts/src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol`
+   — a carteira ERC-4337 de dono único. Rastreei
+   `_authenticateAndAuthorizeUserOp` (o validador de UserOperation, o
+   ponto mais crítico de autorização — controla quem pode mover fundos
+   da carteira): quando `owner != address(0)`, a validação ignora
+   completamente o `userOpValidationFunction` configurado por seletor e
+   valida só a assinatura do `owner` sobre `userOpHash` (via
+   `SignatureChecker.isValidSignatureNow`) — isso é intencional (dono
+   único assina qualquer chamada, independente do seletor), documentado
+   pelo próprio padrão de outras carteiras 6900 já lidas nesta missão
+   (`SponsorPaymaster`, `WeightedWebauthnMultisigPlugin`). Os pre-hooks
+   por seletor (`_processPreUserOpValidationHooks`) continuam rodando
+   independente do modo de validação, então não há bypass de hook.
+   `_processPreRuntimeHooksAndValidation` (caminho de chamada direta, não
+   via EntryPoint) exige `msg.sender == owner || msg.sender ==
+   address(this)` — sem gap. `isValidSignature` (EIP-1271) usa
+   `getReplaySafeMessageHash` (domain separation por `address(this)`)
+   antes de checar a assinatura — protege contra replay cross-account.
+   Sem achado.
+
+Conclusão: nenhum achado novo. `deep-read-log.json` atualizado com os 3
+arquivos (2 em `circlefin/evm-cctp-contracts`, 1 em
+`circlefin/buidl-wallet-contracts`). Resultado normal — a maioria das
+rodadas não acha nada.

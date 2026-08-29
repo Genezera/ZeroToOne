@@ -153,3 +153,19 @@ tipo de token para evitar confusão entre encrypt/decrypt de finalidades
 diferentes (já documentado no topo do arquivo), usa AEAD (JWE
 `A256GCM` via `jose`) — decriptação autenticada, sem superfície óbvia de
 timing attack. Nenhum achado novo adicionado à fila nesta rodada.
+
+## Rodada — fila vazia, leitura profunda completando o fluxo de auth (2026-08-29)
+Sem `pending` na fila. Nenhum arquivo com auth/session/crypto/token/
+login/password/admin/permission/access no nome ficou sem ler em
+`packages/`. Como continuação de julgamento da rodada anterior (que leu
+`crypto.ts`/`verify-access.ts` isoladamente), li os dois pontos que
+efetivamente CONSOMEM essas funções, pra fechar a cadeia de chamada
+completa: `flags/src/next/create-flags-discovery-endpoint.ts` (o handler
+real do endpoint `.well-known/vercel/flags` — confirma que `verifyAccess`
+é chamado ANTES de montar/retornar `apiData`, com `return` imediato em
+401, sem vazamento parcial de dado antes da checagem) e `flags/src/next/
+overrides.ts` (decripta o cookie de override de flags via
+`decryptOverrides`, que reusa o mesmo `crypto.ts` já auditado — sem
+lógica de confiança implícita no valor do cookie antes da decriptação
+autenticada). Nenhum achado. `deep-read-log.json` atualizado com os 2
+arquivos novos.
