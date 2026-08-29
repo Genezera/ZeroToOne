@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDashboardData, renderDashboardPages } from '../generate-dashboard.mjs';
+import { buildDashboardData, renderDashboardSections, renderDashboardApp } from '../generate-dashboard.mjs';
 
 const targetLists = {
   clarity: [{ program: 'StackingDAO', platform: 'Immunefi', contracts: ['a', 'b'], branch: 'main' }],
@@ -45,36 +45,37 @@ test('buildDashboardData ordena atividade por ts, mais recente primeiro', () => 
   assert.equal(data.activityEntries[0].type, 'bugbounty_scan');
 });
 
-test('renderDashboardPages produz as 5 páginas esperadas, todas HTML autocontido e não-vazio', () => {
+test('renderDashboardSections produz as 5 seções esperadas, cada uma com título/corpo', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: { contractsChecked: 13, repoFilesChecked: 0, manifestsChecked: 273, fetchErrors: 1 }, lastScanAt: '2026-08-28T21:20:00Z' });
-  const pages = renderDashboardPages(data);
-  const names = Object.keys(pages);
-  assert.deepEqual(names.sort(), ['activity.html', 'index.html', 'queue.html', 'stats.html', 'targets.html']);
-  for (const html of Object.values(pages)) {
-    assert.ok(html.startsWith('<!doctype html>'));
-    assert.ok(html.includes('Centro de Sinais'));
+  const sections = renderDashboardSections(data);
+  assert.deepEqual(Object.keys(sections).sort(), ['activity', 'index', 'queue', 'stats', 'targets']);
+  for (const s of Object.values(sections)) {
+    assert.equal(s.key, Object.keys(sections).find((k) => sections[k] === s));
+    assert.ok(typeof s.title === 'string' && s.title.length > 0);
+    assert.ok(typeof s.bodyHtml === 'string' && s.bodyHtml.length > 0);
   }
 });
 
 test('página de alvos lista o repositório real e o escopo', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(pages['targets.html'].includes('cashapp/hermit'));
-  assert.ok(pages['targets.html'].includes('StackingDAO'));
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.targets.bodyHtml.includes('cashapp/hermit'));
+  assert.ok(sections.targets.bodyHtml.includes('StackingDAO'));
 });
 
 test('página de fila inclui o raciocínio completo da revisão (não truncado)', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(pages['queue.html'].includes('motivo detalhado'));
-  assert.ok(pages['queue.html'].includes('cashapp/hermit/go.mod'));
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.queue.bodyHtml.includes('motivo detalhado'));
+  assert.ok(sections.queue.bodyHtml.includes('cashapp/hermit/go.mod'));
+  assert.ok(sections.queue.extraScript.includes('f-status')); // filtro client-side presente
 });
 
 test('página de atividade mostra a rodada do scanner e o veredito, mas ignora tipo de ledger não relacionado', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(pages['activity.html'].includes('achado(s) novo(s)'));
-  assert.ok(pages['activity.html'].includes('explicação'));
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.activity.bodyHtml.includes('achado(s) novo(s)'));
+  assert.ok(sections.activity.bodyHtml.includes('explicação'));
 });
 
 test('página de atividade também mostra rodada de descoberta e de digest', () => {
@@ -84,32 +85,47 @@ test('página de atividade também mostra rodada de descoberta e de digest', () 
     { type: 'bugbounty_digest', ts: '2026-08-28T21:51:46.971Z', watchedPackagesCount: 3, totalAdvisories: 16 },
   ];
   const data = buildDashboardData({ queueEntries, ledgerEntries: ledgerWithMore, stats, targetLists, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(pages['activity.html'].includes('Descoberta de alvo'));
-  assert.ok(pages['activity.html'].includes('186 candidato'));
-  assert.ok(pages['activity.html'].includes('Digest de segurança'));
-  assert.ok(pages['activity.html'].includes('16 advisory'));
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.activity.bodyHtml.includes('Descoberta de alvo'));
+  assert.ok(sections.activity.bodyHtml.includes('186 candidato'));
+  assert.ok(sections.activity.bodyHtml.includes('Digest de segurança'));
+  assert.ok(sections.activity.bodyHtml.includes('16 advisory'));
 });
 
 test('página de estatística mostra as duas quebras (linguagem e programa)', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(pages['stats.html'].includes('Por tipo × linguagem'));
-  assert.ok(pages['stats.html'].includes('Por tipo × programa'));
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.stats.bodyHtml.includes('Por tipo × linguagem'));
+  assert.ok(sections.stats.bodyHtml.includes('Por tipo × programa'));
 });
 
-test('escapa conteúdo pra evitar quebra de HTML', () => {
+test('renderDashboardApp produz UM documento autocontido com as 5 seções e navegação por hash', () => {
+  const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: '2026-08-28T21:20:00Z' });
+  const html = renderDashboardApp(data);
+  assert.ok(html.startsWith('<!doctype html>'));
+  assert.ok(html.includes('<title>Centro de Sinais</title>'));
+  ['page-index', 'page-targets', 'page-queue', 'page-activity', 'page-stats'].forEach((id) => {
+    assert.ok(html.includes(`id="${id}"`), `esperava seção ${id}`);
+  });
+  ['#index', '#targets', '#queue', '#activity', '#stats'].forEach((href) => {
+    assert.ok(html.includes(`href="${href}"`), `esperava link de nav ${href}`);
+  });
+  assert.ok(html.includes('cashapp/hermit')); // conteúdo da página de alvos presente no mesmo doc
+  assert.ok(html.includes('hashchange')); // roteamento client-side presente
+});
+
+test('renderDashboardApp escapa conteúdo pra evitar quebra de HTML', () => {
   const evilQueue = [{ id: '1', type: '<script>evil</script>', language: 'go', program: 'X', platform: 'Y', status: 'reviewed', verdict: 'confirmado', foundAt: '2026-01-01T00:00:00Z', file: 'x', function: 'y' }];
   const data = buildDashboardData({ queueEntries: evilQueue, ledgerEntries: [], stats: { byTypeLanguage: {}, byTypeProgram: {} }, targetLists: {}, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(!pages['queue.html'].includes('<script>evil</script>'));
-  assert.ok(pages['queue.html'].includes('&lt;script&gt;'));
+  const html = renderDashboardApp(data);
+  assert.ok(!html.includes('<script>evil</script>'));
+  assert.ok(html.includes('&lt;script&gt;'));
 });
 
 test('lida com estado totalmente vazio sem quebrar (honesto, sem dado fabricado)', () => {
   const data = buildDashboardData({ queueEntries: [], ledgerEntries: [], stats: { byTypeLanguage: {}, byTypeProgram: {} }, targetLists: {}, lastScanSummary: null, lastScanAt: null });
-  const pages = renderDashboardPages(data);
-  assert.ok(pages['index.html'].includes('Nenhum achado registrado ainda.'));
-  assert.ok(pages['queue.html'].includes('A fila está vazia'));
-  assert.ok(pages['activity.html'].includes('Nenhuma atividade registrada ainda.'));
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.index.bodyHtml.includes('Nenhum achado registrado ainda.'));
+  assert.ok(sections.queue.bodyHtml.includes('A fila está vazia'));
+  assert.ok(sections.activity.bodyHtml.includes('Nenhuma atividade registrada ainda.'));
 });

@@ -38,7 +38,7 @@ const STATS_JSON_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.json');
 const STATS_MD_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.md');
 const VERDICTS_SNAPSHOT_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-verdicts.json');
 const STATUS_PATH = path.join(BUGBOUNTY_DIR, 'STATUS.md');
-const DASHBOARD_DIR = path.join(BUGBOUNTY_DIR, 'dashboard');
+const DASHBOARD_PATH = path.join(BUGBOUNTY_DIR, 'dashboard', 'index.html');
 const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
@@ -243,7 +243,7 @@ export async function runScan() {
     statsJsonPath: STATS_JSON_PATH,
     ledgerEntries: readLedger('research'),
     targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS },
-    outputDir: DASHBOARD_DIR,
+    outputPath: DASHBOARD_PATH,
     lastScanSummary: { contractsChecked, repoFilesChecked, manifestsChecked: depResult.filesChecked, fetchErrors },
     lastScanAt: scanTimestamp,
   });

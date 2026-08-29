@@ -213,16 +213,19 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin
 
 .empty { color: var(--ink-faint); font-size: 13px; padding: 14px 0; }
 footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--ink-faint); line-height: 1.6; }
+
+.page { display: none; }
+.page.active { display: block; }
 `;
 
 const FONT_LINK = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">`;
 
 const NAV_ITEMS = [
-  { key: 'index', href: 'index.html', label: 'Visão geral', icon: '◎' },
-  { key: 'targets', href: 'targets.html', label: 'Alvos', icon: '▤' },
-  { key: 'queue', href: 'queue.html', label: 'Fila completa', icon: '≡' },
-  { key: 'activity', href: 'activity.html', label: 'Atividade ao vivo', icon: '↯' },
-  { key: 'stats', href: 'stats.html', label: 'Estatística', icon: '▲' },
+  { key: 'index', label: 'Visão geral', icon: '◎' },
+  { key: 'targets', label: 'Alvos', icon: '▤' },
+  { key: 'queue', label: 'Fila completa', icon: '≡' },
+  { key: 'activity', label: 'Atividade ao vivo', icon: '↯' },
+  { key: 'stats', label: 'Estatística', icon: '▲' },
 ];
 
 function fmtTime(iso) {
@@ -248,15 +251,30 @@ function fpBarColor(fpRate) {
   return 'var(--critical)';
 }
 
-function pageShell({ title, subtitle, activeKey, lastScanAt, bodyHtml, extraScript = '' }) {
+/** Uma "página" agora é uma <section> dentro do MESMO documento, trocada
+ * via hash (#targets, #queue...) — não um arquivo .html separado. Isso é
+ * proposital: um Artifact publicado só serve UM arquivo, então links entre
+ * páginas separadas quebrariam na versão publicada; navegação por hash
+ * funciona idêntico local (file://) e publicado. */
+function renderSection({ key, title, subtitle, bodyHtml }) {
+  return `<section class="page" id="page-${key}" data-page="${key}">
+    <h1>${esc(title)}</h1>
+    ${subtitle ? `<div class="page-sub">${subtitle}</div>` : ''}
+    ${bodyHtml}
+  </section>`;
+}
+
+function renderApp({ sections, lastScanAt, extraScripts }) {
   const navHtml = NAV_ITEMS.map(
-    (n) => `<li><a href="${n.href}"${n.key === activeKey ? ' aria-current="page"' : ''}><span class="nav-icon">${n.icon}</span>${esc(n.label)}</a></li>`
+    (n) => `<li><a href="#${n.key}" data-nav="${n.key}"${n.key === 'index' ? ' aria-current="page"' : ''}><span class="nav-icon">${n.icon}</span>${esc(n.label)}</a></li>`
   ).join('');
+  const sectionsHtml = sections.map((s) => renderSection(s)).join('\n');
+
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Centro de Sinais — ${esc(title)}</title>
+<title>Centro de Sinais</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 ${FONT_LINK}
 <style>${SHARED_STYLES}</style>
@@ -270,32 +288,55 @@ ${FONT_LINK}
     <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>${esc(fmtTime(lastScanAt))}</div>
   </aside>
   <main class="main">
-    <h1>${esc(title)}</h1>
-    ${subtitle ? `<div class="page-sub">${subtitle}</div>` : ''}
-    ${bodyHtml}
-    <footer class="page-footer">Gerado automaticamente por <code>generate-dashboard.mjs</code> a cada rodada do scanner. Instantâneo deste momento — não é uma página com dado ao vivo (o repositório é privado). Pra ver sempre a versão mais recente, abra os arquivos locais em <code>research/bugbounty/dashboard/</code>.</footer>
+    ${sectionsHtml}
+    <footer class="page-footer">Gerado automaticamente por <code>generate-dashboard.mjs</code> a cada rodada do scanner. Instantâneo deste momento — não é uma página com dado ao vivo (o repositório é privado). Pra ver sempre a versão mais recente, abra o arquivo local em <code>research/bugbounty/dashboard/index.html</code>.</footer>
   </main>
 </div>
 <script>
 (function () {
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('[data-countup]').forEach(function (el) {
-    var target = parseInt(el.getAttribute('data-countup'), 10) || 0;
-    if (reduce) { el.textContent = target; return; }
-    var start = null, dur = 800;
-    function step(ts) {
-      if (!start) start = ts;
-      var p = Math.min(1, (ts - start) / dur);
-      el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  });
-  requestAnimationFrame(function () {
-    document.querySelectorAll('.bar-fill').forEach(function (el) { el.classList.add('show'); });
-  });
+  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
+  var animated = {};
+
+  function runAnimations(key) {
+    if (animated[key]) return;
+    animated[key] = true;
+    var root = document.getElementById('page-' + key);
+    if (!root) return;
+    root.querySelectorAll('[data-countup]').forEach(function (el) {
+      var target = parseInt(el.getAttribute('data-countup'), 10) || 0;
+      if (reduce) { el.textContent = target; return; }
+      var start = null, dur = 800;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min(1, (ts - start) / dur);
+        el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+    requestAnimationFrame(function () {
+      root.querySelectorAll('.bar-fill').forEach(function (el) { el.classList.add('show'); });
+    });
+  }
+
+  function showPage(key) {
+    var valid = pages.some(function (p) { return p.dataset.page === key; });
+    if (!valid) key = 'index';
+    pages.forEach(function (p) { p.classList.toggle('active', p.dataset.page === key); });
+    navLinks.forEach(function (a) { if (a.dataset.nav === key) { a.setAttribute('aria-current', 'page'); } else { a.removeAttribute('aria-current'); } });
+    runAnimations(key);
+    document.title = 'Centro de Sinais' + (key === 'index' ? '' : ' — ' + a11yLabel(key));
+  }
+  function a11yLabel(key) {
+    var found = navLinks.find ? navLinks.find(function (a) { return a.dataset.nav === key; }) : null;
+    return found ? found.textContent.trim() : key;
+  }
+  window.addEventListener('hashchange', function () { showPage(location.hash.slice(1)); });
+  showPage(location.hash.slice(1) || 'index');
 })();
-${extraScript}
+${extraScripts}
 </script>
 </body>
 </html>`;
@@ -331,11 +372,10 @@ function renderOverviewPage(data) {
     ? topBars.map((h, i) => barRow(h, LANGUAGE_LABEL[h.language] || h.language, i)).join('')
     : `<div class="empty">Ainda sem amostra suficiente pra estatística.</div>`;
 
-  return pageShell({
+  return {
+    key: 'index',
     title: 'Visão geral',
     subtitle: esc(scanLine),
-    activeKey: 'index',
-    lastScanAt,
     bodyHtml: `
     <div class="tiles">
       ${statTile(totals.targets, 'Alvos ativos', 0)}
@@ -347,20 +387,20 @@ function renderOverviewPage(data) {
     </div>
     <div class="panel">
       <h2>Últimos achados</h2>
-      <div class="panel-sub"><a href="queue.html">Ver a fila completa →</a></div>
+      <div class="panel-sub"><a href="#queue">Ver a fila completa →</a></div>
       ${findingsHtml}
     </div>
     <div class="panel">
       <h2>Atividade recente</h2>
-      <div class="panel-sub"><a href="activity.html">Ver o histórico completo →</a></div>
+      <div class="panel-sub"><a href="#activity">Ver o histórico completo →</a></div>
       ${activityHtml}
     </div>
     <div class="panel">
       <h2>Heurísticas mais ruidosas</h2>
-      <div class="panel-sub"><a href="stats.html">Ver estatística completa →</a></div>
+      <div class="panel-sub"><a href="#stats">Ver estatística completa →</a></div>
       ${barsHtml}
     </div>`,
-  });
+  };
 }
 
 // ---------------------------------------------------------------------
@@ -368,13 +408,13 @@ function renderOverviewPage(data) {
 // ---------------------------------------------------------------------
 
 function renderTargetsPage(data) {
-  const { targetRows, lastScanAt } = data;
+  const { targetRows } = data;
   const byLanguage = {};
   for (const r of targetRows) {
     byLanguage[r.language] = byLanguage[r.language] || [];
     byLanguage[r.language].push(r);
   }
-  const sections = Object.entries(byLanguage)
+  const groupedHtml = Object.entries(byLanguage)
     .map(([language, rows]) => {
       const cards = rows
         .map(
@@ -394,13 +434,12 @@ function renderTargetsPage(data) {
     })
     .join('');
 
-  return pageShell({
+  return {
+    key: 'targets',
     title: 'Alvos ativos',
     subtitle: `${targetRows.length} repositórios/contratos sob varredura contínua, agrupados por linguagem.`,
-    activeKey: 'targets',
-    lastScanAt,
-    bodyHtml: sections,
-  });
+    bodyHtml: groupedHtml,
+  };
 }
 
 // ---------------------------------------------------------------------
@@ -431,7 +470,7 @@ function findingCard(e, i) {
 }
 
 function renderQueuePage(data) {
-  const { queueEntries, lastScanAt } = data;
+  const { queueEntries } = data;
   const programs = [...new Set(queueEntries.map((e) => e.program))].sort();
   const languages = [...new Set(queueEntries.map((e) => e.language).filter(Boolean))].sort();
 
@@ -465,11 +504,10 @@ function renderQueuePage(data) {
   apply();
 })();`;
 
-  return pageShell({
+  return {
+    key: 'queue',
     title: 'Fila completa',
     subtitle: `Todo achado que o scanner já produziu — pendente e revisado, com o raciocínio completo de quem revisou.`,
-    activeKey: 'queue',
-    lastScanAt,
     bodyHtml: `
     <div class="filters">
       <select id="f-status"><option value="">Todo status</option><option value="pending">Pendente</option><option value="reviewed">Revisado</option></select>
@@ -479,7 +517,7 @@ function renderQueuePage(data) {
     </div>
     ${listHtml}`,
     extraScript: script,
-  });
+  };
 }
 
 // ---------------------------------------------------------------------
@@ -524,20 +562,19 @@ function timelineItem(entry, i) {
 }
 
 function renderActivityPage(data) {
-  const { activityEntries, lastScanAt } = data;
+  const { activityEntries } = data;
   const shown = activityEntries.slice(0, 80);
   const html = shown.length
     ? `<div class="timeline">${shown.map((e, i) => timelineItem(e, i)).join('')}</div>`
     : `<div class="empty">Nenhuma atividade registrada ainda.</div>`;
   const truncNote = activityEntries.length > shown.length ? `<div class="panel-sub">Mostrando as ${shown.length} mais recentes de ${activityEntries.length} entradas totais no ledger.</div>` : '';
 
-  return pageShell({
+  return {
+    key: 'activity',
     title: 'Atividade ao vivo',
     subtitle: 'Toda rodada de varredura e todo veredito registrado no ledger encadeado por hash (research/ledger.research.jsonl) — histórico auditável, nunca sobrescrito.',
-    activeKey: 'activity',
-    lastScanAt,
     bodyHtml: `<div class="panel">${truncNote}${html}</div>`,
-  });
+  };
 }
 
 // ---------------------------------------------------------------------
@@ -556,7 +593,7 @@ function barRow(h, labelSuffix, i) {
 }
 
 function renderStatsPage(data) {
-  const { heuristicByLanguage, heuristicByProgram, lastScanAt } = data;
+  const { heuristicByLanguage, heuristicByProgram } = data;
   const byLangHtml = heuristicByLanguage.length
     ? heuristicByLanguage.map((h, i) => barRow(h, h.language, i)).join('')
     : `<div class="empty">Ainda sem amostra suficiente.</div>`;
@@ -564,42 +601,51 @@ function renderStatsPage(data) {
     ? heuristicByProgram.map((h, i) => barRow(h, h.program, i)).join('')
     : `<div class="empty">Ainda sem amostra suficiente.</div>`;
 
-  return pageShell({
+  return {
+    key: 'stats',
     title: 'Estatística de heurísticas',
     subtitle: 'Taxa de falso-positivo calculada a partir de todo veredito já registrado — isso é a retroalimentação que afina achados futuros (research/bugbounty/heuristic-stats.json).',
-    activeKey: 'stats',
-    lastScanAt,
     bodyHtml: `
     <div class="panel"><h2>Por tipo × linguagem</h2>${byLangHtml}</div>
     <div class="panel"><h2>Por tipo × programa</h2>${byProgHtml}</div>`,
-  });
+  };
 }
 
 // ---------------------------------------------------------------------
 // Geração
 // ---------------------------------------------------------------------
 
-export function renderDashboardPages(data) {
+/** Monta as 5 seções (dados ainda, não HTML) — usado pelos testes pra
+ * checar cada seção isoladamente sem parsear o documento inteiro. */
+export function renderDashboardSections(data) {
   return {
-    'index.html': renderOverviewPage(data),
-    'targets.html': renderTargetsPage(data),
-    'queue.html': renderQueuePage(data),
-    'activity.html': renderActivityPage(data),
-    'stats.html': renderStatsPage(data),
+    index: renderOverviewPage(data),
+    targets: renderTargetsPage(data),
+    queue: renderQueuePage(data),
+    activity: renderActivityPage(data),
+    stats: renderStatsPage(data),
   };
 }
 
-export function generateDashboard({ queuePath, statsJsonPath, ledgerEntries, targetLists, outputDir, lastScanSummary, lastScanAt }) {
+/** Documento único autocontido (todas as 5 "páginas" como <section>,
+ * trocadas por hash) — é isso que vira o arquivo publicado/aberto local. */
+export function renderDashboardApp(data) {
+  const sectionsByKey = renderDashboardSections(data);
+  const sections = Object.values(sectionsByKey);
+  const extraScripts = sections.map((s) => s.extraScript || '').join('\n');
+  return renderApp({ sections, lastScanAt: data.lastScanAt, extraScripts });
+}
+
+export function generateDashboard({ queuePath, statsJsonPath, ledgerEntries, targetLists, outputPath, lastScanSummary, lastScanAt }) {
   const queueEntries = loadQueue(queuePath);
   const stats = loadJson(statsJsonPath, { byTypeLanguage: {}, byTypeProgram: {} });
   const RELEVANT_TYPES = new Set(['bugbounty_scan', 'bugbounty_verdict', 'bugbounty_discovery', 'bugbounty_digest']);
   const relevantLedger = (ledgerEntries || []).filter((e) => RELEVANT_TYPES.has(e.type));
   const data = buildDashboardData({ queueEntries, ledgerEntries: relevantLedger, stats, targetLists, lastScanSummary, lastScanAt });
-  const pages = renderDashboardPages(data);
+  const html = renderDashboardApp(data);
 
-  if (!existsSync(outputDir)) mkdirSync(outputDir, { recursive: true });
-  for (const [filename, html] of Object.entries(pages)) {
-    writeFileSync(path.join(outputDir, filename), html, 'utf8');
-  }
+  const outDir = path.dirname(outputPath);
+  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+  writeFileSync(outputPath, html, 'utf8');
   return data;
 }
