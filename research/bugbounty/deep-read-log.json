@@ -50,7 +50,8 @@
     "misk-crypto/src/main/kotlin/misk/crypto/KmsClientModule.kt",
     "misk-jdbc/src/main/kotlin/misk/jdbc/JDBCSession.kt",
     "misk-jdbc/src/main/kotlin/misk/jdbc/Session.kt",
-    "misk-hibernate/src/main/kotlin/misk/hibernate/HibernateInjectorAccess.kt"
+    "misk-hibernate/src/main/kotlin/misk/hibernate/HibernateInjectorAccess.kt",
+    "misk-hibernate/src/main/kotlin/misk/hibernate/advisorylocks/HibernateSessionLocks.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -98,7 +99,9 @@
     "src/roles/Attestable.sol",
     "src/v2/BaseMessageTransmitter.sol",
     "src/roles/v2/AttestableV2.sol",
-    "src/proxy/AdminUpgradableProxy.sol"
+    "src/proxy/AdminUpgradableProxy.sol",
+    "src/TokenMinter.sol",
+    "src/roles/TokenController.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",

@@ -427,3 +427,38 @@ Configurable.sol`/`src/utils/Pausable.sol` (mesmo repo, ainda não lidos) ou
 voltar ao refund flow multi-assinatura (`requireDestinationRefundSig`) de
 `PaymentSettlementV2.sol`, que a rodada anterior já tinha sinalizado como
 merecendo uma segunda leitura mais focada.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `evm-cctp-contracts` (TokenMinter + TokenController)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). 2 dos 3
+arquivos do orçamento desta rodada foram aqui (o terceiro foi
+`cashapp/misk/.../HibernateSessionLocks.kt`, ver NOTES.md do Block Open
+Source):
+
+- `src/TokenMinter.sol` + `src/roles/TokenController.sol` (nunca lidos —
+  única peça do CCTP "core" ainda não coberta: mint/burn de USDC ponte).
+  `mint()`/`burn()` só aceitam chamada de `localTokenMessenger`
+  (`onlyLocalTokenMessenger`, comparação direta de `msg.sender`), e esse
+  endereço só pode ser setado uma vez por `onlyOwner`
+  (`addLocalTokenMessenger` reverte se já setado; precisa
+  `removeLocalTokenMessenger` antes de trocar — sem race de
+  front-running que importe, ambas são `onlyOwner`). O docstring de
+  `mint()` menciona "minterAllowance", mas não existe esse mapping dentro
+  deste arquivo — confirmado que essa checagem vive no próprio contrato
+  do token (USDC/FiatTokenV2 tem seu sistema próprio de `minterAllowance`
+  quando concede o papel de "minter" pro `TokenMinter`), não é uma
+  omissão deste código, é responsabilidade de outro contrato fora deste
+  repo. `TokenController` (linkTokenPair/unlinkTokenPair/
+  setMaxBurnAmountPerMessage) é só acessível por `onlyTokenController`
+  (endereço separado do `owner`, setado via construtor/`_setTokenController`,
+  sempre validado não-zero). Nenhuma falha de autorização encontrada —
+  este é o contrato "core" do CCTP, o mais auditado/exposto de todo o
+  programa (é a ponte oficial de USDC), então esse resultado negativo é
+  esperado, não é evidência fraca.
+
+`deep-read-log.json` atualizado (agora 7 arquivos em
+`circlefin/evm-cctp-contracts`). Nenhum item novo adicionado à fila —
+resultado normal. Sugestão pra próxima rodada: `src/utils/Configurable.sol`/
+`src/utils/Pausable.sol` de `evm-cpn-contracts` (sugestão já pendente da
+rodada anterior) ou `GatewayMinter.sol` de `evm-gateway-contracts`
+(também já sinalizado, ainda não lido).

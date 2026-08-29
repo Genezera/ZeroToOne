@@ -1204,3 +1204,33 @@ Sugestão pra próxima rodada: `afterpay/sdk-ios/Sources/Afterpay/ApiV3.swift`
 `square/wire` `wire-schema/`/`wire-compiler/` sem filtro de nome (ler por
 julgamento de entry-point de parsing de dado não confiável, já que o filtro
 de nome não achou candidato ali).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `cashapp/misk` (HibernateSessionLocks)
+
+`queue.jsonl` sem itens `pending` (33 revisados, 0 pendentes). 1 dos 3
+arquivos do orçamento desta rodada foi aqui (os outros 2 foram
+`circlefin/evm-cctp-contracts` — TokenMinter/TokenController, ver NOTES.md
+do Circle BBP):
+
+- `misk-hibernate/src/main/kotlin/misk/hibernate/advisorylocks/HibernateSessionLocks.kt`
+  (nunca lido — helpers de lock consultivo Postgres/MySQL usados por
+  código que precisa de exclusão mútua distribuída). Revisei os 4
+  caminhos (`tryAcquireLock`/`tryReleaseLock` × Postgres/MySQL): MySQL
+  valida `lockKey.length <= 64` antes de usar (sem truncamento silencioso
+  que pudesse causar colisão de lock entre chaves diferentes); Postgres
+  usa `hashtext(:lockKey)` pra converter string em `bigint` (limitação
+  documentada do próprio Postgres — só aceita bigint/2×int4 pra advisory
+  lock — colisão de hash de 32 bits é teoricamente possível mas é o
+  padrão estabelecido, não uma falha introduzida aqui). Retorno de
+  `RELEASE_LOCK`/`GET_LOCK` tratado explicitamente pros 3 casos possíveis
+  (`0`/`1`/`null`), sem fallback silencioso que mascare "lock já era de
+  outra sessão". Não há superfície de autenticação/autorização própria
+  aqui — é infraestrutura de locking, sem controle de acesso a auditar; o
+  único risco teórico (colisão de hash de 32 bits no Postgres) é uma
+  limitação de design do Postgres em si, aceita pela própria
+  documentação do banco, não um bug do código do misk.
+
+`deep-read-log.json` atualizado (agora 47 arquivos lidos em
+`cashapp/misk`). Nenhum item novo adicionado à fila — resultado normal.
+Sugestão pra próxima rodada: `afterpay/sdk-ios/Sources/Afterpay/ApiV3.swift`
+(sugestão pendente da rodada anterior, ainda não lida).
