@@ -135,7 +135,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
     <div class="brand">Centro de Sinais</div>
     <ul class="nav"><li><a href="#index" data-nav="index" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="#targets" data-nav="targets"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="#queue" data-nav="queue"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="#activity" data-nav="activity"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="#stats" data-nav="stats"><span class="nav-icon">▲</span>Estatística</a></li></ul>
-    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-29 06:04 UTC</div>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-29 06:13 UTC</div>
   </aside>
   <main class="main">
     <section class="page" id="page-index" data-page="index">
@@ -148,7 +148,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="tile" style="--i:2"><div class="tile-value" data-countup="6">0</div><div class="tile-label">Linguagens</div></div>
       <div class="tile" style="--i:3"><div class="tile-value" data-countup="26">0</div><div class="tile-label">Rodadas registradas</div></div>
       <div class="tile" style="--i:4"><div class="tile-value" data-countup="0">0</div><div class="tile-label">Sinais pendentes</div></div>
-      <div class="tile" style="--i:5"><div class="tile-value" data-countup="31">0</div><div class="tile-label">Já revisados</div></div>
+      <div class="tile" style="--i:5"><div class="tile-value" data-countup="33">0</div><div class="tile-label">Já revisados</div></div>
     </div>
     <div class="panel">
       <h2>Últimos achados</h2>
@@ -811,7 +811,23 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">fetch(...) com destino montado por interpolação/variável, não string fixa — risco de SSRF se alguma parte vier de entrada não confiável e não houver allowlist de host. Contexto: &quot;ARIATE&#39;) { try { const mvResponse = await fetch( `https://api.flagsmith.com/api/v1/flags/$&quot;</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>fetch() usa host fixo `https://api.flagsmith.com` (hardcoded, não interpolado) — só o feature id (`flag.feature.id`, vindo da própria resposta anterior da API oficial da Flagsmith) entra no path. Não há nenhuma variável de host nem qualquer dado de entrada externa/não confiável influenciando o destino da requisição. Sem controle de host, não há SSRF.</div>
   </div>
-  <div class="finding" style="--i:22" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:22" data-status="reviewed" data-verdict="confirmado" data-program="Circle BBP" data-language="solidity">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">2026-08-29 00:00 UTC</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-info">confirmado</span>
+      <span class="chip chip-muted">solidity</span>
+      <span>Circle BBP · HackerOne</span>
+      <span class="chip chip-muted">confiança média</span>
+      
+    </div>
+    <div class="finding-file">circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol — initiateWithdrawal / withdraw</div>
+    <div class="finding-note">Withdrawals.sol (initiateWithdrawal, withdraw) não tem nenhum modifier notDenylisted, enquanto TODOS os outros caminhos de movimentação/controle de fundos do mesmo GatewayWallet checam explicitamente: Deposits.sol (deposit/depositFor/depositWithPermit/depositWithAuthorization, todos com notDenylisted(msg.sender) e da contraparte), Delegation.sol (addDelegate/removeDelegate), e o pagamento simétrico do lado minter (Mints.sol::gatewayMint checa notDenylisted(msg.sender) E valida explicitamente &#39;Ensure the intended recipient is not denylisted&#39; pro destinatário do mint). Um endereço denylistado (congelado por compliance/sanção) parece poder chamar initiateWithdrawal + withdraw livremente e sacar seu saldo `available` já depositado, via safeTransfer direto pra msg.sender (Withdrawals.sol:113), sem nenhuma checagem de denylist em nenhum ponto do caminho.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tokenSupported(token)` (linha 76) e `withdraw(address token) external whenNotPaused tokenSupported(token)` (linha 104) — nenhuma das duas tem `notDenylisted`. `withdraw()` termina em `IERC20(token).safeTransfer(msg.sender, balanceToWithdraw)` (linha 113), pagando fundos reais diretamente pro chamador. Contrastei com o resto do mesmo contrato composto (GatewayWallet.sol herda Deposits, Withdrawals, ContractSignersAllowlist, Burns, Batches): grep por `notDenylisted` em todo `src/` mostra que só aparece em Denylist.sol (definição), Deposits.sol, Delegation.sol e Mints.sol (módulo do GatewayMinter) — nunca em Withdrawals.sol nem Burns.sol. Burns.sol é chamado pelo operador pra reduzir saldo e queimar (não paga fundos ao usuário, então a ausência ali é defensável), mas Withdrawals.sol paga fundos DIRETAMENTE ao usuário — exatamente o tipo de operação que Mints.sol::gatewayMint (o caminho de pagamento simétrico no lado mint) protege explicitamente checando tanto o chamador quanto o destinatário. O padrão consistente em Deposits/Delegation/Mints (checar denylist em toda operação relacionada a fundos, inclusive delegação que nem move fundos diretamente) torna a ausência em Withdrawals.sol uma inconsistência que parece falha de lógica, não design deliberado — mas não tenho acesso a documentação de design/issue tracker interno da Circle pra confirmar 100% que isso não é intencional (ex.: política deliberada de sempre permitir ao usuário reaver saldo já depositado mesmo se denylistado depois). Por isso confidence &#39;média&#39;, não &#39;alta&#39;, apesar da cadeia de chamada e do código-fonte estarem plenamente confirmados.</div>
+  </div>
+  <div class="finding" style="--i:23" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -827,7 +843,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:23" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:24" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -843,7 +859,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:24" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:25" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -859,7 +875,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:25" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
+  <div class="finding" style="--i:26" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="jvm">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:20 UTC</div>
@@ -875,7 +891,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21 (Maven) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-r937-wjx7-w2jp — JetBrains Kotlin: Unsafe Deserialization in Kotlin Build Cache Enables Code Execution.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos de fixture usados só pelos testes de integração do próprio wire-gradle-plugin (para validar compatibilidade contra várias versões antigas do plugin Kotlin de propósito), nunca uma dependência runtime do que o Wire de fato publica/distribui para consumidores. Além disso, verifiquei o advisory diretamente (GitHub Advisory GHSA-r937-wjx7-w2jp / CVE-2026-53914): vetor CVSS AV:L/AC:H/PR:H — exige acesso LOCAL, alta complexidade E privilégio alto já concedido na máquina que roda o build, ou seja, nem no cenário mais favorável há um vetor remoto/de rede explorável por um atacante externo via este código. Some-se dependência de teste (nunca exposta a terceiros) + pré-requisito de exploração que já pressupõe comprometimento prévio da máquina de build: não há caminho plausível de exploração via este achado.</div>
   </div>
-  <div class="finding" style="--i:26" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+  <div class="finding" style="--i:27" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:17 UTC</div>
@@ -891,7 +907,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência golang.org/x/crypto@v0.54.0 (Go) tem vulnerabilidade PUBLICADA e CONHECIDA: GO-2026-5932 — The golang.org/x/crypto/openpgp package is unmaintained, unsafe by design, and has known security issues. (+ 1 outra(s) vulnerabilidade(s) na mesma dependência)</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftware/go-rpmutils (go-rpmutils/go.mod:7) e usado apenas nos arquivos verify*.go/signatures.go do pacote rpmutils (verificação de assinatura PGP, função exportada Verify). Confirmei por clone direto de cashapp/hermit e sassoftware/go-rpmutils que o hermit usa exclusivamente rpmutils.ReadRpm + PayloadReader (archive/archive.go:615) para extrair pacotes RPM — nunca chama rpmutils.Verify, e ReadRpm (rpmutils.go) não importa openpgp/ProtonMail em nenhum ponto. O advisory GO-2026-5932 é sobre o pacote golang.org/x/crypto/openpgp especificamente (não usado nem indiretamente por hermit — quem usa openpgp é o go-crypto do ProtonMail, um fork/substituto, não o x/crypto/openpgp original); mesmo essa parte compilando por transitividade, não há caminho de execução no hermit que a alcance.</div>
   </div>
-  <div class="finding" style="--i:27" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
+  <div class="finding" style="--i:28" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="go">
     <div class="finding-head">
       <div class="finding-type">known_vulnerable_dependency</div>
       <div class="finding-time">2026-08-28 21:17 UTC</div>
@@ -907,7 +923,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">Dependência github.com/cloudflare/circl@v1.3.8 (Go) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-2x5j-vhc8-9cwm — CIRCL-Fourq: Missing and wrong validation can lead to incorrect results. (+ 3 outra(s) vulnerabilidade(s) na mesma dependência)</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github.com/ProtonMail/go-crypto (go-rpmutils/go.mod:7), que só é importado pelos arquivos verify.go, verify_v3.go, verify_v4.go, verify_nov3.go e signatures.go do pacote rpmutils — todos voltados a verificação de assinatura PGP de RPM (função exportada rpmutils.Verify). O hermit, porém, só chama rpmutils.ReadRpm e rpm.PayloadReader (archive/archive.go:615) para extrair o conteúdo do pacote RPM; ReadRpm está em rpmutils.go, que não importa ProtonMail/go-crypto nem nada de cripto, e nenhum arquivo do hermit chama rpmutils.Verify (grep completo por &quot;rpmutils.&quot; e &quot;.Verify(&quot; no repo não achou nenhuma chamada de verificação de assinatura). Como Go compila por pacote, o código vulnerável do circl acaba linkado no binário (a dependência é real), mas nunca é executado por nenhum fluxo do hermit — não há input controlável por atacante que alcance a função vulnerável via uso normal da ferramenta.</div>
   </div>
-  <div class="finding" style="--i:28" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:29" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">unguarded_transfer</div>
       <div class="finding-time">2026-08-26 20:14 UTC</div>
@@ -923,7 +939,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">deposit faz uma transferência sem nenhuma checagem de autorização visível no corpo da função (pode estar em outro lugar, ex. trait/decorator — confirmar manualmente).</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A linha 38 é (stx-transfer? stx-amount tx-sender .stx-reserve) — o argumento &#39;sender&#39; passado é literalmente tx-sender, não um principal arbitrário. stx-transfer? é uma primitiva nativa da VM Clarity que só permite mover fundos quando o sender do argumento é o próprio tx-sender (ou o contrato em execução, sob as-contract) — é uma garantia de nível de linguagem/consenso, não algo que o contrato precise checar separadamente. Um depositante só pode mover o próprio STX para a reserva; não existe caminho para debitar fundos de terceiros. Nenhum arquivo externo foi necessário para esta conclusão.</div>
   </div>
-  <div class="finding" style="--i:29" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:30" data-status="reviewed" data-verdict="falso_positivo" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">unguarded_transfer</div>
       <div class="finding-time">2026-08-26 20:14 UTC</div>
@@ -939,7 +955,7 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-note">init-withdraw faz uma transferência sem nenhuma checagem de autorização visível no corpo da função (pode estar em outro lugar, ex. trait/decorator — confirmar manualmente).</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A única transferência de valor é (contract-call? .ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract none), onde sender=tx-sender (linha 49). O contrato irmão já baixado, ststx-token.clar (linha 44), mostra que a função transfer padrão SIP-010 deste protocolo faz (asserts! (is-eq tx-sender sender) ...) — só o dono dos tokens pode movê-los. Não consegui baixar ststxbtc-token-v2.clar para confirmar byte a byte porque api.hiro.so está bloqueado pela política de egress deste ambiente (403 no proxy) nesta sessão; por isso confidence=média, não alta. Mesmo no pior cenário, o argumento sender passado por init-withdraw é sempre tx-sender — a função nunca nomeia outra conta, então não há caminho de exploração dentro desta função mesmo que a suposição sobre o token não se confirme.</div>
   </div>
-  <div class="finding" style="--i:30" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
+  <div class="finding" style="--i:31" data-status="reviewed" data-verdict="confirmado" data-program="StackingDAO" data-language="clarity">
     <div class="finding-head">
       <div class="finding-type">auth_arg_inconsistency</div>
       <div class="finding-time">2026-08-26 20:13 UTC</div>
@@ -954,6 +970,22 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="finding-file">ststx-token.clar — set-token-uri</div>
     <div class="finding-note">set-token-uri usa tx-sender em check-is-protocol, mas o padrão dominante no arquivo (2/3 ocorrências) é contract-caller.</div>
     <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>A inconsistência é real: set-token-uri (linha 61-66) usa (contract-call? .dao check-is-protocol tx-sender), enquanto todas as outras ~25 funções administrativas do código lido (incluindo as 8 em stacking-dao-core-ststxbtc-v1.clar) usam contract-caller. Porém set-token-uri só altera a string de metadado (URI do token) — não movimenta fundos, não minta/queima/transfere nada. Na pior hipótese (tx-sender != contract-caller em uma cadeia de chamadas via DAO), o efeito seria a função ficar inutilizável por certos caminhos de chamada (DoS de metadado), não uma escalada de privilégio que beneficie um atacante. Não se encaixa em roubo de fundos, congelamento, mintagem não autorizada ou insolvência.</div>
+  </div>
+  <div class="finding" style="--i:32" data-status="reviewed" data-verdict="falso_positivo" data-program="Block Open Source" data-language="kotlin">
+    <div class="finding-head">
+      <div class="finding-type">ai_deep_read_finding</div>
+      <div class="finding-time">—</div>
+    </div>
+    <div class="finding-meta">
+      <span class="chip chip-good">falso positivo</span>
+      <span class="chip chip-muted">kotlin</span>
+      <span>Block Open Source · Bugcrowd</span>
+      <span class="chip chip-muted">confiança alta</span>
+      
+    </div>
+    <div class="finding-file">misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt — getQueryStringWithHints</div>
+    <div class="finding-note">getQueryStringWithHints monta um comentário SQL /*vt+ ... */ concatenando diretamente o texto do hint (após strip do prefixo &quot;vt+&quot; e trim) na string da query, sem escapar &quot;*/&quot;. Se o texto do hint contiver &quot;*/&quot;, o comentário fecha prematuramente e qualquer texto após vira SQL executado de verdade (comment-breakout injection) — ex.: um hint &quot;vt+ x */ ; -- &quot; quebraria o comentário. Investigando se algum chamador real dentro do repo passa dado não confiável como hint.</div>
+    <div class="finding-reasoning"><div class="finding-reasoning-label">Raciocínio da revisão</div>Confirmado o defeito de código: getQueryStringWithHints (VitessQueryHintHandler.kt:14-41) monta o comentário /*vt+ ... */ concatenando diretamente cada diretiva extraída do hint (hint.substring(3).trim(), após remover o prefixo &quot;vt+&quot;) sem escapar ou rejeitar a sequência &quot;*/&quot; — um hint contendo &quot;*/&quot; fecha o comentário SQL antes do previsto e qualquer texto subsequente no hint vira SQL literal na query executada (comment-breakout injection clássica). Isso por si só seria uma SQL injection real SE o valor do hint fosse controlado por um atacante. Rastreei a cadeia de chamada completa: getQueryStringWithHints só é invocado por VitessDialect.getQueryHintString (VitessDialect.kt:53), que é o hook SPI do Hibernate chamado com a string acumulada de TODOS os hints setados via Query.addQueryHint/queryHint na query (ReflectionQueryFactory.kt: hints.forEach { typedQuery.addQueryHint(it) }, 4 pontos de chamada). Busquei (grep -rn) todos os chamadores de addQueryHint/queryHint neste repo (escopo restrito a misk-hibernate/misk-jdbc, mas addQueryHint é definido em misk-hibernate/Query.kt e não há outro modulo no target list que o chame): o único uso concreto é Query.kt:114  dentro da extension function allowScatter() — um hint estático, hardcoded, sem qualquer interpolação de dado externo. As duas web actions que expõem consultas dinâmicas via HTTP (HibernateDatabaseQueryDynamicAction.kt e HibernateDatabaseQueryStaticAction.kt, endpoints admin-only sob @AdminDashboardAccess) só encaminham dado da requisição para dynamicAddConstraint/dynamicAddOrder (paths resolvidos via Path.get() do JPA Criteria, parametrizado e seguro contra SQLi) — nenhuma delas tem qualquer campo de request mapeado para addQueryHint/hints; confirmei com grep que a palavra &quot;Hint&quot; nem aparece em HibernateDatabaseQueryStaticAction.kt. Ou seja: o sink vulnerável existe e é demonstravel isoladamente, mas nenhum fluxo real dentro do repositório cashapp/misk (dentro do escopo autorizado do programa) alcança esse sink com dado de entrada não confiável — é o mesmo padrão já confirmado nesta missão para cashapp/hermit + circl (dependência/código vulnerável presente mas nunca invocado com dado externo pelo fluxo real do projeto). Um app consumidor de misk-hibernate poderia teoricamente introduzir a vulnerabilidade chamando .queryHint(userInput) com dado de usuário — mas isso é uso indevido da API por código de terceiros fora deste repositório, não uma falha do próprio misk. Falso positivo por não-exploração dentro do escopo do programa, não por ausência do defeito (o defeito de escaping é real e vale nota para o mantenedor, mas não é uma vulnerabilidade demonstrável no cashapp/misk hoje).</div>
   </div></div>
   </section>
 <section class="page" id="page-activity" data-page="activity">

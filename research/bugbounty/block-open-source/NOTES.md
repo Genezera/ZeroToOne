@@ -864,3 +864,58 @@ Circle BBP, ver NOTES.md daquele programa):
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
 arquivos acima.
+
+## Rodada 2026-08-29 (push automático, 2ª parte) — fila vazia, ataquei finalmente `misk-hibernate`/`misk-jdbc`
+
+`queue.jsonl` continuava sem itens `pending` no disparo desta rodada.
+Segui a sugestão acumulada de várias rodadas anteriores (nunca atacada de
+fato): `misk-hibernate/`/`misk-jdbc` — onde SQL injection viveria, se
+existisse, no framework interno de acesso a banco do `cashapp/misk`.
+Sparse-clone raso (`--filter=blob:none --sparse`, não persistido) restrito
+a `misk-hibernate/` e `misk-jdbc/` pra listar o código de produção (excluí
+`src/test/` e `src/testFixtures/`).
+
+3 arquivos novos lidos por completo (registrados em `deep-read-log.json`):
+- `misk-hibernate/.../ReflectionQueryFactory.kt` (1119 linhas) — o coração
+  do DSL de query dinâmica do misk (`@Constraint`/`@Select`/`@Order`,
+  proxy dinâmico via `InvocationHandler`). Toda construção de predicado
+  passa pela API JPA `CriteriaBuilder`/`Path.get(segment)` — nunca
+  concatenação de string SQL. `dynamicAddConstraint`/`dynamicAddOrder`
+  (usados por `HibernateDatabaseQueryDynamicAction`, um endpoint HTTP
+  `@AdminDashboardAccess` que aceita `path` vindo do corpo da requisição)
+  também resolvem o path via `Path.get()`, parametrizado e seguro — um
+  path inválido só lança `IllegalArgumentException`, não vira SQL
+  injetável. Sem falha.
+- `misk-hibernate/.../vitess/VitessQueryHintHandler.kt` (47 linhas) —
+  **achado genuíno de defeito de código**: `getQueryStringWithHints`
+  monta o comentário `/*vt+ ... */` concatenando o texto do hint direto
+  na query, sem escapar `*/` — uma string de hint contendo `*/` fecha o
+  comentário cedo e o restante vira SQL executado (comment-breakout
+  injection clássica). Adicionei como `ai_deep_read_finding` e já revisei
+  na mesma rodada: **verdict `falso_positivo` (confidence alta), mas por
+  não-exploração, não por ausência do defeito**. Rastreei a cadeia
+  completa: esse handler só é chamado por `VitessDialect.getQueryHintString`
+  (hook SPI do Hibernate) com a string acumulada de `Query.addQueryHint`;
+  o único chamador real de `addQueryHint` neste repo é
+  `Query.kt:114 allowScatter()`, com hint **estático hardcoded**
+  (`VitessQueryHints.allowScatter()`), nunca dado de requisição — as duas
+  web actions que expõem query dinâmica via HTTP só encaminham dado pra
+  `dynamicAddConstraint`/`dynamicAddOrder` (seguros, ver acima), nunca pra
+  hints. Mesmo padrão já confirmado nesta missão com cashapp/hermit+circl:
+  sink vulnerável real, mas nenhum fluxo do próprio repo alcança ele com
+  dado não confiável — só um app consumidor que chamasse
+  `.queryHint(userInput)` com dado de usuário introduziria o bug, e isso
+  seria uso indevido de terceiros, não uma falha do `cashapp/misk`. Vale
+  como nota de hardening pro mantenedor (escapar/rejeitar `*/` no hint),
+  mas não é uma vulnerabilidade demonstrável dentro do escopo do programa.
+- `misk-jdbc/.../JdbcExtensions.kt` (35 linhas) — só helpers de mapeamento
+  de `ResultSet` (`.map`, `.uniqueString`, etc.), nenhuma construção de
+  SQL. Sem falha.
+
+`deep-read-log.json` atualizado com os 3 arquivos acima; `STATUS.md` e
+`dashboard/index.html` regenerados (32 revisados / 0 pendentes). Sugestão
+pra próxima rodada: `misk-jdbc/.../TraditionalSchemaMigrator.kt`/
+`DeclarativeSchemaMigrator.kt` (migração de schema, ainda não lida, outro
+lugar plausível pra SQL montado dinamicamente) ou
+`wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt`
+(sugestão da rodada anterior, ainda não atacada).
