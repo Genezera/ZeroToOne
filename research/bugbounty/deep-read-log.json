@@ -126,7 +126,8 @@
     "src/roles/v2/AttestableV2.sol",
     "src/proxy/AdminUpgradableProxy.sol",
     "src/TokenMinter.sol",
-    "src/roles/TokenController.sol"
+    "src/roles/TokenController.sol",
+    "src/v2/TokenMinterV2.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -136,7 +137,8 @@
     "src/msca/6900/v0.7/plugins/v1_0_0/addressbook/ColdStorageAddressBookPlugin.sol",
     "src/msca/6900/v0.7/plugins/v1_0_0/multisig/WeightedWebauthnMultisigPlugin.sol",
     "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
-    "src/libs/RecipientAddressLib.sol"
+    "src/libs/RecipientAddressLib.sol",
+    "src/paymaster/v1/permissioned/SponsorPaymaster.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
@@ -152,7 +154,8 @@
     "src/lib/AttestationLib.sol",
     "src/lib/BurnIntentLib.sol",
     "src/lib/BurnIntents.sol",
-    "src/lib/TransferSpecLib.sol"
+    "src/lib/TransferSpecLib.sol",
+    "src/modules/common/TokenSupport.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",

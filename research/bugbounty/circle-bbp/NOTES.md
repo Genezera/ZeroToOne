@@ -589,3 +589,42 @@ esse ângulo.
 
 Nenhum achado. `deep-read-log.json` atualizado com os 3 arquivos novos de
 `evm-gateway-contracts` (agora 14 arquivos cobertos nesse alvo).
+
+## Rodada 2026-08-29 (rotina automática seguinte) — fila vazia, 3 arquivos novos, sem achado
+
+Fila (`queue.jsonl`) sem itens `pending`. Leitura profunda proativa desta
+rodada: 3 arquivos ainda não cobertos em `deep-read-log.json`, priorizando
+os que faltavam nos alvos Solidity de `targets-solidity.mjs` (contrato real,
+não interface):
+
+1. `evm-gateway-contracts/src/modules/common/TokenSupport.sol` — módulo de
+   lista de tokens suportados. `addSupportedToken` é `onlyOwner`,
+   irreversível por design (documentado no próprio comentário — "once
+   supported, tokens cannot be un-supported"). Sem gap de controle de
+   acesso.
+2. `evm-cctp-contracts/src/v2/TokenMinterV2.sol` — a versão V2 de `mint()`
+   divide o mint entre dois destinatários (`recipientOne`/`recipientTwo`,
+   padrão de fee split do CCTP V2). Comparei com `TokenMinter.sol` (v1,
+   já lido antes): nem v1 nem v2 aplicam rate-limit (`onlyWithinBurnLimit`)
+   no mint — só `burn()` tem esse limite. Isso é consistente entre as
+   duas versões, não é uma regressão introduzida pela V2: o modelo de
+   confiança é `onlyLocalTokenMessenger` (só o TokenMessenger, depois de
+   validar a mensagem cross-chain assinada, pode chamar mint). Não
+   persegui mais fundo se `TokenMessengerV2`/`BaseTokenMessenger` derivam
+   `amountOne`/`amountTwo` corretamente da mensagem atestada — isso fica
+   como ponto em aberto pra rodada futura (esses dois arquivos já estão
+   em `deep-read-log.json`, mas vale reler com este ângulo específico:
+   "o split de valor é derivado só de dado assinado, ou existe algum
+   argumento não-atestado que influencia `amountOne+amountTwo`?").
+3. `buidl-wallet-contracts/src/paymaster/v1/permissioned/SponsorPaymaster.sol`
+   — paymaster ERC-4337 que exige assinatura de um "verifying signer"
+   (offchain, controlado pela Circle) autorizado via `EnumerableSet`
+   gerenciado por `onlyOwner`. `getHash` inclui `block.chainid` e
+   `address(this)` (domain separation correta), `parsePaymasterAndData`
+   faz slicing de calldata com offsets fixos consistentes com o comentário
+   do formato. Usa `ECDSA.tryRecover` (não reverte em assinatura
+   inválida, retorna `SIG_VALIDATION_FAILED` corretamente em vez de
+   travar). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os 3
+arquivos.
