@@ -232,3 +232,56 @@ Burns.sol também não tem `notDenylisted`, mas isso é defensável: é
 chamado pelo operador pra reduzir saldo/queimar tokens já
 comprometidos por um mint em outra chain (débito, não paga fundos pro
 usuário) — não abri achado pra esse.
+
+## Rodada 2026-08-29 (rotina semanal automática) — fila vazia, leitura profunda nos dois alvos ainda intocados
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada (todos os
+33 itens já `reviewed`, incluindo o achado de denylist acima). Leitura
+profunda proativa cobriu os dois únicos alvos de `targets-solidity.mjs`
+que ainda não tinham nenhuma entrada em `deep-read-log.json`:
+`circlefin/evm-xreserve-contracts` e `circlefin/evm-cpn-contracts`
+(clonados publicamente via `git clone`, sem conta/token).
+
+Arquivos lidos (3, priorizando movimentação de fundos e controle de
+acesso, já que nenhum tem "auth/session/crypto/token/login/password"
+literalmente no nome):
+- `evm-xreserve-contracts/src/modules/x-reserve/Withdrawal.sol` — função
+  `withdraw()` pública (sem role própria, o controle de acesso real está
+  na verificação de assinatura do attestor dentro de `gatewayMint`,
+  padrão já validado em `Attestable.sol`). Rastreei a validação de hook
+  data (`_validateAndProcessHookData`): checa pausa global, domínio
+  remoto registrado/não pausado, `_ensureNotBlocklisted` do depositante
+  remoto, token remoto registrado, e restringe `forwardingContract` a um
+  allowlist fixo de 3 endereços (`tokenMessenger`, `tokenMessengerV2`,
+  `address(this)`) antes de qualquer forwarding. No caminho de
+  "xReserve forwarding" (`_processXReserveForwarding`), o parâmetro
+  `from` do `depositToRemote` é hardcoded para `address(this)` (não vem
+  do calldata decodificado) — não há como desviar fundos de terceiros
+  por aí. Nenhum problema encontrado.
+- `evm-xreserve-contracts/src/modules/x-reserve/Blocklistable.sol` —
+  mesmo padrão de `Denylist.sol` já revisado em `evm-gateway-contracts`
+  (role `blocklister` separada, `onlyBlocklister`/`onlyOwner`,
+  `_ensureNotBlocklisted` chamado de fato dentro de `Withdrawal.sol`
+  antes de processar o saque, ao contrário do gap encontrado em
+  `Withdrawals.sol` do gateway). Nenhum problema.
+- `evm-cpn-contracts/src/PaymentSettlementV2.sol` (Circle Payments
+  Network — não estava na lista de alvos do dashboard/`targets-*.mjs`
+  antes, mas é o mesmo repo `circlefin/evm-cpn-contracts` já listado em
+  `targets-solidity.mjs`) — contrato grande e cuidadosamente desenhado:
+  ciclo de vida de nonce (`Unused → Executed → Refunded` ou
+  `→ Cancelled`) impede replay, `onlyAttester` + checagem extra
+  `_msgSender() != intent.attester` amarra o chamador ao attester
+  assinado no intent, valores pull via Permit2 witness transfer (o
+  próprio Permit2 verifica a assinatura do dono dos fundos amarrada ao
+  hash do intent específico — não há caminho de mover fundos de alguém
+  que não assinou), tetos de reembolso cumulativo (`payerCap`/
+  `incentiveCap`) checados antes de qualquer transferência. Não achei
+  nenhuma falha de autorização/corrida/validação faltando numa primeira
+  leitura cuidadosa. Nenhum problema encontrado — mas é um contrato
+  denso o bastante que vale uma segunda leitura futura mais focada nos
+  fluxos de `refund()` com múltiplas assinaturas condicionais
+  (`requireDestinationRefundSig`), que não dei tanta atenção quanto
+  `execute()`.
+
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum item novo
+adicionado à fila nesta rodada — resultado normal.

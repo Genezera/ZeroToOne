@@ -91,5 +91,12 @@
     "src/modules/minter/Mints.sol",
     "src/GatewayCommon.sol",
     "src/GatewayWallet.sol"
+  ],
+  "circlefin/evm-xreserve-contracts": [
+    "src/modules/x-reserve/Withdrawal.sol",
+    "src/modules/x-reserve/Blocklistable.sol"
+  ],
+  "circlefin/evm-cpn-contracts": [
+    "src/PaymentSettlementV2.sol"
   ]
 }
