@@ -30,6 +30,43 @@ function assetRefFor(entry) {
  */
 export function migrateEntry(db, entry, { scopeSnapshots = {} } = {}) {
   const log = { id: entry.id, steps: [] };
+
+  // Idempotência precisa de DUAS checagens independentes, cobrindo os
+  // dois jeitos que este script roda de verdade:
+  //
+  // 1. `entry.state` na PRÓPRIA LINHA da fila — sinal que sobrevive
+  //    entre ambientes efêmeros (o agente de nuvem começa cada rodada
+  //    com um banco local vazio; só queue.jsonl, clonado do Git, carrega
+  //    o estado real entre uma rodada e outra depois que export-queue
+  //    grava `state` de volta nele).
+  // 2. Estado já existente no BANCO pro mesmo id — sinal que protege
+  //    reexecução manual no MESMO ambiente persistente (Windows local)
+  //    antes de export-queue ter rodado em cima do arquivo real.
+  //
+  // Faltar a (1) faz o agente de nuvem duplicar entrada no ledger toda
+  // vez que reconstrói o banco do zero. Faltar a (2) faz uma reexecução
+  // manual local duplicar antes do primeiro export-queue. Os dois casos
+  // já aconteceram de verdade nesta sessão enquanto eu testava — por
+  // isso as duas checagens, não uma só.
+  if (entry.state && entry.state !== 'candidate') {
+    upsertFinding(db, {
+      id: entry.id, exactFingerprint: entry.id, program: entry.program, platform: entry.platform,
+      asset: assetRefFor(entry), type: entry.type, language: entry.language, file: entry.file, function: entry.function,
+      state: entry.state, confidence: entry.confidence, historicalConfidence: entry.historicalConfidence,
+      reasoning: entry.reasoning, filesRead: entry.filesRead || [], pocRun: !!entry.pocRun, pocResult: entry.pocResult || null,
+      createdAt: entry.createdAt || entry.foundAt,
+    });
+    log.finalState = entry.state;
+    log.steps.push({ to: entry.state, ok: true, reason: 'linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado' });
+    return log;
+  }
+  const existing = getFinding(db, entry.id);
+  if (existing && existing.state && existing.state !== 'candidate') {
+    log.finalState = existing.state;
+    log.steps.push({ to: existing.state, ok: true, reason: 'já migrado anteriormente (banco já tem este id além de "candidate") — não reprocessado' });
+    return log;
+  }
+
   const finding = {
     id: entry.id,
     exactFingerprint: entry.id,

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { openDb, getFinding, closeDb } from '../db.mjs';
+import { openDb, getFinding, exportFindingsToQueueLines, closeDb } from '../db.mjs';
 import { migrateEntry } from '../migrate-to-v2.mjs';
 import { buildScopeSnapshot } from '../scope-registry.mjs';
+import { verifyChain } from '../../ledger/ledger.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-migrate-test-'));
@@ -89,6 +90,49 @@ test('migrateEntry: inconclusivo v1 vira inconclusive v2', () => {
       file: 'afterpay/sdk-android/x.kt', verdict: 'inconclusivo', status: 'reviewed', reasoning: 'não consigo confirmar nem refutar sem acesso externo',
     }, { scopeSnapshots: {} });
     assert.equal(log.finalState, 'inconclusive');
+    closeDb(db);
+  });
+});
+
+test('migrateEntry é idempotente: reprocessar uma entrada já exportada de v2 (tem "state") não replaya transição nem duplica o ledger', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    migrateEntry(db, {
+      id: 'x::round-trip', program: 'Circle BBP', platform: 'HackerOne', type: 'reentrancy_risk', language: 'solidity',
+      file: 'circlefin/evm-gateway-contracts/x.sol', verdict: 'falso_positivo', status: 'reviewed', reasoning: 'refutado na primeira rodada',
+    }, { scopeSnapshots: {} });
+    assert.equal(getFinding(db, 'x::round-trip').state, 'false_positive');
+    const entriesAfterRound1 = verifyChain('research').entries;
+
+    const exported = JSON.parse(exportFindingsToQueueLines(db)[0]);
+    assert.equal(exported.state, 'false_positive');
+
+    const log2 = migrateEntry(db, exported, { scopeSnapshots: {} });
+    assert.equal(log2.finalState, 'false_positive');
+    assert.equal(getFinding(db, 'x::round-trip').state, 'false_positive');
+    assert.equal(verifyChain('research').entries, entriesAfterRound1, 'reprocessar não deveria adicionar nova entrada ao ledger');
+    closeDb(db);
+  });
+});
+
+test('migrateEntry é idempotente MESMO quando a linha de entrada ainda está no formato v1 (sem "state") mas o banco JÁ tem o id migrado — reprodução exata do bug real pego nesta sessão', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const legacyLine = {
+      id: 'x::same-env-rerun', program: 'Circle BBP', platform: 'HackerOne', type: 'reentrancy_risk', language: 'solidity',
+      file: 'circlefin/evm-gateway-contracts/x.sol', verdict: 'falso_positivo', status: 'reviewed', reasoning: 'refutado na primeira rodada',
+    };
+    migrateEntry(db, legacyLine, { scopeSnapshots: {} });
+    const entriesAfterRound1 = verifyChain('research').entries;
+
+    // Roda migrate-to-v2 de NOVO com a MESMA linha v1 (queue.jsonl real
+    // nunca teve export-queue aplicado em cima) contra o MESMO banco
+    // local persistente — cenário real: rodar o script manualmente duas
+    // vezes, ou a máquina Windows local reexecutar sem passar por
+    // export-queue entre uma vez e outra.
+    const log2 = migrateEntry(db, legacyLine, { scopeSnapshots: {} });
+    assert.equal(log2.finalState, 'false_positive');
+    assert.equal(verifyChain('research').entries, entriesAfterRound1, 'reprocessar a MESMA linha v1 contra banco já migrado não deveria duplicar o ledger');
     closeDb(db);
   });
 });

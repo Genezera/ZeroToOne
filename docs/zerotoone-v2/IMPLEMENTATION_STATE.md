@@ -147,18 +147,50 @@ Prompt reescrito por completo (não só remendado) — mudanças reais:
   diretamente, mas o cabeçalho do template em si ainda fala em
   "confirmado". Ajuste cosmético pendente, não bloqueante.
 
+### Bug real pego e corrigido depois do commit inicial: idempotência da migração
+Ao commitar/dar push desta fase, um `git pull` trouxe 2 achados novos que
+o agente de nuvem tinha gerado com o prompt ANTIGO (rodada disparada
+antes da atualização do prompt chegar). Rodar `migrate-to-v2.mjs` de novo
+pra pegar esses 2 novos expôs que a checagem de idempotência original
+(baseada só no estado já salvo no banco) não cobria o caso real que
+importa: o agente de nuvem reconstrói um banco VAZIO a cada rodada
+(ambiente efêmero, `.db` nunca commitado) — rodar a migração contra um
+banco vazio faz TODO finding parecer novo, mesmo que `queue.jsonl` já
+tenha sido exportado com o estado v2 real antes. Isso reproduziu de
+verdade num teste: a primeira correção (checar só o banco) evitava
+duplicar num MESMO ambiente persistente, mas não evitava duplicar entre
+ambientes efêmeros diferentes — exatamente o caso do agente de nuvem.
+
+Corrigido com duas checagens independentes em `migrateEntry`: (1) se a
+própria linha da fila já vem com `state` (gravado por uma exportação v2
+anterior) — sinal que sobrevive entre ambientes efêmeros — confia nela
+sem replay; (2) se o banco local já tem o id além de `candidate` — protege
+reexecução manual no mesmo ambiente antes do primeiro `export-queue`.
+Validado de ponta a ponta simulando o cenário real do agente de nuvem:
+`export-queue` real em cima do `queue.jsonl` de produção, banco local
+apagado (ambiente "novo"), `migrate-to-v2.mjs` rodado de novo — ledger
+ficou EXATAMENTE nas mesmas 143 entradas, confirmando idempotência real,
+não só em teste unitário. 2 testes de regressão novos cobrem os dois
+cenários (mesmo ambiente sem export; ambiente novo com export).
+
 ### Verificação
-- `npm test`: **219/219 passando** (era 175 antes desta rodada; 44 testes
-  novos: scope-registry 11, state-machine 13, db 9, migrate-to-v2 5, cli
+- `npm test`: **221/221 passando** (era 175 antes desta rodada; 46 testes
+  novos: scope-registry 11, state-machine 13, db 9, migrate-to-v2 7, cli
   6 — mais os que já existiam).
-- `verifyChain('research')`: válido, 106 entradas.
-- Migração real rodada contra os 35 achados de produção (não fixture).
+- `verifyChain('research')`: válido, **143 entradas** (106 da migração
+  inicial dos 35 achados + 37 de uma migração completa e limpa depois de
+  reverter uma duplicação real causada pelo bug acima, corrigido antes de
+  qualquer coisa ser commitada/enviada).
+- Migração real rodada contra os 37 achados de produção (35 originais +
+  2 que chegaram via merge de uma rodada do agente de nuvem com o prompt
+  antigo, disparada antes da atualização chegar).
 - Scan-runner.mjs: dual-write testado com smoke test direto contra o
   banco real de produção (linha de teste inserida e removida).
-- Export `cli.mjs export-queue` testado contra o banco real (saída
-  conferida linha a linha, ainda não aplicado por cima do `queue.jsonl`
-  real — a próxima rodada do agente de nuvem será a primeira a fazer
-  isso de verdade, seguindo o novo prompt).
+- `cli.mjs export-queue` **aplicado de verdade** em cima do `queue.jsonl`
+  real (37 linhas, todas agora com o campo `state` novo além de
+  `status`/`verdict` legado) — `status-dashboard.mjs`/`generate-dashboard.mjs`
+  regenerados em cima do resultado sem quebrar, confirmando que os
+  consumidores existentes continuam funcionando durante a transição.
 
 ## Fases 2-5
 
