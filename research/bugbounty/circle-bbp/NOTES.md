@@ -940,3 +940,63 @@ A sugestão da rodada anterior (refund flow de `PaymentSettlementV2.sol` e
 `Balances.sol`/`Batches.sol` de `evm-gateway-contracts`) ainda não foi
 atendida — continua como prioridade pra próxima rodada de leitura
 profunda neste programa.
+
+## Rodada 2026-08-29 (disparada por push, fila vazia) — `Balances.sol` (gateway), `MessageTransmitterV2.sol` (cctp), `StandardExecutor.sol` (buidl-wallet) — sem achado
+
+`queue.jsonl` sem itens `pending` (36/36 revisados). Segui parte da
+sugestão pendente da rodada anterior (`Balances.sol` do
+`evm-gateway-contracts`) e completei o orçamento de 3 com dois arquivos
+"núcleo" de alto valor ainda não lidos isoladamente em outros dois alvos
+do mesmo programa (nenhum dos três tem auth/session/crypto/token/login/
+password/admin/permission/access literalmente no nome, então priorizei
+por criticidade real: contabilidade de fundos, verificação de attestation
+cross-chain, e execução arbitrária de conta):
+
+- `evm-gateway-contracts/src/modules/wallet/Balances.sol` — a lib de
+  contabilidade interna (`availableBalances`/`withdrawingBalances`, EIP-7201)
+  usada por `Deposits`/`Withdrawals`/`Burns`/`Mints`, todos já auditados
+  antes. Ceticismo aplicado especificamente em `_moveBalanceToWithdrawing`
+  (subtrai de `available` sem checagem explícita `value <= available` antes
+  de subtrair) e `_reduceBalance` (prioriza `available` antes de
+  `withdrawing`): ambas seguras porque Solidity `^0.8.29` reverte
+  automaticamente em underflow (panic 0x11) — não há como um valor maior
+  que o saldo disponível silenciosamente virar um número gigante. Nenhuma
+  das duas tem gap de controle de acesso próprio (são `internal`, só
+  chamadas pelos módulos que já fazem a checagem de autorização/denylist
+  na função externa — exceto o gap já confirmado e reportado em
+  `Withdrawals.sol`, que é anterior a esta lib, não nela). Sem achado novo.
+- `evm-cctp-contracts/src/v2/MessageTransmitterV2.sol` — o contrato
+  concreto (não só a base `BaseMessageTransmitter` já lida antes) que
+  implementa `sendMessage`/`receiveMessage`/`_validateReceivedMessage` pro
+  CCTP V2. Confirmei a mesma ordem de checagens já validada na V1
+  (`Attestable`/`MessageTransmitter`): assinaturas → formato → domínio de
+  destino → `destinationCaller` (só exige `msg.sender` bater se o campo for
+  não-zero, comportamento documentado, não um gap) → versão → nonce não
+  usado, e o nonce é marcado como usado (`usedNonces[_nonce] = NONCE_USED`)
+  ANTES de chamar `IMessageHandlerV2(_recipient).handleReceive*Message`
+  (padrão CEI correto, sem reentrância de replay de nonce). `initialize()`
+  reivindica o nonce zero (`usedNonces[bytes32(0)] = NONCE_USED`) de
+  propósito, consistente com o padrão da V1. Sem achado.
+- `buidl-wallet-contracts/src/msca/6900/v0.7/managers/StandardExecutor.sol`
+  — a lib que implementa de fato `execute`/`executeBatch` (chamada
+  arbitrária a partir da conta MSCA). Não tem controle de acesso próprio
+  (é `internal`, sem modifier) — confirma o design já validado em rodada
+  anterior (`BaseMSCA.sol`): a autorização de quem pode disparar `execute`
+  vive inteiramente na função externa que embrulha esta lib (via
+  `_authenticateAndAuthorizeUserOp`/`onlyFromEntryPointOrSelf`), não aqui.
+  O único controle nesta lib é `TargetIsPlugin` — reverte se `target`
+  responde `supportsInterface(IPlugin)` como true, forçando chamadas a
+  plugins a passar pelo caminho `PluginExecutor` (com checagem de
+  `permittedExternalCalls`) em vez de `execute` direto. Considerei se um
+  plugin malicioso que não implementa ERC165 corretamente poderia escapar
+  dessa checagem e ser chamado via `execute` sem hooks — sim, tecnicamente,
+  mas só instalar esse plugin já exige autorização de owner/self (mesma
+  cadeia de autorização de instalação já validada em rodada anterior via
+  `PluginManager.sol`), então não é um vetor de escalada pra um atacante
+  sem essa autorização prévia. Sem achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum item novo
+adicionado à fila — resultado normal. A sugestão restante da rodada
+anterior (refund flow multi-assinatura de `PaymentSettlementV2.sol`,
+`requireDestinationRefundSig`) continua pendente — já sinalizada há várias
+rodadas, candidata forte pra próxima.
