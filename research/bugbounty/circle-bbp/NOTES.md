@@ -91,10 +91,58 @@ nota. Nenhum veredito próprio aqui — aguardando a revisão cética do
 agente de nuvem, mesmo processo dos outros achados.
 
 ## O que falta
-- Revisão do agente de nuvem dos 6 candidatos (pendente no momento desta
-  nota).
 - Verificar se a conta HackerOine existente do usuário (mesma conta do
   Vercel Open Source) já cobre este programa ou se precisa de aceite de
   termo separado.
 - Considerar expandir pra Go do mesmo programa (`arc-remote-signer`,
   `noble-cctp`, `noble-fiattokenfactory`) — reusa scanner Go existente.
+
+## Revisão do agente de nuvem — rodada 2026-08-29 (6 candidatos)
+Todos os 6 candidatos pendentes desta rodada foram investigados com rastreio
+de cadeia de chamada completo (clone local via `git clone` público de
+`evm-gateway-contracts` e `buidl-wallet-contracts`) e revertidos como
+**falso_positivo**, confirmando a suspeita já registrada na nota acima:
+
+- 3 achados (`reentrancy_risk` em `004_UpgradeGatewayWallet.sol::run`,
+  `reentrancy_risk` em `103_DeployColdStorageAddressBookPlugin.s.sol::run`,
+  `reentrancy_risk` em `104_DeployWeightedWebauthnMultisigPlugin.s.sol::run`)
+  são scripts Foundry de deploy/upgrade (`is Script`), executados só pelo
+  deployer/owner confiável via `vm.startBroadcast(...)` com a própria chave
+  — não são contrato on-chain persistente exposto a terceiros, então o
+  modelo de ameaça de reentrância clássico não se aplica. A "escrita após
+  chamada externa" que a heurística pegou é sempre variável local do
+  script, nunca storage de contrato.
+- 2 achados (`unchecked_call_return` em `004_UpgradeGatewayWallet.sol`,
+  linhas 116 e 135) são falso positivo simples: o retorno booleano de cada
+  `.call(...)` É capturado e checado com `require(...)` logo em seguida —
+  a heurística aparentemente não olhou as linhas seguintes à chamada.
+- 1 achado (`delegatecall_risk` em `buidl-wallet-contracts/src/utils/
+  ExecutionUtils.sol:69`) é o mais interessante de investigar mas também
+  falso positivo: é uma função de biblioteca genérica (`to` é parâmetro por
+  definição). Rastreei os 3 call sites reais (`BaseMSCA.sol:228,238`,
+  `UpgradableMSCA.sol:71`) — todos usam `address(PLUGIN_MANAGER)`, que é
+  `immutable`, fixado uma única vez no constructor. Não é delegatecall para
+  endereço controlável por atacante; é o padrão intencional do ERC-6900
+  (modular account delegando para seu próprio Plugin Manager fixo), com
+  autorização (`validateNativeFunction`) nas funções externas que o
+  acionam.
+
+Nenhum relatório escrito nesta rodada (0 confirmado).
+
+## Leitura profunda proativa — rodada 2026-08-29
+3 arquivos novos lidos em `circlefin/evm-cctp-contracts` (núcleo do CCTP,
+ainda não coberto no deep-read-log): `src/MessageTransmitter.sol`,
+`src/roles/Attestable.sol`, `src/v2/BaseMessageTransmitter.sol` —
+justamente o caminho de verificação de assinatura de attestation e
+liberação de mensagem cross-chain (`receiveMessage`/
+`_verifyAttestationSignatures`), a superfície de maior valor do programa
+inteiro (se quebrada, permitiria mintagem forjada de USDC ponte).
+Ordem de checagens em `receiveMessage` confirmada correta (verifica
+assinaturas → formato → domain → destinationCaller → version → nonce não
+usado → **marca nonce como usado antes** da chamada externa
+`handleReceiveMessage` — padrão CEI correto, sem reentrância de nonce).
+Multisig de attesters em `Attestable.sol` exige ordem crescente de
+endereço recuperado (previne duplicata) e todos precisam estar na
+allowlist de `enabledAttesters`. Nenhuma falha de lógica encontrada — é
+código de produção já em uso há anos (ponte oficial de USDC), esperado que
+esteja bem auditado. Nenhuma entrada nova adicionada à fila.

@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T06:02:35.796Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-29T06:03:49.226Z.
 
 ## Alvos ativos
 
@@ -23,15 +23,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **6**
-- Já revisados: 25
+- Pendentes (aguardando o agente de nuvem): **0**
+- Já revisados: 31
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
-| ai_deep_read_finding | Block Open Source | inconclusivo | 2026-08-29T01:32:37.204931Z |
-| ssrf_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:20.456Z |
-| prototype_pollution_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:18.004Z |
-| ssrf_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:16.075Z |
-| prototype_pollution_risk | Vercel Open Source | falso_positivo | 2026-08-29T01:13:08.323Z |
+| delegatecall_risk | Circle BBP | falso_positivo | 2026-08-29T05:56:29.407Z |
+| reentrancy_risk | Circle BBP | falso_positivo | 2026-08-29T05:56:14.275Z |
+| reentrancy_risk | Circle BBP | falso_positivo | 2026-08-29T05:56:14.066Z |
+| unchecked_call_return | Circle BBP | falso_positivo | 2026-08-29T05:56:03.487Z |
+| unchecked_call_return | Circle BBP | falso_positivo | 2026-08-29T05:56:03.487Z |

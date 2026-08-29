@@ -57,5 +57,10 @@
     "Sources/Afterpay/Checkout/CheckoutV2Message.swift",
     "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
     "Sources/Afterpay/Checkout/CheckoutHost.swift"
+  ],
+  "circlefin/evm-cctp-contracts": [
+    "src/MessageTransmitter.sol",
+    "src/roles/Attestable.sol",
+    "src/v2/BaseMessageTransmitter.sol"
   ]
 }
