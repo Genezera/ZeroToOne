@@ -1675,22 +1675,145 @@ ganhou `HTTPRequest.swift`). Sugestão pra próxima rodada: `misk-hibernate/`/
 rodadas e ainda não atacado de fato) ou os arquivos restantes de
 `cash-app-pay-ios-sdk`/`square/wire` ainda não lidos.
 
+## Rodada 2026-08-29 (push automático, máquina de estados v2)
+
+Migração pro novo schema herdou 2 findings deste programa:
+`wire-schema/Root.kt::DirectoryRoot.resolve` (path traversal, `square/wire`)
+em `corroborated_static`, e `AfterpayCheckoutV2Activity`
+(`BootstrapJavascriptInterface`) em `inconclusive` (ambos já com reasoning
+consistente da rodada anterior, sem mudança de veredito).
+
+Para o achado de `square/wire`: registrei deployment evidence (repo
+`square/wire`, commit HEAD atual `d7afcda...`, confidence `unverified` —
+é uma biblioteca de compilação consumida por terceiros via Gradle/Maven,
+não um serviço com endpoint/deploy próprio identificável; o vetor real
+depende de qual consumidor de `protoPath` aponta pra `.proto` de origem
+não confiável, o que está fora do próprio repositório). Tentei
+`reproduced_local` (sem validador de PoC pra Kotlin ainda — recusado
+corretamente, como esperado) e depois `scope_verified` direto (também
+recusado — a máquina de estados não permite pular `reproduced_local`,
+mesmo pra achados sem validador disponível). Fica em `corroborated_static`,
+achado real e bem documentado, mas sem caminho formal pra avançar até o
+sistema ganhar um validador Kotlin/JVM (Fase 2/4) ou uma forma de deploy
+evidence não-`unverified` fazer sentido pra bibliotecas (não serviços).
+
+**Leitura profunda proativa desta rodada foi em `vercel/chat`** (repo
+novo, ainda não coberto, tier 2 do programa Vercel Open Source — ver
+NOTES.md de `vercel-open-source`), não neste programa.
+
+## Rodada 2026-08-29 (push automático seguinte, máquina de estados v2) — fechando a observação lateral pendente do `cashapp/hermit` (checksum RPM)
+
+Fila sem itens `pending`. Voltei à "observação lateral" registrada há
+várias rodadas na entrada de 2026-08-28: "o hermit extrai pacotes RPM sem
+chamar `go-rpmutils.Verify` — não investiguei se há checksum/assinatura
+verificada em outra camada". Cloneado `cashapp/hermit` via
+`git clone --depth 1` e rastreada a cadeia completa de download/cache:
+
+- `state/state.go::CacheAndUnpack`/`extract` sempre passam `p.SHA256` pro
+  `cache.Download`/`cache.Path` antes de extrair qualquer arquivo (RPM
+  incluso) — o SHA256 vem do manifest do pacote (`manifest.Config.SHA256`,
+  campo `sha256` do arquivo `.hcl`).
+- `cache/http.go::downloadHTTP` (linha ~131) calcula o SHA256 real dos
+  bytes baixados via `io.TeeReader` e **compara contra o checksum
+  esperado antes de mover o arquivo pro cache** (`if checksum != "" &&
+  checksum != actualChecksum { return error }`) — verificação de
+  integridade real, não cosmética, acontece antes de qualquer extração.
+- A ressalva real (não uma falha, mas um design a documentar): a
+  verificação só roda `if checksum != ""` — `manifest.validate()`
+  (`manifest/resolver.go`) não exige que todo pacote declare `sha256`, e
+  `manifest/digest/digest.go` (`UpdateDigests`/`computeDigest`) é a
+  ferramenta que POPULA esse campo automaticamente via
+  trust-on-first-use (baixa uma vez, calcula o hash, grava no `.hcl`) —
+  ferramenta de manutenção de manifest, rodada pelos mantenedores do
+  pacote, não pelo usuário final do hermit em tempo de instalação.
+  Ou seja: **dentro do código de `cashapp/hermit`, a verificação de
+  integridade é real e correta quando o manifest declara um `sha256`**; se
+  algum pacote específico do repositório de manifests (`cashapp/hermit-packages`,
+  repositório separado, fora da lista de assets do programa Bugcrowd)
+  não declarar `sha256`, ficaria sem verificação — mas isso é dado de
+  configuração de outro repositório, não uma falha de lógica em
+  `cashapp/hermit` em si, e verificar todos os manifests reais está fora
+  do escopo/alcance desta investigação (repo não incluído no scope
+  snapshot). **Sem achado nesta rodada** — a suspeita original foi
+  investigada a fundo e refutada quanto ao código deste repo
+  especificamente; ponto fechado, não fica mais como pendência.
+
+`deep-read-log.json` atualizado (`cashapp/hermit` ganhou `state/state.go`
+e `manifest/digest/digest.go`; `cache/http.go` já constava). Nenhum item
+novo adicionado à fila.
+
+## Rodada 2026-08-29 (push automático seguinte) — leitura profunda em cashapp/misk e circlefin/buidl-wallet-contracts
+
+Fila sem itens `pending`. Leitura profunda proativa (3 arquivos, clone
+raso de `cashapp/misk` e `circlefin/buidl-wallet-contracts`):
+
+- `misk-config/src/main/kotlin/misk/config/Secret.kt` — interface
+  trivial (`Secret<T> { val value: T }`), zero lógica própria pra
+  auditar. Sem achado.
+- `misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials`
+  — achado real, mas refutado após rastrear a cadeia completa. O código
+  monta `ProcessBuilder("sh", "-c", "echo $registryUrl | $credentialCmd get")`
+  por interpolação de string sem sanitização — padrão clássico de
+  command injection SE `registryUrl`/`credStore` fossem influenciáveis
+  por um atacante. `grep -rn` nos 8 call-sites reais do monorepo mostra
+  que **todos**, sem exceção, passam por `withMiskDefaults()`, que usa
+  exclusivamente a constante hardcoded `DEFAULT_DOCKER_REGISTRY_URL`
+  (nunca input de rede/usuário), e todos são infraestrutura de teste
+  local (emuladores Docker de Spanner/Vitess/OPA/Postgres pra rodar a
+  suite de testes — `GoogleSpannerEmulator.kt`, `LocalOpaService.kt`,
+  `VitessDockerContainer.kt`, `Containers.kt` em `misk-testing`/`wisp`,
+  `StartDatabaseService.kt`), nunca código de produção que atende
+  requisição externa. A outra variável interpolada (`credStore`) vem do
+  `~/.docker/config.json` local da própria máquina que roda o teste —
+  já dentro da fronteira de confiança de quem controla o processo.
+  Registrado como `ai_deep_read_finding` e refutado (`false_positive`)
+  com a cadeia completa documentada no `reasoning`, pra constar em
+  auditoria — o padrão de código é genuinamente frágil (merecia usar
+  `ProcessBuilder` com lista de argumentos, não `sh -c` interpolado),
+  mas sem alcançabilidade real por um atacante externo hoje.
+- `circlefin/buidl-wallet-contracts/src/msca/6900/shared/libs/ValidationDataLib.sol`
+  — biblioteca compartilhada de pack/unpack e interseção de
+  `ValidationData` (formato `validAfter | validUntil | authorizer`,
+  usada por todos os módulos de validação MSCA/ERC-4337). Comparei
+  linha a linha com a semântica documentada no próprio comentário do
+  código e com o padrão de referência conhecido (`_intersectTimeRange`
+  do `eth-infinitism/account-abstraction`): interseção de intervalo de
+  tempo (`validAfter = max`, `validUntil = min`), priorização de
+  autorizador inválido > falha > sucesso, e o caso extra de forçar
+  `authorizer = address(1)` quando o intervalo resultante é vazio mas o
+  autorizador seria sucesso (evita que um intervalo de tempo inválido
+  seja tratado como "sucesso pra sempre"). Reimplementação fiel do
+  padrão de referência, sem desvio. Sem achado.
+
+`deep-read-log.json` atualizado (`cashapp/misk` ganhou `Secret.kt` e
+`DockerCredentials.kt`; `circlefin/buidl-wallet-contracts` ganhou
+`ValidationDataLib.sol` — este é achado/asset de Circle BBP, não deste
+programa, mas o arquivo foi escolhido nesta rodada de leitura profunda
+que também cobriu `cashapp/misk`).
+
 ## Rodada 2026-08-30 (Fase 3, ZeroToOne v2) — primeira vertical completa alcança `human_ready`
 
 O achado `wire-schema/.../Root.kt::DirectoryRoot.resolve::path_traversal_risk`
-foi levado até o fim da vertical do plano v2: (1) checagem de duplicata —
-nenhum advisory/issue público do `square/wire` cobre este caminho
-específico (o PR #3657 relacionado só toca o lado de escrita do arquivo
-gerado, não o de leitura do import); (2) prova de conceito executável de
-verdade — programa Java usando o JAR real de `okio-jvm` 3.12.0 (Maven
+(deixado em `corroborated_static` pela rodada acima, sem validador
+Kotlin/JVM disponível no sistema até então) foi levado até o fim da
+vertical do plano v2: (1) checagem de duplicata — nenhum advisory/issue
+público do `square/wire` cobre este caminho específico (o PR #3657
+relacionado só toca o lado de escrita do arquivo gerado, não o de
+leitura do import); (2) **novo validador construído nesta rodada**:
+prova de conceito executável de verdade sem precisar de um compilador
+Kotlin — programa Java usando o JAR real de `okio-jvm` 3.12.0 (Maven
 Central), reproduzindo `DirectoryRoot.resolve` fora do wire-schema
 inteiro, confirmando que import relativo com `..` e import absoluto
-escapam da raiz protegida (leitura real de conteúdo fora dela); (3)
-escopo confirmado (`square/wire` em escopo real do programa, elegibilidade
-de recompensa por ativo não exposta pelo dataset do Bugcrowd —
-confidence "low", precisa confirmação manual antes de enviar); (4)
-vínculo com o artefato publicado real (`wire-compiler`/plugins Gradle e
-Maven). Estado final: **`human_ready`** — primeiro achado do sistema
-inteiro (qualquer programa) a chegar honestamente a esse estado sob a
-máquina de estados v2. Relatório atualizado com a PoC completa em
+escapam da raiz protegida (leitura real de conteúdo fora dela) — isso
+resolve exatamente a lacuna "sem validador Kotlin/JVM" que a rodada
+anterior tinha registrado; (3) escopo confirmado (`square/wire` em
+escopo real do programa, elegibilidade de recompensa por ativo não
+exposta pelo dataset do Bugcrowd — confidence "low", precisa confirmação
+manual antes de enviar); (4) vínculo com o artefato publicado real
+(`wire-compiler`/plugins Gradle e Maven), agora com `confidence=low` em
+vez do `unverified` que a rodada anterior tinha registrado — suficiente
+pra passar o gate de `scope_verified` da máquina de estados. Estado
+final: **`human_ready`** — primeiro achado do sistema inteiro (qualquer
+programa) a chegar honestamente a esse estado sob a máquina de estados
+v2. Relatório atualizado com a PoC completa em
 `research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`.

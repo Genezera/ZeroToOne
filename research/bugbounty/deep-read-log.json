@@ -81,7 +81,9 @@
     "misk-tokens/src/main/kotlin/misk/tokens/TokenGenerator.kt",
     "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryMetadataAction.kt",
     "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseTabIndexAction.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt",
+    "misk-config/src/main/kotlin/misk/config/Secret.kt",
+    "misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -99,7 +101,9 @@
     "github/url.go",
     "cache/github.go",
     "cache/http.go",
-    "cache/cache.go"
+    "cache/cache.go",
+    "state/state.go",
+    "manifest/digest/digest.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
@@ -134,6 +138,14 @@
     "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutMessage.kt",
     "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutCompletion.kt",
     "afterpay/src/main/kotlin/com/afterpay/android/model/CheckoutV3Tokens.kt"
+  ],
+  "vercel/chat": [
+    "packages/adapter-slack/src/webhook/verify.ts",
+    "packages/adapter-twilio/src/webhook/verify.ts",
+    "packages/adapter-messenger/src/index.ts",
+    "examples/nextjs-chat/src/app/api/modal-callback/[token]/route.ts",
+    "packages/adapter-github/src/index.ts",
+    "packages/adapter-whatsapp/src/index.ts"
   ],
   "afterpay/sdk-ios": [
     "Sources/Afterpay/Helpers/JWT.swift",
@@ -179,7 +191,8 @@
     "src/msca/6900/v0.7/account/BaseMSCA.sol",
     "src/msca/6900/v0.7/managers/PluginExecutor.sol",
     "src/msca/6900/v0.7/managers/PluginManager.sol",
-    "src/msca/6900/v0.7/managers/StandardExecutor.sol"
+    "src/msca/6900/v0.7/managers/StandardExecutor.sol",
+    "src/msca/6900/shared/libs/ValidationDataLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

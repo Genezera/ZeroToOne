@@ -188,3 +188,93 @@ li 2 arquivos pequenos ainda não cobertos:
   `stringifyCookie`), zero código próprio.
 
 Nenhum achado novo. `deep-read-log.json` atualizado com os 2 arquivos.
+
+## Rodada 2026-08-29 (push automático) — leitura profunda em `vercel/chat` (repo novo), sem achado
+
+Fila sem `pending` (migração pro novo state machine v2 não trouxe nenhum
+finding pendente pra este programa especificamente). Ampliei a leitura
+profunda pra um alvo novo dentro do escopo real do programa (confirmado
+no scope snapshot: `vercel/chat`, tier 2, `eligibleForBounty: true`) —
+sugestão que já constava aqui há algumas rodadas. `vercel/chat` é uma
+lib de adapters pra plataformas de chat (Slack, Discord, Twilio/WhatsApp,
+Messenger, Instagram, Telegram, GChat, etc.) — a superfície mais crítica
+de segurança são os verificadores de assinatura de webhook (é ali que um
+atacante externo tentaria forjar eventos como se viessem da plataforma
+real). Priorizei os arquivos de verificação de assinatura em vez de
+regex por nome de arquivo (poucos batiam literalmente com auth/token/
+session):
+
+- `packages/adapter-slack/src/webhook/verify.ts` — HMAC-SHA256 via
+  WebCrypto (`crypto.subtle.verify`, comparação constant-time nativa),
+  checa janela de skew de timestamp (replay), parsing de hex do
+  `v0=<hex>` correto. Sem achado.
+- `packages/adapter-twilio/src/webhook/verify.ts` — recomputa a
+  assinatura HMAC-SHA1 sobre URL+params ordenados (mesmo algoritmo
+  documentado da Twilio) e compara via `constantTimeEqual` própria
+  (sem early-return, soma diferenças em vez de comparar byte a byte com
+  curto-circuito — implementação correta de constant-time). Considerei
+  se um Host/URL diferente do que a Twilio realmente usou (proxy/CDN)
+  poderia ser abusado — não: só causaria falha de verificação (fail
+  closed), nunca bypass, porque o atacante ainda precisaria do
+  `authToken` secreto pra forjar uma assinatura que bata com a URL
+  manipulada. Sem achado.
+- `packages/adapter-messenger/src/index.ts` (`verifySignature`,
+  `handleWebhook`) — `X-Hub-Signature-256` HMAC-SHA256 sobre o body cru
+  (capturado via `request.text()` antes do `JSON.parse`, então não há
+  risco de bypass por reserialização), comparado com
+  `crypto.timingSafeEqual` do Node dentro de `try/catch` (lida
+  corretamente com o `RangeError` que o Node lança quando os buffers têm
+  tamanho diferente — cai no `catch`, retorna `false`, não crasha nem
+  aceita por engano). O handshake de verificação do webhook
+  (`handleVerification`, comparação `token === this.verifyToken`) usa
+  `===` simples, não constant-time — mas é só o GET de confirmação de
+  URL na configuração inicial do webhook (não protege nenhuma ação
+  subsequente; o `verifyToken` não é usado pra autorizar mensagens, só
+  pra confirmar posse da URL no setup), então o risco de um ataque de
+  timing prático aqui é bem baixo — nota registrada, não elevada a
+  achado.
+- `examples/nextjs-chat/src/app/api/modal-callback/[token]/route.ts` —
+  código de exemplo (não é o que consumidores instalam), chama
+  `resumeHook(token, payload)` de `workflow/api` (pacote externo,
+  `vercel/workflow`, também em escopo mas não investigado nesta rodada).
+  Sem lógica própria pra auditar aqui além de repassar o token da URL.
+
+Nenhum achado novo. `deep-read-log.json` ganhou entrada `vercel/chat`
+com os 4 arquivos. Sugestão pra próxima rodada: os adapters restantes de
+`vercel/chat` que usam o mesmo padrão de assinatura (Discord, GitHub,
+WhatsApp, Instagram, Linear, Notion — ainda não lidos individualmente) ou
+começar `vercel/workflow` (também tier 1, ainda sem nenhuma leitura).
+
+## Rodada 2026-08-29 (push automático, máquina de estados v2) — continuando os adapters de `vercel/chat`
+
+Fila sem `pending`. Segui a sugestão da rodada anterior: `adapter-discord`
+não tem verificação de webhook própria (usa Gateway/WebSocket com bot
+token, modelo de autenticação diferente de HMAC — não se aplica aqui, sem
+arquivo `verify.ts`/`webhook.ts` nesse pacote). Troquei para os dois
+adapters restantes que de fato implementam verificação HTTP de assinatura
+inline no próprio `index.ts` (sem arquivo `verify.ts` separado, por isso a
+busca por nome de arquivo em rodadas anteriores não os pegou):
+
+- `packages/adapter-github/src/index.ts` (`handleWebhook`/`verifySignature`)
+  — HMAC-SHA256 sobre `X-Hub-Signature-256`, `timingSafeEqual` dentro de
+  `try/catch` (mesmo padrão já validado no Messenger). Ponto extra
+  investigado com ceticismo: existe um `webhookVerifier` customizável que
+  "toma precedência" sobre a checagem HMAC (comentário explícito no
+  código, usado para Vercel Connect OIDC) — se esse verifier lançar
+  exceção, o catch retorna 401 (fail closed, não fail open); se retornar
+  valor falsy, também 401. Sem bypass: um verifier customizado ausente
+  (`undefined`) cai no `else if` normal da checagem HMAC, nunca pula a
+  verificação silenciosamente.
+- `packages/adapter-whatsapp/src/index.ts` (`handleVerificationChallenge`/
+  `verifySignature`) — mesmo padrão HMAC-SHA256 sobre `X-Hub-Signature-256`
+  com `try/catch` ao redor do `timingSafeEqual`. O handshake de verificação
+  inicial (`hub.verify_token`) usa `===` simples (não constant-time), mas é
+  o mesmo caso já registrado como "risco de timing baixo" pro Messenger
+  (só confirma posse da URL no setup do webhook, não autoriza mensagens
+  subsequentes).
+
+Nenhum achado novo — os dois seguem exatamente o padrão seguro já
+estabelecido em `adapter-slack`/`adapter-twilio`/`adapter-messenger`.
+`deep-read-log.json` atualizado (`vercel/chat` ganhou os 2 arquivos).
+Restam por ler individualmente: Instagram, Linear, Notion, Teams, X
+(adapters do mesmo pacote) e `vercel/workflow` (tier 1, ainda intocado).

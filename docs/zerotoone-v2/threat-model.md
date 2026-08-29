@@ -95,18 +95,53 @@ achado de PoC web/mobile capturar cookie de sessão, header de auth ou
 resposta de API com dado real, isso iria para o histórico permanente do
 Git sem filtro.
 
+## Atualização real (Fase 3, 2026-08-30): o ambiente de nuvem já bloqueia boa parte disso sozinho
+
+A primeira rodada real do agente de nuvem sob o prompt endurecido
+confirmou, na prática, que o ponto 2 abaixo já está parcialmente
+mitigado pela própria infraestrutura, não pelo prompt: `curl -L
+https://foundry.paradigm.xyz | bash` retornou **403 (policy denial)** do
+proxy de saída da sessão, e o mesmo aconteceu com todos os RPCs públicos
+testados (`ethereum-rpc.publicnode.com`, `cloudflare-eth.com`) — ou seja,
+**o fork local de RPC público que este projeto documenta como mecanismo
+de PoC (`system/bugbounty-scanner/README.md`, seção "Prova de conceito
+executável") não funciona no ambiente de nuvem atual**, apesar de
+funcionar localmente no Windows do usuário (validado antes nesta
+missão). O agente contornou de forma honesta e documentada: baixou
+binários oficiais do Foundry via `github.com/foundry-rs/foundry/releases`
+(domínio liberado) em vez do instalador oficial, registrou como "risco
+residual conhecido" não ter validado checksum/assinatura, e rodou a PoC
+contra o fallback local do próprio harness de teste do repositório-alvo
+(sem fork de mainnet) — resultado tecnicamente válido, mas uma limitação
+real que o prompt e o `TEMPLATE.md` devem passar a esperar como caso
+comum, não excepcional.
+
+**Isso é uma boa notícia parcial** (egress não é tão aberto quanto o
+ponto 2 original temia) **e uma lacuna nova** (a capacidade de PoC
+documentada não reflete o que realmente roda no ambiente de produção) —
+ambas precisam entrar na próxima atualização do prompt/README.
+
 ## Prioridade de mitigação (para a Fase 1)
 
 1. **Alta — separar "conteúdo do alvo" de "instrução para o agente"** no
    prompt do agente de nuvem, e parar de ler arquivo de alvo escolhido só
    por nome de caminho sem alguma camada de sanitização/aviso.
-2. **Alta — parar de instalar toolchain via `curl | bash` sob demanda.**
-   Pré-instalar/fixar por versão no ambiente.
+2. **Parcialmente mitigado pela própria infraestrutura, não pelo
+   prompt — `curl | bash` do Foundry e fork de RPC público já levam 403
+   do proxy de saída da sessão de nuvem** (confirmado ao vivo, ver acima).
+   Ainda vale pré-instalar/fixar por versão quando possível, mas o
+   README/prompt precisam documentar o fallback real (harness de teste
+   local do próprio repositório-alvo, sem fork) como caminho esperado,
+   não uma exceção rara.
 3. **Alta — lock de execução entre scanner local e agente de nuvem** para
    nunca mais colidir escrevendo no mesmo `ledger.*.jsonl`/`queue.jsonl`
-   ao mesmo tempo (o incidente desta sessão é prova de conceito do
-   problema).
-4. **Média — allowlist de rede** para o ambiente do agente de nuvem.
+   ao mesmo tempo (aconteceu de novo nesta sessão, na Fase 3: o agente de
+   nuvem e uma sessão interativa transicionaram o MESMO achado
+   concorrentemente, resolvido via replay semântico do ledger — segunda
+   ocorrência real do mesmo problema, ver `IMPLEMENTATION_STATE.md`).
+4. **Média — allowlist de rede** para o ambiente do agente de nuvem (já
+   existe algo parecido de fato, mas não documentado/controlado por nós —
+   ver atualização acima).
 5. **Média — checkpoint externo assinado** para o ledger, para que a
    integridade não dependa só do próprio arquivo.
 6. **Baixa, mas necessária antes de qualquer PoC web/API** — redaction

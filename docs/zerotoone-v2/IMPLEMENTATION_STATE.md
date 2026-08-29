@@ -267,6 +267,27 @@ enviar, sinalizado no próprio relatório).
   não por questão de novidade, então o gate de duplicata não muda o
   resultado deles.
 
+### Reconciliação pós-merge: corrida real entre sessão interativa e agente de nuvem
+Ao dar push da Fase 3, um `git pull` trouxe a primeira rodada real do
+agente de nuvem sob o prompt endurecido — que, de forma independente e
+concorrente, também investigou os mesmos 2 achados. Conflito real, não
+só textual: o agente de nuvem levou `Circle BBP::Withdrawals.sol` até
+`reproduced_local` (PoC Foundry real, rodada contra o fallback local do
+harness do próprio repo — RPC público e `curl \| bash` do Foundry
+bloqueados pela política de rede da sessão de nuvem, contornado via
+binário oficial do GitHub) a partir do MESMO `corroborated_static` que eu
+já tinha avançado pra `known_duplicate` minutos antes. Reconciliado
+preservando as duas coisas: estado final fica `known_duplicate` (a
+divulgação pública externa é mais decisiva que reprodução local pra
+decidir reportabilidade), mas a PoC real do agente de nuvem foi
+importada como `validation` no banco — evidência real, não descartada só
+porque a decisão final mudou. O achado de StackingDAO (`set-token-uri`)
+e um achado novo (`DockerCredentials.kt`, Block Open Source) que o
+agente de nuvem investigou de forma independente e sem qualquer conflito
+foram aceitos como estão — trabalho real, sem meu envolvimento nem
+motivo de discordância. Ledger reconciliado por replay semântico
+(mesma técnica de sempre) — 150 entradas, cadeia íntegra.
+
 ## Fases 2, 4 e 5
 
 Não iniciadas. Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL,

@@ -24,14 +24,14 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 ## Fila de bug bounty
 
 - Pendentes (aguardando o agente de nuvem): **0**
-- Já revisados: 37
+- Já revisados: 38
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
+| ai_deep_read_finding | Block Open Source | falso_positivo | — |
 | ai_deep_read_finding | Block Open Source | confirmado | — |
 | ai_deep_read_finding | Circle BBP | falso_positivo | — |
-| auth_arg_inconsistency | StackingDAO | confirmado | — |
-| unguarded_transfer | StackingDAO | falso_positivo | — |
+| auth_arg_inconsistency | StackingDAO | falso_positivo | — |
 | unguarded_transfer | StackingDAO | falso_positivo | — |
