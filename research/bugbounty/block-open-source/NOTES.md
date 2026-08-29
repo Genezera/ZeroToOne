@@ -1023,3 +1023,55 @@ identificada, sugerir ao mantenedor via issue não é escopo desta missão
 mas vale registrar) ou expandir a leitura pra `square/wire`
 (`wire-schema/`/`wire-compiler/`, ainda não tocados — só `wire-runtime` foi
 lido).
+
+## Rodada 2026-08-29 (push automático) — fila vazia, leitura profunda em misk-hibernate/misk-crypto (SecretColumn)
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada (33 revisados, 0
+pendentes). Sparse-clone raso de `cashapp/misk` (`git clone` com
+`sparse-checkout` limitado aos `pathPrefixes` autorizados, não persistido)
+pra listar arquivos com auth/crypto/token/admin/permission/access/secret no
+nome ainda não presentes em `deep-read-log.json`. Escolhi a família
+`SecretColumn` (criptografia de coluna de banco via Hibernate `UserType`) —
+nunca lida antes e é a peça que efetivamente liga `misk-crypto` a
+`misk-hibernate`, sugestão implícita das rodadas anteriores que só tinham
+tocado `misk-crypto` isoladamente.
+
+3 arquivos lidos por completo:
+- `misk-hibernate/.../SecretColumnType.kt` — `UserType` customizado que
+  criptografa/decriptografa um campo `ByteArray` transparentemente via Tink
+  (`AeadKeyManager`/`DeterministicAeadKeyManager`, escolhido por
+  `indexable`). Critiquei com ceticismo: `nullSafeSet`/`nullSafeGet`
+  cifram/decifram em toda escrita/leitura de linha; `disassemble`/`assemble`
+  também cifram antes de guardar em cache de 2º nível (o KDoc do método
+  confirma essa é a intenção — nunca plaintext em cache). Verifiquei o
+  `associatedData` (AAD) passado ao Tink: é sempre `null` (viraem
+  `byteArrayOf()` só no caso determinístico) — ou seja, o ciphertext não é
+  vinculado a nenhum contexto (linha/tabela/coluna), então em tese um
+  ciphertext de uma linha poderia ser copiado manualmente para outra linha
+  da mesma coluna/chave e decifraria "corretamente" sem erro de
+  autenticação. Não abri candidato: isso exigiria que o atacante já tivesse
+  acesso de escrita direta ao banco (fora do modelo de ameaça de uma
+  aplicação — quem tem `UPDATE` direto na tabela já tem acesso equivalente
+  ou maior que o que essa criptografia protege, que é "dado em repouso no
+  disco/backup", não "banco comprometido em runtime"), e é uma limitação de
+  design documentada implicitamente pelo próprio uso de Tink puro sem
+  camada de AAD contextual — não um bug introduzido por este código
+  especificamente (mesmo padrão em bibliotecas ORM equivalentes). Registrado
+  aqui como nota de hardening, não candidato.
+- `misk-hibernate/.../SecretColumn.kt` — só a anotação (`keyName`,
+  `indexable`) com KDoc extenso explicando o trade-off
+  determinístico-vs-não-determinístico; sem lógica própria.
+- `misk-crypto/.../internal/KeyProviders.kt` — providers Guice
+  (`AeadEnvelopeProvider`, `DeterministicAeadProvider`, `MacProvider`,
+  `DigitalSignatureSignerProvider/VerifierProvider`, `HybridEncryptProvider`/
+  `HybridDecryptProvider`, `StreamingAeadProvider`) que só chamam
+  `readKey(key)` (leitura de keyset Tink já lida em rodadas anteriores via
+  `KeyReader.kt`/`KeyResolver.kt`) e expõem a primitiva certa via a factory
+  correspondente do Tink. Nenhuma lógica de derivação/comparação própria,
+  delega tudo pro Tink. Sem falha encontrada.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão
+pra próxima rodada: `misk-jdbc/JDBCSession.kt`/`misk-jdbc/Session.kt` (ainda
+não cobertos, mesma superfície JDBC das migrações já auditadas) ou
+`square/wire` (`wire-schema/`/`wire-compiler/`, ainda intocado).
