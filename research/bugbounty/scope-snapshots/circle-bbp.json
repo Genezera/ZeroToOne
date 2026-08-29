@@ -1,0 +1,253 @@
+{
+  "program": "Circle BBP",
+  "platform": "HackerOne",
+  "officialUrl": "https://hackerone.com/circle-bbp",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle circle-bbp",
+  "contentHash": "79dcef76c2adc8c88d1edd91e4612b0e533da243e291252eb6ed8f6a43b45311",
+  "capturedAt": "2026-08-29T22:56:33.838Z",
+  "expiresAt": "2026-09-12T22:56:33.838Z",
+  "ttlDays": 14,
+  "confidence": "medium",
+  "assets": [
+    {
+      "assetIdentifier": "api.circle.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Testing should be done on api-sandbox.circle.com."
+    },
+    {
+      "assetIdentifier": "app.circle.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Testing should be done on app-sandbox.circle.com."
+    },
+    {
+      "assetIdentifier": "console.circle.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Only the web2 portion of console.circle.com is in scope. Anything smart contract/smart contract platform or otherwise web3 related is not in scope. \n\nResearchers should make it clear they're HackerOne researchers in their username and email domain, and must be using testnet. "
+    },
+    {
+      "assetIdentifier": "http://github.com/circlefin/noble-cctp",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/aptos-cctp",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/arc-node",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/arc-remote-signer",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/buidl-wallet-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/evm-cctp-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/evm-cpn-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/evm-gateway-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/evm-xreserve-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/malachite",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "only part of this repo is in scope for our program:\n\n- out of scope: Everything that is not in code/crates and also code/crates/starknet and code/crates/test\n\n- in scope:  code/crates (minus starknet and test folders)"
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/noble-fiattokenfactory",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/solana-cctp-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/solana-gateway-contracts",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stablecoin-aptos",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stablecoin-evm",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stablecoin-near",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stablecoin-starknet",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stablecoin-sui",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stablecoin-xlm",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/starknet-cctp",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/stellar-cctp",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/circlefin/sui-cctp",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "rpc.blockdaemon.testnet.arc.network",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "rpc.drpc.testnet.arc.network",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "rpc.quicknode.testnet.arc.network",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "rpc.testnet.arc.network",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Página oficial HackerOne é SPA renderizada por JS/exige sessão autenticada — WebFetch e WebSearch confirmaram (30/08/2026) que não é possível capturar a prosa de política sem navegador logado. Flags de elegibilidade por ativo (eligible_for_bounty/eligible_for_submission) vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página HackerOne usa."
+}

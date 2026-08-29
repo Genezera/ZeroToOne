@@ -1,0 +1,173 @@
+{
+  "program": "Vercel Open Source",
+  "platform": "HackerOne",
+  "officialUrl": "https://hackerone.com/vercel-open-source",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle vercel-open-source",
+  "contentHash": "c96046b3f7a0fd169669db585a4e0c9bc144b7a1775d163c0446800d29757796",
+  "capturedAt": "2026-08-29T22:56:33.838Z",
+  "expiresAt": "2026-09-12T22:56:33.838Z",
+  "ttlDays": 14,
+  "confidence": "medium",
+  "assets": [
+    {
+      "assetIdentifier": "Tier 1 OSS",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "Tier 2 OSS",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "Tier 3 OSS",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "For bounty calculation on experimental features "
+    },
+    {
+      "assetIdentifier": "https://github.com/nitrojs/nitro",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the nitrojs repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/nuxt/nuxt",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the Nuxt repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/sveltejs/svelte",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the svelte repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel-labs/agent-skills",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the agent-skills repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel-labs/skills",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the vercel-labs/skills repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/ai",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the ai-sdk  repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/async-sema",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the async-sema repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/chat",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the chat repo. This is considered \"tier 2\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/eve",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the eve repo. This is considered \"tier 2\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/flags",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the Flags repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/ms",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the ms repo. This is considered \"tier 2\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/next.js",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the nextjs repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/swr",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the swr repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/turborepo",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the turborepo repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/vercel",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the Vercel repo. This is considered \"tier 1\""
+    },
+    {
+      "assetIdentifier": "https://github.com/vercel/workflow",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Please assign this to any project involving the Workflow repo. This is considered \"tier 1\""
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Mesma limitação do Circle BBP: página oficial não fetchável sem sessão autenticada. Estrutura de tier (Tier 1/2/3 OSS) confirmada pelos próprios rótulos do dataset."
+}

@@ -5,3 +5,14 @@ node_modules/
 *.pem
 secrets/
 AppData/
+
+# Estado operacional SQLite (zerotoone.db) é local a cada ambiente
+# (Windows local vs. ambiente efêmero do agente de nuvem) — NUNCA
+# commitado. Um .db binário não dá pra mesclar como o queue.jsonl/ledger
+# texto dão; cada ambiente reconstrói o seu via
+# system/bugbounty-scanner/migrate-to-v2.mjs (idempotente) a partir dos
+# arquivos texto versionados, que continuam sendo a fonte de verdade
+# compartilhada. Ver docs/zerotoone-v2/threat-model.md.
+research/bugbounty/*.db
+research/bugbounty/*.db-wal
+research/bugbounty/*.db-shm

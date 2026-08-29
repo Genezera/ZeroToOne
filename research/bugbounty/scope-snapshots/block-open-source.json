@@ -1,0 +1,77 @@
+{
+  "program": "Block Open Source",
+  "platform": "Bugcrowd",
+  "officialUrl": "https://bugcrowd.com/engagements/blockopensource",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Block Open Source\"",
+  "contentHash": "97c7bd4c07bdf1a4643a429a1c76e014616a6b131246d894bbe79c908b639245",
+  "capturedAt": "2026-08-29T22:56:33.838Z",
+  "expiresAt": "2026-09-12T22:56:33.838Z",
+  "ttlDays": 14,
+  "confidence": "low",
+  "assets": [
+    {
+      "assetIdentifier": "https://github.com/afterpay/sdk-ios",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/afterpay/sdk-android",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/cashapp/cash-app-pay-ios-sdk",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/cashapp/cash-app-pay-android-sdk",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/cashapp/hermit",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/cashapp/misk",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/square/wire",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset (só a lista de alvo) — diferente do HackerOne. Página oficial também não fetchável sem sessão. Confiança mais baixa: sabemos QUE o repo está listado como alvo, não a elegibilidade de recompensa por severidade."
+}

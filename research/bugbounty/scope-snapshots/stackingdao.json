@@ -1,0 +1,31 @@
+{
+  "program": "StackingDAO",
+  "platform": "Immunefi",
+  "officialUrl": "https://immunefi.com/bug-bounty/stackingdao/information/",
+  "sourceType": "official_page_fetch",
+  "sourceDetail": "Fetch direto de immunefi.com/bug-bounty/stackingdao/information/ (SSR, sem necessidade de navegador)",
+  "contentHash": "4ed638a986572f5713e6301d5e0816f58afc14e27f50584d64e1c12cf609eaf6",
+  "capturedAt": "2026-08-29T22:56:33.838Z",
+  "expiresAt": "2026-09-28T22:56:33.838Z",
+  "ttlDays": 30,
+  "confidence": "high",
+  "assets": [],
+  "categoriesEligible": [
+    "Smart Contracts — Critical (até $100.000; 10% dos fundos diretamente afetados, mínimo $20.000)",
+    "Smart Contracts — High (até $20.000; $1.000–$20.000 por roubo/congelamento de yield não reclamado)"
+  ],
+  "categoriesExcluded": [
+    "Vulnerabilidade já reportada em auditoria anterior e ainda não corrigida"
+  ],
+  "prohibitedTechniques": [
+    "Qualquer teste em mainnet ou código já implantado em testnet público",
+    "Teste contra oráculo de preço ou contrato de terceiro",
+    "Phishing / engenharia social",
+    "Ataque de negação de serviço",
+    "Divulgação pública de vulnerabilidade não corrigida"
+  ],
+  "pocRequirements": "Proof of concept é sempre exigida, para toda severidade (\"Proof of concept is always required for all severities\").",
+  "rateLimits": null,
+  "disclosurePolicy": "Categoria 3 — divulgação responsável requer aprovação prévia do programa.",
+  "communitySourceNote": "Página oficial Immunefi é server-rendered; fetch direto (sem navegador) confirma o conteúdo. Testnet/mock explicitamente fora de \"Primacy of Impact\"."
+}

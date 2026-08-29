@@ -29,6 +29,7 @@ import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
 import { runDependencyScan } from './dep-scanner.mjs';
 import { appendEntry, readLedger } from '../ledger/ledger.mjs';
+import { openDb, upsertFinding, closeDb } from './db.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -41,6 +42,7 @@ const STATS_MD_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.md');
 const VERDICTS_SNAPSHOT_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-verdicts.json');
 const STATUS_PATH = path.join(BUGBOUNTY_DIR, 'STATUS.md');
 const DASHBOARD_PATH = path.join(BUGBOUNTY_DIR, 'dashboard', 'index.html');
+const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
 const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
@@ -188,6 +190,20 @@ export async function runScan() {
   if (newFindings.length > 0) {
     for (const f of newFindings) {
       appendFileSync(QUEUE_PATH, JSON.stringify(f) + '\n', 'utf8');
+    }
+    // Grava também no banco v2 (estado operacional novo, ver
+    // docs/zerotoone-v2/) como state='candidate' — dual-write aditivo,
+    // nunca substitui a escrita em queue.jsonl acima. Isolado em
+    // try/catch: uma falha aqui nunca pode derrubar a varredura diária
+    // real, que já funciona e não depende do banco novo ainda.
+    try {
+      const db = openDb(DB_PATH);
+      for (const f of newFindings) {
+        upsertFinding(db, { ...f, state: 'candidate' });
+      }
+      closeDb(db);
+    } catch (err) {
+      log(`Aviso: dual-write no banco v2 falhou (não afeta a fila principal): ${err.message}`);
     }
   }
   saveSeen(seen);
