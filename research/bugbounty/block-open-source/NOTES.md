@@ -503,3 +503,50 @@ menos uma rodada de leitura profunda. Próxima rodada: aprofundar em
 `misk-hibernate/`/`misk-jdbc/` (SQL injection via Hibernate/JDBC, ainda
 não coberto) ou `cash-app-pay-ios-sdk` (`StateMachine.swift`, único
 arquivo do trio Network/State/Facade ainda não lido).
+
+---
+
+## Rodada 2026-08-29 (6) — fila vazia, leitura profunda em cashapp/misk
+
+Fila sem itens `pending` no início desta rodada. Clonado `cashapp/misk`
+(`git clone --depth 1`, público) pra listar arquivos ainda não lidos com
+auth/crypto/token/etc. no nome dentro dos `pathPrefixes` autorizados
+(`misk/`, `misk-core/`, `misk-crypto/`, `misk-inject/`, `misk-hibernate/`,
+`misk-jdbc/`). Escolhi 3 arquivos do módulo `security/authz` e
+`misk-crypto` ainda não cobertos pelas rodadas anteriores (que já tinham
+lido `AccessInterceptor.kt`, `MiskCallerAuthenticator.kt` e
+`CiphertextFormat.kt`):
+
+- `misk/src/main/kotlin/misk/security/authz/AccessAnnotationEntry.kt` —
+  classe de dados (`services`, `capabilities`, `allowAnyService`,
+  `allowAnyUser`) usada via Guice multibinding pra declarar política de
+  acesso por anotação. Não tem lógica de decisão própria (isso fica em
+  `AccessInterceptor`, já auditado antes) — é só o modelo de config. Sem
+  falha encontrada.
+- `misk-crypto/src/main/kotlin/misk/crypto/pgp/RealPgpDecrypter.kt` —
+  decriptador PGP de chave pública. Rastreei a ordem
+  decrypt-then-verify-integrity com ceticismo, porque esse é um padrão
+  clássico de falha (usar plaintext antes de validar MDC/tag de
+  integridade). Confirmei que NÃO é falha: o plaintext é escrito só num
+  buffer interno (`okio.Buffer`), nunca exposto ao chamador — o
+  `pgpPublicKeyEncryptedData.verify()` só pode ser chamado depois de
+  consumir o stream inteiro (exigência da própria API do BouncyCastle,
+  o MDC é um digest cumulativo), e se a verificação falhar a função lança
+  exceção antes do `return buffer.readByteArray()` (linha 63-67), então
+  nenhum plaintext não verificado chega a sair da função. A única
+  ressalva é documentada no próprio KDoc da classe ("No signature
+  verification" e o MDC só é checado `if
+  (pgpPublicKeyEncryptedData.isIntegrityProtected)`) — é uma limitação
+  conhecida e assumida pelos chamadores, não uma falha escondida. Não virou
+  candidato.
+- `misk-crypto/src/main/kotlin/misk/crypto/KeyManager.kt` — classes
+  `MappedKeyManager`/`AeadKeyManager`/etc. são só wrappers de lookup de
+  chave via Guice (`injector.getInstance` por nome), delegando toda a
+  criptografia de fato pro Google Tink. Nenhuma lógica de derivação,
+  comparação ou validação própria. Sem falha encontrada.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`cashapp/misk` ganhou
+3 entradas novas). Próxima rodada: os itens já sinalizados na rodada
+anterior continuam pendentes — `misk-hibernate/`/`misk-jdbc/` (SQL
+injection via Hibernate/JDBC) e `cash-app-pay-ios-sdk`
+(`StateMachine.swift`).
