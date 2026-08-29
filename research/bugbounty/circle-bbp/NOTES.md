@@ -462,3 +462,46 @@ resultado normal. Sugestão pra próxima rodada: `src/utils/Configurable.sol`/
 `src/utils/Pausable.sol` de `evm-cpn-contracts` (sugestão já pendente da
 rodada anterior) ou `GatewayMinter.sol` de `evm-gateway-contracts`
 (também já sinalizado, ainda não lido).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `evm-cpn-contracts` (Configurable/Pausable) + `evm-gateway-contracts` (GatewayMinter)
+
+`queue.jsonl` sem itens `pending` (0 pendentes). 3 arquivos do orçamento
+desta rodada foram aqui (o 4º foi `afterpay/sdk-ios/ApiV3.swift`, ver
+NOTES.md do Block Open Source), seguindo as sugestões pendentes das
+rodadas anteriores:
+
+- `src/utils/Configurable.sol` e `src/utils/Pausable.sol`
+  (`evm-cpn-contracts`, nunca lidos) — dois roles administrativos
+  (`configurator`/`pauser`) desenhados como abstract contracts genéricos,
+  herdados por `PaymentSettlement*`. Ambos seguem o mesmo padrão já
+  validado em `Rescuable.sol`: role dedicado só pode ser trocado por
+  `onlyOwner` (via `Ownable2Step`, troca de dono em duas etapas), o
+  modifier de cada role (`onlyConfigurator`/`onlyPauser`) compara
+  `_msgSender()` direto contra o endereço armazenado, sem desvio.
+  `_setPauser`/`_setConfigurator` revertem em `SamePauser`/
+  `SameConfigurator` se o novo endereço for igual ao atual (evita evento
+  redundante, não é uma falha). `pause()`/`unpause()` só mudam estado
+  quando `whenNotPaused`/`whenPaused` bate, sem caminho pra ficar preso
+  num estado inconsistente. Nenhuma falha de autorização encontrada — é
+  boilerplate de controle de acesso correto, mesmo padrão do resto do
+  programa.
+- `src/GatewayMinter.sol` (`evm-gateway-contracts`, nunca lido) — contrato
+  fino que só orquestra `initialize()` (via `reinitializer(2)`,
+  `_disableInitializers()` no constructor pra bloquear inicialização
+  direta da implementação, só a proxy pode inicializar) chamando
+  `__GatewayCommon_init`/`__Mints_init`. Toda a lógica de mint de verdade
+  já vive em `Mints.sol`, que já tinha sido lida numa rodada anterior
+  (registrado em `deep-read-log.json` antes desta rodada) — não há lógica
+  nova aqui além da checagem de tamanho de array
+  (`MismatchedLengthTokenAndTokenMintAuthorities`) entre
+  `supportedTokens_` e `tokenMintAuthorities_`, que está correta. Nenhuma
+  falha encontrada.
+
+`deep-read-log.json` atualizado (agora 5 arquivos em `evm-cpn-contracts`,
+10 em `evm-gateway-contracts`). Nenhum item novo adicionado à fila —
+resultado normal desta rodada. Sugestão pra próxima rodada: `src/lib/
+AttestationLib.sol`/`src/lib/BurnIntentLib.sol` de `evm-gateway-contracts`
+(verificação de assinatura EIP-712 dos intents de burn/mint — nunca lidos,
+é onde uma falha de verificação de assinatura teria mais impacto) ou
+`evm-xreserve-contracts` (só 2 arquivos lidos até agora, superfície ainda
+pouco coberta).

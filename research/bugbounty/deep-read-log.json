@@ -92,7 +92,8 @@
     "Sources/Afterpay/Checkout/CheckoutV2Message.swift",
     "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
     "Sources/Afterpay/Checkout/CheckoutHost.swift",
-    "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift"
+    "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift",
+    "Sources/Afterpay/ApiV3.swift"
   ],
   "circlefin/evm-cctp-contracts": [
     "src/MessageTransmitter.sol",
@@ -122,7 +123,8 @@
     "src/modules/wallet/Burns.sol",
     "src/modules/minter/Mints.sol",
     "src/GatewayCommon.sol",
-    "src/GatewayWallet.sol"
+    "src/GatewayWallet.sol",
+    "src/GatewayMinter.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
@@ -131,6 +133,8 @@
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
     "src/PaymentSettlement.sol",
-    "src/utils/Rescuable.sol"
+    "src/utils/Rescuable.sol",
+    "src/utils/Configurable.sol",
+    "src/utils/Pausable.sol"
   ]
 }

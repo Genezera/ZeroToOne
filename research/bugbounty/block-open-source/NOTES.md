@@ -1234,3 +1234,30 @@ do Circle BBP):
 `cashapp/misk`). Nenhum item novo adicionado à fila — resultado normal.
 Sugestão pra próxima rodada: `afterpay/sdk-ios/Sources/Afterpay/ApiV3.swift`
 (sugestão pendente da rodada anterior, ainda não lida).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `afterpay/sdk-ios/ApiV3.swift`
+
+`queue.jsonl` sem itens `pending`. 1 dos 3 arquivos do orçamento desta
+rodada foi aqui (os outros 2 foram `circlefin/evm-cpn-contracts` e
+`circlefin/evm-gateway-contracts`, ver NOTES.md do Circle BBP), seguindo a
+sugestão pendente de rodada anterior:
+
+- `Sources/Afterpay/ApiV3.swift` (nunca lido — como o SDK envia/decodifica
+  chamadas de API V3, hipótese era que aqui estaria a assinatura/
+  autenticação das requisições). Na prática o arquivo é só um wrapper
+  genérico de request/response: monta `URLRequest` com header
+  `X-Afterpay-SDK` (metadado de versão, não segredo), decodifica JSON com
+  formatador de data customizado, e mapeia erro HTTP genérico
+  (`ApiError`/`NetworkError`) pro tipo `Result` do Swift. Não há lógica de
+  assinatura, token, ou credencial aqui — é infraestrutura HTTP pura, sem
+  superfície de autenticação própria a auditar. A pergunta real (como o
+  token `ppaConfirmToken`/JWT é assinado e verificado pelo backend da
+  Afterpay) permanece fora do escopo do repositório público, como já
+  documentado nas rodadas anteriores sobre `CheckoutV3ViewController.swift`.
+
+`deep-read-log.json` atualizado (agora 8 arquivos em `afterpay/sdk-ios`).
+Nenhum item novo adicionado à fila — resultado normal. Sugestão pra
+próxima rodada: `square/wire` `wire-schema/`/`wire-compiler/` sem filtro
+de nome (ainda pendente de rodadas anteriores — parsing de schema
+`.proto` não confiável é a superfície mais promissora ainda não coberta
+neste programa).
