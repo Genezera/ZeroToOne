@@ -129,6 +129,17 @@ Automação: tarefa do Windows Task Scheduler `ZeroToOne_BugBountyScanner`,
 diária às 9h — mesma tarefa cobre todos os estágios/linguagens, não há
 tarefa separada por linguagem ou plataforma.
 
+## Solidity (Circle BBP, HackerOne — emissora do USDC)
+`targets-solidity.mjs` + `heuristics-solidity.mjs` — o primeiro alvo
+descoberto pelo próprio módulo de descoberta automática (Lote 5), não
+curadoria manual do zero. 4 classes de vulnerabilidade de contrato
+inteligente bem estabelecidas: `reentrancy_risk` (chamada externa antes de
+escrita de estado — o padrão do hack da The DAO), `unchecked_call_return`,
+`tx_origin_auth_risk`, `delegatecall_risk`. Ver
+`research/bugbounty/circle-bbp/NOTES.md` — inclui achado real (6
+candidatos na primeira rodada, com observação honesta de que a maioria
+está em script de deploy, não contrato de produção exposto a usuário).
+
 ## Estágio 0 — Descoberta automática de alvo (semanal, tarefa própria)
 `discover-targets.mjs` + `discovery-runner.mjs`: rebusca
 `hackerone_data.json`/`bugcrowd_data.json` do mesmo dataset público

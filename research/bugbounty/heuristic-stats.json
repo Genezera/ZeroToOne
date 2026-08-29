@@ -41,6 +41,13 @@
       "falsePositive": 2,
       "other": 0,
       "fpRate": 1
+    },
+    "ai_deep_read_finding::kotlin": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
     }
   },
   "byTypeProgram": {
@@ -78,6 +85,13 @@
       "falsePositive": 2,
       "other": 0,
       "fpRate": 1
+    },
+    "ai_deep_read_finding::Block Open Source": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
     }
   }
 }

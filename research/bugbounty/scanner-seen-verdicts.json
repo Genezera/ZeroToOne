@@ -22,5 +22,6 @@
   "Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_pollution_risk": "falso_positivo",
   "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk": "falso_positivo",
   "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk": "falso_positivo",
-  "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::ssrf_risk": "falso_positivo"
+  "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::ssrf_risk": "falso_positivo",
+  "Block Open Source::afterpay/sdk-android::BootstrapJavascriptInterface.postMessage::ai_deep_read_finding": "inconclusivo"
 }
