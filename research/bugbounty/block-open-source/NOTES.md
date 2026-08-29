@@ -1455,3 +1455,30 @@ entrada na fila (é confirmação do achado já reportado, não achado novo).
 
 `deep-read-log.json` atualizado com os 3 arquivos novos de `square/wire`
 (append).
+
+## Rodada — fila vazia, leitura profunda em misk-crypto (2026-08-29)
+`queue.jsonl` sem `pending` (35/35 revisados). Leitura profunda proativa:
+`cashapp/misk` já tinha a maior parte de `misk-crypto/` e `misk/security/
+authz/` cobertos em rodadas anteriores; sparse-clone local (`git clone
+--filter=blob:none --no-checkout`, `sparse-checkout set misk-crypto misk
+misk-actions misk-api misk-admin`) para listar o que faltava com auth/
+session/crypto/token/login/password/admin/permission/access no caminho.
+Escolhi os 3 arquivos de `misk-crypto/` ainda não lidos:
+
+1. `misk-crypto/src/main/kotlin/misk/crypto/S3KeySource.kt` —
+   `ExternalKeySource` que busca keysets Tink de um bucket S3. O path do
+   objeto (`objectPath`) é montado só a partir do `alias` (vem de
+   `@ExternalDataKeys allKeyAliases`, config estática do serviço, não de
+   request/dado externo) e da região do próprio serviço — não há
+   interpolação de dado de usuário no bucket/key, então sem SSRF/path
+   traversal/IDOR óbvio no acesso ao S3. Sem achado.
+2. `misk-crypto/src/main/kotlin/misk/crypto/pgp/internal/
+   PgpEncrypterProvider.kt` — espelho do `PgpDecrypterProvider.kt` (já
+   lido antes), só carrega a chave pública PGP configurada e escolhe a
+   subkey de encryption. Nada de input externo. Sem achado.
+3. `misk-crypto/src/main/kotlin/misk/crypto/CryptoConfig.kt` — só data
+   classes de configuração (`CryptoConfig`, `Key`, `KeyType`), sem lógica.
+   Sem achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos novos de `cashapp/misk`
+(append). Resultado normal — a maioria das rodadas não acha nada.
