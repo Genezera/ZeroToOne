@@ -159,7 +159,9 @@
     "src/v2/BaseTokenMessenger.sol",
     "src/messages/v2/BurnMessageV2.sol",
     "src/TokenMessenger.sol",
-    "src/roles/v2/Denylistable.sol"
+    "src/roles/v2/Denylistable.sol",
+    "src/roles/Ownable.sol",
+    "src/roles/Ownable2Step.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -203,7 +205,8 @@
     "src/modules/remote-domain-depositor/Attestable.sol",
     "src/modules/remote-domain-depositor/DomainManageable.sol",
     "src/RemoteDomainDepositor.sol",
-    "src/modules/x-reserve/DepositToRemote.sol"
+    "src/modules/x-reserve/DepositToRemote.sol",
+    "src/xReserve.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",

@@ -908,3 +908,35 @@ próxima rodada: revisitar o refund flow multi-assinatura de
 de segunda leitura focada há várias rodadas) ou `evm-gateway-contracts/
 src/modules/wallet/Balances.sol`/`Batches.sol` (núcleo de contabilidade
 da wallet, ainda não lidos isoladamente).
+
+## Rodada seguinte (fila vazia) — sem achado
+Fila continuava em 0 pendentes. Leitura profunda proativa em 3 arquivos
+não lidos ainda, priorizando contratos principais/controle de acesso
+ainda não cobertos isoladamente:
+- `evm-xreserve-contracts/src/xReserve.sol` — contrato principal do
+  x-reserve (herda `Withdrawal`+`Domain`, cuja lógica de fundo já tinha
+  sido lida em rodadas anteriores). É bem fino: `initialize` só encadeia
+  os inicializadores dos módulos; `_authorizeUpgrade` é `onlyOwner`
+  (padrão UUPS correto); `updateDomainManager`/
+  `setPersistentSignatureBufferDelay` são `onlyOwner`;
+  `setUnlimitedAllowances` é deliberadamente pública (comentário no
+  próprio código admite isso) mas só reaprova o `GatewayWallet` a gastar
+  tokens PRÓPRIOS do próprio contrato — não move fundos de terceiros nem
+  eleva privilégio. Sem achado.
+- `evm-gateway-contracts/src/GatewayMinter.sol` — já constava no log
+  (lido em rodada anterior); reli pra conferir: é só o `initialize` que
+  encadeia `GatewayCommon`+`Mints` (ambos já auditados isoladamente, com
+  o achado confirmado de denylist em `Withdrawals.sol` sendo do lado
+  wallet, não minter). Sem achado novo.
+- `evm-cctp-contracts/src/roles/Ownable.sol` +
+  `src/roles/Ownable2Step.sol` — fork direto do OpenZeppelin (só mudou a
+  versão do Solidity de 0.8→0.7.6 e removeu `renounceOwnership`); padrão
+  two-step de transferência de ownership implementado corretamente
+  (`_pendingOwner` é limpo em `_transferOwnership`, `acceptOwnership`
+  confere `pendingOwner() == msg.sender`). Sem desvio do upstream, sem
+  achado.
+
+A sugestão da rodada anterior (refund flow de `PaymentSettlementV2.sol` e
+`Balances.sol`/`Batches.sol` de `evm-gateway-contracts`) ainda não foi
+atendida — continua como prioridade pra próxima rodada de leitura
+profunda neste programa.
