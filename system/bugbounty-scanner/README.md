@@ -17,8 +17,31 @@ sem checagem de auth visível), e persiste os `.clar` neste repositório
 **JavaScript/TypeScript (Vercel Open Source, HackerOne):**
 `targets-js.mjs` + `heuristics-js.mjs` — `eval`/`new Function`,
 `exec`/`execSync` com comando montado por interpolação, regex com
-quantificador aninhado/ReDoS. Ver
-`research/bugbounty/vercel-open-source/NOTES.md`.
+quantificador aninhado/ReDoS, poluição de protótipo (`for...in` sem
+checagem contra `__proto__`), SSRF (`fetch`/`axios` com destino
+variável), path traversal (`fs.*` com caminho concatenado sem
+`path.normalize`). Ver `research/bugbounty/vercel-open-source/NOTES.md`.
+
+**Análise de fluxo de dado por AST de verdade (`heuristics-js-ast.mjs`,
+só JS/TS)** — camada A MAIS sobre as heurísticas de texto, não substitui:
+usa `web-tree-sitter` (parser WASM, sem compilação nativa) com as
+gramáticas reais `tree-sitter-javascript`/`tree-sitter-typescript`/
+`tree-sitter-tsx` (escolhida pela extensão do arquivo) pra rastrear se um
+valor que vem de fonte externa conhecida (`req.query`/`req.body`/
+`req.params`/`process.argv`) REALMENTE flui até um sink perigoso (`exec`,
+`fetch`, `fs.readFile`, `eval`) dentro da mesma função — via atribuição,
+alias, template string ou concatenação. Achado `tainted_data_flow` é
+evidência bem mais forte que coocorrência textual, porque confirma o
+caminho do dado, não só que dois padrões aparecem perto um do outro.
+**Limitação documentada, não escondida**: intraprocedural (não atravessa
+chamada de função) e não segue ramificação condicional complexa — é
+propositalmente conservador (só sinaliza fonte EXPLICITAMENTE externa, não
+qualquer parâmetro de função) pra manter falso-positivo raro, aceitando
+falso-negativo em fluxo mais complexo. Essa é a primeira dependência npm
+real do projeto (`web-tree-sitter`, `tree-sitter-javascript`,
+`tree-sitter-typescript` — todas usam WASM prebuild, sem `node-gyp`/
+compilador C++ necessário) — decisão deliberada: regex não tem como
+verificar fluxo de dado de verdade, só coocorrência textual.
 
 **Go, Kotlin/Java e Swift/ObjC (Block Open Source, Bugcrowd — ex-Square):**
 `targets-go.mjs`/`heuristics-go.mjs` (injeção de comando via shell, TLS

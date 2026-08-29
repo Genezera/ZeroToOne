@@ -598,6 +598,47 @@ genuinamente complementar. Nunca escreve heurística nova sozinho, só gera
 e validados com dado real — não é código nunca testado, cada módulo rodou
 de verdade contra os 3 programas reais pelo menos uma vez nesta sessão.
 
+## "Melhor caminho": mais classes de bug, leitura profunda por IA, AST de
+## verdade (2026-08-28/29)
+Usuário pediu explicitamente pra buscar o caminho mais avançado possível
+— "melhor detecção... isso tem que ser um caçador de bugbounty COMPLETO",
+autorizando mudar linguagem/instalar dependência nova se justificasse.
+Corrigi framing sobre "0-day" antes de construir: 0-day = vulnerabilidade
+real ainda não divulgada (o sistema já pode achar isso, e achou coisas
+reais nesta sessão), não "categoria de bug nunca antes imaginada" (isso é
+pesquisa de ponta, não prometi). Não mudei a linguagem de implementação
+(Node) — não é o gargalo real (rate limit de API e custo de IA são),
+trocar seria retrabalho caro sem ganho. Três coisas construídas de
+verdade:
+
+1. **Mais classes de bug conhecidas por linguagem** — 7 heurísticas novas:
+   JS/TS (`prototype_pollution_risk`, `ssrf_risk`, `path_traversal_risk`),
+   Go (`sql_injection_risk`, `path_traversal_risk`), JVM
+   (`sql_injection_risk`, `insecure_deserialization`). Validado contra
+   código real: achou 15 candidatos novos reais em `vercel/flags` (13
+   `ssrf_risk` em adaptadores de terceiro, 2 `prototype_pollution_risk`).
+2. **Leitura profunda proativa por IA** (prompt do agente de nuvem
+   atualizado via RemoteTrigger) — além de revisar a fila, o agente agora
+   lê até 3 arquivos por rodada com nome sensível (auth/session/crypto/
+   token/...) que ainda não leu (registrado em
+   `research/bugbounty/deep-read-log.json`), procurando falha de lógica
+   que NENHUMA heurística de texto pegaria — isso é o que de fato pode
+   achar 0-day de verdade, porque usa julgamento, não padrão.
+3. **Análise de fluxo de dado por AST real** (`heuristics-js-ast.mjs`) —
+   primeira dependência npm real do projeto (`web-tree-sitter` + gramáticas
+   `tree-sitter-javascript`/`typescript`/`tsx`, todas WASM prebuild, sem
+   compilador C++ necessário). Rastreia se dado de fonte externa conhecida
+   (`req.query`/`body`/`params`, `process.argv`) REALMENTE flui até um
+   sink perigoso dentro da mesma função — evidência muito mais forte que
+   heurística de texto. Limitação documentada: intraprocedural, não seguir
+   ramificação complexa — deixado explícito, não escondido. 16 testes
+   novos, incluindo confirmação de que a gramática TS/TSX de verdade é
+   usada (não só tolerada pela gramática JS).
+
+115+ testes passando (166 contando o projeto inteiro, incluindo sistemas
+arquivados). `npm test` corrigido pra rodar tudo (`system/**/test/`), não
+só `system/test/`.
+
 ## Estado consolidado do centro de operações (2026-08-28, fim de sessão)
 4 tarefas agendadas do Windows, janela oculta (VBS wrapper), sobrevivem a
 reinício: `ZeroToOne_BugBountyScanner` (diária 9h — scanner + retro-
