@@ -133,7 +133,9 @@
     "src/v2/TokenMinterV2.sol",
     "src/v2/TokenMessengerV2.sol",
     "src/v2/BaseTokenMessenger.sol",
-    "src/messages/v2/BurnMessageV2.sol"
+    "src/messages/v2/BurnMessageV2.sol",
+    "src/TokenMessenger.sol",
+    "src/roles/v2/Denylistable.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -144,7 +146,8 @@
     "src/msca/6900/v0.7/plugins/v1_0_0/multisig/WeightedWebauthnMultisigPlugin.sol",
     "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
     "src/libs/RecipientAddressLib.sol",
-    "src/paymaster/v1/permissioned/SponsorPaymaster.sol"
+    "src/paymaster/v1/permissioned/SponsorPaymaster.sol",
+    "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

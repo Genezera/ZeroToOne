@@ -672,3 +672,57 @@ em relação ao v1; `feeRecipient` é confiável por design (governança), e
 `maxFee` também atestado. `deep-read-log.json` atualizado com os 3 arquivos
 novos (`TokenMessengerV2.sol`, `BaseTokenMessenger.sol`, `BurnMessageV2.sol`)
 em `circlefin/evm-cctp-contracts`.
+
+## Rodada 2026-08-29 (leitura profunda em TokenMessenger v1, Denylistable e SingleOwnerMSCA) — fila vazia, sem achado
+
+`queue.jsonl` sem `pending` (35/35 revisados). Leitura profunda proativa:
+listei via `git ls-tree` (clone raso local) os arquivos `.sol` de todos os
+alvos `targets-solidity.mjs` ainda não lidos com auth/owner/role/access/
+admin/permission/control no caminho, e escolhi os 3 mais relevantes por
+serem código de produção (não `test/`) ainda em aberto:
+
+1. `evm-cctp-contracts/src/TokenMessenger.sol` — o `TokenMessenger` v1
+   (a versão v2 já tinha sido lida em rodada anterior, mas o v1 nunca
+   tinha sido aberto diretamente, só citado por comparação). Mesmo padrão
+   de controle de acesso do v2: `handleReceiveMessage` gated por
+   `onlyLocalMessageTransmitter` + `onlyRemoteTokenMessenger`;
+   `addRemoteTokenMessenger`/`removeRemoteTokenMessenger`/`addLocalMinter`/
+   `removeLocalMinter` são `onlyOwner`. Único ponto que vale nota:
+   `replaceDepositForBurn` deriva `_originalMsgSender` diretamente dos
+   bytes de `originalMessage` fornecidos pelo chamador (não de storage) e
+   exige `msg.sender == _originalMsgSender` — à primeira vista pareceria
+   forjável (qualquer um poderia montar um `originalMessage` com o próprio
+   endereço como sender), mas a segurança real vem de
+   `localMessageTransmitter.replaceMessage(originalMessage, originalAttestation, ...)`
+   exigir uma attestation válida (assinatura off-chain dos signers da
+   Circle) sobre esse exato `originalMessage` — sem attestation real
+   não há como passar. Padrão já confiável, documentado, não é bug novo.
+2. `evm-cctp-contracts/src/roles/v2/Denylistable.sol` — controle de
+   denylist padrão (`onlyDenylister` separado de `onlyOwner`, que só o
+   Owner pode trocar via `updateDenylister`). `notDenylistedCallers`
+   checa `msg.sender` e, se diferente, `tx.origin` — padrão idêntico ao
+   usado no FiatToken real da Circle. Sem gap.
+3. `buidl-wallet-contracts/src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol`
+   — a carteira ERC-4337 de dono único. Rastreei
+   `_authenticateAndAuthorizeUserOp` (o validador de UserOperation, o
+   ponto mais crítico de autorização — controla quem pode mover fundos
+   da carteira): quando `owner != address(0)`, a validação ignora
+   completamente o `userOpValidationFunction` configurado por seletor e
+   valida só a assinatura do `owner` sobre `userOpHash` (via
+   `SignatureChecker.isValidSignatureNow`) — isso é intencional (dono
+   único assina qualquer chamada, independente do seletor), documentado
+   pelo próprio padrão de outras carteiras 6900 já lidas nesta missão
+   (`SponsorPaymaster`, `WeightedWebauthnMultisigPlugin`). Os pre-hooks
+   por seletor (`_processPreUserOpValidationHooks`) continuam rodando
+   independente do modo de validação, então não há bypass de hook.
+   `_processPreRuntimeHooksAndValidation` (caminho de chamada direta, não
+   via EntryPoint) exige `msg.sender == owner || msg.sender ==
+   address(this)` — sem gap. `isValidSignature` (EIP-1271) usa
+   `getReplaySafeMessageHash` (domain separation por `address(this)`)
+   antes de checar a assinatura — protege contra replay cross-account.
+   Sem achado.
+
+Conclusão: nenhum achado novo. `deep-read-log.json` atualizado com os 3
+arquivos (2 em `circlefin/evm-cctp-contracts`, 1 em
+`circlefin/buidl-wallet-contracts`). Resultado normal — a maioria das
+rodadas não acha nada.
