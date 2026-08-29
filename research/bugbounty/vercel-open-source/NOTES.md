@@ -278,3 +278,39 @@ estabelecido em `adapter-slack`/`adapter-twilio`/`adapter-messenger`.
 `deep-read-log.json` atualizado (`vercel/chat` ganhou os 2 arquivos).
 Restam por ler individualmente: Instagram, Linear, Notion, Teams, X
 (adapters do mesmo pacote) e `vercel/workflow` (tier 1, ainda intocado).
+
+## Rodada 2026-08-29 (push automático, máquina de estados v2) — fila vazia, leitura profunda em Teams/Linear/X
+
+Sem `pending` na fila. Leitura profunda proativa (clone raso de
+`vercel/chat`), continuando a lista de adapters pendentes:
+
+- `packages/adapter-teams/src/webhook/parse.ts` + `index.ts` (adapter
+  principal): `parseTeamsWebhookBody` só faz parsing de JSON, **sem**
+  nenhuma verificação de assinatura/JWT — investiguei com ceticismo se
+  isso é uma falha de autenticação. Não é: `parseTeamsWebhookBody` só é
+  chamado nos testes; o fluxo real passa por `new App({...})` do SDK
+  oficial `@microsoft/teams.apps` (linha 144 de `index.ts`), que monta
+  sua própria rota HTTP e valida o token Bearer do Bot Framework contra
+  o Azure AD antes de qualquer coisa chegar aos handlers deste adapter
+  (confirmado também pela seção de autenticação do `README.md` do
+  pacote — `appPassword`/`federated`). Verificação delegada a SDK
+  vetada da própria Microsoft, não reimplementada aqui — sem achado.
+- `packages/adapter-linear/src/index.ts` (`handleWebhook` /
+  `handleVerifiedWebhook`, linha ~1263): mesmo padrão de
+  `webhookVerifier` customizável com precedência sobre a assinatura
+  nativa (`LinearWebhookClient` do SDK oficial `@linear/sdk`) já
+  validado em GitHub/WhatsApp — throw ou retorno falsy do verifier
+  sempre vira 401, nunca bypass. Sem achado novo, só reconfirma o
+  padrão.
+- `packages/adapter-x/src/index.ts` (`handleWebhook` / `verifySignature`
+  / `handleCrcChallenge`): HMAC-SHA256 sobre o corpo bruto, comparação
+  por `timingSafeEqual` com checagem de tamanho antes (evita exceção por
+  buffers de tamanho diferente), tudo em `try/catch` fail-closed. O
+  `GET` (challenge-response CRC do X) não exige assinatura — mas isso é
+  o handshake público de posse da URL definido pela própria API do X,
+  não uma rota que processa dados de usuário. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/chat` ganhou os 4 arquivos/trechos acima). Restam por ler
+individualmente: Instagram, Notion (adapters do mesmo pacote) e
+`vercel/workflow` (tier 1, ainda intocado).
