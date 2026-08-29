@@ -99,7 +99,9 @@
     "github/url.go",
     "cache/github.go",
     "cache/http.go",
-    "cache/cache.go"
+    "cache/cache.go",
+    "state/state.go",
+    "manifest/digest/digest.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
@@ -139,7 +141,9 @@
     "packages/adapter-slack/src/webhook/verify.ts",
     "packages/adapter-twilio/src/webhook/verify.ts",
     "packages/adapter-messenger/src/index.ts",
-    "examples/nextjs-chat/src/app/api/modal-callback/[token]/route.ts"
+    "examples/nextjs-chat/src/app/api/modal-callback/[token]/route.ts",
+    "packages/adapter-github/src/index.ts",
+    "packages/adapter-whatsapp/src/index.ts"
   ],
   "afterpay/sdk-ios": [
     "Sources/Afterpay/Helpers/JWT.swift",

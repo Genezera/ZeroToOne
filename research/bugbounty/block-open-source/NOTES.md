@@ -1700,3 +1700,44 @@ evidence não-`unverified` fazer sentido pra bibliotecas (não serviços).
 **Leitura profunda proativa desta rodada foi em `vercel/chat`** (repo
 novo, ainda não coberto, tier 2 do programa Vercel Open Source — ver
 NOTES.md de `vercel-open-source`), não neste programa.
+
+## Rodada 2026-08-29 (push automático seguinte, máquina de estados v2) — fechando a observação lateral pendente do `cashapp/hermit` (checksum RPM)
+
+Fila sem itens `pending`. Voltei à "observação lateral" registrada há
+várias rodadas na entrada de 2026-08-28: "o hermit extrai pacotes RPM sem
+chamar `go-rpmutils.Verify` — não investiguei se há checksum/assinatura
+verificada em outra camada". Cloneado `cashapp/hermit` via
+`git clone --depth 1` e rastreada a cadeia completa de download/cache:
+
+- `state/state.go::CacheAndUnpack`/`extract` sempre passam `p.SHA256` pro
+  `cache.Download`/`cache.Path` antes de extrair qualquer arquivo (RPM
+  incluso) — o SHA256 vem do manifest do pacote (`manifest.Config.SHA256`,
+  campo `sha256` do arquivo `.hcl`).
+- `cache/http.go::downloadHTTP` (linha ~131) calcula o SHA256 real dos
+  bytes baixados via `io.TeeReader` e **compara contra o checksum
+  esperado antes de mover o arquivo pro cache** (`if checksum != "" &&
+  checksum != actualChecksum { return error }`) — verificação de
+  integridade real, não cosmética, acontece antes de qualquer extração.
+- A ressalva real (não uma falha, mas um design a documentar): a
+  verificação só roda `if checksum != ""` — `manifest.validate()`
+  (`manifest/resolver.go`) não exige que todo pacote declare `sha256`, e
+  `manifest/digest/digest.go` (`UpdateDigests`/`computeDigest`) é a
+  ferramenta que POPULA esse campo automaticamente via
+  trust-on-first-use (baixa uma vez, calcula o hash, grava no `.hcl`) —
+  ferramenta de manutenção de manifest, rodada pelos mantenedores do
+  pacote, não pelo usuário final do hermit em tempo de instalação.
+  Ou seja: **dentro do código de `cashapp/hermit`, a verificação de
+  integridade é real e correta quando o manifest declara um `sha256`**; se
+  algum pacote específico do repositório de manifests (`cashapp/hermit-packages`,
+  repositório separado, fora da lista de assets do programa Bugcrowd)
+  não declarar `sha256`, ficaria sem verificação — mas isso é dado de
+  configuração de outro repositório, não uma falha de lógica em
+  `cashapp/hermit` em si, e verificar todos os manifests reais está fora
+  do escopo/alcance desta investigação (repo não incluído no scope
+  snapshot). **Sem achado nesta rodada** — a suspeita original foi
+  investigada a fundo e refutada quanto ao código deste repo
+  especificamente; ponto fechado, não fica mais como pendência.
+
+`deep-read-log.json` atualizado (`cashapp/hermit` ganhou `state/state.go`
+e `manifest/digest/digest.go`; `cache/http.go` já constava). Nenhum item
+novo adicionado à fila.

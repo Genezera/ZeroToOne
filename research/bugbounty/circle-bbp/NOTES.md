@@ -769,6 +769,33 @@ que ainda faltava (`account/`, `managers/`) em vez de mais plugins:
    de bug, só um gap de cobertura de leitura.
 
 Conclusão: nenhum achado novo. Código consistente com o padrão de
+
+## Rodada 2026-08-29 (máquina de estados v2, push automático) — fila vazia, sem candidato novo em Circle BBP
+
+`queue.jsonl` sem itens `pending`. `corroborated_static::Withdrawals.sol`
+(denylist gap) foi revisitado: nova tentativa de PoC Foundry, mesmo
+bloqueio de rede já documentado (`foundry.paradigm.xyz` e RPC público
+ambos 403 no agent-proxy desta sessão) — `record-validation` com
+`not_applicable` e reasoning atualizado; transição pra `reproduced_local`
+recusada corretamente pela máquina de estados, achado permanece
+`corroborated_static`.
+
+Leitura profunda proativa desta rodada fechou o ponto em aberto deixado há
+várias rodadas em `buidl-wallet-contracts` (sugestão da rodada de
+`PluginExecutor.sol`): "não verifiquei se `uninstallPlugin` (em
+`PluginManager.sol`) de fato limpa `permittedPluginCalls`/
+`permittedExternalCalls` ao desinstalar". Cloneado `circlefin/buidl-wallet-contracts`
+via `git clone --depth 1` e lido `src/msca/6900/v0.7/managers/PluginManager.sol`
+por completo — **confirmado que sim**: a função `uninstall()` (linha 310)
+limpa explicitamente `permittedExternalCalls[plugin][...].addressPermitted`/
+`.anySelector`/`.selectors[...]` (linhas 350-365) e
+`permittedPluginCalls[plugin][selector] = false` para cada seletor do
+manifest (linhas 371-374), na ordem inversa da instalação, antes de
+`delete storageLayout.pluginDetails[plugin]`. Sem gap — ponto em aberto
+fechado, sem achado novo.
+
+`deep-read-log.json` atualizado (`circlefin/buidl-wallet-contracts` ganhou
+`PluginManager.sol`). Nenhum item novo adicionado à fila nesta rodada.
 referência ERC-6900 já visto nos outros contratos deste repo
 (`SingleOwnerMSCA`, `SponsorPaymaster`, etc.) — controle de acesso via
 `msg.sender` direto em todos os pontos checados, sem inconsistência entre
