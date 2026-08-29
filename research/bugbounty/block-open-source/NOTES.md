@@ -946,3 +946,80 @@ arquivo acima. Sugestão pra próxima rodada: `DeclarativeSchemaMigrator.kt`
 (par do arquivo lido agora, mesma pasta, ainda não coberto) ou
 `wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt`
 (sugestão acumulada de duas rodadas, ainda não atacada).
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, `DeclarativeSchemaMigrator.kt` + `wisp/wisp-token` + cadeia de acesso admin/metadata
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada. Peguei as duas
+sugestões acumuladas da rodada anterior e complementei com uma terceira
+frente (cadeia `AllMetadataAccess`/`AdminDashboardAccess`), todas via clone
+raso público (`git clone --depth 1`, não persistido) de `cashapp/misk`.
+
+**1) `misk-jdbc/.../DeclarativeSchemaMigrator.kt`** (par do
+`TraditionalSchemaMigrator.kt` já lido) — `applyAll()` chama
+`spirit.diff(dsn, sqlFiles)` e executa (`stmt.execute`) cada linha do DDL
+gerado pela ferramenta de diff `Spirit`. Mesmo padrão já confirmado nas
+duas rodadas anteriores: `sqlFiles` vem de `resourceLoader.utf8(it.filename)`
+(arquivos `.sql` de migração empacotados no classpath, build-time, nunca
+requisição HTTP), e `dsn` é montado com credenciais da própria config do
+serviço (`config.username`/`password`/`host`), não dado externo. Parâmetro
+`author` sequer é usado no corpo da função (diferente do irmão
+`Traditional`, que o valida e usa em bind parameter) — não é falha de
+segurança, só código morto/inconsistência entre os dois migradores. Sem
+achado.
+
+**2) `wisp/wisp-token/.../RealTokenGenerator.kt` + `TokenGenerator.kt`**
+(interface) — confirma a suspeita da rodada anterior: é a implementação
+"antiga" duplicada, marcada `@Deprecated` apontando pra migrar para
+`misk.tokens.RealTokenGenerator` (já lido e aprovado numa rodada bem
+anterior). Mesmíssima técnica seguro-e-correta: `SecureRandom` + `and
+31.toByte()` (5 bits baixos de cada byte, 32 é potência de 2 → sem modulo
+bias) indexando um alfabeto Base32 de Crockford de 32 símbolos. Doc do
+`TokenGenerator` confirma 125 bits de entropia pra 25 caracteres (5
+bits/char × 25), bate com a implementação. Sem achado.
+
+**3) Cadeia `AllMetadataAccess`/`AdminDashboardAccess`/`ConfigMetadata`**
+(motivado por notar que `misk-admin/.../metadata/` tinha vários arquivos
+com "access"/"admin" no nome ainda não lidos) — segui a cadeia completa:
+`AllMetadataAction` (`GET /api/{id}/metadata`) expõe TODO metadata
+registrado via `Map<String, Provider<Metadata>>` (inclui `ConfigMetadata`,
+que pode conter YAML de config bruto não redigido em modo
+`UNSAFE_LEAK_MISK_SECRETS`) atrás de um único gate: `@AllMetadataAccess`.
+Isso é uma anotação DIFERENTE de `@AdminDashboardAccess` (usada só pra
+renderizar o link do menu na dashboard) — ou seja, a proteção real de
+"quem pode ler os dados" depende de quem instala `AllMetadataModule`
+conceder `AccessAnnotationEntry<AllMetadataAccess>` deliberadamente restrito
+(o próprio KDoc do arquivo já avisa: exemplo de uso é
+`services = listOf("internal_security_scraper_service")`, não usuário
+humano comum). Cheguei a suspeitar de bypass de controle de acesso
+granular (Config tab vs. endpoint agregado), mas concluí que não é uma
+vulnerabilidade do framework: (a) o modo default de `ConfigDashboardTabModule`
+é `SAFE` (só JVM info, nada sensível) e o próprio KDoc do módulo grita "DO
+NOT change default of SAFE until redaction... is added" — o modo
+`UNSAFE_LEAK_MISK_SECRETS` é opt-in explícito e documentado como
+perigoso; (b) a separação de anotações (`AllMetadataAccess` !=
+`AdminDashboardAccess`) é justamente o mecanismo que permite ao operador
+NÃO conceder a mesma capability pras duas coisas — é o app consumidor que
+decide o binding de `AccessAnnotationEntry`, fora do controle deste repo.
+Nenhuma escalação de privilégio latente no próprio `cashapp/misk`: é um
+design com poder amplo mas claramente documentado e seguro por padrão. Não
+abri candidato — especulativo demais sem um binding real de app consumidor
+associando as duas anotações incorretamente (mesma classe de "não-exploração"
+já documentada várias vezes nesta missão). Arquivos lidos nesta
+sub-investigação: `AdminDashboardAccess.kt`, `Authenticated.kt` (anotação,
+não a lógica — já lida antes em `AccessInterceptor.kt`),
+`NoAdminDashboardDatabaseAccess.kt`, `AllMetadataAccess.kt`,
+`AllMetadataAction.kt`, `AllMetadataModule.kt`, `ConfigMetadataAction.kt`,
+`ConfigMetadata.kt`, `ConfigDashboardTabModule.kt`.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado com os 12 arquivos acima (todos em
+`cashapp/misk`, incluindo os 2 do `wisp/wisp-token`, que compartilham a
+mesma chave de repo no log). Sugestão pra próxima rodada: `StateMachine.swift`
+já foi coberto; o que resta em `misk` é sobretudo módulos de dashboard/UI
+(`misk-admin/.../web/dashboard/`, `web/v2/`) que são majoritariamente
+HTML/rendering, baixa prioridade — melhor recomeçar por
+`misk-hibernate/vitess/VitessQueryHintHandler.kt` (nota de hardening já
+identificada, sugerir ao mantenedor via issue não é escopo desta missão
+mas vale registrar) ou expandir a leitura pra `square/wire`
+(`wire-schema/`/`wire-compiler/`, ainda não tocados — só `wire-runtime` foi
+lido).

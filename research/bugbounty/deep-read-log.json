@@ -29,7 +29,19 @@
     "misk-hibernate/src/main/kotlin/misk/hibernate/ReflectionQueryFactory.kt",
     "misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt",
     "misk-jdbc/src/main/kotlin/misk/jdbc/JdbcExtensions.kt",
-    "misk-jdbc/src/main/kotlin/misk/jdbc/TraditionalSchemaMigrator.kt"
+    "misk-jdbc/src/main/kotlin/misk/jdbc/TraditionalSchemaMigrator.kt",
+    "misk-jdbc/src/main/kotlin/misk/jdbc/DeclarativeSchemaMigrator.kt",
+    "wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt",
+    "wisp/wisp-token/src/main/kotlin/wisp/token/TokenGenerator.kt",
+    "misk-api/src/main/kotlin/misk/web/dashboard/AdminDashboardAccess.kt",
+    "misk-actions/src/main/kotlin/misk/security/authz/Authenticated.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/NoAdminDashboardDatabaseAccess.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/AllMetadataAccess.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/AllMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/AllMetadataModule.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigMetadata.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigDashboardTabModule.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
