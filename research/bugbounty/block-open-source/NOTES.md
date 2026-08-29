@@ -1741,3 +1741,52 @@ verificada em outra camada". Cloneado `cashapp/hermit` via
 `deep-read-log.json` atualizado (`cashapp/hermit` ganhou `state/state.go`
 e `manifest/digest/digest.go`; `cache/http.go` já constava). Nenhum item
 novo adicionado à fila.
+
+## Rodada 2026-08-29 (push automático seguinte) — leitura profunda em cashapp/misk e circlefin/buidl-wallet-contracts
+
+Fila sem itens `pending`. Leitura profunda proativa (3 arquivos, clone
+raso de `cashapp/misk` e `circlefin/buidl-wallet-contracts`):
+
+- `misk-config/src/main/kotlin/misk/config/Secret.kt` — interface
+  trivial (`Secret<T> { val value: T }`), zero lógica própria pra
+  auditar. Sem achado.
+- `misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials`
+  — achado real, mas refutado após rastrear a cadeia completa. O código
+  monta `ProcessBuilder("sh", "-c", "echo $registryUrl | $credentialCmd get")`
+  por interpolação de string sem sanitização — padrão clássico de
+  command injection SE `registryUrl`/`credStore` fossem influenciáveis
+  por um atacante. `grep -rn` nos 8 call-sites reais do monorepo mostra
+  que **todos**, sem exceção, passam por `withMiskDefaults()`, que usa
+  exclusivamente a constante hardcoded `DEFAULT_DOCKER_REGISTRY_URL`
+  (nunca input de rede/usuário), e todos são infraestrutura de teste
+  local (emuladores Docker de Spanner/Vitess/OPA/Postgres pra rodar a
+  suite de testes — `GoogleSpannerEmulator.kt`, `LocalOpaService.kt`,
+  `VitessDockerContainer.kt`, `Containers.kt` em `misk-testing`/`wisp`,
+  `StartDatabaseService.kt`), nunca código de produção que atende
+  requisição externa. A outra variável interpolada (`credStore`) vem do
+  `~/.docker/config.json` local da própria máquina que roda o teste —
+  já dentro da fronteira de confiança de quem controla o processo.
+  Registrado como `ai_deep_read_finding` e refutado (`false_positive`)
+  com a cadeia completa documentada no `reasoning`, pra constar em
+  auditoria — o padrão de código é genuinamente frágil (merecia usar
+  `ProcessBuilder` com lista de argumentos, não `sh -c` interpolado),
+  mas sem alcançabilidade real por um atacante externo hoje.
+- `circlefin/buidl-wallet-contracts/src/msca/6900/shared/libs/ValidationDataLib.sol`
+  — biblioteca compartilhada de pack/unpack e interseção de
+  `ValidationData` (formato `validAfter | validUntil | authorizer`,
+  usada por todos os módulos de validação MSCA/ERC-4337). Comparei
+  linha a linha com a semântica documentada no próprio comentário do
+  código e com o padrão de referência conhecido (`_intersectTimeRange`
+  do `eth-infinitism/account-abstraction`): interseção de intervalo de
+  tempo (`validAfter = max`, `validUntil = min`), priorização de
+  autorizador inválido > falha > sucesso, e o caso extra de forçar
+  `authorizer = address(1)` quando o intervalo resultante é vazio mas o
+  autorizador seria sucesso (evita que um intervalo de tempo inválido
+  seja tratado como "sucesso pra sempre"). Reimplementação fiel do
+  padrão de referência, sem desvio. Sem achado.
+
+`deep-read-log.json` atualizado (`cashapp/misk` ganhou `Secret.kt` e
+`DockerCredentials.kt`; `circlefin/buidl-wallet-contracts` ganhou
+`ValidationDataLib.sol` — este é achado/asset de Circle BBP, não deste
+programa, mas o arquivo foi escolhido nesta rodada de leitura profunda
+que também cobriu `cashapp/misk`).
