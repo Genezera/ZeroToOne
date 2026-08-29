@@ -215,7 +215,12 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin
 footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--ink-faint); line-height: 1.6; }
 
 .page { display: none; }
-.page.active { display: block; }
+.page.active { display: block; animation: pageIn 0.32s cubic-bezier(.16,1,.3,1); }
+@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .page.active { animation: none; } }
+
+.nav a { transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease; }
+.nav a:active { transform: scale(0.97); }
 `;
 
 const FONT_LINK = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">`;
