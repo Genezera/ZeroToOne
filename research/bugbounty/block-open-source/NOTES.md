@@ -811,3 +811,32 @@ pra próxima rodada: `misk-hibernate/`/`misk-jdbc/` continua pendente
 `wisp/wisp-token/src/main/kotlin/wisp/token/RealTokenGenerator.kt` (a
 implementação real por trás do `RealTokenGenerator` antigo, delegada mas
 não lida ainda).
+
+## Rodada 2026-08-29 — leitura profunda proativa (cashapp/misk)
+3 arquivos novos lidos (nenhum estava no log ainda):
+`misk/src/main/kotlin/misk/security/authz/FakeCallerAuthenticator.kt`,
+`misk/src/main/kotlin/misk/security/keys/KeyService.kt`,
+`misk-crypto/src/main/kotlin/misk/crypto/ServiceKeys.kt`.
+
+`FakeCallerAuthenticator` chamou atenção primeiro por confiar cegamente em
+headers HTTP (`X-Forwarded-Service`/`X-Forwarded-User`/
+`X-Forwarded-Capabilities`) pra autenticar o caller — exatamente o padrão
+de bypass de autenticação real se algum serviço em produção o usasse por
+engano. A própria classe já se autodeclara `/** ... Unsafe for production
+use. */`. Rastreei todos os usos no repo (`grep -rln
+"FakeCallerAuthenticator" misk --include="*.kt"`, clone raso completo do
+módulo `misk/`): as únicas referências ficam em `misk/src/test/kotlin/...`
+(`TestWebActionModule.kt`, `AuthenticationTest.kt` e outros testes) — nunca
+é o binding padrão de nenhum módulo de produção do framework. Cada serviço
+que usa misk precisa fornecer sua própria implementação real de
+`MiskCallerAuthenticator`; o framework não instala esta classe sozinho.
+`falso_positivo` por não-exploração (mesmo padrão do caso hermit/circl já
+documentado): código perigoso existe e é público, mas nenhum fluxo real
+deste repositório o alcança em produção. Não abri candidato na fila — é
+puramente especulativo sem um serviço concreto que faça o bind errado, e
+esse serviço não está neste repositório.
+
+`KeyService.kt` e `ServiceKeys.kt` são interface/anotação triviais (poucas
+linhas, sem lógica) — nada a investigar.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado.

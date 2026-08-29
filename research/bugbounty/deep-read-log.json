@@ -20,7 +20,10 @@
     "misk-tokens/src/main/kotlin/misk/tokens/RealTokenGenerator.kt",
     "misk-mcp/src/main/kotlin/misk/mcp/action/McpSessionId.kt",
     "misk-mcp/src/main/kotlin/misk/mcp/McpSessionHandler.kt",
-    "misk-mcp/src/main/kotlin/misk/mcp/internal/McpServerSessionContext.kt"
+    "misk-mcp/src/main/kotlin/misk/mcp/internal/McpServerSessionContext.kt",
+    "misk/src/main/kotlin/misk/security/authz/FakeCallerAuthenticator.kt",
+    "misk/src/main/kotlin/misk/security/keys/KeyService.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ServiceKeys.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
