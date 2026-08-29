@@ -1,4 +1,9 @@
 {
+  "StackingDAO": [
+    "dao.clar",
+    "signer-admin-v1.clar",
+    "stacker-2.clar"
+  ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
     "packages/flags/src/lib/verify-access.ts",
