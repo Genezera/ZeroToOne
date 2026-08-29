@@ -550,3 +550,86 @@ Nenhum achado novo. `deep-read-log.json` atualizado (`cashapp/misk` ganhou
 anterior continuam pendentes — `misk-hibernate/`/`misk-jdbc/` (SQL
 injection via Hibernate/JDBC) e `cash-app-pay-ios-sdk`
 (`StateMachine.swift`).
+
+---
+
+## Rodada 2026-08-29 (7) — revisitando afterpay/sdk-android em paralelo com a rodada (3) (achado inconclusivo — ver nota de discordância)
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada. Esta rodada
+começou antes de eu ver que a rodada (3) acima já tinha coberto
+`AfterpayCheckoutV2Activity.kt` na mesma sincronização — os dois rounds
+chegaram a conclusões diferentes sobre o mesmo trecho, então registro os dois
+em vez de apagar um. A rodada (3) concluiu que a bridge JS está "corretamente
+restrita a conteúdo primeiro-partido fixo" porque não há `loadUrl` adicional
+nem `shouldOverrideUrlLoading` **permissivo**. Na minha leitura, isso inverte
+o sentido: a AUSÊNCIA de qualquer override de `shouldOverrideUrlLoading` não
+é restritiva, é o padrão do `WebViewClient` deixando a `WebView` navegar
+livremente pra qualquer URL que a própria página (ou um redirect dela)
+dispare — sem checagem de host nenhuma — ao contrário do V1
+(`AfterpayCheckoutActivity.kt`, `validCheckoutUrls` checado antes do
+`loadUrl` inicial) e do equivalente iOS já auditado na rodada (5)
+(`CheckoutWebViewController.swift`, valida `CheckoutHost.validSet` antes de
+carregar). Não chego a uma conclusão de exploração diferente da rodada (3)
+— a precondição real (o conteúdo da página estática em
+`static.afterpay.com`, fora deste repo e fora do escopo de alvos) não dá pra
+verificar dos dois lados. Fica registrado pra quem pegar o próximo round
+decidir com mais confiança; não é achado novo por si só sem informação
+adicional sobre o conteúdo daquela página.
+
+Leitura profunda (texto original desta rodada, antes de notar a
+sobreposição): `afterpay/sdk-android` era o único alvo do programa ainda sem
+nenhuma leitura profunda no início desta rodada (`deep-read-log.json` ainda
+não tinha a chave quando este round começou). Clonado via
+`git clone --depth 1` (público, sem conta/token). Sem arquivo com auth/
+session/crypto/token/login/password/admin/permission/access no nome —
+julgamento de especialista apontou os três `*CheckoutActivity.kt`
+(V1/V2/V3, orquestram o WebView de checkout e a ponte JS->nativo) como a
+superfície mais sensível: qualquer lógica de checkout via WebView é
+candidata clássica a bug de validação de origem/redirect.
+
+5 arquivos lidos por completo: `AfterpayCheckoutActivity.kt` (V1),
+`AfterpayCheckoutV2Activity.kt`, `AfterpayCheckoutV3Activity.kt`,
+`AfterpayCheckoutMessage.kt`, `AfterpayCheckoutCompletion.kt` (+ 2 docs:
+`checkout-v1.md`, `checkout-v2.md`, + `res/values/urls.xml` para resolver a
+URL do bootstrap).
+
+**Achado (`ai_deep_read_finding`, revisado na mesma rodada, verdict
+`inconclusivo`, confidence `baixa`)**: `AfterpayCheckoutV2Activity.kt`
+(fluxo Express/V2) anexa uma ponte JS `addJavascriptInterface(..., "Android")`
+em `bootstrapWebView` sem nunca sobrescrever `shouldOverrideUrlLoading` —
+diferente da V1 (`AfterpayCheckoutActivity.kt`, que restringe a URL inicial a
+um allowlist de host `validCheckoutUrls`) e da V3
+(`AfterpayCheckoutV3Activity.kt`, que exige uma chamada real
+`performConfirmationRequest(ppaConfirmToken)` contra a API da Afterpay antes
+de finalizar). Em V2, `BootstrapJavascriptInterface.postMessage` aceita
+qualquer JSON que decodifique como `AfterpayCheckoutCompletion(status=SUCCESS,
+orderToken=<string livre>)` e retorna `RESULT_OK` direto pro app, sem etapa
+de confirmação server-side equivalente à V3. Como a ponte JS é vinculada à
+instância da WebView (não à origem carregada), JS de uma origem não confiável
+poderia em teoria chamar `Android.postMessage(...)` diretamente **se**
+`bootstrapWebView` algum dia navegasse pra fora do domínio da Afterpay
+mantendo a ponte anexada.
+
+Não deu pra fechar essa cadeia: a URL inicial
+(`https://static.afterpay.com/mobile-sdk/bootstrap/index.html`, resolvida via
+`urls.xml`) é conteúdo hospedado no servidor da Afterpay — fora deste
+repositório e fora da lista de alvos autorizados
+(`system/bugbounty-scanner/targets-*.mjs` só lista repos GitHub) — então não
+dá pra confirmar nem refutar se essa página bootstrap alguma vez navega pra
+fora do domínio afterpay.com. Mesmo que a precondição existisse, o impacto
+fica limitado pelo próprio fluxo documentado: `docs/getting-started/
+checkout-v2.md` confirma que o app consumidor ainda precisa fazer um
+"Capture request" separado, servidor-a-servidor, contra a API real da
+Afterpay (credenciais do merchant) — um `orderToken` forjado devolvido pelo
+SDK não movimenta fundos sozinho; o pior cenário plausível é o app tratar
+incorretamente o status do checkout (spoofing de UI/estado) até essa etapa de
+captura falhar ou confirmar server-side.
+
+Sem relatório (verdict != `confirmado`). `queue.jsonl` e `deep-read-log.json`
+atualizados. Próxima rodada (já coberto por outras rounds nesta mesma
+sincronização, ver acima): `afterpay/sdk-ios` foi auditado na rodada (5) —
+`CheckoutWebViewController.swift` valida host antes do load inicial, mas o
+mesmo tipo de pergunta sobre navegação pós-load não foi verificada lá
+também. Sugestão pra próxima rodada de verdade: `misk-hibernate/`/
+`misk-jdbc/` (SQL injection via Hibernate/JDBC, ainda não coberto) ou
+`StateMachine.swift` do `cash-app-pay-ios-sdk`.

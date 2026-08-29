@@ -35,7 +35,11 @@
   "afterpay/sdk-android": [
     "afterpay/src/main/kotlin/com/afterpay/android/cashapp/AfterpayCashAppJwt.kt",
     "afterpay/src/main/kotlin/com/afterpay/android/internal/WebView.kt",
-    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV2Activity.kt"
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV2Activity.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutActivity.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV3Activity.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutMessage.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutCompletion.kt"
   ],
   "afterpay/sdk-ios": [
     "Sources/Afterpay/Helpers/JWT.swift",
