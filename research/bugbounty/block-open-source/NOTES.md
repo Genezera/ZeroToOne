@@ -1584,3 +1584,55 @@ profunda dedicada — endpoint admin que de fato executa query dinâmica é a
 superfície mais sensível ainda não coberta) ou `misk-hibernate/`/
 `misk-jdbc/` (SQL injection via Hibernate/JDBC, sinalizado repetidamente em
 rodadas anteriores e ainda não atacado de fato).
+
+## Rodada 2026-08-29 (push automático, disparo #2) — fila vazia, leitura profunda em afterpay/sdk-ios
+
+`queue.jsonl` sem itens `pending` no disparo desta rodada (36 revisados, 0
+pendentes — o próprio push que disparou foi o commit da rodada anterior de
+`misk-admin`/`misk-crypto`). Clonado publicamente (`git clone --depth 1`)
+`afterpay/sdk-ios` e `circlefin/evm-xreserve-contracts` (repos com poucos
+arquivos já lidos: 8 e 3 respectivamente) pra buscar candidatos com
+auth/session/crypto/token/login/password/admin/permission/access no nome
+ainda não lidos. Escolhidos 3 arquivos:
+
+1. `Sources/Afterpay/Helpers/JWT.swift` — `JWT.decode` indexa
+   `segments[1]` sem checar `segments.count` (crash em token malformado) e
+   nunca verifica a assinatura do JWT (só decodifica o payload). Rastreei
+   a cadeia completa: único call site é
+   `CashAppSigningResponse.decodeJwtToken()`, chamado só dentro de
+   `CashAppPayCheckout.signPayment`, que decodifica a resposta HTTP do
+   próprio endpoint de assinatura da Afterpay/Cash App
+   (`cashAppSigningURL`, vindo de `Configuration.environment` — nunca
+   fornecido por merchant/usuário). O payload decodificado só é usado pra
+   prefill de UI; a decisão financeira real acontece depois, do lado do
+   servidor, quando o JWT original (não o payload) é reenviado inteiro via
+   `checkoutV3Confirm` pro backend validar a assinatura antes de cobrar.
+   **Verdict: falso_positivo** (defeito de código real — vale nota pro
+   mantenedor — mas sem alcançabilidade por atacante externo dentro do
+   escopo deste SDK). Ver entrada `JWT.decode::ai_deep_read_finding` em
+   `queue.jsonl`.
+2. `Sources/Afterpay/Checkout/CheckoutWebViewController.swift` (fluxo V1,
+   iOS) — ao contrário do achado já confirmado em
+   `AfterpayCheckoutV2Activity.kt` (Android), aqui **há** validação de
+   host (`CheckoutHost.validSet.contains(host)`, linha 71) antes de
+   carregar a URL, e a `WKWebView` não registra nenhuma ponte JS
+   (`WKUserContentController`/`addScriptMessageHandler`) — o resultado do
+   checkout é extraído só de query params da URL de navegação
+   (`decidePolicyFor navigationAction`/`navigationResponse`), não de uma
+   interface JS exposta. Sem achado — reforça que o padrão problemático da
+   V2 Android (bridge JS sem allowlist de host) não se repete no
+   equivalente iOS deste fluxo.
+3. `circlefin/evm-xreserve-contracts/src/modules/x-reserve/TokenSupport.sol`
+   — `addSupportedToken`/`_setUnlimitedAllowances` concede allowance
+   ilimitada (`forceApprove(..., type(uint256).max)`) pro `gatewayWallet`/
+   `tokenMessenger`/`tokenMessengerV2` sempre que um token novo é
+   suportado, mas a função é `onlyOwner` — allowance ilimitada é o design
+   esperado pra um contrato de reserva/bridge administrado pelo owner, não
+   uma falha de autorização. Sem achado.
+
+`deep-read-log.json` atualizado com os arquivos acima (mais
+`CashAppSigningResponse.swift`/`CashAppPayCheckout.swift`/
+`CashAppSigningResult.swift`, lidos pra rastrear a cadeia de chamada do
+achado #1). Um item novo em `queue.jsonl` (achado #1, já investigado e
+resolvido nesta mesma rodada — falso_positivo). Sem relatório gerado (não
+elegível — sem alcançabilidade confirmada).

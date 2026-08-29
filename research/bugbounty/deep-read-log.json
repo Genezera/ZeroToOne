@@ -140,7 +140,8 @@
     "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
     "Sources/Afterpay/Checkout/CheckoutHost.swift",
     "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift",
-    "Sources/Afterpay/ApiV3.swift"
+    "Sources/Afterpay/ApiV3.swift",
+    "Sources/Afterpay/CashApp/CashAppSigningResult.swift"
   ],
   "circlefin/evm-cctp-contracts": [
     "src/MessageTransmitter.sol",
@@ -193,7 +194,8 @@
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
     "src/modules/x-reserve/Blocklistable.sol",
-    "src/lib/NoValidationAttestationLib.sol"
+    "src/lib/NoValidationAttestationLib.sol",
+    "src/modules/x-reserve/TokenSupport.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
