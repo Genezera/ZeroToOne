@@ -14,5 +14,13 @@
     "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringClearTextAdapter.kt",
     "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
     "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt"
+  ],
+  "cashapp/hermit": [
+    "redact/redact.go",
+    "github/api.go",
+    "github/http.go"
+  ],
+  "cashapp/cash-app-pay-ios-sdk": [
+    "Sources/PayKit/CashAppPay.swift"
   ]
 }

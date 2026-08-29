@@ -242,3 +242,65 @@ Nenhum achado novo. `deep-read-log.json` atualizado. Próxima rodada:
 `square/wire` (wire-runtime — desserialização de protobuf não confiável é
 a superfície mais promissora ainda não lida) ou os SDKs iOS (Afterpay/Cash
 App Pay).
+
+---
+
+## Rodada (2026-08-29, disparada por push no repo)
+
+Fila sem itens `pending` no início desta rodada — nenhuma revisão de
+veredito necessária.
+
+Leitura profunda: `mcp__github__search_code` não retornou nada para os
+repos externos (o servidor GitHub MCP desta sessão está escopado só a
+`Genezera/ZeroToOne` — buscas com `repo:` para outro dono/repo voltam
+vazias, não é ausência real de arquivos). Troquei para clone raso local
+(`git clone --depth 1`, sem conta) de `cashapp/hermit` e
+`cashapp/cash-app-pay-ios-sdk`, os dois alvos do programa ainda com menos
+cobertura de leitura profunda. `afterpay/sdk-ios` também foi clonado mas
+não tinha candidato melhor que os mocks de teste (`URLSessionMock.swift`),
+então não entrou nesta rodada.
+
+4 arquivos lidos por completo (3 em `hermit` + 1 em `cash-app-pay-ios-sdk`,
+`hermit` e `wire` não têm nenhum arquivo com auth/session/crypto/token/
+login/password/admin/permission/access no nome, então a triagem foi por
+julgamento de especialista sobre o fluxo mais sensível de cada repo):
+
+- `hermit/redact/redact.go` — tipos `Secret`/`URL`/`Plain` para valores
+  sensíveis (tokens, credenciais em URL) que exibem `[redacted]` por
+  padrão e só revelam o valor real via `.Reveal()` explícito. Design
+  correto: o `String()`/`GoString()` (usado por logging/`%v`/`%s`
+  implícito) nunca vaza o segredo por acidente; só quem chama `.Reveal()`
+  de propósito vê o valor cru.
+- `hermit/github/api.go` + `hermit/github/http.go` — cliente HTTP da
+  GitHub API do Hermit. `TokenAuthenticatedTransport.RoundTrip` só injeta
+  o header `Authorization: token ...` quando `req.URL.Host` é
+  exatamente `github.com` ou `api.github.com` (http.go:28). Isso importa
+  porque `Client.Download`/`Client.ETag` seguem redirects do
+  `http.Client` para baixar assets de release — e assets de release do
+  GitHub tipicamente redirecionam para um host de terceiros
+  (`objects.githubusercontent.com`, URL pré-assinada, sem necessidade de
+  token). Como o `net/http` chama `RoundTrip` de novo pra cada request da
+  cadeia de redirect com a URL nova, o check de host evita que o token do
+  usuário vaze pro host de terceiro no redirect — é exatamente o tipo de
+  bug (token leak via redirect) que uma ferramenta CLI descuidada
+  cometeria, e aqui está tratado corretamente. Não é uma vulnerabilidade,
+  é o oposto — mas valia a pena verificar porque o padrão "client GitHub +
+  segue redirect de asset" é uma classe de bug real em ferramentas
+  parecidas.
+- `cash-app-pay-ios-sdk/Sources/PayKit/CashAppPay.swift` — fachada pública
+  do SDK iOS (equivalente ao `CashAppPayImpl.kt` do Android já lido).
+  É um coordenador fino que delega pra `StateMachine`/`NetworkManager`;
+  `authorizeCustomerRequest` decide entre `.redirecting` (reusar auth flow
+  existente) e `.refreshing` (buscar novo) checando
+  `authFlowTriggers?.isExpired()` — mesma lógica client-side de UX que já
+  foi validada no lado Android, a decisão de autorização real acontece no
+  backend, não aqui. Sem lógica de segurança nova pra auditar neste
+  arquivo; os arquivos que fariam a comparação completa com o Android
+  (`NetworkManager.swift`, `StateMachine.swift`) ficam para a próxima
+  rodada.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (chaves novas:
+`cashapp/hermit`, `cashapp/cash-app-pay-ios-sdk`). Próxima rodada:
+`NetworkManager.swift`/`StateMachine.swift` do `cash-app-pay-ios-sdk`
+(comparar com o fluxo Android já auditado) ou `square/wire`
+(desserialização de protobuf, ainda não coberta).
