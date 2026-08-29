@@ -1075,3 +1075,44 @@ normal. `deep-read-log.json` atualizado com os 3 arquivos acima. Sugestão
 pra próxima rodada: `misk-jdbc/JDBCSession.kt`/`misk-jdbc/Session.kt` (ainda
 não cobertos, mesma superfície JDBC das migrações já auditadas) ou
 `square/wire` (`wire-schema/`/`wire-compiler/`, ainda intocado).
+
+## Rodada 2026-08-29 (push automático, 2ª leitura do dia) — fila vazia, leitura profunda em misk-crypto/pgp + KMS wiring
+
+`queue.jsonl` seguia sem itens `pending` (33 revisados, 0 pendentes) —
+mesmo estado da rodada anterior no mesmo dia. Clone raso de `cashapp/misk`
+pra achar arquivo com auth/crypto/token/admin/permission/access no nome
+ainda fora de `deep-read-log.json`, restrito aos `pathPrefixes` do alvo
+(`misk/`, `misk-core/`, `misk-crypto/`, `misk-inject/`, `misk-hibernate/`,
+`misk-jdbc/` — `misk-admin/`, `misk-tokens/`, `misk-mcp/`, `misk-redis/` e
+`wisp/` ficaram de fora por não estarem no escopo declarado do alvo,
+mesmo aparecendo no grep de nome de arquivo).
+
+3 arquivos lidos por completo (todos em `misk-crypto/`, nunca lidos antes):
+- `pgp/RealPgpEncrypter.kt` — implementação de `PgpEncrypter` via
+  Bouncy Castle. Critiquei a escolha de cifra: usa `PGPEncryptedData.CAST5`
+  (bloco de 64 bits, cifra datada mas ainda é o *default* histórico do
+  padrão OpenPGP/RFC 4880, não uma escolha custom fraca desta lib) com
+  `SecureRandom` de verdade e chave de sessão gerada internamente pelo
+  Bouncy Castle por mensagem (não há reuso de IV/chave visível — a API do
+  BC não expõe controle de IV aqui). `setWithIntegrityPacket(true)` está
+  ligado (protege contra maleabilidade). Não é uma escolha ideal (RFC 4880bis
+  recomenda AES), mas é uma limitação de biblioteca/protocolo padrão, não um
+  bug introduzido por este arquivo — mesmo racional do achado anterior
+  (`SecretColumnType.kt`, sem AAD contextual): nota de hardening, não
+  candidato.
+- `pgp/PgpEncoder.kt` — só as interfaces `PgpEncrypter`/`PgpDecrypter` com
+  KDoc; zero lógica.
+- `KmsClientModule.kt` — módulos Guice finos (`AwsKmsClientModule`,
+  `GcpKmsClientModule`) que só repassam `credentialsPath` (ou usam
+  credenciais default do ambiente) pro construtor do `KmsClient` do Tink.
+  Nenhuma lógica de validação/comparação própria pra auditar; delega tudo
+  pro SDK oficial da nuvem/Tink.
+
+Nenhum achado novo nesta rodada — resultado normal, dois arquivos eram
+puramente estruturais (interface/módulo Guice) e o terceiro (`RealPgpEncrypter`)
+tem uma escolha de algoritmo datada mas não uma falha de lógica introduzida
+pelo código. `deep-read-log.json` atualizado com os 3 arquivos acima
+(total agora: 43 arquivos lidos em `cashapp/misk`). Sugestão pra próxima
+rodada, ainda de pé: `misk-jdbc/JDBCSession.kt`/`misk-jdbc/Session.kt`
+(nunca lidos) ou expandir pra `square/wire` (`wire-schema/`/
+`wire-compiler/`, ainda intocado, mesmo pathPrefix já autorizado no alvo).

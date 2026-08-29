@@ -44,7 +44,10 @@
     "misk-admin/src/main/kotlin/misk/web/metadata/config/ConfigDashboardTabModule.kt",
     "misk-hibernate/src/main/kotlin/misk/hibernate/SecretColumnType.kt",
     "misk-hibernate/src/main/kotlin/misk/hibernate/SecretColumn.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/internal/KeyProviders.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/internal/KeyProviders.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/RealPgpEncrypter.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/PgpEncoder.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KmsClientModule.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
