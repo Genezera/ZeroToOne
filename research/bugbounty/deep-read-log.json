@@ -7,12 +7,55 @@
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
     "misk/src/main/kotlin/misk/security/authz/MiskCallerAuthenticator.kt",
-    "misk-crypto/src/main/kotlin/misk/crypto/CiphertextFormat.kt"
+    "misk-crypto/src/main/kotlin/misk/crypto/CiphertextFormat.kt",
+    "misk/src/main/kotlin/misk/security/authz/AccessAnnotationEntry.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/pgp/RealPgpDecrypter.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KeyManager.kt",
+    "misk/src/main/kotlin/misk/security/authz/AccessControlModule.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/KeyResolver.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/ExternalKeyResolver.kt",
+    "misk-crypto/src/main/kotlin/misk/crypto/LocalConfigKeyResolver.kt",
+    "misk/src/main/kotlin/misk/security/csp/ContentSecurityPolicyInterceptor.kt",
+    "misk/src/main/kotlin/misk/security/cert/X509CertificateExtensions.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
     "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringClearTextAdapter.kt",
     "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
-    "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt"
+    "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt",
+    "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt"
+  ],
+  "cashapp/hermit": [
+    "redact/redact.go",
+    "github/api.go",
+    "github/http.go"
+  ],
+  "cashapp/cash-app-pay-ios-sdk": [
+    "Sources/PayKit/CashAppPay.swift",
+    "Sources/PayKit/NetworkManager.swift",
+    "Sources/PayKit/StateMachine.swift"
+  ],
+  "square/wire": [
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/AnyMessage.kt",
+    "wire-runtime/src/commonMain/kotlin/com/squareup/wire/internal/RuntimeMessageAdapter.kt"
+  ],
+  "afterpay/sdk-android": [
+    "afterpay/src/main/kotlin/com/afterpay/android/cashapp/AfterpayCashAppJwt.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/WebView.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV2Activity.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutActivity.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/view/AfterpayCheckoutV3Activity.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutMessage.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/internal/AfterpayCheckoutCompletion.kt",
+    "afterpay/src/main/kotlin/com/afterpay/android/model/CheckoutV3Tokens.kt"
+  ],
+  "afterpay/sdk-ios": [
+    "Sources/Afterpay/Helpers/JWT.swift",
+    "Sources/Afterpay/CashApp/CashAppSigningResponse.swift",
+    "Sources/Afterpay/CashApp/CashAppPayCheckout.swift",
+    "Sources/Afterpay/Checkout/CheckoutV2Message.swift",
+    "Sources/Afterpay/Checkout/CheckoutWebViewController.swift",
+    "Sources/Afterpay/Checkout/CheckoutHost.swift"
   ]
 }
