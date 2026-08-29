@@ -1396,3 +1396,33 @@ usuário/build) adicionam alguma sanitização própria antes de chamar
 `SchemaLoader.initRoots` que eu não tenha visto ainda restrito a
 `wire-schema/` — isso mudaria a avaliação de confiança pra cima ou pra
 baixo dependendo do que existir lá.
+
+## Rodada — fila vazia, leitura profunda em cash-app-pay-android-sdk, hermit e cash-app-pay-ios-sdk (2026-08-29)
+`queue.jsonl` não tinha nenhum item `pending` nesta rodada (35/35 já
+revisados). Leitura profunda proativa: nenhum arquivo com auth/session/
+crypto/token/login/password/admin/permission/access no nome ficou sem ler
+nos alvos JVM/Swift/Go do programa que ainda tinham poucos arquivos no log
+(`cash-app-pay-android-sdk`, `cash-app-pay-ios-sdk`, `hermit` — todos com
+5 ou menos arquivos lidos até aqui). Ampliei o critério para os arquivos
+centrais de rede/autenticação restantes desses mesmos alvos:
+
+1. `cash-app-pay-android-sdk/core/.../impl/NetworkManagerImpl.kt` —
+   implementação real do `NetworkManager` (a interface já tinha sido lida
+   antes). Monta `Authorization: Client $clientId` (o client ID do
+   integrador, não é segredo de sessão) em toda chamada; sem interpolação
+   de dado de usuário na URL além de `requestId` vindo da própria resposta
+   do servidor CashApp. Sem achado.
+2. `hermit/cache/github.go` — caminho de download de release privado do
+   GitHub via cliente autenticado (`ghclient`). Owner/repo/tag/asset vêm
+   de um regex que só casa `https://github.com/...`; a chamada real usa a
+   API oficial do GitHub (já confirmado em `github/api.go`, lido em rodada
+   anterior), não construção de URL livre — sem SSRF óbvio. Sem achado.
+3. `cash-app-pay-ios-sdk/Sources/PayKit/Services/Networking/RESTService.swift`
+   — camada de retry sobre `URLSession`, sem lógica de auth própria (o
+   header de auth é montado em `NetworkManager.swift`, já lido). Sem
+   achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos novos (append). Nenhuma
+entrada nova em `queue.jsonl` — nada suspeito o bastante para justificar
+`ai_deep_read_finding` nesta rodada. Resultado normal (a maioria das
+rodadas não acha nada).

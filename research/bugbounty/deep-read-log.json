@@ -63,19 +63,22 @@
     "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringClearTextAdapter.kt",
     "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
     "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt",
-    "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt"
+    "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt",
+    "core/src/main/java/app/cash/paykit/core/impl/NetworkManagerImpl.kt"
   ],
   "cashapp/hermit": [
     "redact/redact.go",
     "github/api.go",
     "github/http.go",
     "util/url.go",
-    "github/url.go"
+    "github/url.go",
+    "cache/github.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
     "Sources/PayKit/NetworkManager.swift",
-    "Sources/PayKit/StateMachine.swift"
+    "Sources/PayKit/StateMachine.swift",
+    "Sources/PayKit/Services/Networking/RESTService.swift"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
