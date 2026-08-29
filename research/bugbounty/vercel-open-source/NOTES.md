@@ -169,3 +169,22 @@ overrides.ts` (decripta o cookie de override de flags via
 lógica de confiança implícita no valor do cookie antes da decriptação
 autenticada). Nenhum achado. `deep-read-log.json` atualizado com os 2
 arquivos novos.
+
+## Rodada 2026-08-29 (push automático seguinte) — 2 arquivos triviais, sem achado
+
+Fila sem `pending`. Completando o orçamento de leitura profunda desta
+rodada (o 3º arquivo foi em Circle BBP, ver NOTES.md correspondente),
+li 2 arquivos pequenos ainda não cobertos:
+- `packages/vercel-flags-core/src/utils/sdk-keys.ts` — regex simples de
+  formato de SDK key (`^vf_(?:server|client)_`) e um parser de connection
+  string. `isValidSdkKey` não é chamada em nenhum outro lugar do repo
+  (aparenta ser vestigial/só pra uso externo do pacote);
+  `parseSdkKeyFromFlagsConnectionString` (usada em `auth.ts`, já auditado)
+  só extrai a substring — a validação real da key acontece no backend
+  quando ela é de fato usada como credencial, não aqui. Sem lógica de
+  autorização neste arquivo, nada a auditar além do parsing.
+- `packages/flags/src/spec-extension/cookies.ts` — re-export puro de
+  `@edge-runtime/cookies` (`RequestCookies`/`ResponseCookies`/
+  `stringifyCookie`), zero código próprio.
+
+Nenhum achado novo. `deep-read-log.json` atualizado com os 2 arquivos.

@@ -9,7 +9,9 @@
     "packages/flags/src/lib/verify-access.ts",
     "packages/flags/src/lib/crypto.ts",
     "packages/flags/src/next/create-flags-discovery-endpoint.ts",
-    "packages/flags/src/next/overrides.ts"
+    "packages/flags/src/next/overrides.ts",
+    "packages/vercel-flags-core/src/utils/sdk-keys.ts",
+    "packages/flags/src/spec-extension/cookies.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -165,7 +167,8 @@
     "src/msca/6900/v0.7/account/semi/SingleOwnerMSCA.sol",
     "src/account/v1/ECDSAAccount.sol",
     "src/msca/6900/v0.7/account/BaseMSCA.sol",
-    "src/msca/6900/v0.7/managers/PluginExecutor.sol"
+    "src/msca/6900/v0.7/managers/PluginExecutor.sol",
+    "src/msca/6900/v0.7/managers/PluginManager.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

@@ -773,3 +773,39 @@ referência ERC-6900 já visto nos outros contratos deste repo
 (`SingleOwnerMSCA`, `SponsorPaymaster`, etc.) — controle de acesso via
 `msg.sender` direto em todos os pontos checados, sem inconsistência entre
 checagem e efeito. `deep-read-log.json` atualizado com os 3 arquivos.
+
+## Rodada 2026-08-29 (push automático seguinte) — fila vazia, fechando o ponto em aberto de `PluginManager.sol`
+
+`queue.jsonl` sem `pending`. Li `buidl-wallet-contracts/src/msca/6900/
+v0.7/managers/PluginManager.sol` (nunca lido isoladamente antes),
+justamente pra fechar o ponto que a rodada anterior deixou em aberto:
+"`uninstallPlugin` de fato limpa `permittedPluginCalls`/
+`permittedExternalCalls` ao desinstalar?".
+
+Confirmado que sim: `uninstall()` reconstrói o `pluginManifest` (do
+parâmetro `config` ou, se vazio, chamando `IPlugin(plugin).pluginManifest()`
+de novo) e primeiro valida que `keccak256(abi.encode(pluginManifest))`
+bate com o hash gravado no install — ou seja, não dá pra passar um
+manifest diferente/menor pra escapar de limpar alguma permissão que foi
+concedida de fato. Com o hash validado, o loop de uninstall zera
+`permittedPluginCalls[plugin][selector]` pra cada seletor do manifest e
+`permittedExternalCalls[plugin][addr].addressPermitted`/`.anySelector`/
+`.selectors[...]` pra cada external call permitido, espelhando exatamente
+o que o `install()` setou. Sem gap — ponto fechado, sem achado.
+
+`install()`/`uninstall()` em si só têm o modifier `onlyDelegated` (exige
+`address(this) != SELF`, i.e., só roda via delegatecall a partir da conta,
+nunca chamando a lib diretamente) — a autorização de QUEM pode disparar
+esse delegatecall (dono/self) já tinha sido validada em rodada anterior
+dentro de `BaseMSCA`/`SingleOwnerMSCA` (`_authenticateAndAuthorizeUserOp`,
+`onlyFromEntryPointOrSelf`), então a cadeia de autorização completa (quem
+pode instalar/desinstalar → o que fica limpo ao desinstalar) está fechada
+sem lacuna encontrada.
+
+Também li, no mesmo orçamento de 3 arquivos, dois pontos de
+`vercel/flags` sem relação com este programa (`sdk-keys.ts` — só parsing
+de string, `isValidSdkKey` nem é usado em lugar nenhum além da própria
+função irmã; `spec-extension/cookies.ts` — re-export puro de
+`@edge-runtime/cookies`, zero lógica própria); ver NOTES.md do Vercel
+Open Source. `deep-read-log.json` atualizado com o arquivo de
+`buidl-wallet-contracts`. Nenhum item novo na fila — resultado normal.
