@@ -18,12 +18,20 @@ enviar, confira:
       encontrados no repositório no momento desta varredura — ver seção
       de checagem de duplicata abaixo)
 
-**Estado no sistema: `scope_verified`** (grau de evidência E3 —
-reprodução determinística local real, ver seção de PoC). Deployment
-evidence com confidence **"low"** — ver seção "Ativo afetado" — sem
-confirmação de uma instância específica de validador Arc Chain em
-produção agora, mas o comportamento vulnerável é o default do software
-real publicado.
+**Estado no sistema: `human_ready`** (grau de evidência E3 — reprodução
+determinística local real, ver seção de PoC). Deployment evidence com
+confidence **"medium"** — ver seção "Ativo afetado".
+
+**⏱ URGÊNCIA REAL:** Arc Chain está em mainnet PRIVADA agora (100+
+builders institucionais/ecossistema onboardados), com mainnet PÚBLICA
+confirmada para **16 de setembro de 2026** (~2 semanas a partir desta
+varredura). Validadores fundadores anunciados publicamente:
+**BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE,
+MoneyGram, SBI Group, Sumitomo** (fonte: circle.com/pressroom,
+30/08/2026). Isso não é infraestrutura hipotética — é o software que
+provavelmente protege chaves de validador de instituições financeiras
+reais agora, com a janela até o lançamento público encolhendo. Vale
+priorizar a revisão e o envio deste relatório.
 
 ---
 
@@ -60,10 +68,15 @@ mensagens de consenso com a chave privada do validador Arc Chain.
   usa exatamente essa configuração insegura por padrão — endpoint
   `http://0.0.0.0:10340` (HTTP puro, não HTTPS) e `enable_tls: false` —
   evidência de que a postura vulnerável é o comportamento padrão do
-  software real, não uma configuração exótica. **Confidence: low** —
-  não há confirmação de uma instância específica de validador Arc Chain
-  rodando isso em produção agora (a rede pode ainda não estar em
-  mainnet); confirme isso manualmente antes de enviar.
+  software real, não uma configuração exótica. Arc Chain está em
+  mainnet **privada agora** (100+ builders institucionais) com mainnet
+  **pública em 16/09/2026** — validadores fundadores anunciados
+  publicamente: BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard
+  Chartered, ICE, MoneyGram, SBI Group, Sumitomo
+  (circle.com/pressroom, 30/08/2026). **Confidence: medium** — evidência
+  forte e datada de que a rede está ativa com validadores reais, mas sem
+  confirmação de IP/instância específica rodando este software agora;
+  confirme isso manualmente antes de enviar.
 
 ## Resumo
 `arc-remote-signer` é um sidecar de assinatura remota para o validador
@@ -127,6 +140,17 @@ slashing, sem precisar comprometer a enclave em si.
    — mesmo que o transporte fosse autenticado, a interface já abre mão
    da garantia de domínio que o próprio ecossistema documenta como
    necessária para chaves de validador.
+9. `docs/architecture.md`, seção "Security Model" (lida por completo):
+   documenta em detalhe a proteção da CHAVE (isolamento de hardware,
+   criptografia envelope, KMS vinculado a attestation via PCR) — a
+   palavra "authenticate"/"authorization" tem ZERO ocorrências no
+   documento inteiro. Confirma que a ausência de autenticação no
+   request do `Sign()` não é uma decisão de design documentada como
+   aceitável (diferente de casos já fechados nesta mesma missão onde um
+   audit público documentava explicitamente um comportamento equivalente
+   como intencional) — é um ponto cego real do threat model do projeto:
+   protege a chave de quem tem acesso ao host, nunca discute quem pode
+   PEDIR uma assinatura pela rede.
 
 ## Pré-requisitos
 Nenhuma credencial de usuário real. Para reproduzir: acesso de rede à

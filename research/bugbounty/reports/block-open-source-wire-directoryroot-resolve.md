@@ -13,14 +13,16 @@ enviar, confira:
 - [ ] Não é duplicata — checado contra relatórios já enviados por você
       a este programa
 
-**Estado no sistema: `scope_verified`** (grau de evidência E3 — reprodução
+**Estado no sistema: `human_ready`** (grau de evidência E3 — reprodução
 determinística local real, ver seção de PoC abaixo). Checagem de
-duplicata feita contra advisories/issues públicos do `square/wire`
-(nenhum cobrindo este caminho específico — ver seção "Cadeia de chamada
-confirmada", item de atualização). **Confirme manualmente a elegibilidade
-de recompensa na página real do Bugcrowd antes de enviar** — o dataset
-usado pra escopo não expõe essa informação por ativo para este programa
-(confidence "low", diferente dos achados HackerOne).
+duplicata feita e refeita 2x contra advisories/issues públicos do
+`square/wire` (nenhum cobrindo este caminho específico — ver seção
+"Cadeia de chamada confirmada", itens de atualização). **Confirme
+manualmente a elegibilidade de recompensa na página real do Bugcrowd
+antes de enviar** — o dataset usado pra escopo não expõe essa informação
+por ativo para este programa (confidence "low", diferente dos achados
+HackerOne). Scope snapshot confirmado válido em 30/08/2026 (expira
+13/09/2026, reconfirme se enviar depois dessa data).
 
 ---
 
@@ -215,7 +217,17 @@ build/CI. O vetor de entrada mais realista é uma dependência de schema de
 terceiro (vendor, parceiro, pacote de schema compartilhado) cujo conteúdo
 não é fully trusted pelo time que roda o Wire — cenário coberto pelo
 próprio design do `protoPath` do Wire (compilar tipos que vêm de uma
-biblioteca `.proto` que você não escreveu).
+biblioteca `.proto` que você não escreveu). **Confirmado na documentação
+oficial do Wire** (`docs/wire_compiler.md`, seção "Proto Path for
+Libraries"): o exemplo canônico de uso do `protoPath` é
+`srcJar 'com.example:countries:1.0.0'` — uma **coordenada Maven**. Ou
+seja, popular `protoPath` com um `.jar` resolvido de um repositório
+Maven (Maven Central ou um artifact repo privado) é o jeito
+DOCUMENTADO e padrão de usar essa feature — não uma configuração exótica
+que só valeria em teoria. Qualquer projeto seguindo esse exemplo oficial
+está, por desenho, compilando `.proto` que chegaram via uma dependência
+de terceiro, com a mesma superfície de confiança de qualquer dependência
+Maven transitiva.
 
 ## Prova de conceito executável
 Programa Java mínimo usando o JAR real de `okio-jvm` 3.12.0 (baixado do
@@ -307,7 +319,8 @@ Essa é uma mudança pequena e localizada — não exige alterar a API pública
 de `Loader`/`SchemaLoader`.
 
 ---
-*Gerado automaticamente em 2026-08-29T06:20:00.000Z a partir do achado
+*Gerado a partir do achado
 `Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::DirectoryRoot.resolve::path_traversal_risk`
-na fila (`research/bugbounty/queue.jsonl`). Ver histórico completo do
-veredito em `ledger/ledger.research.jsonl`.*
+na fila (`research/bugbounty/queue.jsonl`), atualizado pela última vez
+em 30/08/2026. Ver histórico completo do veredito em
+`ledger/ledger.research.jsonl`.*
