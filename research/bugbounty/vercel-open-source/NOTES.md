@@ -691,3 +691,47 @@ só 3 arquivos cobertos até agora) valeria continuar por
 middleware runtime (`packages/next/src/server/next-server.ts` /
 `packages/next/src/build/webpack/loaders/next-middleware-loader.ts`)
 em rodadas futuras.
+
+## Rodada 2026-08-30 (push automático seguinte) — verificação direcionada da classe CVE-2025-29927 (bypass de middleware), sem achado
+
+Fila vazia (`list-pending` retornou `[]`; os 4 achados `corroborated_static`
+de rodadas anteriores continuam corretamente travados nesse estado — a
+máquina de estados não tem transição direta `corroborated_static→
+scope_verified`, confirmado lendo `state-machine.mjs` diretamente nesta
+rodada, mesma conclusão já documentada). Continuando a sugestão pendente em
+`vercel/next.js`, mas com objetivo específico em vez de leitura sequencial:
+esse repo teve um CVE real e conhecido publicamente (bypass de middleware via
+o header `x-middleware-subrequest` controlável pelo cliente, permitindo pular
+middleware de auth) — vale checar deliberadamente se a classe voltou a
+aparecer no código atual, não só ler arquivos por nome.
+
+Buscados via `raw.githubusercontent.com` (branch `canary`, sem clone
+completo — repo grande demais): `packages/next/src/server/next-server.ts`,
+`packages/next/src/server/lib/router-utils/resolve-routes.ts` e
+`packages/next/src/server/web/spec-extension/adapters/next-request.ts`.
+`grep` por `x-middleware-subrequest`/`x-middleware` confirma que o header
+**não é mais lido do request do cliente** para decidir se o middleware deve
+rodar: `handleCatchallMiddlewareRequest` (`next-server.ts:1897`) decide via
+`getRequestMeta(req, 'middlewareInvoke')`, que é metadado interno setado
+pelo próprio server-side router (`addRequestMeta`), nunca por um header HTTP
+que o cliente controla — consistente com a correção pública documentada para
+aquele CVE (a versão vulnerável antiga confiava diretamente no header do
+cliente). `resolve-routes.ts` usa `x-middleware-*` só como *headers de
+resposta* que o próprio middleware do usuário pode setar (`rewrite`/
+`redirect`/`refresh`/`set-cookie`), não como sinal de controle vindo do
+cliente. `next-request.ts` só adapta `NodeNextRequest`/`WebNextRequest` para
+`NextRequest`, repassando headers sem lógica de auth própria (filtragem, se
+existir, é responsabilidade de código mais acima, já lido). **Sem achado** —
+checagem negativa direcionada, não leitura genérica: confirma que a classe
+de vulnerabilidade específica não está presente na versão atual do código.
+
+`deep-read-log.json` atualizado (`vercel/next.js` ganhou os 3 arquivos,
+total agora 6). Repos ainda intocados continuam os mesmos da rodada
+anterior: `vercel/turborepo`, `vercel/ai`, `vercel/swr`, `vercel/eve`,
+`vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`, `nuxt/nuxt`,
+`sveltejs/svelte`, `vercel-labs/agent-skills`. Dentro de `vercel/next.js`
+ainda falta a maior parte do repo (middleware loader de build,
+`app-render` fora de encryption, roteamento de app router, etc.) —
+próxima rodada pode continuar por `packages/next/src/build/webpack/
+loaders/next-middleware-loader.ts` (fila de build do middleware, ainda
+não lido) ou trocar de repo pra `vercel/turborepo` (nunca tocado).

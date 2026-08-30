@@ -316,6 +316,9 @@
   "vercel/next.js": [
     "packages/next/src/server/app-render/encryption.ts",
     "packages/next/src/server/app-render/encryption-utils.ts",
-    "packages/next/src/server/app-render/encryption-utils-server.ts"
+    "packages/next/src/server/app-render/encryption-utils-server.ts",
+    "packages/next/src/server/next-server.ts",
+    "packages/next/src/server/lib/router-utils/resolve-routes.ts",
+    "packages/next/src/server/web/spec-extension/adapters/next-request.ts"
   ]
 }
