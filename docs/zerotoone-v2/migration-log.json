@@ -1,7 +1,18 @@
 {
-  "migratedAt": "2026-08-30T16:54:46.704Z",
+  "migratedAt": "2026-08-30T21:32:28.287Z",
   "total": 43,
   "logs": [
+    {
+      "id": "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "human_ready",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "human_ready"
+    },
     {
       "id": "Circle BBP::circlefin/aptos-cctp/packages/token_messenger_minter_v2/sources/token_messenger_minter.move::prepare_mint_complete_mint::ai_deep_read_finding",
       "steps": [
@@ -26,17 +37,6 @@
     },
     {
       "id": "Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "corroborated_static",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "corroborated_static"
-    },
-    {
-      "id": "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding",
       "steps": [
         {
           "to": "corroborated_static",
