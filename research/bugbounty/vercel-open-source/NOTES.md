@@ -377,3 +377,60 @@ sandbox VM — arquivo grande, ler em partes) e/ou
 `packages/world-vercel/src/encryption.ts` (par do `encryption.ts` já lido,
 mas do lado do backend de produção Vercel) — ambos ainda intocados neste
 repo tier 1.
+
+## Rodada 2026-08-30 (leitura profunda proativa, continuação)
+
+Fila `list-pending` vazia de novo. Segui a sugestão da rodada anterior.
+Clonado `vercel/workflow` fresco via `git clone --depth 1` (público, sem
+conta/token) no scratchpad.
+
+- `packages/world-vercel/src/encryption.ts` (232 linhas, completo) — par
+  server-side do `packages/core/src/encryption.ts` já revisado. Deriva a
+  chave por-run via HKDF-SHA256 (`webcrypto.subtle`, salt zero + `info =
+  projectId|runId`, aceitável per RFC 5869 §3.1 dado que a
+  `VERCEL_DEPLOYMENT_KEY` de entrada já tem entropia alta). Dois caminhos:
+  (1) dentro do runtime serverless (`VERCEL=1`) com a run pertencendo à
+  deployment local, deriva localmente; (2) qualquer outro caso (CLI, e2e,
+  cross-deployment) busca a chave já derivada via API
+  `api.vercel.com/v1/workflow/run-key/:deploymentId`, autenticada por
+  token explícito → `VERCEL_TOKEN` → OIDC (nessa ordem,
+  `resolveVercelApiToken`), nunca expondo a deployment key crua fora do
+  boundary da API. Investiguei com ceticismo o branch
+  `!deploymentId || deploymentId === process.env.VERCEL_DEPLOYMENT_ID` →
+  usa chave local mesmo quando `deploymentId` vem `undefined`: isso não é
+  bypass de autorização por si só (a função é um helper interno de
+  derivação de chave, não um endpoint exposto — quem quer que a chame já
+  precisa ter acesso ao `runId`/contexto da run; a superfície de auth real
+  é de quem invoca esta função, fora deste arquivo). Sem achado.
+- `packages/core/src/runtime/quickjs-runtime.ts` (2816 linhas — não é
+  viável ler linha a linha numa rodada; li com grep direcionado +
+  Read nas seções relevantes: bootstrap de globals injetado na VM
+  (L250-1050), criação da VM e host-bridge (`vm.newFunction`/`vm.setProp`,
+  L1200-1350), e a bomba de mensagens/resolvers que processa steps/hooks
+  pendentes (L1600-2800)). Ponto que investiguei especificamente por
+  suspeita de injeção: vários `vm.evalCode(...)` fazem interpolação de
+  template string com `${cidJs}` (o correlationId) — confirmei que
+  `cidJs = JSON.stringify(cid)` (linha 1865), então é serialização segura
+  como literal JS, não concatenação crua — sem injeção. Busquei também
+  qualquer exposição direta de `fs`/`child_process`/`net`/`http` ao
+  bootstrap da VM (`grep` por essas APIs no arquivo inteiro) — zero
+  ocorrências: a única ponte host↔VM é via fila de correlationId
+  (`__pending`/`__resolvers`), nunca uma referência direta a uma função ou
+  objeto Node real, o que é o desenho correto pra evitar vazamento de
+  capability. `Math.random`/`__generateNanoid`/`__generateUlid` são
+  sobrescritos por funções host determinísticas (replay), consistente com
+  a arquitetura documentada. Cobertura parcial apenas — arquivo grande
+  demais pra fechar nesta rodada; fica pendência pra rodada futura cobrir
+  o restante (particularmente L1350-1600, ainda não lida).
+- `packages/world-vercel/src/http-core.ts` (658 linhas, li L1-390 —
+  a metade relevante a auth/erro/OTEL) — `resolveVercelApiToken` segue a
+  mesma ordem de precedência de token documentada no `encryption.ts`
+  (explícito → `VERCEL_TOKEN` → OIDC via `@vercel/oidc`, pacote externo
+  fora do escopo desta leitura). `parseServer`/`httpClientSpanAttributes`
+  são helpers de observabilidade sem superfície de auth. Sem achado.
+
+Nenhum achado novo nesta rodada. Nenhum item chegou perto de virar
+finding (nada digno de `upsert-finding`). `deep-read-log.json` atualizado.
+Sugestão pra próxima rodada: fechar `quickjs-runtime.ts` (L1350-1600 e
+L2450+ ainda não lidas) e considerar `packages/world-vercel/src/utils.ts`
+(usa `getVercelOidcToken` diretamente, ainda intocado).
