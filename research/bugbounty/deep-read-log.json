@@ -396,7 +396,11 @@
     "packages/components/src/blocklistable/blocklistable.cairo"
   ],
   "circlefin/stablecoin-xlm": [
-    "soroban/contracts/fiat-token-admin/src/blocklistable.rs"
+    "soroban/contracts/fiat-token-admin/src/blocklistable.rs",
+    "soroban/packages/common-roles/src/ownable/mod.rs",
+    "soroban/packages/common-roles/src/ownable/storage.rs",
+    "soroban/packages/common-roles/src/manageable/mod.rs",
+    "soroban/contracts/fiat-token-admin/src/contract.rs"
   ],
   "circlefin/sui-cctp": [
     "packages/message_transmitter/sources/auth.move",

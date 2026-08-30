@@ -2411,3 +2411,32 @@ ausência de mTLS no `arc-remote-signer`; nenhum achado adicional).
 `deep-read-log.json` atualizado (`circlefin/arc-remote-signer` +3,
 `circlefin/arc-node` +2). Nenhum item novo na fila; nenhum item
 elegível pra relatório nesta rodada.
+
+## Rodada 30/08/2026 (push automático, sem candidatos na fila)
+
+`list-pending` vazio no início da rodada. Os dois findings em
+`corroborated_static` (`solana-gateway-contracts::initiate_withdrawal`
+e o achado Vercel/`sso.ts`, este último de outro programa) já tinham
+verificação independente completa registrada nesta mesma data (mesmo
+timestamp `updatedAt`), sem nada novo pra investigar — mantidos como
+estão.
+
+Leitura profunda proativa em `circlefin/stablecoin-xlm` (contrato
+Soroban/Stellar `fiat-token-admin`, prioridade admin/access):
+`common-roles/src/ownable/mod.rs` + `.../ownable/storage.rs`
+(transfer de ownership em 2 passos, `expires_in_ledgers` convertido
+pra ledger absoluto via `checked_add` com `.expect()` no overflow —
+sem bug aparente), `common-roles/src/manageable/mod.rs` (mesmo padrão
+2-passos pro admin) e `contracts/fiat-token-admin/src/contract.rs`
+(wiring do contrato: `__constructor` usa exclusivamente os setters
+`*_unchecked`, como a doc exige; `swap_mint` faz
+`minter.require_auth()` + checa `authorized()` na SAC do
+`mint_asset` (gate de blocklist) + valida `amount > 0` + exige minter
+registrado via `configure_minter` antes de burn/mint; upgrade do
+contrato gated por `manageable::enforce_admin_auth`). Nenhuma
+inconsistência entre declaração de auth e uso encontrada — sem
+achado.
+
+`deep-read-log.json` atualizado (`circlefin/stablecoin-xlm` +4).
+Nenhum item novo na fila; nenhum item elegível pra relatório nesta
+rodada.
