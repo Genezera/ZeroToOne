@@ -422,5 +422,10 @@
   ],
   "circlefin/stablecoin-sui": [
     "packages/stablecoin/sources/treasury.move"
+  ],
+  "nitrojs/nitro": [
+    "src/runtime/internal/static.ts",
+    "src/build/virtual/public-assets.ts",
+    "src/runtime/internal/storage.ts"
   ]
 }

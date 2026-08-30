@@ -1068,3 +1068,44 @@ sem sinal concreto de problema.
 Repos do programa ainda totalmente intocados: `vercel/ms`,
 `vercel/async-sema`, `sveltejs/svelte`. Nenhum item
 elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (fila vazia, leitura profunda proativa) — nitrojs/nitro
+
+Fila de findings (`list-pending`) veio vazia nesta rodada, então segui
+direto pra leitura profunda proativa. `nitrojs/nitro` (o motor de
+servidor por trás do Nuxt, incluído no escopo do programa) nunca tinha
+sido lido pelo sistema. Busquei por nomes de arquivo com
+auth/session/token/admin/permission/access/cookie/csrf em todo
+`src/` — só achei `examples/middleware/server/middleware/auth.ts`
+(exemplo de documentação, não código de produção do framework, então
+não conta como leitura útil).
+
+Sem candidato óbvio de auth, apliquei julgamento de especialista: o
+padrão de vulnerabilidade mais valioso num motor de servidor estático é
+path traversal no serving de assets. Li os 3 arquivos que compõem esse
+fluxo real:
+
+- `src/runtime/internal/static.ts` — handler HTTP de `GET`/`HEAD` pra
+  assets públicos. Decodifica o path da URL (`decodePath`) e usa como
+  chave de lookup (`getAsset(id)`), nunca concatenado diretamente num
+  path de filesystem.
+- `src/build/virtual/public-assets.ts` — gera em BUILD TIME (não em
+  runtime) um dicionário fixo `assets[assetId] = {..., path: relative(...)}`
+  via glob sobre `publicDir`; o handler `readAsset(id)` do preset node
+  faz `resolve(serverDir, assets[id].path)` — mas `assets[id].path` vem
+  do dicionário pré-computado no build, nunca do `id` da request. Se o
+  `id` da request não bate com nenhuma chave do dicionário, `assets[id]`
+  é `undefined` e o `static.ts` já filtra isso antes de chamar
+  `readAsset` (linha `if (!asset) { ... return }`).
+- `src/runtime/internal/storage.ts` — wrapper trivial de `useStorage`/
+  `prefixStorage` (unstorage), sem exposição HTTP direta nesse arquivo;
+  não encontrei rota HTTP tipo devtools `/_storage` neste repo (deve
+  estar em pacote separado do monorepo Nitro, não presente aqui).
+
+Conclusão: mesmo padrão seguro de "lookup por chave num mapa
+pré-computado" já visto no achado do `nuxt/nuxt` (island hash) —
+o `id` vindo da request nunca chega a virar path de filesystem
+diretamente, só serve de chave de objeto. Sem achado, não virou
+candidate. `deep-read-log.json` atualizado (`nitrojs/nitro`, 3
+arquivos). Repos ainda intocados no programa: `vercel/ms`,
+`vercel/async-sema`, `sveltejs/svelte`, `vercel-labs/agent-skills`.
