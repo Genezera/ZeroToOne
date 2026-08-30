@@ -330,5 +330,17 @@
     "crates/turborepo-auth/src/auth/login.rs",
     "crates/turborepo-auth/src/auth/sso.rs",
     "crates/turborepo-auth/src/auth/logout.rs"
+  ],
+  "circlefin/solana-gateway-contracts": [
+    "programs/gateway-wallet/src/instructions/initiate_withdrawal.rs",
+    "programs/gateway-wallet/src/instructions/withdrawal.rs",
+    "programs/gateway-wallet/src/instructions/denylist.rs",
+    "programs/gateway-wallet/src/instructions/undenylist.rs",
+    "programs/gateway-wallet/src/instructions/deposit.rs",
+    "programs/gateway-wallet/src/instructions/deposit_for.rs",
+    "programs/gateway-wallet/src/instructions/add_delegate.rs",
+    "programs/gateway-wallet/src/instructions/remove_delegate.rs",
+    "programs/gateway-wallet/src/state.rs",
+    "programs/gateway-wallet/src/utils.rs"
   ]
 }

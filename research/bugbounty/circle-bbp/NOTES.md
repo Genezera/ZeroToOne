@@ -1528,3 +1528,42 @@ em `corroborated_static`), em vez de confiar só no grep amplo já feito:
 Nenhum achado novo nesta rodada — leitura de confirmação, não descoberta.
 `deep-read-log.json` atualizado (`circlefin/arc-remote-signer` ganhou os 3
 arquivos acima, total agora 10).
+
+## Rodada 2026-08-30 (push automático seguinte) — achado novo: mesmo gap de denylist do withdraw da EVM, replicado no Solana
+
+Fila `list-pending` vazia de novo. Leitura profunda proativa escolheu
+`circlefin/solana-gateway-contracts` (nunca lido antes — repo listado no
+scope do programa mas com zero entradas em `deep-read-log.json`), o
+irmão Solana/Anchor do `circlefin/evm-gateway-contracts`, especificamente
+o programa `gateway-wallet`. Motivação: o achado já `human_ready` na
+contraparte EVM (`Withdrawals.sol`, ausência da modifier `notDenylisted`
+em `initiateWithdrawal`/`withdraw`) é exatamente o tipo de gap que vale a
+pena checar se foi replicado no equivalente de outra chain do mesmo
+produto.
+
+Confirmado por leitura direta do código (não por analogia): `deposit.rs`,
+`deposit_for.rs`, `add_delegate.rs` e `remove_delegate.rs` carregam a PDA
+`depositor_denylist`/`delegate_denylist` (seeds `[DENYLIST_SEED, <pubkey>]`)
+e chamam `require!(!utils::is_account_denylisted(...))` antes de agir.
+`initiate_withdrawal.rs` (handler + `GatewayDeposit::initiate_withdrawal`
+em `state.rs`) e `withdrawal.rs` (handler + `GatewayDeposit::complete_withdrawal`
+em `state.rs`) **não declaram nem checam nenhuma conta de denylist** — só
+validam `!gateway_wallet.paused`, saldo suficiente e o delay de saque.
+Resultado: um depositor denylistado depois de já ter depositado ainda
+consegue `initiate_withdrawal` + `withdraw` o saldo integral — o denylist
+bloqueia novos depósitos/delegações mas não impede o saque do que já
+estava lá, mesmo bug de design da contraparte EVM, agora no programa
+Solana.
+
+Novo finding registrado: `Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding`,
+avançado para `corroborated_static` (reasoning + filesRead salvos, achado
+confirmado em código real). Teto estrutural: achado em Rust/Anchor, sem
+validador de PoC executável disponível no sistema hoje (só existe
+`foundry_poc` pra Solidity) — fica em `corroborated_static` sem tentar
+`reproduced_local`, mesmo padrão já usado para o achado Go do
+`arc-remote-signer`. Não avancei para `scope_verified`/relatório: exigiria
+vínculo de deploy real (endereço de programa on-chain confirmado) que não
+tenho evidência pra afirmar com confidence >= "low" nesta rodada.
+
+`deep-read-log.json` atualizado (`circlefin/solana-gateway-contracts`
+criado, 10 arquivos lidos nesta rodada).
