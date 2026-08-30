@@ -30,8 +30,8 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
+| ai_deep_read_finding | Circle BBP | confirmado | — |
 | ai_deep_read_finding | Circle BBP | falso_positivo | — |
 | ai_deep_read_finding | StackingDAO | falso_positivo | — |
 | ai_deep_read_finding | Vercel Open Source | confirmado | — |
-| ai_deep_read_finding | Circle BBP | confirmado | — |
 | ai_deep_read_finding | Circle BBP | confirmado | — |

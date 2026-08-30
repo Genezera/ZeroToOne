@@ -2212,3 +2212,36 @@ rodada: `stablecoin-sui`, `stablecoin-near`, `starknet-cctp` (só 1
 arquivo agora, resto do programa Anchor/Cairo ainda não coberto),
 `stellar-cctp`, `noble-cctp` (parcial), `evm-cpn-contracts` (parcial).
 Nenhum item elegível pra relatório nesta rodada.
+
+## PoC real montada (30/08/2026) — `arc-remote-signer::SignerService.Sign` chega a `human_ready`
+
+Diferente da avaliação anterior ("desproporção de esforço" pra montar o
+binário real com AWS KMS/Datadog/enclave), encontrei um caminho mais
+cirúrgico: em vez de rodar `app.Run()` completo, escrevi um teste Go
+dentro do próprio módulo (`internal/app/public/poc_unauth_test.go`, só
+local, nunca commitado no repo real) que chama a função de PRODUÇÃO
+REAL `public.New()` — a mesma construção de servidor gRPC exata, não
+reimplementada — com um `SignerServiceServer` mínimo no lugar do
+`signer.Service` real. Isso evita AWS KMS/Secrets Manager/Datadog/
+enclave por completo, porque nenhum deles faz parte do que o achado
+realmente afirma (ausência de interceptor de auth no SERVIDOR, não a
+lógica de assinatura em si).
+
+Toolchain: Go 1.27 (via winget) + `buf`/`protoc-gen-go`/
+`protoc-gen-go-grpc` (todos via `go install`, sem Docker/protoc nativo)
++ `buf generate` real contra o `.proto` do próprio repositório. Servidor
+real subiu num listener local efêmero, sem TLS (mesmo default de
+`configs/app.yaml`); cliente gRPC sem NENHUMA credencial chamou `Sign()`
+com sucesso — `go test` real, `PASS`, log da própria middleware de
+request confirmando `"status":"OK"`.
+
+Estado avançado: `corroborated_static` → `reproduced_local` (validação
+`go_grpc_poc`, `result=pass`) → `scope_verified` (escopo já confirmado
+antes; deployment evidence `confidence=low` — o cliente real
+`arc-node::RemoteSigningConfig::default()` usa exatamente essa config
+insegura por padrão, mas sem confirmação de uma instância de produção
+específica) → `human_ready`. Relatório completo em
+`research/bugbounty/reports/circle-bbp-arc-remote-signer-missing-auth.md`.
+
+**Segundo achado do sistema inteiro a chegar honestamente a
+`human_ready`** (o primeiro foi o `wire-schema` do Block Open Source).
