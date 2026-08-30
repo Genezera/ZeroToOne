@@ -280,7 +280,12 @@
     "x/fiattokenfactory/keeper/msg_server_configure_minter_controller.go",
     "x/fiattokenfactory/keeper/msg_server_update_owner.go",
     "proto/circle/fiattokenfactory/v1/tx.proto",
-    "x/fiattokenfactory/keeper/msg_server_accept_owner.go"
+    "x/fiattokenfactory/keeper/msg_server_accept_owner.go",
+    "x/fiattokenfactory/keeper/msg_server_remove_minter_controller.go",
+    "x/fiattokenfactory/keeper/msg_server_remove_minter.go",
+    "x/fiattokenfactory/keeper/msg_server_update_master_minter.go",
+    "x/fiattokenfactory/keeper/msg_server_update_blacklister.go",
+    "x/fiattokenfactory/keeper/keeper.go (ValidatePrivileges)"
   ],
   "circlefin/malachite": [
     "code/crates/signing/src/lib.rs"

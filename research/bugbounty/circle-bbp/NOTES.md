@@ -1474,3 +1474,27 @@ implementados nos contratos xReserve.
 
 `deep-read-log.json` atualizado (`circlefin/evm-xreserve-contracts` ganhou
 os 3 arquivos acima, total agora 12).
+
+Rodada 2026-08-30 (leitura profunda proativa, fila vazia): `circlefin/noble-fiattokenfactory`
+(Cosmos SDK Go, módulo de token soberano da Noble chain), continuando a
+cobertura de handlers admin/mint ainda não lidos:
+`msg_server_remove_minter_controller.go`, `msg_server_remove_minter.go`,
+`msg_server_update_master_minter.go`, `msg_server_update_blacklister.go` e
+`keeper.go::ValidatePrivileges`. Todos corretamente gated pelo padrão já
+observado no programa (owner-only pra update de papéis, minter-controller-only
+pra remover seu próprio minter, com checagem cruzada de que
+`msg.Address == minterController.Minter` antes de remover). Único ponto
+notado: `ValidatePrivileges` (chamada por `UpdateMasterMinter`/
+`UpdateBlacklister`/`UpdatePauser`/`UpdateOwner` antes de atribuir um novo
+endereço a um papel privilegiado) só bloqueia reatribuição se o endereço já
+for `owner`/`blacklister`/`masterMinter`/`pauser` — não verifica se o
+endereço já é `minterController` ou `minter`. Considerado NÃO um achado:
+a chamada em si já exige ser o `owner` atual (raiz de confiança já
+maximamente privilegiada), então isso é apenas uma checagem de higiene de
+governança ausente, não um desvio de controle de acesso explorável por
+alguém sem já ser o owner — mesmo padrão de "sem separação de papel
+minter/master-minter" existe no `FiatTokenV1.sol` original da Circle em
+EVM. Sem achado novo nesta rodada.
+
+`deep-read-log.json` atualizado (`circlefin/noble-fiattokenfactory` ganhou
+5 entradas, total agora 11).
