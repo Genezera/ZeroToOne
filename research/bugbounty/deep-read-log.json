@@ -326,6 +326,9 @@
   ],
   "vercel/turborepo": [
     "crates/turborepo-auth/src/device_flow.rs",
-    "crates/turborepo-auth/src/auth/mod.rs"
+    "crates/turborepo-auth/src/auth/mod.rs",
+    "crates/turborepo-auth/src/auth/login.rs",
+    "crates/turborepo-auth/src/auth/sso.rs",
+    "crates/turborepo-auth/src/auth/logout.rs"
   ]
 }

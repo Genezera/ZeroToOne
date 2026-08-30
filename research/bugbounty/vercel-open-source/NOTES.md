@@ -786,3 +786,84 @@ não lidos — próxima rodada pode continuar ali, ou seguir em
 `vercel/eve`, `vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`,
 `nuxt/nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`,
 `vercel-labs/skills`, `vercel/vercel`, `vercel/chat`, `vercel/workflow`).
+
+## Rodada 2026-08-30 (push automático) — resto do crate `turborepo-auth`: `login.rs`, `sso.rs`, `logout.rs`, sem achado
+
+Fila (`list-pending`) vazia no início desta rodada. Antes de sair para um
+repositório novo, tentei primeiro brevemente `nitrojs/nitro` (sparse
+clone) e `vercel-labs/agent-skills` (clone raso) — nenhum dos dois tem
+superfície de auth/sessão própria digna de nota: `nitro` delega
+gerenciamento de sessão/cookie para o pacote externo `h3` (fora deste
+repositório, sem lógica de sessão vendorizada em `nitrojs/nitro` em si);
+`vercel-labs/agent-skills` só tem um script de build local
+(`packages/react-best-practices-build/src/build.ts`) que lê arquivos de
+regras do próprio repositório em tempo de build, sem input de rede/
+usuário externo. Voltei então para a sugestão pendente mais concreta:
+terminar o crate `crates/turborepo-auth` do `vercel/turborepo`, que a
+rodada anterior tinha deixado pela metade (só `device_flow.rs` e
+`auth/mod.rs` lidos).
+
+3 arquivos lidos por completo (sparse-clone de `crates/turborepo-auth` +
+`crates/turborepo-paths`):
+
+- `crates/turborepo-auth/src/auth/login.rs` (fluxo `login_redirect`/
+  `wait_for_login_redirect` para self-hosted remote caches, e o
+  wrapper do device flow para Vercel) — o servidor de callback local
+  (`TcpListener` em `127.0.0.1:{port}`, nunca `0.0.0.0`) exige que o
+  parâmetro `state` da query string bata exatamente com o CSRF state
+  gerado (`generate_csrf_state`, 32 caracteres alfanuméricos via
+  `rand::rng()` — CSPRNG do crate `rand`, ~190 bits de entropia,
+  inviável de adivinhar por força bruta na janela de 5 minutos do
+  timeout) antes de aceitar qualquer `token` — path clássico de bug
+  neste tipo de fluxo (CLI OAuth local redirect sem checagem de state,
+  vulnerável a um processo local malicioso "roubar" o próximo token que
+  chegar) está mitigado corretamente, com teste próprio cobrindo
+  rejeição de state ausente/divergente
+  (`test_wait_for_login_redirect_rejects_missing_state`).
+- `crates/turborepo-auth/src/auth/sso.rs` (mesmo padrão para o fluxo
+  SSO self-hosted, `wait_for_sso_redirect`) — mesma proteção de CSRF
+  state, mesma vinculação a `127.0.0.1`. Investiguei especificamente um
+  possível open redirect: a função monta `redirect_location` reanexando
+  TODOS os query params recebidos do callback local numa URL de
+  notificação, mas o host dessa URL é sempre uma constante hardcoded
+  (`https://vercel.com/notifications/cli-login-*`), nunca derivado de
+  input do callback — reanexar params não permite trocar o host, então
+  não haveria redirect para domínio arbitrário. Sem achado.
+- `crates/turborepo-auth/src/auth/logout.rs` — fluxo de invalidação/
+  remoção de token local. Único ponto observado sem ser um bug de
+  segurança explorável: se a chamada de rede para invalidar o token no
+  servidor (`token.invalidate`) falhar, `try_remove_token` propaga o
+  erro via `?` **antes** de limpar o arquivo local — ou seja, um
+  `turbo logout` que falha por erro de rede deixa o token ainda válido
+  no disco (local, permissão 0600, não é uma exposição a terceiro).
+  Comportamento defensável (não silenciosamente finge sucesso), mas
+  vale nota de UX/qualidade, não é uma vulnerabilidade real (não há
+  atacante externo capaz de explorar isso — exige já ter acesso de
+  leitura ao arquivo, que já teria acesso ao token de qualquer forma).
+  Não abri item na fila por isso.
+- Verificação complementar em `crates/turborepo-paths/src/absolute_system_path.rs::create_with_contents_secret`
+  (usada por `write_to_auth_file`/`write_to_config_file` em `lib.rs`
+  para persistir o token em disco): no Unix, abre o arquivo já com
+  `mode(0o600)` na criação E reafirma a permissão explicitamente depois
+  (comentário do próprio código documenta o motivo: evitar janela de
+  permissão permissiva se o arquivo já existisse antes com modo mais
+  aberto). Sem achado.
+
+Conclusão: crate `turborepo-auth` completo (todos os arquivos `.rs` de
+`src/` e `src/auth/`, exceto testes/mensagens de UI triviais) agora
+coberto nesta missão, sem nenhuma vulnerabilidade encontrada — é um
+fluxo de autenticação CLI bem desenhado, com proteção deliberada contra
+as classes de bug mais comuns desse tipo de fluxo (CSRF de callback
+local, redirect de login sequestrado por `turbo.json` malicioso já
+achado seguro em rodada anterior, permissão de arquivo de token).
+
+`deep-read-log.json` atualizado (`vercel/turborepo` ganhou `login.rs`,
+`sso.rs`, `logout.rs`, total agora 5 arquivos). Nenhum item novo
+adicionado à fila — resultado normal. Repos do programa ainda
+totalmente intocados: `vercel/ai`, `vercel/swr`, `vercel/eve`,
+`vercel/ms`, `vercel/async-sema`, `nuxt/nuxt`, `sveltejs/svelte`,
+`vercel-labs/skills` (parcial), `vercel/vercel` (parcial), `vercel/chat`
+(parcial), `vercel/workflow` (parcial). `nitrojs/nitro` e
+`vercel-labs/agent-skills` foram espiados nesta rodada mas não geraram
+achado nem entrada de log formal (sem superfície de auth própria digna
+de leitura linha-a-linha completa ainda).
