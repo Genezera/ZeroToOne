@@ -1398,3 +1398,30 @@ Fila novamente vazia. Leitura profunda proativa:
 `deep-read-log.json` atualizado (`circlefin/noble-fiattokenfactory` ganhou
 `msg_server_accept_owner.go`; nova chave `circlefin/malachite` com
 `code/crates/signing/src/lib.rs`).
+
+## Rodada 2026-08-30 (push automático seguinte) — fila vazia, leitura profunda em circlefin/noble-cctp
+
+Fila do scanner vazia (0 candidatos). Os 3 achados existentes deste
+programa que seguiam em `corroborated_static` (`arc-remote-signer`
+SignerService.Sign sem auth) e em `human_ready` (`evm-gateway-contracts`
+Withdrawals.sol) permanecem sem mudança de estado nesta rodada — já
+documentados no teto estrutural correto em rodadas anteriores, nada de
+novo pra investigar neles agora.
+
+Leitura profunda proativa: repositório `circlefin/noble-cctp` (módulo
+Cosmos SDK do CCTP na chain Noble, nunca coberto nesta missão). Li os 3
+handlers de mensagem administrativa mais sensíveis por nome/impacto:
+`x/cctp/keeper/msg_server_add_remote_token_messenger.go`,
+`msg_server_update_token_controller.go` e `msg_server_link_token_pair.go`.
+Mesmo padrão de controle de acesso já visto e validado em
+`noble-fiattokenfactory` (mesma família de módulos Circle em Cosmos SDK):
+cada handler compara o endereço privilegiado armazenado on-chain
+(`GetOwner`/`GetTokenController`) contra `msg.From`, e `msg.From` é
+garantido pelo framework (anotação `cosmos.msg.v1.signer` + ante handler
+do Cosmos SDK) como o endereço que de fato assinou a tx — não há o
+desvio tx-sender-vs-contract-caller que se procura em Clarity, nem
+qualquer outro jeito de spoofar `msg.From` a partir da lógica do módulo.
+Nenhum achado nestes 3 arquivos.
+
+`deep-read-log.json` atualizado com a nova chave `circlefin/noble-cctp`
+(3 arquivos).

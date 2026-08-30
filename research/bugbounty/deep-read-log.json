@@ -281,5 +281,10 @@
   ],
   "circlefin/malachite": [
     "code/crates/signing/src/lib.rs"
+  ],
+  "circlefin/noble-cctp": [
+    "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
+    "x/cctp/keeper/msg_server_update_token_controller.go",
+    "x/cctp/keeper/msg_server_link_token_pair.go"
   ]
 }
