@@ -348,5 +348,13 @@
     "programs/gateway-wallet/src/instructions/remove_delegate.rs",
     "programs/gateway-wallet/src/state.rs",
     "programs/gateway-wallet/src/utils.rs"
+  ],
+  "circlefin/solana-cctp-contracts": [
+    "programs/message-transmitter/src/instructions/receive_message.rs",
+    "programs/message-transmitter/src/state.rs",
+    "programs/message-transmitter/src/instructions/initialize.rs",
+    "programs/message-transmitter/src/instructions/pause.rs",
+    "programs/message-transmitter/src/instructions/send_message.rs",
+    "programs/token-messenger-minter/src/token_messenger/instructions/handle_receive_message.rs"
   ]
 }

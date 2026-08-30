@@ -1699,3 +1699,41 @@ não foram tocados por esta reconciliação — permanecem em
 `corroborated_static`, aguardando a mesma checagem de duplicata/novidade
 e prova de conceito (quando aplicável) antes de qualquer rascunho de
 relatório. Candidatos naturais pra próxima rodada de verticalização.
+
+## Rodada 2026-08-30 (leitura profunda proativa via GitHub Actions/push trigger) — fila vazia, `circlefin/solana-cctp-contracts` (repo irmão ainda não coberto) auditado, nada de novo
+
+`list-pending` veio vazio (nenhum finding em `candidate` em nenhum dos 4
+programas). Escolhi `circlefin/solana-cctp-contracts` pra leitura
+profunda proativa (repo em escopo confirmado via `check-scope`, ainda
+não tocado no `deep-read-log.json`) e rastreei a cadeia completa do
+fluxo de recebimento cross-chain: `message-transmitter::receive_message`
+(verificação de assinatura secp256k1 dos attesters, ordem crescente
+contra duplicata, threshold) → CPI assinada por `authority_pda` →
+`token-messenger-minter::handle_receive_message` (checa
+`params.sender == remote_token_messenger.token_messenger` pro domínio
+remoto, PDAs de `local_token`/`token_pair`/`custody` derivadas por seeds
+a partir do próprio `burn_token` da mensagem, `recipient_token_account`
+validado contra `mint_recipient` da burn message).
+
+Hipótese investigada a fundo e REFUTADA: `message_transmitter` (a conta
+singleton de estado) é aceita em `receive_message.rs`/`pause.rs`/etc.
+via `Account<'info, MessageTransmitter>` **sem** `seeds=` de
+re-derivação — à primeira vista parece abrir espaço pra alguém
+substituir por uma conta forjada com attesters próprios. Refutado ao
+confirmar que `initialize.rs` é o único ponto do programa que escreve o
+discriminator `MessageTransmitter` num account, e o faz com
+`seeds = [b"message_transmitter"], bump` (PDA fixa, singleton,
+gate por `validate_upgrade_authority`) — como só o próprio programa
+pode escrever dados em accounts que possui, e a única instrução que
+inicializa esse tipo já fixa o endereço, não existe caminho real pra
+uma segunda conta com esse discriminator+owner existir. Mesmo padrão
+replicado consistentemente em todas as outras instruções do programa
+(`pause.rs`, `send_message.rs`, etc.) — não é uma lacuna isolada, é o
+design intencional do Anchor pra contas singleton. Nenhum achado novo
+resultou desta leitura. Arquivos lidos (registrados em
+`deep-read-log.json`): `receive_message.rs`, `state.rs`,
+`initialize.rs`, `pause.rs`, `send_message.rs` (message-transmitter) e
+`handle_receive_message.rs` (token-messenger-minter). Próximo candidato
+natural: `programs/v2/*` (message-transmitter-v2/token-messenger-minter-v2,
+ainda não lidos) ou `circlefin/aptos-cctp` (Move, escopo confirmado,
+zero arquivos lidos até agora).
