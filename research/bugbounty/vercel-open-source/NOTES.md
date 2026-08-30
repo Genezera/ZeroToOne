@@ -867,3 +867,26 @@ totalmente intocados: `vercel/ai`, `vercel/swr`, `vercel/eve`,
 `vercel-labs/agent-skills` foram espiados nesta rodada mas não geraram
 achado nem entrada de log formal (sem superfície de auth própria digna
 de leitura linha-a-linha completa ainda).
+
+## Rodada 2026-08-30 (v2 state machine, sessão cloud automática)
+
+`list-pending` vazio. Revisitei o único `corroborated_static` do
+programa (`sso.ts::waitForVerification`, loopback OAuth sem
+state/nonce, RFC 8252 §8.3) sob a state machine nova. Confirmei via
+`raw.githubusercontent.com/vercel/vercel/main/packages/cli-auth/
+package.json` que o pacote `@vercel/cli-auth` é público
+(`private:false`, `publishConfig.access:public`), sem `exports`
+restringindo subpaths — `sso.js` é de fato importável por qualquer
+consumidor npm, reforçando a descrição "used by Vercel's CLIs" (plural)
+do pacote: é plausível que outra ferramenta CLI da Vercel (fora deste
+monorepo) use esse caminho, mesmo sem uso confirmado dentro de
+`packages/cli/src`. Não é dead code esquecido, é superfície pública
+compartilhada com reachability não confirmada dentro do repo auditado.
+Tentei `corroborated_static -> scope_verified` direto (achado não-Solidity,
+sem validador disponível): recusado — a transição não existe sem passar
+por `reproduced_local`, que por sua vez exige uma validação `pass`, hoje
+só disponível pra Solidity (`foundry_poc`). Limitação real do sistema,
+documentada em detalhe no NOTES.md do Circle BBP desta mesma rodada — não
+forcei nem contornei. Fica em `corroborated_static`: achado real,
+reportável com ressalva explícita de alcançabilidade, aguardando um
+validador pra TS/JS que ainda não existe.

@@ -269,3 +269,20 @@ Leitura profunda proativa (3 arquivos ainda não lidos linha a linha):
   relatório neste estado.
 
 `deep-read-log.json` atualizado com os 3 arquivos desta rodada.
+
+## Rodada 2026-08-30 (v2 state machine, sessão cloud automática)
+
+`list-pending` vazio. Revisitei o único `corroborated_static`
+(`compute-ratio` em `data-stbtc-v1.clar`) sob a máquina de estados nova:
+`check-scope("StackingDAO","stbtc-token")` retornou `allowed=false` —
+o snapshot de escopo do programa (`research/bugbounty/scope-snapshots/`)
+tem `assets:[]` (só categorias gerais elegíveis, nenhum ativo específico
+registrado), então nem existe hoje um ativo pra amarrar deployment
+evidence, além da lacuna de reachability já documentada (cadeia
+incompleta, `api.hiro.so` bloqueado). Combinando as duas lacunas,
+transicionei pra `inconclusive` (com justificativa) em vez de deixar
+parado em `corroborated_static` — mais honesto sobre o estado real da
+investigação: não é só "falta prova de conceito", é "não dá pra saber
+hoje". `deep-read-log.json` não ganhou arquivo novo deste programa nesta
+rodada (leitura profunda proativa foi noutro programa — ver NOTES.md do
+Circle BBP).

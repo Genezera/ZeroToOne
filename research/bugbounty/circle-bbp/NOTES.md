@@ -1769,3 +1769,82 @@ completo (cadeia de chamada + trecho exato do `override_deposit`).
 `deep-read-log.json` atualizado (`circlefin/aptos-cctp` ganhou 8
 entradas, `circlefin/stablecoin-aptos` ganhou 2, repo novo nesta
 missão). Nenhum item elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (v2 state machine, sessão cloud automática, GitHub Actions push trigger separado) — testa `scope_verified` sob a state machine nova nos 2 `corroborated_static` do programa, sem avanço de estado
+
+`list-pending` veio vazio (nenhum `candidate` novo). Trabalhei os 2
+achados Circle BBP já em `corroborated_static` (`SignerService.Sign` em
+`arc-remote-signer`, denylist ausente no saque do Gateway Wallet Solana)
+tentando avançar pra `scope_verified` via `record-deployment-evidence`
+(confidence="unverified" pros dois — nenhum dos dois tem
+endereço/release de produção confirmável nesta sessão:
+`developers.circle.com` bloqueado por `EGRESS_BLOCKED`,
+`github.com`/`api.github.com` bloqueados pelo proxy (403, exige
+`add_repo`) — só `raw.githubusercontent.com` e `git clone` funcionam pra
+ler código).
+
+**Achado real, mas a máquina de estados nova tem uma lacuna pra achados
+não-Solidity**: a transição `corroborated_static -> scope_verified`
+tentada direto (como o prompt da missão sugeria pra achados sem
+validador) foi recusada com `"transição \"corroborated_static\" →
+\"scope_verified\" não é permitida pela máquina de estados"` — não é a
+recusa "esperada" de `confidence=unverified` (essa só existe na
+precondição `reproduced_local->scope_verified`), é uma recusa mais
+fundamental: o caminho de transição simplesmente não existe sem passar
+por `reproduced_local` antes, e `reproduced_local` exige uma
+`validations` com `result=pass`, que hoje só existe pra Solidity
+(`foundry_poc`). Ou seja: **achados corroborados em Go/Rust/Clarity/TS
+ficam presos em `corroborated_static` até o sistema ganhar um validador
+pra essas linguagens** — confirmado experimentalmente, não é suposição.
+Não tentei contornar (regra de nunca forçar transição) nem inventar um
+validador falso — deixei documentado pra quem for expandir
+`state-machine.mjs`/`PRECONDITIONS` no futuro (seção 6.3 da auditoria
+externa citada no topo do arquivo).
+
+**Contexto novo pro achado Solana `initiate_withdrawal`**: é a MESMA
+classe de falha do `Withdrawals.sol` (EVM) que foi fechada acima como
+`known_duplicate` via o audit público da ChainSecurity — mas o audit
+citado é sobre o repo `evm-gateway-contracts` (commit `5b5446f5...`),
+não sobre `solana-gateway-contracts` (repo separado, Anchor/Rust). Não
+achei nenhuma fonte pública que confirme (ou negue) que o mesmo audit ou
+outro cobriu o código Solana especificamente — fica documentado no
+`reasoning` do finding como uma ressalva forte de novidade que uma
+sessão futura (ou revisão humana) precisa resolver antes de qualquer
+rascunho: se for a mesma decisão de design deliberada aplicada a outra
+chain, é `known_duplicate` também; se não, pode ser um achado real e
+inédito. Não decidi por conta própria sem citação verificável (regra da
+precondição `known_duplicate`: sempre exige `knownIssueSource` com
+url/quote rastreável).
+
+Leitura profunda proativa (3 arquivos, dentro do orçamento da rodada):
+`circlefin/malachite` tinha só 1 arquivo lido (`crates/signing/src/lib.rs`,
+sugerido como próximo passo em rodada anterior). Li
+`crates/signing-ecdsa/src/lib.rs` + `curve/k256.rs` (diff contra
+`curve/p256.rs`, idêntico exceto pela curva) e `crates/signing-ed25519/
+src/lib.rs` — todo o código de assinatura/verificação delega direto pras
+crates RustCrypto (`k256`, `p256`) e pra `ed25519_consensus` (a variante
+"ZIP215-style" da Zcash Foundation, desenhada especificamente pra
+verificação determinística em sistemas de consenso BFT — escolha correta,
+evita os problemas de maleabilidade de assinatura que o `ed25519-dalek`
+puro teria). Nenhuma lógica de verificação customizada, nenhum bypass,
+nenhum comparador non-constant-time visível nesses arquivos — sem achado,
+refutado dentro da própria rodada de leitura (não abri `candidate`).
+`deep-read-log.json` atualizado.
+
+Sugestão pra próxima rodada: `circlefin/malachite` ainda tem
+`crates/core-consensus`, `crates/core-votekeeper`, `crates/network`,
+`crates/sync` não lidos — onde a lógica de quórum/double-sign/replay de
+voto realmente vive (mais provável de ter bug de lógica do que a camada
+de assinatura pura, que só embala crates já auditadas). Também vale
+tentar de novo `developers.circle.com` (pode não estar sempre bloqueado)
+pra fechar o endereço mainnet real do `gateway_wallet` Solana.
+
+Nota: esta rodada rodou em paralelo (sessões separadas, mesmo trigger de
+push) às rodadas de `circlefin/solana-cctp-contracts` e
+`circlefin/aptos-cctp`/`stablecoin-aptos` documentadas imediatamente
+acima — sem sobreposição de arquivos lidos ou findings tocados, sem
+conflito de conteúdo, só de merge de `queue.jsonl`/`migration-log.json`
+(resolvido via `git reset --hard origin/master` + reaplicação das
+mutações desta sessão via CLI contra a base mais nova, repetido 2x
+durante esta mesma rodada por causa de pushes concorrentes — nunca merge
+textual do JSONL).

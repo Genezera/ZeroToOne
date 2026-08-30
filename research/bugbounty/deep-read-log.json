@@ -297,7 +297,11 @@
     "x/fiattokenfactory/keeper/keeper.go (ValidatePrivileges)"
   ],
   "circlefin/malachite": [
-    "code/crates/signing/src/lib.rs"
+    "code/crates/signing/src/lib.rs",
+    "code/crates/signing-ecdsa/src/lib.rs",
+    "code/crates/signing-ecdsa/src/curve/k256.rs",
+    "code/crates/signing-ecdsa/src/curve/p256.rs",
+    "code/crates/signing-ed25519/src/lib.rs"
   ],
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
