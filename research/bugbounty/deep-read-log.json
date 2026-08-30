@@ -301,7 +301,10 @@
     "code/crates/signing-ecdsa/src/lib.rs",
     "code/crates/signing-ecdsa/src/curve/k256.rs",
     "code/crates/signing-ecdsa/src/curve/p256.rs",
-    "code/crates/signing-ed25519/src/lib.rs"
+    "code/crates/signing-ed25519/src/lib.rs",
+    "code/crates/core-votekeeper/src/keeper.rs",
+    "code/crates/core-votekeeper/src/evidence.rs",
+    "code/crates/core-consensus/src/handle/vote.rs"
   ],
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
@@ -374,5 +377,23 @@
   "circlefin/stablecoin-aptos": [
     "packages/stablecoin/sources/stablecoin.move",
     "packages/stablecoin/sources/treasury.move"
+  ],
+  "circlefin/starknet-cctp": [
+    "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo"
+  ],
+  "circlefin/stablecoin-starknet": [
+    "packages/stablecoin/src/fiat_token/fiat_token.cairo",
+    "packages/components/src/denylistable/denylistable.cairo",
+    "packages/components/src/blocklistable/blocklistable.cairo"
+  ],
+  "circlefin/stablecoin-xlm": [
+    "soroban/contracts/fiat-token-admin/src/blocklistable.rs"
+  ],
+  "circlefin/sui-cctp": [
+    "packages/message_transmitter/sources/auth.move",
+    "packages/token_messenger_minter/sources/admin/role_management.move"
+  ],
+  "vercel/ai": [
+    "packages/gateway/src/gateway-realtime-auth.ts"
   ]
 }

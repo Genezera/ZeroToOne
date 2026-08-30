@@ -2067,3 +2067,148 @@ conflito de conteúdo, só de merge de `queue.jsonl`/`migration-log.json`
 mutações desta sessão via CLI contra a base mais nova, repetido 2x
 durante esta mesma rodada por causa de pushes concorrentes — nunca merge
 textual do JSONL).
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — `circlefin/malachite` core-votekeeper + core-consensus, sem achado
+
+`list-pending` (CLI v2) vazio. Segui a sugestão explícita deixada na
+rodada anterior: `crates/core-consensus`/`crates/core-votekeeper` de
+`circlefin/malachite`, onde a lógica de quórum/double-sign/replay de
+voto de verdade vive (em vez da camada de assinatura pura já auditada
+antes). Clone raso público via `git clone` (sem conta/token).
+
+Arquivos lidos (3, dentro do orçamento da rodada):
+1. `code/crates/core-votekeeper/src/keeper.rs` — `VoteKeeper::apply_vote`
+   e `PerRound::add`. Rastreei a detecção de equivocação: um segundo voto
+   do mesmo validador/tipo/rodada só é aceito sem virar evidência se
+   tiver o MESMO valor (`existing.value() != vote.value()` dispara
+   `ConflictingVote`); a única mutação permitida de um voto já
+   registrado é "upgrade" de extensão (voto sem extensão sendo
+   substituído por um idêntico com extensão) — não dá pra usar isso pra
+   trocar o valor votado. Cálculo de threshold (`compute_threshold`)
+   soma peso por validador (`RoundWeights::set_once`, uma vez só por
+   endereço, evita contar peso duplicado de reenvio do mesmo voto).
+   `SkipRound` (voto de rodada futura) exige o threshold `honest`
+   (f+1), separado e mais baixo que `quorum` — sem confusão entre os
+   dois parâmetros. Sem achado.
+2. `code/crates/core-votekeeper/src/evidence.rs` — `EvidenceMap::add`.
+   Dedup de par de evidência (checa os dois sentidos
+   `existing`/`conflicting`) e teto `MAX_EVIDENCE_PER_VALIDATOR = 3` por
+   validador, evitando crescimento ilimitado de estado por um validador
+   malicioso que manda muitas variações de voto conflitante na mesma
+   altura/rodada. `debug_assert_eq!` (não enforced em release) confirma
+   que a precondição "mesmo validador" é responsabilidade do chamador
+   (`keeper.rs`, que já garante isso via `validator_address()` do voto
+   existente == do novo) — não é uma checagem que falta, é uma invariante
+   interna já garantida no único call site. Sem achado.
+3. `code/crates/core-consensus/src/handle/vote.rs` — `on_vote`/
+   `verify_signed_vote`/`verify_vote_extension`. Ordem de checagens
+   correta: descarta altura menor, enfileira altura maior/rodada -1,
+   limita lookahead de rodada futura (`MAX_FUTURE_ROUND_LOOKAHEAD`,
+   proteção de DoS de estado), dedup via `has_vote` (que só casa
+   valor igual — um voto forjado com valor diferente do já registrado
+   NÃO é descartado por aí, cai pra verificação de assinatura de
+   verdade), e só DEPOIS verifica assinatura
+   (`verify_signature`) antes de processar. Investiguei
+   especificamente se o dedup por `has_vote` (que roda ANTES da
+   verificação de assinatura) permite alguma forma de "confirmar" um
+   voto sem assinatura válida: não permite — `has_vote` só compara
+   contra o que já está armazenado em `per_round`, e a única forma de
+   um voto chegar lá é já ter passado por `verify_signed_vote` com
+   sucesso (`apply_driver_input` só é chamado depois da verificação);
+   um voto forjado que "colida" em endereço+tipo+valor com um já
+   verificado apenas é descartado como redundante, nunca tratado como
+   informação nova. `verify_vote_extension` aplica a política
+   (`required`/`disabled`/opcional) de forma consistente por tipo de
+   voto (extensão só é válida em precommit não-nil) antes de aceitar.
+   Sem achado.
+
+Conclusão: nenhum achado novo — o vote keeper e o handler de voto do
+Malachite são código de consenso BFT cuidadosamente desenhado (padrão
+Tendermint), com as invariantes de segurança que importam (nenhum voto
+processado sem assinatura verificada, equivocação sempre detectada e
+com estado limitado, sem confusão entre threshold `honest` e `quorum`)
+intactas nos três arquivos revisados. `deep-read-log.json` atualizado
+(`circlefin/malachite` agora com 8 arquivos). Sugestão pra próxima
+rodada: `crates/core-consensus/src/full_proposal.rs` (832 linhas, ainda
+não lido, gerencia propostas completas/streaming) ou
+`crates/core-votekeeper/src/round_votes.rs`/`round_weights.rs`/
+`value_weights.rs` (arquivos pequenos restantes do mesmo crate, pra
+fechar a cobertura completa de `core-votekeeper`).
+
+Nenhum item novo na fila. Os únicos itens em estado não-terminal do
+programa continuam os já documentados nas rodadas anteriores acima
+(`Withdrawals.sol` denylist gap e o achado Solana `initiate_withdrawal`,
+ambos aguardando decisão humana/evidência externa que esta rodada não
+teve novidade pra oferecer).
+
+
+## Rodada 2026-08-30 (push trigger seguinte) — 4 findings `corroborated_static` revisados (sem transição possível, teto estrutural confirmado); leitura profunda em `circlefin/starknet-cctp`/`stablecoin-starknet` repete e confirma o padrão de `aptos-cctp`
+
+`migrate-to-v2.mjs` + `list-pending`: fila de `candidate` vazia (mesmo
+padrão de rodadas anteriores — os 43 findings existentes já estão
+distribuídos entre `false_positive` (36), `corroborated_static` (4),
+`human_ready` (1), `known_duplicate` (1), `inconclusive` (1)). Revisei
+os 4 `corroborated_static` (`packages/cli-auth/sso.ts` do Vercel,
+`data-stbtc-v1.clar` do StackingDAO, `arc-remote-signer` e
+`solana-gateway-contracts` do Circle BBP): todos já documentam
+corretamente por que não avançam — `corroborated_static->reproduced_local`
+exige `validations` com `result="pass"`, e hoje só existe validador
+Foundry (Solidity); os 4 são TS/Clarity/Go/Rust, sem PoC executável
+disponível no sistema. Não força a transição — comportamento correto
+da máquina de estados, não bug.
+
+Leitura profunda proativa (3 arquivos/áreas, prioridade auth/access):
+escolhi `circlefin/starknet-cctp` (zero arquivos lidos até então) por
+ser exatamente o par Starknet do mesmo produto CCTP já auditado em
+EVM/Solana/Aptos. Em
+`packages/token_messenger_minter/src/token_messenger_minter_v2.cairo`
+confirmei o MESMO padrão já visto 3x nesta missão: `deposit_for_burn`/
+`deposit_for_burn_with_hook` chamam
+`assert_not_denylisted_caller_and_origin` (só caller/tx-origin, nunca
+o `mint_recipient`), e `mint`/`mint_and_withdraw`/`handle_receive_message`
+(fluxo inbound) NUNCA chamam `self.denylistable.assert_not_denylisted`
+em lugar nenhum — o componente `denylistable` do próprio
+TokenMessengerMinter é unidirecional (só protege quem pode queimar/
+enviar, não quem pode receber via mint). Antes de registrar como
+achado, comparei com dois pontos de referência: (1) o EVM oficial
+(`circlefin/evm-cctp-contracts::TokenMessengerV2.sol`, já lido em
+rodada anterior) usa o modifier `notDenylistedCallers` exatamente do
+mesmo jeito — só em `depositForBurn`/`depositForBurnWithHook`, nunca
+em `handleReceiveFinalizedMessage`/`_handleReceiveMessage` — ou seja
+o design upstream É intencionalmente unidirecional, não uma regressão
+introduzida pelo port Starknet; (2) o token subjacente
+(`circlefin/stablecoin-starknet::packages/stablecoin/src/fiat_token/fiat_token.cairo`,
+lido linha a linha) implementa `blocklistable` (namespace SEPARADO de
+`denylistable`, mas com o mesmo propósito de compliance) e sua função
+`mint()` chama `self.blocklistable.assert_not_blocklisted(to)` — como
+o `TokenMessengerMinter.mint()` invoca `IFiatTokenDispatcher.mint(recipient, amount)`
+(chamada real cross-contract, não suposição), qualquer `mint_recipient`
+blocklistado no token real ainda reverte ali, fechando o gap do
+mesmo jeito que `stablecoin-aptos::override_deposit` fechou o gap do
+`aptos-cctp` na rodada anterior. Mesma conclusão, terceira chain
+diferente confirmando o mesmo padrão de design: **não registrado como
+finding novo** (refutado antes mesmo de criar o candidate — a cadeia
+de chamada real já mostra que não é explorável, então não há
+`reasoning`/`filesRead` de um achado "confirmado" pra depois desfazer,
+só documentação de due diligence). Também revisei rapidamente
+`circlefin/stablecoin-xlm::soroban/contracts/fiat-token-admin/src/blocklistable.rs`
+(port Soroban/Stellar do mesmo produto) — design diferente dos
+outros dois (delega pro flag nativo `authorized` do Stellar Asset
+Contract via `set_authorized`/`StellarAssetClient`, em vez de mapping
+próprio) mas sem inconsistência visível na leitura estática; não dá
+pra confirmar se o asset emissor real tem `AUTH_REQUIRED` habilitado
+(estado de deploy, não código) — não é um achado, é limitação de
+alcance de leitura estática, documentada aqui pra não repetir a
+mesma pergunta em rodada futura sem responder.
+
+`deep-read-log.json` atualizado: `circlefin/starknet-cctp` (1 entrada,
+repo novo), `circlefin/stablecoin-starknet` (3 entradas, repo novo),
+`circlefin/stablecoin-xlm` (1 entrada, repo novo), `circlefin/sui-cctp`
+(2 entradas, repo novo — `auth.move`/`role_management.move` do
+`token_messenger_minter`, ambos limpos: padrão de auth por tipo
+(`type_name`/witness) e transferência de ownership em duas etapas,
+sem achado). Repos do Circle BBP ainda com zero leitura após esta
+rodada: `stablecoin-sui`, `stablecoin-near`, `starknet-cctp` (só 1
+arquivo agora, resto do programa Anchor/Cairo ainda não coberto),
+`stellar-cctp`, `noble-cctp` (parcial), `evm-cpn-contracts` (parcial).
+Nenhum item elegível pra relatório nesta rodada.
