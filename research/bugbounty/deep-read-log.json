@@ -264,7 +264,7 @@
     "packages/world-vercel/src/encryption.ts",
     "packages/world-vercel/src/http-core.ts (partial: L1-390, token resolution + span/error handling)",
     "packages/world-vercel/src/utils.ts",
-    "packages/core/src/runtime/quickjs-runtime.ts (completo \u2014 fechadas as se\u00e7\u00f5es finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
+    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
   ],
   "circlefin/arc-remote-signer": [
     "internal/app/public/public.go",
@@ -330,7 +330,7 @@
     "src/skill-lock.ts",
     "src/blob.ts",
     "src/update.ts (parcial)",
-    "src/installer.ts (parcial \u2014 writeSkillFiles/isPathSafe/sanitizeName)"
+    "src/installer.ts (parcial — writeSkillFiles/isPathSafe/sanitizeName)"
   ],
   "vercel/next.js": [
     "packages/next/src/server/app-render/encryption.ts",
@@ -404,5 +404,11 @@
     "packages/eve/src/channel/auth/jwt-ecdsa.ts",
     "packages/eve/src/shared/validate-authorization.ts",
     "packages/eve/src/channel/auth/token-claims.ts"
+  ],
+  "nuxt/nuxt": [
+    "packages/nuxt/src/app/island-props.ts",
+    "packages/nuxt/src/app/components/island-renderer.ts",
+    "packages/nitro-server/src/runtime/handlers/island.ts",
+    "packages/nuxt/src/app/island-hash.ts"
   ]
 }

@@ -980,3 +980,53 @@ nesta leitura — nem virou candidate.
 Repos do programa ainda totalmente intocados: `vercel/swr`, `vercel/ms`,
 `vercel/async-sema`, `nuxt/nuxt`, `sveltejs/svelte`. Nenhum item
 elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (push webhook, segunda passada)
+
+`list-pending` vazio de novo. Os 2 achados em `corroborated_static`
+(sso.ts do Vercel, initiate_withdrawal.rs do Circle Solana) já tinham
+sido re-verificados de forma independente mais cedo hoje (mesmo
+`updatedAt`) com bloqueios genuínos documentados no reasoning — nada
+novo pra fazer neles sem acesso que não tenho.
+
+Leitura profunda proativa: abri `nuxt/nuxt` pela primeira vez (estava
+na lista de intocados acima, tier 1 confirmado no scope snapshot).
+Sparse-checkout de `packages/nuxt/src`, `packages/kit/src`,
+`packages/vite-server`, `packages/nitro-server`. Grep por
+auth/session/token/password/secret/permission/access apontou pra
+`app/island-props.ts` (`findUnsafeIslandPropKey` — detecta uma chave
+`template` em qualquer profundidade dentro de props de island, que
+seria compilada e EXECUTADA pelo Vue runtime compiler se alcançasse
+resolução de componente — classe de vuln real, RCE via island prop
+injection).
+
+Rastreei a cadeia completa: a função existe mas não é chamada em
+nenhum lugar dentro de `packages/nuxt/src` (só `findReservedRootIslandPropKey`,
+o guard do prop `as`, é usado em `island-renderer.ts`). Isso pareceu
+suspeito no início — código de segurança definido mas nunca invocado.
+Expandindo o sparse-checkout pra `packages/nitro-server` (o handler
+HTTP real de `/__nuxt_island/*`, que eu tinha perdido no primeiro
+grep por estar fora de `packages/nuxt`), encontrei a chamada real em
+`nitro-server/src/runtime/handlers/island.ts::getIslandContext`:
+`findUnsafeIslandPropKey(parsedProps)` roda DEPOIS da validação de
+tamanho/profundidade do body e da checagem de hash, ANTES do render,
+gated corretamente por `runtimeCompiler` (flag opt-in, default false,
+lido de `#internal/nuxt.config.mjs`), e não vaza no response de
+produção se a runtime compiler está presente (só loga em
+`import.meta.dev`) — exatamente pra não dar a um chamador não
+autenticado um oráculo de qual build está rodando.
+
+Verifiquei os componentes auxiliares em busca de bypass:
+`filterIslandProps`/`getIslandHash` (`app/island-hash.ts`) só removem
+atributos `data-v-*` e calculam um hash de conteúdo (`ohash`, sem
+segredo do servidor — é consistência de cache/URL, não um boundary de
+auth, então não substitui o guard). `slots`/`components` no contexto
+retornado por `getIslandContext` são hardcoded pra `{}` nesse ponto do
+fluxo (não vêm do request), fechando essa rota de injeção alternativa.
+Não achei bypass. Código bem projetado, defesa em profundidade real —
+sem achado, não virou candidate.
+
+`deep-read-log.json` atualizado (`nuxt/nuxt`, 4 arquivos, ver acima).
+Repos do programa ainda totalmente intocados: `vercel/swr`, `vercel/ms`,
+`vercel/async-sema`, `sveltejs/svelte`. Nenhum item elegível pra
+relatório nesta rodada.
