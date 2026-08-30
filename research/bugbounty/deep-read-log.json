@@ -276,7 +276,10 @@
     "docs/architecture.md",
     "internal/app/service/signer/crypto.go",
     "internal/app/service/signer/cache.go",
-    "internal/common/grpc/server/interceptor/middleware.go"
+    "internal/common/grpc/server/interceptor/middleware.go",
+    "internal/app/provider/secrets/secrets.go",
+    "internal/enclave/provider/keystore/keystore.go",
+    "internal/enclave/service/enclave/enclave.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -284,7 +287,9 @@
     "crates/eth-engine/src/rpc/auth.rs",
     "crates/eth-engine/src/rpc/mod.rs",
     "crates/eth-engine/src/rpc/engine_rpc.rs",
-    "crates/eth-engine/src/rpc/ethereum_rpc.rs"
+    "crates/eth-engine/src/rpc/ethereum_rpc.rs",
+    "crates/signer/src/remote.rs",
+    "crates/remote-signer/src/provider.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",

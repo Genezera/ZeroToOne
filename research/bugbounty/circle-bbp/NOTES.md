@@ -2305,3 +2305,50 @@ nova (1 arquivo, `treasury.move`). Repos do Circle BBP ainda com zero
 leitura: `stablecoin-near`, `stellar-cctp`. `starknet-cctp` (1 arquivo),
 `evm-cpn-contracts` (parcial) e `stablecoin-sui` (agora 1 arquivo)
 seguem parciais. Nenhum item elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (push trigger, commit e319850) — sem candidatos novos; leitura profunda em `circlefin/arc-remote-signer`/`circlefin/arc-node` sem achado novo
+
+`migrate-to-v2.mjs` + `list-pending`: fila vazia (mesma distribuição:
+37 `false_positive`, 2 `corroborated_static`, 2 `human_ready`, 1
+`known_duplicate`, 1 `inconclusive`). Os 2 `corroborated_static`
+(`packages/cli-auth/sso.ts` do Vercel e `solana-gateway-contracts`
+`initiate_withdrawal` do Circle BBP) já tinham verificação
+independente registrada nesta mesma data, sem evidência nova nesta
+rodada pra mudar a decisão — mantidos como estão, sem tentar forçar
+transição.
+
+Leitura profunda proativa (arquivos ainda não lidos, prioridade
+crypto/key/secret): `internal/app/provider/secrets/secrets.go` (wrapper
+fino do AWS Secrets Manager, get/update via API, sem lógica própria —
+sem achado). `internal/enclave/provider/keystore/keystore.go` +
+`internal/enclave/service/enclave/enclave.go` (cache em memória de
+chaves decifradas dentro do processo do enclave, indexado por
+`enclaveEncryptedDataKey` cru pra `loadDataKey`, vs. hash composto
+`sha256(encryptedPrivateKey||dataKey||nonce)` pra `loadSecretKey` — o
+comentário do código explica que o hash composto existe especificamente
+pra impedir "tentativa de assinatura não autorizada só com uma
+`encryptedPrivateKey` vazada", mas o cache de `dataKey` não recebe a
+mesma proteção, usando só o ciphertext bruto como chave). Considerei
+como candidato a achado novo e decidi não abrir: este código roda
+inteiramente dentro do processo do enclave, só alcançável via vsock
+pelo host pareado (nunca pela rede) — explorar a inconsistência do
+cache exigiria já ter acesso vsock ao enclave, o que por si só já é
+comprometimento total do host (mesmo nível de acesso que permitiria
+chamar `GenerateKey`/`SignMessage` diretamente); não encontrei um
+caminho em que essa inconsistência de design ofereça um degrau de
+privilégio adicional sobre o que o achado já existente
+(`SignerService.Sign` sem autenticação, já `human_ready`) não cobre.
+Registrado aqui como observação de design pra referência futura, não
+como finding formal.
+
+`circlefin/arc-node::crates/signer/src/remote.rs` (apenas
+`pub use arc_remote_signer::*` — reexport trivial) e
+`crates/remote-signer/src/provider.rs` (provider de assinatura de
+consenso Malachite; testes de integração confirmam
+`endpoint: "http://0.0.0.0:10340"` como default e TLS desabilitado por
+padrão — corrobora, do lado cliente, o achado já `human_ready` sobre
+ausência de mTLS no `arc-remote-signer`; nenhum achado adicional).
+
+`deep-read-log.json` atualizado (`circlefin/arc-remote-signer` +3,
+`circlefin/arc-node` +2). Nenhum item novo na fila; nenhum item
+elegível pra relatório nesta rodada.
