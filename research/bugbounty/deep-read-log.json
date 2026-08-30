@@ -254,7 +254,8 @@
     "packages/core/src/runtime/deployment-guard.ts",
     "packages/world-vercel/src/encryption.ts",
     "packages/core/src/runtime/quickjs-runtime.ts (partial: bootstrap globals L250-1050, VM host-bridge L1200-1350, message/resolver pump L1600-2800)",
-    "packages/world-vercel/src/http-core.ts (partial: L1-390, token resolution + span/error handling)"
+    "packages/world-vercel/src/http-core.ts (partial: L1-390, token resolution + span/error handling)",
+    "packages/world-vercel/src/utils.ts"
   ],
   "circlefin/arc-remote-signer": [
     "internal/app/public/public.go",
@@ -264,5 +265,17 @@
     "proto/arc/signer/v1/signer.proto",
     "configs/app.yaml",
     "docs/architecture.md"
+  ],
+  "circlefin/arc-node": [
+    "crates/remote-signer/src/client.rs",
+    "crates/remote-signer/src/config.rs",
+    "crates/eth-engine/src/rpc/auth.rs"
+  ],
+  "circlefin/noble-fiattokenfactory": [
+    "x/fiattokenfactory/keeper/msg_server_mint.go",
+    "x/fiattokenfactory/keeper/msg_server_configure_minter.go",
+    "x/fiattokenfactory/keeper/msg_server_configure_minter_controller.go",
+    "x/fiattokenfactory/keeper/msg_server_update_owner.go",
+    "proto/circle/fiattokenfactory/v1/tx.proto"
   ]
 }

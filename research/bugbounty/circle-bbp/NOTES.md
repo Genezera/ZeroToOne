@@ -1283,3 +1283,81 @@ estrutural já visto no achado Kotlin. Fica em `corroborated_static`.
 `deep-read-log.json` atualizado com a nova chave `circlefin/arc-remote-signer`
 (7 arquivos: `public.go`, `signer.go`, `server.go`, `option.go`, o
 `.proto`, `configs/app.yaml`, `docs/architecture.md`).
+
+## Rodada 2026-08-30 (push automático, commit posterior) — corroboração cruzada do achado `arc-remote-signer` via `circlefin/arc-node`, e leitura profunda em `circlefin/noble-fiattokenfactory`
+
+Fila `list-pending` vazia (0 candidatos). Os outros achados de rodadas
+anteriores que seguem em `corroborated_static` (Kotlin `Root.kt` de
+`block-open-source`; Clarity `compute-ratio` de StackingDAO) pertencem a
+outros programas e seguem no mesmo teto estrutural já documentado neles
+— nada novo a fazer aqui. `api.hiro.so` (StackingDAO) segue bloqueado
+por egress nesta sessão, confirmado de novo.
+
+Leitura profunda proativa (2 alvos):
+
+- **`circlefin/arc-node`** (repositório irmão do `arc-remote-signer`,
+  não coberto ainda — é o software real do validador Arc Chain, escolhido
+  especificamente pra ver o lado CLIENTE da mesma chamada gRPC já
+  documentada como vulnerável em `arc-remote-signer`). Encontrei
+  `crates/remote-signer/src/client.rs` (`RemoteSignerClient`, o código
+  que o validador de fato usa pra chamar `SignerService.Sign`) e
+  `crates/remote-signer/src/config.rs` (`RemoteSigningConfig::default()`).
+  Isso **corrobora o achado já registrado**
+  (`Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding`,
+  ainda em `corroborated_static`) em vez de criar um achado novo:
+  confirma, do lado cliente, exatamente o mesmo padrão inseguro já visto
+  no servidor — endpoint padrão `http://0.0.0.0:10340` (HTTP puro),
+  `enable_tls: false` por padrão, e mesmo com TLS habilitado o cliente só
+  configura `ca_certificate` (autentica o servidor, nunca envia
+  identidade/certificado próprio — sem mTLS). `SignRequest{message}` não
+  carrega nenhum campo de autenticação. Ou seja a ausência de auth em
+  nível de aplicação está confirmada nos dois lados do protocolo real,
+  não só inferida a partir do server. Atualizei o `reasoning` e
+  `filesRead` do achado existente via `update-finding` (script direto
+  contra `db.mjs`, mesmas funções que o `cli.mjs` expõe, só pra lidar com
+  texto longo sem problema de quoting de shell — não editei
+  `queue.jsonl` na mão). Não tentei nova transição: o teto estrutural é o
+  mesmo (achado Go/Rust sem PoC Foundry aplicável,
+  `corroborated_static->scope_verified` não existe no grafo sem passar
+  por `reproduced_local`), só a confiança do achado documentado subiu.
+  Também li `crates/eth-engine/src/rpc/auth.rs` (JWT HS256 pro Engine
+  API interno, padrão reth/go-ethereum) — protege uma superfície
+  diferente (consensus↔execution client), sem relação com o achado do
+  signer; sem achado novo aí.
+- **`circlefin/noble-fiattokenfactory`** (módulo Cosmos SDK que emite
+  USDC na chain Noble, repositório novo, `asset_type: SMART_CONTRACT`,
+  `eligible_for_bounty: true`, `max_severity: critical` — nunca coberto
+  nesta missão). Rastreei a cadeia completa de autorização
+  owner→master_minter→minter_controller→minter→mint:
+  `msg_server_mint.go` (`Keeper.Mint`), `msg_server_configure_minter.go`,
+  `msg_server_configure_minter_controller.go`,
+  `msg_server_update_owner.go`. Investiguei especificamente por
+  suspeita do mesmo padrão de bug recorrente nesta pesquisa
+  (tx-sender vs contract-caller em Clarity): aqui o equivalente seria
+  `msg.From` (usado pra toda checagem de autorização, ex.
+  `k.GetMinters(ctx, msg.From)`, `msg.From != minterController.Controller`)
+  não corresponder ao assinante real da tx. Refutado: confirmei em
+  `proto/circle/fiattokenfactory/v1/tx.proto` que `MsgMint`/`MsgBurn`/etc
+  declaram `option (cosmos.msg.v1.signer) = "from"` — o Cosmos SDK
+  aplica essa anotação no nível do `baseapp`/ante handler pra exigir que
+  `from` seja de fato o endereço que assinou a tx (diferente de Clarity,
+  onde `contract-caller` pode divergir de `tx-sender` dentro de uma
+  chamada — aqui não há esse desvio possível, é reforçado pelo framework,
+  não pela lógica do módulo). Cadeia de permissão também consistente:
+  `ConfigureMinterController` só o `master_minter` pode chamar;
+  `ConfigureMinter` exige que quem chama seja o controller cadastrado
+  E que o `msg.Address` bata com o minter que aquele controller
+  especificamente controla (não deixa um controller configurar allowance
+  de um minter que não é o seu); `Mint` decrementa `Allowance` antes de
+  `MintCoins`/`SendCoinsFromModuleToAccount` (sem janela de reentrância —
+  Cosmos SDK é single-threaded por bloco de qualquer forma) e checa
+  blacklist de quem envia E de quem recebe. `UpdateOwner` usa padrão de
+  2 passos (`SetPendingOwner` + aceite explícito, não vi ainda o
+  `msg_server_accept_owner.go` mas o padrão já está claro pelo nome e
+  pelo `SetPendingOwner` aqui). Nenhum achado — controle de acesso em
+  camadas bem implementado, sem o desvio que eu estava especificamente
+  procurando.
+
+`deep-read-log.json` atualizado com as novas chaves `circlefin/arc-node`
+(3 arquivos) e `circlefin/noble-fiattokenfactory` (5 arquivos, incluindo
+o `.proto`).

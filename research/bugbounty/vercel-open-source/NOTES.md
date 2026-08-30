@@ -434,3 +434,31 @@ finding (nada digno de `upsert-finding`). `deep-read-log.json` atualizado.
 Sugestão pra próxima rodada: fechar `quickjs-runtime.ts` (L1350-1600 e
 L2450+ ainda não lidas) e considerar `packages/world-vercel/src/utils.ts`
 (usa `getVercelOidcToken` diretamente, ainda intocado).
+
+## Rodada 2026-08-30 (push automático, commit posterior) — `packages/world-vercel/src/utils.ts`
+
+Fila vazia de novo. Segui a sugestão pendente: `packages/world-vercel/src/utils.ts`
+(725 linhas, completo) — monta a config HTTP (`getHttpConfig`) que decide
+entre dois caminhos de auth: (1) proxy `api.vercel.com/v1/workflow`
+quando há `projectConfig` completo (`projectId`+`teamId`), autenticado
+por `Bearer` com token explícito obrigatório (falha alto e cedo se
+ausente, sem fallback silencioso); (2) `workflow-server` direto, ordem de
+precedência `config.token` explícito → `getVercelOidcToken()` (falha
+silenciosamente só quando fora de um contexto Vercel função, tratado
+como "sem OIDC disponível", não como erro) — mesma ordem já documentada
+em `packages/core/src/encryption.ts`/`world-vercel/src/encryption.ts`,
+consistente entre os três arquivos. `resolveClientEnvironment` (usado
+tanto pro header `x-vercel-environment` quanto, em outro arquivo já
+revisto, pro guard cross-tenant) tem comentário extenso e correto
+explicando por que retorna `undefined` em vez de adivinhar `'production'`
+quando nenhuma fonte está disponível — evita fabricar um mismatch contra
+um preview legítimo. Nada no arquivo autoriza uma requisição por si só
+(é só montagem de headers/config do lado cliente); a fronteira de auth
+real fica no servidor Vercel, fora do escopo deste repo. Sem achado —
+arquivo bem documentado, mesma disciplina cuidadosa já vista no resto de
+`vercel/workflow`.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`packages/world-vercel/src/utils.ts` adicionado à chave `vercel/workflow`).
+Sugestão pra próxima rodada: ainda falta fechar `quickjs-runtime.ts`
+(L1350-1600 e L2450+).
