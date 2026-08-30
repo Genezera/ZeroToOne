@@ -1594,3 +1594,69 @@ cobertura parcial do módulo). Li `mod.rs`, `engine_rpc.rs` e
 
 Nenhum achado novo. `deep-read-log.json` atualizado (`circlefin/arc-node`
 ganhou os 3 arquivos acima, total agora 6).
+
+## Rodada 2026-08-30 (push automático seguinte) — deviation deliberada no domain separator EIP-712 do gateway, investigada e refutada
+
+Fila `list-pending` vazia de novo. Voltei em `circlefin/evm-gateway-contracts`
+pra fechar o resto dos módulos `common/` ainda não lidos isoladamente
+(`GatewayCommon.sol` já tinha sido lido antes, mas só compõe os módulos —
+reli pra ter o mapa de herança fresco). Arquivos novos desta rodada:
+
+- `src/modules/common/TransferSpecHashes.sol` — mapping simples de
+  `usedHashes[transferSpecHash] => bool` (padrão EIP-7201), com
+  `_checkAndMarkTransferSpecHash` (check-then-mark, sem race condition
+  possível em EVM single-threaded). Sem achado.
+- `src/lib/EIP712Domain.sol` — **chamou atenção genuína**: o comentário do
+  próprio arquivo admite explicitamente que a implementação "intentionally
+  deviates from the standard by omitting `chainId` and `verifyingContract`
+  fields from the domain separator" para permitir que burn intents sejam
+  verificados entre chains/deployments diferentes. Isso é, em princípio,
+  exatamente a classe de bug "domain separator fraco → assinatura
+  reutilizável entre contratos/chains" — mas a ressalva do próprio comentário
+  merece verificação, não aceitação. Segui a cadeia pra confirmar se a
+  omissão é compensada em outro lugar.
+- `src/modules/common/Domain.sol` — módulo que guarda o `domain` (uint32,
+  identificador emitido pelo operador, != chainId) desta instância
+  específica, com `_isCurrentDomain(uint32)`.
+
+**Verificação da cadeia completa (grep em `Mints.sol`/`Burns.sol`, já lidos
+em rodada anterior, cruzando com `TransferSpecLib.sol`/`TransferSpec.sol`):**
+o struct `TransferSpec` assinado via EIP-712 carrega explicitamente
+`sourceDomain`, `destinationDomain`, `sourceContract` (bytes32) e
+`destinationContract` (bytes32) como campos do próprio payload assinado
+(não do domain separator). `Mints.sol::_validateAttestation` checa
+`destinationContract == address(this)` (`InvalidAttestationDestinationContractAtIndex`
+se não bater) e `destinationDomain == domain()` atual
+(`InvalidAttestationDestinationDomainAtIndex`); `Burns.sol` checa
+simetricamente `sourceContract == address(this)`
+(`InvalidIntentSourceContractAtIndex`) no lado do burn. Ou seja: a
+vinculação de "esta assinatura só vale para ESTE contrato, NESTA chain" que
+normalmente viria do domain separator (chainId+verifyingContract) é
+recriada explicitamente como campos checados do próprio struct assinado —
+um padrão deliberado (mesmo já visto em `evm-cctp-contracts`/CCTP: mensagem
+carrega source/destination domain explícitos) que permite exatamente o caso
+de uso pretendido (mesma assinatura de burn intent, atestada e usada em
+qualquer chain de destino que bata os campos) sem abrir replay
+cross-contract/cross-chain — cada checagem reverte se o campo não bater com
+o `address(this)`/`domain()` de onde a tx está rodando.
+
+**Verdict: não é achado — deviation deliberada e corretamente compensada.**
+Não abri item na fila para isso: a leitura já saiu refutada dentro da mesma
+rodada (mesmo padrão de "investigar e descartar sem passar pelo estado
+`candidate`" já usado antes pra achados óbvios de código de teste). Nota
+cosmética sem impacto de segurança: `EIP712Domain.sol::_NAME` é hardcoded
+como `"GatewayWallet"` mesmo quando herdado por `GatewayMinter` (via
+`GatewayCommon`) — inofensivo porque o campo `name` do domain separator não
+participa de nenhuma checagem de escopo (isso já é feito pelos campos
+explícitos do `TransferSpec`), mas vale reportar como observação de
+qualidade se algum relatório futuro tocar nesse contrato.
+
+`deep-read-log.json` atualizado (`circlefin/evm-gateway-contracts` ganhou
+`TransferSpecHashes.sol`, `EIP712Domain.sol` e `Domain.sol`, total agora 20
+arquivos). Nenhum item novo na fila — resultado normal desta rodada.
+Sugestão pra próxima: módulos ainda não lidos isoladamente em
+`evm-gateway-contracts` — `modules/wallet/Batches.sol`, `modules/common/
+Pausing.sol`, `lib/Attestations.sol`, `lib/Cursor.sol`, `lib/BatchedDelta.sol`,
+`lib/TransferSpec.sol` — ou avançar pra `circlefin/evm-xreserve-contracts`
+(já com boa cobertura, mas `Domain.sol`/`Immutables.sol` locais ainda não
+lidos) ou iniciar `circlefin/malachite` (só 1 arquivo lido até agora).

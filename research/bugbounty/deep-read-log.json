@@ -218,7 +218,10 @@
     "src/lib/TransferSpecLib.sol",
     "src/modules/common/TokenSupport.sol",
     "src/modules/wallet/WithdrawalDelay.sol",
-    "src/modules/wallet/Balances.sol"
+    "src/modules/wallet/Balances.sol",
+    "src/modules/common/TransferSpecHashes.sol",
+    "src/lib/EIP712Domain.sol",
+    "src/modules/common/Domain.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
