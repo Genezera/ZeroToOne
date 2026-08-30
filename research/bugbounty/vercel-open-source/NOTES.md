@@ -1109,3 +1109,45 @@ diretamente, só serve de chave de objeto. Sem achado, não virou
 candidate. `deep-read-log.json` atualizado (`nitrojs/nitro`, 3
 arquivos). Repos ainda intocados no programa: `vercel/ms`,
 `vercel/async-sema`, `sveltejs/svelte`, `vercel-labs/agent-skills`.
+
+
+## Rodada 2026-08-30 (leitura profunda proativa, passo 4 avulso, rodada paralela) — `sveltejs/svelte` (repo até então intocado) auditado, sem achado
+
+`list-pending` vazio. Sem achados novos pendentes de reavaliação nos
+3 itens não-terminais existentes (`corroborated_static`/`inconclusive`
+em Vercel/Circle/Block) — já tinham verificação independente completa
+registrada mais cedo hoje, sem evidência nova pra mudar decisão nesta
+rodada; não reabertos pra evitar retrabalho idêntico.
+
+Abri `sveltejs/svelte` pela primeira vez (confirmado em escopo real via
+`scope-snapshots/vercel-open-source.json`: listado explicitamente como
+asset "Tier 1 OSS" — "Please assign this to any project involving the
+svelte repo"). Como é um compilador/framework, priorizei a superfície
+clássica de XSS server-side: a função central de escaping usada pelo
+SSR (`packages/svelte/src/escaping.js::escape_html`), sua consumidora
+de atributos (`internal/shared/attributes.js::attr`), a montagem de
+atributos via spread no SSR (`internal/server/index.js::attributes()`,
+que processa `{...obj}` em elementos) e os dois blocos `{@html ...}`
+(server e client).
+
+Rastreei a cadeia com ceticismo: `escape_html` escapa `&`/`<` (texto)
+ou `&`/`"`/`<` (atributo) — não escapa `'` nem `>`, mas isso é seguro
+porque todo atributo gerado é sempre entre aspas duplas (`="${...}"`,
+`attributes.js:34`) e `>` solto em texto não inicia tag em HTML. Testei
+a hipótese mais promissora — spread de atributos arbitrários vindo de
+objeto controlado por dado (`<div {...userObj}>`) poderia injetar HTML
+via NOME do atributo, já que só o VALOR passa por `escape_html` (nome
+vai direto pra string sem escapar, `index.js:171`). Confirmei que existe
+de fato uma defesa dedicada: `INVALID_ATTR_NAME_CHAR_REGEX`
+(`internal/server/index.js:30-31`) rejeita qualquer nome contendo
+espaço, `'`, `"`, `>`, `/`, `=` (cita a spec WHATWG de nomes de atributo
+válidos como referência) — bloqueia exatamente o vetor que eu esperava
+explorar. `{@html}` (ambos os lados) é intencionalmente não-escapado
+por design documentado (equivalente ao `dangerouslySetInnerHTML` do
+React), não é bug. `sanitize_template_string.js` (usado em geração de
+template literal pelo compilador) escapa corretamente backtick/`${`/
+backslash. Sem achado — superfície bem endurecida, com defesa
+específica pro vetor que tentei refutar primeiro.
+
+`deep-read-log.json` ganhou chave nova `sveltejs/svelte` (6 arquivos).
+Nenhum item elegível pra relatório nesta rodada.

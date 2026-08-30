@@ -436,5 +436,13 @@
     "src/requires.rs",
     "src/role.rs",
     "src/fiat_token.rs (parcial: mint/burn/approve/transfer_from/ft_transfer/ft_transfer_call/ft_resolve_transfer/storage_deposit/storage_unregister/pause/unpause — todas as funcoes com side-effect de saldo ou estado, via grep de require_not_blocklisted/require_only + leitura pontual de cada bloco)"
+  ],
+  "sveltejs/svelte": [
+    "packages/svelte/src/escaping.js",
+    "packages/svelte/src/internal/shared/attributes.js",
+    "packages/svelte/src/internal/server/index.js (attributes()/spread attrs)",
+    "packages/svelte/src/internal/server/blocks/html.js",
+    "packages/svelte/src/internal/client/dom/blocks/html.js",
+    "packages/svelte/src/compiler/utils/sanitize_template_string.js"
   ]
 }
