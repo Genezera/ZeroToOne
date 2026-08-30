@@ -564,3 +564,99 @@ próxima rodada: dentro do mesmo repo, o fluxo de OAuth/SSO em
 `packages/cli-auth/oauth.ts`/`sso.ts` (ainda não lidos) — troca de code
 por token, validação de `state`/PKCE — é superfície de auth mais rica
 que o armazenamento local já fechado aqui.
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — novo achado `corroborated_static`: callback loopback sem state/nonce em `packages/cli-auth/sso.ts` + leitura sem achado em `vercel-labs/skills`
+
+Fila vazia no início. Leitura profunda proativa, dois alvos:
+
+**1. `vercel-labs/skills` (repo novo, nunca tocado) — sem achado.** Escolhido
+por lidar com instalação de código de terceiros no disco do usuário
+(superfície clássica de supply-chain). Lidos `src/github-host.ts`
+(validação de `GH_HOST`, rejeita valores com userinfo/porta/path —
+correto), `src/skill-lock.ts` (bookkeeping do lockfile + resolução de
+token `GITHUB_TOKEN`/`GH_TOKEN`), `src/blob.ts` (Trees API do GitHub +
+fallback de auth só quando rate-limited/401/404, nunca vaza token pra
+host errado porque o host vem de `getGitHubHost()` local, não do
+`ownerRepo` do achado) e trechos de `src/update.ts`/`src/installer.ts`
+relevantes a escrita de arquivo em disco. Ponto investigado
+especificamente por suspeita de path traversal/zip-slip na instalação
+de skill (arquivos de um repo de terceiro escritos em
+`.agents/skills/<nome>/<file.path>`): `isPathSafe()` usa
+`normalize(resolve(...))` com checagem `startsWith(base + sep)` (padrão
+correto, evita o bug clássico de `startsWith(base)` sem separador) e é
+chamada tanto pra instalação via clone quanto via blob download — sem
+brecha. Código consistentemente defensivo (comentários no próprio
+código já documentam decisões de segurança passadas: pin de `GH_HOST`
+pra `github.com` em updates, `shell:false` explícito contra command
+injection no Windows). Sem achado novo.
+
+**2. `vercel/vercel` — novo achado `corroborated_static`.** Segui a
+sugestão pendente da rodada anterior: `packages/cli-auth/oauth.ts` e
+`packages/cli-auth/sso.ts`. `oauth.ts` implementa Device Authorization
+Grant (RFC 8628) com checagem de `issuer` mismatch e validação Zod em
+toda resposta — sem achado (esse é o fluxo realmente usado pelo `vercel
+login` ativo, confirmado depois lendo `packages/cli/src/commands/login/
+future.ts` e `packages/cli/src/util/oauth.ts`, que reimplementam o
+mesmo padrão localmente).
+
+`sso.ts` é outra história: `reauthorizeTeam`/`waitForVerification` abre
+um servidor HTTP local em `127.0.0.1:<porta efêmera aleatória>`, manda o
+browser pra `vercel.com/sso/<team>?session_id=...&client_id=...&next=
+http://localhost:<porta>`, e trata a **primeira requisição que chegar**
+nesse servidor (`server.once('request', ...)`) como a resposta legítima
+— extrai `token` da query string e usa direto num `fetch` pra
+`api.vercel.com/registration/verify?token=...`. Não há nenhum
+segredo/`state`/nonce gerado localmente e exigido de volta na resposta
+pra amarrar o callback ao fluxo que foi de fato iniciado. Isso é
+exatamente a classe "loopback interception" que a RFC 8252 (OAuth 2.0
+for Native Apps) existe pra prevenir: como o servidor não emite headers
+CORS e uma requisição GET simples não dispara preflight, uma página
+maliciosa aberta em outra aba do mesmo navegador (durante a janela em
+que o comando está esperando) pode mandar uma query forjada pra
+`127.0.0.1:<porta>` — CORS bloqueia a LEITURA da resposta pelo JS da
+página atacante, não o envio/processamento da requisição pelo servidor.
+Cenário de impacto: atacante roda o próprio fluxo de SSO pra obter um
+`token` de verificação válido (mas da conta/sessão DELE), corre uma
+página que faz port-scan de localhost tentando essa query em várias
+portas candidatas durante a janela da vítima — se ganhar a corrida antes
+do redirect real do browser, o CLI da vítima completa
+`registration/verify` com a sessão do atacante (confusão de
+conta/session-fixation). Porta aleatória é mitigação parcial, não
+suficiente (port-scan de localhost via `fetch()` é técnica conhecida,
+não bloqueada por CORS).
+
+**Ressalva que baixou a confiança pra "baixa" e travou o achado em
+`corroborated_static`:** rastreei a cadeia de chamada real dentro de
+`packages/cli/src` (o consumidor de fato do pacote `@vercel/cli-auth`,
+declarado `workspace:*` no `package.json`) e **não encontrei nenhum
+import** de `@vercel/cli-auth/oauth.js` ou `@vercel/cli-auth/sso.js` em
+lugar nenhum — o único subpath do pacote realmente importado é
+`@vercel/cli-auth/credentials-store.js` (já auditado, sem relação). O
+comando `vercel teams sso` que existe de fato
+(`packages/cli/src/commands/teams/sso.ts`) só lê status SAML via API,
+não chama `reauthorizeTeam`. Ou seja: não consegui confirmar que esse
+código está de fato alcançável pelo binário `vercel` publicado a partir
+deste mesmo repositório — pode ser código em transição/não finalizado,
+ou consumido por outro produto Vercel fora deste monorepo (o pacote é
+publicado no npm, não-privado, README diz "used by Vercel's CLI tools"
+no plural). `record-deployment-evidence` registrado com
+`confidence: "unverified"` de propósito — a transição pra
+`scope_verified` foi tentada e corretamente recusada pela máquina de
+estados (na verdade nem existe transição direta `corroborated_static→
+scope_verified`; exigiria passar por `reproduced_local`, que por sua vez
+exige um validador local que não existe pra este tipo de achado —
+mesma limitação real já documentada para os outros 3 achados
+`corroborated_static` não-Solidity da fila). Achado fica registrado e
+travado em `corroborated_static`, correto e honesto dado o estado atual
+da evidência — não uma falha do sistema.
+
+`deep-read-log.json` atualizado (`vercel/vercel` ganhou 5 arquivos
+novos; `vercel-labs/skills` criado com 5 entradas). Sugestão pra próxima
+rodada: se alguém quiser reforçar a confiança deste achado, valeria
+buscar por outros consumidores do pacote `@vercel/cli-auth` publicado no
+npm (fora deste repo) ou confirmar via changelog/histórico de commits
+se `sso.ts` é código novo ainda não cortado para produção ou código
+sendo removido; fora isso, os repos ainda intocados continuam:
+`vercel/next.js`, `vercel/turborepo`, `vercel/ai`, `vercel/swr`,
+`vercel/eve`, `vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`,
+`nuxt/nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`.

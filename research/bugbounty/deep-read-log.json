@@ -291,6 +291,18 @@
     "packages/cli/src/util/config/files.ts",
     "packages/cli-auth/credentials-store.ts",
     "packages/cli-config/src/cli-config.ts",
-    "packages/cli-config/src/paths.ts"
+    "packages/cli-config/src/paths.ts",
+    "packages/cli-auth/oauth.ts",
+    "packages/cli-auth/sso.ts",
+    "packages/cli/src/commands/login/future.ts",
+    "packages/cli/src/util/oauth.ts",
+    "packages/cli/src/commands/teams/sso.ts"
+  ],
+  "vercel-labs/skills": [
+    "src/github-host.ts",
+    "src/skill-lock.ts",
+    "src/blob.ts",
+    "src/update.ts (parcial)",
+    "src/installer.ts (parcial — writeSkillFiles/isPathSafe/sanitizeName)"
   ]
 }
