@@ -1700,6 +1700,155 @@ não foram tocados por esta reconciliação — permanecem em
 e prova de conceito (quando aplicável) antes de qualquer rascunho de
 relatório. Candidatos naturais pra próxima rodada de verticalização.
 
+## Rodada 2026-08-30 (leitura profunda proativa via GitHub Actions/push trigger) — fila vazia, `circlefin/solana-cctp-contracts` (repo irmão ainda não coberto) auditado, nada de novo
+
+`list-pending` veio vazio (nenhum finding em `candidate` em nenhum dos 4
+programas). Escolhi `circlefin/solana-cctp-contracts` pra leitura
+profunda proativa (repo em escopo confirmado via `check-scope`, ainda
+não tocado no `deep-read-log.json`) e rastreei a cadeia completa do
+fluxo de recebimento cross-chain: `message-transmitter::receive_message`
+(verificação de assinatura secp256k1 dos attesters, ordem crescente
+contra duplicata, threshold) → CPI assinada por `authority_pda` →
+`token-messenger-minter::handle_receive_message` (checa
+`params.sender == remote_token_messenger.token_messenger` pro domínio
+remoto, PDAs de `local_token`/`token_pair`/`custody` derivadas por seeds
+a partir do próprio `burn_token` da mensagem, `recipient_token_account`
+validado contra `mint_recipient` da burn message).
+
+Hipótese investigada a fundo e REFUTADA: `message_transmitter` (a conta
+singleton de estado) é aceita em `receive_message.rs`/`pause.rs`/etc.
+via `Account<'info, MessageTransmitter>` **sem** `seeds=` de
+re-derivação — à primeira vista parece abrir espaço pra alguém
+substituir por uma conta forjada com attesters próprios. Refutado ao
+confirmar que `initialize.rs` é o único ponto do programa que escreve o
+discriminator `MessageTransmitter` num account, e o faz com
+`seeds = [b"message_transmitter"], bump` (PDA fixa, singleton,
+gate por `validate_upgrade_authority`) — como só o próprio programa
+pode escrever dados em accounts que possui, e a única instrução que
+inicializa esse tipo já fixa o endereço, não existe caminho real pra
+uma segunda conta com esse discriminator+owner existir. Mesmo padrão
+replicado consistentemente em todas as outras instruções do programa
+(`pause.rs`, `send_message.rs`, etc.) — não é uma lacuna isolada, é o
+design intencional do Anchor pra contas singleton. Nenhum achado novo
+resultou desta leitura. Arquivos lidos (registrados em
+`deep-read-log.json`): `receive_message.rs`, `state.rs`,
+`initialize.rs`, `pause.rs`, `send_message.rs` (message-transmitter) e
+`handle_receive_message.rs` (token-messenger-minter). Próximo candidato
+natural: `programs/v2/*` (message-transmitter-v2/token-messenger-minter-v2,
+ainda não lidos) ou `circlefin/aptos-cctp` (Move, escopo confirmado,
+zero arquivos lidos até agora).
+
+## Rodada 2026-08-30 (leitura profunda proativa via GitHub Actions/push trigger) — `circlefin/aptos-cctp` auditado, achado registrado e refutado no mesmo round
+
+`list-pending` veio vazio de novo. Escolhi `circlefin/aptos-cctp` (repo
+Move em escopo confirmado, zero arquivos lidos até então). Investiguei
+`token_messenger_minter_v2::denylistable` — o padrão já visto antes
+nesta missão (denylist checado em um lado do fluxo, não no outro,
+classe de bug já confirmada com PoC no par EVM de Gateway e em
+`corroborated_static` no par Solana de Gateway). Aqui: `grep -rn`
+confirma que `denylistable::assert_not_denylisted` só é chamado em
+`create_burn_receipt` (fluxo OUTBOUND, `deposit_for_burn`) — o fluxo
+INBOUND (`prepare_mint`/`complete_mint`, via
+`stablecoin_handler::handler::mint`) nunca checa o `mint_recipient`
+contra o denylist. Registrei como finding novo
+(`token_messenger_minter.move::prepare_mint_complete_mint`), avancei
+pra investigação e **refutei no mesmo round**: cloneiei o repo irmão
+`circlefin/stablecoin-aptos` (também em escopo, dependência `local`
+declarada no `Move.toml` do `stablecoin_handler`) e confirmei que
+`stablecoin::stablecoin::override_deposit` (a função de dispatch
+customizado registrada via `dispatchable_fungible_asset::register_dispatch_functions`,
+que roda em TODO depósito do FA real, CCTP ou não) chama
+`blocklistable::assert_not_blocklisted(store_owner)` antes de
+qualquer depósito — ou seja o token subjacente tem seu próprio
+blocklist, independente e universal, que já bloqueia mint pra um
+destinatário blocklistado, fechando o gap que o denylist do nível
+CCTP deixava aberto. Diferente do caso EVM/Solana Gateway (onde não
+havia controle equivalente em nenhum outro lugar), aqui a assimetria
+é redundante, não explorável. Marcado `false_positive` com reasoning
+completo (cadeia de chamada + trecho exato do `override_deposit`).
+`deep-read-log.json` atualizado (`circlefin/aptos-cctp` ganhou 8
+entradas, `circlefin/stablecoin-aptos` ganhou 2, repo novo nesta
+missão). Nenhum item elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (v2 state machine, sessão cloud automática, GitHub Actions push trigger separado) — testa `scope_verified` sob a state machine nova nos 2 `corroborated_static` do programa, sem avanço de estado
+
+`list-pending` veio vazio (nenhum `candidate` novo). Trabalhei os 2
+achados Circle BBP já em `corroborated_static` (`SignerService.Sign` em
+`arc-remote-signer`, denylist ausente no saque do Gateway Wallet Solana)
+tentando avançar pra `scope_verified` via `record-deployment-evidence`
+(confidence="unverified" pros dois — nenhum dos dois tem
+endereço/release de produção confirmável nesta sessão:
+`developers.circle.com` bloqueado por `EGRESS_BLOCKED`,
+`github.com`/`api.github.com` bloqueados pelo proxy (403, exige
+`add_repo`) — só `raw.githubusercontent.com` e `git clone` funcionam pra
+ler código).
+
+**Achado real, mas a máquina de estados nova tem uma lacuna pra achados
+não-Solidity**: a transição `corroborated_static -> scope_verified`
+tentada direto (como o prompt da missão sugeria pra achados sem
+validador) foi recusada com `"transição \"corroborated_static\" →
+\"scope_verified\" não é permitida pela máquina de estados"` — não é a
+recusa "esperada" de `confidence=unverified` (essa só existe na
+precondição `reproduced_local->scope_verified`), é uma recusa mais
+fundamental: o caminho de transição simplesmente não existe sem passar
+por `reproduced_local` antes, e `reproduced_local` exige uma
+`validations` com `result=pass`, que hoje só existe pra Solidity
+(`foundry_poc`). Ou seja: **achados corroborados em Go/Rust/Clarity/TS
+ficam presos em `corroborated_static` até o sistema ganhar um validador
+pra essas linguagens** — confirmado experimentalmente, não é suposição.
+Não tentei contornar (regra de nunca forçar transição) nem inventar um
+validador falso — deixei documentado pra quem for expandir
+`state-machine.mjs`/`PRECONDITIONS` no futuro (seção 6.3 da auditoria
+externa citada no topo do arquivo).
+
+**Contexto novo pro achado Solana `initiate_withdrawal`**: é a MESMA
+classe de falha do `Withdrawals.sol` (EVM) que foi fechada acima como
+`known_duplicate` via o audit público da ChainSecurity — mas o audit
+citado é sobre o repo `evm-gateway-contracts` (commit `5b5446f5...`),
+não sobre `solana-gateway-contracts` (repo separado, Anchor/Rust). Não
+achei nenhuma fonte pública que confirme (ou negue) que o mesmo audit ou
+outro cobriu o código Solana especificamente — fica documentado no
+`reasoning` do finding como uma ressalva forte de novidade que uma
+sessão futura (ou revisão humana) precisa resolver antes de qualquer
+rascunho: se for a mesma decisão de design deliberada aplicada a outra
+chain, é `known_duplicate` também; se não, pode ser um achado real e
+inédito. Não decidi por conta própria sem citação verificável (regra da
+precondição `known_duplicate`: sempre exige `knownIssueSource` com
+url/quote rastreável).
+
+Leitura profunda proativa (3 arquivos, dentro do orçamento da rodada):
+`circlefin/malachite` tinha só 1 arquivo lido (`crates/signing/src/lib.rs`,
+sugerido como próximo passo em rodada anterior). Li
+`crates/signing-ecdsa/src/lib.rs` + `curve/k256.rs` (diff contra
+`curve/p256.rs`, idêntico exceto pela curva) e `crates/signing-ed25519/
+src/lib.rs` — todo o código de assinatura/verificação delega direto pras
+crates RustCrypto (`k256`, `p256`) e pra `ed25519_consensus` (a variante
+"ZIP215-style" da Zcash Foundation, desenhada especificamente pra
+verificação determinística em sistemas de consenso BFT — escolha correta,
+evita os problemas de maleabilidade de assinatura que o `ed25519-dalek`
+puro teria). Nenhuma lógica de verificação customizada, nenhum bypass,
+nenhum comparador non-constant-time visível nesses arquivos — sem achado,
+refutado dentro da própria rodada de leitura (não abri `candidate`).
+`deep-read-log.json` atualizado.
+
+Sugestão pra próxima rodada: `circlefin/malachite` ainda tem
+`crates/core-consensus`, `crates/core-votekeeper`, `crates/network`,
+`crates/sync` não lidos — onde a lógica de quórum/double-sign/replay de
+voto realmente vive (mais provável de ter bug de lógica do que a camada
+de assinatura pura, que só embala crates já auditadas). Também vale
+tentar de novo `developers.circle.com` (pode não estar sempre bloqueado)
+pra fechar o endereço mainnet real do `gateway_wallet` Solana.
+
+Nota: esta rodada rodou em paralelo (sessões separadas, mesmo trigger de
+push) às rodadas de `circlefin/solana-cctp-contracts` e
+`circlefin/aptos-cctp`/`stablecoin-aptos` documentadas imediatamente
+acima — sem sobreposição de arquivos lidos ou findings tocados, sem
+conflito de conteúdo, só de merge de `queue.jsonl`/`migration-log.json`
+(resolvido via `git reset --hard origin/master` + reaplicação das
+mutações desta sessão via CLI contra a base mais nova, repetido 2x
+durante esta mesma rodada por causa de pushes concorrentes — nunca merge
+textual do JSONL).
+
 ## Verificação (30/08/2026) — denylist ausente no saque do Gateway Wallet Solana: achado real, sem PoC, aparenta ser genuinamente novo
 
 Revisão humana assistida do achado
@@ -1763,3 +1912,158 @@ integração real, de ordem de grandeza maior que os outros 2 PoCs já
 feitos nesta missão. Mantido em `corroborated_static`, escopo confirmado
 (critical), candidato real pra uma rodada de verticalização dedicada
 futura.
+
+(Nota de reconciliação: as duas verificações acima — Solana e
+arc-remote-signer — chegaram independentemente à mesma conclusão que a
+rodada de estado-máquina logo abaixo já tinha documentado: nenhum dos
+dois pode avançar além de `corroborated_static` hoje sem um validador de
+PoC pra Go/Rust. Confirma o achado deles, não contradiz.)
+
+## Rodada 2026-08-30 (leitura profunda proativa via GitHub Actions/push trigger) — fila vazia, `circlefin/solana-cctp-contracts` (repo irmão ainda não coberto) auditado, nada de novo
+
+`list-pending` veio vazio (nenhum finding em `candidate` em nenhum dos 4
+programas). Escolhi `circlefin/solana-cctp-contracts` pra leitura
+profunda proativa (repo em escopo confirmado via `check-scope`, ainda
+não tocado no `deep-read-log.json`) e rastreei a cadeia completa do
+fluxo de recebimento cross-chain: `message-transmitter::receive_message`
+(verificação de assinatura secp256k1 dos attesters, ordem crescente
+contra duplicata, threshold) → CPI assinada por `authority_pda` →
+`token-messenger-minter::handle_receive_message` (checa
+`params.sender == remote_token_messenger.token_messenger` pro domínio
+remoto, PDAs de `local_token`/`token_pair`/`custody` derivadas por seeds
+a partir do próprio `burn_token` da mensagem, `recipient_token_account`
+validado contra `mint_recipient` da burn message).
+
+Hipótese investigada a fundo e REFUTADA: `message_transmitter` (a conta
+singleton de estado) é aceita em `receive_message.rs`/`pause.rs`/etc.
+via `Account<'info, MessageTransmitter>` **sem** `seeds=` de
+re-derivação — à primeira vista parece abrir espaço pra alguém
+substituir por uma conta forjada com attesters próprios. Refutado ao
+confirmar que `initialize.rs` é o único ponto do programa que escreve o
+discriminator `MessageTransmitter` num account, e o faz com
+`seeds = [b"message_transmitter"], bump` (PDA fixa, singleton,
+gate por `validate_upgrade_authority`) — como só o próprio programa
+pode escrever dados em accounts que possui, e a única instrução que
+inicializa esse tipo já fixa o endereço, não existe caminho real pra
+uma segunda conta com esse discriminator+owner existir. Mesmo padrão
+replicado consistentemente em todas as outras instruções do programa
+(`pause.rs`, `send_message.rs`, etc.) — não é uma lacuna isolada, é o
+design intencional do Anchor pra contas singleton. Nenhum achado novo
+resultou desta leitura. Arquivos lidos (registrados em
+`deep-read-log.json`): `receive_message.rs`, `state.rs`,
+`initialize.rs`, `pause.rs`, `send_message.rs` (message-transmitter) e
+`handle_receive_message.rs` (token-messenger-minter). Próximo candidato
+natural: `programs/v2/*` (message-transmitter-v2/token-messenger-minter-v2,
+ainda não lidos) ou `circlefin/aptos-cctp` (Move, escopo confirmado,
+zero arquivos lidos até agora).
+
+## Rodada 2026-08-30 (leitura profunda proativa via GitHub Actions/push trigger) — `circlefin/aptos-cctp` auditado, achado registrado e refutado no mesmo round
+
+`list-pending` veio vazio de novo. Escolhi `circlefin/aptos-cctp` (repo
+Move em escopo confirmado, zero arquivos lidos até então). Investiguei
+`token_messenger_minter_v2::denylistable` — o padrão já visto antes
+nesta missão (denylist checado em um lado do fluxo, não no outro,
+classe de bug já confirmada com PoC no par EVM de Gateway e em
+`corroborated_static` no par Solana de Gateway). Aqui: `grep -rn`
+confirma que `denylistable::assert_not_denylisted` só é chamado em
+`create_burn_receipt` (fluxo OUTBOUND, `deposit_for_burn`) — o fluxo
+INBOUND (`prepare_mint`/`complete_mint`, via
+`stablecoin_handler::handler::mint`) nunca checa o `mint_recipient`
+contra o denylist. Registrei como finding novo
+(`token_messenger_minter.move::prepare_mint_complete_mint`), avancei
+pra investigação e **refutei no mesmo round**: cloneiei o repo irmão
+`circlefin/stablecoin-aptos` (também em escopo, dependência `local`
+declarada no `Move.toml` do `stablecoin_handler`) e confirmei que
+`stablecoin::stablecoin::override_deposit` (a função de dispatch
+customizado registrada via `dispatchable_fungible_asset::register_dispatch_functions`,
+que roda em TODO depósito do FA real, CCTP ou não) chama
+`blocklistable::assert_not_blocklisted(store_owner)` antes de
+qualquer depósito — ou seja o token subjacente tem seu próprio
+blocklist, independente e universal, que já bloqueia mint pra um
+destinatário blocklistado, fechando o gap que o denylist do nível
+CCTP deixava aberto. Diferente do caso EVM/Solana Gateway (onde não
+havia controle equivalente em nenhum outro lugar), aqui a assimetria
+é redundante, não explorável. Marcado `false_positive` com reasoning
+completo (cadeia de chamada + trecho exato do `override_deposit`).
+`deep-read-log.json` atualizado (`circlefin/aptos-cctp` ganhou 8
+entradas, `circlefin/stablecoin-aptos` ganhou 2, repo novo nesta
+missão). Nenhum item elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (v2 state machine, sessão cloud automática, GitHub Actions push trigger separado) — testa `scope_verified` sob a state machine nova nos 2 `corroborated_static` do programa, sem avanço de estado
+
+`list-pending` veio vazio (nenhum `candidate` novo). Trabalhei os 2
+achados Circle BBP já em `corroborated_static` (`SignerService.Sign` em
+`arc-remote-signer`, denylist ausente no saque do Gateway Wallet Solana)
+tentando avançar pra `scope_verified` via `record-deployment-evidence`
+(confidence="unverified" pros dois — nenhum dos dois tem
+endereço/release de produção confirmável nesta sessão:
+`developers.circle.com` bloqueado por `EGRESS_BLOCKED`,
+`github.com`/`api.github.com` bloqueados pelo proxy (403, exige
+`add_repo`) — só `raw.githubusercontent.com` e `git clone` funcionam pra
+ler código).
+
+**Achado real, mas a máquina de estados nova tem uma lacuna pra achados
+não-Solidity**: a transição `corroborated_static -> scope_verified`
+tentada direto (como o prompt da missão sugeria pra achados sem
+validador) foi recusada com `"transição \"corroborated_static\" →
+\"scope_verified\" não é permitida pela máquina de estados"` — não é a
+recusa "esperada" de `confidence=unverified` (essa só existe na
+precondição `reproduced_local->scope_verified`), é uma recusa mais
+fundamental: o caminho de transição simplesmente não existe sem passar
+por `reproduced_local` antes, e `reproduced_local` exige uma
+`validations` com `result=pass`, que hoje só existe pra Solidity
+(`foundry_poc`). Ou seja: **achados corroborados em Go/Rust/Clarity/TS
+ficam presos em `corroborated_static` até o sistema ganhar um validador
+pra essas linguagens** — confirmado experimentalmente, não é suposição.
+Não tentei contornar (regra de nunca forçar transição) nem inventar um
+validador falso — deixei documentado pra quem for expandir
+`state-machine.mjs`/`PRECONDITIONS` no futuro (seção 6.3 da auditoria
+externa citada no topo do arquivo).
+
+**Contexto novo pro achado Solana `initiate_withdrawal`**: é a MESMA
+classe de falha do `Withdrawals.sol` (EVM) que foi fechada acima como
+`known_duplicate` via o audit público da ChainSecurity — mas o audit
+citado é sobre o repo `evm-gateway-contracts` (commit `5b5446f5...`),
+não sobre `solana-gateway-contracts` (repo separado, Anchor/Rust). Não
+achei nenhuma fonte pública que confirme (ou negue) que o mesmo audit ou
+outro cobriu o código Solana especificamente — fica documentado no
+`reasoning` do finding como uma ressalva forte de novidade que uma
+sessão futura (ou revisão humana) precisa resolver antes de qualquer
+rascunho: se for a mesma decisão de design deliberada aplicada a outra
+chain, é `known_duplicate` também; se não, pode ser um achado real e
+inédito. Não decidi por conta própria sem citação verificável (regra da
+precondição `known_duplicate`: sempre exige `knownIssueSource` com
+url/quote rastreável).
+
+Leitura profunda proativa (3 arquivos, dentro do orçamento da rodada):
+`circlefin/malachite` tinha só 1 arquivo lido (`crates/signing/src/lib.rs`,
+sugerido como próximo passo em rodada anterior). Li
+`crates/signing-ecdsa/src/lib.rs` + `curve/k256.rs` (diff contra
+`curve/p256.rs`, idêntico exceto pela curva) e `crates/signing-ed25519/
+src/lib.rs` — todo o código de assinatura/verificação delega direto pras
+crates RustCrypto (`k256`, `p256`) e pra `ed25519_consensus` (a variante
+"ZIP215-style" da Zcash Foundation, desenhada especificamente pra
+verificação determinística em sistemas de consenso BFT — escolha correta,
+evita os problemas de maleabilidade de assinatura que o `ed25519-dalek`
+puro teria). Nenhuma lógica de verificação customizada, nenhum bypass,
+nenhum comparador non-constant-time visível nesses arquivos — sem achado,
+refutado dentro da própria rodada de leitura (não abri `candidate`).
+`deep-read-log.json` atualizado.
+
+Sugestão pra próxima rodada: `circlefin/malachite` ainda tem
+`crates/core-consensus`, `crates/core-votekeeper`, `crates/network`,
+`crates/sync` não lidos — onde a lógica de quórum/double-sign/replay de
+voto realmente vive (mais provável de ter bug de lógica do que a camada
+de assinatura pura, que só embala crates já auditadas). Também vale
+tentar de novo `developers.circle.com` (pode não estar sempre bloqueado)
+pra fechar o endereço mainnet real do `gateway_wallet` Solana.
+
+Nota: esta rodada rodou em paralelo (sessões separadas, mesmo trigger de
+push) às rodadas de `circlefin/solana-cctp-contracts` e
+`circlefin/aptos-cctp`/`stablecoin-aptos` documentadas imediatamente
+acima — sem sobreposição de arquivos lidos ou findings tocados, sem
+conflito de conteúdo, só de merge de `queue.jsonl`/`migration-log.json`
+(resolvido via `git reset --hard origin/master` + reaplicação das
+mutações desta sessão via CLI contra a base mais nova, repetido 2x
+durante esta mesma rodada por causa de pushes concorrentes — nunca merge
+textual do JSONL).

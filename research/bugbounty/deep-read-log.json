@@ -297,7 +297,11 @@
     "x/fiattokenfactory/keeper/keeper.go (ValidatePrivileges)"
   ],
   "circlefin/malachite": [
-    "code/crates/signing/src/lib.rs"
+    "code/crates/signing/src/lib.rs",
+    "code/crates/signing-ecdsa/src/lib.rs",
+    "code/crates/signing-ecdsa/src/curve/k256.rs",
+    "code/crates/signing-ecdsa/src/curve/p256.rs",
+    "code/crates/signing-ed25519/src/lib.rs"
   ],
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
@@ -348,5 +352,27 @@
     "programs/gateway-wallet/src/instructions/remove_delegate.rs",
     "programs/gateway-wallet/src/state.rs",
     "programs/gateway-wallet/src/utils.rs"
+  ],
+  "circlefin/solana-cctp-contracts": [
+    "programs/message-transmitter/src/instructions/receive_message.rs",
+    "programs/message-transmitter/src/state.rs",
+    "programs/message-transmitter/src/instructions/initialize.rs",
+    "programs/message-transmitter/src/instructions/pause.rs",
+    "programs/message-transmitter/src/instructions/send_message.rs",
+    "programs/token-messenger-minter/src/token_messenger/instructions/handle_receive_message.rs"
+  ],
+  "circlefin/aptos-cctp": [
+    "packages/token_messenger_minter_v2/sources/token_messenger_minter.move",
+    "packages/token_messenger_minter_v2/sources/denylistable.move",
+    "packages/message_transmitter_v2/sources/message_transmitter.move",
+    "packages/stablecoin_handler/sources/handler.move",
+    "packages/stablecoin_handler/scripts/receive_message.move",
+    "packages/stablecoin_handler/scripts/deposit_for_burn.move",
+    "packages/token_messenger_minter_v2/Move.toml",
+    "packages/stablecoin_handler/Move.toml"
+  ],
+  "circlefin/stablecoin-aptos": [
+    "packages/stablecoin/sources/stablecoin.move",
+    "packages/stablecoin/sources/treasury.move"
   ]
 }

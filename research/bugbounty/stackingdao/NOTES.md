@@ -270,19 +270,51 @@ Leitura profunda proativa (3 arquivos ainda não lidos linha a linha):
 
 `deep-read-log.json` atualizado com os 3 arquivos desta rodada.
 
+## Rodada 2026-08-30 (v2 state machine, sessão cloud automática)
+
+`list-pending` vazio. Revisitei o único `corroborated_static`
+(`compute-ratio` em `data-stbtc-v1.clar`) sob a máquina de estados nova:
+`check-scope("StackingDAO","stbtc-token")` retornou `allowed=false` —
+o snapshot de escopo do programa (`research/bugbounty/scope-snapshots/`)
+tem `assets:[]` (só categorias gerais elegíveis, nenhum ativo específico
+registrado), então nem existe hoje um ativo pra amarrar deployment
+evidence, além da lacuna de reachability já documentada (cadeia
+incompleta, `api.hiro.so` bloqueado). Combinando as duas lacunas,
+transicionei pra `inconclusive` (com justificativa) em vez de deixar
+parado em `corroborated_static` — mais honesto sobre o estado real da
+investigação: não é só "falta prova de conceito", é "não dá pra saber
+hoje". `deep-read-log.json` não ganhou arquivo novo deste programa nesta
+rodada (leitura profunda proativa foi noutro programa — ver NOTES.md do
+Circle BBP).
+
+**Achado real e separado nesta rodada**: `check-scope` pra StackingDAO
+sempre vai retornar `allowed=false`, pra qualquer ativo, porque o
+snapshot de escopo (`research/bugbounty/scope-snapshots/stackingdao.json`)
+tem `assets:[]` por desenho — na Fase 1 os contratos individuais foram
+deixados de fora do snapshot, curados só em `targets.mjs`. Isso bloqueia
+`scope_verified` pra QUALQUER achado StackingDAO, não só este. Fica
+registrado como pendência real de engenharia (ver `IMPLEMENTATION_STATE.md`),
+não é um problema deste achado específico.
+
 ## Verificação (30/08/2026) — `data-stbtc-v1.clar::compute-ratio` fechado como falso-positivo, com evidência on-chain
 
 A lacuna que o achado acima deixou em aberto (rede bloqueada, não deu pra
 confirmar se `pending-shares` pode superar `stbtc-supply` em uso real)
-foi fechada consultando `api.hiro.so` diretamente: `data-stbtc-v1` e o
-`stbtc-token` irmão têm **exatamente 1 transação cada — a própria
-transação de deploy** (30/07/2026, mesmo dia para os dois). Zero chamada
-a `add-pending-shares`/`remove-pending-shares` desde então. Em contraste,
-`stbtc-reserve` (o contrato realmente ativo do produto BTC) tem 552
-transações, a mais recente com poucos minutos de idade, e não referencia
-`pending-shares` em nenhum lugar do seu código. Conclusão: o defeito de
-código é real (falta a mesma guarda que `data-stx-v2` tem), mas não há
-alcançabilidade hoje — o mecanismo inteiro nunca foi usado. Fechado como
-`false_positivo`, com ressalva explícita pra reabrir se
+foi fechada consultando `api.hiro.so` diretamente (acessível nesta
+sessão, ao contrário da sessão de nuvem que gerou a rodada acima):
+`data-stbtc-v1` e o `stbtc-token` irmão têm **exatamente 1 transação
+cada — a própria transação de deploy** (30/07/2026, mesmo dia para os
+dois). Zero chamada a `add-pending-shares`/`remove-pending-shares` desde
+então. Em contraste, `stbtc-reserve` (o contrato realmente ativo do
+produto BTC) tem 552 transações, a mais recente com poucos minutos de
+idade, e não referencia `pending-shares` em nenhum lugar do seu código.
+Conclusão: o defeito de código é real (falta a mesma guarda que
+`data-stx-v2` tem), mas não há alcançabilidade hoje — o mecanismo
+inteiro nunca foi usado. **Estado final reconciliado: `false_positivo`**
+(não `inconclusive` como a rodada acima tinha deixado) — a lacuna de
+reachability, que era o motivo real da incerteza, está fechada com
+evidência direta. A lacuna de scope snapshot (achado separado acima)
+continua real e deve ser corrigida, mas não é mais o que está segurando
+este achado específico. Ressalva explícita pra reabrir se
 `data-stbtc-v1`/`stbtc-token` forem ativados no futuro (parecem
 infraestrutura nova, ainda não conectada ao fluxo real).
