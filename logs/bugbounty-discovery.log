@@ -1,1 +1,31 @@
 [30/08/2026 10:00:00,71] Iniciando descoberta de alvo 
+[2026-08-30T13:00:11.450Z] Descoberta completa: 194 candidato(s) com bounty em HackerOne+Bugcrowd, 186 novo(s) (não rastreado ainda), 30 com metadado buscado nesta rodada (156 ficou pra próxima rodada).
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-scanner.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/STATUS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/dashboard/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/discovered-targets.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-repo-shas.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-verdicts.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen.json', LF will be replaced by CRLF the next time Git touches it
+To https://github.com/Genezera/ZeroToOne.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'https://github.com/Genezera/ZeroToOne.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[2026-08-30T13:00:14.468Z] AVISO: falha ao sincronizar com o GitHub: Command failed: git push
+To https://github.com/Genezera/ZeroToOne.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'https://github.com/Genezera/ZeroToOne.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+[30/08/2026 10:00:14,49] Iniciando digest de seguranca 

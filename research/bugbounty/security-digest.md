@@ -1,6 +1,6 @@
 # Digest de segurança — pacotes observados
 
-Gerado automaticamente por `cve-digest.mjs` na rodada semanal de descoberta (2026-08-28T21:51:46.968Z). Não editar à mão.
+Gerado automaticamente por `cve-digest.mjs` na rodada semanal de descoberta (2026-08-30T13:00:15.588Z). Não editar à mão.
 
 Cruza contra os Security Advisories do GitHub (GHSA), filtrado só pelos
 pacotes que o `dep-scanner.mjs` já achou vulnerável pelo menos uma vez —
