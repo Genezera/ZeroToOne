@@ -5,7 +5,10 @@
     "stacker-2.clar",
     "stacker-3.clar",
     "stacker-4.clar",
-    "stacker-5.clar"
+    "stacker-5.clar",
+    "stbtc-token.clar",
+    "data-stx-v2.clar",
+    "data-stbtc-v1.clar"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
