@@ -938,3 +938,31 @@ autorização própria).
 ainda totalmente intocados: `vercel/swr`, `vercel/eve`, `vercel/ms`,
 `vercel/async-sema`, `nuxt/nuxt`, `sveltejs/svelte`. Nenhum item
 elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-30 (push webhook, v2 state machine)
+
+`list-pending` vazio (nenhum candidate novo do scanner automático).
+Leitura profunda proativa: abri `vercel/eve` pela primeira vez (estava
+na lista de intocados acima). Foco na superfície de autenticação de
+canal/conector: `channel/auth/jwt-hmac.ts`, `channel/auth/jwt-ecdsa.ts`,
+`channel/auth/token-claims.ts`, `shared/validate-authorization.ts`.
+
+Rastreei a cadeia completa de verificação de JWT nas duas estratégias
+(HMAC e ECDSA): ambas chamam `jwtVerify` da lib `jose` com o array
+`algorithms` explicitamente restrito à estratégia resolvida (nunca
+derivado do header do token) — sem risco de confusão de algoritmo
+(`alg: none` ou HS/RS swap). `token-claims.ts::areTokenClaimMatchersSatisfied`
+(usado por ambas as estratégias pra checar `sub`/claims extras depois
+da verificação de assinatura) usa `matchesWildcardPattern`, que escapa
+corretamente os metacaracteres de regex antes de converter `*` em
+`.*` e ancora com `^...$` — sem bypass óbvio de wildcard nem risco de
+ReDoS (o padrão vem de config autorada pelo dono da conexão, não do
+token do chamador). `shared/validate-authorization.ts` é só validação
+estrutural de schema pro `auth` autorado por quem define uma conexão
+(não é ele mesmo um boundary de autorização em runtime). Sem achado
+nesta leitura — nem virou candidate.
+
+`deep-read-log.json` atualizado (`vercel/eve`, 4 arquivos, ver acima).
+Repos do programa ainda totalmente intocados: `vercel/swr`, `vercel/ms`,
+`vercel/async-sema`, `nuxt/nuxt`, `sveltejs/svelte`. Nenhum item
+elegível pra relatório nesta rodada.
