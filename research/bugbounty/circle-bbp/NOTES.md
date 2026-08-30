@@ -2306,6 +2306,65 @@ leitura: `stablecoin-near`, `stellar-cctp`. `starknet-cctp` (1 arquivo),
 `evm-cpn-contracts` (parcial) e `stablecoin-sui` (agora 1 arquivo)
 seguem parciais. Nenhum item elegível pra relatório nesta rodada.
 
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — `corroborated_static` revisados sem mudança de estado; leitura profunda em `stablecoin-near` (repo até então intocado), sem achado
+
+`list-pending` vazio em todo o sistema (0 candidates). Os 2 achados
+`corroborated_static` deste programa (`Withdrawals.sol` denylist gap,
+`human_ready` já — ver rodadas anteriores — e o gap gêmeo em
+`solana-gateway-contracts::initiate_withdrawal.rs`/`withdrawal.rs`, sem
+PoC executável disponível pra Anchor/Solana no sistema hoje) foram
+conferidos: ambos já têm verificação independente completa registrada
+em rodada anterior (re-leitura byte a byte, checagem de duplicata contra
+os 2 relatórios de auditoria pública do Gateway, confirmação de que
+Solana ainda não está em mainnet). Nada novo a fazer neles nesta rodada
+— seguem corretamente presos em `corroborated_static` pela limitação
+real de ferramental (sem validador Anchor/Solana), não por dúvida sobre
+o achado em si.
+
+Leitura profunda proativa: `circlefin/stablecoin-near` (NEAR/Rust,
+`asset_type: SMART_CONTRACT`, `eligible_for_bounty: true`, confirmado
+via `check-scope`) nunca tinha nenhuma entrada em `deep-read-log.json` —
+repo pequeno (3 034 linhas em `src/`), então priorizei cobertura
+completa da superfície de controle de acesso/denylist em vez de 1 arquivo
+grande só. Clone raso público via `git clone` (sem conta/token). Lidos:
+
+- `src/requires.rs` (36 linhas, completo) — 2 helpers usados em todo o
+  contrato: `require_not_blocklisted` (checa role `Blocklisted` via RBAC)
+  e `require_only` (checa role arbitrário do `predecessor_account_id`).
+- `src/role.rs` (60 linhas, completo) — enum de roles
+  (`Multisig`/`Admin`/`Blocklister`/`Controller`/`MasterMinter`/`Minter`/
+  `Owner`/`Pauser`/`Blocklisted`). Comentário no código confirma que
+  `Blocklisted` foi adicionado depois do deploy original e por isso
+  precisa ficar no fim do enum (estabilidade do `BorshStorageKey`) — não
+  é uma falha, é um cuidado de migração já documentado pelos próprios
+  autores.
+- `src/fiat_token.rs` (2 655 linhas — parcial, mas cobrindo por
+  `grep`+leitura pontual TODAS as funções com efeito colateral de saldo
+  ou estado): `mint`, `burn`, `approve`, `transfer_from`, `ft_transfer`,
+  `ft_transfer_call`, `ft_resolve_transfer`, `storage_deposit`,
+  `storage_unregister`, `pause`/`unpause`.
+
+Comparei exatamente o padrão que já rendeu achado real 2x nesta missão
+(denylist unidirecional — bloqueia entrada mas não saída de fundos, visto
+em `Withdrawals.sol` EVM e replicado em `initiate_withdrawal.rs` Solana):
+aqui o resultado é o oposto — **todas** as funções de movimentação de
+saldo checam blocklist dos DOIS lados (chamador e contraparte), não só
+um: `mint` checa `caller_id` e `to`; `transfer_from` checa `caller_id`,
+`from` e `to`; `ft_transfer`/`ft_transfer_call`/`ft_resolve_transfer`
+checam `predecessor`/`sender_id` e `receiver_id`; `storage_deposit`
+chega a checar a conta opcional passada por terceiro, não só quem chama.
+`burn` só checa o `caller_id` porque queima exclusivamente do próprio
+saldo do minter (`self.token.internal_withdraw(&caller_id, ...)`, nunca
+de terceiro) — não é uma omissão, é o mesmo modelo do `burn()` da USDC
+EVM (débito da própria conta do minter). Não encontrei nenhum caminho
+público de mudança de saldo sem a checagem correspondente. Sem achado —
+não virou candidate.
+
+`deep-read-log.json` ganhou chave nova `circlefin/stablecoin-near` (3
+entradas). Repos do Circle BBP ainda com zero leitura:
+`circlefin/stellar-cctp` (também `eligible_for_bounty: true`, confirmado
+no scope snapshot). Nenhum item elegível pra relatório nesta rodada.
+
 ## Rodada 2026-08-30 (push trigger, commit e319850) — sem candidatos novos; leitura profunda em `circlefin/arc-remote-signer`/`circlefin/arc-node` sem achado novo
 
 `migrate-to-v2.mjs` + `list-pending`: fila vazia (mesma distribuição:
