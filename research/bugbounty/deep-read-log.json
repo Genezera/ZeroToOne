@@ -356,5 +356,19 @@
     "programs/message-transmitter/src/instructions/pause.rs",
     "programs/message-transmitter/src/instructions/send_message.rs",
     "programs/token-messenger-minter/src/token_messenger/instructions/handle_receive_message.rs"
+  ],
+  "circlefin/aptos-cctp": [
+    "packages/token_messenger_minter_v2/sources/token_messenger_minter.move",
+    "packages/token_messenger_minter_v2/sources/denylistable.move",
+    "packages/message_transmitter_v2/sources/message_transmitter.move",
+    "packages/stablecoin_handler/sources/handler.move",
+    "packages/stablecoin_handler/scripts/receive_message.move",
+    "packages/stablecoin_handler/scripts/deposit_for_burn.move",
+    "packages/token_messenger_minter_v2/Move.toml",
+    "packages/stablecoin_handler/Move.toml"
+  ],
+  "circlefin/stablecoin-aptos": [
+    "packages/stablecoin/sources/stablecoin.move",
+    "packages/stablecoin/sources/treasury.move"
   ]
 }

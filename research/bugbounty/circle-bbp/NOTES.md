@@ -1737,3 +1737,35 @@ resultou desta leitura. Arquivos lidos (registrados em
 natural: `programs/v2/*` (message-transmitter-v2/token-messenger-minter-v2,
 ainda não lidos) ou `circlefin/aptos-cctp` (Move, escopo confirmado,
 zero arquivos lidos até agora).
+
+## Rodada 2026-08-30 (leitura profunda proativa via GitHub Actions/push trigger) — `circlefin/aptos-cctp` auditado, achado registrado e refutado no mesmo round
+
+`list-pending` veio vazio de novo. Escolhi `circlefin/aptos-cctp` (repo
+Move em escopo confirmado, zero arquivos lidos até então). Investiguei
+`token_messenger_minter_v2::denylistable` — o padrão já visto antes
+nesta missão (denylist checado em um lado do fluxo, não no outro,
+classe de bug já confirmada com PoC no par EVM de Gateway e em
+`corroborated_static` no par Solana de Gateway). Aqui: `grep -rn`
+confirma que `denylistable::assert_not_denylisted` só é chamado em
+`create_burn_receipt` (fluxo OUTBOUND, `deposit_for_burn`) — o fluxo
+INBOUND (`prepare_mint`/`complete_mint`, via
+`stablecoin_handler::handler::mint`) nunca checa o `mint_recipient`
+contra o denylist. Registrei como finding novo
+(`token_messenger_minter.move::prepare_mint_complete_mint`), avancei
+pra investigação e **refutei no mesmo round**: cloneiei o repo irmão
+`circlefin/stablecoin-aptos` (também em escopo, dependência `local`
+declarada no `Move.toml` do `stablecoin_handler`) e confirmei que
+`stablecoin::stablecoin::override_deposit` (a função de dispatch
+customizado registrada via `dispatchable_fungible_asset::register_dispatch_functions`,
+que roda em TODO depósito do FA real, CCTP ou não) chama
+`blocklistable::assert_not_blocklisted(store_owner)` antes de
+qualquer depósito — ou seja o token subjacente tem seu próprio
+blocklist, independente e universal, que já bloqueia mint pra um
+destinatário blocklistado, fechando o gap que o denylist do nível
+CCTP deixava aberto. Diferente do caso EVM/Solana Gateway (onde não
+havia controle equivalente em nenhum outro lugar), aqui a assimetria
+é redundante, não explorável. Marcado `false_positive` com reasoning
+completo (cadeia de chamada + trecho exato do `override_deposit`).
+`deep-read-log.json` atualizado (`circlefin/aptos-cctp` ganhou 8
+entradas, `circlefin/stablecoin-aptos` ganhou 2, repo novo nesta
+missão). Nenhum item elegível pra relatório nesta rodada.
