@@ -1848,3 +1848,76 @@ conflito de conteúdo, só de merge de `queue.jsonl`/`migration-log.json`
 mutações desta sessão via CLI contra a base mais nova, repetido 2x
 durante esta mesma rodada por causa de pushes concorrentes — nunca merge
 textual do JSONL).
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — `circlefin/malachite` core-votekeeper + core-consensus, sem achado
+
+`list-pending` (CLI v2) vazio. Segui a sugestão explícita deixada na
+rodada anterior: `crates/core-consensus`/`crates/core-votekeeper` de
+`circlefin/malachite`, onde a lógica de quórum/double-sign/replay de
+voto de verdade vive (em vez da camada de assinatura pura já auditada
+antes). Clone raso público via `git clone` (sem conta/token).
+
+Arquivos lidos (3, dentro do orçamento da rodada):
+1. `code/crates/core-votekeeper/src/keeper.rs` — `VoteKeeper::apply_vote`
+   e `PerRound::add`. Rastreei a detecção de equivocação: um segundo voto
+   do mesmo validador/tipo/rodada só é aceito sem virar evidência se
+   tiver o MESMO valor (`existing.value() != vote.value()` dispara
+   `ConflictingVote`); a única mutação permitida de um voto já
+   registrado é "upgrade" de extensão (voto sem extensão sendo
+   substituído por um idêntico com extensão) — não dá pra usar isso pra
+   trocar o valor votado. Cálculo de threshold (`compute_threshold`)
+   soma peso por validador (`RoundWeights::set_once`, uma vez só por
+   endereço, evita contar peso duplicado de reenvio do mesmo voto).
+   `SkipRound` (voto de rodada futura) exige o threshold `honest`
+   (f+1), separado e mais baixo que `quorum` — sem confusão entre os
+   dois parâmetros. Sem achado.
+2. `code/crates/core-votekeeper/src/evidence.rs` — `EvidenceMap::add`.
+   Dedup de par de evidência (checa os dois sentidos
+   `existing`/`conflicting`) e teto `MAX_EVIDENCE_PER_VALIDATOR = 3` por
+   validador, evitando crescimento ilimitado de estado por um validador
+   malicioso que manda muitas variações de voto conflitante na mesma
+   altura/rodada. `debug_assert_eq!` (não enforced em release) confirma
+   que a precondição "mesmo validador" é responsabilidade do chamador
+   (`keeper.rs`, que já garante isso via `validator_address()` do voto
+   existente == do novo) — não é uma checagem que falta, é uma invariante
+   interna já garantida no único call site. Sem achado.
+3. `code/crates/core-consensus/src/handle/vote.rs` — `on_vote`/
+   `verify_signed_vote`/`verify_vote_extension`. Ordem de checagens
+   correta: descarta altura menor, enfileira altura maior/rodada -1,
+   limita lookahead de rodada futura (`MAX_FUTURE_ROUND_LOOKAHEAD`,
+   proteção de DoS de estado), dedup via `has_vote` (que só casa
+   valor igual — um voto forjado com valor diferente do já registrado
+   NÃO é descartado por aí, cai pra verificação de assinatura de
+   verdade), e só DEPOIS verifica assinatura
+   (`verify_signature`) antes de processar. Investiguei
+   especificamente se o dedup por `has_vote` (que roda ANTES da
+   verificação de assinatura) permite alguma forma de "confirmar" um
+   voto sem assinatura válida: não permite — `has_vote` só compara
+   contra o que já está armazenado em `per_round`, e a única forma de
+   um voto chegar lá é já ter passado por `verify_signed_vote` com
+   sucesso (`apply_driver_input` só é chamado depois da verificação);
+   um voto forjado que "colida" em endereço+tipo+valor com um já
+   verificado apenas é descartado como redundante, nunca tratado como
+   informação nova. `verify_vote_extension` aplica a política
+   (`required`/`disabled`/opcional) de forma consistente por tipo de
+   voto (extensão só é válida em precommit não-nil) antes de aceitar.
+   Sem achado.
+
+Conclusão: nenhum achado novo — o vote keeper e o handler de voto do
+Malachite são código de consenso BFT cuidadosamente desenhado (padrão
+Tendermint), com as invariantes de segurança que importam (nenhum voto
+processado sem assinatura verificada, equivocação sempre detectada e
+com estado limitado, sem confusão entre threshold `honest` e `quorum`)
+intactas nos três arquivos revisados. `deep-read-log.json` atualizado
+(`circlefin/malachite` agora com 8 arquivos). Sugestão pra próxima
+rodada: `crates/core-consensus/src/full_proposal.rs` (832 linhas, ainda
+não lido, gerencia propostas completas/streaming) ou
+`crates/core-votekeeper/src/round_votes.rs`/`round_weights.rs`/
+`value_weights.rs` (arquivos pequenos restantes do mesmo crate, pra
+fechar a cobertura completa de `core-votekeeper`).
+
+Nenhum item novo na fila. Os únicos itens em estado não-terminal do
+programa continuam os já documentados nas rodadas anteriores acima
+(`Withdrawals.sol` denylist gap e o achado Solana `initiate_withdrawal`,
+ambos aguardando decisão humana/evidência externa que esta rodada não
+teve novidade pra oferecer).
