@@ -345,6 +345,21 @@ tempo todo via webhook de push) — todas por replay semântico do ledger +
 reconstrução de `queue.jsonl` a partir do banco, nunca merge textual de
 JSON.
 
+### Segundo achado chega a `human_ready` (30/08/2026): PoC Go real pro `arc-remote-signer`
+Corrigido o bug do scope-registry do StackingDAO (assets:[] recusava
+tudo — populado a partir de targets.mjs, 2 testes novos). Depois, PoC
+real pro achado `SignerService.Sign` sem auth: em vez do binário
+completo (AWS KMS/Secrets Manager/Datadog/enclave — avaliado antes como
+desproporcional), um teste Go local chama a função de produção real
+`public.New()` com um `SignerServiceServer` mínimo, evitando as
+dependências que não fazem parte do achado. Toolchain Go 1.27 + buf +
+protoc-gen-go/-grpc, tudo via `go install`, sem Docker. Resultado real:
+`go test` PASS, servidor real aceitou `Sign()` sem nenhuma credencial.
+`corroborated_static → reproduced_local → scope_verified → human_ready`.
+Fila: 2 `corroborated_static` (Solana, Vercel SSO), 37 `false_positive`,
+1 `inconclusive`, 1 `known_duplicate`, **2 `human_ready`**. Ledger: 170
+entradas.
+
 ## Fases 2, 4 e 5
 
 Não iniciadas. Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL,
