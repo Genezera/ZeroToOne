@@ -308,6 +308,43 @@ com deduplicação (as duas pontas do merge compartilhavam história de um
 merge anterior, causando entradas repetidas que precisaram ser
 filtradas antes do replay).
 
+### Checagem dos 4 achados novos (30/08/2026) — resultado final
+- **Solana Gateway Wallet** (denylist ausente no saque): `corroborated_static`.
+  Verificado independentemente linha a linha; nenhum dos 2 audits
+  públicos do Circle Gateway cobre Solana; Gateway ainda não está em
+  mainnet lá. PoC não tentada — impossibilidade estrutural do próprio
+  framework Anchor (`#[derive(Accounts)]`), não limitação de tempo.
+- **arc-remote-signer** (`SignerService.Sign` sem auth): `corroborated_static`.
+  Verificado independentemente (interceptors do servidor, TLS
+  unidirecional). PoC avaliada e adiada por desproporção de esforço
+  (AWS KMS + Datadog + enclave attestation na inicialização) — candidato
+  real pra uma rodada de verticalização dedicada.
+- **Vercel SSO** (`cli-auth/sso.ts`): `corroborated_static`. Alcançabilidade
+  real fora do monorepo público segue genuinamente incerta — confirmado
+  de forma independente 2x (minha verificação + uma rodada separada do
+  agente de nuvem, sem saber uma da outra, mesma conclusão).
+- **StackingDAO `compute-ratio`**: **fechado como `false_positivo`** com
+  evidência on-chain direta (`api.hiro.so`, acessível nesta sessão) —
+  `data-stbtc-v1`/`stbtc-token` têm exatamente 1 transação cada desde o
+  deploy (a própria transação de deploy), zero uso real do mecanismo.
+
+**Bug real encontrado e não corrigido ainda**: `check-scope` pra
+StackingDAO sempre retorna `allowed=false` pra qualquer ativo, porque
+`research/bugbounty/scope-snapshots/stackingdao.json` tem `assets:[]`
+por desenho da Fase 1 (só política/categoria, contratos ficaram só em
+`targets.mjs`). Isso bloqueia `scope_verified` pra QUALQUER achado
+StackingDAO, não só os desta rodada. Pendência real de engenharia — o
+próprio agente de nuvem achou isso tentando usar o CLI de verdade.
+
+Estado final da fila: 37 `false_positive`, 3 `corroborated_static`
+(candidatos reais pra uma vertical dedicada — Solana e arc-remote-signer
+são os mais promissores), 1 `inconclusive`, 1 `known_duplicate`, 1
+`human_ready`. Ledger: 167 entradas, íntegro. 4 rodadas de merge
+reconciliadas nesta sessão (o agente de nuvem trabalhou em paralelo o
+tempo todo via webhook de push) — todas por replay semântico do ledger +
+reconstrução de `queue.jsonl` a partir do banco, nunca merge textual de
+JSON.
+
 ## Fases 2, 4 e 5
 
 Não iniciadas. Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL,
