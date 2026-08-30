@@ -462,3 +462,43 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`packages/world-vercel/src/utils.ts` adicionado à chave `vercel/workflow`).
 Sugestão pra próxima rodada: ainda falta fechar `quickjs-runtime.ts`
 (L1350-1600 e L2450+).
+
+## Rodada 2026-08-30 (push automático seguinte) — fechamento de quickjs-runtime.ts
+
+Fila vazia. Segui a pendência da rodada anterior: li as duas seções
+restantes de `packages/core/src/runtime/quickjs-runtime.ts` (agora
+completo, 2816 linhas):
+
+- L1350-1600 (`startQuickJSWorkflow`/fase de init por execução): seed do
+  PRNG determinístico derivado de `runId`+`workflowName`+`deploymentId`
+  (não de `startedAt`, que diverge entre invocação turbo sintetizada e a
+  execução durável — comentário explica o motivo), geração de
+  nanoid/ULID seedados a partir do mesmo PRNG, `process.env` injetado
+  via serde host-side (paridade documentada com o motor node:vm, cópia
+  congelada, mesma decisão já vista em outros arquivos desta missão).
+  Nada aqui expõe env/segredos a um caminho não confiável — é o próprio
+  código do workflow do usuário quem roda dentro da VM, não input
+  externo não confiável.
+- L2450-2816 (fim do arquivo): coleta de "pending operations" para
+  drain/suspensão (`dumpPendingOps`/`collectDrainOperations`),
+  `checkWorkflowState` (detecta completed/failed/suspended lendo só
+  globals internos da própria VM: `__workflowDone`, `__workflowError`,
+  `__resolvers`, `__pending` — nenhum desses é controlável por um
+  terceiro, só pelo próprio código do workflow que já roda dentro do
+  sandbox) e helpers de extração de erro/interrupt budget. Puro
+  bookkeeping determinístico, sem superfície de auth/crypto.
+
+Sem achado — arquivo fechado por completo nesta missão, engenharia
+cuidadosa de replay determinístico consistente com o resto do módulo já
+revisado. `deep-read-log.json` atualizado (entrada de
+`quickjs-runtime.ts` marcada como completa).
+
+Repos do escopo `Vercel Open Source` ainda nunca tocados por esta
+missão (fora do repo `workflow`/`flags`/`chat` já cobertos):
+`vercel/next.js`, `vercel/vercel`, `vercel/turborepo`, `vercel/ai`,
+`vercel/swr`, `vercel/eve`, `vercel/ms`, `vercel/async-sema`,
+`nitrojs/nitro`, `nuxt/nuxt`, `sveltejs/svelte`,
+`vercel-labs/agent-skills`, `vercel-labs/skills` — a maioria são
+monorepos grandes; próxima rodada pode escolher um arquivo específico
+de auth/token dentro de `vercel/vercel` (ex. CLI login/token storage)
+em vez de tentar cobrir o repo inteiro de uma vez.

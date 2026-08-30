@@ -1361,3 +1361,40 @@ Leitura profunda proativa (2 alvos):
 `deep-read-log.json` atualizado com as novas chaves `circlefin/arc-node`
 (3 arquivos) e `circlefin/noble-fiattokenfactory` (5 arquivos, incluindo
 o `.proto`).
+
+## Rodada 2026-08-30 (push automático seguinte) — msg_server_accept_owner.go e circlefin/malachite
+
+Fila novamente vazia. Leitura profunda proativa:
+
+- `circlefin/noble-fiattokenfactory::x/fiattokenfactory/keeper/msg_server_accept_owner.go`
+  (pendência mencionada em rodada anterior, "ainda não vi"): fecha o
+  padrão de 2 passos de transferência de ownership já suspeitado —
+  `AcceptOwner` confere corretamente `owner.Address != msg.From` contra
+  o pending owner antes de promover. Sem achado, refuta qualquer dúvida
+  residual sobre esse fluxo.
+- `circlefin/malachite::code/crates/signing/src/lib.rs` (repo novo,
+  nunca coberto nesta missão — motor de consenso BFT que o validador
+  Arc Chain roda). É só a definição dos traits `Signer<Ctx>`/`Verifier<Ctx>`
+  (sem implementação concreta), mas o design documentado no próprio
+  código reforça o achado já registrado em `arc-remote-signer`
+  (`SignerService.Sign` sem autenticação): os métodos de assinatura do
+  malachite são todos nomeados por propósito (`sign_vote`,
+  `sign_proposal`, `sign_vote_extension`, `sign_validator_proof`)
+  justamente para impor separação de domínio — nenhuma assinatura de um
+  escopo deve verificar para outro. O `SignerService.Sign` do
+  arc-remote-signer é o oposto disso: assina bytes arbitrários sem
+  noção de propósito/escopo. Atualizei o `reasoning` do finding existente
+  com essa evidência de contraste (não é um achado novo, reforça o
+  existente). **Nota de processo**: o primeiro `update-finding` desta
+  atualização usou `--patch` com só o texto novo e isso **sobrescreveu**
+  o `reasoning` completo anterior (ficou só preservado aninhado em
+  `raw.raw`, não no campo usado pela validação) — corrigido nesta mesma
+  rodada mesclando manualmente o texto original + a atualização antes de
+  gravar de novo. Lição: `update-finding --patch='{"reasoning":"..."}'`
+  substitui o campo inteiro, não concatena — futuras atualizações de
+  achados existentes precisam ler o `reasoning` atual primeiro e enviar
+  o texto mesclado.
+
+`deep-read-log.json` atualizado (`circlefin/noble-fiattokenfactory` ganhou
+`msg_server_accept_owner.go`; nova chave `circlefin/malachite` com
+`code/crates/signing/src/lib.rs`).
