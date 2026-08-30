@@ -275,7 +275,10 @@
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
     "crates/remote-signer/src/config.rs",
-    "crates/eth-engine/src/rpc/auth.rs"
+    "crates/eth-engine/src/rpc/auth.rs",
+    "crates/eth-engine/src/rpc/mod.rs",
+    "crates/eth-engine/src/rpc/engine_rpc.rs",
+    "crates/eth-engine/src/rpc/ethereum_rpc.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",

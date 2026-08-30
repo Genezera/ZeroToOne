@@ -1567,3 +1567,30 @@ tenho evidência pra afirmar com confidence >= "low" nesta rodada.
 
 `deep-read-log.json` atualizado (`circlefin/solana-gateway-contracts`
 criado, 10 arquivos lidos nesta rodada).
+
+## Rodada 2026-08-30 (push automático seguinte) — arc-node: RPC do Engine API, sem achado novo
+
+Fila `list-pending` vazia de novo. Leitura profunda proativa voltou em
+`circlefin/arc-node` pra fechar o módulo `crates/eth-engine/src/rpc/`
+inteiro em torno do `auth.rs` já lido antes (achado de auth só tinha
+cobertura parcial do módulo). Li `mod.rs`, `engine_rpc.rs` e
+`ethereum_rpc.rs`:
+
+- `engine_rpc.rs` — cliente `EngineRpc` que fala com o Engine API
+  (`engine_forkchoiceUpdatedV3`, `engine_getPayloadV4/V5`,
+  `engine_newPayloadV4`) sempre anexando `bearer_auth(self.auth.generate_token())`
+  (o JWT do `auth.rs` já analisado). Toda chamada passa por
+  `rpc_request`, que centraliza o `bearer_auth` — não achei nenhum
+  caminho que monte a requisição HTTP pulando essa etapa.
+- `ethereum_rpc.rs` — cliente `EthereumRPC` separado, para o JSON-RPC
+  `eth_*`/`txpool_*` padrão (sem JWT). Isso é o desenho normal de
+  clientes Ethereum: a Engine API (autenticada, consensus-critical) e o
+  JSON-RPC `eth_*` de leitura (não autenticado por convenção, pensado
+  pra ficar atrás de firewall/rede local) são propositalmente
+  endpoints/portas diferentes com modelos de confiança diferentes — não
+  é um gap de auth, é a mesma separação que existe no geth/reth/lighthouse
+  etc.
+- `mod.rs` — só declara os módulos, sem lógica própria.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`circlefin/arc-node`
+ganhou os 3 arquivos acima, total agora 6).
