@@ -76,3 +76,44 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 
 [30/08/2026  9:20:40,07] Iniciando scanner de bug bounty 
+[2026-08-30T12:21:35.285Z] Varredura completa: 13 contratos Clarity + 0 arquivos (JS/TS+Go+JVM+Swift) + 0 manifesto(s) de dependência checados, 0 erros de busca, 0 achados NOVOS na fila (0 de dependência conhecida), 5 veredito(s) novo(s)/mudado(s).
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-scanner.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/STATUS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/dashboard/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-repo-shas.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-verdicts.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/dao.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/data-stbtc-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/data-stx-v2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/signer-admin-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacking-dao-core-btc-v3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacking-dao-core-ststxbtc-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stbtc-reserve.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stbtc-token.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/ststx-token.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stx-reserve-v2.clar', LF will be replaced by CRLF the next time Git touches it
+To https://github.com/Genezera/ZeroToOne.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'https://github.com/Genezera/ZeroToOne.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[2026-08-30T12:21:37.733Z] AVISO: falha ao sincronizar estado sem achados: Command failed: git push
+To https://github.com/Genezera/ZeroToOne.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'https://github.com/Genezera/ZeroToOne.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
