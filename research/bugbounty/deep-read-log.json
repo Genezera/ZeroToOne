@@ -145,7 +145,11 @@
     "packages/adapter-messenger/src/index.ts",
     "examples/nextjs-chat/src/app/api/modal-callback/[token]/route.ts",
     "packages/adapter-github/src/index.ts",
-    "packages/adapter-whatsapp/src/index.ts"
+    "packages/adapter-whatsapp/src/index.ts",
+    "packages/adapter-teams/src/webhook/parse.ts",
+    "packages/adapter-teams/src/index.ts",
+    "packages/adapter-linear/src/index.ts (handleWebhook/handleVerifiedWebhook)",
+    "packages/adapter-x/src/index.ts (handleWebhook/verifySignature/handleCrcChallenge)"
   ],
   "afterpay/sdk-ios": [
     "Sources/Afterpay/Helpers/JWT.swift",

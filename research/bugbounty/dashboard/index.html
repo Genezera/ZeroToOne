@@ -135,18 +135,18 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
     <div class="brand">Centro de Sinais</div>
     <ul class="nav"><li><a href="#index" data-nav="index" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="#targets" data-nav="targets"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="#queue" data-nav="queue"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="#activity" data-nav="activity"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="#stats" data-nav="stats"><span class="nav-icon">▲</span>Estatística</a></li></ul>
-    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>—</div>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-30 12:21 UTC</div>
   </aside>
   <main class="main">
     <section class="page" id="page-index" data-page="index">
     <h1>Visão geral</h1>
-    <div class="page-sub">Varredura estática multi-linguagem, mais retroalimentação de veredito, cross-referência de dependência/CVE e revisão por IA.</div>
+    <div class="page-sub">13 contrato(s) Clarity, 0 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 0 erro(s) de busca.</div>
     
     <div class="tiles">
       <div class="tile" style="--i:0"><div class="tile-value" data-countup="14">0</div><div class="tile-label">Alvos ativos</div></div>
       <div class="tile" style="--i:1"><div class="tile-value" data-countup="4">0</div><div class="tile-label">Programas</div></div>
       <div class="tile" style="--i:2"><div class="tile-value" data-countup="6">0</div><div class="tile-label">Linguagens</div></div>
-      <div class="tile" style="--i:3"><div class="tile-value" data-countup="27">0</div><div class="tile-label">Rodadas registradas</div></div>
+      <div class="tile" style="--i:3"><div class="tile-value" data-countup="28">0</div><div class="tile-label">Rodadas registradas</div></div>
       <div class="tile" style="--i:4"><div class="tile-value" data-countup="0">0</div><div class="tile-label">Sinais pendentes</div></div>
       <div class="tile" style="--i:5"><div class="tile-value" data-countup="38">0</div><div class="tile-label">Já revisados</div></div>
     </div>
@@ -296,35 +296,35 @@ Esta PoC real é evidência adicional forte de que o COMPORTAMENTO é exatamente
       <h2>Atividade recente</h2>
       <div class="panel-sub"><a href="#activity">Ver o histórico completo →</a></div>
       <div class="timeline">
-    <div class="timeline-item" style="--i:0" data-kind="verdict">
-      <div class="timeline-time">2026-08-29 12:07 UTC</div>
-      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Circle BBP (solidity) — Rastreei a cadeia de chamada completa cruzando dois repositórios (clonados publicamente via git clone): Withdrawal.sol::withdraw() (evm-xreserve-contracts) recebe `attestationPayload` como `bytes calldata` e primeiro cha…</div>
+    <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 5 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
     <div class="timeline-item" style="--i:1" data-kind="verdict">
-      <div class="timeline-time">2026-08-29 12:07 UTC</div>
-      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
-      <div class="timeline-body">Block Open Source (kotlin) — Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` …</div>
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Swift/ObjC) — Confirmei os dois defeitos de codigo isoladamente: (1) JWT.decode (JWT.swift:12-15) faz jwt.components(separatedBy: &quot;.&quot;)[1] sem checar o tamanho do array -- um jwtToken malformado (ex.: string sem nenhum ponto, ou vazia)…</div>
     </div>
     <div class="timeline-item" style="--i:2" data-kind="verdict">
-      <div class="timeline-time">2026-08-29 12:07 UTC</div>
-      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
-      <div class="timeline-body">Circle BBP (solidity) — Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tok…</div>
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">StackingDAO (Clarity) — Investiguei a fundo e a hipótese não se sustenta: request-stx-to-stack (stx-reserve-v2.clar linha 199-212) usa exclusivamente contract-caller — tanto para a checagem de autorização ((try! (contract-call? .dao check-is-pr…</div>
     </div>
     <div class="timeline-item" style="--i:3" data-kind="verdict">
-      <div class="timeline-time">2026-08-29 12:07 UTC</div>
-      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Block Open Source (kotlin) — Confirmado o defeito de código: getQueryStringWithHints (VitessQueryHintHandler.kt:14-41) monta o comentário /*vt+ ... */ concatenando diretamente cada diretiva extraída do hint (hint.substring(3).trim(), após remover o …</div>
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: auth_arg_inconsistency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">StackingDAO (Clarity) — A inconsistência tx-sender vs contract-caller em set-token-uri (linhas 61-66) é real e confirmada por leitura direta do código (única função entre ~25 administrativas que usa tx-sender em vez de contract-caller). Porém, …</div>
     </div>
     <div class="timeline-item" style="--i:4" data-kind="verdict">
-      <div class="timeline-time">2026-08-29 12:07 UTC</div>
-      <div class="timeline-title">Veredito: delegatecall_risk <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Circle BBP (solidity) — ExecutionUtils.delegateCall(address to, bytes memory data) e uma funcao de biblioteca generica utilitaria (src/utils/, codigo de runtime de verdade, nao script) — por definicao recebe `to` como parametro, entao a heurist…</div>
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Circle BBP (solidity) — Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tok…</div>
     </div>
     <div class="timeline-item" style="--i:5" data-kind="verdict">
-      <div class="timeline-time">2026-08-29 12:07 UTC</div>
-      <div class="timeline-title">Veredito: unchecked_call_return <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Circle BBP (solidity) — Mesmo padrao do outro achado &#39;unchecked_call_return&#39; neste arquivo: o retorno de gatewayWalletProxy.call(addBatchSignerCallData) nas linhas 134-135 e capturado em (bool batchSignerSuccess, bytes memory batchSignerReturnD…</div>
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (kotlin) — O código monta ProcessBuilder(&quot;sh&quot;, &quot;-c&quot;, &quot;echo $registryUrl | $credentialCmd get&quot;) por interpolação de string sem sanitização — padrão clássico de command injection SE registryUrl/credStore fossem influenciáveis por um …</div>
     </div></div>
     </div>
     <div class="panel">
@@ -332,29 +332,29 @@ Esta PoC real é evidência adicional forte de que o COMPORTAMENTO é exatamente
       <div class="panel-sub"><a href="#stats">Ver estatística completa →</a></div>
       
   <div class="bar-row" style="--i:0">
-    <div class="bar-label">unguarded_transfer <span class="bar-lang">Clarity</span></div>
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">solidity</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
   <div class="bar-row" style="--i:1">
+    <div class="bar-label">auth_arg_inconsistency <span class="bar-lang">Clarity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(1)</span></div>
+  </div>
+  <div class="bar-row" style="--i:2">
+    <div class="bar-label">unguarded_transfer <span class="bar-lang">Clarity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(2)</span></div>
+  </div>
+  <div class="bar-row" style="--i:3">
     <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Go</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:2">
+  <div class="bar-row" style="--i:4">
     <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Kotlin/Java</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(4)</span></div>
-  </div>
-  <div class="bar-row" style="--i:3">
-    <div class="bar-label">ssrf_risk <span class="bar-lang">JS/TS</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
-    <div class="bar-value">100% <span class="bar-n">(13)</span></div>
-  </div>
-  <div class="bar-row" style="--i:4">
-    <div class="bar-label">prototype_pollution_risk <span class="bar-lang">JS/TS</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
-    <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
     </div>
   </section>
@@ -1154,247 +1154,277 @@ Esta PoC real é evidência adicional forte de que o COMPORTAMENTO é exatamente
     <h1>Atividade ao vivo</h1>
     <div class="page-sub">Toda rodada de varredura e todo veredito registrado no ledger encadeado por hash (research/ledger.research.jsonl) — histórico auditável, nunca sobrescrito.</div>
     <div class="panel"><div class="timeline">
-    <div class="timeline-item" style="--i:0" data-kind="verdict">
+    <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 5 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="verdict">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (Swift/ObjC) — Confirmei os dois defeitos de codigo isoladamente: (1) JWT.decode (JWT.swift:12-15) faz jwt.components(separatedBy: &quot;.&quot;)[1] sem checar o tamanho do array -- um jwtToken malformado (ex.: string sem nenhum ponto, ou vazia)…</div>
+    </div>
+    <div class="timeline-item" style="--i:2" data-kind="verdict">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">StackingDAO (Clarity) — Investiguei a fundo e a hipótese não se sustenta: request-stx-to-stack (stx-reserve-v2.clar linha 199-212) usa exclusivamente contract-caller — tanto para a checagem de autorização ((try! (contract-call? .dao check-is-pr…</div>
+    </div>
+    <div class="timeline-item" style="--i:3" data-kind="verdict">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: auth_arg_inconsistency <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">StackingDAO (Clarity) — A inconsistência tx-sender vs contract-caller em set-token-uri (linhas 61-66) é real e confirmada por leitura direta do código (única função entre ~25 administrativas que usa tx-sender em vez de contract-caller). Porém, …</div>
+    </div>
+    <div class="timeline-item" style="--i:4" data-kind="verdict">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Circle BBP (solidity) — Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tok…</div>
+    </div>
+    <div class="timeline-item" style="--i:5" data-kind="verdict">
+      <div class="timeline-time">2026-08-30 12:21 UTC</div>
+      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
+      <div class="timeline-body">Block Open Source (kotlin) — O código monta ProcessBuilder(&quot;sh&quot;, &quot;-c&quot;, &quot;echo $registryUrl | $credentialCmd get&quot;) por interpolação de string sem sanitização — padrão clássico de command injection SE registryUrl/credStore fossem influenciáveis por um …</div>
+    </div>
+    <div class="timeline-item" style="--i:6" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Rastreei a cadeia de chamada completa cruzando dois repositórios (clonados publicamente via git clone): Withdrawal.sol::withdraw() (evm-xreserve-contracts) recebe `attestationPayload` como `bytes calldata` e primeiro cha…</div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="verdict">
+    <div class="timeline-item" style="--i:7" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Block Open Source (kotlin) — Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` …</div>
     </div>
-    <div class="timeline-item" style="--i:2" data-kind="verdict">
+    <div class="timeline-item" style="--i:8" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tok…</div>
     </div>
-    <div class="timeline-item" style="--i:3" data-kind="verdict">
+    <div class="timeline-item" style="--i:9" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (kotlin) — Confirmado o defeito de código: getQueryStringWithHints (VitessQueryHintHandler.kt:14-41) monta o comentário /*vt+ ... */ concatenando diretamente cada diretiva extraída do hint (hint.substring(3).trim(), após remover o …</div>
     </div>
-    <div class="timeline-item" style="--i:4" data-kind="verdict">
+    <div class="timeline-item" style="--i:10" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: delegatecall_risk <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — ExecutionUtils.delegateCall(address to, bytes memory data) e uma funcao de biblioteca generica utilitaria (src/utils/, codigo de runtime de verdade, nao script) — por definicao recebe `to` como parametro, entao a heurist…</div>
     </div>
-    <div class="timeline-item" style="--i:5" data-kind="verdict">
+    <div class="timeline-item" style="--i:11" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: unchecked_call_return <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Mesmo padrao do outro achado &#39;unchecked_call_return&#39; neste arquivo: o retorno de gatewayWalletProxy.call(addBatchSignerCallData) nas linhas 134-135 e capturado em (bool batchSignerSuccess, bytes memory batchSignerReturnD…</div>
     </div>
-    <div class="timeline-item" style="--i:6" data-kind="verdict">
+    <div class="timeline-item" style="--i:12" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: reentrancy_risk <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Mesmo padrao do achado analogo no evm-gateway-contracts: e um script Foundry de deploy (contract DeployColdStorageAddressBookScript is Script), rodado apenas pelo deployer confiavel via vm.startBroadcast(key) com a propr…</div>
     </div>
-    <div class="timeline-item" style="--i:7" data-kind="verdict">
+    <div class="timeline-item" style="--i:13" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: reentrancy_risk <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Identico em estrutura ao achado 103_DeployColdStorageAddressBookPlugin.s.sol: script Foundry de deploy (DeployWeightedWebauthnMultiSigPluginScript is Script), rodado so pelo deployer via vm.startBroadcast(key), chamada p…</div>
     </div>
-    <div class="timeline-item" style="--i:8" data-kind="verdict">
+    <div class="timeline-item" style="--i:14" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: unchecked_call_return <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Falso positivo de heuristica: o retorno de gatewayWalletProxy.call(updateAllowlisterCallData) NA LINHA 115-116 e capturado em (bool allowlisterSuccess, bytes memory allowlisterReturnData) e imediatamente checado nas linh…</div>
     </div>
-    <div class="timeline-item" style="--i:9" data-kind="verdict">
+    <div class="timeline-item" style="--i:15" data-kind="verdict">
       <div class="timeline-time">2026-08-29 12:07 UTC</div>
       <div class="timeline-title">Veredito: reentrancy_risk <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — 004_UpgradeGatewayWallet.sol e um script Foundry (contract ... is Script), executado off-chain via `forge script --broadcast --account deployer --account owner` — nunca e implantado on-chain como contrato persistente cha…</div>
     </div>
-    <div class="timeline-item" style="--i:10" data-kind="scan">
+    <div class="timeline-item" style="--i:16" data-kind="scan">
       <div class="timeline-time">2026-08-29 12:01 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:11" data-kind="scan">
+    <div class="timeline-item" style="--i:17" data-kind="scan">
       <div class="timeline-time">2026-08-29 06:02 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">6 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). 26 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:12" data-kind="scan">
+    <div class="timeline-item" style="--i:18" data-kind="scan">
       <div class="timeline-time">2026-08-29 06:01 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">6 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). 9 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:13" data-kind="scan">
+    <div class="timeline-item" style="--i:19" data-kind="scan">
       <div class="timeline-time">2026-08-29 05:59 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 1 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:14" data-kind="verdict">
+    <div class="timeline-item" style="--i:20" data-kind="verdict">
       <div class="timeline-time">2026-08-29 05:59 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">Block Open Source (kotlin) — Confirmado o gap de código: AfterpayCheckoutV2Activity.kt (bootstrapWebView) não tem shouldOverrideUrlLoading nem qualquer allowlist de host, ao contrário de AfterpayCheckoutActivity.kt (V1, validCheckoutUrls checado ant…</div>
     </div>
-    <div class="timeline-item" style="--i:15" data-kind="scan">
+    <div class="timeline-item" style="--i:21" data-kind="scan">
       <div class="timeline-time">2026-08-29 05:56 UTC</div>
       <div class="timeline-title">Rodada do scanner — 6 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 229 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 229). </div>
     </div>
-    <div class="timeline-item" style="--i:16" data-kind="scan">
+    <div class="timeline-item" style="--i:22" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:27 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:17" data-kind="scan">
+    <div class="timeline-item" style="--i:23" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:26 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:18" data-kind="scan">
+    <div class="timeline-item" style="--i:24" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:24 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:19" data-kind="scan">
+    <div class="timeline-item" style="--i:25" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:24 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:20" data-kind="scan">
+    <div class="timeline-item" style="--i:26" data-kind="scan">
       <div class="timeline-time">2026-08-29 01:17 UTC</div>
       <div class="timeline-title">Rodada do scanner — 15 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código, 162 manifesto(s) checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:21" data-kind="scan">
+    <div class="timeline-item" style="--i:27" data-kind="scan">
       <div class="timeline-time">2026-08-29 00:54 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:22" data-kind="scan">
+    <div class="timeline-item" style="--i:28" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:53 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 3 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:23" data-kind="digest">
+    <div class="timeline-item" style="--i:29" data-kind="digest">
       <div class="timeline-time">2026-08-28 21:51 UTC</div>
       <div class="timeline-title">Digest de segurança — 16 advisory(s) em 3 pacote(s) observado(s)</div>
       <div class="timeline-body">Ver <a href="../security-digest.md">security-digest.md</a> pra decisão manual sobre heurística nova.</div>
     </div>
-    <div class="timeline-item" style="--i:24" data-kind="discovery">
+    <div class="timeline-item" style="--i:30" data-kind="discovery">
       <div class="timeline-time">2026-08-28 21:49 UTC</div>
       <div class="timeline-title">Descoberta de alvo — 186 candidato(s) novo(s)</div>
       <div class="timeline-body">194 alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 156 ficou pra próxima rodada. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
     </div>
-    <div class="timeline-item" style="--i:25" data-kind="scan">
+    <div class="timeline-item" style="--i:31" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:45 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:26" data-kind="scan">
+    <div class="timeline-item" style="--i:32" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 6 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:27" data-kind="verdict">
+    <div class="timeline-item" style="--i:33" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
-    <div class="timeline-item" style="--i:28" data-kind="verdict">
+    <div class="timeline-item" style="--i:34" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
-    <div class="timeline-item" style="--i:29" data-kind="verdict">
+    <div class="timeline-item" style="--i:35" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
-    <div class="timeline-item" style="--i:30" data-kind="verdict">
+    <div class="timeline-item" style="--i:36" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Kotlin/Java) — Os 4 candidatos com este osvId (GHSA-r937-wjx7-w2jp / CVE-2026-53914) apontam para versões de org.jetbrains.kotlin:kotlin-gradle-plugin fixadas em arquivos dentro de wire-gradle-plugin/src/test/projects/ — são projetos d…</div>
     </div>
-    <div class="timeline-item" style="--i:31" data-kind="verdict">
+    <div class="timeline-item" style="--i:37" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Go) — Mesma cadeia de dependência do achado circl (ver candidato irmão github.com/cloudflare/circl@v1.3.8 nesta mesma fila): golang.org/x/crypto entra como indireta via github.com/ProtonMail/go-crypto, exigido só por sassoftwa…</div>
     </div>
-    <div class="timeline-item" style="--i:32" data-kind="verdict">
+    <div class="timeline-item" style="--i:38" data-kind="verdict">
       <div class="timeline-time">2026-08-28 21:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Go) — Cloniei cashapp/hermit e sassoftware/go-rpmutils (via git clone público) para checar se o caminho vulnerável é alcançável, não só se a versão consta no go.mod. circl e golang.org/x/crypto entram como indiretas via github…</div>
     </div>
-    <div class="timeline-item" style="--i:33" data-kind="scan">
+    <div class="timeline-item" style="--i:39" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:22 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 14 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:34" data-kind="scan">
+    <div class="timeline-item" style="--i:40" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:21 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 6 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:35" data-kind="scan">
+    <div class="timeline-item" style="--i:41" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:20 UTC</div>
       <div class="timeline-title">Rodada do scanner — 4 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 273 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:36" data-kind="scan">
+    <div class="timeline-item" style="--i:42" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:17 UTC</div>
       <div class="timeline-title">Rodada do scanner — 2 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 1 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:37" data-kind="scan">
+    <div class="timeline-item" style="--i:43" data-kind="scan">
       <div class="timeline-time">2026-08-28 21:11 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:38" data-kind="scan">
+    <div class="timeline-item" style="--i:44" data-kind="scan">
       <div class="timeline-time">2026-08-28 20:42 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:39" data-kind="scan">
+    <div class="timeline-item" style="--i:45" data-kind="scan">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 3 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:40" data-kind="verdict">
+    <div class="timeline-item" style="--i:46" data-kind="verdict">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Veredito: unguarded_transfer <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A única transferência de valor é (contract-call? .ststxbtc-token-v2 transfer ststxbtc-amount sender current-contract none), onde sender=tx-sender (linha 49). O contrato irmão já baixado, ststx-token.clar (linha 44), most…</div>
     </div>
-    <div class="timeline-item" style="--i:41" data-kind="verdict">
+    <div class="timeline-item" style="--i:47" data-kind="verdict">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Veredito: unguarded_transfer <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A linha 38 é (stx-transfer? stx-amount tx-sender .stx-reserve) — o argumento &#39;sender&#39; passado é literalmente tx-sender, não um principal arbitrário. stx-transfer? é uma primitiva nativa da VM Clarity que só permite mover…</div>
     </div>
-    <div class="timeline-item" style="--i:42" data-kind="verdict">
+    <div class="timeline-item" style="--i:48" data-kind="verdict">
       <div class="timeline-time">2026-08-28 20:41 UTC</div>
       <div class="timeline-title">Veredito: auth_arg_inconsistency <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A inconsistência é real: set-token-uri (linha 61-66) usa (contract-call? .dao check-is-protocol tx-sender), enquanto todas as outras ~25 funções administrativas do código lido (incluindo as 8 em stacking-dao-core-ststxbt…</div>
     </div>
-    <div class="timeline-item" style="--i:43" data-kind="scan">
+    <div class="timeline-item" style="--i:49" data-kind="scan">
       <div class="timeline-time">2026-08-28 14:22 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:44" data-kind="scan">
+    <div class="timeline-item" style="--i:50" data-kind="scan">
       <div class="timeline-time">2026-08-27 12:00 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:45" data-kind="scan">
+    <div class="timeline-item" style="--i:51" data-kind="scan">
       <div class="timeline-time">2026-08-26 21:49 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). </div>
     </div>
-    <div class="timeline-item" style="--i:46" data-kind="scan">
+    <div class="timeline-item" style="--i:52" data-kind="scan">
       <div class="timeline-time">2026-08-26 21:44 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1049 arquivo(s) de código checados (JS/TS: 121, Go: 107, Kotlin/Java: 723, Swift/ObjC: 98). </div>
     </div>
-    <div class="timeline-item" style="--i:47" data-kind="scan">
+    <div class="timeline-item" style="--i:53" data-kind="scan">
       <div class="timeline-time">2026-08-26 21:26 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados. </div>
     </div>
-    <div class="timeline-item" style="--i:48" data-kind="scan">
+    <div class="timeline-item" style="--i:54" data-kind="scan">
       <div class="timeline-time">2026-08-26 20:14 UTC</div>
       <div class="timeline-title">Rodada do scanner — 3 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código checados. </div>
@@ -1406,110 +1436,125 @@ Esta PoC real é evidência adicional forte de que o COMPORTAMENTO é exatamente
     
     <div class="panel"><h2>Por tipo × linguagem</h2>
   <div class="bar-row" style="--i:0">
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">solidity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(2)</span></div>
+  </div>
+  <div class="bar-row" style="--i:1">
+    <div class="bar-label">auth_arg_inconsistency <span class="bar-lang">Clarity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(1)</span></div>
+  </div>
+  <div class="bar-row" style="--i:2">
     <div class="bar-label">unguarded_transfer <span class="bar-lang">Clarity</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:1">
+  <div class="bar-row" style="--i:3">
     <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Go</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:2">
+  <div class="bar-row" style="--i:4">
     <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Kotlin/Java</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(4)</span></div>
   </div>
-  <div class="bar-row" style="--i:3">
+  <div class="bar-row" style="--i:5">
     <div class="bar-label">ssrf_risk <span class="bar-lang">JS/TS</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(13)</span></div>
   </div>
-  <div class="bar-row" style="--i:4">
+  <div class="bar-row" style="--i:6">
     <div class="bar-label">prototype_pollution_risk <span class="bar-lang">JS/TS</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:5">
+  <div class="bar-row" style="--i:7">
     <div class="bar-label">reentrancy_risk <span class="bar-lang">solidity</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(3)</span></div>
   </div>
-  <div class="bar-row" style="--i:6">
+  <div class="bar-row" style="--i:8">
     <div class="bar-label">unchecked_call_return <span class="bar-lang">solidity</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:7">
+  <div class="bar-row" style="--i:9">
     <div class="bar-label">delegatecall_risk <span class="bar-lang">solidity</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(1)</span></div>
   </div>
-  <div class="bar-row" style="--i:8">
-    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">solidity</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:50%; background:var(--accent)"></div></div>
-    <div class="bar-value">50% <span class="bar-n">(2)</span></div>
-  </div>
-  <div class="bar-row" style="--i:9">
-    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">kotlin</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:33%; background:var(--good)"></div></div>
-    <div class="bar-value">33% <span class="bar-n">(3)</span></div>
-  </div>
   <div class="bar-row" style="--i:10">
-    <div class="bar-label">auth_arg_inconsistency <span class="bar-lang">Clarity</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:0%; background:var(--good)"></div></div>
-    <div class="bar-value">0% <span class="bar-n">(1)</span></div>
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">Clarity</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(1)</span></div>
+  </div>
+  <div class="bar-row" style="--i:11">
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">Swift/ObjC</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(1)</span></div>
+  </div>
+  <div class="bar-row" style="--i:12">
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">kotlin</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:50%; background:var(--accent)"></div></div>
+    <div class="bar-value">50% <span class="bar-n">(4)</span></div>
   </div></div>
     <div class="panel"><h2>Por tipo × programa</h2>
   <div class="bar-row" style="--i:0">
-    <div class="bar-label">unguarded_transfer <span class="bar-lang">StackingDAO</span></div>
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">Circle BBP</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
   <div class="bar-row" style="--i:1">
+    <div class="bar-label">auth_arg_inconsistency <span class="bar-lang">StackingDAO</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(1)</span></div>
+  </div>
+  <div class="bar-row" style="--i:2">
+    <div class="bar-label">unguarded_transfer <span class="bar-lang">StackingDAO</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(2)</span></div>
+  </div>
+  <div class="bar-row" style="--i:3">
     <div class="bar-label">known_vulnerable_dependency <span class="bar-lang">Block Open Source</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(6)</span></div>
   </div>
-  <div class="bar-row" style="--i:2">
+  <div class="bar-row" style="--i:4">
     <div class="bar-label">ssrf_risk <span class="bar-lang">Vercel Open Source</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(13)</span></div>
   </div>
-  <div class="bar-row" style="--i:3">
+  <div class="bar-row" style="--i:5">
     <div class="bar-label">prototype_pollution_risk <span class="bar-lang">Vercel Open Source</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:4">
+  <div class="bar-row" style="--i:6">
     <div class="bar-label">reentrancy_risk <span class="bar-lang">Circle BBP</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(3)</span></div>
   </div>
-  <div class="bar-row" style="--i:5">
+  <div class="bar-row" style="--i:7">
     <div class="bar-label">unchecked_call_return <span class="bar-lang">Circle BBP</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(2)</span></div>
   </div>
-  <div class="bar-row" style="--i:6">
+  <div class="bar-row" style="--i:8">
     <div class="bar-label">delegatecall_risk <span class="bar-lang">Circle BBP</span></div>
     <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
     <div class="bar-value">100% <span class="bar-n">(1)</span></div>
   </div>
-  <div class="bar-row" style="--i:7">
-    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">Circle BBP</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:50%; background:var(--accent)"></div></div>
-    <div class="bar-value">50% <span class="bar-n">(2)</span></div>
-  </div>
-  <div class="bar-row" style="--i:8">
-    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">Block Open Source</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:33%; background:var(--good)"></div></div>
-    <div class="bar-value">33% <span class="bar-n">(3)</span></div>
-  </div>
   <div class="bar-row" style="--i:9">
-    <div class="bar-label">auth_arg_inconsistency <span class="bar-lang">StackingDAO</span></div>
-    <div class="bar-track"><div class="bar-fill" style="--pct:0%; background:var(--good)"></div></div>
-    <div class="bar-value">0% <span class="bar-n">(1)</span></div>
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">StackingDAO</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:100%; background:var(--critical)"></div></div>
+    <div class="bar-value">100% <span class="bar-n">(1)</span></div>
+  </div>
+  <div class="bar-row" style="--i:10">
+    <div class="bar-label">ai_deep_read_finding <span class="bar-lang">Block Open Source</span></div>
+    <div class="bar-track"><div class="bar-fill" style="--pct:60%; background:var(--accent)"></div></div>
+    <div class="bar-value">60% <span class="bar-n">(5)</span></div>
   </div></div>
   </section>
     <footer class="page-footer">Gerado automaticamente por <code>generate-dashboard.mjs</code> a cada rodada do scanner. Instantâneo deste momento — não é uma página com dado ao vivo (o repositório é privado). Pra ver sempre a versão mais recente, abra o arquivo local em <code>research/bugbounty/dashboard/index.html</code>.</footer>
