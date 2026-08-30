@@ -198,7 +198,32 @@ PASS
 ok  	github.com/circlefin/arc-remote-signer/internal/app/public	1.220s
 ```
 
-O log da própria middleware de request real do servidor confirma `&quot;status&quot;:&quot;OK&quot;` — a chamada não-autenticada foi processada como uma requisição legítima, exatamente como o reasoning original alegava. Grau de evidência: E3 (reprodução determinística local), subiu de E2 (leitura de código, ainda que re-verificada 2x independentemente). Princípio de menor impacto respeitado: nenhuma rede real, nenhuma chave/enclave real, servidor efêmero local, encerrado ao fim do teste.</div>
+O log da própria middleware de request real do servidor confirma `&quot;status&quot;:&quot;OK&quot;` — a chamada não-autenticada foi processada como uma requisição legítima, exatamente como o reasoning original alegava. Grau de evidência: E3 (reprodução determinística local), subiu de E2 (leitura de código, ainda que re-verificada 2x independentemente). Princípio de menor impacto respeitado: nenhuma rede real, nenhuma chave/enclave real, servidor efêmero local, encerrado ao fim do teste.
+
+REVISÃO FINAL ANTES DE ENVIAR (30/08/2026):
+
+(1) Confirmado via docs/architecture.md, seção &quot;Security Model&quot; (lida por
+completo): a documentação de segurança do próprio repositório cobre em
+detalhe a proteção da CHAVE (isolamento de hardware, criptografia envelope,
+KMS vinculado a attestation) — a palavra &quot;authenticate&quot;/&quot;authorization&quot;
+tem ZERO ocorrências em todo o documento. Confirma que a ausência de auth
+no request do Sign() não é uma decisão de design documentada como
+aceitável (diferente do caso EVM/ChainSecurity) — é um ponto cego real do
+threat model do projeto: protege a chave de quem tem acesso ao HOST, mas
+nunca discute quem pode PEDIR uma assinatura pela rede.
+
+(2) URGÊNCIA REAL — Arc Chain está em mainnet PRIVADA agora (mais de 100
+builders institucionais/ecossistema onboardados) com lançamento de mainnet
+PÚBLICA confirmado para 16 de setembro de 2026 (~2 semanas a partir desta
+varredura). Validadores fundadores anunciados publicamente incluem
+BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE,
+MoneyGram, SBI Group, Sumitomo (fonte: pressroom oficial da Circle,
+circle.com/pressroom, 30/08/2026). Isso eleva a confiança de deployment
+evidence de &quot;low&quot; pra &quot;medium&quot;: não tenho o IP/instância específica
+confirmada, mas há evidência forte, datada e específica de que
+arc-remote-signer (o único software de sidecar publicado para este
+propósito) está rodando de verdade, agora, protegendo chaves de
+validadores institucionais reais.</div>
   </div>
   <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="move">
     <div class="finding-head">
@@ -577,7 +602,32 @@ PASS
 ok  	github.com/circlefin/arc-remote-signer/internal/app/public	1.220s
 ```
 
-O log da própria middleware de request real do servidor confirma `&quot;status&quot;:&quot;OK&quot;` — a chamada não-autenticada foi processada como uma requisição legítima, exatamente como o reasoning original alegava. Grau de evidência: E3 (reprodução determinística local), subiu de E2 (leitura de código, ainda que re-verificada 2x independentemente). Princípio de menor impacto respeitado: nenhuma rede real, nenhuma chave/enclave real, servidor efêmero local, encerrado ao fim do teste.</div>
+O log da própria middleware de request real do servidor confirma `&quot;status&quot;:&quot;OK&quot;` — a chamada não-autenticada foi processada como uma requisição legítima, exatamente como o reasoning original alegava. Grau de evidência: E3 (reprodução determinística local), subiu de E2 (leitura de código, ainda que re-verificada 2x independentemente). Princípio de menor impacto respeitado: nenhuma rede real, nenhuma chave/enclave real, servidor efêmero local, encerrado ao fim do teste.
+
+REVISÃO FINAL ANTES DE ENVIAR (30/08/2026):
+
+(1) Confirmado via docs/architecture.md, seção &quot;Security Model&quot; (lida por
+completo): a documentação de segurança do próprio repositório cobre em
+detalhe a proteção da CHAVE (isolamento de hardware, criptografia envelope,
+KMS vinculado a attestation) — a palavra &quot;authenticate&quot;/&quot;authorization&quot;
+tem ZERO ocorrências em todo o documento. Confirma que a ausência de auth
+no request do Sign() não é uma decisão de design documentada como
+aceitável (diferente do caso EVM/ChainSecurity) — é um ponto cego real do
+threat model do projeto: protege a chave de quem tem acesso ao HOST, mas
+nunca discute quem pode PEDIR uma assinatura pela rede.
+
+(2) URGÊNCIA REAL — Arc Chain está em mainnet PRIVADA agora (mais de 100
+builders institucionais/ecossistema onboardados) com lançamento de mainnet
+PÚBLICA confirmado para 16 de setembro de 2026 (~2 semanas a partir desta
+varredura). Validadores fundadores anunciados publicamente incluem
+BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE,
+MoneyGram, SBI Group, Sumitomo (fonte: pressroom oficial da Circle,
+circle.com/pressroom, 30/08/2026). Isso eleva a confiança de deployment
+evidence de &quot;low&quot; pra &quot;medium&quot;: não tenho o IP/instância específica
+confirmada, mas há evidência forte, datada e específica de que
+arc-remote-signer (o único software de sidecar publicado para este
+propósito) está rodando de verdade, agora, protegendo chaves de
+validadores institucionais reais.</div>
   </div>
   <div class="finding" style="--i:1" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="move">
     <div class="finding-head">
@@ -750,7 +800,30 @@ Confirma os dois vetores citados na leitura de código original: (a) import rela
 
 (3) Escopo e elegibilidade: `square/wire` está listado como alvo em escopo de &quot;Block Open Source&quot; no dataset estruturado do Bugcrowd (confirmado via scope-registry). Bugcrowd não expõe elegibilidade de recompensa por ativo no dataset (diferente do HackerOne) — confiança da fonte é &quot;low&quot; por esse motivo, não por dúvida sobre o ativo estar em escopo. Recomendo confirmar manualmente na página real do programa antes de enviar.
 
-(4) Vínculo de &quot;deploy&quot; (para uma biblioteca, não um contrato): `wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin` são os artefatos PUBLICADOS que qualquer consumidor real usa (não um fork interno nem código não-lançado) — o uso de `protoPath` para resolver schema de terceiro é documentado como caso de uso legítimo do próprio Wire. Não tenho como citar um consumidor real específico processando `.proto` não-confiável via `protoPath` (a mesma limitação já registrada na leitura original) — por isso confidence &quot;low&quot;, não &quot;medium&quot;/&quot;high&quot;: o mecanismo e o vetor são reais e comprovados, mas o cenário de vítima concreta em produção continua inferido, não citado.</div>
+(4) Vínculo de &quot;deploy&quot; (para uma biblioteca, não um contrato): `wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin` são os artefatos PUBLICADOS que qualquer consumidor real usa (não um fork interno nem código não-lançado) — o uso de `protoPath` para resolver schema de terceiro é documentado como caso de uso legítimo do próprio Wire. Não tenho como citar um consumidor real específico processando `.proto` não-confiável via `protoPath` (a mesma limitação já registrada na leitura original) — por isso confidence &quot;low&quot;, não &quot;medium&quot;/&quot;high&quot;: o mecanismo e o vetor são reais e comprovados, mas o cenário de vítima concreta em produção continua inferido, não citado.
+
+REVISÃO FINAL ANTES DE ENVIAR (30/08/2026):
+
+(1) Confirmado na documentação OFICIAL do Wire (docs/wire_compiler.md,
+seção &quot;Proto Path for Libraries&quot;, lida diretamente do repositório): o
+exemplo canônico de configuração de protoPath é
+`srcJar &#39;com.example:countries:1.0.0&#39;` — uma coordenada Maven. Isso
+confirma que compilar .proto vindo de uma dependência de terceiro
+(resolvida via Maven Central ou artifact repo privado) é o uso
+DOCUMENTADO e padrão da feature, não uma configuração hipotética/exótica
+— fortalece consideravelmente o argumento de realismo do vetor de
+ataque. Adicionado ao relatório.
+
+(2) Re-checagem de duplicata: zero advisories/issues novos desde a
+verificação anterior (busca repetida no GitHub, mesmo resultado: só
+PR #3657, que cobre o lado de escrita, não o de leitura).
+
+(3) Scope snapshot confirmado válido (recapturado 30/08/2026, expira
+13/09/2026).
+
+Nenhuma mudança de estado — achado já estava em human_ready, esta é só
+uma revisão final que fortalece o relatório antes do usuário decidir
+enviar.</div>
   </div>
   <div class="finding" style="--i:7" data-status="reviewed" data-verdict="falso_positivo" data-program="Circle BBP" data-language="solidity">
     <div class="finding-head">
