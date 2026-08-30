@@ -2245,3 +2245,63 @@ específica) → `human_ready`. Relatório completo em
 
 **Segundo achado do sistema inteiro a chegar honestamente a
 `human_ready`** (o primeiro foi o `wire-schema` do Block Open Source).
+
+## Rodada 2026-08-30 (leitura profunda proativa, passo 4 avulso) — `noble-cctp::ReceiveMessage` e `stablecoin-sui::treasury.move`, sem achado
+
+`list-pending` vazio. Continuando a varredura sistemática do padrão
+"denylist unidirecional" já confirmado 3x nesta missão (EVM/Solana/Aptos/
+Starknet — o `TokenMessengerMinter` só bloqueia quem *envia* via
+`depositForBurn`, nunca quem *recebe* via `handleReceiveMessage`, e o gap
+só fecha se o token subjacente checar blocklist(recipient) dentro do
+próprio `mint()`), escolhi 2 arquivos novos que faltavam nesse
+levantamento:
+
+- `circlefin/noble-cctp/x/cctp/keeper/msg_server_receive_message.go`
+  (`Keeper.ReceiveMessage`, repo com cobertura só administrativa até
+  agora — `add_remote_token_messenger`/`update_token_controller`/
+  `link_token_pair`, nunca o handler de recebimento em si). Rastreei a
+  cadeia completa: valida pause, quorum de assinaturas dos attesters,
+  domínio de destino, `destinationCaller`, versão, nonce não usado: e
+  aí, se `message.Recipient == PaddedModuleAddress`, monta um
+  `fiattokenfactorytypes.MsgMint{From: ModuleAddress, Address:
+  mintRecipient, ...}` (com `mintRecipient` vindo direto do
+  `BurnMessage` cross-chain, portanto controlável pelo emissor da
+  mensagem original) e chama `k.fiattokenfactory.Mint(ctx, &msgMint)`.
+  Fui conferir a implementação real desse `Mint` (já em
+  `deep-read-log.json` de rodada anterior,
+  `noble-fiattokenfactory/x/fiattokenfactory/keeper/msg_server_mint.go`,
+  reli pra confirmar o comportamento atual): `Keeper.Mint` checa
+  blacklist tanto de `msg.From` (o módulo CCTP, nunca vai estar
+  blacklistado) quanto de `msg.Address` — exatamente o `mintRecipient`
+  cross-chain — via `k.GetBlacklisted(ctx, addressBz)` antes de
+  `MintCoins`/`SendCoinsFromModuleToAccount`. Ou seja, **o gap está
+  fechado aqui pela mesma razão já vista em Starknet/Aptos**: o
+  `TokenMessenger` da Noble não precisa checar denylist no recebimento
+  porque o token subjacente (`noble-fiattokenfactory`) já rejeita mint
+  para endereço blacklistado, não importa quem chamou. Quarta chain
+  diferente confirmando o mesmo padrão de design intencional — não é
+  achado (nem virou candidate).
+- `circlefin/stablecoin-sui/packages/stablecoin/sources/treasury.move`
+  (repo `stablecoin-sui` totalmente intocado até agora). Lido por
+  completo: `mint()` checa `!is_blocklisted(deny_list, ctx.sender())` E
+  `!is_blocklisted(deny_list, recipient)` antes de mintar (ambos os
+  lados, não só o sender) e `!is_paused`; `burn()` idem para o sender;
+  autorização em camadas owner→master_minter (`configure_controller`/
+  `create_mint_cap`)→controller (`configure_minter`/
+  `increment_mint_allowance`)→minter (`mint`/`burn` via `MintCap`
+  capability object, não endereço) segue o padrão two-step já visto em
+  outras chains do produto (`start_migration`/`abort_migration`/
+  `complete_migration` com `owner_role().assert_sender_is_active_role`).
+  Nota lateral sem gravidade: `is_blocklisted`/`is_paused` usam as
+  variantes `_next_epoch` da Sui deny list (`deny_list_v2_contains_next_epoch`),
+  ou seja um `blocklist()` só passa a bloquear mint/burn na próxima
+  epoch, nunca imediatamente — comportamento documentado do próprio
+  sistema de deny list da Sui, não uma falha de lógica deste contrato;
+  não registrado como achado. Sem achado nesta leitura.
+
+`deep-read-log.json` atualizado: `circlefin/noble-cctp` ganhou
+`msg_server_receive_message.go`; `circlefin/stablecoin-sui` é chave
+nova (1 arquivo, `treasury.move`). Repos do Circle BBP ainda com zero
+leitura: `stablecoin-near`, `stellar-cctp`. `starknet-cctp` (1 arquivo),
+`evm-cpn-contracts` (parcial) e `stablecoin-sui` (agora 1 arquivo)
+seguem parciais. Nenhum item elegível pra relatório nesta rodada.

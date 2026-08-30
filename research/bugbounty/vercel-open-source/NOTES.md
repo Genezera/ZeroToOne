@@ -1030,3 +1030,41 @@ sem achado, não virou candidate.
 Repos do programa ainda totalmente intocados: `vercel/swr`, `vercel/ms`,
 `vercel/async-sema`, `sveltejs/svelte`. Nenhum item elegível pra
 relatório nesta rodada.
+
+## Rodada 2026-08-30 (leitura profunda proativa, passo 4 avulso) — `vercel/swr` (repo até então intocado) auditado, sem achado
+
+`list-pending` vazio. Abri `vercel/swr` pela primeira vez nesta missão
+(estava na lista de "totalmente intocados"). Como SWR é uma lib
+client-side de data-fetching/cache sem superfície clássica de
+auth/session, priorizei o componente mais sensível a bug de lógica com
+impacto de segurança real: `src/_internal/utils/hash.ts::stableHash`, a
+função que gera a chave de cache estável a partir dos argumentos de
+`useSWR` (array/objeto/string). Um bug de colisão aqui teria impacto
+concreto — duas chaves de request DIFERENTES colapsando na mesma chave
+de cache podem levar a servir dado de um recurso para uma request de
+outro recurso (confusão de cache), o tipo de bug que a documentação
+oficial do SWR já alerta para não reusar globalmente entre requests
+sem escopo por usuário.
+
+Rastreei a lógica linha a linha: usa prefixos de tipo distintos por
+formato (`@` para array, `#` para objeto plano, WeakMap+contador para
+outros objetos/Map/Set/Function, string via `JSON.stringify` — portanto
+sempre entre aspas, o que separa `"123"` de `123` sem aspas — número/
+boolean/undefined via `''+arg`) — não encontrei par de entradas de tipo
+diferente que produza a mesma string de saída (os prefixos e a
+serialização de string via `JSON.stringify` evitam ambiguidade entre
+tipos). Para objetos, as chaves são ordenadas (`Object.keys(arg).sort()`)
+antes de concatenar, garantindo que `{a:1,b:2}` e `{b:2,a:1}` colidam
+DE PROPÓSITO (mesma chave lógica, comportamento correto e documentado,
+não bug). WeakMap identity-based cache evita reentrância infinita em
+referência circular (grava o placeholder antes de recursar). Não achei
+uso de `arg[index]` como sink de escrita (só leitura via
+`Object.keys`), então sem risco de prototype pollution nessa função.
+Sem achado — função pequena, mas already hardened; não abri mais
+arquivos deste repo pra não gastar o orçamento desta rodada num só alvo
+sem sinal concreto de problema.
+
+`deep-read-log.json` ganhou chave nova `vercel/swr` (1 arquivo).
+Repos do programa ainda totalmente intocados: `vercel/ms`,
+`vercel/async-sema`, `sveltejs/svelte`. Nenhum item
+elegível pra relatório nesta rodada.
