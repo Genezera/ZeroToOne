@@ -890,3 +890,51 @@ documentada em detalhe no NOTES.md do Circle BBP desta mesma rodada — não
 forcei nem contornei. Fica em `corroborated_static`: achado real,
 reportável com ressalva explícita de alcançabilidade, aguardando um
 validador pra TS/JS que ainda não existe.
+
+
+## Rodada 2026-08-30 (push trigger seguinte) — `vercel/ai` (repo até então intocado) auditado; único achado `corroborated_static` do programa revisado sem transição
+
+`list-pending` vazio de novo. Revisei o único `corroborated_static` do
+programa (`packages/cli-auth/sso.ts::waitForVerification`, achado de
+rodada anterior): reasoning já documenta com clareza que o código
+vulnerável (callback loopback sem state/nonce, classe RFC 8252 §8.3)
+não é alcançável pelo binário `vercel` publicado deste monorepo — só
+`credentials-store.js` do pacote `@vercel/cli-auth` é importado por
+`packages/cli/src`, nunca `sso.js`/`oauth.js`. Sem cadeia de chamada
+fechada, correto ficar em `corroborated_static` — não tentei forçar
+`reproduced_local` (achado TS sem exploit de rede real aplicável, e a
+alcançabilidade em si já é o gap, não algo que uma PoC resolveria).
+
+Leitura profunda proativa: abri `vercel/ai` pela primeira vez nesta
+missão (estava na lista de "totalmente intocados" da rodada anterior).
+Prioridade auth: `packages/gateway/src/gateway-realtime-auth.ts`, o
+contrato compartilhado cliente/servidor que carrega o bearer token do
+AI Gateway dentro do handshake `Sec-WebSocket-Protocol` (workaround
+padrão da indústria pra WebSocket não suportar header `Authorization`
+no browser — o próprio comentário do arquivo cita o precedente da
+OpenAI, `openai-insecure-api-key.<token>`). Lido por completo: o
+módulo só faz *encode/decode* do token e do team-scope
+(base64url) pra dentro/fora da string de subprotocolo — não faz
+nenhuma validação de autenticação ele mesmo; o comentário do cabeçalho
+diz explicitamente que "the Gateway upgrade handler turns this into
+an `Authorization: Bearer <token>` before its normal auth path", ou
+seja a validação real acontece no caminho de auth normal depois da
+extração, reaproveitado 1:1. Não encontrei um handler de servidor
+real dentro do repo `vercel/ai` que consuma
+`getGatewayRealtimeAuthToken`/`getGatewayRealtimeTeamIdOrSlug` (grep
+`-r` por essas duas funções só retorna a própria definição, os
+testes do pacote `gateway`, e o `getGatewayRealtimeProtocols` client-side
+usado em `packages/react`) — o servidor de upgrade WebSocket em si
+provavelmente vive no serviço AI Gateway hospedado (fora deste repo
+open-source), então não dá pra confirmar aqui se o "normal auth path"
+de fato aplica os mesmos controles a um token vindo de subprotocolo
+vs. de header — mesma limitação estrutural de alcançabilidade já
+documentada pra `cli-auth/sso.ts`. Sem achado nesta leitura (nem
+sequer virou candidate: a lógica lida é só transporte, sem decisão de
+autorização própria).
+
+`deep-read-log.json` atualizado (`vercel/ai` — repo novo, 1 arquivo:
+`packages/gateway/src/gateway-realtime-auth.ts`). Repos do programa
+ainda totalmente intocados: `vercel/swr`, `vercel/eve`, `vercel/ms`,
+`vercel/async-sema`, `nuxt/nuxt`, `sveltejs/svelte`. Nenhum item
+elegível pra relatório nesta rodada.

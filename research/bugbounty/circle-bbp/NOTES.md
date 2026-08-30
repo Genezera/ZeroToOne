@@ -1921,3 +1921,75 @@ programa continuam os já documentados nas rodadas anteriores acima
 (`Withdrawals.sol` denylist gap e o achado Solana `initiate_withdrawal`,
 ambos aguardando decisão humana/evidência externa que esta rodada não
 teve novidade pra oferecer).
+
+
+## Rodada 2026-08-30 (push trigger seguinte) — 4 findings `corroborated_static` revisados (sem transição possível, teto estrutural confirmado); leitura profunda em `circlefin/starknet-cctp`/`stablecoin-starknet` repete e confirma o padrão de `aptos-cctp`
+
+`migrate-to-v2.mjs` + `list-pending`: fila de `candidate` vazia (mesmo
+padrão de rodadas anteriores — os 43 findings existentes já estão
+distribuídos entre `false_positive` (36), `corroborated_static` (4),
+`human_ready` (1), `known_duplicate` (1), `inconclusive` (1)). Revisei
+os 4 `corroborated_static` (`packages/cli-auth/sso.ts` do Vercel,
+`data-stbtc-v1.clar` do StackingDAO, `arc-remote-signer` e
+`solana-gateway-contracts` do Circle BBP): todos já documentam
+corretamente por que não avançam — `corroborated_static->reproduced_local`
+exige `validations` com `result="pass"`, e hoje só existe validador
+Foundry (Solidity); os 4 são TS/Clarity/Go/Rust, sem PoC executável
+disponível no sistema. Não força a transição — comportamento correto
+da máquina de estados, não bug.
+
+Leitura profunda proativa (3 arquivos/áreas, prioridade auth/access):
+escolhi `circlefin/starknet-cctp` (zero arquivos lidos até então) por
+ser exatamente o par Starknet do mesmo produto CCTP já auditado em
+EVM/Solana/Aptos. Em
+`packages/token_messenger_minter/src/token_messenger_minter_v2.cairo`
+confirmei o MESMO padrão já visto 3x nesta missão: `deposit_for_burn`/
+`deposit_for_burn_with_hook` chamam
+`assert_not_denylisted_caller_and_origin` (só caller/tx-origin, nunca
+o `mint_recipient`), e `mint`/`mint_and_withdraw`/`handle_receive_message`
+(fluxo inbound) NUNCA chamam `self.denylistable.assert_not_denylisted`
+em lugar nenhum — o componente `denylistable` do próprio
+TokenMessengerMinter é unidirecional (só protege quem pode queimar/
+enviar, não quem pode receber via mint). Antes de registrar como
+achado, comparei com dois pontos de referência: (1) o EVM oficial
+(`circlefin/evm-cctp-contracts::TokenMessengerV2.sol`, já lido em
+rodada anterior) usa o modifier `notDenylistedCallers` exatamente do
+mesmo jeito — só em `depositForBurn`/`depositForBurnWithHook`, nunca
+em `handleReceiveFinalizedMessage`/`_handleReceiveMessage` — ou seja
+o design upstream É intencionalmente unidirecional, não uma regressão
+introduzida pelo port Starknet; (2) o token subjacente
+(`circlefin/stablecoin-starknet::packages/stablecoin/src/fiat_token/fiat_token.cairo`,
+lido linha a linha) implementa `blocklistable` (namespace SEPARADO de
+`denylistable`, mas com o mesmo propósito de compliance) e sua função
+`mint()` chama `self.blocklistable.assert_not_blocklisted(to)` — como
+o `TokenMessengerMinter.mint()` invoca `IFiatTokenDispatcher.mint(recipient, amount)`
+(chamada real cross-contract, não suposição), qualquer `mint_recipient`
+blocklistado no token real ainda reverte ali, fechando o gap do
+mesmo jeito que `stablecoin-aptos::override_deposit` fechou o gap do
+`aptos-cctp` na rodada anterior. Mesma conclusão, terceira chain
+diferente confirmando o mesmo padrão de design: **não registrado como
+finding novo** (refutado antes mesmo de criar o candidate — a cadeia
+de chamada real já mostra que não é explorável, então não há
+`reasoning`/`filesRead` de um achado "confirmado" pra depois desfazer,
+só documentação de due diligence). Também revisei rapidamente
+`circlefin/stablecoin-xlm::soroban/contracts/fiat-token-admin/src/blocklistable.rs`
+(port Soroban/Stellar do mesmo produto) — design diferente dos
+outros dois (delega pro flag nativo `authorized` do Stellar Asset
+Contract via `set_authorized`/`StellarAssetClient`, em vez de mapping
+próprio) mas sem inconsistência visível na leitura estática; não dá
+pra confirmar se o asset emissor real tem `AUTH_REQUIRED` habilitado
+(estado de deploy, não código) — não é um achado, é limitação de
+alcance de leitura estática, documentada aqui pra não repetir a
+mesma pergunta em rodada futura sem responder.
+
+`deep-read-log.json` atualizado: `circlefin/starknet-cctp` (1 entrada,
+repo novo), `circlefin/stablecoin-starknet` (3 entradas, repo novo),
+`circlefin/stablecoin-xlm` (1 entrada, repo novo), `circlefin/sui-cctp`
+(2 entradas, repo novo — `auth.move`/`role_management.move` do
+`token_messenger_minter`, ambos limpos: padrão de auth por tipo
+(`type_name`/witness) e transferência de ownership em duas etapas,
+sem achado). Repos do Circle BBP ainda com zero leitura após esta
+rodada: `stablecoin-sui`, `stablecoin-near`, `starknet-cctp` (só 1
+arquivo agora, resto do programa Anchor/Cairo ainda não coberto),
+`stellar-cctp`, `noble-cctp` (parcial), `evm-cpn-contracts` (parcial).
+Nenhum item elegível pra relatório nesta rodada.

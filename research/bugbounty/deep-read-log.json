@@ -377,5 +377,23 @@
   "circlefin/stablecoin-aptos": [
     "packages/stablecoin/sources/stablecoin.move",
     "packages/stablecoin/sources/treasury.move"
+  ],
+  "circlefin/starknet-cctp": [
+    "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo"
+  ],
+  "circlefin/stablecoin-starknet": [
+    "packages/stablecoin/src/fiat_token/fiat_token.cairo",
+    "packages/components/src/denylistable/denylistable.cairo",
+    "packages/components/src/blocklistable/blocklistable.cairo"
+  ],
+  "circlefin/stablecoin-xlm": [
+    "soroban/contracts/fiat-token-admin/src/blocklistable.rs"
+  ],
+  "circlefin/sui-cctp": [
+    "packages/message_transmitter/sources/auth.move",
+    "packages/token_messenger_minter/sources/admin/role_management.move"
+  ],
+  "vercel/ai": [
+    "packages/gateway/src/gateway-realtime-auth.ts"
   ]
 }
