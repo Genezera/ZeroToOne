@@ -2493,3 +2493,26 @@ nova (3 arquivos: `contract.rs`/`deposit.rs`/`receive.rs` do
 scope snapshot do Circle BBP já têm pelo menos 1 arquivo lido
 (cobertura completa de superfície, profundidade ainda parcial em
 vários). Nenhum item elegível pra relatório nesta rodada.
+
+## Addendum 2026-08-30 (mesma rodada seguinte) — formalização de evidência no achado `initiate_withdrawal`/Solana denylist
+
+O achado ficou em `corroborated_static` com decisão registrada em prosa
+(reasoning) mas sem os registros formais no state machine. Formalizado
+nesta rodada:
+- `record-validation ... --type=anchor_poc --result=not_applicable`
+  (nenhum validador Anchor/Solana existe no sistema — limitação de
+  ferramental documentada, mesma classificação já usada para
+  `arc-remote-signer`).
+- `record-deployment-evidence ... --patch='{"confidence":"unverified", ...}'`
+  (Gateway ainda não está em mainnet no Solana — sem endereço de
+  programa real para citar).
+- Tentativa de `transition ... reproduced_local` recusada, como
+  esperado: "nenhum validador local existe ainda para este tipo de
+  achado (PoC not_applicable)". Confirma que o achado está corretamente
+  preso em `corroborated_static` — não é bug do sistema, é a barra
+  funcionando. Nenhuma tentativa de forçar `scope_verified` foi feita
+  (já teria sido recusada pela mesma razão de confidence=unverified).
+  Sem mudança de estado; achado permanece candidato natural a
+  `reproduced_local` assim que (a) um validador Anchor/Solana existir
+  no sistema, ou (b) o programa for lançado em mainnet e um endereço
+  real puder ser citado como deployment evidence com confidence >= low.

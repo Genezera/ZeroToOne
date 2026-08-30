@@ -11,7 +11,10 @@
     "data-stbtc-v1.clar",
     "stbtc-reserve.clar",
     "stacking-dao-core-btc-v3.clar",
-    "stacking-dao-core-ststxbtc-v1.clar"
+    "stacking-dao-core-ststxbtc-v1.clar",
+    "stacker-1.clar",
+    "stx-reserve-v2.clar",
+    "ststx-token.clar"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",

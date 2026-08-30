@@ -377,3 +377,67 @@ atualizado com os 3 arquivos. `stacker-1.clar` (já baixado localmente)
 segue sem entrada em `deep-read-log.json` — pendência trivial para
 próxima rodada (só falta registrar/ler, os irmãos 2-5 já foram cobertos
 e seguem o mesmo padrão). Nenhum achado novo nesta rodada.
+
+## Rodada 2026-08-30 (push, seguinte) — fila vazia, `stacker-1.clar` + `stx-reserve-v2.clar` + `ststx-token.clar`, sem achado novo
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` + `list-pending`).
+Também revisitados os 2 achados legados em `corroborated_static` fora
+deste programa (SSO Vercel e denylist Solana Circle) — nenhum dos dois
+é StackingDAO, sem ação necessária aqui além de formalizar
+`record-deployment-evidence`/`record-validation` (ver NOTES dos
+respectivos programas).
+
+Leitura profunda proativa — os 3 arquivos pendentes da rodada anterior:
+
+- `stacker-1.clar` (185 linhas, completo) — mesma família de
+  `stacker-2..5.clar` já auditados. Ponto que mereceu atenção extra:
+  `initiate-stacking`/`stack-increase`/`stack-extend` gateiam via
+  `(contract-call? .dao check-is-protocol tx-sender)` — **tx-sender, não
+  contract-caller** — à primeira vista o padrão inverso do que os outros
+  contratos desta missão usam (`stbtc-reserve.clar`,
+  `stacking-dao-core-btc-v3.clar`, `stx-reserve-v2.clar` today, todos
+  usam `contract-caller`). Investiguei se é confused-deputy: verifiquei
+  `dao.clar` init — o mapa `contracts` registra tanto o **deployer
+  (tx-sender no deploy, uma conta EOA)** quanto os contratos
+  `.stacking-dao-core-v1`/`.reserve-v1`/`.commission-v1`/`.stacker-1..10`.
+  Ou seja, o design é: um keeper/bot EOA autorizado chama os
+  `stacker-N` **diretamente** (não via proxy/contrato intermediário) —
+  diferente de `deposit`/`withdraw` em `core-btc-v3`/`stx-reserve-v2`,
+  que são acionados por QUALQUER usuário e por isso precisam de
+  `contract-caller` pra não confiar num `reserve-contract` trait
+  malicioso passado pelo próprio chamador. Confirmei que TODOS os 10
+  `stacker-N.clar` (verificado stacker-1/2/3 byte a byte) usam o mesmo
+  padrão `tx-sender` de forma consistente — não é um erro isolado do
+  stacker-1, é decisão de design deliberada e replicada, condizente com
+  "somente o keeper autorizado do protocolo aciona stacking/unstacking".
+  Risco residual (checagem por tx-sender é válida ao longo de toda a
+  cadeia de chamada, não só do caller imediato) existe apenas se o
+  próprio keeper algum dia assinar uma tx que invoque um contrato não
+  confiável que internamente encadeie uma chamada a `stacker-N` — isso é
+  risco operacional de custódia de chave/comportamento do bot, não uma
+  falha de código auditável neste repositório. Sem achado.
+- `stx-reserve-v2.clar` (306 linhas, completo) — todas as funções
+  mutantes (lock/unlock/request/pay/receive para STX de stSTX e
+  ststXBTC, `request-stx-to-stack`, `return-stx-from-stacking`,
+  `return-stx-from-staking-split`, `get-stx`) gateiam corretamente via
+  `check-is-protocol contract-caller`. Padrão notável: em
+  `return-stx-from-stacking`/`return-stx-from-staking-split`, o
+  `stx-transfer?` usa `tx-sender` como origem dos fundos — analisado e
+  confirmado seguro: essas funções só são alcançáveis quando o chamador
+  (um `stacker-N`) envolve a chamada em `as-contract`, o que redefine
+  `tx-sender` para o próprio principal do stacker durante a chamada —
+  ou seja, `tx-sender` aqui é igual a `contract-caller`, os fundos saem
+  de fato do stacker que os detinha após destacking. `receive-migration`
+  restrita a `.migration-v3` via `is-eq contract-caller` + flag
+  `migrated`/`ERR_NOT_PRISTINE` — proteção correta contra migração dupla
+  ou fora de ordem. Sem achado.
+- `ststx-token.clar` (93 linhas, completo) — SIP-010 padrão. `transfer`
+  exige `is-eq tx-sender sender` (correto, é o dono transferindo).
+  `mint-for-protocol`/`burn-for-protocol` gateados por
+  `check-is-protocol contract-caller` (correto). `burn` externo queima
+  do próprio `tx-sender` sem restrição adicional — esperado (usuário só
+  pode queimar o próprio saldo). Sem achado.
+
+`deep-read-log.json` atualizado (StackingDAO agora com 15 arquivos
+lidos). Nenhum achado novo nesta rodada — os 3 arquivos pendentes de
+rodadas anteriores foram fechados.
