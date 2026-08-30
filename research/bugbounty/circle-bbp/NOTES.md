@@ -1233,3 +1233,53 @@ anti-front-running documentada), `ECRecover` rejeita `s` no range alto
 `isValidSignature` (ERC-1271). Código extremamente maduro e já
 publicamente auditado (é o FiatToken/USDC principal) — resultado normal
 e válido de leitura profunda sem achado novo.
+
+Rodada 2026-08-30 (push automático, notificação de commit). Fila
+novamente vazia — 0 candidatos; os 2 achados de rodadas anteriores em
+`corroborated_static` (Kotlin `Root.kt`, Clarity `compute-ratio`)
+seguem no mesmo teto estrutural já documentado, nada novo a fazer
+neles. Leitura profunda proativa: primeiro repositório novo desta
+missão em `circlefin/arc-remote-signer` (SOURCE_CODE, elegível a
+bounty, `max_severity: critical`, escolhido pelo próprio nome sugerir
+superfície de auth/crypto — ainda não coberto no `deep-read-log.json`).
+É o "Nitro Enclave Signer" — serviço gRPC sidecar 1:1 que assina
+mensagens de consenso para validadores da Arc Chain dentro de um AWS
+Nitro Enclave.
+
+**Achado novo, registrado e avançado até `corroborated_static`**
+(`Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding`):
+o RPC público `Sign` (porta 10340, `internal/app/service/signer/signer.go`)
+assina qualquer mensagem arbitrária enviada pelo chamador com a chave
+privada do validador, sem NENHUM controle de autenticação/autorização
+em nível de aplicação — confirmado via grep amplo (auth/bearer/apikey/
+jwt/hmac/shared-secret/mTLS/ClientCAs) no repo inteiro (zero hits
+relevantes) e leitura da cadeia de interceptors gRPC (só recovery/
+requestID/metrics/logging, nunca auth). `WithTLS` (`option.go`) usa
+`credentials.NewServerTLSFromFile` — TLS unidirecional (autentica o
+servidor, nunca o cliente) — e além disso vem **desabilitado por
+padrão** na config (`configs/app.yaml`: `tls.enabled: false`, bind em
+`0.0.0.0`). `docs/architecture.md` confirma que a única proteção
+documentada é de rede (security group da VPC), nunca controle de
+aplicação. Impacto: qualquer principal de rede capaz de alcançar a
+porta 10340 pode fazer o validador assinar mensagens de consenso
+arbitrárias (risco de equivocation/double-signing/slashing), sem
+precisar comprometer a enclave em si — a isolação de hardware protege
+a chave, não protege contra quem pode *pedir* uma assinatura.
+Documentado com ressalva honesta: é possível que o operador (Circle)
+trate segmentação de rede como controle suficiente por design (mesmo
+modelo do external signer plugin do avalanchego, de onde este proto
+foi derivado — `proto/arc/signer/v1/signer.proto` cita
+`ava-labs/avalanchego`), então não é necessariamente um bug introduzido
+neste fork. Achado Go, sem PoC Foundry aplicável (`record-validation
+--result=not_applicable` registrado, mesma limitação real já documentada
+para o achado Kotlin). `check-scope` confirmou `allowed=true`;
+`record-deployment-evidence` registrado como `confidence=unverified`
+(sem prova de qual commit/release roda de fato em produção); a
+transição para `scope_verified` foi tentada e corretamente recusada
+pela state machine (`corroborated_static->scope_verified` não existe
+no grafo — só `reproduced_local->scope_verified`), mesmo teto
+estrutural já visto no achado Kotlin. Fica em `corroborated_static`.
+
+`deep-read-log.json` atualizado com a nova chave `circlefin/arc-remote-signer`
+(7 arquivos: `public.go`, `signer.go`, `server.go`, `option.go`, o
+`.proto`, `configs/app.yaml`, `docs/architecture.md`).
