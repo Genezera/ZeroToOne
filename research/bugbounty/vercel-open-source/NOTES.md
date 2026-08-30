@@ -314,3 +314,66 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/chat` ganhou os 4 arquivos/trechos acima). Restam por ler
 individualmente: Instagram, Notion (adapters do mesmo pacote) e
 `vercel/workflow` (tier 1, ainda intocado).
+
+## Rodada 2026-08-30 — fila vazia, primeira leitura profunda em vercel/workflow (tier 1)
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada. Confirmado
+via `cli.mjs check-scope "Vercel Open Source" "vercel/workflow"` que o repo
+está em escopo (`allowed: true`, `SOURCE_CODE`, `eligibleForBounty: true`,
+`maxSeverity: critical`, marcado "tier 1" — maior prioridade que `vercel/chat`,
+que é tier 2). Ainda não tinha nenhuma entrada em `deep-read-log.json` apesar
+de já mencionado como pendência em rodadas anteriores. Clonado via
+`git clone --depth 1` (público, sem conta/token).
+
+`vercel/workflow` é o framework "Workflow SDK" — funções duráveis para
+JS/TS que persistem progresso como event log e fazem replay determinístico
+do código após cold start/falha/scale. Arquitetura relevante: funções
+`"use workflow"` rodam numa VM sandboxed (QuickJS) sem acesso completo ao
+Node.js, funções `"use step"` rodam com runtime Node completo — o limite
+entre as duas é a superfície mais crítica do repo (sandbox escape teria
+severidade alta), mas o arquivo do runtime QuickJS
+(`packages/core/src/runtime/quickjs-runtime.ts`, 2816 linhas) é grande
+demais para uma leitura completa nesta rodada — fica para uma rodada futura
+dedicada só a ele. Priorizei nesta rodada os 2 arquivos de criptografia do
+`packages/core` (nome mais óbvio de risco) + 1 arquivo de roteamento/guard:
+
+- `packages/core/src/encryption.ts` — AES-256-GCM via Web Crypto API
+  (`globalThis.crypto.subtle`), nonce aleatório de 12 bytes por chamada
+  (`getRandomValues`), AAD opcional coberto pela tag GCM. Falhas do Web
+  Crypto (incluindo tag GCM inválida) são recapturadas como
+  `RuntimeDecryptionError` com contexto, nunca engolidas silenciosamente.
+  Sem falha encontrada — implementação padrão e correta.
+- `packages/core/src/sealed-box.ts` — construção estilo HPKE (RFC 9180)
+  para writes cross-run: ECDH X25519 efêmero + HKDF-SHA256 + AES-256-GCM,
+  chave por run derivada de `HKDF(VERCEL_DEPLOYMENT_KEY, "projectId|runId")`.
+  Verifiquei com ceticismo os pontos clássicos de falha desse tipo de
+  construção: (1) binding do `kem_context` — `info` do HKDF inclui
+  `ephemeralPublicKey ‖ recipientPublicKey`, prevenindo key-substitution/
+  unknown-key-share attack; (2) disciplina de nonce — nonce sempre aleatório
+  via `aesGcmEncrypt` mesmo quando a `contentKey` é amortizada entre frames
+  de um stream (`createSealSession`), nunca contador; (3) ponto de baixa
+  ordem X25519 — rejeitado pelo próprio Web Crypto (`OperationError` em
+  segredo compartilhado zerado), tratado como erro explícito, não como
+  segredo fraco silencioso; (4) decodificação de chave pública recebida de
+  storage/wire (`decodeRunPublicKey`/`base64ToBytes`) é estrita (rejeita
+  caracteres fora do alfabeto, padding malformado, bits de sobra não-zero)
+  e falha fechado (degrada pra `undefined` → caminho simétrico, nunca aceita
+  um valor truncado como se fosse uma chave válida). Construção sólida, bem
+  documentada, sem desvio do padrão HPKE que introduza fraqueza. Sem achado.
+- `packages/core/src/runtime/deployment-guard.ts` — `guardDeploymentAffinity`
+  garante que um run só executa na deployment a que está pinado (evita
+  decrypt com a master key errada). Fail-safe por padrão
+  (`world.capabilities?.deploymentAffinity !== true` → `CONTINUE` sem
+  guarda), re-enfileira pra deployment correta com backoff exponencial
+  limitado, falha definitivamente só após esgotar
+  `WORKFLOW_DEPLOYMENT_MISMATCH_MAX_RETRIES` ou receber classificação
+  explícita de "deployment indisponível". É lógica de roteamento/robustez,
+  não um limite de autorização entre tenants — sem falha encontrada.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/workflow` criado com os 3 arquivos acima). Sugestão pra próxima
+rodada: `packages/core/src/runtime/quickjs-runtime.ts` (fronteira do
+sandbox VM — arquivo grande, ler em partes) e/ou
+`packages/world-vercel/src/encryption.ts` (par do `encryption.ts` já lido,
+mas do lado do backend de produção Vercel) — ambos ainda intocados neste
+repo tier 1.

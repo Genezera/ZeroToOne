@@ -240,5 +240,10 @@
     "contracts/minting/MintController.sol",
     "contracts/minting/Controller.sol",
     "contracts/v1/Blacklistable.sol"
+  ],
+  "vercel/workflow": [
+    "packages/core/src/encryption.ts",
+    "packages/core/src/sealed-box.ts",
+    "packages/core/src/runtime/deployment-guard.ts"
   ]
 }
