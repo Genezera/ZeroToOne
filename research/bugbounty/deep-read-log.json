@@ -312,7 +312,8 @@
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
     "x/cctp/keeper/msg_server_update_token_controller.go",
-    "x/cctp/keeper/msg_server_link_token_pair.go"
+    "x/cctp/keeper/msg_server_link_token_pair.go",
+    "x/cctp/keeper/msg_server_receive_message.go"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
@@ -410,5 +411,11 @@
     "packages/nuxt/src/app/components/island-renderer.ts",
     "packages/nitro-server/src/runtime/handlers/island.ts",
     "packages/nuxt/src/app/island-hash.ts"
+  ],
+  "vercel/swr": [
+    "src/_internal/utils/hash.ts"
+  ],
+  "circlefin/stablecoin-sui": [
+    "packages/stablecoin/sources/treasury.move"
   ]
 }
