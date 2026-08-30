@@ -444,5 +444,10 @@
     "packages/svelte/src/internal/server/blocks/html.js",
     "packages/svelte/src/internal/client/dom/blocks/html.js",
     "packages/svelte/src/compiler/utils/sanitize_template_string.js"
+  ],
+  "circlefin/stellar-cctp": [
+    "contracts/token-messenger-minter-v2/src/receive.rs",
+    "contracts/token-messenger-minter-v2/src/deposit.rs",
+    "contracts/token-messenger-minter-v2/src/contract.rs"
   ]
 }

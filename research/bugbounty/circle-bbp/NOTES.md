@@ -2440,3 +2440,56 @@ achado.
 `deep-read-log.json` atualizado (`circlefin/stablecoin-xlm` +4).
 Nenhum item novo na fila; nenhum item elegível pra relatório nesta
 rodada.
+
+## Rodada 2026-08-30 (push trigger, commit 6941d7e) — `circlefin/stellar-cctp` (repo até então intocado), sem achado
+
+`migrate-to-v2.mjs` + `list-pending` vazio. Os 2 achados em
+`corroborated_static` seguem com o mesmo bloqueio já documentado.
+
+Leitura profunda proativa em `circlefin/stellar-cctp` (porta Soroban/
+Stellar do CCTP v2 — arquitetura diferente das demais chains: usa um
+`SwapMinter` externo em vez de mint direto pelo próprio
+TokenMessengerMinter). Rastreei `deposit_for_burn`/
+`deposit_for_burn_with_hook` (`contract.rs`, checam
+`denylistable::require_not_denylisted(caller)`) vs.
+`handle_recv_finalized_message`/`handle_recv_unfinalized_message`
+(`contract.rs`) → `handle_receive_message_impl` (`receive.rs`) →
+`mint_and_withdraw` → `SwapMinterClient::swap_mint(mint_recipient,
+...)`: MESMO padrão de denylist unidirecional já confirmado
+repetidamente nesta missão (EVM/Solana/Aptos/Starknet/Noble) — o
+handler de recebimento nunca checa denylist do `mint_recipient`
+(controlável pelo emissor da `BurnMessageV2` cross-chain).
+
+Segui a cadeia até o fim: a implementação real de `SwapMinter` não
+está neste repo, vem de `stablecoin-interfaces` via dependência git
+fixada em `Cargo.toml` (`circlefin/stablecoin-xlm` rev
+`7f33848b3d76df2aeff92a049a50d99c263e403d`) — o mesmo
+`fiat-token-admin/src/contract.rs` que a rodada logo acima também
+leu (por outro motivo, ownable/manageable), mas com foco diferente
+aqui: a função `swap_mint` especificamente. Ela NÃO chama nenhuma
+checagem de blocklist própria do Circle sobre `to` (só valida que
+`minter` está `authorized` via `StellarAssetClient` e faz burn do
+minter) antes de `asset_client.mint(&to, &amount)` na Stellar Asset
+Contract (SAC) nativa. Antes de concluir que isso é um gap real, fui
+verificar o comportamento do `mint()` nativo da SAC na fonte oficial
+do protocolo (`stellar/rs-soroban-env`,
+`builtin_contracts/stellar_asset_contract/{contract.rs,balance.rs}`,
+via WebFetch): `mint()` chama `receive_balance(to, amount)`, que
+checa `is_authorized(to)` e reverte com `BalanceDeauthorizedError` se
+o destinatário estiver desautorizado — ou seja o SAC nativo já
+enforce essa checagem por conta própria, fechando o gap do mesmo jeito
+que o token subjacente fechou em Aptos/Starknet/Noble/Sui. Continua
+valendo a MESMA ressalva já registrada sobre
+`stablecoin-xlm::blocklistable.rs`: o mecanismo depende da flag
+nativa `AUTH_REQUIRED`/`AUTH_REVOCABLE` estar de fato habilitada no
+asset USDC real emitido na Stellar mainnet — estado de
+deploy/configuração, não código, portanto não confirmável por leitura
+estática. Sexta chain diferente confirmando o mesmo padrão de design
+intencional — não é achado novo, não virou candidate.
+
+`deep-read-log.json` atualizado: `circlefin/stellar-cctp` é chave
+nova (3 arquivos: `contract.rs`/`deposit.rs`/`receive.rs` do
+`token-messenger-minter-v2`). Com isso todos os 22 repos GitHub do
+scope snapshot do Circle BBP já têm pelo menos 1 arquivo lido
+(cobertura completa de superfície, profundidade ainda parcial em
+vários). Nenhum item elegível pra relatório nesta rodada.
