@@ -1212,3 +1212,24 @@ aplicado de forma consistente em `mint`/`transfer`/`transferFrom`/
 `grep -n "notBlacklisted"` nos dois arquivos) — controle de acesso
 `onlyOwner`/`onlyController`/`onlyBlacklister` também consistente. Não
 criei finding novo — resultado normal e válido de leitura profunda.
+
+Rodada 2026-08-30 (fila novamente vazia — 0 candidatos; os 2 achados em
+`corroborated_static` de rodadas anteriores, Kotlin `Root.kt` e Clarity
+`compute-ratio`, seguem no teto estrutural já documentado, nada novo a
+fazer neles). Leitura profunda proativa: 4 arquivos ainda não lidos em
+`circlefin/stablecoin-evm`, priorizando a superfície de autorização por
+assinatura (auth/crypto) — `contracts/v2/EIP3009.sol`
+(`transferWithAuthorization`/`receiveWithAuthorization`/
+`cancelAuthorization`), `contracts/util/SignatureChecker.sol` (EIP-1271 +
+ECDSA), `contracts/util/ECRecover.sol` e, por completude, a leitura
+linha a linha de `contracts/v1/FiatTokenV1.sol` (a rodada anterior só
+tinha confirmado `notBlacklisted` via grep, não lido o arquivo inteiro).
+Nenhum achado: nonce de autorização é marcado usado antes da
+`_transfer` (sem janela de reentrância), `validAfter`/`validBefore`
+checados, `receiveWithAuthorization` exige `to == msg.sender` (proteção
+anti-front-running documentada), `ECRecover` rejeita `s` no range alto
+(proteção EIP-2 contra malleability) e `v` fora de {27,28}, e
+`SignatureChecker` seque o padrão OZ com checagem correta do retorno de
+`isValidSignature` (ERC-1271). Código extremamente maduro e já
+publicamente auditado (é o FiatToken/USDC principal) — resultado normal
+e válido de leitura profunda sem achado novo.
