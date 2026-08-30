@@ -3,13 +3,118 @@
   "platform": "Immunefi",
   "officialUrl": "https://immunefi.com/bug-bounty/stackingdao/information/",
   "sourceType": "official_page_fetch",
-  "sourceDetail": "Fetch direto de immunefi.com/bug-bounty/stackingdao/information/ (SSR, sem necessidade de navegador)",
-  "contentHash": "4ed638a986572f5713e6301d5e0816f58afc14e27f50584d64e1c12cf609eaf6",
-  "capturedAt": "2026-08-29T22:56:33.838Z",
-  "expiresAt": "2026-09-28T22:56:33.838Z",
+  "sourceDetail": "Fetch direto de immunefi.com/bug-bounty/stackingdao/information/ (SSR, sem necessidade de navegador) + contratos curados em targets.mjs",
+  "contentHash": "71a38a010caecfb7b8a8ec200e4cdcbb6a45f14c51c33a6d727356f9293f9164",
+  "capturedAt": "2026-08-30T16:58:04.999Z",
+  "expiresAt": "2026-09-29T16:58:04.999Z",
   "ttlDays": 30,
   "confidence": "high",
-  "assets": [],
+  "assets": [
+    {
+      "assetIdentifier": "dao",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.dao — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stx-reserve-v2",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stx-reserve-v2 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stbtc-reserve",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stbtc-reserve — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "ststx-token",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stbtc-token",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stbtc-token — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "signer-admin-v1",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.signer-admin-v1 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "data-stx-v2",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.data-stx-v2 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "data-stbtc-v1",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.data-stbtc-v1 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stacking-dao-core-btc-v3",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-btc-v3 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stacking-dao-core-ststxbtc-v1",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacking-dao-core-ststxbtc-v1 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stacker-1",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacker-1 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stacker-2",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacker-2 — curado em targets.mjs."
+    },
+    {
+      "assetIdentifier": "stacker-3",
+      "assetType": "SMART_CONTRACT",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Deployer real: SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.stacker-3 — curado em targets.mjs."
+    }
+  ],
   "categoriesEligible": [
     "Smart Contracts — Critical (até $100.000; 10% dos fundos diretamente afetados, mínimo $20.000)",
     "Smart Contracts — High (até $20.000; $1.000–$20.000 por roubo/congelamento de yield não reclamado)"

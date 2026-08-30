@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { buildScopeSnapshot, saveSnapshot } from './scope-registry.mjs';
+import { TARGETS } from './targets.mjs';
 
 const H1_DATA_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/hackerone_data.json';
 const BC_DATA_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/bugcrowd_data.json';
@@ -110,17 +111,33 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
   }
   if (stackingDaoRaw || true) {
     // StackingDAO é Immunefi, não HackerOne — o dataset hackerone_data.json
-    // não cobre Immunefi. A lista de contrato vem de targets.mjs (curadoria
-    // manual já existente); aqui só registramos a política/categoria real,
-    // confirmada por fetch direto da página oficial (server-rendered).
+    // não cobre Immunefi. Política/categoria confirmada por fetch direto da
+    // página oficial (server-rendered). A lista de CONTRATO continua
+    // curada à mão em targets.mjs (só ali sabemos por que cada endereço
+    // específico foi escolhido) — mas o scope snapshot PRECISA espelhar
+    // esses mesmos contratos como `assets`, senão `scopeGate` nunca acha
+    // nada pra combinar e recusa QUALQUER achado do programa por padrão
+    // (bug real, achado pelo agente de nuvem em 30/08/2026 tentando usar
+    // check-scope de verdade — nunca fabricar um "allowed=true" sem
+    // ativo real por trás, mas também nunca deixar o ativo real de fora
+    // do snapshot que o gate de fato consulta).
+    const stackingDaoProgram = TARGETS.find((t) => t.program === 'StackingDAO');
+    const stackingDaoAssets = (stackingDaoProgram ? stackingDaoProgram.contracts : []).map((name) => ({
+      assetIdentifier: name,
+      assetType: 'SMART_CONTRACT',
+      eligibleForBounty: true,
+      eligibleForSubmission: true,
+      maxSeverity: 'critical',
+      instruction: `Deployer real: ${stackingDaoProgram ? stackingDaoProgram.deployer : ''}.${name} — curado em targets.mjs.`,
+    }));
     snapshots.push(buildScopeSnapshot({
       program: 'StackingDAO',
       platform: 'Immunefi',
       officialUrl: 'https://immunefi.com/bug-bounty/stackingdao/information/',
       sourceType: 'official_page_fetch',
-      sourceDetail: 'Fetch direto de immunefi.com/bug-bounty/stackingdao/information/ (SSR, sem necessidade de navegador)',
-      rawSourceContent: JSON.stringify(IMMUNEFI_STACKINGDAO_POLICY),
-      assets: [], // contratos individuais continuam curados em targets.mjs; este snapshot é só política/categoria
+      sourceDetail: 'Fetch direto de immunefi.com/bug-bounty/stackingdao/information/ (SSR, sem necessidade de navegador) + contratos curados em targets.mjs',
+      rawSourceContent: JSON.stringify({ ...IMMUNEFI_STACKINGDAO_POLICY, assets: stackingDaoAssets }),
+      assets: stackingDaoAssets,
       ...IMMUNEFI_STACKINGDAO_POLICY,
       confidence: 'high',
       capturedAt,
