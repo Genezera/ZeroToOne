@@ -304,5 +304,10 @@
     "src/blob.ts",
     "src/update.ts (parcial)",
     "src/installer.ts (parcial — writeSkillFiles/isPathSafe/sanitizeName)"
+  ],
+  "vercel/next.js": [
+    "packages/next/src/server/app-render/encryption.ts",
+    "packages/next/src/server/app-render/encryption-utils.ts",
+    "packages/next/src/server/app-render/encryption-utils-server.ts"
   ]
 }

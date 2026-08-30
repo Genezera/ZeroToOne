@@ -660,3 +660,34 @@ sendo removido; fora isso, os repos ainda intocados continuam:
 `vercel/next.js`, `vercel/turborepo`, `vercel/ai`, `vercel/swr`,
 `vercel/eve`, `vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`,
 `nuxt/nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`.
+
+Rodada 2026-08-30 (leitura profunda proativa, fila vazia): primeira
+leitura de `vercel/next.js` (nunca coberto nesta missão), priorizando
+o subsistema de criptografia de Server Actions por nome (auth/crypto):
+`packages/next/src/server/app-render/encryption.ts` (encode/decode dos
+bound args de Server Actions com AES-GCM, IV aleatório de 16 bytes por
+chamada, checagem de prefixo `actionId` como validação de integridade
+pós-decrypt), `encryption-utils.ts` (`getActionEncryptionKey` — lê a
+chave de `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` ou do manifest de build,
+nunca hardcoded) e `encryption-utils-server.ts` (`generateEncryptionKeyBase64`
+— gera a chave via `crypto.subtle.generateKey` AES-256-GCM real quando
+não fornecida por env, persiste em `.rscinfo` dentro do cache dir do
+servidor — não exposto ao client —, com rotação a cada 14 dias em
+build). Esta é exatamente a área que teve o CVE histórico de chave de
+criptografia de Server Actions previsível/reaproveitada em versões
+antigas do Next.js; a implementação atual usa geração de chave
+aleatória de verdade (não uma constante/seed fraca) e o padrão bate com
+a correção documentada publicamente para aquele problema antigo. Sem
+achado novo nestes 3 arquivos.
+
+`deep-read-log.json` atualizado com a nova chave `vercel/next.js` (3
+arquivos). Repos ainda intocados: `vercel/turborepo`, `vercel/ai`,
+`vercel/swr`, `vercel/eve`, `vercel/ms`, `vercel/async-sema`,
+`nitrojs/nitro`, `nuxt/nuxt`, `sveltejs/svelte`,
+`vercel-labs/agent-skills`; dentro de `vercel/next.js` (repo enorme,
+só 3 arquivos cobertos até agora) valeria continuar por
+`packages/next/src/server/lib/router-server.ts`,
+`packages/next/src/server/web/spec-extension/adapters/*`, e o
+middleware runtime (`packages/next/src/server/next-server.ts` /
+`packages/next/src/build/webpack/loaders/next-middleware-loader.ts`)
+em rodadas futuras.
