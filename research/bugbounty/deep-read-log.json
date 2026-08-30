@@ -286,5 +286,11 @@
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
     "x/cctp/keeper/msg_server_update_token_controller.go",
     "x/cctp/keeper/msg_server_link_token_pair.go"
+  ],
+  "vercel/vercel": [
+    "packages/cli/src/util/config/files.ts",
+    "packages/cli-auth/credentials-store.ts",
+    "packages/cli-config/src/cli-config.ts",
+    "packages/cli-config/src/paths.ts"
   ]
 }

@@ -502,3 +502,65 @@ missão (fora do repo `workflow`/`flags`/`chat` já cobertos):
 monorepos grandes; próxima rodada pode escolher um arquivo específico
 de auth/token dentro de `vercel/vercel` (ex. CLI login/token storage)
 em vez de tentar cobrir o repo inteiro de uma vez.
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — fila vazia, primeira leitura em `vercel/vercel` (armazenamento de token do CLI)
+
+`node system/bugbounty-scanner/cli.mjs list-pending` vazio. Peguei a
+pendência explícita deixada na rodada anterior: `vercel/vercel` nunca
+tinha sido tocado nesta missão apesar de `check-scope` confirmar
+`allowed: true`/`maxSeverity: critical`/tier 1. Clone raso com sparse
+checkout (`git clone --depth 1 --filter=blob:none --sparse`, público,
+sem token) e segui a cadeia real de onde o token de autenticação do CLI
+é persistido em disco, por ser a superfície mais sensível óbvia
+(`login`/`token`/`credential` no path):
+
+1. `packages/cli/src/util/config/files.ts` — `persistAuthConfig`/
+   `readAuthConfigFile` delegam pra um pacote interno separado,
+   `@vercel/cli-auth/credentials-store.js`.
+2. `packages/cli-auth/credentials-store.ts` — `CredentialsStore` suporta
+   3 modos (`file`/`keyring`/`auto`, este último tenta keyring do SO via
+   `@napi-rs/keyring` primeiro e cai pra arquivo se indisponível), com
+   migração automática nos dois sentidos quando o modo configurado muda.
+   Escrita em arquivo delega pra `cliConfig.writeAuthConfigFile`.
+3. `packages/cli-config/src/cli-config.ts` — `writeAuthConfigFile` chama
+   `writeConfigFile(..., { mode: 0o600 })`, que por sua vez escreve num
+   arquivo temporário (`.<nome>.<pid>.<timestamp>.tmp`) via
+   `fs.writeFileSync(tempFilePath, content, { mode: options.mode })` e só
+   depois `fs.renameSync(tempFilePath, filePath)` — padrão atômico
+   write-then-rename, correto para evitar arquivo parcialmente escrito
+   ficar visível com o nome final.
+4. `packages/cli-config/src/paths.ts` — resolve o diretório via
+   `XDGAppPaths('com.vercel.cli').dataDirs()` (com fallback pra
+   `~/.now` legado), sempre dentro da árvore do `$HOME` do usuário, sem
+   nenhum componente vindo de input externo/rede.
+
+Investiguei especificamente 2 hipóteses de bypass antes de descartar:
+- **Modo do arquivo ficar mundialmente legível**: não — `mode: 0o600` é
+  passado direto pro `open()` na criação do arquivo temporário (não um
+  `chmod` posterior), então não há janela de corrida onde o arquivo
+  exista com permissão mais aberta; `rename()` no Linux preserva o modo
+  do arquivo de origem, então o arquivo final herda `0o600`.
+- **Symlink attack no arquivo temporário** (nome previsível por
+  `pid`+`timestamp`): tecnicamente o `fs.writeFileSync` sem `O_EXCL`
+  seguiria um symlink pré-plantado com esse nome exato, mas isso exige
+  que outro usuário tenha permissão de ESCRITA no próprio diretório de
+  config (`~/.local/share/com.vercel.cli` ou equivalente) — diretório
+  esse criado dentro do `$HOME` do usuário sem modo restritivo explícito
+  (`fs.mkdirSync(dir, { recursive: true })`, herda `0o755` do umask
+  padrão), mas `0o755` não dá permissão de escrita pra outros usuários,
+  só leitura/listagem — um atacante sem escrita nesse diretório não
+  consegue plantar o symlink. Só seria explorável num sistema
+  multi-usuário já mal configurado (ex. `$HOME` ou o diretório de config
+  world-writable), o que é falha de configuração do SO/host, não do
+  código do Vercel CLI.
+
+**Sem achado** — o design é cuidadoso e correto no que depende só do
+código deste repositório: modo de arquivo restritivo aplicado
+atomicamente na criação, escrita atômica via rename, opção de keyring
+do SO como alternativa mais forte que arquivo, sem input externo/rede
+influenciando o path de resolução do diretório. `deep-read-log.json`
+atualizado com a nova chave `vercel/vercel` (4 arquivos). Sugestão pra
+próxima rodada: dentro do mesmo repo, o fluxo de OAuth/SSO em
+`packages/cli-auth/oauth.ts`/`sso.ts` (ainda não lidos) — troca de code
+por token, validação de `state`/PKCE — é superfície de auth mais rica
+que o armazenamento local já fechado aqui.
