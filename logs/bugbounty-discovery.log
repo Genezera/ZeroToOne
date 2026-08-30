@@ -29,3 +29,26 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 
 [30/08/2026 10:00:14,49] Iniciando digest de seguranca 
+[2026-08-30T13:00:15.594Z] Digest completo: 3 pacote(s) observado(s), 16 advisory(s) encontrado(s), 0 erro(s) de busca.
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-discovery.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/discovered-targets.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/security-digest.md', LF will be replaced by CRLF the next time Git touches it
+To https://github.com/Genezera/ZeroToOne.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'https://github.com/Genezera/ZeroToOne.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+[2026-08-30T13:00:17.294Z] AVISO: falha ao sincronizar com o GitHub: Command failed: git push
+To https://github.com/Genezera/ZeroToOne.git
+ ! [rejected]        master -> master (fetch first)
+error: failed to push some refs to 'https://github.com/Genezera/ZeroToOne.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
