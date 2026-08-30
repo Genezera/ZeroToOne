@@ -267,7 +267,10 @@
     "internal/common/grpc/server/option.go",
     "proto/arc/signer/v1/signer.proto",
     "configs/app.yaml",
-    "docs/architecture.md"
+    "docs/architecture.md",
+    "internal/app/service/signer/crypto.go",
+    "internal/app/service/signer/cache.go",
+    "internal/common/grpc/server/interceptor/middleware.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -320,5 +323,9 @@
     "packages/next/src/server/next-server.ts",
     "packages/next/src/server/lib/router-utils/resolve-routes.ts",
     "packages/next/src/server/web/spec-extension/adapters/next-request.ts"
+  ],
+  "vercel/turborepo": [
+    "crates/turborepo-auth/src/device_flow.rs",
+    "crates/turborepo-auth/src/auth/mod.rs"
   ]
 }

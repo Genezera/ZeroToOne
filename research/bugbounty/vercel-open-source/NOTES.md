@@ -735,3 +735,54 @@ ainda falta a maior parte do repo (middleware loader de build,
 próxima rodada pode continuar por `packages/next/src/build/webpack/
 loaders/next-middleware-loader.ts` (fila de build do middleware, ainda
 não lido) ou trocar de repo pra `vercel/turborepo` (nunca tocado).
+
+## Rodada 2026-08-30 (push automático) — primeira leitura de `vercel/turborepo` (device flow + resolução de token local)
+
+Fila vazia de novo. Troquei pra `vercel/turborepo` (nunca coberto),
+sparse-clone de `crates/turborepo-auth`. Objetivo específico (não leitura
+genérica): esse crate implementa OAuth 2.0 Device Authorization Grant
+(RFC 8628) e resolução de `login_url`/`api_url` que, em teoria, podem vir
+de config *do próprio repositório* (`turbo.json`) — procurei
+deliberadamente por um jeito de um `turbo.json` malicioso redirecionar o
+fluxo de login/token pra um servidor controlado pelo atacante quando a
+vítima roda `turbo login` dentro do repo.
+
+- `crates/turborepo-auth/src/device_flow.rs` (RFC 8628 completo): emissor
+  derivado de `login_url` via `issuer_from_login_url`, mas
+  `validate_endpoint_origins` valida que TODOS os endpoints do documento
+  de discovery (`device_authorization_endpoint`/`token_endpoint`/
+  `revocation_endpoint`/`introspection_endpoint`) estão no mesmo
+  host-ou-subdomínio do issuer com o MESMO scheme, com checagem de
+  fronteira de domínio correta (usa `.{issuer_host}` como sufixo, não
+  substring simples — testes próprios do arquivo confirmam que
+  `notvercel.com`/`evil-vercel.com`/`el.com` são rejeitados pra issuer
+  `vercel.com`). `TokenSet` tem `Debug` customizado que redige
+  `access_token`/`refresh_token` (testado). Scheme não-https é rejeitado
+  exceto localhost. Sem achado — mitigação de SSRF/exfiltração de token
+  via discovery document comprometido está implementada corretamente.
+- `crates/turborepo-auth/src/auth/mod.rs`: aqui está o controle real que
+  eu esperava encontrar quebrado — `ensure_non_vercel_redirect_allowed`
+  exige que `login_url_source` seja `Cli`/`Environment`/`GlobalConfig`
+  (`is_user_controlled_url_source`), explicitamente EXCLUINDO
+  `ConfigurationSource::TurboJson`. Ou seja, um `login_url` nãovercel
+  vindo de `turbo.json` (config do próprio repositório, portanto
+  potencialmente hostil se a vítima clona um repo malicioso) é
+  **rejeitado antes de qualquer redirect de login acontecer** — só
+  origem explicitamente controlada pelo usuário (flag de CLI, env var,
+  ou config global fora do repo) pode apontar o fluxo de auth pra um
+  domínio não-Vercel. Confirmado por teste próprio do arquivo,
+  `test_non_vercel_login_rejects_repo_controlled_login_url`. Também
+  bloqueia credenciais embutidas na URL (`login_url.username()`/
+  `.password()`) e exige https (exceto localhost). **Sem achado** —
+  exatamente o vetor de ataque que eu estava procurando (repo malicioso
+  sequestrando `turbo login`) já está mitigado de propósito, com teste
+  cobrindo o caso.
+
+`deep-read-log.json` atualizado com a nova chave `vercel/turborepo` (2
+arquivos). Repo grande, resto do crate (`login.rs`/`sso.rs`/`logout.rs`,
+~2.300 linhas) e o resto do monorepo (`crates/turborepo-lib`, etc.) seguem
+não lidos — próxima rodada pode continuar ali, ou seguir em
+`vercel/next.js` (repos ainda intocados: `vercel/ai`, `vercel/swr`,
+`vercel/eve`, `vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`,
+`nuxt/nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`,
+`vercel-labs/skills`, `vercel/vercel`, `vercel/chat`, `vercel/workflow`).

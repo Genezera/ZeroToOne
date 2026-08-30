@@ -1498,3 +1498,33 @@ EVM. Sem achado novo nesta rodada.
 
 `deep-read-log.json` atualizado (`circlefin/noble-fiattokenfactory` ganhou
 5 entradas, total agora 11).
+
+## Rodada 2026-08-30 (push automático seguinte) — arc-remote-signer: crypto.go/cache.go/middleware.go, sem achado novo
+
+Fila `list-pending` vazia. Voltei em `circlefin/arc-remote-signer` pra
+fechar os arquivos pequenos que faltavam do serviço de assinatura
+(`internal/app/service/signer/`) e confirmar diretamente a lista completa
+de interceptors gRPC citada no achado já registrado
+(`arc-remote-signer/internal/app/public/public.go::SignerService.Sign`,
+em `corroborated_static`), em vez de confiar só no grep amplo já feito:
+
+- `internal/app/service/signer/crypto.go` (43 linhas) — só define
+  `header{CipherKey, CipherData, Nonce}` com `MarshalBinary`/
+  `UnmarshalBinary` via `encoding/gob`, usado para serializar o material
+  cifrado que sai/entra da enclave. Sem lógica de auth, sem achado.
+- `internal/app/service/signer/cache.go` (46 linhas) — cache em memória
+  trivial (`sync.RWMutex` + `get`/`set`) da chave já decifrada dentro da
+  enclave. Sem achado.
+- `internal/common/grpc/server/interceptor/middleware.go` — **confirma
+  diretamente, lendo o arquivo que centraliza os construtores dos
+  interceptors, o que antes só tinha sido confirmado por grep**: só expõe
+  `WithRecovery`/`WithRequestID`/`WithMetrics`/`WithLogging`. Não existe
+  `WithAuth` nem qualquer interceptor de autenticação/autorização neste
+  pacote — reforça (não amplia) o achado já documentado, sem mudar seu
+  estado (`corroborated_static`, teto estrutural inalterado: achado
+  Go sem PoC Foundry aplicável, transição pra `scope_verified` sem passar
+  por `reproduced_local` continua corretamente indisponível no grafo).
+
+Nenhum achado novo nesta rodada — leitura de confirmação, não descoberta.
+`deep-read-log.json` atualizado (`circlefin/arc-remote-signer` ganhou os 3
+arquivos acima, total agora 10).
