@@ -1699,3 +1699,67 @@ não foram tocados por esta reconciliação — permanecem em
 `corroborated_static`, aguardando a mesma checagem de duplicata/novidade
 e prova de conceito (quando aplicável) antes de qualquer rascunho de
 relatório. Candidatos naturais pra próxima rodada de verticalização.
+
+## Verificação (30/08/2026) — denylist ausente no saque do Gateway Wallet Solana: achado real, sem PoC, aparenta ser genuinamente novo
+
+Revisão humana assistida do achado
+`solana-gateway-contracts/.../initiate_withdrawal.rs` (mesma classe de
+bug do caso EVM já fechado acima — denylist bloqueia depósito/delegação
+mas não saque). Re-lidos diretamente os 5 arquivos-fonte reais na branch
+correta (`master`, não `main` como o `filesRead` original citava
+incorretamente — conteúdo da análise batia mesmo assim) — confirmado
+byte a byte que `deposit()` exige `is_account_denylisted`, mas
+`WithdrawContext`/`InitiateWithdrawalContext` nem declaram uma conta de
+denylist na struct `#[derive(Accounts)]`, então os handlers não têm como
+checar. Testes TypeScript do próprio repo (`initiate_withdrawal.test.ts`,
+`withdrawal.test.ts`) não mencionam "denylist" em nenhum lugar.
+
+**Duplicata/novidade**: baixados e lidos por completo os 2 únicos
+relatórios públicos de auditoria do Circle Gateway (ChainSecurity e
+OtterSec, confirmados via developers.circle.com) — ambos cobrem
+exclusivamente `evm-gateway-contracts` (Solidity), zero menção a
+Solana/Anchor/Rust em qualquer um dos dois. Zero advisories, zero issues
+no GitHub mencionando "denylist" no repo Solana. **Diferente do caso EVM,
+não achei nenhuma divulgação pública cobrindo este comportamento no
+programa Solana** — aparenta ser genuinamente não-divulgado.
+
+**Status de produção**: confirmado via blog oficial da Circle que Gateway
+ainda NÃO está em mainnet no Solana (só as 7 chains EVM lançaram em
+agosto/2025) — bom momento pra reportar, antes de fundos reais.
+
+**PoC**: não tentada. Decisão deliberada, não preguiça — diferente dos
+casos EVM/Foundry e wire-schema/Okio (onde só rodar código real resolveu
+uma ambiguidade genuína), aqui a prova é estrutural do próprio framework
+Anchor: `#[derive(Accounts)]` só valida contas declaradas na struct — não
+existe mecanismo pra checar uma conta não-declarada. A ausência do campo
+é prova de impossibilidade em tempo de compilação, não uma condição de
+runtime. Instalar o toolchain Anchor/Solana (cargo/rustc já disponíveis
+localmente, mas Anchor + `solana-test-validator` têm fricção conhecida
+fora de WSL) ficaria desproporcional ao ganho de evidência marginal para
+esta classe específica de bug. Fica em `corroborated_static` — mesmo
+padrão já documentado pro achado Go de `arc-remote-signer`.
+
+## Verificação (30/08/2026) — `arc-remote-signer::SignerService.Sign` (ausência de auth): confirmado independentemente
+
+Re-lidos diretamente (não só confiando no reasoning anterior, que já era
+extenso — 14 arquivos em 3 repositórios) os 2 arquivos mais centrais:
+`internal/app/public/public.go` (`New()`) e
+`internal/common/grpc/server/server.go`/`option.go`. Confirmado byte a
+byte: a cadeia de interceptors do servidor gRPC é
+`[WithRecovery, WithRequestID, WithMetrics, WithLogging]` — nenhum de
+auth — e `WithTLS()` usa só `credentials.NewServerTLSFromFile` (TLS
+unidirecional, a função nem tem parâmetro pra CA de cliente/mTLS). Zero
+security advisories no repositório; os 3 issues que batem com "auth" na
+busca são PRs de sincronização de release automatizada, sem relação.
+`SECURITY.md` é só o texto padrão — não documenta isso como decisão de
+design aceita (diferente do caso EVM/ChainSecurity).
+
+PoC executável avaliada e adiada por desproporção de esforço (não
+limitação estrutural como o caso Solana): o binário real precisa de AWS
+KMS + Datadog + attestation de enclave na inicialização antes de chegar
+no servidor gRPC — existem arquivos `_mock.go` que sugerem um caminho de
+execução local viável, mas configurá-lo corretamente é trabalho de
+integração real, de ordem de grandeza maior que os outros 2 PoCs já
+feitos nesta missão. Mantido em `corroborated_static`, escopo confirmado
+(critical), candidato real pra uma rodada de verticalização dedicada
+futura.

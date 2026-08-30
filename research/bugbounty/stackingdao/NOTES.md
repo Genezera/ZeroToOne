@@ -269,3 +269,20 @@ Leitura profunda proativa (3 arquivos ainda não lidos linha a linha):
   relatório neste estado.
 
 `deep-read-log.json` atualizado com os 3 arquivos desta rodada.
+
+## Verificação (30/08/2026) — `data-stbtc-v1.clar::compute-ratio` fechado como falso-positivo, com evidência on-chain
+
+A lacuna que o achado acima deixou em aberto (rede bloqueada, não deu pra
+confirmar se `pending-shares` pode superar `stbtc-supply` em uso real)
+foi fechada consultando `api.hiro.so` diretamente: `data-stbtc-v1` e o
+`stbtc-token` irmão têm **exatamente 1 transação cada — a própria
+transação de deploy** (30/07/2026, mesmo dia para os dois). Zero chamada
+a `add-pending-shares`/`remove-pending-shares` desde então. Em contraste,
+`stbtc-reserve` (o contrato realmente ativo do produto BTC) tem 552
+transações, a mais recente com poucos minutos de idade, e não referencia
+`pending-shares` em nenhum lugar do seu código. Conclusão: o defeito de
+código é real (falta a mesma guarda que `data-stx-v2` tem), mas não há
+alcançabilidade hoje — o mecanismo inteiro nunca foi usado. Fechado como
+`false_positivo`, com ressalva explícita pra reabrir se
+`data-stbtc-v1`/`stbtc-token` forem ativados no futuro (parecem
+infraestrutura nova, ainda não conectada ao fluxo real).

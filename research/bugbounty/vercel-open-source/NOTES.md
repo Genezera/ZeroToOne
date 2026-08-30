@@ -867,3 +867,21 @@ totalmente intocados: `vercel/ai`, `vercel/swr`, `vercel/eve`,
 `vercel-labs/agent-skills` foram espiados nesta rodada mas não geraram
 achado nem entrada de log formal (sem superfície de auth própria digna
 de leitura linha-a-linha completa ainda).
+
+## Verificação (30/08/2026) — `cli-auth/sso.ts::waitForVerification`: alcançabilidade continua genuinamente incerta
+
+Revisão humana assistida do achado (falta de state/nonce no callback
+loopback OAuth-like, RFC 8252 §8.3). Reproduzi a busca de alcançabilidade
+de forma independente (clone raso + grep em todo `packages/cli` e
+`packages/cli-auth`): confirmado, nenhum chamador de
+`reauthorizeTeam`/`waitForVerification` dentro do repositório
+`vercel/vercel`. Achado adicional: `package.json` de `cli-auth` não tem
+campo `exports`, então o subpath `@vercel/cli-auth/sso.js` é
+tecnicamente importável por qualquer consumidor externo — o pacote é
+publicado como "used by Vercel's CLIs" (plural). Diferente dos
+precedentes desta missão (`VitessQueryHintHandler`, `hermit+circl`) onde
+a não-alcançabilidade foi decisiva o bastante pra fechar como
+falso-positivo, aqui a pergunta central (algum CLI real da Vercel, fora
+deste monorepo público, chama isso?) não está resolvida em nenhuma
+direção. Mantido em `corroborated_static`, sem forçar um veredito
+terminal sem base.
