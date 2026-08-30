@@ -5,7 +5,10 @@
     "stacker-2.clar",
     "stacker-3.clar",
     "stacker-4.clar",
-    "stacker-5.clar"
+    "stacker-5.clar",
+    "stbtc-token.clar",
+    "data-stx-v2.clar",
+    "data-stbtc-v1.clar"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
@@ -215,7 +218,10 @@
     "src/lib/TransferSpecLib.sol",
     "src/modules/common/TokenSupport.sol",
     "src/modules/wallet/WithdrawalDelay.sol",
-    "src/modules/wallet/Balances.sol"
+    "src/modules/wallet/Balances.sol",
+    "src/modules/common/TransferSpecHashes.sol",
+    "src/lib/EIP712Domain.sol",
+    "src/modules/common/Domain.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
@@ -226,7 +232,10 @@
     "src/modules/remote-domain-depositor/DomainManageable.sol",
     "src/RemoteDomainDepositor.sol",
     "src/modules/x-reserve/DepositToRemote.sol",
-    "src/xReserve.sol"
+    "src/xReserve.sol",
+    "src/modules/x-reserve/RemoteDomainRegistration.sol",
+    "src/lib/WithdrawHookDataLib.sol",
+    "src/modules/x-reserve/Pausing.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
@@ -235,5 +244,109 @@
     "src/utils/Configurable.sol",
     "src/utils/Pausable.sol",
     "src/factory/Create2Factory.sol"
+  ],
+  "circlefin/stablecoin-evm": [
+    "contracts/minting/MintController.sol",
+    "contracts/minting/Controller.sol",
+    "contracts/v1/Blacklistable.sol",
+    "contracts/v2/EIP3009.sol",
+    "contracts/util/SignatureChecker.sol",
+    "contracts/util/ECRecover.sol",
+    "contracts/v1/FiatTokenV1.sol"
+  ],
+  "vercel/workflow": [
+    "packages/core/src/encryption.ts",
+    "packages/core/src/sealed-box.ts",
+    "packages/core/src/runtime/deployment-guard.ts",
+    "packages/world-vercel/src/encryption.ts",
+    "packages/world-vercel/src/http-core.ts (partial: L1-390, token resolution + span/error handling)",
+    "packages/world-vercel/src/utils.ts",
+    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
+  ],
+  "circlefin/arc-remote-signer": [
+    "internal/app/public/public.go",
+    "internal/app/service/signer/signer.go",
+    "internal/common/grpc/server/server.go",
+    "internal/common/grpc/server/option.go",
+    "proto/arc/signer/v1/signer.proto",
+    "configs/app.yaml",
+    "docs/architecture.md",
+    "internal/app/service/signer/crypto.go",
+    "internal/app/service/signer/cache.go",
+    "internal/common/grpc/server/interceptor/middleware.go"
+  ],
+  "circlefin/arc-node": [
+    "crates/remote-signer/src/client.rs",
+    "crates/remote-signer/src/config.rs",
+    "crates/eth-engine/src/rpc/auth.rs",
+    "crates/eth-engine/src/rpc/mod.rs",
+    "crates/eth-engine/src/rpc/engine_rpc.rs",
+    "crates/eth-engine/src/rpc/ethereum_rpc.rs"
+  ],
+  "circlefin/noble-fiattokenfactory": [
+    "x/fiattokenfactory/keeper/msg_server_mint.go",
+    "x/fiattokenfactory/keeper/msg_server_configure_minter.go",
+    "x/fiattokenfactory/keeper/msg_server_configure_minter_controller.go",
+    "x/fiattokenfactory/keeper/msg_server_update_owner.go",
+    "proto/circle/fiattokenfactory/v1/tx.proto",
+    "x/fiattokenfactory/keeper/msg_server_accept_owner.go",
+    "x/fiattokenfactory/keeper/msg_server_remove_minter_controller.go",
+    "x/fiattokenfactory/keeper/msg_server_remove_minter.go",
+    "x/fiattokenfactory/keeper/msg_server_update_master_minter.go",
+    "x/fiattokenfactory/keeper/msg_server_update_blacklister.go",
+    "x/fiattokenfactory/keeper/keeper.go (ValidatePrivileges)"
+  ],
+  "circlefin/malachite": [
+    "code/crates/signing/src/lib.rs"
+  ],
+  "circlefin/noble-cctp": [
+    "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
+    "x/cctp/keeper/msg_server_update_token_controller.go",
+    "x/cctp/keeper/msg_server_link_token_pair.go"
+  ],
+  "vercel/vercel": [
+    "packages/cli/src/util/config/files.ts",
+    "packages/cli-auth/credentials-store.ts",
+    "packages/cli-config/src/cli-config.ts",
+    "packages/cli-config/src/paths.ts",
+    "packages/cli-auth/oauth.ts",
+    "packages/cli-auth/sso.ts",
+    "packages/cli/src/commands/login/future.ts",
+    "packages/cli/src/util/oauth.ts",
+    "packages/cli/src/commands/teams/sso.ts"
+  ],
+  "vercel-labs/skills": [
+    "src/github-host.ts",
+    "src/skill-lock.ts",
+    "src/blob.ts",
+    "src/update.ts (parcial)",
+    "src/installer.ts (parcial — writeSkillFiles/isPathSafe/sanitizeName)"
+  ],
+  "vercel/next.js": [
+    "packages/next/src/server/app-render/encryption.ts",
+    "packages/next/src/server/app-render/encryption-utils.ts",
+    "packages/next/src/server/app-render/encryption-utils-server.ts",
+    "packages/next/src/server/next-server.ts",
+    "packages/next/src/server/lib/router-utils/resolve-routes.ts",
+    "packages/next/src/server/web/spec-extension/adapters/next-request.ts"
+  ],
+  "vercel/turborepo": [
+    "crates/turborepo-auth/src/device_flow.rs",
+    "crates/turborepo-auth/src/auth/mod.rs",
+    "crates/turborepo-auth/src/auth/login.rs",
+    "crates/turborepo-auth/src/auth/sso.rs",
+    "crates/turborepo-auth/src/auth/logout.rs"
+  ],
+  "circlefin/solana-gateway-contracts": [
+    "programs/gateway-wallet/src/instructions/initiate_withdrawal.rs",
+    "programs/gateway-wallet/src/instructions/withdrawal.rs",
+    "programs/gateway-wallet/src/instructions/denylist.rs",
+    "programs/gateway-wallet/src/instructions/undenylist.rs",
+    "programs/gateway-wallet/src/instructions/deposit.rs",
+    "programs/gateway-wallet/src/instructions/deposit_for.rs",
+    "programs/gateway-wallet/src/instructions/add_delegate.rs",
+    "programs/gateway-wallet/src/instructions/remove_delegate.rs",
+    "programs/gateway-wallet/src/state.rs",
+    "programs/gateway-wallet/src/utils.rs"
   ]
 }

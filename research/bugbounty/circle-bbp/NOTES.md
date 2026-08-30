@@ -1161,34 +1161,541 @@ relatório.
 Leitura profunda proativa desta rodada não foi neste programa (ver
 `block-open-source/NOTES.md`).
 
-## Rodada 2026-08-30 (Fase 3, ZeroToOne v2) — checagem de duplicata/novidade fecha o achado, mesmo com PoC real passando
+## Rodada 2026-08-29 (segunda passagem) — achado do denylist bypass chegou a `human_ready`
 
-Correndo em paralelo com a rodada anterior deste mesmo dia (a corrida
-real entre as duas fica visível no ledger — `ledger/ledger.research.jsonl`,
-ambas transições a partir do mesmo `corroborated_static`), levei o achado
+Retomei o achado `Withdrawals.sol::initiateWithdrawal_withdraw`, que já
+estava em `reproduced_local` (PoC Foundry passando) da rodada anterior,
+mas travado em `scope_verified` por `DeploymentEvidence.confidence`
+`unverified`. Nesta rodada:
+
+- Busquei o endereço real de deploy em mainnet via `WebSearch` (não
+  consegui bater direto em `developers.circle.com` — `EGRESS_BLOCKED`
+  pelo proxy desta sessão). Encontrei
+  `0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE`, corroborado por 3 fontes
+  públicas independentes: docs oficiais da Circle (via snippet
+  indexado), docs oficiais da Polygon citando o mesmo endereço como o
+  `GatewayWallet` oficial multi-chain da Circle, e o padrão de vanity
+  address `0x7777777` que o próprio `README.md` deste repositório define
+  para o contrato Wallet em Production/Mainnet (bate exatamente com o
+  prefixo do endereço encontrado). Registrei `DeploymentEvidence` com
+  `confidence=medium` (não `high`: sem verificação direta de bytecode
+  on-chain, Etherscan/RPC seguem bloqueados por egress) — a transição
+  `reproduced_local -> scope_verified` foi aceita.
+- Reinstalei Foundry (`forge`/`cast`/`anvil` v1.0.0) e `solc` 0.8.29 do
+  zero neste ambiente efêmero (via releases oficiais no GitHub, mesmo
+  contorno da rodada anterior — `binaries.soliditylang.org` e RPC
+  público continuam bloqueados por egress) e **re-executei a PoC do
+  zero** (não reaproveitei só a alegação da rodada anterior):
+  `test/wallet/DenylistWithdrawalBypass.t.sol`, 2 testes, ambos `PASS`
+  (`test_denylistedAddressCannotDeposit` confirma que a modifier
+  funciona no depósito; `test_denylistedDepositorCanStillWithdrawFullBalance`
+  confirma o bug — o depositor denylistado sai com 100% do saldo que
+  havia depositado). Saída real anexada ao rascunho de relatório.
+- Atualizei `research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`
+  com a seção "Prova de conceito executável" completa (código do teste +
+  comando + saída literal) e com o endereço/evidência de deploy, e
+  registrei `record-report` + transição `scope_verified -> human_ready`
+  — aceita. Este é o primeiro achado desta pesquisa a chegar em
+  `human_ready`: rascunho pronto para revisão humana antes de qualquer
+  envio real.
+
+Leitura profunda proativa desta rodada: 3 arquivos em
+`circlefin/stablecoin-evm` (repositório do token USDC principal, ainda
+não coberto no `deep-read-log.json`, `asset_type: SMART_CONTRACT`,
+`eligible_for_bounty: true`, `max_severity: critical`) —
+`contracts/minting/MintController.sol`, `contracts/minting/Controller.sol`,
+`contracts/v1/Blacklistable.sol`. Nada digno de nota: ao contrário do
+`GatewayWallet` (onde o padrão `notDenylisted` tinha uma exceção real em
+`Withdrawals.sol`), aqui o padrão equivalente (`notBlacklisted`) está
+aplicado de forma consistente em `mint`/`transfer`/`transferFrom`/
+`approve` em `FiatTokenV1.sol` e `FiatTokenV2.sol` (confirmado via
+`grep -n "notBlacklisted"` nos dois arquivos) — controle de acesso
+`onlyOwner`/`onlyController`/`onlyBlacklister` também consistente. Não
+criei finding novo — resultado normal e válido de leitura profunda.
+
+Rodada 2026-08-30 (fila novamente vazia — 0 candidatos; os 2 achados em
+`corroborated_static` de rodadas anteriores, Kotlin `Root.kt` e Clarity
+`compute-ratio`, seguem no teto estrutural já documentado, nada novo a
+fazer neles). Leitura profunda proativa: 4 arquivos ainda não lidos em
+`circlefin/stablecoin-evm`, priorizando a superfície de autorização por
+assinatura (auth/crypto) — `contracts/v2/EIP3009.sol`
+(`transferWithAuthorization`/`receiveWithAuthorization`/
+`cancelAuthorization`), `contracts/util/SignatureChecker.sol` (EIP-1271 +
+ECDSA), `contracts/util/ECRecover.sol` e, por completude, a leitura
+linha a linha de `contracts/v1/FiatTokenV1.sol` (a rodada anterior só
+tinha confirmado `notBlacklisted` via grep, não lido o arquivo inteiro).
+Nenhum achado: nonce de autorização é marcado usado antes da
+`_transfer` (sem janela de reentrância), `validAfter`/`validBefore`
+checados, `receiveWithAuthorization` exige `to == msg.sender` (proteção
+anti-front-running documentada), `ECRecover` rejeita `s` no range alto
+(proteção EIP-2 contra malleability) e `v` fora de {27,28}, e
+`SignatureChecker` seque o padrão OZ com checagem correta do retorno de
+`isValidSignature` (ERC-1271). Código extremamente maduro e já
+publicamente auditado (é o FiatToken/USDC principal) — resultado normal
+e válido de leitura profunda sem achado novo.
+
+Rodada 2026-08-30 (push automático, notificação de commit). Fila
+novamente vazia — 0 candidatos; os 2 achados de rodadas anteriores em
+`corroborated_static` (Kotlin `Root.kt`, Clarity `compute-ratio`)
+seguem no mesmo teto estrutural já documentado, nada novo a fazer
+neles. Leitura profunda proativa: primeiro repositório novo desta
+missão em `circlefin/arc-remote-signer` (SOURCE_CODE, elegível a
+bounty, `max_severity: critical`, escolhido pelo próprio nome sugerir
+superfície de auth/crypto — ainda não coberto no `deep-read-log.json`).
+É o "Nitro Enclave Signer" — serviço gRPC sidecar 1:1 que assina
+mensagens de consenso para validadores da Arc Chain dentro de um AWS
+Nitro Enclave.
+
+**Achado novo, registrado e avançado até `corroborated_static`**
+(`Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding`):
+o RPC público `Sign` (porta 10340, `internal/app/service/signer/signer.go`)
+assina qualquer mensagem arbitrária enviada pelo chamador com a chave
+privada do validador, sem NENHUM controle de autenticação/autorização
+em nível de aplicação — confirmado via grep amplo (auth/bearer/apikey/
+jwt/hmac/shared-secret/mTLS/ClientCAs) no repo inteiro (zero hits
+relevantes) e leitura da cadeia de interceptors gRPC (só recovery/
+requestID/metrics/logging, nunca auth). `WithTLS` (`option.go`) usa
+`credentials.NewServerTLSFromFile` — TLS unidirecional (autentica o
+servidor, nunca o cliente) — e além disso vem **desabilitado por
+padrão** na config (`configs/app.yaml`: `tls.enabled: false`, bind em
+`0.0.0.0`). `docs/architecture.md` confirma que a única proteção
+documentada é de rede (security group da VPC), nunca controle de
+aplicação. Impacto: qualquer principal de rede capaz de alcançar a
+porta 10340 pode fazer o validador assinar mensagens de consenso
+arbitrárias (risco de equivocation/double-signing/slashing), sem
+precisar comprometer a enclave em si — a isolação de hardware protege
+a chave, não protege contra quem pode *pedir* uma assinatura.
+Documentado com ressalva honesta: é possível que o operador (Circle)
+trate segmentação de rede como controle suficiente por design (mesmo
+modelo do external signer plugin do avalanchego, de onde este proto
+foi derivado — `proto/arc/signer/v1/signer.proto` cita
+`ava-labs/avalanchego`), então não é necessariamente um bug introduzido
+neste fork. Achado Go, sem PoC Foundry aplicável (`record-validation
+--result=not_applicable` registrado, mesma limitação real já documentada
+para o achado Kotlin). `check-scope` confirmou `allowed=true`;
+`record-deployment-evidence` registrado como `confidence=unverified`
+(sem prova de qual commit/release roda de fato em produção); a
+transição para `scope_verified` foi tentada e corretamente recusada
+pela state machine (`corroborated_static->scope_verified` não existe
+no grafo — só `reproduced_local->scope_verified`), mesmo teto
+estrutural já visto no achado Kotlin. Fica em `corroborated_static`.
+
+`deep-read-log.json` atualizado com a nova chave `circlefin/arc-remote-signer`
+(7 arquivos: `public.go`, `signer.go`, `server.go`, `option.go`, o
+`.proto`, `configs/app.yaml`, `docs/architecture.md`).
+
+## Rodada 2026-08-30 (push automático, commit posterior) — corroboração cruzada do achado `arc-remote-signer` via `circlefin/arc-node`, e leitura profunda em `circlefin/noble-fiattokenfactory`
+
+Fila `list-pending` vazia (0 candidatos). Os outros achados de rodadas
+anteriores que seguem em `corroborated_static` (Kotlin `Root.kt` de
+`block-open-source`; Clarity `compute-ratio` de StackingDAO) pertencem a
+outros programas e seguem no mesmo teto estrutural já documentado neles
+— nada novo a fazer aqui. `api.hiro.so` (StackingDAO) segue bloqueado
+por egress nesta sessão, confirmado de novo.
+
+Leitura profunda proativa (2 alvos):
+
+- **`circlefin/arc-node`** (repositório irmão do `arc-remote-signer`,
+  não coberto ainda — é o software real do validador Arc Chain, escolhido
+  especificamente pra ver o lado CLIENTE da mesma chamada gRPC já
+  documentada como vulnerável em `arc-remote-signer`). Encontrei
+  `crates/remote-signer/src/client.rs` (`RemoteSignerClient`, o código
+  que o validador de fato usa pra chamar `SignerService.Sign`) e
+  `crates/remote-signer/src/config.rs` (`RemoteSigningConfig::default()`).
+  Isso **corrobora o achado já registrado**
+  (`Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding`,
+  ainda em `corroborated_static`) em vez de criar um achado novo:
+  confirma, do lado cliente, exatamente o mesmo padrão inseguro já visto
+  no servidor — endpoint padrão `http://0.0.0.0:10340` (HTTP puro),
+  `enable_tls: false` por padrão, e mesmo com TLS habilitado o cliente só
+  configura `ca_certificate` (autentica o servidor, nunca envia
+  identidade/certificado próprio — sem mTLS). `SignRequest{message}` não
+  carrega nenhum campo de autenticação. Ou seja a ausência de auth em
+  nível de aplicação está confirmada nos dois lados do protocolo real,
+  não só inferida a partir do server. Atualizei o `reasoning` e
+  `filesRead` do achado existente via `update-finding` (script direto
+  contra `db.mjs`, mesmas funções que o `cli.mjs` expõe, só pra lidar com
+  texto longo sem problema de quoting de shell — não editei
+  `queue.jsonl` na mão). Não tentei nova transição: o teto estrutural é o
+  mesmo (achado Go/Rust sem PoC Foundry aplicável,
+  `corroborated_static->scope_verified` não existe no grafo sem passar
+  por `reproduced_local`), só a confiança do achado documentado subiu.
+  Também li `crates/eth-engine/src/rpc/auth.rs` (JWT HS256 pro Engine
+  API interno, padrão reth/go-ethereum) — protege uma superfície
+  diferente (consensus↔execution client), sem relação com o achado do
+  signer; sem achado novo aí.
+- **`circlefin/noble-fiattokenfactory`** (módulo Cosmos SDK que emite
+  USDC na chain Noble, repositório novo, `asset_type: SMART_CONTRACT`,
+  `eligible_for_bounty: true`, `max_severity: critical` — nunca coberto
+  nesta missão). Rastreei a cadeia completa de autorização
+  owner→master_minter→minter_controller→minter→mint:
+  `msg_server_mint.go` (`Keeper.Mint`), `msg_server_configure_minter.go`,
+  `msg_server_configure_minter_controller.go`,
+  `msg_server_update_owner.go`. Investiguei especificamente por
+  suspeita do mesmo padrão de bug recorrente nesta pesquisa
+  (tx-sender vs contract-caller em Clarity): aqui o equivalente seria
+  `msg.From` (usado pra toda checagem de autorização, ex.
+  `k.GetMinters(ctx, msg.From)`, `msg.From != minterController.Controller`)
+  não corresponder ao assinante real da tx. Refutado: confirmei em
+  `proto/circle/fiattokenfactory/v1/tx.proto` que `MsgMint`/`MsgBurn`/etc
+  declaram `option (cosmos.msg.v1.signer) = "from"` — o Cosmos SDK
+  aplica essa anotação no nível do `baseapp`/ante handler pra exigir que
+  `from` seja de fato o endereço que assinou a tx (diferente de Clarity,
+  onde `contract-caller` pode divergir de `tx-sender` dentro de uma
+  chamada — aqui não há esse desvio possível, é reforçado pelo framework,
+  não pela lógica do módulo). Cadeia de permissão também consistente:
+  `ConfigureMinterController` só o `master_minter` pode chamar;
+  `ConfigureMinter` exige que quem chama seja o controller cadastrado
+  E que o `msg.Address` bata com o minter que aquele controller
+  especificamente controla (não deixa um controller configurar allowance
+  de um minter que não é o seu); `Mint` decrementa `Allowance` antes de
+  `MintCoins`/`SendCoinsFromModuleToAccount` (sem janela de reentrância —
+  Cosmos SDK é single-threaded por bloco de qualquer forma) e checa
+  blacklist de quem envia E de quem recebe. `UpdateOwner` usa padrão de
+  2 passos (`SetPendingOwner` + aceite explícito, não vi ainda o
+  `msg_server_accept_owner.go` mas o padrão já está claro pelo nome e
+  pelo `SetPendingOwner` aqui). Nenhum achado — controle de acesso em
+  camadas bem implementado, sem o desvio que eu estava especificamente
+  procurando.
+
+`deep-read-log.json` atualizado com as novas chaves `circlefin/arc-node`
+(3 arquivos) e `circlefin/noble-fiattokenfactory` (5 arquivos, incluindo
+o `.proto`).
+
+## Rodada 2026-08-30 (push automático seguinte) — msg_server_accept_owner.go e circlefin/malachite
+
+Fila novamente vazia. Leitura profunda proativa:
+
+- `circlefin/noble-fiattokenfactory::x/fiattokenfactory/keeper/msg_server_accept_owner.go`
+  (pendência mencionada em rodada anterior, "ainda não vi"): fecha o
+  padrão de 2 passos de transferência de ownership já suspeitado —
+  `AcceptOwner` confere corretamente `owner.Address != msg.From` contra
+  o pending owner antes de promover. Sem achado, refuta qualquer dúvida
+  residual sobre esse fluxo.
+- `circlefin/malachite::code/crates/signing/src/lib.rs` (repo novo,
+  nunca coberto nesta missão — motor de consenso BFT que o validador
+  Arc Chain roda). É só a definição dos traits `Signer<Ctx>`/`Verifier<Ctx>`
+  (sem implementação concreta), mas o design documentado no próprio
+  código reforça o achado já registrado em `arc-remote-signer`
+  (`SignerService.Sign` sem autenticação): os métodos de assinatura do
+  malachite são todos nomeados por propósito (`sign_vote`,
+  `sign_proposal`, `sign_vote_extension`, `sign_validator_proof`)
+  justamente para impor separação de domínio — nenhuma assinatura de um
+  escopo deve verificar para outro. O `SignerService.Sign` do
+  arc-remote-signer é o oposto disso: assina bytes arbitrários sem
+  noção de propósito/escopo. Atualizei o `reasoning` do finding existente
+  com essa evidência de contraste (não é um achado novo, reforça o
+  existente). **Nota de processo**: o primeiro `update-finding` desta
+  atualização usou `--patch` com só o texto novo e isso **sobrescreveu**
+  o `reasoning` completo anterior (ficou só preservado aninhado em
+  `raw.raw`, não no campo usado pela validação) — corrigido nesta mesma
+  rodada mesclando manualmente o texto original + a atualização antes de
+  gravar de novo. Lição: `update-finding --patch='{"reasoning":"..."}'`
+  substitui o campo inteiro, não concatena — futuras atualizações de
+  achados existentes precisam ler o `reasoning` atual primeiro e enviar
+  o texto mesclado.
+
+`deep-read-log.json` atualizado (`circlefin/noble-fiattokenfactory` ganhou
+`msg_server_accept_owner.go`; nova chave `circlefin/malachite` com
+`code/crates/signing/src/lib.rs`).
+
+## Rodada 2026-08-30 (push automático seguinte) — fila vazia, leitura profunda em circlefin/noble-cctp
+
+Fila do scanner vazia (0 candidatos). Os 3 achados existentes deste
+programa que seguiam em `corroborated_static` (`arc-remote-signer`
+SignerService.Sign sem auth) e em `human_ready` (`evm-gateway-contracts`
+Withdrawals.sol) permanecem sem mudança de estado nesta rodada — já
+documentados no teto estrutural correto em rodadas anteriores, nada de
+novo pra investigar neles agora.
+
+Leitura profunda proativa: repositório `circlefin/noble-cctp` (módulo
+Cosmos SDK do CCTP na chain Noble, nunca coberto nesta missão). Li os 3
+handlers de mensagem administrativa mais sensíveis por nome/impacto:
+`x/cctp/keeper/msg_server_add_remote_token_messenger.go`,
+`msg_server_update_token_controller.go` e `msg_server_link_token_pair.go`.
+Mesmo padrão de controle de acesso já visto e validado em
+`noble-fiattokenfactory` (mesma família de módulos Circle em Cosmos SDK):
+cada handler compara o endereço privilegiado armazenado on-chain
+(`GetOwner`/`GetTokenController`) contra `msg.From`, e `msg.From` é
+garantido pelo framework (anotação `cosmos.msg.v1.signer` + ante handler
+do Cosmos SDK) como o endereço que de fato assinou a tx — não há o
+desvio tx-sender-vs-contract-caller que se procura em Clarity, nem
+qualquer outro jeito de spoofar `msg.From` a partir da lógica do módulo.
+Nenhum achado nestes 3 arquivos.
+
+`deep-read-log.json` atualizado com a nova chave `circlefin/noble-cctp`
+(3 arquivos).
+
+## Rodada 2026-08-30 (push automático seguinte) — fila vazia, leitura profunda em circlefin/evm-xreserve-contracts
+
+Fila do scanner novamente vazia (0 candidatos). Os achados existentes
+(`arc-remote-signer` SignerService.Sign em `corroborated_static`,
+`evm-gateway-contracts` Withdrawals.sol em `human_ready`) permanecem sem
+mudança — nada de novo pra investigar neles nesta rodada.
+
+Leitura profunda proativa: 3 arquivos ainda não cobertos em
+`circlefin/evm-xreserve-contracts` (Solidity, alvo direto do programa,
+já parcialmente lido em rodadas anteriores).
+
+- `src/modules/x-reserve/RemoteDomainRegistration.sol`: módulo de
+  registro/desregistro de domínios e tokens remotos. `registerRemoteDomain`
+  segue CEI corretamente — grava o mapping `remoteDomainDepositors` (efeito)
+  ANTES da chamada externa `IRemoteDomainDepositor(...).initialize(...)`, sem
+  janela de reentrância aproveitável (e mesmo que houvesse, o próprio
+  domínio já estaria marcado como registrado, então uma reentrada em
+  `registerRemoteDomain` pro mesmo domínio bateria em
+  `requireDomainNotRegistered` e reverteria). Todas as funções sensíveis
+  (`registerRemoteDomain`/`registerRemoteToken` via `onlyRegistrationManager`;
+  `deregisterRemoteDomain`/`deregisterRemoteToken`/`setRemoteDomainHookExecutor`/
+  `updateRegistrationManager` via `onlyOwner`) têm modifier de controle de
+  acesso correto. `setDomainPauseState` não tem modifier próprio mas
+  verifica manualmente `msg.sender == domainPauser` obtido do contrato
+  depositor do domínio — delegação de autorização coerente, sem desvio.
+  Sem achado.
+- `src/lib/WithdrawHookDataLib.sol`: biblioteca de codificação/decodificação
+  de `WithdrawHookData` usando `TypedMemView`. Validação em camadas antes de
+  qualquer leitura de campo: checagem de magic number, comprimento mínimo de
+  header, versão, e MUITO importante — checagem de consistência de
+  comprimento total (`hookDataView.len() != expectedTotalLength`, calculado
+  a partir do `forwardingCalldataLength` declarado) antes de expor
+  `getForwardingCalldata`. Isso fecha exatamente o tipo de desvio que eu
+  esperava encontrar aqui (comprimento declarado divergindo do real,
+  causando leitura fora dos limites do buffer) — a lib já se protege
+  corretamente. Sem achado.
+- `src/modules/x-reserve/Pausing.sol`: role `pauser` separado de `owner`
+  (Ownable2StepUpgradeable), `pause`/`unpause`/`updatePauser` todos
+  corretamente gated (`onlyPauser` ou `onlyOwner`), sem função que deixe
+  escapar o pause de domínio específico para chamador não autorizado. Sem
+  achado.
+
+Nenhum achado novo nesta rodada — os 3 arquivos lidos reforçam o padrão já
+observado neste programa: controle de acesso e validação de dados bem
+implementados nos contratos xReserve.
+
+`deep-read-log.json` atualizado (`circlefin/evm-xreserve-contracts` ganhou
+os 3 arquivos acima, total agora 12).
+
+Rodada 2026-08-30 (leitura profunda proativa, fila vazia): `circlefin/noble-fiattokenfactory`
+(Cosmos SDK Go, módulo de token soberano da Noble chain), continuando a
+cobertura de handlers admin/mint ainda não lidos:
+`msg_server_remove_minter_controller.go`, `msg_server_remove_minter.go`,
+`msg_server_update_master_minter.go`, `msg_server_update_blacklister.go` e
+`keeper.go::ValidatePrivileges`. Todos corretamente gated pelo padrão já
+observado no programa (owner-only pra update de papéis, minter-controller-only
+pra remover seu próprio minter, com checagem cruzada de que
+`msg.Address == minterController.Minter` antes de remover). Único ponto
+notado: `ValidatePrivileges` (chamada por `UpdateMasterMinter`/
+`UpdateBlacklister`/`UpdatePauser`/`UpdateOwner` antes de atribuir um novo
+endereço a um papel privilegiado) só bloqueia reatribuição se o endereço já
+for `owner`/`blacklister`/`masterMinter`/`pauser` — não verifica se o
+endereço já é `minterController` ou `minter`. Considerado NÃO um achado:
+a chamada em si já exige ser o `owner` atual (raiz de confiança já
+maximamente privilegiada), então isso é apenas uma checagem de higiene de
+governança ausente, não um desvio de controle de acesso explorável por
+alguém sem já ser o owner — mesmo padrão de "sem separação de papel
+minter/master-minter" existe no `FiatTokenV1.sol` original da Circle em
+EVM. Sem achado novo nesta rodada.
+
+`deep-read-log.json` atualizado (`circlefin/noble-fiattokenfactory` ganhou
+5 entradas, total agora 11).
+
+## Rodada 2026-08-30 (push automático seguinte) — arc-remote-signer: crypto.go/cache.go/middleware.go, sem achado novo
+
+Fila `list-pending` vazia. Voltei em `circlefin/arc-remote-signer` pra
+fechar os arquivos pequenos que faltavam do serviço de assinatura
+(`internal/app/service/signer/`) e confirmar diretamente a lista completa
+de interceptors gRPC citada no achado já registrado
+(`arc-remote-signer/internal/app/public/public.go::SignerService.Sign`,
+em `corroborated_static`), em vez de confiar só no grep amplo já feito:
+
+- `internal/app/service/signer/crypto.go` (43 linhas) — só define
+  `header{CipherKey, CipherData, Nonce}` com `MarshalBinary`/
+  `UnmarshalBinary` via `encoding/gob`, usado para serializar o material
+  cifrado que sai/entra da enclave. Sem lógica de auth, sem achado.
+- `internal/app/service/signer/cache.go` (46 linhas) — cache em memória
+  trivial (`sync.RWMutex` + `get`/`set`) da chave já decifrada dentro da
+  enclave. Sem achado.
+- `internal/common/grpc/server/interceptor/middleware.go` — **confirma
+  diretamente, lendo o arquivo que centraliza os construtores dos
+  interceptors, o que antes só tinha sido confirmado por grep**: só expõe
+  `WithRecovery`/`WithRequestID`/`WithMetrics`/`WithLogging`. Não existe
+  `WithAuth` nem qualquer interceptor de autenticação/autorização neste
+  pacote — reforça (não amplia) o achado já documentado, sem mudar seu
+  estado (`corroborated_static`, teto estrutural inalterado: achado
+  Go sem PoC Foundry aplicável, transição pra `scope_verified` sem passar
+  por `reproduced_local` continua corretamente indisponível no grafo).
+
+Nenhum achado novo nesta rodada — leitura de confirmação, não descoberta.
+`deep-read-log.json` atualizado (`circlefin/arc-remote-signer` ganhou os 3
+arquivos acima, total agora 10).
+
+## Rodada 2026-08-30 (push automático seguinte) — achado novo: mesmo gap de denylist do withdraw da EVM, replicado no Solana
+
+Fila `list-pending` vazia de novo. Leitura profunda proativa escolheu
+`circlefin/solana-gateway-contracts` (nunca lido antes — repo listado no
+scope do programa mas com zero entradas em `deep-read-log.json`), o
+irmão Solana/Anchor do `circlefin/evm-gateway-contracts`, especificamente
+o programa `gateway-wallet`. Motivação: o achado já `human_ready` na
+contraparte EVM (`Withdrawals.sol`, ausência da modifier `notDenylisted`
+em `initiateWithdrawal`/`withdraw`) é exatamente o tipo de gap que vale a
+pena checar se foi replicado no equivalente de outra chain do mesmo
+produto.
+
+Confirmado por leitura direta do código (não por analogia): `deposit.rs`,
+`deposit_for.rs`, `add_delegate.rs` e `remove_delegate.rs` carregam a PDA
+`depositor_denylist`/`delegate_denylist` (seeds `[DENYLIST_SEED, <pubkey>]`)
+e chamam `require!(!utils::is_account_denylisted(...))` antes de agir.
+`initiate_withdrawal.rs` (handler + `GatewayDeposit::initiate_withdrawal`
+em `state.rs`) e `withdrawal.rs` (handler + `GatewayDeposit::complete_withdrawal`
+em `state.rs`) **não declaram nem checam nenhuma conta de denylist** — só
+validam `!gateway_wallet.paused`, saldo suficiente e o delay de saque.
+Resultado: um depositor denylistado depois de já ter depositado ainda
+consegue `initiate_withdrawal` + `withdraw` o saldo integral — o denylist
+bloqueia novos depósitos/delegações mas não impede o saque do que já
+estava lá, mesmo bug de design da contraparte EVM, agora no programa
+Solana.
+
+Novo finding registrado: `Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding`,
+avançado para `corroborated_static` (reasoning + filesRead salvos, achado
+confirmado em código real). Teto estrutural: achado em Rust/Anchor, sem
+validador de PoC executável disponível no sistema hoje (só existe
+`foundry_poc` pra Solidity) — fica em `corroborated_static` sem tentar
+`reproduced_local`, mesmo padrão já usado para o achado Go do
+`arc-remote-signer`. Não avancei para `scope_verified`/relatório: exigiria
+vínculo de deploy real (endereço de programa on-chain confirmado) que não
+tenho evidência pra afirmar com confidence >= "low" nesta rodada.
+
+`deep-read-log.json` atualizado (`circlefin/solana-gateway-contracts`
+criado, 10 arquivos lidos nesta rodada).
+
+## Rodada 2026-08-30 (push automático seguinte) — arc-node: RPC do Engine API, sem achado novo
+
+Fila `list-pending` vazia de novo. Leitura profunda proativa voltou em
+`circlefin/arc-node` pra fechar o módulo `crates/eth-engine/src/rpc/`
+inteiro em torno do `auth.rs` já lido antes (achado de auth só tinha
+cobertura parcial do módulo). Li `mod.rs`, `engine_rpc.rs` e
+`ethereum_rpc.rs`:
+
+- `engine_rpc.rs` — cliente `EngineRpc` que fala com o Engine API
+  (`engine_forkchoiceUpdatedV3`, `engine_getPayloadV4/V5`,
+  `engine_newPayloadV4`) sempre anexando `bearer_auth(self.auth.generate_token())`
+  (o JWT do `auth.rs` já analisado). Toda chamada passa por
+  `rpc_request`, que centraliza o `bearer_auth` — não achei nenhum
+  caminho que monte a requisição HTTP pulando essa etapa.
+- `ethereum_rpc.rs` — cliente `EthereumRPC` separado, para o JSON-RPC
+  `eth_*`/`txpool_*` padrão (sem JWT). Isso é o desenho normal de
+  clientes Ethereum: a Engine API (autenticada, consensus-critical) e o
+  JSON-RPC `eth_*` de leitura (não autenticado por convenção, pensado
+  pra ficar atrás de firewall/rede local) são propositalmente
+  endpoints/portas diferentes com modelos de confiança diferentes — não
+  é um gap de auth, é a mesma separação que existe no geth/reth/lighthouse
+  etc.
+- `mod.rs` — só declara os módulos, sem lógica própria.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`circlefin/arc-node`
+ganhou os 3 arquivos acima, total agora 6).
+
+## Rodada 2026-08-30 (push automático seguinte) — deviation deliberada no domain separator EIP-712 do gateway, investigada e refutada
+
+Fila `list-pending` vazia de novo. Voltei em `circlefin/evm-gateway-contracts`
+pra fechar o resto dos módulos `common/` ainda não lidos isoladamente
+(`GatewayCommon.sol` já tinha sido lido antes, mas só compõe os módulos —
+reli pra ter o mapa de herança fresco). Arquivos novos desta rodada:
+
+- `src/modules/common/TransferSpecHashes.sol` — mapping simples de
+  `usedHashes[transferSpecHash] => bool` (padrão EIP-7201), com
+  `_checkAndMarkTransferSpecHash` (check-then-mark, sem race condition
+  possível em EVM single-threaded). Sem achado.
+- `src/lib/EIP712Domain.sol` — **chamou atenção genuína**: o comentário do
+  próprio arquivo admite explicitamente que a implementação "intentionally
+  deviates from the standard by omitting `chainId` and `verifyingContract`
+  fields from the domain separator" para permitir que burn intents sejam
+  verificados entre chains/deployments diferentes. Isso é, em princípio,
+  exatamente a classe de bug "domain separator fraco → assinatura
+  reutilizável entre contratos/chains" — mas a ressalva do próprio comentário
+  merece verificação, não aceitação. Segui a cadeia pra confirmar se a
+  omissão é compensada em outro lugar.
+- `src/modules/common/Domain.sol` — módulo que guarda o `domain` (uint32,
+  identificador emitido pelo operador, != chainId) desta instância
+  específica, com `_isCurrentDomain(uint32)`.
+
+**Verificação da cadeia completa (grep em `Mints.sol`/`Burns.sol`, já lidos
+em rodada anterior, cruzando com `TransferSpecLib.sol`/`TransferSpec.sol`):**
+o struct `TransferSpec` assinado via EIP-712 carrega explicitamente
+`sourceDomain`, `destinationDomain`, `sourceContract` (bytes32) e
+`destinationContract` (bytes32) como campos do próprio payload assinado
+(não do domain separator). `Mints.sol::_validateAttestation` checa
+`destinationContract == address(this)` (`InvalidAttestationDestinationContractAtIndex`
+se não bater) e `destinationDomain == domain()` atual
+(`InvalidAttestationDestinationDomainAtIndex`); `Burns.sol` checa
+simetricamente `sourceContract == address(this)`
+(`InvalidIntentSourceContractAtIndex`) no lado do burn. Ou seja: a
+vinculação de "esta assinatura só vale para ESTE contrato, NESTA chain" que
+normalmente viria do domain separator (chainId+verifyingContract) é
+recriada explicitamente como campos checados do próprio struct assinado —
+um padrão deliberado (mesmo já visto em `evm-cctp-contracts`/CCTP: mensagem
+carrega source/destination domain explícitos) que permite exatamente o caso
+de uso pretendido (mesma assinatura de burn intent, atestada e usada em
+qualquer chain de destino que bata os campos) sem abrir replay
+cross-contract/cross-chain — cada checagem reverte se o campo não bater com
+o `address(this)`/`domain()` de onde a tx está rodando.
+
+**Verdict: não é achado — deviation deliberada e corretamente compensada.**
+Não abri item na fila para isso: a leitura já saiu refutada dentro da mesma
+rodada (mesmo padrão de "investigar e descartar sem passar pelo estado
+`candidate`" já usado antes pra achados óbvios de código de teste). Nota
+cosmética sem impacto de segurança: `EIP712Domain.sol::_NAME` é hardcoded
+como `"GatewayWallet"` mesmo quando herdado por `GatewayMinter` (via
+`GatewayCommon`) — inofensivo porque o campo `name` do domain separator não
+participa de nenhuma checagem de escopo (isso já é feito pelos campos
+explícitos do `TransferSpec`), mas vale reportar como observação de
+qualidade se algum relatório futuro tocar nesse contrato.
+
+`deep-read-log.json` atualizado (`circlefin/evm-gateway-contracts` ganhou
+`TransferSpecHashes.sol`, `EIP712Domain.sol` e `Domain.sol`, total agora 20
+arquivos). Nenhum item novo na fila — resultado normal desta rodada.
+Sugestão pra próxima: módulos ainda não lidos isoladamente em
+`evm-gateway-contracts` — `modules/wallet/Batches.sol`, `modules/common/
+Pausing.sol`, `lib/Attestations.sol`, `lib/Cursor.sol`, `lib/BatchedDelta.sol`,
+`lib/TransferSpec.sol` — ou avançar pra `circlefin/evm-xreserve-contracts`
+(já com boa cobertura, mas `Domain.sol`/`Immutables.sol` locais ainda não
+lidos) ou iniciar `circlefin/malachite` (só 1 arquivo lido até agora).
+
+## Reconciliação (Fase 3, ZeroToOne v2, 30/08/2026) — checagem de duplicata/novidade fecha `Withdrawals.sol`, mesmo com PoC real e endereço de deploy real
+
+Uma sessão interativa em paralelo às rodadas acima (a corrida real entre
+as duas fica visível no ledger — `ledger/ledger.research.jsonl`, ambas
+transições a partir do mesmo `corroborated_static`, sem visibilidade uma
+da outra até o merge) levou o achado
 `Withdrawals.sol::initiateWithdrawal_withdraw` até a checagem de
 duplicata/novidade que ainda faltava — e ele foi refutado como
-**não-novo**, não pela leitura de código estar errada (a PoC real do
-agente de nuvem na rodada acima confirma que o comportamento é
-exatamente como descrito), mas porque já estava publicamente
-documentado: o relatório PÚBLICO de auditoria da ChainSecurity pra
-Circle Gateway (08/07/2025), com `Withdrawals.sol` explicitamente em
-escopo (commit `5b5446f5...`), descreve exatamente esse comportamento na
-seção 8.1 ("Notes" — definida no próprio relatório como achados que não
-exigem correção), tratando-o como característica de design aceita, não
-bug. Circle Gateway está em produção real desde agosto de 2025 (7
-chains).
+**não-novo**, não pela leitura de código estar errada (a PoC real via
+Foundry das rodadas acima, incluindo o endereço mainnet real
+`0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE` corroborado por 3 fontes
+públicas independentes, confirma que o comportamento é exatamente como
+descrito), mas porque já estava publicamente documentado: o relatório
+PÚBLICO de auditoria da ChainSecurity pra Circle Gateway (08/07/2025),
+com `Withdrawals.sol` explicitamente em escopo (commit `5b5446f5...`),
+descreve exatamente esse comportamento na seção 8.1 ("Notes" — definida
+no próprio relatório como achados que não exigem correção), tratando-o
+como característica de design aceita, não bug.
 
-**Estado final reconciliado: `known_duplicate`** (não `reproduced_local`
-como a rodada acima tinha deixado) — a PoC real via Foundry foi
-preservada como validação no banco (evidência real e valiosa, ver
-`ledger`), mas a decisão de reportabilidade é sobre novidade, não sobre
-se o código funciona como descrito. Rascunho de relatório atualizado com
-a citação completa e marcado "NÃO ENVIAR" —
-`research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`.
+**Estado final reconciliado: `known_duplicate`** (não `human_ready` como
+as rodadas acima tinham deixado) — toda a evidência real produzida acima
+(PoC Foundry passando, endereço de deploy real, cadeia de código
+confirmada) foi preservada no banco e no rascunho de relatório
+(`research/bugbounty/reports/circle-bbp-withdrawals-denylist.md`, agora
+marcado "NÃO ENVIAR" com a citação completa da ChainSecurity), mas a
+decisão de reportabilidade é sobre novidade, não sobre se o código
+funciona como descrito ou se está deployado em produção real. Primeiro
+caso real, nesta missão, de um achado tecnicamente correto, com
+endereço de deploy real E prova de conceito executável passando, mas
+mesmo assim descartado por falta de novidade.
 
-Isso é o primeiro caso real, nesta missão, de um achado tecnicamente
-correto E com prova de conceito executável passando, mas mesmo assim
-descartado por falta de novidade — exatamente o tipo de checagem que
-faltava antes de qualquer achado (por mais bem comprovado que esteja)
-chegar perto de virar um relatório enviado de verdade.
+Os achados novos das rodadas acima (`SignerService.Sign` sem auth em
+`arc-remote-signer`, denylist ausente no saque do Gateway Wallet Solana,
+`sso.ts::waitForVerification` em Vercel, `compute-ratio` em StackingDAO)
+não foram tocados por esta reconciliação — permanecem em
+`corroborated_static`, aguardando a mesma checagem de duplicata/novidade
+e prova de conceito (quando aplicável) antes de qualquer rascunho de
+relatório. Candidatos naturais pra próxima rodada de verticalização.

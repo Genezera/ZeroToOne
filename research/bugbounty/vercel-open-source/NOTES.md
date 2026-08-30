@@ -314,3 +314,556 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/chat` ganhou os 4 arquivos/trechos acima). Restam por ler
 individualmente: Instagram, Notion (adapters do mesmo pacote) e
 `vercel/workflow` (tier 1, ainda intocado).
+
+## Rodada 2026-08-30 — fila vazia, primeira leitura profunda em vercel/workflow (tier 1)
+
+Fila (`queue.jsonl`) sem itens `pending` no início desta rodada. Confirmado
+via `cli.mjs check-scope "Vercel Open Source" "vercel/workflow"` que o repo
+está em escopo (`allowed: true`, `SOURCE_CODE`, `eligibleForBounty: true`,
+`maxSeverity: critical`, marcado "tier 1" — maior prioridade que `vercel/chat`,
+que é tier 2). Ainda não tinha nenhuma entrada em `deep-read-log.json` apesar
+de já mencionado como pendência em rodadas anteriores. Clonado via
+`git clone --depth 1` (público, sem conta/token).
+
+`vercel/workflow` é o framework "Workflow SDK" — funções duráveis para
+JS/TS que persistem progresso como event log e fazem replay determinístico
+do código após cold start/falha/scale. Arquitetura relevante: funções
+`"use workflow"` rodam numa VM sandboxed (QuickJS) sem acesso completo ao
+Node.js, funções `"use step"` rodam com runtime Node completo — o limite
+entre as duas é a superfície mais crítica do repo (sandbox escape teria
+severidade alta), mas o arquivo do runtime QuickJS
+(`packages/core/src/runtime/quickjs-runtime.ts`, 2816 linhas) é grande
+demais para uma leitura completa nesta rodada — fica para uma rodada futura
+dedicada só a ele. Priorizei nesta rodada os 2 arquivos de criptografia do
+`packages/core` (nome mais óbvio de risco) + 1 arquivo de roteamento/guard:
+
+- `packages/core/src/encryption.ts` — AES-256-GCM via Web Crypto API
+  (`globalThis.crypto.subtle`), nonce aleatório de 12 bytes por chamada
+  (`getRandomValues`), AAD opcional coberto pela tag GCM. Falhas do Web
+  Crypto (incluindo tag GCM inválida) são recapturadas como
+  `RuntimeDecryptionError` com contexto, nunca engolidas silenciosamente.
+  Sem falha encontrada — implementação padrão e correta.
+- `packages/core/src/sealed-box.ts` — construção estilo HPKE (RFC 9180)
+  para writes cross-run: ECDH X25519 efêmero + HKDF-SHA256 + AES-256-GCM,
+  chave por run derivada de `HKDF(VERCEL_DEPLOYMENT_KEY, "projectId|runId")`.
+  Verifiquei com ceticismo os pontos clássicos de falha desse tipo de
+  construção: (1) binding do `kem_context` — `info` do HKDF inclui
+  `ephemeralPublicKey ‖ recipientPublicKey`, prevenindo key-substitution/
+  unknown-key-share attack; (2) disciplina de nonce — nonce sempre aleatório
+  via `aesGcmEncrypt` mesmo quando a `contentKey` é amortizada entre frames
+  de um stream (`createSealSession`), nunca contador; (3) ponto de baixa
+  ordem X25519 — rejeitado pelo próprio Web Crypto (`OperationError` em
+  segredo compartilhado zerado), tratado como erro explícito, não como
+  segredo fraco silencioso; (4) decodificação de chave pública recebida de
+  storage/wire (`decodeRunPublicKey`/`base64ToBytes`) é estrita (rejeita
+  caracteres fora do alfabeto, padding malformado, bits de sobra não-zero)
+  e falha fechado (degrada pra `undefined` → caminho simétrico, nunca aceita
+  um valor truncado como se fosse uma chave válida). Construção sólida, bem
+  documentada, sem desvio do padrão HPKE que introduza fraqueza. Sem achado.
+- `packages/core/src/runtime/deployment-guard.ts` — `guardDeploymentAffinity`
+  garante que um run só executa na deployment a que está pinado (evita
+  decrypt com a master key errada). Fail-safe por padrão
+  (`world.capabilities?.deploymentAffinity !== true` → `CONTINUE` sem
+  guarda), re-enfileira pra deployment correta com backoff exponencial
+  limitado, falha definitivamente só após esgotar
+  `WORKFLOW_DEPLOYMENT_MISMATCH_MAX_RETRIES` ou receber classificação
+  explícita de "deployment indisponível". É lógica de roteamento/robustez,
+  não um limite de autorização entre tenants — sem falha encontrada.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/workflow` criado com os 3 arquivos acima). Sugestão pra próxima
+rodada: `packages/core/src/runtime/quickjs-runtime.ts` (fronteira do
+sandbox VM — arquivo grande, ler em partes) e/ou
+`packages/world-vercel/src/encryption.ts` (par do `encryption.ts` já lido,
+mas do lado do backend de produção Vercel) — ambos ainda intocados neste
+repo tier 1.
+
+## Rodada 2026-08-30 (leitura profunda proativa, continuação)
+
+Fila `list-pending` vazia de novo. Segui a sugestão da rodada anterior.
+Clonado `vercel/workflow` fresco via `git clone --depth 1` (público, sem
+conta/token) no scratchpad.
+
+- `packages/world-vercel/src/encryption.ts` (232 linhas, completo) — par
+  server-side do `packages/core/src/encryption.ts` já revisado. Deriva a
+  chave por-run via HKDF-SHA256 (`webcrypto.subtle`, salt zero + `info =
+  projectId|runId`, aceitável per RFC 5869 §3.1 dado que a
+  `VERCEL_DEPLOYMENT_KEY` de entrada já tem entropia alta). Dois caminhos:
+  (1) dentro do runtime serverless (`VERCEL=1`) com a run pertencendo à
+  deployment local, deriva localmente; (2) qualquer outro caso (CLI, e2e,
+  cross-deployment) busca a chave já derivada via API
+  `api.vercel.com/v1/workflow/run-key/:deploymentId`, autenticada por
+  token explícito → `VERCEL_TOKEN` → OIDC (nessa ordem,
+  `resolveVercelApiToken`), nunca expondo a deployment key crua fora do
+  boundary da API. Investiguei com ceticismo o branch
+  `!deploymentId || deploymentId === process.env.VERCEL_DEPLOYMENT_ID` →
+  usa chave local mesmo quando `deploymentId` vem `undefined`: isso não é
+  bypass de autorização por si só (a função é um helper interno de
+  derivação de chave, não um endpoint exposto — quem quer que a chame já
+  precisa ter acesso ao `runId`/contexto da run; a superfície de auth real
+  é de quem invoca esta função, fora deste arquivo). Sem achado.
+- `packages/core/src/runtime/quickjs-runtime.ts` (2816 linhas — não é
+  viável ler linha a linha numa rodada; li com grep direcionado +
+  Read nas seções relevantes: bootstrap de globals injetado na VM
+  (L250-1050), criação da VM e host-bridge (`vm.newFunction`/`vm.setProp`,
+  L1200-1350), e a bomba de mensagens/resolvers que processa steps/hooks
+  pendentes (L1600-2800)). Ponto que investiguei especificamente por
+  suspeita de injeção: vários `vm.evalCode(...)` fazem interpolação de
+  template string com `${cidJs}` (o correlationId) — confirmei que
+  `cidJs = JSON.stringify(cid)` (linha 1865), então é serialização segura
+  como literal JS, não concatenação crua — sem injeção. Busquei também
+  qualquer exposição direta de `fs`/`child_process`/`net`/`http` ao
+  bootstrap da VM (`grep` por essas APIs no arquivo inteiro) — zero
+  ocorrências: a única ponte host↔VM é via fila de correlationId
+  (`__pending`/`__resolvers`), nunca uma referência direta a uma função ou
+  objeto Node real, o que é o desenho correto pra evitar vazamento de
+  capability. `Math.random`/`__generateNanoid`/`__generateUlid` são
+  sobrescritos por funções host determinísticas (replay), consistente com
+  a arquitetura documentada. Cobertura parcial apenas — arquivo grande
+  demais pra fechar nesta rodada; fica pendência pra rodada futura cobrir
+  o restante (particularmente L1350-1600, ainda não lida).
+- `packages/world-vercel/src/http-core.ts` (658 linhas, li L1-390 —
+  a metade relevante a auth/erro/OTEL) — `resolveVercelApiToken` segue a
+  mesma ordem de precedência de token documentada no `encryption.ts`
+  (explícito → `VERCEL_TOKEN` → OIDC via `@vercel/oidc`, pacote externo
+  fora do escopo desta leitura). `parseServer`/`httpClientSpanAttributes`
+  são helpers de observabilidade sem superfície de auth. Sem achado.
+
+Nenhum achado novo nesta rodada. Nenhum item chegou perto de virar
+finding (nada digno de `upsert-finding`). `deep-read-log.json` atualizado.
+Sugestão pra próxima rodada: fechar `quickjs-runtime.ts` (L1350-1600 e
+L2450+ ainda não lidas) e considerar `packages/world-vercel/src/utils.ts`
+(usa `getVercelOidcToken` diretamente, ainda intocado).
+
+## Rodada 2026-08-30 (push automático, commit posterior) — `packages/world-vercel/src/utils.ts`
+
+Fila vazia de novo. Segui a sugestão pendente: `packages/world-vercel/src/utils.ts`
+(725 linhas, completo) — monta a config HTTP (`getHttpConfig`) que decide
+entre dois caminhos de auth: (1) proxy `api.vercel.com/v1/workflow`
+quando há `projectConfig` completo (`projectId`+`teamId`), autenticado
+por `Bearer` com token explícito obrigatório (falha alto e cedo se
+ausente, sem fallback silencioso); (2) `workflow-server` direto, ordem de
+precedência `config.token` explícito → `getVercelOidcToken()` (falha
+silenciosamente só quando fora de um contexto Vercel função, tratado
+como "sem OIDC disponível", não como erro) — mesma ordem já documentada
+em `packages/core/src/encryption.ts`/`world-vercel/src/encryption.ts`,
+consistente entre os três arquivos. `resolveClientEnvironment` (usado
+tanto pro header `x-vercel-environment` quanto, em outro arquivo já
+revisto, pro guard cross-tenant) tem comentário extenso e correto
+explicando por que retorna `undefined` em vez de adivinhar `'production'`
+quando nenhuma fonte está disponível — evita fabricar um mismatch contra
+um preview legítimo. Nada no arquivo autoriza uma requisição por si só
+(é só montagem de headers/config do lado cliente); a fronteira de auth
+real fica no servidor Vercel, fora do escopo deste repo. Sem achado —
+arquivo bem documentado, mesma disciplina cuidadosa já vista no resto de
+`vercel/workflow`.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`packages/world-vercel/src/utils.ts` adicionado à chave `vercel/workflow`).
+Sugestão pra próxima rodada: ainda falta fechar `quickjs-runtime.ts`
+(L1350-1600 e L2450+).
+
+## Rodada 2026-08-30 (push automático seguinte) — fechamento de quickjs-runtime.ts
+
+Fila vazia. Segui a pendência da rodada anterior: li as duas seções
+restantes de `packages/core/src/runtime/quickjs-runtime.ts` (agora
+completo, 2816 linhas):
+
+- L1350-1600 (`startQuickJSWorkflow`/fase de init por execução): seed do
+  PRNG determinístico derivado de `runId`+`workflowName`+`deploymentId`
+  (não de `startedAt`, que diverge entre invocação turbo sintetizada e a
+  execução durável — comentário explica o motivo), geração de
+  nanoid/ULID seedados a partir do mesmo PRNG, `process.env` injetado
+  via serde host-side (paridade documentada com o motor node:vm, cópia
+  congelada, mesma decisão já vista em outros arquivos desta missão).
+  Nada aqui expõe env/segredos a um caminho não confiável — é o próprio
+  código do workflow do usuário quem roda dentro da VM, não input
+  externo não confiável.
+- L2450-2816 (fim do arquivo): coleta de "pending operations" para
+  drain/suspensão (`dumpPendingOps`/`collectDrainOperations`),
+  `checkWorkflowState` (detecta completed/failed/suspended lendo só
+  globals internos da própria VM: `__workflowDone`, `__workflowError`,
+  `__resolvers`, `__pending` — nenhum desses é controlável por um
+  terceiro, só pelo próprio código do workflow que já roda dentro do
+  sandbox) e helpers de extração de erro/interrupt budget. Puro
+  bookkeeping determinístico, sem superfície de auth/crypto.
+
+Sem achado — arquivo fechado por completo nesta missão, engenharia
+cuidadosa de replay determinístico consistente com o resto do módulo já
+revisado. `deep-read-log.json` atualizado (entrada de
+`quickjs-runtime.ts` marcada como completa).
+
+Repos do escopo `Vercel Open Source` ainda nunca tocados por esta
+missão (fora do repo `workflow`/`flags`/`chat` já cobertos):
+`vercel/next.js`, `vercel/vercel`, `vercel/turborepo`, `vercel/ai`,
+`vercel/swr`, `vercel/eve`, `vercel/ms`, `vercel/async-sema`,
+`nitrojs/nitro`, `nuxt/nuxt`, `sveltejs/svelte`,
+`vercel-labs/agent-skills`, `vercel-labs/skills` — a maioria são
+monorepos grandes; próxima rodada pode escolher um arquivo específico
+de auth/token dentro de `vercel/vercel` (ex. CLI login/token storage)
+em vez de tentar cobrir o repo inteiro de uma vez.
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — fila vazia, primeira leitura em `vercel/vercel` (armazenamento de token do CLI)
+
+`node system/bugbounty-scanner/cli.mjs list-pending` vazio. Peguei a
+pendência explícita deixada na rodada anterior: `vercel/vercel` nunca
+tinha sido tocado nesta missão apesar de `check-scope` confirmar
+`allowed: true`/`maxSeverity: critical`/tier 1. Clone raso com sparse
+checkout (`git clone --depth 1 --filter=blob:none --sparse`, público,
+sem token) e segui a cadeia real de onde o token de autenticação do CLI
+é persistido em disco, por ser a superfície mais sensível óbvia
+(`login`/`token`/`credential` no path):
+
+1. `packages/cli/src/util/config/files.ts` — `persistAuthConfig`/
+   `readAuthConfigFile` delegam pra um pacote interno separado,
+   `@vercel/cli-auth/credentials-store.js`.
+2. `packages/cli-auth/credentials-store.ts` — `CredentialsStore` suporta
+   3 modos (`file`/`keyring`/`auto`, este último tenta keyring do SO via
+   `@napi-rs/keyring` primeiro e cai pra arquivo se indisponível), com
+   migração automática nos dois sentidos quando o modo configurado muda.
+   Escrita em arquivo delega pra `cliConfig.writeAuthConfigFile`.
+3. `packages/cli-config/src/cli-config.ts` — `writeAuthConfigFile` chama
+   `writeConfigFile(..., { mode: 0o600 })`, que por sua vez escreve num
+   arquivo temporário (`.<nome>.<pid>.<timestamp>.tmp`) via
+   `fs.writeFileSync(tempFilePath, content, { mode: options.mode })` e só
+   depois `fs.renameSync(tempFilePath, filePath)` — padrão atômico
+   write-then-rename, correto para evitar arquivo parcialmente escrito
+   ficar visível com o nome final.
+4. `packages/cli-config/src/paths.ts` — resolve o diretório via
+   `XDGAppPaths('com.vercel.cli').dataDirs()` (com fallback pra
+   `~/.now` legado), sempre dentro da árvore do `$HOME` do usuário, sem
+   nenhum componente vindo de input externo/rede.
+
+Investiguei especificamente 2 hipóteses de bypass antes de descartar:
+- **Modo do arquivo ficar mundialmente legível**: não — `mode: 0o600` é
+  passado direto pro `open()` na criação do arquivo temporário (não um
+  `chmod` posterior), então não há janela de corrida onde o arquivo
+  exista com permissão mais aberta; `rename()` no Linux preserva o modo
+  do arquivo de origem, então o arquivo final herda `0o600`.
+- **Symlink attack no arquivo temporário** (nome previsível por
+  `pid`+`timestamp`): tecnicamente o `fs.writeFileSync` sem `O_EXCL`
+  seguiria um symlink pré-plantado com esse nome exato, mas isso exige
+  que outro usuário tenha permissão de ESCRITA no próprio diretório de
+  config (`~/.local/share/com.vercel.cli` ou equivalente) — diretório
+  esse criado dentro do `$HOME` do usuário sem modo restritivo explícito
+  (`fs.mkdirSync(dir, { recursive: true })`, herda `0o755` do umask
+  padrão), mas `0o755` não dá permissão de escrita pra outros usuários,
+  só leitura/listagem — um atacante sem escrita nesse diretório não
+  consegue plantar o symlink. Só seria explorável num sistema
+  multi-usuário já mal configurado (ex. `$HOME` ou o diretório de config
+  world-writable), o que é falha de configuração do SO/host, não do
+  código do Vercel CLI.
+
+**Sem achado** — o design é cuidadoso e correto no que depende só do
+código deste repositório: modo de arquivo restritivo aplicado
+atomicamente na criação, escrita atômica via rename, opção de keyring
+do SO como alternativa mais forte que arquivo, sem input externo/rede
+influenciando o path de resolução do diretório. `deep-read-log.json`
+atualizado com a nova chave `vercel/vercel` (4 arquivos). Sugestão pra
+próxima rodada: dentro do mesmo repo, o fluxo de OAuth/SSO em
+`packages/cli-auth/oauth.ts`/`sso.ts` (ainda não lidos) — troca de code
+por token, validação de `state`/PKCE — é superfície de auth mais rica
+que o armazenamento local já fechado aqui.
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — novo achado `corroborated_static`: callback loopback sem state/nonce em `packages/cli-auth/sso.ts` + leitura sem achado em `vercel-labs/skills`
+
+Fila vazia no início. Leitura profunda proativa, dois alvos:
+
+**1. `vercel-labs/skills` (repo novo, nunca tocado) — sem achado.** Escolhido
+por lidar com instalação de código de terceiros no disco do usuário
+(superfície clássica de supply-chain). Lidos `src/github-host.ts`
+(validação de `GH_HOST`, rejeita valores com userinfo/porta/path —
+correto), `src/skill-lock.ts` (bookkeeping do lockfile + resolução de
+token `GITHUB_TOKEN`/`GH_TOKEN`), `src/blob.ts` (Trees API do GitHub +
+fallback de auth só quando rate-limited/401/404, nunca vaza token pra
+host errado porque o host vem de `getGitHubHost()` local, não do
+`ownerRepo` do achado) e trechos de `src/update.ts`/`src/installer.ts`
+relevantes a escrita de arquivo em disco. Ponto investigado
+especificamente por suspeita de path traversal/zip-slip na instalação
+de skill (arquivos de um repo de terceiro escritos em
+`.agents/skills/<nome>/<file.path>`): `isPathSafe()` usa
+`normalize(resolve(...))` com checagem `startsWith(base + sep)` (padrão
+correto, evita o bug clássico de `startsWith(base)` sem separador) e é
+chamada tanto pra instalação via clone quanto via blob download — sem
+brecha. Código consistentemente defensivo (comentários no próprio
+código já documentam decisões de segurança passadas: pin de `GH_HOST`
+pra `github.com` em updates, `shell:false` explícito contra command
+injection no Windows). Sem achado novo.
+
+**2. `vercel/vercel` — novo achado `corroborated_static`.** Segui a
+sugestão pendente da rodada anterior: `packages/cli-auth/oauth.ts` e
+`packages/cli-auth/sso.ts`. `oauth.ts` implementa Device Authorization
+Grant (RFC 8628) com checagem de `issuer` mismatch e validação Zod em
+toda resposta — sem achado (esse é o fluxo realmente usado pelo `vercel
+login` ativo, confirmado depois lendo `packages/cli/src/commands/login/
+future.ts` e `packages/cli/src/util/oauth.ts`, que reimplementam o
+mesmo padrão localmente).
+
+`sso.ts` é outra história: `reauthorizeTeam`/`waitForVerification` abre
+um servidor HTTP local em `127.0.0.1:<porta efêmera aleatória>`, manda o
+browser pra `vercel.com/sso/<team>?session_id=...&client_id=...&next=
+http://localhost:<porta>`, e trata a **primeira requisição que chegar**
+nesse servidor (`server.once('request', ...)`) como a resposta legítima
+— extrai `token` da query string e usa direto num `fetch` pra
+`api.vercel.com/registration/verify?token=...`. Não há nenhum
+segredo/`state`/nonce gerado localmente e exigido de volta na resposta
+pra amarrar o callback ao fluxo que foi de fato iniciado. Isso é
+exatamente a classe "loopback interception" que a RFC 8252 (OAuth 2.0
+for Native Apps) existe pra prevenir: como o servidor não emite headers
+CORS e uma requisição GET simples não dispara preflight, uma página
+maliciosa aberta em outra aba do mesmo navegador (durante a janela em
+que o comando está esperando) pode mandar uma query forjada pra
+`127.0.0.1:<porta>` — CORS bloqueia a LEITURA da resposta pelo JS da
+página atacante, não o envio/processamento da requisição pelo servidor.
+Cenário de impacto: atacante roda o próprio fluxo de SSO pra obter um
+`token` de verificação válido (mas da conta/sessão DELE), corre uma
+página que faz port-scan de localhost tentando essa query em várias
+portas candidatas durante a janela da vítima — se ganhar a corrida antes
+do redirect real do browser, o CLI da vítima completa
+`registration/verify` com a sessão do atacante (confusão de
+conta/session-fixation). Porta aleatória é mitigação parcial, não
+suficiente (port-scan de localhost via `fetch()` é técnica conhecida,
+não bloqueada por CORS).
+
+**Ressalva que baixou a confiança pra "baixa" e travou o achado em
+`corroborated_static`:** rastreei a cadeia de chamada real dentro de
+`packages/cli/src` (o consumidor de fato do pacote `@vercel/cli-auth`,
+declarado `workspace:*` no `package.json`) e **não encontrei nenhum
+import** de `@vercel/cli-auth/oauth.js` ou `@vercel/cli-auth/sso.js` em
+lugar nenhum — o único subpath do pacote realmente importado é
+`@vercel/cli-auth/credentials-store.js` (já auditado, sem relação). O
+comando `vercel teams sso` que existe de fato
+(`packages/cli/src/commands/teams/sso.ts`) só lê status SAML via API,
+não chama `reauthorizeTeam`. Ou seja: não consegui confirmar que esse
+código está de fato alcançável pelo binário `vercel` publicado a partir
+deste mesmo repositório — pode ser código em transição/não finalizado,
+ou consumido por outro produto Vercel fora deste monorepo (o pacote é
+publicado no npm, não-privado, README diz "used by Vercel's CLI tools"
+no plural). `record-deployment-evidence` registrado com
+`confidence: "unverified"` de propósito — a transição pra
+`scope_verified` foi tentada e corretamente recusada pela máquina de
+estados (na verdade nem existe transição direta `corroborated_static→
+scope_verified`; exigiria passar por `reproduced_local`, que por sua vez
+exige um validador local que não existe pra este tipo de achado —
+mesma limitação real já documentada para os outros 3 achados
+`corroborated_static` não-Solidity da fila). Achado fica registrado e
+travado em `corroborated_static`, correto e honesto dado o estado atual
+da evidência — não uma falha do sistema.
+
+`deep-read-log.json` atualizado (`vercel/vercel` ganhou 5 arquivos
+novos; `vercel-labs/skills` criado com 5 entradas). Sugestão pra próxima
+rodada: se alguém quiser reforçar a confiança deste achado, valeria
+buscar por outros consumidores do pacote `@vercel/cli-auth` publicado no
+npm (fora deste repo) ou confirmar via changelog/histórico de commits
+se `sso.ts` é código novo ainda não cortado para produção ou código
+sendo removido; fora isso, os repos ainda intocados continuam:
+`vercel/next.js`, `vercel/turborepo`, `vercel/ai`, `vercel/swr`,
+`vercel/eve`, `vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`,
+`nuxt/nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`.
+
+Rodada 2026-08-30 (leitura profunda proativa, fila vazia): primeira
+leitura de `vercel/next.js` (nunca coberto nesta missão), priorizando
+o subsistema de criptografia de Server Actions por nome (auth/crypto):
+`packages/next/src/server/app-render/encryption.ts` (encode/decode dos
+bound args de Server Actions com AES-GCM, IV aleatório de 16 bytes por
+chamada, checagem de prefixo `actionId` como validação de integridade
+pós-decrypt), `encryption-utils.ts` (`getActionEncryptionKey` — lê a
+chave de `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` ou do manifest de build,
+nunca hardcoded) e `encryption-utils-server.ts` (`generateEncryptionKeyBase64`
+— gera a chave via `crypto.subtle.generateKey` AES-256-GCM real quando
+não fornecida por env, persiste em `.rscinfo` dentro do cache dir do
+servidor — não exposto ao client —, com rotação a cada 14 dias em
+build). Esta é exatamente a área que teve o CVE histórico de chave de
+criptografia de Server Actions previsível/reaproveitada em versões
+antigas do Next.js; a implementação atual usa geração de chave
+aleatória de verdade (não uma constante/seed fraca) e o padrão bate com
+a correção documentada publicamente para aquele problema antigo. Sem
+achado novo nestes 3 arquivos.
+
+`deep-read-log.json` atualizado com a nova chave `vercel/next.js` (3
+arquivos). Repos ainda intocados: `vercel/turborepo`, `vercel/ai`,
+`vercel/swr`, `vercel/eve`, `vercel/ms`, `vercel/async-sema`,
+`nitrojs/nitro`, `nuxt/nuxt`, `sveltejs/svelte`,
+`vercel-labs/agent-skills`; dentro de `vercel/next.js` (repo enorme,
+só 3 arquivos cobertos até agora) valeria continuar por
+`packages/next/src/server/lib/router-server.ts`,
+`packages/next/src/server/web/spec-extension/adapters/*`, e o
+middleware runtime (`packages/next/src/server/next-server.ts` /
+`packages/next/src/build/webpack/loaders/next-middleware-loader.ts`)
+em rodadas futuras.
+
+## Rodada 2026-08-30 (push automático seguinte) — verificação direcionada da classe CVE-2025-29927 (bypass de middleware), sem achado
+
+Fila vazia (`list-pending` retornou `[]`; os 4 achados `corroborated_static`
+de rodadas anteriores continuam corretamente travados nesse estado — a
+máquina de estados não tem transição direta `corroborated_static→
+scope_verified`, confirmado lendo `state-machine.mjs` diretamente nesta
+rodada, mesma conclusão já documentada). Continuando a sugestão pendente em
+`vercel/next.js`, mas com objetivo específico em vez de leitura sequencial:
+esse repo teve um CVE real e conhecido publicamente (bypass de middleware via
+o header `x-middleware-subrequest` controlável pelo cliente, permitindo pular
+middleware de auth) — vale checar deliberadamente se a classe voltou a
+aparecer no código atual, não só ler arquivos por nome.
+
+Buscados via `raw.githubusercontent.com` (branch `canary`, sem clone
+completo — repo grande demais): `packages/next/src/server/next-server.ts`,
+`packages/next/src/server/lib/router-utils/resolve-routes.ts` e
+`packages/next/src/server/web/spec-extension/adapters/next-request.ts`.
+`grep` por `x-middleware-subrequest`/`x-middleware` confirma que o header
+**não é mais lido do request do cliente** para decidir se o middleware deve
+rodar: `handleCatchallMiddlewareRequest` (`next-server.ts:1897`) decide via
+`getRequestMeta(req, 'middlewareInvoke')`, que é metadado interno setado
+pelo próprio server-side router (`addRequestMeta`), nunca por um header HTTP
+que o cliente controla — consistente com a correção pública documentada para
+aquele CVE (a versão vulnerável antiga confiava diretamente no header do
+cliente). `resolve-routes.ts` usa `x-middleware-*` só como *headers de
+resposta* que o próprio middleware do usuário pode setar (`rewrite`/
+`redirect`/`refresh`/`set-cookie`), não como sinal de controle vindo do
+cliente. `next-request.ts` só adapta `NodeNextRequest`/`WebNextRequest` para
+`NextRequest`, repassando headers sem lógica de auth própria (filtragem, se
+existir, é responsabilidade de código mais acima, já lido). **Sem achado** —
+checagem negativa direcionada, não leitura genérica: confirma que a classe
+de vulnerabilidade específica não está presente na versão atual do código.
+
+`deep-read-log.json` atualizado (`vercel/next.js` ganhou os 3 arquivos,
+total agora 6). Repos ainda intocados continuam os mesmos da rodada
+anterior: `vercel/turborepo`, `vercel/ai`, `vercel/swr`, `vercel/eve`,
+`vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`, `nuxt/nuxt`,
+`sveltejs/svelte`, `vercel-labs/agent-skills`. Dentro de `vercel/next.js`
+ainda falta a maior parte do repo (middleware loader de build,
+`app-render` fora de encryption, roteamento de app router, etc.) —
+próxima rodada pode continuar por `packages/next/src/build/webpack/
+loaders/next-middleware-loader.ts` (fila de build do middleware, ainda
+não lido) ou trocar de repo pra `vercel/turborepo` (nunca tocado).
+
+## Rodada 2026-08-30 (push automático) — primeira leitura de `vercel/turborepo` (device flow + resolução de token local)
+
+Fila vazia de novo. Troquei pra `vercel/turborepo` (nunca coberto),
+sparse-clone de `crates/turborepo-auth`. Objetivo específico (não leitura
+genérica): esse crate implementa OAuth 2.0 Device Authorization Grant
+(RFC 8628) e resolução de `login_url`/`api_url` que, em teoria, podem vir
+de config *do próprio repositório* (`turbo.json`) — procurei
+deliberadamente por um jeito de um `turbo.json` malicioso redirecionar o
+fluxo de login/token pra um servidor controlado pelo atacante quando a
+vítima roda `turbo login` dentro do repo.
+
+- `crates/turborepo-auth/src/device_flow.rs` (RFC 8628 completo): emissor
+  derivado de `login_url` via `issuer_from_login_url`, mas
+  `validate_endpoint_origins` valida que TODOS os endpoints do documento
+  de discovery (`device_authorization_endpoint`/`token_endpoint`/
+  `revocation_endpoint`/`introspection_endpoint`) estão no mesmo
+  host-ou-subdomínio do issuer com o MESMO scheme, com checagem de
+  fronteira de domínio correta (usa `.{issuer_host}` como sufixo, não
+  substring simples — testes próprios do arquivo confirmam que
+  `notvercel.com`/`evil-vercel.com`/`el.com` são rejeitados pra issuer
+  `vercel.com`). `TokenSet` tem `Debug` customizado que redige
+  `access_token`/`refresh_token` (testado). Scheme não-https é rejeitado
+  exceto localhost. Sem achado — mitigação de SSRF/exfiltração de token
+  via discovery document comprometido está implementada corretamente.
+- `crates/turborepo-auth/src/auth/mod.rs`: aqui está o controle real que
+  eu esperava encontrar quebrado — `ensure_non_vercel_redirect_allowed`
+  exige que `login_url_source` seja `Cli`/`Environment`/`GlobalConfig`
+  (`is_user_controlled_url_source`), explicitamente EXCLUINDO
+  `ConfigurationSource::TurboJson`. Ou seja, um `login_url` nãovercel
+  vindo de `turbo.json` (config do próprio repositório, portanto
+  potencialmente hostil se a vítima clona um repo malicioso) é
+  **rejeitado antes de qualquer redirect de login acontecer** — só
+  origem explicitamente controlada pelo usuário (flag de CLI, env var,
+  ou config global fora do repo) pode apontar o fluxo de auth pra um
+  domínio não-Vercel. Confirmado por teste próprio do arquivo,
+  `test_non_vercel_login_rejects_repo_controlled_login_url`. Também
+  bloqueia credenciais embutidas na URL (`login_url.username()`/
+  `.password()`) e exige https (exceto localhost). **Sem achado** —
+  exatamente o vetor de ataque que eu estava procurando (repo malicioso
+  sequestrando `turbo login`) já está mitigado de propósito, com teste
+  cobrindo o caso.
+
+`deep-read-log.json` atualizado com a nova chave `vercel/turborepo` (2
+arquivos). Repo grande, resto do crate (`login.rs`/`sso.rs`/`logout.rs`,
+~2.300 linhas) e o resto do monorepo (`crates/turborepo-lib`, etc.) seguem
+não lidos — próxima rodada pode continuar ali, ou seguir em
+`vercel/next.js` (repos ainda intocados: `vercel/ai`, `vercel/swr`,
+`vercel/eve`, `vercel/ms`, `vercel/async-sema`, `nitrojs/nitro`,
+`nuxt/nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`,
+`vercel-labs/skills`, `vercel/vercel`, `vercel/chat`, `vercel/workflow`).
+
+## Rodada 2026-08-30 (push automático) — resto do crate `turborepo-auth`: `login.rs`, `sso.rs`, `logout.rs`, sem achado
+
+Fila (`list-pending`) vazia no início desta rodada. Antes de sair para um
+repositório novo, tentei primeiro brevemente `nitrojs/nitro` (sparse
+clone) e `vercel-labs/agent-skills` (clone raso) — nenhum dos dois tem
+superfície de auth/sessão própria digna de nota: `nitro` delega
+gerenciamento de sessão/cookie para o pacote externo `h3` (fora deste
+repositório, sem lógica de sessão vendorizada em `nitrojs/nitro` em si);
+`vercel-labs/agent-skills` só tem um script de build local
+(`packages/react-best-practices-build/src/build.ts`) que lê arquivos de
+regras do próprio repositório em tempo de build, sem input de rede/
+usuário externo. Voltei então para a sugestão pendente mais concreta:
+terminar o crate `crates/turborepo-auth` do `vercel/turborepo`, que a
+rodada anterior tinha deixado pela metade (só `device_flow.rs` e
+`auth/mod.rs` lidos).
+
+3 arquivos lidos por completo (sparse-clone de `crates/turborepo-auth` +
+`crates/turborepo-paths`):
+
+- `crates/turborepo-auth/src/auth/login.rs` (fluxo `login_redirect`/
+  `wait_for_login_redirect` para self-hosted remote caches, e o
+  wrapper do device flow para Vercel) — o servidor de callback local
+  (`TcpListener` em `127.0.0.1:{port}`, nunca `0.0.0.0`) exige que o
+  parâmetro `state` da query string bata exatamente com o CSRF state
+  gerado (`generate_csrf_state`, 32 caracteres alfanuméricos via
+  `rand::rng()` — CSPRNG do crate `rand`, ~190 bits de entropia,
+  inviável de adivinhar por força bruta na janela de 5 minutos do
+  timeout) antes de aceitar qualquer `token` — path clássico de bug
+  neste tipo de fluxo (CLI OAuth local redirect sem checagem de state,
+  vulnerável a um processo local malicioso "roubar" o próximo token que
+  chegar) está mitigado corretamente, com teste próprio cobrindo
+  rejeição de state ausente/divergente
+  (`test_wait_for_login_redirect_rejects_missing_state`).
+- `crates/turborepo-auth/src/auth/sso.rs` (mesmo padrão para o fluxo
+  SSO self-hosted, `wait_for_sso_redirect`) — mesma proteção de CSRF
+  state, mesma vinculação a `127.0.0.1`. Investiguei especificamente um
+  possível open redirect: a função monta `redirect_location` reanexando
+  TODOS os query params recebidos do callback local numa URL de
+  notificação, mas o host dessa URL é sempre uma constante hardcoded
+  (`https://vercel.com/notifications/cli-login-*`), nunca derivado de
+  input do callback — reanexar params não permite trocar o host, então
+  não haveria redirect para domínio arbitrário. Sem achado.
+- `crates/turborepo-auth/src/auth/logout.rs` — fluxo de invalidação/
+  remoção de token local. Único ponto observado sem ser um bug de
+  segurança explorável: se a chamada de rede para invalidar o token no
+  servidor (`token.invalidate`) falhar, `try_remove_token` propaga o
+  erro via `?` **antes** de limpar o arquivo local — ou seja, um
+  `turbo logout` que falha por erro de rede deixa o token ainda válido
+  no disco (local, permissão 0600, não é uma exposição a terceiro).
+  Comportamento defensável (não silenciosamente finge sucesso), mas
+  vale nota de UX/qualidade, não é uma vulnerabilidade real (não há
+  atacante externo capaz de explorar isso — exige já ter acesso de
+  leitura ao arquivo, que já teria acesso ao token de qualquer forma).
+  Não abri item na fila por isso.
+- Verificação complementar em `crates/turborepo-paths/src/absolute_system_path.rs::create_with_contents_secret`
+  (usada por `write_to_auth_file`/`write_to_config_file` em `lib.rs`
+  para persistir o token em disco): no Unix, abre o arquivo já com
+  `mode(0o600)` na criação E reafirma a permissão explicitamente depois
+  (comentário do próprio código documenta o motivo: evitar janela de
+  permissão permissiva se o arquivo já existisse antes com modo mais
+  aberto). Sem achado.
+
+Conclusão: crate `turborepo-auth` completo (todos os arquivos `.rs` de
+`src/` e `src/auth/`, exceto testes/mensagens de UI triviais) agora
+coberto nesta missão, sem nenhuma vulnerabilidade encontrada — é um
+fluxo de autenticação CLI bem desenhado, com proteção deliberada contra
+as classes de bug mais comuns desse tipo de fluxo (CSRF de callback
+local, redirect de login sequestrado por `turbo.json` malicioso já
+achado seguro em rodada anterior, permissão de arquivo de token).
+
+`deep-read-log.json` atualizado (`vercel/turborepo` ganhou `login.rs`,
+`sso.rs`, `logout.rs`, total agora 5 arquivos). Nenhum item novo
+adicionado à fila — resultado normal. Repos do programa ainda
+totalmente intocados: `vercel/ai`, `vercel/swr`, `vercel/eve`,
+`vercel/ms`, `vercel/async-sema`, `nuxt/nuxt`, `sveltejs/svelte`,
+`vercel-labs/skills` (parcial), `vercel/vercel` (parcial), `vercel/chat`
+(parcial), `vercel/workflow` (parcial). `nitrojs/nitro` e
+`vercel-labs/agent-skills` foram espiados nesta rodada mas não geraram
+achado nem entrada de log formal (sem superfície de auth própria digna
+de leitura linha-a-linha completa ainda).

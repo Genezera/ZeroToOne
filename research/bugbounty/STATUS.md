@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-08-30T12:21:35.260Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: nunca.
 
 ## Alvos ativos
 
@@ -24,14 +24,14 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 ## Fila de bug bounty
 
 - Pendentes (aguardando o agente de nuvem): **0**
-- Já revisados: 38
+- Já revisados: 42
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
+| ai_deep_read_finding | Vercel Open Source | confirmado | — |
+| ai_deep_read_finding | StackingDAO | confirmado | — |
+| ai_deep_read_finding | Circle BBP | confirmado | — |
+| ai_deep_read_finding | Circle BBP | confirmado | — |
 | ai_deep_read_finding | Block Open Source | falso_positivo | — |
-| ai_deep_read_finding | Block Open Source | confirmado | — |
-| ai_deep_read_finding | Circle BBP | falso_positivo | — |
-| auth_arg_inconsistency | StackingDAO | falso_positivo | — |
-| unguarded_transfer | StackingDAO | falso_positivo | — |

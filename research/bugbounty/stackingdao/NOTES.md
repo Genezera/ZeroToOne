@@ -226,3 +226,46 @@ contratos parecem só existir on-chain via Hiro, sem fonte GitHub
 espelhada conhecida) — não vou adivinhar URLs de repositório às cegas.
 Continua bloqueado; sem novo progresso nesta rodada além do fechamento
 do item já mencionado.
+
+## Rodada 2026-08-30 (push automático) — leitura profunda em stbtc-token/data-stx-v2/data-stbtc-v1
+
+Fila do scanner novamente vazia (0 candidatos). Confirmei de novo que
+`api.hiro.so` segue bloqueado nesta sessão (CONNECT 403 no agent-proxy) —
+os 3 contratos SIP-010/NFT `ststxbtc-*` continuam impossíveis de baixar.
+
+Leitura profunda proativa (3 arquivos ainda não lidos linha a linha):
+
+- `stbtc-token.clar` — padrão idêntico a `ststx-token.clar`
+  (`mint-for-protocol`/`burn-for-protocol` gated por
+  `check-is-protocol contract-caller`, `transfer` exige
+  `tx-sender == sender`). Achado colateral: nenhum dos 10 contratos já
+  baixados nesta missão chama `.stbtc-token mint-for-protocol` nem
+  `burn-for-protocol` (confirmado via grep) — o contrato que de fato
+  gerencia o fluxo BTC→stBTC não está entre os já baixados. Sem achado
+  de vulnerabilidade neste arquivo isoladamente.
+- `data-stx-v2.clar` — cálculo de `get-stx-per-ststx`
+  (share price stSTX/STX). `active-supply` é calculado com guarda contra
+  underflow (`if ststx-supply > escrow then (- ...) else u0`). Sem achado.
+- `data-stbtc-v1.clar` — **achado real, registrado como finding novo**
+  (`StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding`,
+  avançado até `corroborated_static`): `compute-ratio` (linha 32) faz
+  `active-supply = (- stbtc-supply (var-get pending-shares))` **sem** a
+  mesma guarda contra underflow que o contrato irmão `data-stx-v2.clar`
+  usa para o cálculo equivalente. Se `pending-shares` já superou
+  `stbtc-supply` em algum momento, a subtração unsigned da Clarity
+  aborta a transação (Clarity tem aritmética checada — não é wraparound
+  estilo Solidity pré-0.8), o que quebraria as funções read-only
+  `get-sbtc-per-stbtc`/`get-sbtc-per-stbtc-up` (DoS local nessa leitura,
+  não roubo de fundos direto). **Cadeia incompleta**: `add-pending-shares`/
+  `remove-pending-shares` são gated por `check-is-protocol`, mas nenhum
+  dos 10 contratos já baixados os chama — o contrato real do fluxo de
+  depósito BTC→stBTC que presumivelmente os chama não está entre os
+  baixados, e `api.hiro.so` bloqueado impede buscar mais. Registrado
+  deployment evidence como `unverified` (honesto — não sei se isso é
+  sequer alcançável) e a transição para `scope_verified` foi corretamente
+  recusada pela state machine. Fica em `corroborated_static`: achado de
+  código real (assimetria com o contrato irmão), mas alcançabilidade e
+  impacto de fundos não confirmados. Não é elegível para rascunho de
+  relatório neste estado.
+
+`deep-read-log.json` atualizado com os 3 arquivos desta rodada.
