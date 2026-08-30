@@ -318,3 +318,62 @@ continua real e deve ser corrigida, mas não é mais o que está segurando
 este achado específico. Ressalva explícita pra reabrir se
 `data-stbtc-v1`/`stbtc-token` forem ativados no futuro (parecem
 infraestrutura nova, ainda não conectada ao fluxo real).
+
+## Rodada 2026-08-30 (push automático, máquina de estados v2) — fila vazia, leitura profunda em `stbtc-reserve.clar` + 2 contratos core, sem achado
+
+`list-pending` vazio (0 candidates em todo o sistema, não só neste
+programa). Os 3 achados legados (`compute-ratio` → `false_positivo`,
+lacuna de scope snapshot, e o `known_duplicate`/`inconclusive` de outros
+programas) continuam no estado já reconciliado — nada novo a revisitar
+aqui.
+
+Leitura profunda proativa: a rodada anterior tinha identificado
+`stbtc-reserve.clar` como "o contrato realmente ativo do produto BTC"
+(552 transações on-chain) mas nunca lido linha a linha nesta missão —
+prioridade óbvia. Já estava baixado localmente em
+`research/bugbounty/stackingdao/` (não precisou de rede). Lidos 3
+arquivos por completo:
+
+- `stbtc-reserve.clar` (120 linhas) — todas as funções mutantes
+  (`lock-sbtc-for-withdrawal`, `request-sbtc-for-withdrawal`,
+  `unlock-sbtc-from-withdrawal`, `pay-sbtc-from-idle`,
+  `request-sbtc-to-stack`, `return-sbtc-from-stacking`, `get-sbtc`) usam
+  `(contract-call? .dao check-is-protocol contract-caller)` —
+  padrão correto, mesmo já validado em outros contratos desta missão
+  (`contract-caller`, não `tx-sender`, evita o confused-deputy clássico
+  de Clarity). Confirma a nota da rodada anterior: este arquivo **não**
+  referencia `pending-shares`/`add-pending-shares`/`remove-pending-shares`
+  em lugar nenhum — o defeito de `compute-ratio` em `data-stbtc-v1.clar`
+  de fato não tem relação de chamada com o contrato ativo de verdade.
+  `return-sbtc-from-stacking` subtrai `sbtc-staking` sem `asserts!`
+  prévio de suficiência, mas aritmética da Clarity é checada (abort em
+  underflow, não wraparound) — mesmo padrão fail-safe já visto e não
+  elevado a achado em rodadas anteriores (DoS local no pior caso, não
+  perda de fundos). Sem achado.
+- `stacking-dao-core-btc-v3.clar` (366 linhas, completo) — apesar do
+  nome/comentário "Core BTC", as funções de usuário (`deposit`,
+  `withdraw-idle`, `init-withdraw`, `withdraw`) operam sobre STX/
+  `ststxbtc-token-v2` via um `<reserve-trait>` genérico passado como
+  parâmetro (dispatch dinâmico) — **não** chama `stbtc-reserve.clar`
+  nem `data-stbtc-v1.clar` diretamente por nome. Todas as 4 funções de
+  usuário e as 7 funções admin (`set-commission-address`,
+  `set-shutdown-*`, `set-*-fee`) gateiam corretamente via
+  `check-is-protocol` com `contract-of <trait-param>` ou
+  `contract-caller` — mesmo padrão seguro. Sem achado.
+- `stacking-dao-core-ststxbtc-v1.clar` (190 linhas, completo) — mesmo
+  padrão: usa `.stx-reserve`/`.ststxbtc-data-v1`/`.ststxbtc-withdraw-nft-v2`
+  por nome fixo (não trait), todas as 6 funções admin gateadas por
+  `check-is-protocol contract-caller`. `withdraw` trava a taxa
+  (`withdraw-fee`) no momento do `init-withdraw` (armazenada na entry),
+  não a taxa corrente — decisão de design razoável (evita mudança de taxa
+  afetar saques já em andamento), não um bug. Sem achado.
+
+Conclusão prática: nenhum dos 2 contratos "core" locais é o consumidor
+real de `stbtc-reserve.clar`/`data-stbtc-v1.clar` — o fluxo de depósito
+BTC→stBTC citado nas rodadas anteriores continua fora do conjunto de
+contratos já baixados (provavelmente um contrato `core-btc` de versão
+diferente, ainda não identificado/baixado). `deep-read-log.json`
+atualizado com os 3 arquivos. `stacker-1.clar` (já baixado localmente)
+segue sem entrada em `deep-read-log.json` — pendência trivial para
+próxima rodada (só falta registrar/ler, os irmãos 2-5 já foram cobertos
+e seguem o mesmo padrão). Nenhum achado novo nesta rodada.
