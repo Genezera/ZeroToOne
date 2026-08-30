@@ -288,6 +288,26 @@ foram aceitos como estão — trabalho real, sem meu envolvimento nem
 motivo de discordância. Ledger reconciliado por replay semântico
 (mesma técnica de sempre) — 150 entradas, cadeia íntegra.
 
+### Segunda reconciliação (30/08/2026): agente de nuvem avançou muito durante a primeira
+Entre o push da reconciliação anterior e o próximo `git fetch`, o agente
+de nuvem tinha rodado ~20 vezes mais (webhook de push é bem mais rápido
+que uma sessão interativa revisando cada linha). Achados: (1) confirmou
+o endereço mainnet real do `GatewayWallet`
+(`0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE`, 3 fontes independentes) e
+levou `Withdrawals.sol` até `human_ready` por conta própria, sem
+visibilidade ainda de `known_duplicate` — reconciliado da mesma forma
+que antes: evidência real preservada (relatório e NOTES.md), estado
+final continua `known_duplicate`; (2) 4 achados genuinamente novos,
+importados como `corroborated_static`: `SignerService.Sign` sem auth
+(`arc-remote-signer`), denylist ausente no saque do Gateway Wallet
+**Solana** (codebase diferente da EVM — a auditoria ChainSecurity
+encontrada é EVM-only, então este pode ser genuinamente não-duplicado,
+ainda não verificado), `sso.ts::waitForVerification` (Vercel),
+`compute-ratio` (StackingDAO). Ledger: 164 entradas, replay semântico
+com deduplicação (as duas pontas do merge compartilhavam história de um
+merge anterior, causando entradas repetidas que precisaram ser
+filtradas antes do replay).
+
 ## Fases 2, 4 e 5
 
 Não iniciadas. Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL,
