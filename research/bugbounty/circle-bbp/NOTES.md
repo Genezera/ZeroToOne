@@ -1425,3 +1425,52 @@ Nenhum achado nestes 3 arquivos.
 
 `deep-read-log.json` atualizado com a nova chave `circlefin/noble-cctp`
 (3 arquivos).
+
+## Rodada 2026-08-30 (push automático seguinte) — fila vazia, leitura profunda em circlefin/evm-xreserve-contracts
+
+Fila do scanner novamente vazia (0 candidatos). Os achados existentes
+(`arc-remote-signer` SignerService.Sign em `corroborated_static`,
+`evm-gateway-contracts` Withdrawals.sol em `human_ready`) permanecem sem
+mudança — nada de novo pra investigar neles nesta rodada.
+
+Leitura profunda proativa: 3 arquivos ainda não cobertos em
+`circlefin/evm-xreserve-contracts` (Solidity, alvo direto do programa,
+já parcialmente lido em rodadas anteriores).
+
+- `src/modules/x-reserve/RemoteDomainRegistration.sol`: módulo de
+  registro/desregistro de domínios e tokens remotos. `registerRemoteDomain`
+  segue CEI corretamente — grava o mapping `remoteDomainDepositors` (efeito)
+  ANTES da chamada externa `IRemoteDomainDepositor(...).initialize(...)`, sem
+  janela de reentrância aproveitável (e mesmo que houvesse, o próprio
+  domínio já estaria marcado como registrado, então uma reentrada em
+  `registerRemoteDomain` pro mesmo domínio bateria em
+  `requireDomainNotRegistered` e reverteria). Todas as funções sensíveis
+  (`registerRemoteDomain`/`registerRemoteToken` via `onlyRegistrationManager`;
+  `deregisterRemoteDomain`/`deregisterRemoteToken`/`setRemoteDomainHookExecutor`/
+  `updateRegistrationManager` via `onlyOwner`) têm modifier de controle de
+  acesso correto. `setDomainPauseState` não tem modifier próprio mas
+  verifica manualmente `msg.sender == domainPauser` obtido do contrato
+  depositor do domínio — delegação de autorização coerente, sem desvio.
+  Sem achado.
+- `src/lib/WithdrawHookDataLib.sol`: biblioteca de codificação/decodificação
+  de `WithdrawHookData` usando `TypedMemView`. Validação em camadas antes de
+  qualquer leitura de campo: checagem de magic number, comprimento mínimo de
+  header, versão, e MUITO importante — checagem de consistência de
+  comprimento total (`hookDataView.len() != expectedTotalLength`, calculado
+  a partir do `forwardingCalldataLength` declarado) antes de expor
+  `getForwardingCalldata`. Isso fecha exatamente o tipo de desvio que eu
+  esperava encontrar aqui (comprimento declarado divergindo do real,
+  causando leitura fora dos limites do buffer) — a lib já se protege
+  corretamente. Sem achado.
+- `src/modules/x-reserve/Pausing.sol`: role `pauser` separado de `owner`
+  (Ownable2StepUpgradeable), `pause`/`unpause`/`updatePauser` todos
+  corretamente gated (`onlyPauser` ou `onlyOwner`), sem função que deixe
+  escapar o pause de domínio específico para chamador não autorizado. Sem
+  achado.
+
+Nenhum achado novo nesta rodada — os 3 arquivos lidos reforçam o padrão já
+observado neste programa: controle de acesso e validação de dados bem
+implementados nos contratos xReserve.
+
+`deep-read-log.json` atualizado (`circlefin/evm-xreserve-contracts` ganhou
+os 3 arquivos acima, total agora 12).

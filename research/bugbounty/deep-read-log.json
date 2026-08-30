@@ -229,7 +229,10 @@
     "src/modules/remote-domain-depositor/DomainManageable.sol",
     "src/RemoteDomainDepositor.sol",
     "src/modules/x-reserve/DepositToRemote.sol",
-    "src/xReserve.sol"
+    "src/xReserve.sol",
+    "src/modules/x-reserve/RemoteDomainRegistration.sol",
+    "src/lib/WithdrawHookDataLib.sol",
+    "src/modules/x-reserve/Pausing.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
