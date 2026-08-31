@@ -68,6 +68,35 @@ export function diffAgainstKnownTargets(candidates, knownTargetLists) {
   return candidates.filter((c) => !known.has(`${c.owner.toLowerCase()}/${c.repo.toLowerCase()}`));
 }
 
+/** Ordena candidatos pra priorizar quem NUNCA teve metadado buscado —
+ * sem isso, um orçamento de API fixo (MAX_METADATA_LOOKUPS) sempre pega
+ * os mesmos primeiros N candidatos da lista, toda rodada, pra sempre (bug
+ * real encontrado em 31/08/2026: 156 de 186 candidatos nunca tinham
+ * recebido metadado em nenhuma rodada). `seenMap` é
+ * `{ "owner/repo": ultimoTimestampISOEmQueFoiChecado }` — quem nunca
+ * apareceu aí vem primeiro (na ordem original); quem já foi checado
+ * antes vem depois, do mais antigo pro mais recente, então o orçamento
+ * sobrando depois de cobrir tudo que é genuinamente novo passa a
+ * refrescar as entradas mais velhas em vez de sempre as mesmas. */
+export function prioritizeCandidates(candidates, seenMap = {}) {
+  const neverSeen = [];
+  const alreadySeen = [];
+  for (const c of candidates) {
+    const key = `${c.owner.toLowerCase()}/${c.repo.toLowerCase()}`;
+    if (Object.prototype.hasOwnProperty.call(seenMap, key)) {
+      alreadySeen.push(c);
+    } else {
+      neverSeen.push(c);
+    }
+  }
+  alreadySeen.sort((a, b) => {
+    const ta = seenMap[`${a.owner.toLowerCase()}/${a.repo.toLowerCase()}`];
+    const tb = seenMap[`${b.owner.toLowerCase()}/${b.repo.toLowerCase()}`];
+    return new Date(ta).getTime() - new Date(tb).getTime();
+  });
+  return [...neverSeen, ...alreadySeen];
+}
+
 async function fetchRepoMetadata(owner, repo) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { 'User-Agent': 'ZeroToOne-bugbounty-scanner' } });
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando metadado de ${owner}/${repo}`);
@@ -76,9 +105,13 @@ async function fetchRepoMetadata(owner, repo) {
 }
 
 /** Orquestra a rodada completa: busca os 2 datasets, deduplica contra o
- * que já rastreamos, busca metadado (tamanho/linguagem/atividade) só dos
- * candidatos genuinamente novos, até o teto de orçamento de API. */
-export async function runTargetDiscovery(knownTargetLists) {
+ * que já rastreamos, prioriza quem nunca foi checado, busca metadado
+ * (tamanho/linguagem/atividade) até o teto de orçamento de API.
+ * `seenMap` (opcional) é `{ "owner/repo": ultimoTimestampISO }` — ver
+ * `prioritizeCandidates`. Quem chama é responsável por persistir o
+ * `checkedKeys` retornado de volta no `seenMap` entre rodadas; sem isso,
+ * a rotação não funciona e o bug original (mesmos 30 pra sempre) volta. */
+export async function runTargetDiscovery(knownTargetLists, seenMap = {}) {
   const [hackerOneRes, bugcrowdRes] = await Promise.all([fetch(HACKERONE_URL), fetch(BUGCROWD_URL)]);
   if (!hackerOneRes.ok) throw new Error(`HTTP ${hackerOneRes.status} buscando dataset HackerOne`);
   if (!bugcrowdRes.ok) throw new Error(`HTTP ${bugcrowdRes.status} buscando dataset Bugcrowd`);
@@ -87,13 +120,19 @@ export async function runTargetDiscovery(knownTargetLists) {
 
   const allCandidates = extractGithubCandidates(hackerOneData, bugcrowdData);
   const newCandidates = diffAgainstKnownTargets(allCandidates, knownTargetLists);
+  const prioritized = prioritizeCandidates(newCandidates, seenMap);
 
-  const capped = newCandidates.slice(0, MAX_METADATA_LOOKUPS);
-  const truncatedCount = newCandidates.length - capped.length;
+  const capped = prioritized.slice(0, MAX_METADATA_LOOKUPS);
+  const truncatedCount = prioritized.length - capped.length;
+  const neverSeenRemaining = capped.length < prioritized.length
+    ? prioritized.slice(capped.length).filter((c) => !Object.prototype.hasOwnProperty.call(seenMap, `${c.owner.toLowerCase()}/${c.repo.toLowerCase()}`)).length
+    : 0;
 
   const enriched = [];
+  const checkedKeys = [];
   let metadataErrors = 0;
   for (const c of capped) {
+    checkedKeys.push(`${c.owner.toLowerCase()}/${c.repo.toLowerCase()}`);
     try {
       const meta = await fetchRepoMetadata(c.owner, c.repo);
       if (meta.archived) continue; // repo arquivado não é candidato útil
@@ -108,7 +147,9 @@ export async function runTargetDiscovery(knownTargetLists) {
     totalCandidatesInDatasets: allCandidates.length,
     newCandidatesFound: newCandidates.length,
     truncatedCount,
+    neverSeenRemaining,
     metadataErrors,
     discovered: enriched,
+    checkedKeys,
   };
 }

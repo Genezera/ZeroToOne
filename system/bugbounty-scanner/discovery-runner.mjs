@@ -3,7 +3,7 @@
 // da API anônima do GitHub (a listagem de metadado de dezenas de
 // candidatos não cabe dividido com a tarefa diária).
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
@@ -18,6 +18,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const DISCOVERED_PATH = path.join(BUGBOUNTY_DIR, 'discovered-targets.json');
+const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.json');
+
+function loadSeenMap() {
+  if (!existsSync(SEEN_METADATA_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(SEEN_METADATA_PATH, 'utf8'));
+  } catch {
+    return {};
+  }
+}
 
 function log(msg) {
   console.log(`[${new Date().toISOString()}] ${msg}`);
@@ -26,7 +36,14 @@ function log(msg) {
 export async function runDiscovery() {
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
-  const result = await runTargetDiscovery([JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS]);
+  const seenMap = loadSeenMap();
+  const result = await runTargetDiscovery([JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS], seenMap);
+
+  const checkedAt = new Date().toISOString();
+  for (const key of result.checkedKeys) {
+    seenMap[key] = checkedAt;
+  }
+  writeFileSync(SEEN_METADATA_PATH, JSON.stringify(seenMap, null, 2), 'utf8');
 
   writeFileSync(
     DISCOVERED_PATH,
@@ -36,9 +53,10 @@ export async function runDiscovery() {
         totalCandidatesInDatasets: result.totalCandidatesInDatasets,
         newCandidatesFound: result.newCandidatesFound,
         truncatedCount: result.truncatedCount,
+        neverSeenRemaining: result.neverSeenRemaining,
         note:
           result.truncatedCount > 0
-            ? `AVISO: ${result.truncatedCount} candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — aparecem em rodadas futuras.`
+            ? `AVISO: ${result.truncatedCount} candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — priorizados por rotação (quem nunca foi checado vem primeiro, ver discovery-metadata-seen.json); ${result.neverSeenRemaining} desses ainda nunca foram checados nenhuma vez, aparecem primeiro na próxima rodada.`
             : 'Todo candidato novo encontrado teve metadado buscado nesta rodada.',
         discovered: result.discovered,
       },
@@ -53,10 +71,11 @@ export async function runDiscovery() {
     totalCandidatesInDatasets: result.totalCandidatesInDatasets,
     newCandidatesFound: result.newCandidatesFound,
     truncatedCount: result.truncatedCount,
+    neverSeenRemaining: result.neverSeenRemaining,
     metadataErrors: result.metadataErrors,
   });
 
-  log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} novo(s) (não rastreado ainda), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada)` : ''}.`);
+  log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} novo(s) (não rastreado ainda), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
 
   try {
     execSync('git add -A', { cwd: REPO_ROOT });

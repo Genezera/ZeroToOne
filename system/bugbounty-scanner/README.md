@@ -185,6 +185,18 @@ do que o scan diário sozinho consumiria. Teto de 30 buscas de metadado por
 rodada, com o que sobrar ficando registrado (não escondido) pra próxima
 rodada.
 
+**Bug real corrigido em 31/08/2026**: até então, "o que sobrar pra próxima
+rodada" nunca de fato rotacionava — toda rodada pegava sempre os mesmos
+primeiros 30 candidatos da lista (a única filtragem era contra os
+`targets-*.mjs`, que nunca mudam sozinhos), então os outros 156
+descobertos na primeira rodada real nunca tinham recebido metadado em
+NENHUMA rodada seguinte, pra sempre. `prioritizeCandidates()` (pura,
+testada) + `research/bugbounty/discovery-metadata-seen.json`
+(`{"owner/repo": timestampDaÚltimaChecada}`, no mesmo espírito do
+`scanner-seen.json` do scan diário) agora garantem que quem nunca foi
+checado vem primeiro; só depois de cobrir todo mundo genuinamente novo
+o orçamento sobrando passa a refrescar as entradas mais antigas.
+
 ## Digest de segurança (mesma tarefa semanal)
 `cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
 Advisories (GHSA, API pública, sem conta) **só dos pacotes que o
