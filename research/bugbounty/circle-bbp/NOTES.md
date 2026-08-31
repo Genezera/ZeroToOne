@@ -3709,3 +3709,53 @@ com risco real de precedente, e este agora confirmado duplicata. Fica
 registrado como resultado honesto de uma auditoria completa, não como
 falha — a auditoria fez exatamente o que devia: achar o problema antes
 do envio, não depois. `export-queue` + commit ao final.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, leitura profunda em `circlefin/noble-fiattokenfactory` (Blacklist/Burn/Pause), sem achado
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` + `cli.mjs
+list-pending`). Os 2 achados não-`false_positive` do sistema
+(`human_ready` do wire-schema, Block Open Source; `reproduced_local` do
+denylist Solana, mesmo programa) já têm investigação exaustiva e recente
+registrada no próprio `reasoning`/NOTES — nada novo a acrescentar aqui
+sem evidência nova.
+
+Leitura profunda proativa: `circlefin/noble-fiattokenfactory` (Go,
+Cosmos SDK — módulo de mint/burn/blacklist/pause da FiatTokenFactory,
+já parcialmente coberto em rodadas anteriores) tinha 11 arquivos lidos
+mas nunca os handlers reais de `Blacklist`/`Burn`/`Pause` — só os de
+gestão de role (`update_blacklister`, etc.) e `Mint`. Escolhidos por
+julgamento de especialista (o par assimétrico mint/burn é exatamente a
+classe de bug já encontrada uma vez nesta missão — gap de denylist em
+`Withdrawals.sol` do `evm-gateway-contracts` — então valia a pena
+verificar se o mesmo padrão existe aqui em Go/Cosmos):
+
+- `x/fiattokenfactory/keeper/msg_server_blacklist.go` — só o
+  `blacklister` (role dedicada, comparação direta de endereço) pode
+  adicionar a blacklist. Sem gap.
+- `x/fiattokenfactory/keeper/msg_server_burn.go` — comparado
+  campo a campo com `msg_server_mint.go` (já lido em rodada anterior,
+  relido aqui pra comparação): `Burn` verifica minter role, blacklist do
+  próprio minter e `paused`, exatamente simétrico ao que `Mint` já
+  verifica (role, blacklist do minter E do destinatário, `paused`). Ao
+  contrário do gap achado no `Withdrawals.sol` do Gateway (onde
+  `withdraw()` pulava a checagem que `mint` tinha), aqui **não há
+  assimetria** — `Burn` não precisa checar blacklist de um "destinatário"
+  porque queima do próprio saldo do minter, já checado.
+- `x/fiattokenfactory/keeper/msg_server_pause.go` — só o `pauser` (role
+  dedicada) pode pausar; `paused.Paused` é consultado por `Mint`/`Burn`
+  antes de mover fundos. Sem gap.
+
+Confirmei também (grep, não leitura completa) que a restrição de
+transferência geral por blacklist é implementada via hook
+`SendRestriction` registrado em `keeper.go` (já lido em rodada anterior,
+`ValidatePrivileges`) — não é um mecanismo novo/não coberto.
+
+Nenhum achado novo nesta rodada — resultado normal. `deep-read-log.json`
+atualizado (`circlefin/noble-fiattokenfactory` ganhou os 3 arquivos
+acima, agora 14 no total). Sugestão pra próxima rodada: os handlers
+ainda não lidos de `circlefin/noble-cctp` (`msg_server_depositForBurn`/
+`msg_server_replace_deposit_for_burn`, se existirem — o módulo Go tem 9
+arquivos lidos, mas nenhum ainda cobre o caminho de burn/deposit em si,
+só administração de roles) ou continuar em repos com pouca cobertura
+(`stablecoin-aptos`, `starknet-cctp`, `sui-cctp`, `stellar-cctp`,
+`stablecoin-near` — todos com 2-3 arquivos lidos até agora).

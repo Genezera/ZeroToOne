@@ -344,7 +344,10 @@
     "x/fiattokenfactory/keeper/msg_server_remove_minter.go",
     "x/fiattokenfactory/keeper/msg_server_update_master_minter.go",
     "x/fiattokenfactory/keeper/msg_server_update_blacklister.go",
-    "x/fiattokenfactory/keeper/keeper.go (ValidatePrivileges)"
+    "x/fiattokenfactory/keeper/keeper.go (ValidatePrivileges)",
+    "x/fiattokenfactory/keeper/msg_server_blacklist.go",
+    "x/fiattokenfactory/keeper/msg_server_burn.go",
+    "x/fiattokenfactory/keeper/msg_server_pause.go"
   ],
   "circlefin/malachite": [
     "code/crates/signing/src/lib.rs",
