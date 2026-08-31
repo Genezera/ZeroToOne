@@ -2516,3 +2516,228 @@ nesta rodada:
   `reproduced_local` assim que (a) um validador Anchor/Solana existir
   no sistema, ou (b) o programa for lançado em mainnet e um endereço
   real puder ser citado como deployment evidence com confidence >= low.
+
+## Rodada 2026-08-31 (push trigger) — sem candidatos novos, leitura profunda em componentes de auth do Starknet CCTP
+
+`list-pending` vazio. Os dois achados em `corroborated_static`
+(Solana denylist acima, e Vercel SSO alcançabilidade) já tinham sido
+re-verificados de forma independente e exaustiva na rodada anterior
+(mesmo dia); ambiente desta rodada é um container efêmero novo (30G
+livres, sem toolchain Anchor/Solana instalado) — nada mudou que
+justifique reabrir a investigação sem novo insumo (nenhum release de
+mainnet novo, nenhum PoC validator novo no sistema). Não retrabalhado.
+
+Leitura profunda proativa (3 arquivos novos, todos em
+`circlefin/starknet-cctp` / `circlefin/stablecoin-starknet`, priorizando
+os componentes de controle de acesso mais críticos e ainda não lidos):
+
+- `starknet-cctp/packages/message_transmitter/src/message_transmitter_v2.cairo`
+  — `receive_message`/`validate_received_message`: nonce vem do próprio
+  `MessageV2` (não é contador incremental), domínio de destino, destino
+  de caller e versão são validados antes de marcar nonce usado. Sem
+  achado — mesmo shape do MessageTransmitter EVM já auditado.
+- `starknet-cctp/packages/components/src/attestable.cairo` —
+  `verify_attestation_signatures`: M-de-N assinaturas ECDSA
+  secp256k1, ordem estritamente crescente de endereço recuperado
+  (impede duplicata), rejeita high-S (anti-malleability), valida
+  range de `v`. Port fiel do multisig já auditado no EVM
+  (`SimpleMultisig`/CCTP MessageTransmitter). Sem achado.
+- `stablecoin-starknet/packages/components/src/ownable/ownable.cairo`
+  e `.../manageable/manageable.cairo` — transferência de
+  owner/admin em duas etapas (`propose`→`accept`), checagem de
+  endereço zero, `assert_only_owner`/`assert_only_admin` corretos.
+  Componentes compartilhados por ambos os produtos Starknet da Circle
+  (CCTP e stablecoin) — sem achado, mas alto valor por serem
+  primitivas de acesso reutilizadas amplamente.
+
+`deep-read-log.json` atualizado com os 4 arquivos acima. Nenhum
+achado novo nesta rodada.
+
+## Rodada 2026-08-31 (push trigger seguinte) — sem candidatos novos, leitura profunda em `stablecoin-evm` (FiatTokenV2/V2_1/V2_2, permit + init)
+
+`list-pending` vazio de novo. Os dois achados em `corroborated_static`
+seguem sem insumo novo (mesmo ambiente efêmero, nenhum release/PoC
+validator novo) — não retrabalhados nesta rodada, mesma decisão da
+rodada anterior.
+
+Leitura profunda proativa (3 arquivos novos, `circlefin/stablecoin-evm`
+— nunca coberto além de `MintController`/`Controller`/`Blacklistable`/
+`EIP3009`/`SignatureChecker`/`ECRecover`/`FiatTokenV1`, priorizando a
+cadeia de auth de `permit`/EIP-3009 que ainda faltava):
+
+- `contracts/v2/FiatTokenV2.sol` — `initializeV2(newName)` é `external`
+  sem `onlyOwner`, só gateado por `require(initialized &&
+  _initializedVersion == 0)`. À primeira vista parece um clássico
+  "front-run de initializer de proxy" (qualquer um chama antes do
+  admin, fixando `newName`/domain separator maliciosos e travando o
+  `_initializedVersion` em 1 pra sempre). Persegui isso a fundo: o
+  fluxo real de upgrade usa `contracts/v2/upgrader/V2Upgrader.sol`, que
+  faz `_proxy.upgradeTo(_implementation)` **e** `v2.initializeV2(_newName)`
+  na mesma função `upgrade()` (`onlyOwner`), atomicamente — antes dessa
+  tx o proxy nem aponta pra V2, então não existe janela de mempool pra
+  um atacante inserir a própria chamada entre o upgrade e o init.
+  `scripts/deploy/DeployImpl.sol` reforça o mesmo padrão pro contrato de
+  implementação isolado (`getOrDeployImpl`): inicializa com valores
+  dummy logo após o `new FiatTokenV2_2()`, comentário explícito
+  ("prevents the contract from being reinitialized later on with
+  different values"). Sem achado — mitigação por design já existente,
+  não uma omissão.
+- `contracts/v2/FiatTokenV2_1.sol` — mesmo padrão em `initializeV2_1`
+  (drena saldo travado no próprio contrato pro `lostAndFound` e
+  blacklista `address(this)`); mesma dependência do upgrader atômico.
+  Sem achado novo (é o fix já conhecido publicamente do incidente de
+  fundos travados em EIP-3009, não uma superfície nova).
+- `contracts/v2/FiatTokenV2_2.sol` — ponto que investiguei com
+  ceticismo real: os overrides de `permit`/`approve`/
+  `increaseAllowance`/`decreaseAllowance` nesta versão **removeram** os
+  modifiers `notBlacklisted(owner)`/`notBlacklisted(spender)` que
+  existiam em `FiatTokenV2`. Hipótese testada: conta blacklistada
+  conseguir aprovar/alterar allowance mesmo bloqueada. Rastreei até
+  `contracts/v1/FiatTokenV1.sol::transferFrom` (linhas 258-269): exige
+  `notBlacklisted(msg.sender)`, `notBlacklisted(from)` e
+  `notBlacklisted(to)` — ou seja, mesmo que uma conta blacklistada
+  consiga setar uma allowance via `permit`/`approve`, ninguém consegue
+  de fato mover os fundos dela (`transferFrom` bloqueia porque `from`
+  está blacklistado). A remoção do modifier é intencional e inofensiva:
+  aprovar não move valor, só quem pode gastar (`transferFrom`) é que
+  precisa checar blacklist, e essa checagem continua intacta. Sem
+  achado — comportamento real do USDC em produção há anos, não uma
+  regressão.
+
+`deep-read-log.json` atualizado (`circlefin/stablecoin-evm` agora com
+10 arquivos). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, `arc-remote-signer` (RNG + KMS provider + enclave-side gRPC wiring)
+
+`queue.jsonl` sem itens `pending` (0 pendentes; 2 `corroborated_static`
+seguem bloqueados por falta de deployment evidence confirmada, 2
+`human_ready` aguardando revisão humana — nenhum dos dois é desta rodada).
+Voltei a `circlefin/arc-remote-signer` por já ter produzido o único
+achado `human_ready` deste programa (`SignerService.Sign` sem
+interceptor de auth) — clone raso público via `git clone`, 3 arquivos
+ainda não cobertos em `deep-read-log.json`:
+
+1. `internal/enclave/public/public.go` — contraparte do lado enclave do
+   `internal/app/public/public.go` já investigado (onde está o achado
+   `human_ready`). Só wiring de servidor gRPC (`New()` registra
+   `EnclaveServiceServer`, escolhe transporte TCP vs VSOCK conforme
+   `NitroEnclaveEnabled`). Nenhuma lógica de autorização própria aqui —
+   não adiciona nem contradiz o achado já registrado. Sem achado novo.
+2. `internal/common/crypto/rand/random.go` — geração de bytes/string
+   aleatórios. Uso exclusivo de `crypto/rand` (`crand.Reader`,
+   `crand.Int`) em todas as funções, inclusive `GenerateRandomString`
+   (comentário no próprio código já registra a decisão consciente de
+   não usar `math/rand`). Sem fallback inseguro. Sem achado.
+3. `internal/app/provider/awskms/awskms.go` — provider que envolve o
+   AWS KMS pra `Decrypt`/`GenerateDataKey` com failover multi-região
+   (`p.call` reordena a lista de clients em caso de erro, tenta o
+   próximo). Controle de acesso real fica inteiramente do lado do IAM
+   policy da AWS (fora do escopo de código deste repo); nenhuma lógica
+   local de autorização pra revisar. `moveClientToBack` usa mutex
+   corretamente (sem race na lista compartilhada). Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal, consistente com o
+padrão desta missão (a maioria das rodadas não acha nada). `deep-read-log.json`
+atualizado com os 3 arquivos acima. Sugestão pra próxima rodada: os
+arquivos de crypto do lado enclave ainda não lidos
+(`internal/enclave/common/crypto/bls/bls.go`,
+`internal/enclave/common/crypto/ed25519/ed25519.go`,
+`internal/enclave/common/crypto/crypto.go`) — é onde a assinatura de
+verdade acontece (chave do validador), mais provável de conter lógica
+não-trivial do que os wiring/utilitários cobertos até agora.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, `arc-remote-signer` (crypto enclave: bls.go/ed25519.go/crypto.go)
+
+Fila de `candidate` vazia. Continuando a sugestão da rodada anterior:
+os 3 arquivos de crypto do lado enclave ainda não lidos.
+
+- `internal/enclave/common/crypto/crypto.go` — só dispatcher por
+  algoritmo (`NewSecretKey`/`DeserializeSecretKey`/`VerifySignedMessage`
+  escolhem `bls` ou `ed25519` conforme `Algorithm`). Sem lógica própria.
+  Sem achado.
+- `internal/enclave/common/crypto/ed25519/ed25519.go` — uso padrão de
+  `crypto/ed25519` da stdlib (`GenerateKey`/`Sign`/`Verify`), com
+  checagem de tamanho de chave/assinatura em toda entrada
+  (`Deserialize`/`VerifySignedMessage`). Sem achado.
+- `internal/enclave/common/crypto/bls/bls.go` (build tag `cgo`, usa
+  `github.com/supranational/blst` v0.3.14) — ponto que investiguei a
+  fundo: `verify()` chama `sig.Verify(true, pk, false, message, dst)`.
+  Cloneei `supranational/blst` na tag `v0.3.14` (mesma versão do
+  `go.mod`) pra confirmar a semântica exata dos parâmetros posicionais
+  — `bindings/go/blst.go:547` nomeia o 3º argumento `pkValidate`, que
+  flui até `PairingAggregatePkInG1(pairing, curPk, pkValidate, ...)`
+  (linha ~707), o group-check real da chave pública no subgrupo correto
+  de G1. Aqui está `false` — ou seja, a chave pública passada pra
+  verificação **não** é validada como pertencente ao subgrupo correto
+  antes do pairing (só a assinatura é group-checked, via
+  `sigGroupcheck=true`). Isso É um anti-padrão criptográfico real
+  (ataque de invalid-curve/small-subgroup em curvas com cofactor > 1,
+  caso do BLS12-381 G1) **se** a `publicKey` vier de uma fonte não
+  confiável.
+
+  Registrei como achado novo (`upsert-finding`,
+  `ai_deep_read_finding`) e tentei refutar rastreando alcançabilidade
+  real: `grep -rn VerifySignedMessage` em todo o repositório mostra que
+  o único chamador de `crypto.VerifySignedMessage`/`bls.VerifySignedMessage`
+  fora dos próprios testes unitários do pacote `bls`/`ed25519` é
+  `internal/smoke/public/public_test.go:84` — um smoke test que assina
+  uma mensagem via o próprio serviço e verifica contra a `publicKey`
+  que o próprio serviço acabou de devolver (self-check não-adversarial,
+  mesmo processo). Nenhum caminho de produção (`SignerService.Sign`,
+  o wiring gRPC, interceptors) chama `Verify` — só `NewSecretKey`/
+  `DeserializeSecretKey`/`SignMessage`. Ou seja, hoje não existe
+  nenhuma rota externa nem interna que passe uma `publicKey` arbitrária
+  pra essa função: é código de verificação efetivamente morto fora de
+  teste. Marcado `false_positive` — a análise criptográfica do
+  anti-padrão está correta (deveria ser `pkValidate=true`, é API
+  pública exportada que um caller futuro poderia usar com chave não
+  confiável), mas não há caminho de exploração alcançável hoje, então
+  não há impacto real a demonstrar nem PoC possível (Go, sem
+  infraestrutura de PoC no sistema — limitação real, não inventei
+  validador).
+
+`deep-read-log.json` atualizado (`circlefin/arc-remote-signer` agora
+com 18 arquivos, cobrindo todo o pacote `internal/enclave/common/crypto`).
+Um achado novo processado nesta rodada, refutado com justificativa
+completa (não é resultado "nenhum achado" nem submissão — é o ciclo
+funcionando: achado real de código, sem impacto real por falta de
+alcançabilidade).
+
+## Rodada 2026-08-31 — retomada do achado corroborated_static em solana-gateway-contracts
+
+Fila de `candidate` vazia. Retomei o achado já existente em
+`corroborated_static` (`initiate_withdrawal.rs`/`withdraw`, denylist não
+verificado no saque no programa Anchor `gateway-wallet`) pra tentar
+avançar a máquina de estados nesta rodada, já que o ambiente atual (cloud,
+Linux) tem ~30GB livres em disco — bem diferente do bloqueio de espaço
+em disco (~2GB livres) registrado na rodada anterior numa máquina local
+Windows.
+
+Passos executados: `check-scope "Circle BBP" "circlefin/solana-gateway-contracts"`
+→ `allowed=true`, `bountyEligible=true`, `maxSeverity=critical`.
+`record-deployment-evidence` com `confidence="unverified"` (confirmei
+via `git ls-remote` o commit atual de `master`,
+`909373cdee3aad9e06fe37b599f9d29160f7ca4c`, mas o programa Circle
+Gateway ainda não está em mainnet no Solana — sem endereço/programId
+real pra citar). Tentativa de `transition ... scope_verified` foi
+**recusada pela máquina de estados**, e corretamente: a precondição real
+de `state-machine.mjs` exige vir de `reproduced_local`, não de
+`corroborated_static` diretamente — e mesmo se viesse de lá, o gate
+adicional de `deploymentEvidence.confidence !== "unverified"` também
+bloquearia.
+
+Decisão explícita desta rodada: **não construí um validador
+Anchor/LiteSVM novo**, mesmo com disco disponível agora, porque a
+instrução da missão é clara — achados não-Solidity sem validador
+disponível no sistema ficam em `corroborated_static` por design ("não
+invente um validador"); inventar um agora seria contornar a máquina de
+estados por fora, não usá-la. Isso fica registrado como decisão
+consciente, não como limitação esquecida: se o sistema ganhar um
+validador Anchor/Solana de verdade (fora desta sessão, via
+Fase 2/4 do plano), este é candidato natural a ser o primeiro caso de
+teste.
+
+Estado final: mantido em `corroborated_static`. Nenhuma mudança de
+veredito — resultado normal (achado real, bem documentado, mas
+genuinamente sem caminho de avanço disponível hoje sob as regras da
+missão).

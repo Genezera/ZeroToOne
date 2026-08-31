@@ -112,7 +112,8 @@
     "cache/http.go",
     "cache/cache.go",
     "state/state.go",
-    "manifest/digest/digest.go"
+    "manifest/digest/digest.go",
+    "archive/archive.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
@@ -258,7 +259,10 @@
     "contracts/v2/EIP3009.sol",
     "contracts/util/SignatureChecker.sol",
     "contracts/util/ECRecover.sol",
-    "contracts/v1/FiatTokenV1.sol"
+    "contracts/v1/FiatTokenV1.sol",
+    "contracts/v2/FiatTokenV2.sol",
+    "contracts/v2/FiatTokenV2_1.sol",
+    "contracts/v2/FiatTokenV2_2.sol"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
@@ -282,7 +286,13 @@
     "internal/common/grpc/server/interceptor/middleware.go",
     "internal/app/provider/secrets/secrets.go",
     "internal/enclave/provider/keystore/keystore.go",
-    "internal/enclave/service/enclave/enclave.go"
+    "internal/enclave/service/enclave/enclave.go",
+    "internal/enclave/public/public.go",
+    "internal/common/crypto/rand/random.go",
+    "internal/app/provider/awskms/awskms.go",
+    "internal/enclave/common/crypto/crypto.go",
+    "internal/enclave/common/crypto/ed25519/ed25519.go",
+    "internal/enclave/common/crypto/bls/bls.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -332,7 +342,17 @@
     "packages/cli-auth/sso.ts",
     "packages/cli/src/commands/login/future.ts",
     "packages/cli/src/util/oauth.ts",
-    "packages/cli/src/commands/teams/sso.ts"
+    "packages/cli/src/commands/teams/sso.ts",
+    "packages/cli/src/commands/login/index.ts",
+    "packages/cli/src/util/login/reauthenticate.ts",
+    "packages/cli/src/util/login/update-current-team-after-login.ts",
+    "packages/oidc/src/verify-vercel-oidc-token.ts",
+    "packages/connect/src/mcp/connect-auth-provider.ts",
+    "packages/connect/src/eve/connect-oauth.ts"
+  ],
+  "vercel-labs/agent-skills": [
+    ".github/workflows/agent-skills-discovery.yml",
+    ".github/workflows/react-best-practices-ci.yml"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",
@@ -354,7 +374,12 @@
     "crates/turborepo-auth/src/auth/mod.rs",
     "crates/turborepo-auth/src/auth/login.rs",
     "crates/turborepo-auth/src/auth/sso.rs",
-    "crates/turborepo-auth/src/auth/logout.rs"
+    "crates/turborepo-auth/src/auth/logout.rs",
+    "crates/turborepo-auth/src/lib.rs",
+    "crates/turborepo-api-client/src/lib.rs",
+    "crates/turborepo-config/src/lib.rs",
+    "crates/turborepo-config/src/turbo_json.rs",
+    "crates/turborepo-lib/src/commands/login/mod.rs"
   ],
   "circlefin/solana-gateway-contracts": [
     "programs/gateway-wallet/src/instructions/initiate_withdrawal.rs",
@@ -391,12 +416,16 @@
     "packages/stablecoin/sources/treasury.move"
   ],
   "circlefin/starknet-cctp": [
+    "packages/components/src/attestable.cairo",
+    "packages/message_transmitter/src/message_transmitter_v2.cairo",
     "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo"
   ],
   "circlefin/stablecoin-starknet": [
-    "packages/stablecoin/src/fiat_token/fiat_token.cairo",
+    "packages/components/src/blocklistable/blocklistable.cairo",
     "packages/components/src/denylistable/denylistable.cairo",
-    "packages/components/src/blocklistable/blocklistable.cairo"
+    "packages/components/src/manageable/manageable.cairo",
+    "packages/components/src/ownable/ownable.cairo",
+    "packages/stablecoin/src/fiat_token/fiat_token.cairo"
   ],
   "circlefin/stablecoin-xlm": [
     "soroban/contracts/fiat-token-admin/src/blocklistable.rs",
@@ -410,7 +439,12 @@
     "packages/token_messenger_minter/sources/admin/role_management.move"
   ],
   "vercel/ai": [
-    "packages/gateway/src/gateway-realtime-auth.ts"
+    "packages/gateway/src/gateway-realtime-auth.ts",
+    "packages/harness/src/utils/get-restricted-sandbox-session.ts",
+    "packages/harness/src/v1/harness-v1-network-sandbox-session.ts",
+    "packages/sandbox-vercel/src/vercel-network-sandbox-session.ts",
+    "packages/sandbox-vercel/src/vercel-sandbox-session.ts",
+    "packages/sandbox-vercel/src/vercel-network-policy-manager.ts"
   ],
   "vercel/eve": [
     "packages/eve/src/channel/auth/jwt-hmac.ts",
@@ -426,6 +460,12 @@
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts"
+  ],
+  "vercel/ms": [
+    "src/index.ts"
+  ],
+  "vercel/async-sema": [
+    "src/index.ts"
   ],
   "circlefin/stablecoin-sui": [
     "packages/stablecoin/sources/treasury.move"

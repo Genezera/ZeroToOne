@@ -1151,3 +1151,283 @@ específica pro vetor que tentei refutar primeiro.
 
 `deep-read-log.json` ganhou chave nova `sveltejs/svelte` (6 arquivos).
 Nenhum item elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-31 (push automático) — `list-pending` vazio; leitura profunda em `vercel/vercel` (fluxo de login/reauth)
+
+`list-pending` vazio (0 candidatos) e os 2 achados não-terminais restantes
+no sistema (Circle BBP/Solana denylist em `corroborated_static`, Circle
+BBP/stablecoin-evm em `inconclusive`) já tinham verificação independente
+completa registrada em rodadas anteriores hoje mesmo — não reabertos sem
+evidência nova, pra evitar retrabalho idêntico.
+
+Varri os scope snapshots dos 4 programas em busca de assets de código-fonte
+ainda sem nenhuma entrada em `deep-read-log.json`: `vercel-labs/agent-skills`
+(pacote `react-best-practices-build`, clonado e inspecionado — só parser/
+build/migrate de um linter de boas práticas React, sem superfície de auth/
+rede/crypto) e `vercel/ms`/`vercel/async-sema` (utilitários triviais) — nenhum
+continha caminho batendo com as palavras-chave prioritárias
+(auth/session/crypto/token/login/...), então não abriram achado nem
+consumiram uma das 3 vagas desta rodada.
+
+Em vez disso, aprofundei dentro de `vercel/vercel` (já parcialmente coberto)
+no pacote `packages/cli-auth` (esgotado: `oauth.ts`/`sso.ts`/
+`credentials-store.ts` já lidos antes; `user-agent.ts` é só string de UA) e
+achei 3 arquivos do fluxo de login/reautenticação ainda não lidos:
+`packages/cli/src/commands/login/index.ts` (parsing de flags, delega pra
+`future.ts` já auditado — sem lógica de auth própria),
+`packages/cli/src/util/login/reauthenticate.ts` (dispara o mesmo device-code
+flow de `future.ts` quando a API retorna erro SAML com `teamId`; testei a
+hipótese de o CLI aceitar/gravar um token sem validação de escopo local —
+não existe: o cliente só persiste o `access_token` devolvido pelo próprio
+endpoint OAuth da Vercel após aprovação humana no browser, a imposição real
+de escopo/SAML é 100% server-side, fora do que dá pra auditar por código-fonte)
+e `packages/cli/src/util/login/update-current-team-after-login.ts` (seta
+`currentTeam` a partir de `ssoTeamId` do próprio fluxo de login ou do
+`defaultTeamId` do usuário já autenticado via `getUser` — sem tomada de
+decisão de autorização local). Rastreei o chamador de `reauthenticate`
+(`client.ts::Client.reauthenticate`, usado no interceptor de retry de
+`fetch`) pra confirmar que não há reuso indevido do token antigo nem bypass
+do fluxo de aprovação. Sem achado — mesmo padrão de "confiar no backend,
+que é o ponto de aplicação real" já visto nas rodadas anteriores de
+`oauth.ts`/`sso.ts`.
+
+`deep-read-log.json` atualizado (`vercel/vercel` ganhou 3 arquivos:
+`login/index.ts`, `login/reauthenticate.ts`,
+`login/update-current-team-after-login.ts`). Nenhum achado novo nesta
+rodada — resultado normal.
+
+## Rodada 2026-08-31 (ZeroToOne v2, disparada por push automático)
+
+`list-pending` vazio. Os 2 achados em `corroborated_static`/`inconclusive`
+já tinham verificação independente completa registrada em rodadas
+anteriores (Vercel `cli-auth/sso.ts` incluso) — não reabertos sem evidência
+nova.
+
+Leitura profunda focou em `vercel/turborepo` (já parcialmente coberto:
+`turborepo-auth/src/{device_flow,auth/{mod,login,sso,logout}}.rs` lidos
+antes). Hipótese testada desta rodada: será que um repositório malicioso
+consegue, via `turbo.json` commitado (`remoteCache.apiUrl`/`loginUrl`),
+redirecionar o fluxo de login/token da vítima para um servidor do
+atacante — o mesmo padrão de "config de projeto não-confiável sobrescreve
+endpoint de auth" que já rendeu achado em outras ferramentas de monorepo?
+
+Rastreei a cadeia completa: `turborepo-config/src/lib.rs` e
+`turbo_json.rs` (novos, não lidos antes) mostram que `apiUrl`/`loginUrl`
+PODEM de fato vir de `turbo.json` (`ConfigurationSource::TurboJson`), e o
+próprio código de config já rastreia a origem de cada valor
+(`api_url_source`/`login_url_source`) — inclusive com um teste chamado
+literalmente `test_turbo_json_url_sources_are_recorded` usando
+`https://attacker.test/api` como valor de exemplo, sinal de que a equipe
+já modelou esse cenário de ataque deliberadamente.
+
+Segui o rastro até o ponto de uso real
+(`turborepo-lib/src/commands/login/mod.rs`, novo) e daí para
+`turborepo-auth/src/auth/mod.rs::ensure_non_vercel_redirect_allowed`
+(função já existente, mas meu foco anterior nela era outro). Confirmado:
+a) o fluxo Vercel real (`is_vercel_login`) só é escolhido se o host do
+`login_url` bate exatamente com `vercel.com`/`*.vercel.com`
+(`is_vercel_host`, comparação de sufixo correta — não `contains`, sem
+brecha tipo `vercel.com.attacker.com`); b) nesse caso `ensure_trusted_vercel_api`
+TAMBÉM exige que o `api_client.make_url("")` aponte pra um host Vercel
+confiável antes de prosseguir — protege contra o caso de login_url
+correto mas api_url separadamente sequestrado; c) no caminho não-Vercel
+(`login_redirect`, pensado para remote-cache self-hosted legítimo),
+`ensure_non_vercel_redirect_allowed` exige que TANTO `login_url_source`
+quanto (quando `api_url` não é host Vercel) `api_url_source` sejam
+`Cli`/`Environment`/`GlobalConfig` — `TurboJson` está deliberadamente
+EXCLUÍDO dessa lista (`is_user_controlled_url_source`). Ou seja: um
+`turbo.json` malicioso committado no repo NÃO consegue, sozinho,
+redirecionar login/token pra fora do Vercel — a função retorna erro antes
+de abrir o browser ou trocar qualquer token. Testes dedicados já cobrem
+exatamente isso (`test_vercel_login_rejects_untrusted_api_url`,
+`test_vercel_sso_rejects_untrusted_api_url`). Hipótese refutada — mitigação
+real e testada, não uma lacuna.
+
+Nota lateral (não é achado, é observação de baixo risco só documentada):
+`should_skip_existing_token_for_login`/`looks_like_vercel_substring` (em
+`auth/mod.rs`) usa uma checagem fraca (`contains("vercel.com")`, não
+`is_vercel_host`) — mas essa função só decide se um token JÁ EXISTENTE em
+disco é reaproveitado ou se um login novo é forçado, não participa do
+gate de segurança real (`ensure_non_vercel_redirect_allowed`, que usa a
+checagem forte). Na pior hipótese o efeito de uma checagem fraca aqui é
+forçar um login novo com mais frequência do que o necessário — não abre
+caminho pra vazamento de token. Sem ação necessária.
+
+`deep-read-log.json` atualizado (`vercel/turborepo` ganhou 5 arquivos:
+`turborepo-auth/src/lib.rs`, `turborepo-api-client/src/lib.rs`,
+`turborepo-config/src/lib.rs`, `turborepo-config/src/turbo_json.rs`,
+`turborepo-lib/src/commands/login/mod.rs`). Nenhum achado novo nesta
+rodada — resultado normal (hipótese de ataque real testada e refutada
+por controle já existente no código, não por falta de tentativa).
+
+## Rodada 2026-08-31 (push trigger seguinte) — sem candidatos novos, leitura profunda em `vercel/ai` (harness sandbox network policy)
+
+`list-pending` vazio. Os 2 achados legados em `corroborated_static`
+(Vercel `cli-auth/sso.ts` alcançabilidade, e Solana denylist do Circle
+BBP) seguem sem insumo novo desde a última re-verificação exaustiva —
+não reabertos.
+
+Leitura profunda proativa em `vercel/ai` (só 1 arquivo coberto antes,
+`packages/gateway/src/gateway-realtime-auth.ts`). Escolhi a superfície de
+controle de acesso de rede do sandbox de execução de agente (`packages/harness`
++ `packages/sandbox-vercel`) — é onde código gerado/potencialmente não
+confiável roda dentro de um sandbox, e a política de rede + injeção de
+credencial em requisições de saída é exatamente o tipo de controle de
+acesso que merece ceticismo (clone raso via `git clone` público):
+
+- `packages/harness/src/utils/get-restricted-sandbox-session.ts` e
+  `packages/harness/src/v1/harness-v1-network-sandbox-session.ts` —
+  definição de tipos/interface da "visão restrita" da sessão de sandbox
+  (`restricted()`: expõe só I/O de arquivo + exec, nunca `stop`/`destroy`/
+  `setNetworkPolicy`). Confirmado explicitamente no próprio comentário do
+  código que essa restrição é de superfície TypeScript (para o código
+  interno do harness não chamar por engano os métodos de infraestrutura),
+  não uma fronteira de segurança contra processo malicioso rodando DENTRO
+  do sandbox — o enforcement real de rede acontece no lado do provedor
+  (Vercel Sandbox), fora deste repositório.
+- `packages/sandbox-vercel/src/vercel-sandbox-session.ts` e
+  `vercel-network-sandbox-session.ts` — implementação concreta. `restricted()`
+  retorna um novo `VercelSandboxSession` sobre o MESMO `Sandbox` subjacente
+  (campera `protected readonly sandbox`) — em runtime JS puro isso não é uma
+  barreira de reflexão, mas o consumidor legítimo (código do harness, não
+  o processo dentro do sandbox) só enxerga os métodos do tipo `SandboxSession`
+  — consistente com o design documentado, não um bug.
+- `packages/sandbox-vercel/src/vercel-network-policy-manager.ts` (755
+  linhas, leitura completa) — a peça mais sensível: compõe a política de
+  rede (`allow-all`/`deny-all`/`custom` com CIDR allow/deny) E as regras de
+  transformação de requisição (injeção de header de credencial fora do
+  sandbox, nunca visível para o processo sandboxed) num único `NetworkPolicy`
+  enviado a `sandbox.update()`. Ceticismo aplicado especificamente em
+  `intersectHostPatterns`/`isHostPatternSubset` (a lógica que decide a quais
+  padrões de host uma regra de transformação de credencial fica anexada):
+  testei mentalmente casos de wildcard (`*`, `*.example.com` vs host
+  concreto, vs wildcard mais específico) — em todos os casos testados a
+  interseção retorna corretamente o padrão MAIS ESTREITO dos dois, nunca
+  mais amplo que o host original da transformação nem mais amplo que o
+  host permitido pela política de acesso. Único ponto residual notado (não
+  é achado, é observação): `isHostPatternSubset` só reconhece limite de
+  subdomínio quando o padrão wildcard tem literalmente um ponto após o
+  `*` (ex. `*.example.com`); um padrão malformado tipo `*example.com` (sem
+  ponto) casaria também com `evilexample.com` — mas `allowedHosts`/
+  `ruleHost` vêm da configuração do desenvolvedor/harness que monta a
+  sessão, não de conteúdo não confiável, então não é uma superfície
+  explorável por um atacante — só um jeito de o desenvolvedor se
+  configurar mal, já mitigável escrevendo `*.example.com` corretamente.
+  Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/ai` ganhou 5 arquivos, agora 6 no
+total). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 (push automático, máquina de estados v2) — fila vazia, leitura profunda em `vercel/vercel` (OIDC/Connect), sem achado
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` + `list-pending`).
+Revisitados os 2 achados legados em `corroborated_static` fora deste
+programa (SSO Vercel `cli-auth/sso.ts::waitForVerification`, confidence
+"baixa", e denylist Solana Circle) — ambos já exaustivamente
+investigados em rodadas anteriores (checagem de duplicata, escopo,
+alcançabilidade) sem evidência nova disponível nesta rodada; nenhuma
+ação adicional tomada para não repetir esforço já esgotado. Achado
+Circle/Solana especificamente: confirmado que o ambiente cloud atual
+tem espaço em disco suficiente (30G livre) pro toolchain Solana/Anchor
+que a rodada anterior tinha marcado como bloqueado por falta de disco —
+mas construir esse validador está fora do escopo desta rodada (a regra
+do sistema é clara: não inventar validador pra achado não-Solidity sem
+pedido explícito do usuário para esse investimento específico).
+
+Leitura profunda proativa — 3 arquivos novos em `vercel/vercel`
+(clonado via `git clone` raso), priorizando superfície OIDC/OAuth:
+
+- `packages/oidc/src/verify-vercel-oidc-token.ts` (184 linhas,
+  completo) — wrapper de `jose.jwtVerify` contra o JWKS remoto de
+  `oidc.vercel.com`. Ceticismo aplicado ao caso `projectId: '*'`: o
+  código exige explicitamente `ownerId` OU `audience` quando
+  `projectId` é wildcard (`hasAudienceVerification`), evitando que um
+  wildcard descontrolado aceite QUALQUER token OIDC válido de QUALQUER
+  projeto Vercel. `algorithms` default é `['RS256']` (não aceita
+  `none`/HMAC por padrão); pode ser sobrescrito pelo chamador, mas isso
+  é opção documentada do SDK, não uma falha da lib. Validação de
+  `iss`/`project_id`/`environment`/`owner_id` todas corretas e com
+  fallback seguro (lança erro se claim esperada não fornecida nem via
+  opção nem via env var, nunca aceita silenciosamente). Sem achado.
+- `packages/connect/src/mcp/connect-auth-provider.ts` (256 linhas,
+  completo) — adapta o `OAuthClientProvider` do MCP pra Vercel Connect.
+  `saveTokens`/`saveCodeVerifier` são no-ops documentados (Connect
+  possui PKCE e persistência de token no lado do servidor); `tokens()`
+  delega pra `getTokenResponse` (não lido nesta rodada, já citado como
+  dependência). Nenhuma lógica de verificação de assinatura acontece
+  aqui — é só orquestração de client, não achado.
+- `packages/connect/src/eve/connect-oauth.ts` (301 linhas, completo)
+  — `AuthFn` de gateway pra tokens OAuth do Connect. Ponto investigado
+  a fundo: `decodeJwtPayload` faz um decode BASE64 SEM verificação de
+  assinatura só pra escolher a lista de `audiences`/política de
+  `connector` ANTES de chamar `verifyOidc` (verificação criptográfica
+  real, em `eve/channels/auth`, lido via clone de `vercel/eve`). Testei
+  se isso permite bypass: não permite — o decode não-verificado e a
+  verificação real operam sobre os MESMOS bytes do token (mesma string
+  JWT), então se `verifyOidc` aceita o token, o payload que o
+  pre-check leu já era genuíno; se o token for forjado, `verifyOidc`
+  rejeita (retorna `ok:false` → função retorna `null`) independente do
+  que o pre-check "achou". Único ponto notado: a política de
+  `connectors` (`clientId`/`clientUid`) só é aplicada no pre-check
+  não-verificado, nunca incluída nos `claims` passados pra `verifyOidc`
+  (`buildClaimMatchers` só adiciona `tenantId`/`installationId`/`typ`)
+  — mas como estabelecido acima, isso não abre brecha real porque
+  ambos os decodes leem o mesmo payload assinado. Confirmado lendo
+  `verifyOidc`/`runOidcVerification` em `vercel/eve` (clone separado,
+  `packages/eve/src/public/channels/auth.ts`) — delega a verificação
+  de assinatura pra `authenticateOidcStrategy`, não reimplementada
+  aqui. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel` ganhou 3 arquivos,
+agora 15 no total). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 — fila vazia, leitura profunda em vercel-labs/agent-skills
+
+Fila de `candidate` vazia (0 pendentes). Sem trabalho de máquina de
+estados a fazer nesta rodada. Leitura profunda proativa: alvo novo
+`vercel-labs/agent-skills` (ainda não tinha entrada em
+`deep-read-log.json`), clonado publicamente via `git clone --depth 1`.
+Repositório é majoritariamente conteúdo de skills em Markdown; a
+superfície de código real fica nos dois workflows do GitHub Actions em
+`.github/workflows/`:
+
+- `agent-skills-discovery.yml` — job `validate` roda em `pull_request`
+  (não `pull_request_target`), sem `secrets`, permissions
+  `contents: read` — contexto seguro pra PR de fork, nada a explorar.
+  Job `publish` só roda em `push` pra `main` (não em PR), usa
+  `github.token` (`GH_TOKEN`) só pra `gh release`, e as únicas
+  interpolações no `run:` são `github.sha`/`github.repository` — não
+  são strings controláveis por um atacante externo nesse evento. Sem
+  injeção de comando via campo de PR (title/body/branch) porque nada
+  disso é interpolado em `run:`.
+- `react-best-practices-ci.yml` — build/validate padrão com pnpm, sem
+  segredos, sem interpolação de conteúdo externo em `run:`. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` ganhou a chave
+`vercel-labs/agent-skills` com os 2 arquivos lidos.
+
+## Rodada 2026-08-31 — fila vazia, leitura profunda em vercel/ms e vercel/async-sema
+
+Fila de `candidate` vazia. Sem trabalho de máquina de estados novo pro
+achado já existente em `corroborated_static` (`packages/cli-auth/sso.ts`,
+`waitForVerification`/`reauthorizeTeam`) — nenhuma fonte nova foi
+encontrada nesta rodada sobre alcançabilidade externa (nenhuma
+verificação adicional tentada, pra não repetir a mesma busca exaustiva
+já feita duas vezes; fica como está, aguardando decisão humana).
+
+Leitura profunda proativa: dois alvos do snapshot de escopo ainda sem
+entrada em `deep-read-log.json` — `vercel/ms` e `vercel/async-sema`,
+ambos repositórios pequenos (um único arquivo-fonte relevante cada).
+
+- `vercel/ms` (`src/index.ts`): parser de string tipo "2h"/"1d" pra
+  milissegundos. Já é a versão hardened pós-CVE-2015-8315 (limite
+  explícito de 100 chars de entrada antes de rodar a regex, e a regex
+  em si — `-?\d*\.?\d+ *(unit)?` — não tem quantificadores aninhados
+  vulneráveis a ReDoS catastrófico). Sem achado.
+- `vercel/async-sema` (`src/index.ts`): semáforo/rate-limiter genérico
+  em cima de uma Deque circular. Não processa entrada não-confiável
+  (é uma primitiva de controle de concorrência, não parser), sem lógica
+  de auth/crypto. Sem achado.
+
+`deep-read-log.json` atualizado com as duas chaves novas. Nenhum
+achado nesta rodada — resultado normal.
