@@ -23,6 +23,8 @@ The `devN7ZZFhGVTgwoKHaDDTFFgrhRzSGzuC6hgVFPrxbs` program ID referenced under "A
 
 **Revised again 2026-08-31 (second pass):** Evidence reordered to lead with `deposit.rs` (the check that DOES exist) before the two files where it's missing, added a real `utils.rs` excerpt (`is_account_denylisted`, fetched fresh from the pinned commit, not paraphrased), trimmed the Anchor-macro paragraph to one plain sentence, and replaced "Commit: master" with the exact SHA (confirmed live against the GitHub API as still-current `HEAD`). Also added one neutral sentence near the end noting the EVM implementation was reviewed separately, without repeating the ChainSecurity "accepted design" characterization in the submittable body — full detail stays here, above the line. Separately: I dug into whether "accepted design" is really Circle's own position or just one auditor's read of a different codebase — checked Circle's own EVM contract-interfaces documentation directly, and it does NOT state anywhere that withdrawal-during-denylist is intended behavior; that characterization exists only in ChainSecurity's audit note, not in Circle's own developer-facing docs, and doesn't cover Solana at all. Doesn't eliminate the risk, but the "it's just design" defense rests on thinner ground than it might sound.
 
+**Re-verified live 2026-08-31 (third pass, PoC re-run):** The exact PoC test was re-run for real (not replayed) via the cached toolchain at `E:\dev-toolchains\solana-poc\solana-gateway-contracts`, at the same pinned commit, through WSL (native Windows Node can't load `litesvm`'s native binding — that package ships Linux/macOS binaries only, no Windows one, confirmed by checking its `optionalDependencies`). New transaction signature each run (expected, LiteSVM-generated), identical deterministic numbers every time (1,000,000 → 2,000,000, `AccountDenylisted` on the control check). The PoC's `console.log` calls were also rewritten into a clearer step-by-step banner format for screenshot purposes — zero change to any assertion or program logic, purely presentational. See the file itself at that path if you want to re-run it again before submitting.
+
 ---
 
 ## Title
@@ -155,49 +157,44 @@ Test sequence:
 5. Depositor calls `initiate_withdrawal` for the full 1,000,000 balance deposited in step 2 (before being denylisted). **Succeeds.**
 6. After the withdrawal delay, depositor calls `withdraw`. **Succeeds.** Funds are transferred.
 
-```text
-Account allowed
-      |
-Deposit 1,000,000
-      |
-Account denylisted
-      |
-New deposit of 1 rejected   <- proves denylist is active
-      |
-initiate_withdrawal(1,000,000)
-      |
-ACCEPTED                    <- authorization bypass
-      |
-withdraw()
-      |
-ACCEPTED
-      |
-1,000,000 returned
-```
-
 ### Key PoC observation
-The most important control test is that the denylisted account cannot perform a new deposit, while the exact same denylisted account can withdraw its entire pre-existing balance. This rules out a false positive caused by the denylist setup or an incorrectly denylisted account:
+The most important control test is step [4] below: the denylisted account cannot perform a new deposit (`REJECTED`, error `AccountDenylisted`), while the exact same denylisted account can initiate and complete a withdrawal (steps [5]-[6], both `SUCCESS`). This rules out a false positive caused by the denylist setup or an incorrectly denylisted account — the account was demonstrably denylisted, by the program's own error, at the moment the withdrawal was authorized.
 
-```text
-New deposit after denylist:       REJECTED
-Withdrawal of pre-existing funds: ACCEPTED
+Real output (literal, re-verified live on 2026-08-31 against the pinned commit above — this is a fresh, independent run, not a copy of an earlier one; the transaction signature is different each run by design, everything else is deterministic):
 ```
+============================================================
+PoC: Denylisted account can withdraw pre-existing funds
+============================================================
+[1] Initial balance
+    Depositor token balance: 2,000,000
+[2] Deposit before denylist
+    Amount: 1,000,000
+    Result: SUCCESS
+[3] Denylist depositor
+    Result: SUCCESS
+[4] Attempt NEW deposit after denylist
+    Amount: 1
+    Result: REJECTED
+    Error: AccountDenylisted
+[5] Initiate withdrawal of pre-existing balance
+    Amount: 1,000,000
+    Result: SUCCESS
+[6] Complete withdrawal
+    Result: SUCCESS
+============================================================
+RESULT
+============================================================
+Denylisted before withdrawal: TRUE
+Balance before withdrawal:    1,000,000
+Balance after withdrawal:     2,000,000
+Amount withdrawn:             1,000,000
+tx:                           5fWLeusEMbfKPBNDNSBSw7eQwQucsEUnnJGWcKBFq9QHHrK86dk3fZZVde2XVX5Q2TGLwZa3TQPZN1zJAQQfvVu6
+UNAUTHORIZED WITHDRAWAL ACCEPTED
+============================================================
+    ✔ withdrawal succeeds even though depositor was denylisted after depositing (873ms)
 
-The account was therefore demonstrably denylisted at the time the withdrawal was authorized.
-
-Real output (literal, 2026-08-31):
+  1 passing (875ms)
 ```
-PoC: denylisted depositor can still withdraw pre-existing balance
-RESULT: withdrawal from a DENYLISTED account was ACCEPTED.
-tx: 4pA4JX4bLT3sqDZmG6fM8TPYgU6vvn68cnrFrR8xUrobGpZyKnjcVwatosaD3KFSFd3ZzR9MDtcdnS4danRnhStk
-balance before: 1000000
-balance after: 2000000
-denylisted before the withdrawal: true
-
-  1 passing (281ms)
-```
-
-`balance after` minus `balance before` is exactly 1,000,000 — the full amount deposited before the denylist, withdrawn in full by an account the program itself confirms is denylisted (step 4 above proves the denylist state is real, not a setup error).
 
 ## Impact
 A denylisted account can retain and withdraw funds that were deposited before the denylist action.
