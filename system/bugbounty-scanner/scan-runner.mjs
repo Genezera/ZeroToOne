@@ -25,6 +25,7 @@ import { scanJvmSource } from './heuristics-jvm.mjs';
 import { scanSwiftSource } from './heuristics-swift.mjs';
 import { scanSoliditySource } from './heuristics-solidity.mjs';
 import { deriveLanguage, historicalConfidenceFor, loadStats, runVerdictStats } from './verdict-stats.mjs';
+import { isQuarantined, computeQuarantinedRules, renderQuarantineMarkdown } from './quarantine.mjs';
 import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
 import { runDependencyScan } from './dep-scanner.mjs';
@@ -43,6 +44,8 @@ const STATS_MD_PATH = path.join(BUGBOUNTY_DIR, 'heuristic-stats.md');
 const VERDICTS_SNAPSHOT_PATH = path.join(BUGBOUNTY_DIR, 'scanner-seen-verdicts.json');
 const STATUS_PATH = path.join(BUGBOUNTY_DIR, 'STATUS.md');
 const DASHBOARD_PATH = path.join(BUGBOUNTY_DIR, 'dashboard', 'index.html');
+const QUARANTINE_OVERRIDES_PATH = path.join(BUGBOUNTY_DIR, 'quarantine-overrides.json');
+const QUARANTINE_STATUS_PATH = path.join(BUGBOUNTY_DIR, 'quarantine-status.md');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
 const MAX_FILES_PER_TARGET = 450;
 
@@ -78,9 +81,10 @@ function log(msg) {
 // heurística. Não persiste o código-fonte no git (repos grandes demais) —
 // só o texto do achado (com trecho de contexto) vai para a fila. Cache de
 // SHA de blob por arquivo evita rebuscar/rescanear o que não mudou.
-async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas, language, priorStats) {
+async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas, language, priorStats, quarantineOverrides = new Set()) {
   let filesChecked = 0;
   let fetchErrors = 0;
+  let quarantinedCount = 0;
 
   for (const target of targets) {
     let files;
@@ -119,13 +123,27 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
         const fp = fingerprint(f);
         if (seen.has(fp)) continue;
         seen.add(fp);
+        if (isQuarantined(priorStats, f.type, language, { overrides: quarantineOverrides })) {
+          quarantinedCount++;
+          continue;
+        }
         const historicalConfidence = historicalConfidenceFor(priorStats, f.type, language);
         newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
       }
     }
   }
 
-  return { filesChecked, fetchErrors };
+  return { filesChecked, fetchErrors, quarantinedCount };
+}
+
+function loadQuarantineOverrides() {
+  if (!existsSync(QUARANTINE_OVERRIDES_PATH)) return new Set();
+  try {
+    const arr = JSON.parse(readFileSync(QUARANTINE_OVERRIDES_PATH, 'utf8'));
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
 }
 
 export async function runScan() {
@@ -133,6 +151,8 @@ export async function runScan() {
   const seen = loadSeen();
   const newFindings = [];
   const priorStats = loadStats(STATS_JSON_PATH);
+  const quarantineOverrides = loadQuarantineOverrides();
+  let quarantinedTotal = 0;
   let contractsChecked = 0;
   let fetchErrors = 0;
 
@@ -157,6 +177,10 @@ export async function runScan() {
         const fp = fingerprint(f);
         if (seen.has(fp)) continue;
         seen.add(fp);
+        if (isQuarantined(priorStats, f.type, 'clarity', { overrides: quarantineOverrides })) {
+          quarantinedTotal++;
+          continue;
+        }
         const historicalConfidence = historicalConfidenceFor(priorStats, f.type, 'clarity');
         newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
       }
@@ -164,11 +188,12 @@ export async function runScan() {
   }
 
   const repoShas = loadRepoShas();
-  const jsResult = await runLanguageScan(JS_TARGETS, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats);
-  const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats);
-  const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats);
-  const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats);
-  const solidityResult = await runLanguageScan(SOLIDITY_TARGETS, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats);
+  const jsResult = await runLanguageScan(JS_TARGETS, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats, quarantineOverrides);
+  const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats, quarantineOverrides);
+  const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats, quarantineOverrides);
+  const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats, quarantineOverrides);
+  const solidityResult = await runLanguageScan(SOLIDITY_TARGETS, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats, quarantineOverrides);
+  quarantinedTotal += jsResult.quarantinedCount + goResult.quarantinedCount + jvmResult.quarantinedCount + swiftResult.quarantinedCount + solidityResult.quarantinedCount;
 
   // Cross-referência de dependência conhecida vulnerável (OSV.dev) — roda
   // nos mesmos alvos JS/Go/JVM já rastreados (reusa pathPrefixes e
@@ -179,6 +204,10 @@ export async function runScan() {
     const fp = fingerprint(f);
     if (seen.has(fp)) continue;
     seen.add(fp);
+    if (isQuarantined(priorStats, f.type, f.language, { overrides: quarantineOverrides })) {
+      quarantinedTotal++;
+      continue;
+    }
     const historicalConfidence = historicalConfidenceFor(priorStats, f.type, f.language);
     newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
   }
@@ -247,8 +276,18 @@ export async function runScan() {
     fetchErrors,
     newFindingsCount: newFindings.length,
     newlyReviewedCount: verdictResult.newlyReviewed.length,
+    quarantinedCount: quarantinedTotal,
     programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS, ...SOLIDITY_TARGETS].map((t) => t.program))],
   });
+
+  // Regra com 100% de FP em amostra suficiente (ex.: ssrf_risk, 13/13)
+  // para de gerar candidato novo -- ver quarantine.mjs. Recalculado a
+  // partir das MESMAS stats que acabaram de ser salvas por
+  // runVerdictStats acima (incluem o veredito desta rodada), então o
+  // relatório reflete o estado mais atual, não o de antes desta rodada.
+  const currentStats = loadStats(STATS_JSON_PATH);
+  const quarantinedRules = computeQuarantinedRules(currentStats, { overrides: quarantineOverrides });
+  writeFileSync(QUARANTINE_STATUS_PATH, renderQuarantineMarkdown(quarantinedRules, quarantinedTotal), 'utf8');
 
   generateStatusDashboard({
     queuePath: QUEUE_PATH,
@@ -269,7 +308,7 @@ export async function runScan() {
     lastScanAt: scanTimestamp,
   });
 
-  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) + ${depResult.filesChecked} manifesto(s) de dependência checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila (${depResult.findings.length} de dependência conhecida), ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s).`);
+  log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) + ${depResult.filesChecked} manifesto(s) de dependência checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila (${depResult.findings.length} de dependência conhecida), ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s)${quarantinedTotal > 0 ? `, ${quarantinedTotal} suprimido(s) por regra em quarentena (ver quarantine-status.md)` : ''}.`);
 
   // Resumo diário no Telegram — best-effort, nunca derruba o scan real
   // se falhar. Manda todo dia (não só quando acha algo novo) porque essa
@@ -285,8 +324,9 @@ export async function runScan() {
         `${emoji} <b>ZeroToOne — scan diário</b>`,
         `${repoFilesChecked} arquivo(s) + ${contractsChecked} contrato(s) Clarity verificados, ${fetchErrors} erro(s) de busca.`,
         newFindings.length > 0 ? `<b>${newFindings.length} achado(s) NOVO(S)</b> na fila.` : 'Nenhum achado novo hoje.',
+        quarantinedTotal > 0 ? `${quarantinedTotal} suprimido(s) por regra em quarentena.` : null,
         `Situação atual: ${countsLine}`,
-      ].join('\n')
+      ].filter(Boolean).join('\n')
     );
   } catch (err) {
     log(`Aviso: resumo diário do Telegram falhou (não afeta o scan): ${err.message}`);

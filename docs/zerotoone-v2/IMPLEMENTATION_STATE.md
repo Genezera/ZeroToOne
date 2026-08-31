@@ -362,13 +362,41 @@ entradas.
 
 ## Fases 2, 4 e 5
 
-Não iniciadas. Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL,
-benchmark de detector, quarentena do `ssrf_risk`) e Fase 4 (validadores
-web/API/mobile) ficam mais valiosas depois de mais verticais completas
-como a da Fase 3 confirmarem o padrão. Fase 5 (outcomes reais de
-plataforma, calibrador, ranking de alvo) depende de pelo menos um envio
-real acontecer primeiro — e isso agora existe: o achado do Block Open
-Source está pronto pra revisão humana de verdade.
+**Nota (31/08/2026): esta seção ficou desatualizada por 2 dias de
+trabalho real não registrado aqui** — arc-remote-signer foi submetido e
+fechado como duplicata, o achado do Solana avançou até `reproduced_local`
+com PoC real, Block Open Source foi pausado (regras do programa proíbem
+pesquisa assistida por IA), ColdStorageAddressBookModule percorreu o
+ciclo inteiro até ser identificado como duplicata pública, e a Hacker
+API do HackerOne + Telegram foram integrados ao pipeline. Ver
+`research/bugbounty/circle-bbp/NOTES.md`, `block-open-source/NOTES.md`
+e `system/bugbounty-scanner/README.md` pro registro completo — reescrita
+completa desta seção fica pra uma rodada dedicada só a isso, não junto
+de uma mudança de código.
+
+Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL, benchmark de
+detector) e Fase 4 (validadores web/API/mobile) seguem majoritariamente
+não iniciadas — são esforços grandes, ficam mais valiosos depois de mais
+verticais completas confirmarem o padrão. **Exceção parcial, feita
+31/08/2026**: o item específico de quarentena do `ssrf_risk` citado
+aqui (seção 6.11 da auditoria) foi implementado de verdade —
+`quarantine.mjs`, mecanismo genérico (não hardcoded só pro ssrf_risk),
+confirmado ao vivo contra `heuristic-stats.json` real (`ssrf_risk::js`:
+13/13 revisões falso-positivo, 100%, agora suprimido nas 3 vias de
+entrada do scanner). Ver seção própria em
+`system/bugbounty-scanner/README.md`. O resto da Fase 2 (ensemble SARIF
+completo) continua não iniciado — essa foi deliberadamente a fatia
+pequena e barata, não uma tentativa de fechar a fase inteira de uma vez.
+
+Fase 5 (outcomes reais de plataforma, calibrador, ranking de alvo)
+estava bloqueada esperando "pelo menos um envio real acontecer" — isso
+já aconteceu (arc-remote-signer, #3981927, fechado duplicata). Parte da
+Fase 5 já está parcialmente feita também: `h1-api.mjs` sincroniza status
+real de relatório (`sync-report-status`), e `discover-targets.mjs` agora
+prioriza por idade de programa (um dos fatores de ranking de alvo
+citados na auditoria, não todos). O calibrador (usar resultado real de
+plataforma pra ajustar confiança de heurística) continua não
+implementado.
 
 ## Bloqueios externos conhecidos
 

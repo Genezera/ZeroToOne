@@ -340,3 +340,41 @@ que a chamam (scanner local, CLI do agente de nuvem) não usam
 tempo de completar antes do Node encerrar naturalmente. Os resumos
 diário/semanal SÃO `await`ados, já que `runScan()`/`runDiscovery()` já
 são funções assíncronas.
+
+## Quarentena automática de regra ruim (31/08/2026 — Fase 2, item P1)
+
+`quarantine.mjs` — implementa a seção 6.11 da auditoria externa
+(`ZeroToOne_Auditoria_e_Prompt_Mestre.md`). Caso concreto que motivou
+isso e que a própria auditoria já tinha identificado: `ssrf_risk`
+chegou a **13 revisões, 13 falso-positivo, 0% de precisão** e continuava
+gerando candidato novo toda vez que o padrão batia em código de
+terceiro — confirmado ao vivo contra `research/bugbounty/heuristic-stats.json`
+real antes de implementar (não é hipotético).
+
+Usa a MESMA estatística por tipo×linguagem que `verdict-stats.mjs` já
+calculava (nenhuma fonte de dado nova): se uma regra tem amostra
+suficiente (padrão: 5+ revisões) e taxa de falso-positivo no limiar
+(padrão: 100%, mesmo caso do `ssrf_risk`), ela para de gerar candidato
+novo em QUALQUER dos 3 pontos de entrada do scanner (heurística por
+linguagem via `runLanguageScan`, contratos Clarity, e cruzamento de
+dependência via `dep-scanner.mjs`) — nenhum caminho fica de fora.
+
+**Isso é permanente por desenho, não um bug**: uma regra quarentenada
+nunca mais chega na fila, então nunca mais acumula amostra nova pra "se
+corrigir sozinha" sobre o mesmo padrão ruim. A única saída é reescrever
+a heurística de verdade em `heuristics-*.mjs` e então adicionar a
+chave `"tipo::linguagem"` em `research/bugbounty/quarantine-overrides.json`
+(array de string, começa vazio) — isso libera a regra; se ela continuar
+ruim, a estatística das próximas revisões reflete isso e ela pode
+voltar a ser quarentenada. Nunca escondido: toda rodada regenera
+`research/bugbounty/quarantine-status.md` (o que está quarentenado, taxa
+de FP, quantos candidatos foram suprimidos NESTA rodada), e o resumo
+diário do Telegram menciona quando algo é suprimido.
+
+**O que isso NÃO é**: não é o sistema de benchmark/re-certificação
+completo que a seção 6.10 da auditoria descreve (corpus rotulado,
+precision@K, mutation testing) — essa parte continua não iniciada
+(Fase 2 completa exige CodeQL/Semgrep/Slither/OSV-Scanner como adapters
+SARIF, o que é um esforço bem maior). Esta é a fatia pequena e barata
+que resolve o problema concreto já confirmado (regra específica gerando
+100% de ruído), não a arquitetura de ensemble inteira.
