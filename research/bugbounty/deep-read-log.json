@@ -582,7 +582,10 @@
   "nitrojs/nitro": [
     "src/runtime/internal/static.ts",
     "src/build/virtual/public-assets.ts",
-    "src/runtime/internal/storage.ts"
+    "src/runtime/internal/storage.ts",
+    "src/dev/_request.ts",
+    "src/dev/vfs.ts",
+    "src/dev/app.ts"
   ],
   "circlefin/stablecoin-near": [
     "src/requires.rs",

@@ -1786,3 +1786,64 @@ bypass. Transicionados os 6 para `false_positive` (na base local desta
 sessão; a base da sessão cloud que os corroborou originalmente segue
 com seu próprio estado local, por design — ver comentário em
 `.gitignore` sobre `zerotoone.db` ser local a cada ambiente).
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — aplica a refutação dos 6 `mcp.ts` ao estado compartilhado; leitura profunda em `nitrojs/nitro`
+
+`list-pending` global veio vazio. Antes da leitura profunda proativa,
+reconstrui a base local a partir do `queue.jsonl` mais recente de
+`origin/master` (esta sessão havia commitado em cima de um HEAD
+desatualizado; ver histórico) e notei que a nota acima — revisão local
+do usuário citando a documentação oficial da Vercel para fechar a
+pergunta de exploração dos 6 `command_injection_risk` de `mcp.ts` —
+concluía "transicionados para `false_positive`" mas só na base SQLite
+*local daquela sessão*, que não é commitada (`.gitignore`); o
+`queue.jsonl` compartilhado ainda trazia os 6 em `corroborated_static`.
+Repeti a transição de fato no CLI (`update-finding` com o mesmo
+reasoning/fonte + `transition ... false_positive`) pra que ela chegasse
+ao estado compartilhado desta vez — os 6 aparecem agora como
+`false_positive` neste `queue.jsonl`. Nenhuma decisão nova da minha
+parte aqui: só executei a conclusão já validada pelo usuário via CLI,
+que é o único jeito de fazer uma transição de estado persistir.
+
+Leitura profunda proativa: `nitrojs/nitro` tinha só 3 arquivos no log,
+nenhum relacionado a auth/acesso. Busquei por
+`x-forwarded|trust proxy|getRequestIP|remoteAddress` e encontrei
+`src/dev/_request.ts::isLocalDevRequest` — gate explícito de IP usado
+pra restringir dois endpoints de debug do dev server (`/_vfs/**` e
+`/_nitro/tasks/**`, este último documentado no próprio código como
+executando "server tasks with caller-supplied payload").
+
+Rastreei a cadeia completa (3 arquivos, todos novos):
+- `src/dev/_request.ts` — `isLocalDevRequest` só confia no header
+  `X-Forwarded-For` quando uma heurística (`isUnixSocket`) detecta que
+  a conexão TCP real não tem `socket.remoteAddress`/`remotePort` (i.e.,
+  o dev server está atrás de um Unix domain socket, cenário clássico de
+  reverse proxy no mesmo host). Em qualquer conexão TCP normal (o modo
+  default do `nitro dev`, que faz bind em todas as interfaces),
+  `remoteAddress` vem sempre preenchido pelo Node, `isUnixSocket` fica
+  `false`, e o código passa `xForwardedFor: false` pro `getRequestIP` —
+  ou seja, ignora o header e usa o endereço real do socket, não
+  spoofável por um atacante remoto via header.
+- `src/dev/app.ts` — confirmei que `/_vfs/**` e `/_nitro/tasks/**` são
+  registrados nesta mesma camada H3 que recebe o evento com o socket
+  real (não atrás de um proxy interno via worker — o roteamento pro
+  worker via `RunnerManager.fetch` só acontece no catch-all, depois
+  desses dois gates), então o `isLocalDevRequest` desta camada vê a
+  conexão de verdade, não uma reencaminhada.
+- `src/dev/vfs.ts` — endpoint gateado só expõe `nitro.vfs` (arquivos
+  virtuais já construídos, `id` precisa existir em `nitro.vfs.has(id)`),
+  não o filesystem real — mesmo se o gate falhasse, não seria path
+  traversal de disco.
+
+Não encontrei bypass: o único jeito de fazer `isUnixSocket` virar
+`true` remotamente exigiria já estar na posição de proxy de confiança
+(falando com o dev server via Unix socket), não um atacante de rede
+externo falando TCP normal. Padrão correto e deliberado (comentário no
+próprio código já documenta a motivação e o raciocínio de ameaça) — bom
+sinal de segurança pensada, mesmo em ferramenta só de dev. Sem achado.
+
+`deep-read-log.json` atualizado (`nitrojs/nitro` 3→6: `_request.ts`,
+`vfs.ts`, `app.ts`).
+
+`Vercel Open Source` fila agora: 0 `candidate`, 0 `corroborated_static`
+(era 6).
