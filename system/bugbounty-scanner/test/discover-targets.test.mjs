@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseGithubUrl, extractGithubCandidates, diffAgainstKnownTargets, prioritizeCandidates } from '../discover-targets.mjs';
+import { parseGithubUrl, extractGithubCandidates, diffAgainstKnownTargets, prioritizeCandidates, distinctHackerOneHandles, attachProgramAge, mapWithConcurrency } from '../discover-targets.mjs';
 
 test('parseGithubUrl extrai owner/repo de URL simples', () => {
   assert.deepEqual(parseGithubUrl('https://github.com/vercel/flags'), { owner: 'vercel', repo: 'flags' });
@@ -100,4 +100,70 @@ test('prioritizeCandidates é case-insensitive na chave owner/repo', () => {
   // Já visto (mesmo com case diferente) -- com só 1 candidato "nunca visto"
   // vazio, ele cai na lista alreadySeen, não deveria estourar nem duplicar.
   assert.equal(result.length, 1);
+});
+
+test('prioritizeCandidates, entre os nunca-vistos, coloca programa mais novo (newestProgramStartedAt mais recente) primeiro', () => {
+  const candidates = [
+    { owner: 'a', repo: 'old-program', programs: [], newestProgramStartedAt: '2020-01-01T00:00:00Z' },
+    { owner: 'b', repo: 'new-program', programs: [], newestProgramStartedAt: '2026-06-01T00:00:00Z' },
+    { owner: 'c', repo: 'no-age-data', programs: [] },
+  ];
+  const result = prioritizeCandidates(candidates, {});
+  // programa mais novo primeiro, depois o mais antigo, e quem não tem
+  // dado de idade nenhuma vai por último dentro do grupo "nunca visto"
+  // (desconhecido não deveria furar fila na frente de quem sabemos ser novo).
+  assert.deepEqual(result.map((c) => c.repo), ['new-program', 'old-program', 'no-age-data']);
+});
+
+test('distinctHackerOneHandles extrai handles únicos, ignora Bugcrowd (sem handle consultável)', () => {
+  const candidates = [
+    { owner: 'a', repo: 'x', programs: [{ platform: 'HackerOne', handle: 'circle-bbp' }, { platform: 'HackerOne', handle: 'vercel-open-source' }] },
+    { owner: 'b', repo: 'y', programs: [{ platform: 'HackerOne', handle: 'circle-bbp' }] },
+    { owner: 'c', repo: 'z', programs: [{ platform: 'Bugcrowd', handle: undefined }] },
+  ];
+  const handles = distinctHackerOneHandles(candidates);
+  assert.deepEqual([...handles].sort(), ['circle-bbp', 'vercel-open-source']);
+});
+
+test('attachProgramAge anexa a data MAIS RECENTE entre os programas HackerOne do candidato', () => {
+  const candidates = [
+    {
+      owner: 'a', repo: 'multi-program',
+      programs: [
+        { platform: 'HackerOne', handle: 'old-one' },
+        { platform: 'HackerOne', handle: 'new-one' },
+      ],
+    },
+    { owner: 'b', repo: 'no-match', programs: [{ platform: 'HackerOne', handle: 'unknown-handle' }] },
+  ];
+  const ageByHandle = { 'old-one': '2020-01-01T00:00:00Z', 'new-one': '2026-06-01T00:00:00Z' };
+  const result = attachProgramAge(candidates, ageByHandle);
+  assert.equal(result[0].newestProgramStartedAt, '2026-06-01T00:00:00Z');
+  assert.equal(result[1].newestProgramStartedAt, undefined);
+});
+
+test('mapWithConcurrency preserva a ordem dos resultados mesmo com itens terminando fora de ordem', async () => {
+  const items = [30, 10, 20];
+  const result = await mapWithConcurrency(items, 3, async (ms) => {
+    await new Promise((r) => setTimeout(r, ms));
+    return ms;
+  });
+  assert.deepEqual(result, [30, 10, 20]);
+});
+
+test('mapWithConcurrency nunca roda mais que "concurrency" chamadas ao mesmo tempo', async () => {
+  let inFlight = 0;
+  let maxInFlight = 0;
+  await mapWithConcurrency([1, 2, 3, 4, 5, 6, 7, 8], 2, async () => {
+    inFlight++;
+    maxInFlight = Math.max(maxInFlight, inFlight);
+    await new Promise((r) => setTimeout(r, 5));
+    inFlight--;
+  });
+  assert.ok(maxInFlight <= 2, `esperava no máximo 2 em voo, viu ${maxInFlight}`);
+});
+
+test('mapWithConcurrency processa todo mundo mesmo quando concurrency > items.length', async () => {
+  const result = await mapWithConcurrency([1, 2], 10, async (x) => x * 2);
+  assert.deepEqual(result, [2, 4]);
 });

@@ -12,7 +12,17 @@ import { JS_TARGETS } from './targets-js.mjs';
 import { GO_TARGETS } from './targets-go.mjs';
 import { JVM_TARGETS } from './targets-jvm.mjs';
 import { SWIFT_TARGETS } from './targets-swift.mjs';
+import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
+import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
+
+// TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
+// usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
+// diffAgainstKnownTargets não teria o que comparar, incluir seria
+// inofensivo mas inútil. SOLIDITY_TARGETS, por outro lado, É
+// owner/repo e faltava aqui até 31/08/2026 -- bug real: os repos
+// Solidity já rastreados (evm-cctp-contracts etc.) apareciam como
+// "candidato novo" toda semana, gastando orçamento de metadado à toa.
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -37,7 +47,7 @@ export async function runDiscovery() {
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const seenMap = loadSeenMap();
-  const result = await runTargetDiscovery([JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS], seenMap);
+  const result = await runTargetDiscovery([JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS, SOLIDITY_TARGETS], seenMap, getProgram);
 
   const checkedAt = new Date().toISOString();
   for (const key of result.checkedKeys) {
@@ -54,9 +64,11 @@ export async function runDiscovery() {
         newCandidatesFound: result.newCandidatesFound,
         truncatedCount: result.truncatedCount,
         neverSeenRemaining: result.neverSeenRemaining,
+        programsWithAgeFound: result.programsWithAgeFound,
+        programAgeSkippedReason: result.programAgeSkippedReason,
         note:
           result.truncatedCount > 0
-            ? `AVISO: ${result.truncatedCount} candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — priorizados por rotação (quem nunca foi checado vem primeiro, ver discovery-metadata-seen.json); ${result.neverSeenRemaining} desses ainda nunca foram checados nenhuma vez, aparecem primeiro na próxima rodada.`
+            ? `AVISO: ${result.truncatedCount} candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — priorizados por rotação (quem nunca foi checado vem primeiro, programa mais novo primeiro dentro desses, ver discovery-metadata-seen.json); ${result.neverSeenRemaining} desses ainda nunca foram checados nenhuma vez, aparecem primeiro na próxima rodada.`
             : 'Todo candidato novo encontrado teve metadado buscado nesta rodada.',
         discovered: result.discovered,
       },
@@ -73,9 +85,17 @@ export async function runDiscovery() {
     truncatedCount: result.truncatedCount,
     neverSeenRemaining: result.neverSeenRemaining,
     metadataErrors: result.metadataErrors,
+    programsWithAgeFound: result.programsWithAgeFound,
+    programAgeErrors: result.programAgeErrors,
+    programAgeSkippedReason: result.programAgeSkippedReason,
   });
 
   log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} novo(s) (não rastreado ainda), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
+  if (result.programAgeSkippedReason) {
+    log(`AVISO: idade de programa (sinal de concorrência) não pôde ser buscada nesta rodada: ${result.programAgeSkippedReason}`);
+  } else {
+    log(`Idade de programa buscada com sucesso pra ${result.programsWithAgeFound} programa(s) HackerOne distinto(s) — usada pra priorizar candidato de programa mais novo primeiro.`);
+  }
 
   try {
     execSync('git add -A', { cwd: REPO_ROOT });

@@ -197,6 +197,37 @@ testada) + `research/bugbounty/discovery-metadata-seen.json`
 checado vem primeiro; só depois de cobrir todo mundo genuinamente novo
 o orçamento sobrando passa a refrescar as entradas mais antigas.
 
+**Sinal de "programa novo" (31/08/2026)**: `GET /hackers/programs/{handle}`
+da Hacker API devolve `started_accepting_at` — a data real de
+lançamento do programa (confirmado ao vivo: Circle BBP lançou em
+28/05/2024). Dentro do grupo "nunca visto" de `prioritizeCandidates`,
+quem está no programa mais recentemente lançado vem primeiro — a ideia
+é simples: programa mais novo tende a ter menos pesquisador já
+escrutinando, é onde a chance de achar algo genuinamente inédito é
+maior (aprendido do jeito difícil: 2 achados nesta missão já se
+revelaram duplicata pública em programas maduros). Busca a idade de
+todo handle HackerOne distinto encontrado na rodada (não só os 30 que
+vão receber metadado de repo), com concorrência limitada a 5 chamadas
+simultâneas via `mapWithConcurrency()` — sequencial media ~3s por
+handle e passava de 1 minuto só nessa etapa com ~23 handles reais;
+concorrente cai pra ~16s no total. Melhor esforço sempre: se a
+credencial da Hacker API não estiver configurada no ambiente que roda
+isso, a rodada continua normalmente sem o sinal de idade, registrando
+o motivo (`programAgeSkippedReason`) em vez de falhar a rodada inteira.
+
+**Dois bugs reais encontrados construindo isso, ambos corrigidos**: (1)
+`getProgram` fazia `body.data` como todo outro endpoint deste cliente,
+mas `GET /hackers/programs/{handle}` é o único que devolve o recurso
+direto na raiz (`{id, type, attributes}`, sem envelope `data`) —
+confirmado só depois de ver o corpo bruto da resposta, já que o erro
+era silencioso (`toProgramSummary(undefined)` devolvia `null` sem
+lançar exceção nenhuma). (2) `discovery-runner.mjs` nunca importava
+`SOLIDITY_TARGETS` na lista de "já rastreado" passada pra
+`diffAgainstKnownTargets` — os 5 repositórios Solidity já cobertos
+apareciam como "candidato novo" toda semana, gastando orçamento de
+metadado à toa (confirmado ao vivo: 194 candidatos "novos" viravam 189
+depois da correção).
+
 ## Digest de segurança (mesma tarefa semanal)
 `cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
 Advisories (GHSA, API pública, sem conta) **só dos pacotes que o

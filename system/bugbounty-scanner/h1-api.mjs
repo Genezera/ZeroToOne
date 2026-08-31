@@ -91,8 +91,30 @@ export async function getStructuredScope(programHandle) {
   }));
 }
 
-/** GET /hackers/programs/{handle} — metadados do programa (pra achar policy/handle real). */
+/** GET /hackers/programs/{handle} — metadados do programa, incluindo
+ * `started_accepting_at` (data real de lançamento do programa — sinal de
+ * maturidade/concorrência: programa mais novo tende a estar menos
+ * escrutinado por outros pesquisadores). Confirmado ao vivo 31/08/2026.
+ * ATENÇÃO: diferente de todo outro endpoint deste arquivo, este devolve o
+ * recurso direto na raiz (`{id, type, attributes}`), SEM envelope
+ * `{"data": {...}}` — confirmado com o corpo bruto da resposta depois de
+ * `body.data` ter devolvido `undefined` silenciosamente numa primeira
+ * versão. Não é um erro deste cliente, é a API real sendo inconsistente
+ * entre endpoints. */
 export async function getProgram(programHandle) {
   const body = await h1Get(`/hackers/programs/${programHandle}`);
-  return body.data;
+  return toProgramSummary(body);
+}
+
+function toProgramSummary(item) {
+  if (!item) return null;
+  return {
+    handle: item.attributes?.handle,
+    name: item.attributes?.name,
+    state: item.attributes?.state,
+    submissionState: item.attributes?.submission_state,
+    triageActive: item.attributes?.triage_active,
+    offersBounties: item.attributes?.offers_bounties,
+    startedAcceptingAt: item.attributes?.started_accepting_at || null,
+  };
 }
