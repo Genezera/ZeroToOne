@@ -1,89 +1,107 @@
-# ⚠️ RASCUNHO — REVISÃO HUMANA OBRIGATÓRIA ANTES DE ENVIAR
+# 🛑 DO NOT SUBMIT — program rules prohibit AI-assisted research
 
-Este relatório foi gerado por IA a partir de análise de código-fonte
-público. **Não foi enviado a nenhuma plataforma.** Antes de copiar/colar e
-enviar, confira:
+**Block's Bugcrowd program rules (`bugcrowd.com/engagements/blockopensource`,
+Rules of Engagement) state, verbatim:**
 
-- [ ] Escopo confirmado — o ativo afetado está no escopo do programa AGORA
-      (escopo pode mudar; reconfirme na página do programa antes de enviar)
-- [ ] Categoria confirmada — bate com uma categoria que o programa
-      declara como elegível para recompensa (não é metadado/cosmético)
-- [ ] Evidência conferida — os trechos de código abaixo realmente
-      existem no arquivo/linha citados (não foi paráfrase/alucinação)
-- [ ] Não é duplicata — checado contra relatórios já enviados por você
-      a este programa
+> "Do not use ChatGPT, Claude, DeepSeek, Google Gemini or any AI tools
+> during your research. You may not disclose any information within
+> these platforms."
 
-**Estado no sistema: `human_ready`** (grau de evidência E3 — reprodução
-determinística local real, ver seção de PoC abaixo). Checagem de
-duplicata feita e refeita 2x contra advisories/issues públicos do
-`square/wire` (nenhum cobrindo este caminho específico — ver seção
-"Cadeia de chamada confirmada", itens de atualização). **Confirme
-manualmente a elegibilidade de recompensa na página real do Bugcrowd
-antes de enviar** — o dataset usado pra escopo não expõe essa informação
-por ativo para este programa (confidence "low", diferente dos achados
-HackerOne). Scope snapshot confirmado válido em 30/08/2026 (expira
-13/09/2026, reconfirme se enviar depois dessa data).
+This entire finding was researched and written with AI assistance
+(Claude). Submitting it would directly violate that rule — and per other
+clauses of the same program, rule violations can lead to "point
+reduction or program expulsion." **Do not submit this report to Block
+Open Source under the program's current rules.** Kept here only as a
+record of a technically real, independently re-verified finding, in case
+the rule changes in the future or you choose to independently
+re-research and write it up yourself without AI involvement.
 
 ---
 
-## Título
-Path traversal / leitura de arquivo arbitrário na resolução de `import` de arquivos `.proto` em `wire-schema` (`DirectoryRoot.resolve`), via caminho absoluto ou `../` no próprio `.proto` compilado
+# ⚠️ REVIEW CHECKLIST (not that it matters — see the notice above: do not submit this one)
 
-## Programa / Plataforma
+Everything below the next `---` line is the technical write-up. Before
+copying/pasting and submitting ANY report drafted this way, check:
+
+- [ ] Scope confirmed — the affected asset is in the program's scope
+      RIGHT NOW (scope can change; re-confirm on the program page before
+      submitting)
+- [ ] Category confirmed — matches a category the program declares
+      eligible for a reward (not metadata/cosmetic)
+- [ ] Evidence checked — the code excerpts below really exist at the
+      cited file/lines (not paraphrase/hallucination)
+- [ ] Not a duplicate — checked against reports you've already
+      submitted to this program
+
+Duplicate check performed twice against public `square/wire` advisories/
+issues (none covering this specific path — see "Confirmed call chain"
+section). Reward eligibility for this specific file was never confirmed
+on the real Bugcrowd page — moot now given the notice above, but note it
+if this is ever re-researched independently.
+
+---
+
+## Title
+Path traversal / arbitrary file read while resolving `.proto` file
+`import` statements in `wire-schema` (`DirectoryRoot.resolve`), via an
+absolute path or `../` inside the `.proto` file being compiled
+
+## Program / Platform
 Block Open Source via Bugcrowd — https://bugcrowd.com/engagements/blockopensource
 
-## Categoria / Severidade declarada
-Path traversal / leitura de arquivo fora do diretório pretendido (CWE-22).
-Confirmada contra `research/bugbounty/block-open-source/NOTES.md`: o
-programa cobre `square/wire` (Kotlin/Java/Swift, módulo runtime + schema/
-codegen do Protocol Buffers), e o critério da missão trata qualquer achado
-deste tipo em Block/Vercel como "critical de segurança de verdade" — não é
-metadado, não é cosmético, não é código de teste (o código afetado é
-produção: o próprio motor de carregamento de esquema usado por qualquer
-consumidor de `wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin`).
+## Category / Declared severity
+Path traversal / file read outside the intended directory (CWE-22).
+Confirmed against `research/bugbounty/block-open-source/NOTES.md`: the
+program covers `square/wire` (Kotlin/Java/Swift, runtime + schema/codegen
+module for Protocol Buffers), and this effort's own criteria treat any
+finding of this type in Block/Vercel as "genuinely critical security" —
+not metadata, not cosmetic, not test code (the affected code is
+production: the schema-loading engine itself, used by any consumer of
+`wire-compiler`/`wire-gradle-plugin`/`wire-maven-plugin`).
 
-## Ativo afetado
-- Repositório: `square/wire`
-- Arquivo: `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt`
-- Linhas: 129-137 (`DirectoryRoot.resolve`)
-- Também relevante (cadeia de chamada): `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/CommonSchemaLoader.kt:135-181`, `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Linker.kt:91-100`, `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/ProtoParser.kt:117-129`, `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/SyntaxReader.kt:79-104`, `wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/Roots.kt:61-72`
-- Commit/branch no momento da análise: `master` @ `d7afcda569199f38826b6e7c90a93c6215167440` (verificar SHA atual antes de enviar — o código pode ter mudado desde a varredura)
+## Affected asset
+- Repository: `square/wire`
+- File: `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt`
+- Lines: 129-137 (`DirectoryRoot.resolve`)
+- Also relevant (call chain): `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/CommonSchemaLoader.kt:135-181`, `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Linker.kt:91-100`, `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/ProtoParser.kt:117-129`, `wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/internal/parser/SyntaxReader.kt:79-104`, `wire-schema/src/jvmMain/kotlin/com/squareup/wire/schema/Roots.kt:61-72`
+- Commit/branch at time of analysis: `master` @ `d7afcda569199f38826b6e7c90a93c6215167440` — re-confirmed live on 2026-08-31: this is still the exact current `master` commit, and the vulnerable code in `Root.kt` is byte-for-byte unchanged.
 
-## Resumo
-`wire-schema` resolve toda declaração `import "X";` dentro de um arquivo
-`.proto` chamando `DirectoryRoot.resolve(import)`, que monta o caminho
-físico como `rootDirectory / import` e só verifica se o arquivo existe —
-sem checar que o resultado continua dentro de `rootDirectory`. A string
-`import` vem, sem nenhuma sanitização em nenhum ponto do pipeline, direto
-do texto entre aspas do `.proto` sendo compilado. Isso permite que um
-arquivo `.proto` malicioso — por exemplo, uma dependência de terceiro
-resolvida via `protoPath` (biblioteca de schema de um vendor/parceiro, um
-pacote de terceiro, um submódulo) — force o Wire (CLI, plugin Gradle ou
-Maven) a ler um arquivo arbitrário do disco da máquina de build, fora do
-diretório de proto pretendido, usando um `import` com caminho absoluto
-(`import "/etc/passwd";`) ou com travessia relativa
+## Summary
+`wire-schema` resolves every `import "X";` declaration inside a `.proto`
+file by calling `DirectoryRoot.resolve(import)`, which builds the
+physical path as `rootDirectory / import` and only checks whether the
+file exists — without checking that the result stays inside
+`rootDirectory`. The `import` string comes, with no sanitization at any
+point in the pipeline, directly from the quoted text in the `.proto`
+being compiled. This lets a malicious `.proto` file — for example, a
+third-party dependency resolved via `protoPath` (a vendor/partner schema
+library, a third-party package, a submodule) — force Wire (CLI, Gradle
+plugin, or Maven plugin) to read an arbitrary file from the build
+machine's disk, outside the intended proto directory, using an
+absolute-path import (`import "/etc/passwd";`) or relative traversal
 (`import "../../../../etc/passwd";`).
 
-## Cadeia de chamada confirmada
+## Confirmed call chain
 1. `wire-schema/.../internal/parser/ProtoParser.kt:117-129` —
-   `readDeclaration()` trata `label == "import"` fazendo
+   `readDeclaration()` handles `label == "import"` by doing
    `imports.add(reader.readQuotedString())`.
 2. `wire-schema/.../internal/parser/SyntaxReader.kt:79-104` —
-   `readQuotedString()` devolve literalmente qualquer sequência de
-   caracteres entre aspas (só interpreta escapes tipo `\n`/`\t`/`\xNN`);
-   não rejeita `/`, `..`, nem barra inicial.
-3. `wire-schema/.../ProtoFile.kt:26` — o valor bruto vira
-   `ProtoFile.imports: List<String>`, repassado sem validação adicional em
-   `ProtoFile.get()`.
-4. `wire-schema/.../Linker.kt:91-100` (`getFileLinker`) chama
-   `loader.withErrors(errors).load(path)` com esse `importPath` bruto —
-   isso acontece para QUALQUER import de um tipo que seja efetivamente
-   referenciado por uma mensagem/serviço do `.proto` (fluxo normal de
-   linkagem, não um modo opcional/exótico).
-5. `wire-schema/.../internal/CommonSchemaLoader.kt:135-161` (`load`) itera
-   `protoPathRoots` chamando `protoPathRoot.resolve(path)` em cada raiz
-   configurada (`protoPath`, onde ficam dependências/schemas de terceiro).
-6. `wire-schema/.../Root.kt:129-137` (`DirectoryRoot.resolve`, o sink):
+   `readQuotedString()` returns literally any character sequence between
+   quotes (only interprets escapes like `\n`/`\t`/`\xNN`); it does not
+   reject `/`, `..`, or a leading slash.
+3. `wire-schema/.../ProtoFile.kt:26` — the raw value becomes
+   `ProtoFile.imports: List<String>`, passed through with no further
+   validation in `ProtoFile.get()`.
+4. `wire-schema/.../Linker.kt:91-100` (`getFileLinker`) calls
+   `loader.withErrors(errors).load(path)` with that raw `importPath` —
+   this happens for ANY import of a type that is actually referenced by
+   a message/service in the `.proto` (the normal linking flow, not an
+   optional/exotic mode).
+5. `wire-schema/.../internal/CommonSchemaLoader.kt:135-161` (`load`)
+   iterates `protoPathRoots`, calling `protoPathRoot.resolve(path)` on
+   each configured root (`protoPath`, where third-party
+   dependency/vendor schemas live).
+6. `wire-schema/.../Root.kt:129-137` (`DirectoryRoot.resolve`, the sink):
    ```kotlin
    override fun resolve(import: String): ProtoFilePath? {
      val resolved = rootDirectory / import
@@ -95,73 +113,69 @@ diretório de proto pretendido, usando um `import` com caminho absoluto
      )
    }
    ```
-   Nenhuma checagem de que `resolved` está contido em `rootDirectory`.
-7. Se `fileSystem.exists(resolved)` for verdadeiro, o arquivo é lido por
-   completo: `wire-schema/.../jvmMain/.../Roots.kt:61-72`
-   (`ProtoFilePath.parse()`) faz
-   `fileSystem.read(path) { readString(charset) }` seguido de
+   No check that `resolved` is contained within `rootDirectory`.
+7. If `fileSystem.exists(resolved)` is true, the file is read in full:
+   `wire-schema/.../jvmMain/.../Roots.kt:61-72` (`ProtoFilePath.parse()`)
+   does `fileSystem.read(path) { readString(charset) }` followed by
    `ProtoParser.parse(location, data)`.
-8. Confirmei a semântica exata do operador `rootDirectory / import` na
-   biblioteca `square/okio` (dependência do próprio Wire para todo
-   `FileSystem`/`Path`), clonando `square/okio` publicamente:
+8. Confirmed the exact semantics of the `rootDirectory / import` operator
+   in the `square/okio` library (a dependency of Wire itself for every
+   `FileSystem`/`Path`), by cloning `square/okio` publicly:
    `okio/src/commonMain/kotlin/okio/internal/Path.kt:206-218`
-   (`commonResolve`, implementação real por trás do operador `/`):
+   (`commonResolve`, the real implementation behind the `/` operator):
    ```kotlin
    internal fun Path.commonResolve(child: Path, normalize: Boolean): Path {
      if (child.isAbsolute || child.volumeLetter != null) return child
-     // ... senão, só concatena bytes crus e chama buffer.toPath(normalize = normalize)
+     // ... otherwise, just concatenates raw bytes and calls buffer.toPath(normalize = normalize)
    }
    ```
-   e `okio/src/commonMain/kotlin/okio/Path.kt:202` documenta que o
-   operador `/` chama `resolve(child, normalize = false)` por padrão — ou
-   seja: (a) se `import` for um caminho absoluto, o `rootDirectory` é
-   **totalmente ignorado** e o resultado é o caminho absoluto puro; (b)
-   se `import` tiver segmentos `..`, eles **não são colapsados** pelo
-   Okio (`normalize=false`), mas continuam presentes de forma literal no
-   `Path` resultante — e quando esse `Path` chega em
-   `fileSystem.exists`/`fileSystem.read` (implementação real via
-   `java.nio.file` na JVM), o sistema operacional resolve `..` do jeito
-   normal, permitindo escapar de `rootDirectory` de qualquer forma.
-9. `grep -rn` por qualquer validação de `import`/`isAbsolute`/`..` em todo
-   `wire-schema/src/commonMain` e `jvmMain` (dentro do escopo do alvo) não
-   encontrou nenhuma sanitização em nenhum ponto da cadeia acima.
+   and `okio/src/commonMain/kotlin/okio/Path.kt:202` documents that the
+   `/` operator calls `resolve(child, normalize = false)` by default —
+   i.e.: (a) if `import` is an absolute path, `rootDirectory` is
+   **completely ignored** and the result is the raw absolute path; (b)
+   if `import` has `..` segments, they are **not collapsed** by Okio
+   (`normalize=false`), but remain literally present in the resulting
+   `Path` — and when that `Path` reaches
+   `fileSystem.exists`/`fileSystem.read` (implemented via `java.nio.file`
+   on the JVM), the operating system resolves `..` normally, allowing an
+   escape from `rootDirectory` either way.
+9. A `grep -rn` for any validation of `import`/`isAbsolute`/`..` across
+   all of `wire-schema/src/commonMain` and `jvmMain` (within the target's
+   scope) found no sanitization anywhere in the chain above.
 
-## Passo a passo de reprodução
-1. Um consumidor do Wire configura `protoPath` apontando para um
-   diretório real no disco (ex.: onde ficam schemas `.proto` de uma
-   dependência/vendor/parceiro) — uso documentado e comum do Wire para
-   compilar tipos que vêm de uma biblioteca `.proto` de terceiros.
-2. Um arquivo `.proto` compilado (seja no `sourcePath` do próprio
-   consumidor, seja transitivamente importado a partir de um schema de
-   terceiro nesse `protoPath`) contém uma declaração de import maliciosa,
-   por exemplo:
+## Steps to reproduce
+1. A Wire consumer configures `protoPath` pointing to a real directory on
+   disk (e.g., where a dependency/vendor/partner's `.proto` schemas
+   live) — a documented and common use of Wire for compiling types that
+   come from a third-party `.proto` library.
+2. A compiled `.proto` file (either in the consumer's own `sourcePath`,
+   or transitively imported from a third-party schema in that
+   `protoPath`) contains a malicious import declaration, for example:
    ```proto
    syntax = "proto3";
    import "/etc/passwd";
    message Foo {
-     // usa algum tipo do arquivo importado, ou nenhum — a resolução do
-     // import acontece de qualquer forma quando o tipo é referenciado
+     // uses some type from the imported file, or none at all — import
+     // resolution happens regardless, whenever the type is referenced
    }
    ```
-   (ou, para travessia relativa, `import "../../../../etc/passwd";`).
-3. Ao rodar `wire-compiler` (ou o plugin Gradle/Maven equivalente) sobre
-   esse `.proto`, o Linker resolve o import através de
-   `CommonSchemaLoader.load` → `DirectoryRoot.resolve`, que localiza e lê
-   o arquivo alvo fora do `protoPath` pretendido.
-4. Se o conteúdo do arquivo alvo não for uma sintaxe `.proto` válida, a
-   compilação falha com uma mensagem de erro do tipo
-   `IllegalStateException("Syntax error in $location: $message")`
-   (`SyntaxReader.kt:437-440`), onde `$message` tipicamente inclui um
-   fragmento/token lido do próprio arquivo (ex.: `unexpected label: root`
-   para a primeira palavra de `/etc/passwd`) — ou seja, mesmo uma falha de
-   parse pode vazar um fragmento do conteúdo do arquivo lido no log de
-   build/CI. Se o arquivo alvo for, coincidentemente, um `.proto` válido
-   (ex.: outro schema interno/privado presente na máquina de build, fora
-   do diretório que deveria estar em escopo), seu conteúdo integral
-   (tipos, campos, comentários) é incorporado ao grafo de schema
-   compilado.
+   (or, for relative traversal, `import "../../../../etc/passwd";`).
+3. Running `wire-compiler` (or the equivalent Gradle/Maven plugin) over
+   that `.proto` resolves the import through
+   `CommonSchemaLoader.load` → `DirectoryRoot.resolve`, which locates and
+   reads the target file outside the intended `protoPath`.
+4. If the target file's content isn't valid `.proto` syntax, compilation
+   fails with an `IllegalStateException("Syntax error in $location:
+   $message")` (`SyntaxReader.kt:437-440`), where `$message` typically
+   includes a fragment/token read from the file itself (e.g., `unexpected
+   label: root` for the first word of `/etc/passwd`) — meaning even a
+   parse failure can leak a fragment of the read file's content into
+   build/CI logs. If the target file happens to be a valid `.proto` (e.g.
+   another internal/private schema present on the build machine, outside
+   the directory that should be in scope), its full content (types,
+   fields, comments) is incorporated into the compiled schema graph.
 
-## Evidência
+## Evidence
 ```kotlin
 // wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt:129-137
 override fun resolve(import: String): ProtoFilePath? {
@@ -179,65 +193,64 @@ override fun resolve(import: String): ProtoFilePath? {
 label == "import" && context.permitsImport() -> {
   val peeked = reader.peekChar()
   if (peeked == '"' || peeked == '\'') {
-    imports.add(reader.readQuotedString())   // <- sem sanitização
+    imports.add(reader.readQuotedString())   // <- no sanitization
   } else { ... }
   reader.require(';')
   null
 }
 ```
 ```kotlin
-// okio/src/commonMain/kotlin/okio/internal/Path.kt:206-218 (square/okio, dependência do Wire)
+// okio/src/commonMain/kotlin/okio/internal/Path.kt:206-218 (square/okio, a Wire dependency)
 internal fun Path.commonResolve(child: Path, normalize: Boolean): Path {
-  if (child.isAbsolute || child.volumeLetter != null) return child   // <- bypass total do rootDirectory
+  if (child.isAbsolute || child.volumeLetter != null) return child   // <- total bypass of rootDirectory
   val slash = slash ?: child.slash ?: Path.DIRECTORY_SEPARATOR.toSlash()
   val buffer = Buffer()
   buffer.write(bytes)
   if (buffer.size > 0) buffer.write(slash)
-  buffer.write(child.bytes)                                          // <- ".." não colapsado (normalize=false por padrão no operador `/`)
+  buffer.write(child.bytes)                                          // <- ".." not collapsed (normalize=false by default on the `/` operator)
   return buffer.toPath(normalize = normalize)
 }
 ```
 
-## Impacto
-Um `.proto` malicioso, compilado por qualquer consumidor do Wire que
-resolva imports contra um diretório real em disco (uso normal via
-`protoPath`, tipicamente usado para schemas de dependências/terceiros),
-consegue: (a) confirmar a existência de arquivos arbitrários no host de
-build; (b) ler o conteúdo completo de qualquer arquivo legível pelo
-processo de build fora do diretório de proto pretendido, incluindo outros
-schemas `.proto` privados presentes na mesma máquina (ex.: em um monorepo
-com múltiplos serviços, ou em CI com múltiplos checkouts) — esse conteúdo
-pode acabar incorporado ao grafo de tipos gerado, ou vazar parcialmente em
-mensagens de erro de parse (que tipicamente vão para logs de build/CI,
-por vezes públicos); (c) na pior hipótese, dependendo do que existe no
-host de build (arquivos de configuração, credenciais versionadas por
-engano em outro diretório do checkout, etc.), uma leitura de arquivo
-arbitrário é uma primitiva de alto impacto em qualquer pipeline de
-build/CI. O vetor de entrada mais realista é uma dependência de schema de
-terceiro (vendor, parceiro, pacote de schema compartilhado) cujo conteúdo
-não é fully trusted pelo time que roda o Wire — cenário coberto pelo
-próprio design do `protoPath` do Wire (compilar tipos que vêm de uma
-biblioteca `.proto` que você não escreveu). **Confirmado na documentação
-oficial do Wire** (`docs/wire_compiler.md`, seção "Proto Path for
-Libraries"): o exemplo canônico de uso do `protoPath` é
-`srcJar 'com.example:countries:1.0.0'` — uma **coordenada Maven**. Ou
-seja, popular `protoPath` com um `.jar` resolvido de um repositório
-Maven (Maven Central ou um artifact repo privado) é o jeito
-DOCUMENTADO e padrão de usar essa feature — não uma configuração exótica
-que só valeria em teoria. Qualquer projeto seguindo esse exemplo oficial
-está, por desenho, compilando `.proto` que chegaram via uma dependência
-de terceiro, com a mesma superfície de confiança de qualquer dependência
-Maven transitiva.
+## Impact
+A malicious `.proto`, compiled by any Wire consumer who resolves imports
+against a real on-disk directory (normal usage via `protoPath`,
+typically used for dependency/third-party schemas), can: (a) confirm the
+existence of arbitrary files on the build host; (b) read the full
+content of any file readable by the build process outside the intended
+proto directory, including other private `.proto` schemas present on the
+same machine (e.g., in a monorepo with multiple services, or in CI with
+multiple checkouts) — that content can end up incorporated into the
+generated type graph, or partially leak in parse-error messages
+(typically sent to build/CI logs, sometimes public); (c) in the worst
+case, depending on what exists on the build host (config files,
+credentials accidentally committed elsewhere in the checkout, etc.), an
+arbitrary file read is a high-impact primitive in any build/CI pipeline.
+The most realistic entry vector is a third-party schema dependency
+(vendor, partner, shared schema package) whose content isn't fully
+trusted by the team running Wire — a scenario covered by `protoPath`'s
+own design (compiling types from a `.proto` library you didn't write).
+**Confirmed in Wire's official documentation**
+(`docs/wire_compiler.md`, "Proto Path for Libraries" section): the
+canonical `protoPath` usage example is `srcJar
+'com.example:countries:1.0.0'` — a **Maven coordinate**. In other words,
+populating `protoPath` with a `.jar` resolved from a Maven repository
+(Maven Central or a private artifact repo) is the DOCUMENTED, standard
+way to use this feature — not an exotic configuration that would only
+matter in theory. Any project following that official example is, by
+design, compiling `.proto` files that arrived via a third-party
+dependency, with the same trust surface as any transitive Maven
+dependency.
 
-## Prova de conceito executável
-Programa Java mínimo usando o JAR real de `okio-jvm` 3.12.0 (baixado do
-Maven Central — não uma reimplementação, o mesmo bytecode de produção
-que `wire-schema` usa via sua dependência de `Path`/`FileSystem`),
-reproduzindo exatamente o mecanismo de `DirectoryRoot.resolve`: junta
-`rootDirectory` com o `import` via `Path.resolve(String)` (o método por
-trás do operador `/` do Okio, `normalize=false` por padrão) e faz a
-mesma checagem que o código real faz (`fileSystem.exists(resolved)`)
-antes de ler.
+## Executable proof of concept
+Minimal Java program using the real `okio-jvm` 3.12.0 JAR (downloaded
+from Maven Central — not a reimplementation, the exact production
+bytecode that `wire-schema` uses via its `Path`/`FileSystem`
+dependency), reproducing exactly the mechanism behind
+`DirectoryRoot.resolve`: joins `rootDirectory` with `import` via
+`Path.resolve(String)` (the method behind Okio's `/` operator,
+`normalize=false` by default) and performs the same check the real code
+does (`fileSystem.exists(resolved)`) before reading.
 
 ```java
 import okio.Path;
@@ -250,77 +263,72 @@ public class PathTraversalPoc {
     File safeRoot = new File(tmp, "protoPathRoot");
     safeRoot.mkdirs();
     File secretOutsideRoot = new File(tmp, "secret-outside-root.txt");
-    Files.writeString(secretOutsideRoot.toPath(), "SEGREDO_FORA_DA_RAIZ_PROTEGIDA");
+    Files.writeString(secretOutsideRoot.toPath(), "SECRET_OUTSIDE_THE_PROTECTED_ROOT");
 
     Path rootDirectory = Path.Companion.get(safeRoot);
 
-    // Caso 1: import relativo com ".."
+    // Case 1: relative import with ".."
     Path resolvedRelative = rootDirectory.resolve("../secret-outside-root.txt");
     boolean exists = new File(resolvedRelative.toString()).exists();
     String content = exists ? Files.readString(java.nio.file.Path.of(resolvedRelative.toString())) : null;
 
-    // Caso 2: import absoluto
+    // Case 2: absolute import
     Path resolvedAbsolute = rootDirectory.resolve(secretOutsideRoot.getAbsolutePath());
     boolean absoluteEscaped = !resolvedAbsolute.toString().startsWith(safeRoot.getAbsolutePath());
 
-    // ver saída real completa abaixo
+    // see the full real output below
   }
 }
 ```
 
-Comando exato:
+Exact command:
 ```
 javac -cp "okio-jvm-3.12.0.jar;kotlin-stdlib-1.9.24.jar" PathTraversalPoc.java
 java  -cp ".;okio-jvm-3.12.0.jar;kotlin-stdlib-1.9.24.jar" PathTraversalPoc
 ```
 
-Saída real (literal, JDK 21, 30/08/2026):
+Real output (literal, JDK 21, 2026-08-30):
 ```
 tmp dir: C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628
-safeRoot (raiz que deveria conter o import): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot
-secretOutsideRoot (arquivo FORA da raiz, nao deveria ser alcancavel): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
+safeRoot (root that should contain the import): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot
+secretOutsideRoot (file OUTSIDE the root, should not be reachable): C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
 
-=== Caso 1: import relativo com ".." ===
-import (como apareceria no .proto): "../secret-outside-root.txt"
-rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot\..\secret-outside-root.txt  (string ainda contem ".." literal, normalize=false)
-fileSystem.exists(resolved) -- MESMA checagem que DirectoryRoot.resolve faz antes de ler: true
-Conteudo lido do arquivo (real, fora de safeRoot): SEGREDO_FORA_DA_RAIZ_PROTEGIDA
-ESCAPOU de verdade (leu o CONTEUDO do arquivo fora da raiz, nao so uma string parecida): true
+=== Case 1: relative import with ".." ===
+import (as it would appear in the .proto): "../secret-outside-root.txt"
+rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\protoPathRoot\..\secret-outside-root.txt  (string still contains literal "..", normalize=false)
+fileSystem.exists(resolved) -- the SAME check DirectoryRoot.resolve does before reading: true
+File content read (real, from outside safeRoot): SECRET_OUTSIDE_THE_PROTECTED_ROOT
+Really ESCAPED (read the file's CONTENT outside the root, not just a string that looks like it): true
 
-=== Caso 2: import absoluto ===
-import (como apareceria no .proto): "C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt"
+=== Case 2: absolute import ===
+import (as it would appear in the .proto): "C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt"
 rootDirectory.resolve(import) = C:\Users\Renan\AppData\Local\Temp\wire-poc-4866194955616216628\secret-outside-root.txt
-ESCAPOU da raiz protegida (ignorou rootDirectory por completo): true
+ESCAPED the protected root (ignored rootDirectory entirely): true
 
-=== RESULTADO ===
-PASS (comportamento perigoso REPRODUZIDO): okio.Path.resolve(String), sem normalize, permite path relativo com ".." E path absoluto escaparem de rootDirectory. DirectoryRoot.resolve do wire-schema so confere fileSystem.exists(resolved) antes de ler -- nenhuma checagem de que resolved continua dentro de rootDirectory.
+=== RESULT ===
+PASS (dangerous behavior REPRODUCED): okio.Path.resolve(String), without normalize, lets both a relative ".." path and an absolute path escape rootDirectory. wire-schema's DirectoryRoot.resolve only checks fileSystem.exists(resolved) before reading -- no check that resolved stays inside rootDirectory.
 ```
 
-**Nota sobre a string vs. a resolução real**: o `Path` resultante do caso
-1 ainda contém `..` de forma literal na representação em string (Okio
-não normaliza por padrão) — um `startsWith(rootDirectory)` ingênuo diria
-"não escapou". O sinal que importa de verdade é o mesmo que o próprio
-`DirectoryRoot.resolve` usa: `fileSystem.exists()`/leitura sobre esse
-`Path`, que aciona a resolução real do sistema operacional via
-`java.nio.file`, onde `..` sobe de diretório de fato — e foi isso que a
-PoC mediu (leu e comparou o conteúdo real do arquivo fora da raiz, não
-só a aparência da string).
+**Note on the string vs. the real resolution**: the resulting `Path` in
+case 1 still contains a literal `..` in its string representation (Okio
+doesn't normalize by default) — a naive `startsWith(rootDirectory)`
+check would say "didn't escape." The signal that actually matters is the
+same one `DirectoryRoot.resolve` itself uses:
+`fileSystem.exists()`/reading over that `Path`, which triggers the real
+operating-system resolution via `java.nio.file`, where `..` really does
+go up a directory — and that's what the PoC measured (it read and
+compared the real content of the file outside the root, not just how
+the string looks).
 
-## Correção sugerida
-Em `DirectoryRoot.resolve` (`Root.kt:129-137`), antes de aceitar
-`resolved`, validar que ele continua dentro de `rootDirectory`: resolver
-com `normalize = true`, rejeitar `import` cujo `Path` resultante seja
-absoluto (`import.toPath().isAbsolute`) ou cujo `.toPath(normalize = true)`
-comece com `..` depois de tornado relativo a `rootDirectory` (equivalente
-a checar `resolved.normalized().toString().startsWith(rootDirectory.toString())`
-após a normalização, ou usar `resolved.relativeTo(rootDirectory)` dentro
-de um `try/catch` que rejeita qualquer resultado que comece com `..`).
-Essa é uma mudança pequena e localizada — não exige alterar a API pública
-de `Loader`/`SchemaLoader`.
-
----
-*Gerado a partir do achado
-`Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::DirectoryRoot.resolve::path_traversal_risk`
-na fila (`research/bugbounty/queue.jsonl`), atualizado pela última vez
-em 30/08/2026. Ver histórico completo do veredito em
-`ledger/ledger.research.jsonl`.*
+## Suggested fix
+In `DirectoryRoot.resolve` (`Root.kt:129-137`), before accepting
+`resolved`, validate that it stays inside `rootDirectory`: resolve with
+`normalize = true`, reject any `import` whose resulting `Path` is
+absolute (`import.toPath().isAbsolute`) or whose
+`.toPath(normalize = true)` starts with `..` once made relative to
+`rootDirectory` (equivalent to checking
+`resolved.normalized().toString().startsWith(rootDirectory.toString())`
+after normalization, or using `resolved.relativeTo(rootDirectory)`
+inside a `try/catch` that rejects any result starting with `..`). This
+is a small, localized change — it doesn't require changing the public
+`Loader`/`SchemaLoader` API.

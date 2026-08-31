@@ -1,185 +1,190 @@
-# ⚠️ RASCUNHO — REVISÃO HUMANA OBRIGATÓRIA ANTES DE ENVIAR
+# ⚠️ REVIEW CHECKLIST — READ BEFORE SUBMITTING, THEN DELETE THIS SECTION
 
-Este relatório foi gerado por IA a partir de análise de código-fonte
-público e prova de conceito executada localmente (Go, servidor gRPC
-real rodando em ambiente isolado — nunca contra o sistema real).
-**Não foi enviado a nenhuma plataforma.** Antes de copiar/colar e
-enviar, confira:
+Everything below the `---` line is the actual report — copy from there
+down. This section above the line is only for you; do not paste it.
 
-- [ ] Escopo confirmado — o ativo afetado está no escopo do programa AGORA
-      (escopo pode mudar; reconfirme na página do programa antes de enviar)
-- [ ] Categoria confirmada — bate com uma categoria que o programa
-      declara como elegível para recompensa (não é metadado/cosmético)
-- [ ] Evidência conferida — os trechos de código e a saída da prova de
-      conceito abaixo realmente existem/rodaram como descrito (não foi
-      paráfrase/alucinação)
-- [ ] Não é duplicata — checado contra relatórios já enviados por você
-      a este programa (zero security advisories/issues relacionados
-      encontrados no repositório no momento desta varredura — ver seção
-      de checagem de duplicata abaixo)
+Before copying/pasting and submitting, check:
 
-**Estado no sistema: `human_ready`** (grau de evidência E3 — reprodução
-determinística local real, ver seção de PoC). Deployment evidence com
-confidence **"medium"** — ver seção "Ativo afetado".
+- [ ] Scope confirmed — the affected asset is in the program's scope
+      RIGHT NOW (scope can change; re-confirm on the program page before
+      submitting)
+- [ ] Category confirmed — matches a category the program declares
+      eligible for a reward (not metadata/cosmetic)
+- [ ] Evidence checked — the code excerpts and the PoC output below
+      really exist/ran as described (not paraphrase/hallucination)
+- [ ] Not a duplicate — checked against reports you've already
+      submitted to this program (zero related security advisories/
+      issues found in the repository at the time of this scan — see
+      the duplicate-check section below)
 
-**⏱ URGÊNCIA REAL:** Arc Chain está em mainnet PRIVADA agora (100+
-builders institucionais/ecossistema onboardados), com mainnet PÚBLICA
-confirmada para **16 de setembro de 2026** (~2 semanas a partir desta
-varredura). Validadores fundadores anunciados publicamente:
-**BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE,
-MoneyGram, SBI Group, Sumitomo** (fonte: circle.com/pressroom,
-30/08/2026). Isso não é infraestrutura hipotética — é o software que
-provavelmente protege chaves de validador de instituições financeiras
-reais agora, com a janela até o lançamento público encolhendo. Vale
-priorizar a revisão e o envio deste relatório.
+**⏱ TIMING:** Arc Chain is on private mainnet right now (100+
+institutional/ecosystem builders onboarded), with public mainnet
+confirmed for **September 16, 2026** (~2 weeks away). Publicly announced
+founding validators: **BlackRock, DTCC, Galaxy, Mastercard, Visa,
+Standard Chartered, ICE, MoneyGram, SBI Group, Sumitomo** (source:
+circle.com/pressroom, 2026-08-30). This is likely the software protecting
+real financial institutions' validator keys right now, with the window
+until public launch shrinking. Worth submitting soon.
+
+Re-checked on 2026-08-31, right before writing this: current `main`
+commit is `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` (2026-06-18, a
+trivial CI-only change, nothing security-relevant). `configs/app.yaml`
+still ships `tls.enabled: false` by default right now, and `public.go`
+still has no auth/interceptor/token/credential logic anywhere. Nothing
+has changed since the proof of concept below was run.
 
 ---
 
-## Título
-Serviço gRPC `SignerService` do sidecar de assinatura remota de
-validador (`arc-remote-signer`) não exige nenhuma autenticação —
-qualquer chamador de rede consegue fazer o validador assinar mensagens
-de consenso arbitrárias com a chave da enclave
+## Title
+The `SignerService` gRPC service of the validator remote-signing sidecar
+(`arc-remote-signer`) requires no authentication whatsoever — any network
+caller can make the validator sign arbitrary consensus messages with the
+enclave key
 
-## Programa / Plataforma
+## Program / Platform
 Circle BBP via HackerOne — https://hackerone.com/circle-bbp
 
-## Categoria / Severidade declarada
-Falha de controle de acesso / ausência de autenticação em função crítica
-(CWE-306) num componente de infraestrutura de validador de blockchain
+## Category / Declared severity
+Access-control failure / missing authentication on a critical function
+(CWE-306) in a blockchain validator infrastructure component
 (`asset_type: SOURCE_CODE`, `eligible_for_bounty: true`,
-`max_severity: critical` — confirmado via scope snapshot real do
-programa). Não é metadado nem cosmético: o serviço afetado assina
-mensagens de consenso com a chave privada do validador Arc Chain.
+`max_severity: critical` — confirmed via the program's real scope
+snapshot, and independently re-confirmed live on the HackerOne scope
+table on 2026-08-31: `circlefin/arc-remote-signer`, type "Source code",
+**In scope**, max severity **Critical**, **Eligible**). Not metadata, not
+cosmetic: the affected service signs consensus messages with the Arc
+Chain validator's private key.
 
-## Ativo afetado
-- Repositório: `circlefin/arc-remote-signer`
-- Arquivo: `internal/app/public/public.go` (construção do servidor),
-  `internal/common/grpc/server/server.go` e `option.go` (interceptors e
-  TLS)
-- Linhas: `public.go:39-72` (`New`), `server.go` (`NewServer`),
+## Affected asset
+- Repository: `circlefin/arc-remote-signer`
+- File: `internal/app/public/public.go` (server construction),
+  `internal/common/grpc/server/server.go` and `option.go` (interceptors
+  and TLS)
+- Lines: `public.go:39-72` (`New`), `server.go` (`NewServer`),
   `option.go:86-99` (`WithTLS`)
-- Commit/branch no momento da análise: `main` (verificar SHA atual antes
-  de enviar — o código pode ter mudado desde a varredura)
-- Vínculo de deploy: repositório público real, licenciado Apache 2.0 e
-  publicado pela Circle (não fork/não código experimental). O cliente
-  real do protocolo (`circlefin/arc-node`,
+- Commit/branch at time of analysis: `main` @
+  `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` (re-verified live on
+  2026-08-31 — re-check the SHA again right before submitting, in case
+  the code changes further)
+- Deployment link: real public repository, Apache 2.0 licensed and
+  published by Circle (not a fork, not experimental code). The real
+  protocol client (`circlefin/arc-node`,
   `crates/remote-signer/src/config.rs::RemoteSigningConfig::default()`)
-  usa exatamente essa configuração insegura por padrão — endpoint
-  `http://0.0.0.0:10340` (HTTP puro, não HTTPS) e `enable_tls: false` —
-  evidência de que a postura vulnerável é o comportamento padrão do
-  software real, não uma configuração exótica. Arc Chain está em
-  mainnet **privada agora** (100+ builders institucionais) com mainnet
-  **pública em 16/09/2026** — validadores fundadores anunciados
-  publicamente: BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard
-  Chartered, ICE, MoneyGram, SBI Group, Sumitomo
-  (circle.com/pressroom, 30/08/2026). **Confidence: medium** — evidência
-  forte e datada de que a rede está ativa com validadores reais, mas sem
-  confirmação de IP/instância específica rodando este software agora;
-  confirme isso manualmente antes de enviar.
+  uses exactly this insecure configuration by default — endpoint
+  `http://0.0.0.0:10340` (plain HTTP, not HTTPS) and `enable_tls: false`
+  — evidence that the vulnerable posture is the real software's default
+  behavior, not an exotic configuration. Arc Chain is on PRIVATE mainnet
+  **right now** (100+ institutional builders) with PUBLIC mainnet on
+  **2026-09-16** — publicly announced founding validators: BlackRock,
+  DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE, MoneyGram, SBI
+  Group, Sumitomo (circle.com/pressroom, 2026-08-30). **Confidence:
+  medium** — strong, dated evidence that the network is active with real
+  validators, but no confirmation of the specific IP/instance running
+  this software right now; confirm this manually before submitting.
 
-## Resumo
-`arc-remote-signer` é um sidecar de assinatura remota para o validador
-da Arc Chain (design derivado do external signer do `avalanchego`,
-citado no próprio código). Ele expõe um serviço gRPC (`SignerService`)
-com um RPC `Sign(message bytes) -> signature bytes` que assina QUALQUER
-mensagem recebida com a chave privada do validador, mantida numa AWS
-Nitro Enclave. O servidor gRPC não tem nenhum interceptor de
-autenticação/autorização, e mesmo quando TLS está habilitado, é apenas
-TLS unidirecional (autentica o servidor pro cliente, nunca o contrário)
-— não há mTLS, API key, JWT ou qualquer outro mecanismo que confirme
-que o chamador é de fato o processo validador legítimo. A única
-proteção documentada é de rede (security group da AWS VPC). Qualquer
-principal capaz de alcançar a porta do serviço (via SSRF de outro
-serviço na mesma VPC, misconfiguração de security group, movimento
-lateral, etc.) consegue fazer o validador assinar mensagens de
-consenso arbitrárias — risco de equivocation/double-signing e possível
-slashing, sem precisar comprometer a enclave em si.
+## Summary
+`arc-remote-signer` is a remote-signing sidecar for the Arc Chain
+validator (a design derived from `avalanchego`'s external signer, cited
+in the code itself). It exposes a gRPC service (`SignerService`) with a
+`Sign(message bytes) -> signature bytes` RPC that signs ANY received
+message with the validator's private key, held in an AWS Nitro Enclave.
+The gRPC server has no authentication/authorization interceptor at all,
+and even when TLS is enabled, it is one-directional TLS only
+(authenticates the server to the client, never the reverse) — there is
+no mTLS, API key, JWT, or any other mechanism confirming the caller is
+actually the legitimate validator process. The only documented
+protection is network-level (AWS VPC security group). Any principal able
+to reach the service's port (via SSRF from another service in the same
+VPC, security-group misconfiguration, lateral movement, etc.) can make
+the validator sign arbitrary consensus messages — risk of
+equivocation/double-signing and possible slashing, without needing to
+compromise the enclave itself.
 
-## Cadeia de chamada confirmada
-1. `proto/arc/signer/v1/signer.proto` — define `SignerService.Sign`
-   sem NENHUM campo de autenticação/token na mensagem `SignRequest`
-   (só `bytes message`).
-2. `internal/app/public/public.go:39-72` (`New`) — monta o servidor
-   gRPC: chama `grpcServer.WithTLS(cfg.TLS)`, registra
-   `SignerServiceServer` e reflection. Nenhuma menção a auth.
-3. `internal/common/grpc/server/server.go` (`NewServer`) — cadeia de
-   interceptors é `[WithRecovery, WithRequestID, WithMetrics,
-   WithLogging]` mais o que for passado em `UnaryInterceptors` (só usado
-   pra métricas Prometheus). Nenhum interceptor de autenticação em
-   nenhum caminho.
-4. `internal/common/grpc/server/option.go:86-99` (`WithTLS`) — usa
-   exclusivamente `credentials.NewServerTLSFromFile` (TLS de um lado
-   só); a função nem tem parâmetro para CA de cliente/mTLS.
-5. `configs/app.yaml` (config default/dev) documenta explicitamente
-   `tls.enabled: false` com o comentário "tls secures the malachite ->
-   sidecar gRPC connection. Disabled by default", e `host: 0.0.0.0`
-   (bind em todas interfaces, não só loopback).
-6. `docs/architecture.md`, seção "Production Deployment Notes"/"AWS
-   Prerequisites", confirma que a ÚNICA proteção documentada é de rede
-   (security group da VPC) — nenhuma menção a controle de autorização
-   em nível de aplicação.
-7. Lado cliente confirmado em `circlefin/arc-node` (o software real do
-   validador): `crates/remote-signer/src/client.rs::RemoteSignerClient`
-   é o código que o validador usa de verdade para chamar
+## Confirmed call chain
+1. `proto/arc/signer/v1/signer.proto` — defines `SignerService.Sign` with
+   NO authentication/token field whatsoever in the `SignRequest` message
+   (just `bytes message`).
+2. `internal/app/public/public.go:39-72` (`New`) — assembles the gRPC
+   server: calls `grpcServer.WithTLS(cfg.TLS)`, registers
+   `SignerServiceServer` and reflection. No mention of auth.
+3. `internal/common/grpc/server/server.go` (`NewServer`) — the
+   interceptor chain is `[WithRecovery, WithRequestID, WithMetrics,
+   WithLogging]` plus whatever is passed via `UnaryInterceptors` (only
+   used for Prometheus metrics). No authentication interceptor on any
+   path.
+4. `internal/common/grpc/server/option.go:86-99` (`WithTLS`) — uses only
+   `credentials.NewServerTLSFromFile` (one-sided TLS); the function
+   doesn't even have a parameter for a client CA/mTLS.
+5. `configs/app.yaml` (default/dev config) explicitly documents
+   `tls.enabled: false` with the comment "tls secures the malachite ->
+   sidecar gRPC connection. Disabled by default", and `host: 0.0.0.0`
+   (binds on all interfaces, not just loopback).
+6. `docs/architecture.md`, "Production Deployment Notes"/"AWS
+   Prerequisites" section, confirms the ONLY documented protection is
+   network-level (VPC security group) — no mention of
+   application-level authorization control.
+7. Confirmed client-side in `circlefin/arc-node` (the real validator
+   software): `crates/remote-signer/src/client.rs::RemoteSignerClient`
+   is the code the validator actually uses to call
    `SignerService.Sign`. `crates/remote-signer/src/config.rs::
-   RemoteSigningConfig::default()` confirma o mesmo padrão inseguro do
-   lado servidor: endpoint padrão `http://0.0.0.0:10340`, `enable_tls:
-   false` por padrão. Quando TLS é habilitado, `client.rs` usa só
-   `ClientTlsConfig::new().ca_certificate(...)` — nenhum certificado de
-   cliente configurado (`with_client_auth`/`identity()` não existem no
-   arquivo) — confirmando, do lado cliente, que mesmo com TLS habilitado
-   não há mTLS.
-8. Comparação com o design do motor de consenso que este validador
-   roda (`circlefin/malachite`, `crates/signing/src/lib.rs`): os
-   traits `Signer<Ctx>`/`Verifier<Ctx>` documentam explicitamente que
-   cada tipo de assinatura precisa de separação de domínio ("no two
-   (scope, extension) pairs produce the same preimage bytes"). O
-   `SignerService.Sign` do `arc-remote-signer` é o oposto estrutural
-   desse design: assina bytes arbitrários sem noção de propósito/escopo
-   — mesmo que o transporte fosse autenticado, a interface já abre mão
-   da garantia de domínio que o próprio ecossistema documenta como
-   necessária para chaves de validador.
-9. `docs/architecture.md`, seção "Security Model" (lida por completo):
-   documenta em detalhe a proteção da CHAVE (isolamento de hardware,
-   criptografia envelope, KMS vinculado a attestation via PCR) — a
-   palavra "authenticate"/"authorization" tem ZERO ocorrências no
-   documento inteiro. Confirma que a ausência de autenticação no
-   request do `Sign()` não é uma decisão de design documentada como
-   aceitável (diferente de casos já fechados nesta mesma missão onde um
-   audit público documentava explicitamente um comportamento equivalente
-   como intencional) — é um ponto cego real do threat model do projeto:
-   protege a chave de quem tem acesso ao host, nunca discute quem pode
-   PEDIR uma assinatura pela rede.
+   RemoteSigningConfig::default()` confirms the same insecure pattern on
+   the client side: default endpoint `http://0.0.0.0:10340`,
+   `enable_tls: false` by default. When TLS is enabled, `client.rs` uses
+   only `ClientTlsConfig::new().ca_certificate(...)` — no client
+   certificate configured (`with_client_auth`/`identity()` don't exist
+   in the file) — confirming, from the client side too, that even with
+   TLS enabled there is no mTLS.
+8. Comparison with the design of the consensus engine this validator
+   runs (`circlefin/malachite`, `crates/signing/src/lib.rs`): the
+   `Signer<Ctx>`/`Verifier<Ctx>` traits explicitly document that every
+   signature type needs domain separation ("no two (scope, extension)
+   pairs produce the same preimage bytes"). `arc-remote-signer`'s
+   `SignerService.Sign` is the structural opposite of that design: it
+   signs arbitrary bytes with no notion of purpose/scope — even if the
+   transport were authenticated, the interface already gives up the
+   domain-separation guarantee the ecosystem itself documents as
+   necessary for validator keys.
+9. `docs/architecture.md`, "Security Model" section (read in full):
+   documents the KEY's protection in detail (hardware isolation,
+   envelope encryption, attestation-bound KMS via PCR) — the word
+   "authenticate"/"authorization" has ZERO occurrences in the entire
+   document. Confirms the absence of authentication on the `Sign()`
+   request is not a documented, accepted design decision (unlike other
+   cases already closed in this same effort where a public audit
+   explicitly documented an equivalent behavior as intentional) — it's a
+   real blind spot in the project's threat model: it protects the key
+   from whoever has host access, but never discusses who can REQUEST a
+   signature over the network.
 
-## Pré-requisitos
-Nenhuma credencial de usuário real. Para reproduzir: acesso de rede à
-porta do `SignerService` (na configuração padrão publicada,
-`0.0.0.0:10340` sem TLS) — no cenário real, isso corresponde a um
-princípio de rede dentro da mesma VPC/subnet (outro serviço
-comprometido, SSRF, misconfiguração de security group).
+## Prerequisites
+No real user credentials needed. To reproduce: network access to the
+`SignerService` port (in the published default configuration,
+`0.0.0.0:10340` with TLS disabled) — in the real-world scenario, this
+corresponds to a network principal within the same VPC/subnet (another
+compromised service, SSRF, security-group misconfiguration).
 
-## Passo a passo de reprodução
-1. O validador Arc Chain roda `arc-remote-signer` como sidecar,
-   expondo `SignerService` na porta configurada (padrão `10340`, sem
-   TLS habilitado por padrão).
-2. Um chamador de rede qualquer (dentro do alcance de rede do serviço)
-   conecta via gRPC sem nenhuma credencial.
-3. Chama `Sign(SignRequest{message: <bytes arbitrários>})`.
-4. O servidor processa a chamada normalmente e retorna
-   `SignResponse{signature: <assinatura real da chave do validador>}`.
+## Steps to reproduce
+1. The Arc Chain validator runs `arc-remote-signer` as a sidecar,
+   exposing `SignerService` on the configured port (default `10340`,
+   TLS disabled by default).
+2. Any network caller (within the service's network reach) connects via
+   gRPC with no credentials at all.
+3. Calls `Sign(SignRequest{message: <arbitrary bytes>})`.
+4. The server processes the call normally and returns
+   `SignResponse{signature: <a real signature from the validator's
+   key>}`.
 
-## Resultado atual vs. esperado
-- **Atual:** qualquer chamador de rede que alcance a porta do serviço
-  consegue obter uma assinatura válida da chave do validador para
-  qualquer mensagem, sem nenhuma autenticação.
-- **Esperado:** o serviço deveria autenticar o chamador (mTLS, token
-  compartilhado, ou equivalente) antes de assinar — o mesmo padrão que
-  sistemas de remote signing de validador do setor usam (ex.:
-  Tendermint/CometBFT KMS, que implementa `SecretConnection` com
-  station-to-station handshake e node keys pré-compartilhadas).
+## Actual vs. expected result
+- **Actual:** any network caller who can reach the service's port
+  obtains a valid signature from the validator's key for any message,
+  with no authentication at all.
+- **Expected:** the service should authenticate the caller (mTLS, a
+  shared token, or equivalent) before signing — the same pattern
+  industry validator remote-signing systems already use (e.g.,
+  Tendermint/CometBFT KMS, which implements `SecretConnection` with a
+  station-to-station handshake and pre-shared node keys).
 
-## Evidência
+## Evidence
 ```go
 // internal/app/public/public.go:39-72 (New)
 func New(cfg *grpcServer.Config, params CreateServerParams) (lifecycle.Runnable, error) {
@@ -188,7 +193,7 @@ func New(cfg *grpcServer.Config, params CreateServerParams) (lifecycle.Runnable,
   grpcSrv := grpcServer.NewServer(engineParams, opts...)
   reflection.Register(grpcSrv)
   pb.RegisterSignerServiceServer(grpcSrv, params.SignerSvc)
-  // nenhum interceptor de auth em lugar nenhum
+  // no auth interceptor anywhere
 }
 ```
 ```go
@@ -197,7 +202,7 @@ func WithTLS(cfg *TLSConfig) ([]grpc.ServerOption, error) {
   if cfg != nil && cfg.Enabled {
     // ...
     creds, err := credentials.NewServerTLSFromFile(cfg.Cert, cfg.Key)
-    // TLS de UM LADO SÓ — sem ClientCAs, sem RequireAndVerifyClientCert
+    // ONE-SIDED TLS only — no ClientCAs, no RequireAndVerifyClientCert
     return []grpc.ServerOption{grpc.Creds(creds)}, nil
   }
   return []grpc.ServerOption{}, nil
@@ -210,21 +215,21 @@ tls:
 host: 0.0.0.0
 ```
 
-## Prova de conceito executável
-Toolchain Go real montado (Go 1.27, `buf` v1.50.0,
-`protoc-gen-go`/`protoc-gen-go-grpc`, todos via `go install`, sem
-Docker) e código protobuf real gerado a partir do `.proto` do próprio
-repositório (`buf generate`, zero erro). Escrito um teste Go
-(`internal/app/public/poc_unauth_test.go`, só na cópia local clonada,
-nunca commitado no repositório real) que usa a função de **produção
-real** `public.New()` — mesmo código-fonte, não reimplementação — para
-montar o servidor gRPC exatamente como `app.Run()` faz, com um
-`SignerServiceServer` mínimo no lugar do `signer.Service` real (que
-exigiria AWS KMS/Secrets Manager reais ou Localstack via Docker — fora
-do escopo desta checagem específica, que é sobre a AUSÊNCIA DE
-INTERCEPTOR, não sobre a lógica de assinatura em si).
+## Executable proof of concept
+Built a real Go toolchain (Go 1.27, `buf` v1.50.0,
+`protoc-gen-go`/`protoc-gen-go-grpc`, all via `go install`, no Docker)
+and generated real protobuf code from the repository's own `.proto`
+(`buf generate`, zero errors). Wrote a Go test
+(`internal/app/public/poc_unauth_test.go`, only on the local clone,
+never committed to the real repository) that uses the **real
+production** function `public.New()` — the actual source code, not a
+reimplementation — to assemble the gRPC server exactly as `app.Run()`
+does, with a minimal `SignerServiceServer` stand-in for the real
+`signer.Service` (which would require real AWS KMS/Secrets Manager or
+Localstack via Docker — out of scope for this specific check, which is
+about the ABSENCE OF AN INTERCEPTOR, not the signing logic itself).
 
-Comando exato:
+Exact command:
 ```
 go install github.com/bufbuild/buf/cmd/buf@v1.50.0
 go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
@@ -233,12 +238,12 @@ cd proto && buf generate
 cd .. && go test ./internal/app/public/... -run TestUnauthenticatedSignIsAccepted -v
 ```
 
-Saída real (literal, 30/08/2026):
+Real output (literal, 2026-08-30):
 ```
 === RUN   TestUnauthenticatedSignIsAccepted
 2026/08/30 18:29:15 gRPC server listening on 127.0.0.1:57080
 {"time":"2026-08-30T18:29:15.7539059-03:00","level":"INFO","msg":"gRPC request completed","logger":"common.middleware","method":"/arc.signer.v1.SignerService/Sign","userAgent":"grpc-go/1.79.3","requestID":"b5c254b5-0159-4efa-9b63-f6fd5bff9be4","status":"OK","requestTimeMS":0,"clientIP":"127.0.0.1","mdc":{"clientIP":"127.0.0.1","method":"/arc.signer.v1.SignerService/Sign","requestID":"b5c254b5-0159-4efa-9b63-f6fd5bff9be4","requestTimeMS":0,"status":"OK","userAgent":"grpc-go/1.79.3"}}
-    poc_unauth_test.go:112: RESULTADO: Sign() foi ACEITO sem NENHUMA credencial/autenticacao. resposta="ASSINATURA-FALSA-SO-PRA-PROVAR-QUE-CHEGOU-AQUI" — achado REPRODUZIDO: o servidor gRPC real (public.New(), sem reimplementacao) processa Sign() de qualquer chamador de rede.
+    poc_unauth_test.go:112: RESULT: Sign() was ACCEPTED with NO credentials/authentication at all. response="FAKE-SIGNATURE-JUST-TO-PROVE-IT-GOT-HERE" — finding REPRODUCED: the real gRPC server (public.New(), no reimplementation) processes Sign() from any network caller.
 2026/08/30 18:29:15 initiating graceful shutdown of gRPC server at 127.0.0.1:57080
 2026/08/30 18:29:15 gRPC server gracefully stopped
 --- PASS: TestUnauthenticatedSignIsAccepted (0.03s)
@@ -246,38 +251,30 @@ PASS
 ok  	github.com/circlefin/arc-remote-signer/internal/app/public	1.220s
 ```
 
-O próprio log de middleware de request REAL do servidor confirma
-`"status":"OK"` — a chamada não-autenticada foi processada como
-requisição legítima. Nenhuma rede real, nenhuma chave/enclave real,
-servidor efêmero local, encerrado ao fim do teste (princípio de menor
-impacto).
+The server's own real middleware request log confirms `"status":"OK"` —
+the unauthenticated call was processed as a legitimate request. No real
+network, no real key/enclave, ephemeral local server, shut down at the
+end of the test (minimal-impact principle).
 
-## Impacto
-Um atacante capaz de alcançar a porta do `SignerService` (SSRF a partir
-de outro serviço na mesma VPC, misconfiguração de security group,
-movimento lateral após comprometer outro host na mesma subnet) consegue
-fazer o validador da Arc Chain assinar QUALQUER mensagem de consenso
-com a chave da enclave — sem precisar comprometer a enclave/chave em
-si. Isso abre risco real de equivocation/double-signing (assinar dois
-valores conflitantes na mesma altura/rodada de consenso), que em
-sistemas BFT tipicamente resulta em slashing do validador e pode, a
-depender do design específico do consenso Arc Chain, contribuir para
-ataques mais amplos de disponibilidade/integridade da rede. A garantia
-de isolamento de hardware da enclave protege a CHAVE contra extração,
-mas não protege contra QUEM PODE PEDIR uma assinatura — e hoje,
-qualquer um que alcance a porta.
+## Impact
+An attacker able to reach the `SignerService` port (SSRF from another
+service in the same VPC, security-group misconfiguration, lateral
+movement after compromising another host on the same subnet) can make
+the Arc Chain validator sign ANY consensus message with the enclave key
+— without needing to compromise the enclave/key itself. This opens real
+risk of equivocation/double-signing (signing two conflicting values at
+the same consensus height/round), which in BFT systems typically results
+in validator slashing and, depending on Arc Chain's specific consensus
+design, could contribute to broader availability/integrity attacks on
+the network. The enclave's hardware-isolation guarantee protects the KEY
+against extraction, but does not protect against WHO CAN REQUEST a
+signature — and today, that's anyone who can reach the port.
 
-## Correção sugerida
-Adicionar autenticação mútua (mTLS com `RequireAndVerifyClientCert` +
-`ClientCAs`, ou um mecanismo equivalente de identidade do chamador) ao
-`SignerService`, seguindo o mesmo padrão que sistemas de remote signing
-de validador do setor já implementam (ex.: Tendermint/CometBFT KMS).
-Mudança localizada em `internal/common/grpc/server/option.go`
-(`WithTLS`) e `configs/app.yaml` (habilitar TLS + configurar client CA
-por padrão, não deixar `tls.enabled: false` como default).
-
----
-*Gerado a partir do achado
-`Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding`
-na fila (`research/bugbounty/queue.jsonl`). Ver histórico completo do
-veredito em `ledger/ledger.research.jsonl`.*
+## Suggested fix
+Add mutual authentication (mTLS with `RequireAndVerifyClientCert` +
+`ClientCAs`, or an equivalent caller-identity mechanism) to
+`SignerService`, following the same pattern industry validator
+remote-signing systems already implement (e.g., Tendermint/CometBFT
+KMS). Localized change in `internal/common/grpc/server/option.go`
+(`WithTLS`) and `configs/app.yaml` (enable TLS + configure a client CA by
+default, don't leave `tls.enabled: false` as the default).
