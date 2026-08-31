@@ -1,31 +1,9 @@
 {
-  "migratedAt": "2026-08-31T16:58:23.140Z",
+  "migratedAt": "2026-08-31T16:58:59.004Z",
   "total": 45,
   "logs": [
     {
-      "id": "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "reproduced_local",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "reproduced_local"
-    },
-    {
-      "id": "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding",
+      "id": "Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessage/verify::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -36,403 +14,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol::run::reentrancy_risk",
+      "id": "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding",
       "steps": [
         {
-          "to": "false_positive",
+          "to": "duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "false_positive"
+      "finalState": "duplicate"
     },
     {
-      "id": "Circle BBP::circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol::withdraw_attestation_reparse::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol::line:69::delegatecall_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::afterpay/sdk-android::BootstrapJavascriptInterface.postMessage::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "inconclusive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "inconclusive"
-    },
-    {
-      "id": "Block Open Source::misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt::getQueryStringWithHints::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:135::unchecked_call_return",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol::run::reentrancy_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:116::unchecked_call_return",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:157::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-split/src/provider/index.ts::line:63::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:192::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:81::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_pollution_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-flagsmith/src/provider/index.ts::line:86::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:54::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:157::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:65::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::cashapp/hermit/go.mod::github.com/cloudflare/circl@v1.3.8::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::cashapp/hermit/go.mod::golang.org/x/crypto@v0.54.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::DirectoryRoot.resolve::path_traversal_risk",
-      "steps": [
-        {
-          "to": "human_ready",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "human_ready"
-    },
-    {
-      "id": "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::init-withdraw::unguarded_transfer",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials::ai_deep_read_finding",
+      "id": "Circle BBP::circlefin/aptos-cctp/packages/token_messenger_minter_v2/sources/token_messenger_minter.move::prepare_mint_complete_mint::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -465,7 +58,7 @@
       "finalState": "inconclusive"
     },
     {
-      "id": "Circle BBP::circlefin/aptos-cctp/packages/token_messenger_minter_v2/sources/token_messenger_minter.move::prepare_mint_complete_mint::ai_deep_read_finding",
+      "id": "Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -476,18 +69,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "duplicate"
-    },
-    {
-      "id": "Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessage/verify::ai_deep_read_finding",
+      "id": "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::init-withdraw::unguarded_transfer",
       "steps": [
         {
           "to": "false_positive",
@@ -496,6 +78,424 @@
         }
       ],
       "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::DirectoryRoot.resolve::path_traversal_risk",
+      "steps": [
+        {
+          "to": "human_ready",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "human_ready"
+    },
+    {
+      "id": "Block Open Source::cashapp/hermit/go.mod::golang.org/x/crypto@v0.54.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::cashapp/hermit/go.mod::github.com/cloudflare/circl@v1.3.8::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:65::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:54::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:157::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-flagsmith/src/provider/index.ts::line:86::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_pollution_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:81::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:192::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:157::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-split/src/provider/index.ts::line:63::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol::run::reentrancy_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:116::unchecked_call_return",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:135::unchecked_call_return",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::afterpay/sdk-android::BootstrapJavascriptInterface.postMessage::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "inconclusive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "inconclusive"
+    },
+    {
+      "id": "Block Open Source::misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt::getQueryStringWithHints::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol::line:69::delegatecall_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol::withdraw_attestation_reparse::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol::run::reentrancy_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "reproduced_local",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "reproduced_local"
+    },
+    {
+      "id": "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
     }
   ]
 }

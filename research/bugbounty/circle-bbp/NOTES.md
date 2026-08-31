@@ -3784,3 +3784,60 @@ sobreposição nem gap entre eles. Também lido `msg_server_unblacklist.go`
 `deep-read-log.json`: adicionados `ante.go` e `msg_server_unblacklist.go`
 à entrada de `circlefin/noble-fiattokenfactory` (union com o que a rodada
 concorrente já tinha registrado — sem duplicar entradas).
+
+## Rodada 2026-08-31 (push automático) — noble-cctp: cadeia depositForBurn / replaceDepositForBurn
+
+Seguindo a sugestão da rodada anterior (handlers de burn/deposit do
+`circlefin/noble-cctp` ainda não cobertos). Lidos os 4 arquivos que
+faltavam pra fechar essa cadeia:
+
+- `x/cctp/keeper/msg_server_deposit_for_burn.go`
+- `x/cctp/keeper/msg_server_deposit_for_burn_with_caller.go`
+- `x/cctp/keeper/msg_server_replace_deposit_for_burn.go`
+- `x/cctp/keeper/msg_server_replace_message.go` (lido pra completar o
+  rastreio — `ReplaceDepositForBurn` delega pra cá)
+
+Ceticismo aplicado no ponto óbvio: `msg.From` é usado tanto pra debitar
+fundos (`SendCoinsFromAccountToModule`) quanto embutido no
+`BurnMessage.MessageSender`, então verifiquei se `From` é de fato o
+signatário real da tx (não um campo livre que o chamador poderia setar
+pra outra conta e drenar fundos alheios). Confirmei via
+`proto/circle/cctp/v1/tx.proto`: `option (cosmos.msg.v1.signer) = "from"`
+em `MsgDepositForBurn`, `MsgDepositForBurnWithCaller` e
+`MsgReplaceDepositForBurn` — o ante handler do Cosmos SDK exige
+assinatura válida da conta em `from`, então não há gap tipo
+tx-sender-vs-caller aqui.
+
+Rastreei também a cadeia de autorização em duas camadas do
+`ReplaceDepositForBurn` (permite trocar `mintRecipient`/
+`destinationCaller` de um burn já enviado, sem poder alterar
+`amount`/`burnToken` — o novo `BurnMessage` é reconstruído preservando
+esses dois campos do original):
+1. Camada externa (`ReplaceDepositForBurn`): exige que
+   `AccAddress(msg.From)` (assinante real da tx) bata com o
+   `BurnMessage.MessageSender` gravado no burn original — ou seja, só o
+   depositante original daquele burn específico pode substituí-lo.
+2. Camada interna (`ReplaceMessage`, chamada com
+   `From: types.ModuleAddress.String()`): exige assinatura válida
+   (`VerifyAttestationSignatures`) da attestation original fornecida
+   pelo chamador + que o sender do envelope genérico bata com
+   `msg.From` — aqui trivialmente satisfeito porque o envelope original
+   também foi criado com `From=ModuleAddress` (dentro do
+   `depositForBurn`), então as duas camadas não colidem nem criam gap.
+
+Considerei também se `SendMessage`/`ReplaceMessage` (RPCs genéricos de
+messaging, não exclusivos de burn) poderiam ser abusados diretamente por
+qualquer usuário pra forjar uma "BurnMessage" falsa com `amount`
+arbitrário sem queimar token de verdade — mas esse vetor é fechado pela
+arquitetura CCTP padrão do lado de **recebimento** (cadeia destino
+valida `message.sender` contra o endereço registrado do
+"remote token messenger" daquele domínio; uma mensagem enviada
+diretamente por um usuário comum, sem passar por `depositForBurn`, teria
+`message.sender = <endereço do usuário>`, que nunca bate com o endereço
+do módulo Noble registrado como token messenger remoto) — mesmo padrão
+já auditado nos contratos EVM do CCTP (`evm-cctp-contracts`), não é um
+gap novo deste módulo Cosmos.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`circlefin/noble-cctp`
+ganhou os 4 arquivos acima, agora 13 no total — cobre toda a cadeia de
+burn/deposit/replace do módulo).

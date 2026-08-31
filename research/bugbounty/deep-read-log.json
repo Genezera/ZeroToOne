@@ -362,15 +362,19 @@
     "code/crates/core-consensus/src/handle/vote.rs"
   ],
   "circlefin/noble-cctp": [
+    "x/cctp/keeper/msg_server_accept_owner.go",
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
-    "x/cctp/keeper/msg_server_update_token_controller.go",
+    "x/cctp/keeper/msg_server_deposit_for_burn.go",
+    "x/cctp/keeper/msg_server_deposit_for_burn_with_caller.go",
     "x/cctp/keeper/msg_server_link_token_pair.go",
     "x/cctp/keeper/msg_server_receive_message.go",
-    "x/cctp/keeper/roles.go",
+    "x/cctp/keeper/msg_server_replace_deposit_for_burn.go",
+    "x/cctp/keeper/msg_server_replace_message.go",
+    "x/cctp/keeper/msg_server_update_attester_manager.go",
     "x/cctp/keeper/msg_server_update_owner.go",
-    "x/cctp/keeper/msg_server_accept_owner.go",
     "x/cctp/keeper/msg_server_update_pauser.go",
-    "x/cctp/keeper/msg_server_update_attester_manager.go"
+    "x/cctp/keeper/msg_server_update_token_controller.go",
+    "x/cctp/keeper/roles.go"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
