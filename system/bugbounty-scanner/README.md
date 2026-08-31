@@ -583,3 +583,36 @@ o mesmo mecanismo. Não é falha de metodologia: o achado era real, o
 PoC era real, só perdeu a corrida pra outro pesquisador — mesmo padrão
 já visto com o arc-remote-signer nesta sessão. Ver
 `circle-bbp/NOTES.md` pro registro completo.
+
+## Orçamento de envio por programa (31/08/2026) — a "corrida" contra outros pesquisadores é estrutural, não uma falha de ferramenta
+
+Tentei checar o report que nos venceu (#3517577) pra entender quando
+foi enviado — `HTTP 403`, confirmado ao vivo. A Hacker API só mostra
+reports do próprio usuário; não existe visibilidade de reports privados
+de terceiros, de propósito (é exatamente o que impede um pesquisador
+de "espiar a fila" de outro). Hacktivity (já documentado antes como
+dead end pra filtro por programa) também não ajudaria aqui: só mostra
+report já **divulgado publicamente**, e um `duplicate` recente
+provavelmente nunca chega a esse ponto. Isso significa que não dá pra
+checar de antemão "alguém já está investigando isso" — só dá pra
+reduzir a chance, nunca eliminar.
+
+O que reduz de verdade: (1) preferir alvo menos batido (programa/repo
+recém-adicionado tem menos gente já olhando — é exatamente o motivo de
+existir o sinal de novidade de programa em `discover-targets.mjs` e o
+pipeline de promoção automática); (2) em programa maduro e popular
+como Circle BBP, dar menos peso a um achado do tipo "falta um
+`require!` óbvio" — é exatamente o tipo de coisa que muitos
+pesquisadores fazendo revisão sistemática do mesmo código público
+tendem a achar de forma independente e quase simultânea, como
+aconteceu duas vezes seguidas aqui.
+
+`program-submission-budget.mjs` + `research/bugbounty/
+program-submission-budget.json` — rastreiam quantos envios restam por
+programa quando existe um limite real (informado pelo usuário, não
+descoberto via API). Não é bloqueio automático como
+`program-policy.mjs` (os mecanismos exatos de cada limite não são bem
+conhecidos o bastante pra virar gate rígido com segurança) — é aviso
+persistente, exposto em `cli.mjs check-program`, pra nunca depender de
+lembrar disso numa sessão futura. Circle BBP: 2 usados (ambos
+`duplicate`, sem pagamento), 2 restantes.

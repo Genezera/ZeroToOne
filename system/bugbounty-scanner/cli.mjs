@@ -3,6 +3,7 @@ import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './sco
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
 import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
+import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-budget.mjs';
 import path from 'node:path';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
@@ -102,11 +103,16 @@ export function cmdEvidenceGrade(db, id) {
 /** Checagem rápida ANTES de investir tempo de investigação — não precisa
  * de finding nem de banco. Usa a mesma policy que o gate de human_ready
  * consulta automaticamente, então "seguro pra pesquisar" aqui e "consegue
- * chegar a human_ready" depois são sempre a mesma resposta. */
+ * chegar a human_ready" depois são sempre a mesma resposta. Também
+ * mostra orçamento de envio restante quando existe um rastreado (ver
+ * program-submission-budget.mjs) -- aviso, não bloqueio automático. */
 export function cmdCheckProgram(programName) {
   const policy = loadProgramPolicy();
   const reason = getBlockReason(programName, policy);
-  return reason ? { program: programName, blocked: true, reason } : { program: programName, blocked: false };
+  const budget = getSubmissionBudget(programName, loadSubmissionBudget());
+  const result = reason ? { program: programName, blocked: true, reason } : { program: programName, blocked: false };
+  if (budget) result.submissionBudget = budget;
+  return result;
 }
 
 export function cmdCheckScope(program, assetRef) {

@@ -1,0 +1,9 @@
+{
+  "Circle BBP": {
+    "remaining": 2,
+    "used": 2,
+    "usedFor": ["arc-remote-signer (#3981927, duplicate)", "solana-gateway-contracts denylist (#3984747, duplicate)"],
+    "updatedAt": "2026-08-31T00:00:00.000Z",
+    "note": "Limite informado pelo usuário em 31/08/2026 -- ambos os envios até aqui fecharam como duplicate contra pesquisadores terceiros, sem pagamento. Com só 2 restantes, ser mais seletivo antes de gastar um: preferir achado que exige encadeamento/raciocínio mais profundo do que 'falta um require! óbvio', já que padrões simples são exatamente os que múltiplos pesquisadores independentes tendem a achar primeiro num programa maduro e bastante visitado como este."
+  }
+}
