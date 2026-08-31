@@ -168,7 +168,18 @@ async function fetchRepoMetadata(owner, repo) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { 'User-Agent': 'ZeroToOne-bugbounty-scanner' } });
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando metadado de ${owner}/${repo}`);
   const json = await res.json();
-  return { language: json.language || null, sizeKb: json.size ?? null, pushedAt: json.pushed_at || null, stars: json.stargazers_count ?? null, archived: json.archived ?? false };
+  return {
+    language: json.language || null,
+    sizeKb: json.size ?? null,
+    pushedAt: json.pushed_at || null,
+    stars: json.stargazers_count ?? null,
+    archived: json.archived ?? false,
+    // Precisado por promote-targets.mjs -- um target sem branch não dá pra
+    // listRepoFiles buscar nada. Ausente até 31/08/2026 porque discovery
+    // só existia pra SUGERIR pra revisão manual (que já sabe o branch por
+    // ter olhado o repo); virou obrigatório com a promoção automática.
+    defaultBranch: json.default_branch || null,
+  };
 }
 
 /** Orquestra a rodada completa: busca os 2 datasets, deduplica contra o

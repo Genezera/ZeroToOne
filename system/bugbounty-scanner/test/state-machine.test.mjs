@@ -90,6 +90,24 @@ test('scope_verified -> human_ready exige rascunho de relatório existente', () 
   assert.equal(transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup }).ok, true);
 });
 
+test('scope_verified -> human_ready bloqueia programa em ctx.programPolicy com aiResearchBanned, mesmo com relatório+duplicateCheck completos', () => {
+  const f = finding('scope_verified', { program: 'Block Open Source' });
+  const dup = { duplicateCheck: { methods: ['github_issues'], ts: '2026-08-31T00:00:00Z' } };
+  const policy = { 'Block Open Source': { aiResearchBanned: true, reason: 'regras do programa proíbem pesquisa assistida por IA' } };
+  const r = transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup, programPolicy: policy });
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /bloqueado/);
+  assert.match(r.reason, /proíbem pesquisa assistida por IA/);
+});
+
+test('scope_verified -> human_ready não é afetado por programPolicy quando o programa do achado não está nela', () => {
+  const f = finding('scope_verified', { program: 'Circle BBP' });
+  const dup = { duplicateCheck: { methods: ['github_issues'], ts: '2026-08-31T00:00:00Z' } };
+  const policy = { 'Block Open Source': { aiResearchBanned: true, reason: 'x' } };
+  const r = transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup, programPolicy: policy });
+  assert.equal(r.ok, true);
+});
+
 test('scope_verified -> human_ready exige duplicateCheck com methods incluindo "github_issues" e timestamp', () => {
   const f = finding('scope_verified');
   const report = { report: { path: 'reports/x.md' } };

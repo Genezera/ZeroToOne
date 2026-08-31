@@ -4,6 +4,7 @@ import path from 'node:path';
 import { transition as smTransition } from './state-machine.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage, shouldNotifyForTransition, formatTransitionMessage } from './telegram.mjs';
+import { loadProgramPolicy } from './program-policy.mjs';
 
 // Estado operacional local (SQLite/WAL) — substitui queue.jsonl como
 // fonte de verdade para leitura/escrita concorrente (seção 6.5 da
@@ -215,7 +216,13 @@ export function listFindings(db, { state, program } = {}) {
 export function recordTransition(db, findingId, toState, { actor, context = {} } = {}) {
   const finding = getFinding(db, findingId);
   if (!finding) return { ok: false, reason: `finding "${findingId}" não existe no banco` };
-  const result = smTransition(finding, toState, context);
+  // programPolicy é injetado aqui, não deixado a cargo de quem chama --
+  // é o único jeito de o bloqueio valer pra QUALQUER chamador (CLI local,
+  // CLI do agente de nuvem) sem depender de cada um lembrar de checar.
+  // Fica fora do context_json persistido abaixo (é dado de sistema, não
+  // evidência que o chamador forneceu) -- usa `context`, não `fullContext`.
+  const fullContext = { ...context, programPolicy: loadProgramPolicy() };
+  const result = smTransition(finding, toState, fullContext);
   if (!result.ok) return result;
 
   const ts = new Date().toISOString();

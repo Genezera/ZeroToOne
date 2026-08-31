@@ -8,11 +8,14 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { runTargetDiscovery } from './discover-targets.mjs';
+import { promoteTargets, renderAutoPromotedModule, DEFAULT_MAX_PROMOTIONS_PER_RUN, DEFAULT_MAX_TOTAL_PROMOTED } from './promote-targets.mjs';
+import { loadProgramPolicy } from './program-policy.mjs';
 import { JS_TARGETS } from './targets-js.mjs';
-import { GO_TARGETS } from './targets-go.mjs';
-import { JVM_TARGETS } from './targets-jvm.mjs';
-import { SWIFT_TARGETS } from './targets-swift.mjs';
+import { GO_TARGETS, _PAUSED_GO_TARGETS_MANUAL } from './targets-go.mjs';
+import { JVM_TARGETS, _PAUSED_JVM_TARGETS_MANUAL } from './targets-jvm.mjs';
+import { SWIFT_TARGETS, _PAUSED_SWIFT_TARGETS_MANUAL } from './targets-swift.mjs';
 import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
+import { AUTO_PROMOTED_TARGETS } from './targets-auto-promoted.mjs';
 import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
@@ -24,12 +27,18 @@ import { sendTelegramMessage } from './telegram.mjs';
 // owner/repo e faltava aqui até 31/08/2026 -- bug real: os repos
 // Solidity já rastreados (evm-cctp-contracts etc.) apareciam como
 // "candidato novo" toda semana, gastando orçamento de metadado à toa.
+//
+// _PAUSED_*_MANUAL (Block Open Source, pausado) entram só na checagem de
+// "já conhecido" -- mesmo motivo do SOLIDITY_TARGETS acima, não porque
+// vão ser escaneados (não vão).
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const DISCOVERED_PATH = path.join(BUGBOUNTY_DIR, 'discovered-targets.json');
 const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.json');
+const AUTO_PROMOTED_MODULE_PATH = path.join(__dirname, 'targets-auto-promoted.mjs');
+const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
 
 function loadSeenMap() {
   if (!existsSync(SEEN_METADATA_PATH)) return {};
@@ -48,7 +57,11 @@ export async function runDiscovery() {
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const seenMap = loadSeenMap();
-  const result = await runTargetDiscovery([JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS, SOLIDITY_TARGETS], seenMap, getProgram);
+  const result = await runTargetDiscovery(
+    [JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS, SOLIDITY_TARGETS, _PAUSED_GO_TARGETS_MANUAL, _PAUSED_JVM_TARGETS_MANUAL, _PAUSED_SWIFT_TARGETS_MANUAL],
+    seenMap,
+    getProgram
+  );
 
   const checkedAt = new Date().toISOString();
   for (const key of result.checkedKeys) {
@@ -79,6 +92,39 @@ export async function runDiscovery() {
     'utf8'
   );
 
+  // Promoção automática -- reusa result.discovered (já enriquecido com
+  // linguagem/estrelas/payout/idade acima), nenhuma chamada de rede nova.
+  // existingPromotedKeys vem do módulo JÁ importado no topo do arquivo
+  // (estado de ANTES desta rodada) -- nunca promove o mesmo repo 2x.
+  const existingPromotedKeys = new Set(AUTO_PROMOTED_TARGETS.map((t) => `${t.owner.toLowerCase()}/${t.repo.toLowerCase()}`));
+  const programPolicy = loadProgramPolicy();
+  const promotionResult = promoteTargets(result.discovered, {
+    programPolicy,
+    existingPromotedKeys,
+    maxPromotionsPerRun: DEFAULT_MAX_PROMOTIONS_PER_RUN,
+    maxTotalPromoted: DEFAULT_MAX_TOTAL_PROMOTED,
+    currentTotalPromoted: AUTO_PROMOTED_TARGETS.length,
+  });
+  const mergedAutoPromoted = [...AUTO_PROMOTED_TARGETS, ...promotionResult.promoted];
+  if (promotionResult.promoted.length > 0) {
+    writeFileSync(AUTO_PROMOTED_MODULE_PATH, renderAutoPromotedModule(mergedAutoPromoted), 'utf8');
+  }
+  writeFileSync(
+    PROMOTION_LOG_PATH,
+    JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        totalActiveAutoPromoted: mergedAutoPromoted.length,
+        promotedThisRound: promotionResult.promoted,
+        skippedThisRound: promotionResult.skipped,
+        note: 'skippedThisRound cobre TODO candidato considerado e recusado nesta rodada (linguagem não suportada, repo grande demais, programa bloqueado, erro de metadado, já promovido antes, ou elegível mas sem vaga nesta rodada) -- nunca um corte silencioso.',
+      },
+      null,
+      2
+    ),
+    'utf8'
+  );
+
   appendEntry('research', {
     type: 'bugbounty_discovery',
     totalCandidatesInDatasets: result.totalCandidatesInDatasets,
@@ -89,6 +135,8 @@ export async function runDiscovery() {
     programsWithAgeFound: result.programsWithAgeFound,
     programAgeErrors: result.programAgeErrors,
     programAgeSkippedReason: result.programAgeSkippedReason,
+    promotedThisRound: promotionResult.promoted.length,
+    totalActiveAutoPromoted: mergedAutoPromoted.length,
   });
 
   log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} novo(s) (não rastreado ainda), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
@@ -97,12 +145,17 @@ export async function runDiscovery() {
   } else {
     log(`Idade de programa buscada com sucesso pra ${result.programsWithAgeFound} programa(s) HackerOne distinto(s) — usada pra priorizar candidato de programa mais novo primeiro.`);
   }
+  log(`Promoção automática: ${promotionResult.promoted.length} alvo(s) novo(s) promovido(s) pra varredura ativa (${mergedAutoPromoted.length} no total agora), ${promotionResult.skipped.blockedProgram.length} recusado(s) por política de programa, ${promotionResult.skipped.unsupportedLanguage.length} por linguagem não suportada, ${promotionResult.skipped.tooLarge.length} por repo grande demais (revisão manual sugerida), ${promotionResult.skipped.deferredToNextRun.length} elegível(is) mas sem vaga nesta rodada.`);
+  if (promotionResult.skipped.tooLarge.length > 0) {
+    log(`Repos grandes demais pra promoção automática (curadoria de pathPrefix manual recomendada, ver ${PROMOTION_LOG_PATH}): ${promotionResult.skipped.tooLarge.map((r) => `${r.owner}/${r.repo}`).join(', ')}`);
+  }
 
   try {
     execSync('git add -A', { cwd: REPO_ROOT });
     const status = execSync('git status --porcelain', { cwd: REPO_ROOT }).toString().trim();
     if (status) {
-      execSync(`git commit -m "Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo (revisão manual)"`, { cwd: REPO_ROOT });
+      const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
+      execSync(`git commit -m "Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}"`, { cwd: REPO_ROOT });
       execSync('git push', { cwd: REPO_ROOT });
       log('Sincronizado com o GitHub.');
     }
@@ -120,6 +173,10 @@ export async function runDiscovery() {
         `${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} ainda não rastreado(s).`,
         `${result.discovered.length} receberam metadado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficaram pra semana que vem)` : ''}.`,
         newestProgram ? `Programa mais novo visto: ${newestProgram.programs?.[0]?.program || '?'} (${newestProgram.owner}/${newestProgram.repo}).` : null,
+        promotionResult.promoted.length > 0
+          ? `🚀 <b>${promotionResult.promoted.length} alvo(s) novo(s) promovido(s)</b> pra varredura ativa: ${promotionResult.promoted.map((p) => `${p.owner}/${p.repo} (${p.program})`).join(', ')}. Total agora: ${mergedAutoPromoted.length}.`
+          : `Nenhum alvo novo promovido nesta rodada (${mergedAutoPromoted.length} ativo(s) no total).`,
+        promotionResult.skipped.tooLarge.length > 0 ? `${promotionResult.skipped.tooLarge.length} repo(s) grande(s) demais pra promoção automática — revisão manual sugerida.` : null,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {

@@ -4,8 +4,15 @@
 // direto de hackerone.com/vercel-open-source, seção "Scope" — não do
 // dataset heurístico de discover-targets.mjs, que só sugere candidato,
 // nunca decide). Ver research/bugbounty/vercel-open-source/NOTES.md.
+//
+// A partir de 31/08/2026, some com o que promote-targets.mjs promoveu
+// automaticamente de OUTROS programas JS/TS (ver targets-auto-promoted.mjs)
+// — a lista abaixo continua 100% curada à mão, nunca misturada com a
+// automática na mesma constante escrita aqui.
 
-export const JS_TARGETS = [
+import { AUTO_PROMOTED_TARGETS } from './targets-auto-promoted.mjs';
+
+const JS_TARGETS_MANUAL = [
   {
     program: 'Vercel Open Source',
     platform: 'HackerOne',
@@ -59,3 +66,5 @@ export const JS_TARGETS = [
     pathPrefixes: [],
   },
 ];
+
+export const JS_TARGETS = [...JS_TARGETS_MANUAL, ...AUTO_PROMOTED_TARGETS.filter((t) => t.language === 'js')];

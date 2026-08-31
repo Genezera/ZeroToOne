@@ -4,6 +4,14 @@
 // recebe o finding + o contexto de evidência disponível, devolve
 // {ok, reason} — nunca decide sozinha, só valida se o pedido de transição
 // tem lastro.
+//
+// ctx.programPolicy (ver program-policy.mjs) é injetado automaticamente por
+// db.mjs::recordTransition em TODA chamada — não fica a cargo de quem
+// chama lembrar de passar. Isso mantém esta função pura (só lê o objeto já
+// carregado, nunca toca disco) e ainda assim faz o bloqueio valer pra
+// QUALQUER caminho de chamada (CLI local, CLI do agente de nuvem).
+
+import { getBlockReason } from './program-policy.mjs';
 
 export const STATES = [
   'candidate',
@@ -90,6 +98,10 @@ const PRECONDITIONS = {
   // antes de recomendar envio. Isso não pode mais depender de alguém
   // lembrar de perguntar "verifique tudo" no fim.
   'scope_verified->human_ready': (f, ctx = {}) => {
+    const blockReason = getBlockReason(f.program, ctx.programPolicy || {});
+    if (blockReason) {
+      return fail(`programa "${f.program}" está bloqueado para envio: ${blockReason} — achado fica em scope_verified como registro técnico, nunca avança pra human_ready`);
+    }
     if (!ctx.report || !ctx.report.path) return fail('nenhum rascunho de relatório foi gerado ainda');
     const dup = ctx.duplicateCheck;
     if (!dup || !Array.isArray(dup.methods) || dup.methods.length === 0) {

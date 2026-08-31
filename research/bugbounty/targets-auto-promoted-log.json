@@ -1,0 +1,205 @@
+{
+  "generatedAt": "2026-08-31T18:44:50.518Z",
+  "totalActiveAutoPromoted": 4,
+  "promotedThisRound": [
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "apimachinery",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "901 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-08-31T18:44:50.517Z"
+    },
+    {
+      "program": "OKG",
+      "platform": "HackerOne",
+      "owner": "okx",
+      "repo": "go-wallet-sdk",
+      "branch": "main",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 10,
+      "reasons": [
+        "574 estrelas no GitHub — indício de uso real, não projeto de brinquedo"
+      ],
+      "promotedAt": "2026-08-31T18:44:50.517Z"
+    },
+    {
+      "program": "Exodus",
+      "platform": "HackerOne",
+      "owner": "ExodusOSS",
+      "repo": "crypto",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "js",
+      "score": 0,
+      "reasons": [],
+      "promotedAt": "2026-08-31T18:44:50.517Z"
+    },
+    {
+      "program": "Exodus",
+      "platform": "HackerOne",
+      "owner": "ExodusOSS",
+      "repo": "hydra",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "js",
+      "score": 0,
+      "reasons": [],
+      "promotedAt": "2026-08-31T18:44:50.517Z"
+    }
+  ],
+  "skippedThisRound": {
+    "blockedProgram": [],
+    "unsupportedLanguage": [
+      {
+        "owner": "circlefin",
+        "repo": "stablecoin-near",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "circlefin",
+        "repo": "stablecoin-starknet",
+        "githubLanguage": "Cairo"
+      },
+      {
+        "owner": "circlefin",
+        "repo": "stablecoin-sui",
+        "githubLanguage": "Move"
+      },
+      {
+        "owner": "circlefin",
+        "repo": "stablecoin-xlm",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "circlefin",
+        "repo": "starknet-cctp",
+        "githubLanguage": "Cairo"
+      },
+      {
+        "owner": "circlefin",
+        "repo": "stellar-cctp",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "circlefin",
+        "repo": "sui-cctp",
+        "githubLanguage": "Move"
+      },
+      {
+        "owner": "Chia-Network",
+        "repo": "chia-blockchain",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "Chia-Network",
+        "repo": "chia_rs",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "Chia-Network",
+        "repo": "chiapos",
+        "githubLanguage": "HTML"
+      },
+      {
+        "owner": "Chia-Network",
+        "repo": "chiavdf",
+        "githubLanguage": "C++"
+      },
+      {
+        "owner": "Chia-Network",
+        "repo": "clvm_rs",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-core",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-firmware",
+        "githubLanguage": "C"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-messages",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-relay-messages",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-rustzone",
+        "githubLanguage": "Rust"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-secure-element",
+        "githubLanguage": "C"
+      },
+      {
+        "owner": "worldcoin",
+        "repo": "orb-software",
+        "githubLanguage": "Rust"
+      }
+    ],
+    "tooLarge": [
+      {
+        "owner": "Chia-Network",
+        "repo": "chia-blockchain-gui",
+        "sizeKb": 136546
+      },
+      {
+        "owner": "tronprotocol",
+        "repo": "java-tron",
+        "sizeKb": 214820
+      },
+      {
+        "owner": "DopplerHQ",
+        "repo": "cli",
+        "sizeKb": 39315
+      },
+      {
+        "owner": "ExodusOSS",
+        "repo": "bytes",
+        "sizeKb": 41401
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "api",
+        "sizeKb": 84550
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "apiextensions-apiserver",
+        "sizeKb": 29285
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "apiserver",
+        "sizeKb": 29937
+      }
+    ],
+    "metadataFetchFailed": [],
+    "alreadyPromoted": 0,
+    "deferredToNextRun": [],
+    "atCap": false
+  },
+  "note": "skippedThisRound cobre TODO candidato considerado e recusado nesta rodada (linguagem não suportada, repo grande demais, programa bloqueado, erro de metadado, já promovido antes, ou elegível mas sem vaga nesta rodada) -- nunca um corte silencioso."
+}

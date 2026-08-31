@@ -2,6 +2,7 @@ import { openDb, upsertFinding, getFinding, listFindings, recordTransition, reco
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
+import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
 import path from 'node:path';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
@@ -86,6 +87,16 @@ export function cmdEvidenceGrade(db, id) {
   const grade = getEvidenceGrade(db, id, { getFinding, listValidations, latestPlatformOutcome });
   if (grade === null) throw new Error(`finding "${id}" não existe`);
   return { id, grade, meaning: explainGrade(grade) };
+}
+
+/** Checagem rápida ANTES de investir tempo de investigação — não precisa
+ * de finding nem de banco. Usa a mesma policy que o gate de human_ready
+ * consulta automaticamente, então "seguro pra pesquisar" aqui e "consegue
+ * chegar a human_ready" depois são sempre a mesma resposta. */
+export function cmdCheckProgram(programName) {
+  const policy = loadProgramPolicy();
+  const reason = getBlockReason(programName, policy);
+  return reason ? { program: programName, blocked: true, reason } : { program: programName, blocked: false };
 }
 
 export function cmdCheckScope(program, assetRef) {
@@ -178,6 +189,10 @@ async function main() {
   const [, , command, ...rest] = process.argv;
   const { positional, flags } = parseArgs(rest);
 
+  if (command === 'check-program') {
+    printJson(cmdCheckProgram(positional[0]));
+    return;
+  }
   if (command === 'check-scope') {
     const [program, assetRef] = positional;
     printJson(cmdCheckScope(program, assetRef));
@@ -244,7 +259,7 @@ async function main() {
         printJson(await cmdSyncReportStatus(db));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', evidence-grade <id>, export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
         process.exitCode = 1;
     }
   } finally {
