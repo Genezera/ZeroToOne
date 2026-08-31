@@ -4228,3 +4228,54 @@ documentados em rodadas anteriores). Esta rodada não tocou
 `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) — programa
 segue banido pra pesquisa assistida por IA, ver NOTES.md do próprio
 programa.
+
+## Rodada 2026-08-31 (push automático seguinte, gatilho GitHub) — fila vazia, `buidl-wallet-contracts` (factories + callback handler)
+
+`list-pending` global trouxe 0 candidatos (nenhum programa). Este
+disparo do webhook chegou com o repositório já no HEAD do commit
+anterior (`4344124`, "Deep-read round: 3 files in Circle BBP
+(evm-xreserve/evm-gateway), no findings") — ou seja, uma rodada
+equivalente já tinha sido processada por uma sessão concorrente do
+mesmo evento de push antes desta. Prossegui mesmo assim (mesmo padrão
+já documentado antes nesta missão de rodadas concorrentes
+processando o mesmo push de forma independente e chegando às mesmas
+conclusões).
+
+Leitura profunda proativa: clonei `circlefin/buidl-wallet-contracts`
+publicamente (`git clone`) e listei todos os `.sol` de `src/` pra achar
+o que faltava — a maior parte do repo (interfaces, structs, enums) já
+tinha sido descartada em rodadas anteriores por baixo valor. 3 arquivos
+com lógica real ainda não cobertos:
+
+- `src/msca/6900/v0.8/factories/UpgradableMSCAFactory.sol` — a versão
+  v0.8 do factory (a v0.7 equivalente já tinha sido lida antes). Mesmo
+  padrão: `createAccountWithValidation`/`getAddressWithValidation` são
+  `public` de propósito (criação de conta é permissionless por design em
+  account abstraction), mas `_getAddressWithValidation` valida que TODO
+  módulo de validação e TODO hook estão em `isModuleAllowed` (allowlist
+  gerenciada só por `onlyOwner` via `setModules`) antes de computar o
+  endereço counterfactual — não há como criar uma conta com módulo não
+  aprovado. `addStake`/`unlockStake`/`withdrawStake` (interação com
+  stake do EntryPoint ERC-4337) todos `onlyOwner`.
+  `renounceOwnership` foi deliberadamente sobrescrito pra sempre
+  reverter (evita perda acidental de ownership do factory). Sem achado.
+- `src/account/v1/factory/ECDSAAccountFactory.sol` — factory da conta
+  ECDSA de dono único (não-MSCA). `createAccount(owner)`/
+  `createAccount(owner, salt)` são permissionless (qualquer um pode
+  fazer o deploy determinístico da conta de qualquer `owner`), mas isso
+  é seguro: o `owner` real da conta vem do parâmetro explícito passado
+  pro `initialize()` da implementação, nunca de `msg.sender` — quem
+  paga o gas do deploy não ganha controle sobre a conta. Sem achado.
+- `src/callback/DefaultCallbackHandler.sol` — handler de callback
+  ERC721/ERC1155/ERC777 (`onERC*Received`/`tokensReceived`), todas as
+  funções são `pure`/vazias, só retornam o selector esperado pra
+  sinalizar que a conta aceita o token. Sem estado, sem lógica, sem
+  superfície de ataque.
+
+`deep-read-log.json` atualizado (`circlefin/buidl-wallet-contracts`
+31→33; o `UpgradableMSCAFactory.sol` v0.8 já constava no log de uma
+rodada anterior — só os outros 2 arquivos eram de fato novos).
+Nenhum achado novo nesta rodada — resultado normal e válido. Esta
+rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA, ver NOTES.md do próprio programa.
