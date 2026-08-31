@@ -360,7 +360,12 @@
     "crates/turborepo-auth/src/auth/mod.rs",
     "crates/turborepo-auth/src/auth/login.rs",
     "crates/turborepo-auth/src/auth/sso.rs",
-    "crates/turborepo-auth/src/auth/logout.rs"
+    "crates/turborepo-auth/src/auth/logout.rs",
+    "crates/turborepo-auth/src/lib.rs",
+    "crates/turborepo-api-client/src/lib.rs",
+    "crates/turborepo-config/src/lib.rs",
+    "crates/turborepo-config/src/turbo_json.rs",
+    "crates/turborepo-lib/src/commands/login/mod.rs"
   ],
   "circlefin/solana-gateway-contracts": [
     "programs/gateway-wallet/src/instructions/initiate_withdrawal.rs",

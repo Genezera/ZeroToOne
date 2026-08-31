@@ -1195,3 +1195,67 @@ que é o ponto de aplicação real" já visto nas rodadas anteriores de
 `login/index.ts`, `login/reauthenticate.ts`,
 `login/update-current-team-after-login.ts`). Nenhum achado novo nesta
 rodada — resultado normal.
+
+## Rodada 2026-08-31 (ZeroToOne v2, disparada por push automático)
+
+`list-pending` vazio. Os 2 achados em `corroborated_static`/`inconclusive`
+já tinham verificação independente completa registrada em rodadas
+anteriores (Vercel `cli-auth/sso.ts` incluso) — não reabertos sem evidência
+nova.
+
+Leitura profunda focou em `vercel/turborepo` (já parcialmente coberto:
+`turborepo-auth/src/{device_flow,auth/{mod,login,sso,logout}}.rs` lidos
+antes). Hipótese testada desta rodada: será que um repositório malicioso
+consegue, via `turbo.json` commitado (`remoteCache.apiUrl`/`loginUrl`),
+redirecionar o fluxo de login/token da vítima para um servidor do
+atacante — o mesmo padrão de "config de projeto não-confiável sobrescreve
+endpoint de auth" que já rendeu achado em outras ferramentas de monorepo?
+
+Rastreei a cadeia completa: `turborepo-config/src/lib.rs` e
+`turbo_json.rs` (novos, não lidos antes) mostram que `apiUrl`/`loginUrl`
+PODEM de fato vir de `turbo.json` (`ConfigurationSource::TurboJson`), e o
+próprio código de config já rastreia a origem de cada valor
+(`api_url_source`/`login_url_source`) — inclusive com um teste chamado
+literalmente `test_turbo_json_url_sources_are_recorded` usando
+`https://attacker.test/api` como valor de exemplo, sinal de que a equipe
+já modelou esse cenário de ataque deliberadamente.
+
+Segui o rastro até o ponto de uso real
+(`turborepo-lib/src/commands/login/mod.rs`, novo) e daí para
+`turborepo-auth/src/auth/mod.rs::ensure_non_vercel_redirect_allowed`
+(função já existente, mas meu foco anterior nela era outro). Confirmado:
+a) o fluxo Vercel real (`is_vercel_login`) só é escolhido se o host do
+`login_url` bate exatamente com `vercel.com`/`*.vercel.com`
+(`is_vercel_host`, comparação de sufixo correta — não `contains`, sem
+brecha tipo `vercel.com.attacker.com`); b) nesse caso `ensure_trusted_vercel_api`
+TAMBÉM exige que o `api_client.make_url("")` aponte pra um host Vercel
+confiável antes de prosseguir — protege contra o caso de login_url
+correto mas api_url separadamente sequestrado; c) no caminho não-Vercel
+(`login_redirect`, pensado para remote-cache self-hosted legítimo),
+`ensure_non_vercel_redirect_allowed` exige que TANTO `login_url_source`
+quanto (quando `api_url` não é host Vercel) `api_url_source` sejam
+`Cli`/`Environment`/`GlobalConfig` — `TurboJson` está deliberadamente
+EXCLUÍDO dessa lista (`is_user_controlled_url_source`). Ou seja: um
+`turbo.json` malicioso committado no repo NÃO consegue, sozinho,
+redirecionar login/token pra fora do Vercel — a função retorna erro antes
+de abrir o browser ou trocar qualquer token. Testes dedicados já cobrem
+exatamente isso (`test_vercel_login_rejects_untrusted_api_url`,
+`test_vercel_sso_rejects_untrusted_api_url`). Hipótese refutada — mitigação
+real e testada, não uma lacuna.
+
+Nota lateral (não é achado, é observação de baixo risco só documentada):
+`should_skip_existing_token_for_login`/`looks_like_vercel_substring` (em
+`auth/mod.rs`) usa uma checagem fraca (`contains("vercel.com")`, não
+`is_vercel_host`) — mas essa função só decide se um token JÁ EXISTENTE em
+disco é reaproveitado ou se um login novo é forçado, não participa do
+gate de segurança real (`ensure_non_vercel_redirect_allowed`, que usa a
+checagem forte). Na pior hipótese o efeito de uma checagem fraca aqui é
+forçar um login novo com mais frequência do que o necessário — não abre
+caminho pra vazamento de token. Sem ação necessária.
+
+`deep-read-log.json` atualizado (`vercel/turborepo` ganhou 5 arquivos:
+`turborepo-auth/src/lib.rs`, `turborepo-api-client/src/lib.rs`,
+`turborepo-config/src/lib.rs`, `turborepo-config/src/turbo_json.rs`,
+`turborepo-lib/src/commands/login/mod.rs`). Nenhum achado novo nesta
+rodada — resultado normal (hipótese de ataque real testada e refutada
+por controle já existente no código, não por falta de tentativa).
