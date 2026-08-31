@@ -1,51 +1,3 @@
-# ⚠️ REVIEW CHECKLIST — READ BEFORE SUBMITTING, THEN DELETE THIS SECTION
-
-Everything below the `---` line is the actual report — copy from there down. This section above the line is only for you; do not paste it.
-
-Before copying/pasting and submitting, check:
-
-- [ ] Scope confirmed — the affected asset is in the program's scope RIGHT NOW (scope can change; re-confirm on the program page before submitting)
-- [ ] Category confirmed — matches a category the program declares eligible for a reward (not metadata/cosmetic)
-- [ ] Evidence checked — the code excerpts and the PoC output below really exist/ran as described
-- [ ] Not a duplicate — checked against reports already submitted; also do a fresh search on the program page right before submitting (a live public program with real activity can get new duplicates fast — this session already lost a race on a different finding)
-- [ ] Screenshots attached — HackerOne needs these as separate file uploads on the submission form, not as pasted Markdown; the `![...]()` embeds below are for viewing this report locally/on GitHub, not for pasting into the report text box
-- [ ] **`01-poc-execution.png` re-cropped or retaken** (see below) — the current file shows my local machine's directory layout and WSL setup in the command line, which has no business going to Circle
-
-**Screenshots (2026-08-31):** 5 real screenshots, taken by you following the guide, verified here by actually looking at each one — all accurate, all legible, all matching the code/output already in this report. Files at `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/`. The submittable body now calls them out by number in the actual prose (not just the `![...]()` embeds, which won't survive being pasted as plain text) — **upload them to HackerOne in this exact order so "Screenshot N" in the text matches attachment N**:
-
-1. `01-poc-execution.png` (once fixed — see below) — Screenshot 1
-2. `02-deposit-rs.png` — Screenshot 2
-3. `03-initiate-withdrawal-rs.png` — Screenshot 3
-4. `04-withdrawal-rs.png` — Screenshot 4
-5. `05-utils-rs.png` — Screenshot 5
-
-`01` shows a third independent run (different tx signature again) — three separate live executions now, same deterministic result every time.
-
-**Problem with `01-poc-execution.png`, needs fixing before you send anything to Circle:** the top of that screenshot shows the actual command line — `wsl -d kali-linux -- bash -c "cd /mnt/e/dev-toolchains/solana-poc/solana-gateway-contracts && ..."`. That reveals my local folder structure and WSL distro name, which is irrelevant to Circle and not something an external report should expose (it's not a security issue, just unprofessional clutter — reads like an internal note leaked into a customer-facing document). I can't edit pixels in an existing image, so pick one:
-
-1. **Simplest — re-crop what you already have.** Open the PNG in Paint (or any editor) and crop off the top few lines, keeping only from `============================================================` (the first banner line) down through `1 passing`. Nothing about the command needs to be visible — the output alone tells the whole story.
-2. **Cleanest — retake it.** Open a new terminal, run the same command from the guide again, wait for it to finish, then before screenshotting, scroll the window up (or just drag the Win+Shift+S selection box) so it starts at the `PS ...>` prompt line is excluded — capture only from the first `====` line to `1 passing`.
-
-Either way, replace `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/01-poc-execution.png` with the fixed version before uploading anywhere.
-
-**Live-verified 2026-08-31:** `circlefin/solana-gateway-contracts`, type "Smart contract", **In scope**, max severity **Critical**, **Eligible**, on `hackerone.com/circle-bbp`.
-
-**Deployment status (re-verified 2026-08-31, supersedes the note below from an earlier draft):** Circle Gateway **is now live on Solana mainnet** — confirmed live via public RPC (`getAccountInfo` against `mainnet-beta`, `executable: true`, owned by the standard upgradeable BPF loader) and via Circle's own `circlefin/skills` reference repo, which cites this as the official mainnet `gateway-wallet` address: **`GATEwy4YxeiEbRJLwB6dXgg7q61e6zBPrMzYj5h1pRXQ`**. As of January 2026 Circle's own blog described Solana support as pre-launch (a separate pre-mint address, no program deployed yet); by August 2026 Circle's own materials list Solana among Gateway's actively supported chains. **This means real user funds are now at risk, not hypothetical future risk** — the impact below should be read as current, not "before launch."
-
-The `devN7ZZFhGVTgwoKHaDDTFFgrhRzSGzuC6hgVFPrxbs` program ID referenced under "Affected asset" below was found during an earlier pass and has not been independently re-confirmed as mainnet — treat `GATEwy4YxeiEbRJLwB6dXgg7q61e6zBPrMzYj5h1pRXQ` (above) as the current, verified mainnet address; reconcile the two before submitting.
-
-**Timing note:** don't sit on this one. This session already lost report-priority on a related Circle finding (arc-remote-signer) to another researcher who submitted first, even though our analysis was independently confirmed correct by Circle's own triage team.
-
-**⚠️ Read this before deciding to submit — real precedent risk:** The identical behavior on this program's EVM counterpart (`evm-gateway-contracts::Withdrawals.sol`, same missing check on `initiateWithdrawal`/`withdraw`) is **not an open/paid vulnerability** — Circle's own commissioned audit (ChainSecurity, "PUBLIC Code Assessment of the Circle Gateway Smart Contracts," 2025-07-08) documents this exact behavior in section 8.1 ("Denylist on GatewayWallet and GatewayMinter") as a **Note**, not a finding requiring a fix: *"The GatewayWallet prevents denylisted accounts from depositing tokens into the contract, updating delegations, or bridging... However, denylisted users can still withdraw their tokens from the wallet contract."* That's Circle treating this exact behavior as accepted design on the EVM side. Neither public Circle Gateway audit (ChainSecurity or OtterSec) covers the Solana program at all, so this specific instance genuinely hasn't been publicly disclosed anywhere found — it may still be legitimately reportable as a novel finding on a different codebase. But there is a real, material chance Circle applies the same "accepted design" reasoning here and closes this as informative/not-applicable rather than paying it. Go in with that expectation, not as a slam-dunk.
-
-**Revised 2026-08-31 (report-writing pass, before first submission):** title/Summary/Impact tightened, a "Key PoC observation" section added to pre-empt the false-positive question, and severity is no longer self-asserted as Critical (the demonstrated impact is a denylisted account bypassing its *own* funds' restriction, not cross-account theft — let HackerOne's own calculator decide). The EVM-precedent paragraph above was deliberately kept OUT of the submittable Summary — it doesn't change any fact about the Solana-specific evidence, and volunteering it up front risks anchoring a triager toward "known accepted design" before they've read the Solana proof. You already have the full context here for your own judgment call; nothing below assumes you didn't.
-
-**Revised again 2026-08-31 (second pass):** Evidence reordered to lead with `deposit.rs` (the check that DOES exist) before the two files where it's missing, added a real `utils.rs` excerpt (`is_account_denylisted`, fetched fresh from the pinned commit, not paraphrased), trimmed the Anchor-macro paragraph to one plain sentence, and replaced "Commit: master" with the exact SHA (confirmed live against the GitHub API as still-current `HEAD`). Also added one neutral sentence near the end noting the EVM implementation was reviewed separately, without repeating the ChainSecurity "accepted design" characterization in the submittable body — full detail stays here, above the line. Separately: I dug into whether "accepted design" is really Circle's own position or just one auditor's read of a different codebase — checked Circle's own EVM contract-interfaces documentation directly, and it does NOT state anywhere that withdrawal-during-denylist is intended behavior; that characterization exists only in ChainSecurity's audit note, not in Circle's own developer-facing docs, and doesn't cover Solana at all. Doesn't eliminate the risk, but the "it's just design" defense rests on thinner ground than it might sound.
-
-**Re-verified live 2026-08-31 (third pass, PoC re-run):** The exact PoC test was re-run for real (not replayed) via the cached toolchain at `E:\dev-toolchains\solana-poc\solana-gateway-contracts`, at the same pinned commit, through WSL (native Windows Node can't load `litesvm`'s native binding — that package ships Linux/macOS binaries only, no Windows one, confirmed by checking its `optionalDependencies`). New transaction signature each run (expected, LiteSVM-generated), identical deterministic numbers every time (1,000,000 → 2,000,000, `AccountDenylisted` on the control check). The PoC's `console.log` calls were also rewritten into a clearer step-by-step banner format for screenshot purposes — zero change to any assertion or program logic, purely presentational. See the file itself at that path if you want to re-run it again before submitting.
-
----
-
 ## Title
 Denylist bypass allows denied accounts to withdraw previously deposited funds
 
@@ -409,8 +361,6 @@ UNAUTHORIZED WITHDRAWAL ACCEPTED
 ![Executable PoC — denylisted account successfully withdraws its pre-existing balance](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/01-poc-execution.png)
 *Executable PoC — denylisted account successfully withdraws its pre-existing balance. This is a separate live run from the literal text above (same command, run again from a plain PowerShell window) — different transaction signature (`4YFCbs5U...`) than the text block's `5fWLeusE...`, identical deterministic numbers. Two independent runs, same result.*
 
-**⚠️ Before uploading `01-poc-execution.png`, see the note in the checklist above — it currently shows the command line with a local path, which needs to be cropped or replaced before this goes to Circle.**
-
 ## Impact
 A denylisted account can retain and withdraw funds that were deposited before the denylist action.
 
@@ -434,5 +384,3 @@ The EVM implementation was reviewed separately, but this report concerns the Sol
 
 ## Suggested fix
 Add a denylist account (same PDA convention as `deposit.rs`: `seeds = [DENYLIST_SEED, depositor.key().as_ref()]`) to both `InitiateWithdrawalContext` and `WithdrawContext`, and call `require!(!utils::is_account_denylisted(...), GatewayWalletError::AccountDenylisted)` in both handlers, mirroring the existing check in `deposit`/`deposit_for`/`add_delegate`/`remove_delegate`.
-
----
