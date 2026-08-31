@@ -258,7 +258,10 @@
     "src/xReserve.sol",
     "src/modules/x-reserve/RemoteDomainRegistration.sol",
     "src/lib/WithdrawHookDataLib.sol",
-    "src/modules/x-reserve/Pausing.sol"
+    "src/modules/x-reserve/Pausing.sol",
+    "src/UpgradeablePlaceholder.sol",
+    "src/lib/DepositIntentLib.sol",
+    "src/lib/AddressLib.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",

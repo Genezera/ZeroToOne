@@ -3463,3 +3463,43 @@ por `init.rs`, grava com `mode(0o600)` explícito em Unix). Nenhum
 achado novo. `deep-read-log.json` atualizado.
 
 `export-queue` + commit ao final.
+
+## Rodada 2026-08-31 (push 47d8c81)
+
+Fila de `candidate` vazia. Achado `corroborated_static`
+(`ColdStorageAddressBookModule.sol::addAllowedRecipients`, PoC
+pendente de Foundry): quinta checagem consecutiva de
+`curl -L https://foundry.paradigm.xyz` — mesmo resultado das 4
+rodadas anteriores (`connect_rejected`/403, política de organização
+do agent-proxy). Confirma de vez que o bloqueio é permanente neste
+ambiente, não transitório — vou parar de repetir essa checagem em
+toda rodada a partir de agora (vou revisitar só se algo mudar na
+política de rede, não por rotina) pra não gastar esforço em uma
+verificação cujo resultado já é previsível. Achado permanece em
+`corroborated_static`, sem PoC executável possível.
+
+Leitura profunda proativa desta rodada: `circlefin/evm-xreserve-contracts`
+(Solidity), 3 arquivos novos —
+`src/UpgradeablePlaceholder.sol` (implementação UUPS no-op usada
+como placeholder antes do deploy real do `xReserve`; `_disableInitializers`
+no construtor, `initialize` valida owner não-zero via `AddressLib`,
+`_authorizeUpgrade` restrito a `onlyOwner` via `Ownable2StepUpgradeable`
+— padrão OZ padrão, sem achado), `src/lib/DepositIntentLib.sol`
+(codifica/decodifica o `DepositIntent` usando `TypedMemView`;
+`_validateDepositIntent` checa versão, `localToken`/`localDepositor`
+não-zero e `amount>0`, mas note-se que NÃO valida `remoteToken`/
+`remoteRecipient` como não-zero — investiguei se isso é explorável:
+não é, porque esses dois campos são responsabilidade de validação do
+lado remoto/destino, não do lado que decodifica localmente; quem
+efetivamente usa `decodeDepositIntent` hoje é só `USDCx.sol`, que o
+próprio código rotula explicitamente como
+"example... not audited or production-ready... for illustrative
+purposes" — não é um contrato de produção implantável, então não abre
+achado reportável neste programa) e `src/lib/AddressLib.sol`
+(`_checkNotZeroAddress`/`_checkNotZeroBytes32`/`_bytes32ToAddressSafe`
+— utilitários simples, `_bytes32ToAddressSafe` corretamente rejeita
+padding não-zero nos 12 bytes superiores antes de truncar pra
+`address`). Nenhum achado novo. `deep-read-log.json` atualizado
+(circlefin/evm-xreserve-contracts agora com 15 arquivos lidos).
+
+`export-queue` + commit ao final.
