@@ -3759,3 +3759,28 @@ arquivos lidos, mas nenhum ainda cobre o caminho de burn/deposit em si,
 só administração de roles) ou continuar em repos com pouca cobertura
 (`stablecoin-aptos`, `starknet-cctp`, `sui-cctp`, `stellar-cctp`,
 `stablecoin-near` — todos com 2-3 arquivos lidos até agora).
+
+## Rodada 2026-08-31 (push automático, execução concorrente) — complemento à rodada anterior de noble-fiattokenfactory
+
+Esta rodada rodou em paralelo com a rodada imediatamente anterior
+("verify Circle noble-fiattokenfactory mint/burn symmetry", commit
+`59dcad1`), que já cobriu `msg_server_blacklist.go`/`msg_server_burn.go`/
+`msg_server_pause.go` — mesma conclusão independente (sem achado) via
+análise própria antes de ver o commit dela.
+
+Complemento não coberto por aquela rodada: `x/fiattokenfactory/ante.go`
+(`IsBlacklistedDecorator`) — o ante handler só intercepta explicitamente
+`*transfertypes.MsgTransfer` (IBC), com comentário no próprio código
+explicando por quê (o receiver de um IBC transfer não é local a Noble,
+então não passa pelo `SendRestrictionFn` do bank module — só o handler
+IBC pode checar). Confirmado que isso NÃO é um gap: a rodada anterior já
+tinha identificado que `SendRestrictionFn` (`keeper.go`) cobre `MsgSend`
+nativo checando `fromAddr` E `toAddr`; reli essa função aqui e confirmei
+que ela também cobre `grantee` de `authz.MsgExec` — os dois mecanismos
+(ante pra IBC, send-restriction pra bank nativo) são complementares, sem
+sobreposição nem gap entre eles. Também lido `msg_server_unblacklist.go`
+(simétrico a `blacklist.go`, mesmo gate por role). Sem achado novo.
+
+`deep-read-log.json`: adicionados `ante.go` e `msg_server_unblacklist.go`
+à entrada de `circlefin/noble-fiattokenfactory` (union com o que a rodada
+concorrente já tinha registrado — sem duplicar entradas).
