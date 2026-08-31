@@ -3097,3 +3097,65 @@ este achado é candidato natural a virar o próximo `reproduced_local`: o
 teste seria simplesmente instalar o módulo numa MSCA v0.8 de teste e
 chamar `addAllowedRecipients` de um endereço aleatório sem nenhuma
 validação configurada, confirmando que o storage do módulo muda.
+
+## Rodada 2026-08-31 (push automático, disparado pelo commit "closed as duplicate") — fila vazia, verificação de padrão irmão em buidl-wallet-contracts, sem achado novo
+
+`list-pending` global = 0 no início desta rodada. Nota sobre o push que
+disparou esta rodada: o commit `664e259` (já presente no HEAD antes desta
+sessão começar) registra que o report `arc-remote-signer` (RPC de
+assinatura sem autenticação, `SignerService.Sign`) foi fechado como
+**duplicate** no HackerOne (`#3981927` vs `#3720384`) — outro
+pesquisador reportou o mesmo problema antes. Triagem da Circle confirmou
+o achado ponto a ponto (a análise estava correta), só perdemos a corrida
+de submissão. Isso já é resultado de plataforma real, registrado pelo
+usuário numa sessão separada — nenhuma ação adicional necessária aqui
+além de constatar (estado já `duplicate`, coerente com a regra de que
+veredito terminal só vem de resultado real de plataforma).
+
+Leitura profunda proativa desta rodada: em vez de escolher um repositório
+novo, usei julgamento pra verificar se o padrão do achado
+`corroborated_static` mais recente desta missão (`addAllowedRecipients`
+sem gate de autorização em `ColdStorageAddressBookModule.sol` v0.8, via
+`skipRuntimeValidation: true` não interceptado por `_checkCallPermission`)
+se repete em outro lugar do mesmo repositório — 3 arquivos ainda não
+lidos individualmente: `src/msca/6900/v0.8/libs/HookLib.sol`,
+`src/msca/6900/v0.8/managers/StandardExecutor.sol` e
+`src/msca/6900/v0.8/factories/UpgradableMSCAFactory.sol`.
+
+- Primeiro, `grep -rn "skipRuntimeValidation" src/` no clone raso
+  confirma que o único lugar do repositório inteiro que atribui
+  `skipRuntimeValidation: true` a uma função de execução é exatamente o
+  `ColdStorageAddressBookModule.sol` já registrado — nenhum módulo irmão
+  (v0.7 nem v0.8) repete o padrão. Fecha a hipótese de "bug sistemático
+  na v0.8" com evidência direta (grep no repo completo, não amostragem).
+- `HookLib.sol` — iteração/execução de pre/post hooks de execução
+  (`_processPreExecHooks`/`_processPostExecHooks`). Falhas de qualquer
+  hook (`try/catch`) sempre revertem a transação inteira (`revert
+  PreExecHookFailed`/`PostExecHookFailed`) — fail-closed, sem caminho de
+  hook "engolido" silenciosamente. A instalação/autorização de quais
+  hooks existem é decidida em `BaseMSCA.sol` (já auditado); este arquivo
+  só executa o que já foi validado antes. Sem achado.
+- `StandardExecutor.sol` (v0.8) — biblioteca fina (`execute`/
+  `executeBatch`), só encapsula a chamada externa via
+  `callWithReturnDataOrRevert`; toda checagem de autorização de quem
+  pode chamar `execute`/`executeBatch` acontece antes, em `BaseMSCA.sol`
+  (`_checkCallPermission`, já auditado nas rodadas anteriores). Idêntica
+  em espírito à v0.7 já lida — nenhuma lógica de auth própria aqui pra
+  regressar. Sem achado.
+- `UpgradableMSCAFactory.sol` — `setModules`/`addStake`/`unlockStake`/
+  `withdrawStake` corretamente gateados por `onlyOwner` (`Ownable2Step`,
+  com `renounceOwnership()` explicitamente desabilitado via `revert
+  Unsupported()` — evita perda acidental de ownership).
+  `_getAddressWithValidation` (chamado tanto por
+  `createAccountWithValidation` quanto por `getAddressWithValidation`)
+  valida que o módulo de validação E todos os módulos de hook passados
+  na criação estão em `isModuleAllowed` (populado só pelo owner) —
+  consistente com o comentário do contrato ("only fully audited modules
+  during account creation"). Não há como criar uma conta já com um
+  módulo não autorizado instalado. Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal, e evidência adicional
+(negativa, por grep completo do repo) de que o achado já registrado é um
+caso isolado, não um padrão sistêmico do fork v0.8. `deep-read-log.json`
+atualizado (`circlefin/buidl-wallet-contracts` ganhou os 3 arquivos
+acima). `export-queue` + commit ao final desta rodada.

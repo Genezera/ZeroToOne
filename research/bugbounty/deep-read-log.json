@@ -210,7 +210,10 @@
     "src/libs/PublicKeyLib.sol",
     "src/msca/6900/v0.8/account/UpgradableMSCA.sol",
     "src/msca/6900/v0.8/account/BaseMSCA.sol",
-    "src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol"
+    "src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol",
+    "src/msca/6900/v0.8/libs/HookLib.sol",
+    "src/msca/6900/v0.8/managers/StandardExecutor.sol",
+    "src/msca/6900/v0.8/factories/UpgradableMSCAFactory.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
