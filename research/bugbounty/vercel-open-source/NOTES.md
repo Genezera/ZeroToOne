@@ -1380,3 +1380,28 @@ Leitura profunda proativa — 3 arquivos novos em `vercel/vercel`
 
 `deep-read-log.json` atualizado (`vercel/vercel` ganhou 3 arquivos,
 agora 15 no total). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 — fila vazia, leitura profunda em vercel-labs/agent-skills
+
+Fila de `candidate` vazia (0 pendentes). Sem trabalho de máquina de
+estados a fazer nesta rodada. Leitura profunda proativa: alvo novo
+`vercel-labs/agent-skills` (ainda não tinha entrada em
+`deep-read-log.json`), clonado publicamente via `git clone --depth 1`.
+Repositório é majoritariamente conteúdo de skills em Markdown; a
+superfície de código real fica nos dois workflows do GitHub Actions em
+`.github/workflows/`:
+
+- `agent-skills-discovery.yml` — job `validate` roda em `pull_request`
+  (não `pull_request_target`), sem `secrets`, permissions
+  `contents: read` — contexto seguro pra PR de fork, nada a explorar.
+  Job `publish` só roda em `push` pra `main` (não em PR), usa
+  `github.token` (`GH_TOKEN`) só pra `gh release`, e as únicas
+  interpolações no `run:` são `github.sha`/`github.repository` — não
+  são strings controláveis por um atacante externo nesse evento. Sem
+  injeção de comando via campo de PR (title/body/branch) porque nada
+  disso é interpolado em `run:`.
+- `react-best-practices-ci.yml` — build/validate padrão com pnpm, sem
+  segredos, sem interpolação de conteúdo externo em `run:`. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` ganhou a chave
+`vercel-labs/agent-skills` com os 2 arquivos lidos.

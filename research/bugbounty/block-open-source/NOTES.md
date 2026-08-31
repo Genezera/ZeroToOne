@@ -1817,3 +1817,44 @@ final: **`human_ready`** — primeiro achado do sistema inteiro (qualquer
 programa) a chegar honestamente a esse estado sob a máquina de estados
 v2. Relatório atualizado com a PoC completa em
 `research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md`.
+
+## Rodada 2026-08-31 — fila vazia, leitura profunda em cashapp/hermit (archive.go)
+
+Fila de `candidate` vazia. Leitura profunda proativa: `archive/archive.go`
+do `cashapp/hermit` (gerenciador de pacotes Go do Block/Cash App) — é o
+ponto natural de extração de arquivos baixados (zip/tar/7z/deb/rpm/dmg/pkg),
+clássico hotspot de zip-slip/tar-slip. Análise cética linha a linha:
+
+- `extractZip`/`extractPackageTarball` (os dois formatos mais comuns):
+  usam `os.OpenRoot(dest)` (API de containment do Go 1.24+) pra toda
+  operação de escrita, então mesmo um symlink malicioso na árvore não
+  consegue redirecionar escrita pra fora de `dest` — o kernel recusa via
+  semântica tipo `openat2 RESOLVE_BENEATH`. Além disso: (1) checagem
+  lexical `sanitizeExtractPath` em CADA nome de entrada, incluindo
+  revalidação depois do `strip` de prefixo; (2) `sanitizeSymlinkTarget`
+  rejeita link cujo alvo resolvido (relativo ao diretório do link) sai
+  de `dest`; (3) hard link em tar é convertido pra symlink relativo e
+  passa pela mesma validação; (4) `validateSymlinks` faz uma segunda
+  passada no fim, andando a árvore final via `root.FS()` — cobre o caso
+  em que um link parecia contido no momento da criação mas uma entrada
+  posterior do arquivo (ex.: um `.` symlink preenchendo um componente
+  que faltava) o transforma em escape. Isso é defesa em profundidade
+  genuína, não só o fix lexical clássico do Snyk.
+- `extract7Zip`/`extractRpmPackage` (formatos menos comuns): usam só a
+  checagem lexical (`makeDestPath`/`sanitizeExtractPath`), sem
+  `os.Root`. Testei se isso é explorável via symlink: não é, porque
+  nenhum dos dois trata entradas do tipo symlink como tal — todo
+  conteúdo é escrito como arquivo regular (`os.OpenFile`/`os.WriteFile`)
+  independente do que a entrada original representava. Ou seja, mesmo
+  que `go7z`/`go-rpmutils` exponham metadado de link simbólico Unix no
+  header, este código nunca chama `os.Symlink` nesses dois caminhos —
+  na pior hipótese isso é bug de fidelidade de extração (um symlink do
+  pacote original vira um arquivo regular contendo o texto do alvo),
+  não escape de sandbox. E a checagem lexical de nome sozinha já cobre
+  o `../` clássico (confirmado: `filepath.Join` + `Clean` + prefixo
+  exige separador depois do destino, sem o bug de "prefixo por nome"
+  tipo `/dest-evil` passar como se fosse `/dest`).
+
+Sem achado — código já hardened, com comentários no próprio arquivo
+citando explicitamente a pesquisa de zip-slip do Snyk. Resultado normal.
+`deep-read-log.json` ganhou `archive/archive.go` na chave `cashapp/hermit`.

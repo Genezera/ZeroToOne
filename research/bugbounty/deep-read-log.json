@@ -112,7 +112,8 @@
     "cache/http.go",
     "cache/cache.go",
     "state/state.go",
-    "manifest/digest/digest.go"
+    "manifest/digest/digest.go",
+    "archive/archive.go"
   ],
   "cashapp/cash-app-pay-ios-sdk": [
     "Sources/PayKit/CashAppPay.swift",
@@ -345,6 +346,10 @@
     "packages/oidc/src/verify-vercel-oidc-token.ts",
     "packages/connect/src/mcp/connect-auth-provider.ts",
     "packages/connect/src/eve/connect-oauth.ts"
+  ],
+  "vercel-labs/agent-skills": [
+    ".github/workflows/agent-skills-discovery.yml",
+    ".github/workflows/react-best-practices-ci.yml"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",
