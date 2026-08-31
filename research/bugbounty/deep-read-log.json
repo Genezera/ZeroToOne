@@ -461,6 +461,12 @@
   "vercel/swr": [
     "src/_internal/utils/hash.ts"
   ],
+  "vercel/ms": [
+    "src/index.ts"
+  ],
+  "vercel/async-sema": [
+    "src/index.ts"
+  ],
   "circlefin/stablecoin-sui": [
     "packages/stablecoin/sources/treasury.move"
   ],

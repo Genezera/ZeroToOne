@@ -2702,3 +2702,42 @@ Um achado novo processado nesta rodada, refutado com justificativa
 completa (não é resultado "nenhum achado" nem submissão — é o ciclo
 funcionando: achado real de código, sem impacto real por falta de
 alcançabilidade).
+
+## Rodada 2026-08-31 — retomada do achado corroborated_static em solana-gateway-contracts
+
+Fila de `candidate` vazia. Retomei o achado já existente em
+`corroborated_static` (`initiate_withdrawal.rs`/`withdraw`, denylist não
+verificado no saque no programa Anchor `gateway-wallet`) pra tentar
+avançar a máquina de estados nesta rodada, já que o ambiente atual (cloud,
+Linux) tem ~30GB livres em disco — bem diferente do bloqueio de espaço
+em disco (~2GB livres) registrado na rodada anterior numa máquina local
+Windows.
+
+Passos executados: `check-scope "Circle BBP" "circlefin/solana-gateway-contracts"`
+→ `allowed=true`, `bountyEligible=true`, `maxSeverity=critical`.
+`record-deployment-evidence` com `confidence="unverified"` (confirmei
+via `git ls-remote` o commit atual de `master`,
+`909373cdee3aad9e06fe37b599f9d29160f7ca4c`, mas o programa Circle
+Gateway ainda não está em mainnet no Solana — sem endereço/programId
+real pra citar). Tentativa de `transition ... scope_verified` foi
+**recusada pela máquina de estados**, e corretamente: a precondição real
+de `state-machine.mjs` exige vir de `reproduced_local`, não de
+`corroborated_static` diretamente — e mesmo se viesse de lá, o gate
+adicional de `deploymentEvidence.confidence !== "unverified"` também
+bloquearia.
+
+Decisão explícita desta rodada: **não construí um validador
+Anchor/LiteSVM novo**, mesmo com disco disponível agora, porque a
+instrução da missão é clara — achados não-Solidity sem validador
+disponível no sistema ficam em `corroborated_static` por design ("não
+invente um validador"); inventar um agora seria contornar a máquina de
+estados por fora, não usá-la. Isso fica registrado como decisão
+consciente, não como limitação esquecida: se o sistema ganhar um
+validador Anchor/Solana de verdade (fora desta sessão, via
+Fase 2/4 do plano), este é candidato natural a ser o primeiro caso de
+teste.
+
+Estado final: mantido em `corroborated_static`. Nenhuma mudança de
+veredito — resultado normal (achado real, bem documentado, mas
+genuinamente sem caminho de avanço disponível hoje sob as regras da
+missão).

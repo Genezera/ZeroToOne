@@ -1405,3 +1405,29 @@ superfície de código real fica nos dois workflows do GitHub Actions em
 
 Nenhum achado novo. `deep-read-log.json` ganhou a chave
 `vercel-labs/agent-skills` com os 2 arquivos lidos.
+
+## Rodada 2026-08-31 — fila vazia, leitura profunda em vercel/ms e vercel/async-sema
+
+Fila de `candidate` vazia. Sem trabalho de máquina de estados novo pro
+achado já existente em `corroborated_static` (`packages/cli-auth/sso.ts`,
+`waitForVerification`/`reauthorizeTeam`) — nenhuma fonte nova foi
+encontrada nesta rodada sobre alcançabilidade externa (nenhuma
+verificação adicional tentada, pra não repetir a mesma busca exaustiva
+já feita duas vezes; fica como está, aguardando decisão humana).
+
+Leitura profunda proativa: dois alvos do snapshot de escopo ainda sem
+entrada em `deep-read-log.json` — `vercel/ms` e `vercel/async-sema`,
+ambos repositórios pequenos (um único arquivo-fonte relevante cada).
+
+- `vercel/ms` (`src/index.ts`): parser de string tipo "2h"/"1d" pra
+  milissegundos. Já é a versão hardened pós-CVE-2015-8315 (limite
+  explícito de 100 chars de entrada antes de rodar a regex, e a regex
+  em si — `-?\d*\.?\d+ *(unit)?` — não tem quantificadores aninhados
+  vulneráveis a ReDoS catastrófico). Sem achado.
+- `vercel/async-sema` (`src/index.ts`): semáforo/rate-limiter genérico
+  em cima de uma Deque circular. Não processa entrada não-confiável
+  (é uma primitiva de controle de concorrência, não parser), sem lógica
+  de auth/crypto. Sem achado.
+
+`deep-read-log.json` atualizado com as duas chaves novas. Nenhum
+achado nesta rodada — resultado normal.
