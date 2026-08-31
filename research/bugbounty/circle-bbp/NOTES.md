@@ -3635,3 +3635,27 @@ achado do Solana (LiteSVM em vez de `solana-test-validator`/Anchor CLI)
 — segunda vez nesta missão que um bloqueio de "ferramenta oficial"
 teve um caminho real alternativo que ninguém tinha tentado ainda.
 `export-queue` + relatório commitados ao final desta auditoria.
+
+## ColdStorageAddressBookModule: avançou até human_ready (31/08/2026, mesma rodada)
+
+Verificado ao vivo `script/bytecode-deploy/100_Constants.sol` e o README do
+repo: existe pipeline de deploy real, multi-chain (14 chains, incluindo
+mainnet Ethereum/Base/Arbitrum/Optimism/Polygon/Avalanche), com endereços
+de factory determinísticos reais — mas **só para ERC-6900 v0.7**
+(`ColdStorageAddressBookPlugin`, a versão SEM o bug). Nenhum script/
+endereço de deploy equivalente encontrado pra v0.8 (`ColdStorageAddressBookModule`,
+onde o bug vive) em todo `script/bytecode-deploy/`. DeploymentEvidence
+gravada com confidence `low` (honesto: pipeline real existe pro repo, mas
+não confirmado especificamente pra v0.8) — suficiente pro gate de
+`scope_verified` (`check-scope` confirma escopo+elegibilidade+`critical`).
+Relatório já existia (`recordReport` da rodada anterior) — avançou direto
+pra `human_ready`. Banner do relatório atualizado pra refletir esse
+detalhe v0.7-vs-v0.8 com precisão (a versão anterior do banner dizia só
+"não achei endereço de mainnet", sem a distinção específica, que é mais
+forte e mais honesta).
+
+Terceiro achado do sistema inteiro a chegar em `human_ready` (depois de
+arc-remote-signer, já resolvido, e wire-schema, bloqueado por regra do
+programa) — e o único hoje sem nenhum bloqueio conhecido (nem regra de
+programa, nem precedente de "design aceito", nem alcançabilidade
+duvidosa). `export-queue` + commit ao final.
