@@ -390,8 +390,11 @@
     "src/github-host.ts",
     "src/skill-lock.ts",
     "src/blob.ts",
-    "src/update.ts (parcial)",
-    "src/installer.ts (parcial — writeSkillFiles/isPathSafe/sanitizeName)"
+    "src/update.ts (completo)",
+    "src/installer.ts (completo)",
+    "src/sanitize.ts",
+    "src/list.ts",
+    "src/find.ts"
   ],
   "vercel/next.js": [
     "packages/next/src/server/app-render/encryption.ts",
