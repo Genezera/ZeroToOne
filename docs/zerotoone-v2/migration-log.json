@@ -1,17 +1,17 @@
 {
-  "migratedAt": "2026-08-31T11:20:57.731Z",
-  "total": 46,
+  "migratedAt": "2026-08-31T16:47:07.398Z",
+  "total": 45,
   "logs": [
     {
-      "id": "Vercel Open Source::vercel-labs/skills/src/sanitize.ts::function:stripTerminalEscapes::terminal_escape_injection_risk",
+      "id": "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding",
       "steps": [
         {
-          "to": "corroborated_static",
+          "to": "known_duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "corroborated_static"
+      "finalState": "known_duplicate"
     },
     {
       "id": "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding",
@@ -157,7 +157,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -168,7 +168,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -201,7 +201,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-split/src/provider/index.ts::line:63::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -212,7 +212,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-split/src/provider/index.ts::line:63::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -421,6 +421,17 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials::ai_deep_read_finding",
       "steps": [
         {
@@ -432,15 +443,15 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
+      "id": "Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding",
       "steps": [
         {
-          "to": "known_duplicate",
+          "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "known_duplicate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding",
@@ -485,28 +496,6 @@
         }
       ],
       "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "corroborated_static",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "corroborated_static"
-    },
-    {
-      "id": "Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "inconclusive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "inconclusive"
     }
   ]
 }
