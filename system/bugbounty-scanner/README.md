@@ -560,3 +560,26 @@ Personal access tokens → Tokens (classic) → Generate new token, sem
 marcar nenhuma permissão, e configurar como variável de ambiente do
 usuário (nunca em arquivo — mesmo padrão de `HACKERONE_API_TOKEN`/
 `TELEGRAM_BOT_TOKEN`).
+
+## `record-platform-outcome`: sincronizar submissão feita direto na HackerOne (31/08/2026)
+
+`sync-report-status` (`cli.mjs`) só sabia atualizar um finding que já
+estava em `submitted` COM `externalReportId` gravado — ou seja, só
+funcionava pra submissão feita através do próprio fluxo deste projeto.
+Não cobria o caso real que aconteceu: o usuário revisou o relatório já
+pronto e enviou direto no site da HackerOne, sem passar por
+`transition ... submitted` primeiro. `cmdRecordPlatformOutcome`
+(`cli.mjs record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}'`)
+fecha essa lacuna — grava o outcome real depois do fato, pra então
+`transition <id> submitted` e `transition <id> <outcome>` fluírem pela
+state machine normalmente, com os timestamps reais da plataforma, não
+os do momento em que o comando foi rodado.
+
+Primeiro uso real: o achado do Solana (`gateway-wallet` denylist)
+enviado pelo usuário como report #3984747 — fechado como `duplicate`
+em menos de 4 minutos, por um bot automático da HackerOne
+(`hackerone-agent`), citando outro report já existente (#3517577) com
+o mesmo mecanismo. Não é falha de metodologia: o achado era real, o
+PoC era real, só perdeu a corrida pra outro pesquisador — mesmo padrão
+já visto com o arc-remote-signer nesta sessão. Ver
+`circle-bbp/NOTES.md` pro registro completo.

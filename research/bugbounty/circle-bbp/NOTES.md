@@ -4098,3 +4098,41 @@ cadeia de código citada linha a linha, e o aviso honesto sobre risco de
 precedente (o gap idêntico do lado EVM foi tratado como design aceito
 pela própria auditoria ChainSecurity da Circle — não é garantia de
 pagamento, é um achado novo genuíno num codebase diferente).
+
+## Solana `gateway-wallet` (denylist/withdraw): enviado e fechado como duplicata (31/08/2026, mais tarde)
+
+Usuário enviou de verdade na HackerOne — report **#3984747**, severidade
+autoavaliada Medium (CVSS 4.0, score 6.9,
+`AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:L/VA:N/SC:N/SI:N/SA:N`, os mesmos
+valores calculados aqui antes do envio), asset/weakness corretos
+(`circlefin/solana-gateway-contracts`, CWE-862 Missing Authorization).
+
+Fechado como **duplicate** em `2026-08-31T21:12:00Z` — **menos de 4
+minutos** depois do envio (`21:08:04Z`), pelo ator `hackerone-agent`
+(bot automático da própria HackerOne, não triagem humana da Circle).
+Mensagem: já existe o report **#3517577**, descrevendo exatamente o
+mesmo mecanismo (denylist bypass via `initiate_withdrawal`/`withdraw`
+faltando o check). `bounty_awarded_at: null`.
+
+Isso não é falha de metodologia — o achado é real, a cadeia de código
+e o PoC foram genuínos e bem executados, e o próprio relatório já
+avisava que existia risco real de fechamento sem pagamento (ali por
+causa do precedente EVM; aqui a causa real acabou sendo diferente —
+duplicata de um pesquisador terceiro que chegou primeiro, não o
+precedente EVM em si). Mesmo padrão já visto com o arc-remote-signer
+nesta sessão: dois dos achados mais avançados do Circle BBP, ambos
+tecnicamente sólidos, ambos perderam a corrida pra outro pesquisador.
+
+Estado real sincronizado na state machine via o novo comando
+`record-platform-outcome` (`cli.mjs`) — não existia antes um jeito de
+registrar outcome de plataforma pra um finding que foi submetido
+DIRETO pelo usuário na HackerOne (fora do fluxo `transition ->
+submitted` deste CLI); agora existe, reutilizável pra qualquer achado
+futuro na mesma situação. Progressão real registrada:
+`human_ready -> submitted -> duplicate`, com os timestamps reais da
+HackerOne, não os do momento em que rodei o comando.
+
+Fila Circle BBP agora: 1 `human_ready` (wire-schema, bloqueado por
+política, nunca vai ser enviado), 2 `duplicate` (arc-remote-signer,
+este achado), 2 `known_duplicate`, 87 `candidate` ainda não revisados,
+38 `false_positive`, 2 `inconclusive`.

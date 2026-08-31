@@ -80,6 +80,16 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   return recordDuplicateCheck(db, id, patch);
 }
 
+/** Pra quando um humano submete direto na plataforma (fora do fluxo de
+ * transition->submitted deste CLI) -- registra o resultado real depois
+ * do fato, mesmo padrão que `sync-report-status` já usa internamente,
+ * só que chamável manualmente pra um finding que ainda não tinha
+ * platformOutcome nenhum gravado. */
+export function cmdRecordPlatformOutcome(db, id, patch) {
+  if (!patch.state) throw new Error('platform outcome precisa de "state" (ex.: submitted, duplicate, triaged, paid, resolved, informative, rejected)');
+  return recordPlatformOutcome(db, id, patch);
+}
+
 /** Grau de evidência (E0-E5, ver evidence-grade.mjs) -- deriva do que já
  * está gravado (filesRead, validations, platformOutcome), não pede
  * nenhum dado novo do chamador. */
@@ -246,6 +256,9 @@ async function main() {
       case 'record-duplicate-check':
         printJson(cmdRecordDuplicateCheck(db, positional[0], parseJsonFlag(flags, 'patch')));
         break;
+      case 'record-platform-outcome':
+        printJson(cmdRecordPlatformOutcome(db, positional[0], parseJsonFlag(flags, 'patch')));
+        break;
       case 'evidence-grade':
         printJson(cmdEvidenceGrade(db, positional[0]));
         break;
@@ -259,7 +272,7 @@ async function main() {
         printJson(await cmdSyncReportStatus(db));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
         process.exitCode = 1;
     }
   } finally {
