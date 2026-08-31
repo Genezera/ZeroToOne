@@ -3255,3 +3255,35 @@ Sem achado novo — resultado normal, e reforça (não contradiz) a análise
 já feita da arquitetura app<->enclave. `deep-read-log.json` atualizado
 (`circlefin/arc-remote-signer` ganhou os 3 arquivos acima). `export-queue`
 + commit ao final desta rodada.
+
+## Rodada 31/08
+
+Fila (`list-pending`) vazia — nenhum candidato novo do scanner. Leitura
+profunda proativa em `circlefin/buidl-wallet-contracts` (23 arquivos já
+lidos em rodadas anteriores), 3 arquivos ainda não cobertos, priorizados
+por nome (factory/auth/erc712):
+
+- `src/msca/6900/v0.7/factories/semi/SingleOwnerMSCAFactory.sol` —
+  factory CREATE2 do semi-MSCA de dono único. `mixedSalt =
+  keccak256(sender, owner, salt)` e o owner também entra no
+  `initializeSingleOwnerMSCA` do initcode do `ERC1967Proxy`, então tanto
+  o salt quanto o bytecode hash dependem do owner — front-running de
+  `createAccount` por terceiros não desvia o endereço pro owner errado
+  (na pior hipótese, alguém re-executa a mesma deployment com os mesmos
+  parâmetros, o que é idempotente: se `counterfactualAddr.code.length >
+  0` já retorna a conta existente sem re-inicializar). Padrão idêntico ao
+  de outras factories ERC-4337 já revisadas no mesmo repo. Sem achado.
+- `src/msca/6900/shared/erc712/BaseERC712CompliantModule.sol` —
+  `getReplaySafeMessageHash` constrói o domain separator EIP-712
+  incluindo `block.chainid`, `address(this)` (módulo) e a conta
+  (empacotada no campo `salt` do domínio) — evita replay tanto entre
+  contas quanto entre chains. Design correto e documentado no próprio
+  comentário do arquivo. Sem achado.
+- `src/msca/6900/v0.8/modules/BaseModule.sol` — só implementa
+  `supportsInterface` (ERC-165) pra `IModule`. Trivial, sem lógica de
+  auth. Sem achado.
+
+Sem achado novo nesta rodada. `deep-read-log.json` atualizado. Nenhum
+finding em `corroborated_static`/`human_ready` de rodadas anteriores foi
+tocado (fora do escopo desta rodada — eles não estão em `candidate`).
+`export-queue` + commit ao final.

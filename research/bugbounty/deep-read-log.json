@@ -213,7 +213,10 @@
     "src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol",
     "src/msca/6900/v0.8/libs/HookLib.sol",
     "src/msca/6900/v0.8/managers/StandardExecutor.sol",
-    "src/msca/6900/v0.8/factories/UpgradableMSCAFactory.sol"
+    "src/msca/6900/v0.8/factories/UpgradableMSCAFactory.sol",
+    "src/msca/6900/v0.7/factories/semi/SingleOwnerMSCAFactory.sol",
+    "src/msca/6900/shared/erc712/BaseERC712CompliantModule.sol",
+    "src/msca/6900/v0.8/modules/BaseModule.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
