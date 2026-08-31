@@ -1692,16 +1692,84 @@ não-Solidity sem validador local).
 
 `Vercel Open Source` fila agora: 0 `candidate` (era 14).
 
+## Rodada 2026-08-31 (push automático, sessão cloud) — leitura profunda em `vercel-labs/skills` e `vercel-labs/agent-skills`
+
+`list-pending` global desta rodada veio vazio (0 candidatos em
+qualquer programa — duas outras rodadas concorrentes já haviam
+fechado, entre esta sessão começar e terminar, os 72 achados de OKG e
+o achado de Kubernetes que estavam pendentes fora do escopo dos 4
+programas desta missão, além de leituras profundas novas em Circle
+BBP; ver `research/bugbounty/okg/NOTES.md` e `circle-bbp/NOTES.md`).
+Os 6 achados `corroborated_static` de
+`vercel/vercel/packages/cli/src/commands/mcp/mcp.ts` seguem no mesmo
+lugar (sem aresta `corroborated_static -> scope_verified` pra achado
+não-Solidity sem validador local — nada novo a fazer sem confirmar o
+vínculo real de deploy).
+
+Leitura profunda proativa priorizada pelo maior desequilíbrio de
+cobertura relativo entre os alvos ativos: `vercel-labs/agent-skills`
+tinha só 2 arquivos lidos (ambos workflow YAML, zero código-fonte
+real, apesar de ser um repo com mais de 100 arquivos `.ts`/`.mjs`) e
+`vercel-labs/skills` tinha `install.ts`/`download-source.ts`/`archive.ts`
+— justamente os arquivos que implementam o foco declarado do programa
+("path traversal na instalação") — ainda não lidos:
+
+- `src/install.ts` (completo) — wrapper fino de `runInstallFromLock`,
+  delega toda a lógica real pra `runAdd`/`runSync` (já auditados em
+  rodadas anteriores). Sem lógica própria de risco. Sem achado.
+- `src/download-source.ts` (completo) — baixa uma URL, detecta
+  SKILL.md vs arquivo (zip/tar) por magic bytes, extrai com limite de
+  tamanho de download (`SKILLS_DOWNLOAD_MAX_BYTES`, aplicado tanto por
+  `content-length` quanto por contagem real via `TransformStream`
+  durante o download, então não dá pra mentir o header) e limite de
+  bytes/arquivos extraídos. Tanto `extractZip` quanto `extractTar`
+  validam o path final resolvido (`isPathSafe`) contra o diretório de
+  extração — a checagem usa `startsWith(base + sep)`, forma correta
+  que evita o bug clássico de prefixo (`/tmp/extract-evil` casando
+  `/tmp/extract`). `extractTar` roda com `preservePaths: false` e o
+  filtro rejeita qualquer entrada que não seja `File`/`Directory`
+  (bloqueia symlink/hardlink na filtragem de tipo). Sem achado.
+- `src/archive.ts` (completo) — parser de ZIP feito à mão (lê o
+  formato binário diretamente, sem lib externa, incluindo suporte a
+  zip64). Ceticismo alto aplicado aqui por ser exatamente o tipo de
+  código onde zip-slip/CVEs de parser costumam morar: `ensureRange` em
+  toda leitura de offset/tamanho (sem out-of-bounds read), `fileType`
+  da entrada checado contra o campo de atributos externos do Unix e
+  **rejeita explicitamente qualquer coisa que não seja arquivo regular
+  ou diretório** (bloqueia symlink no nível do parser, antes mesmo de
+  chegar no `isPathSafe` do arquivo acima), `normalizeArchivePath`
+  rejeita nome com `..`, path absoluto, drive letter Windows ou byte
+  nulo, e cada entrada tem o `uncompressedSize` declarado usado como
+  `maxOutputLength` do `inflateRawSync` — ou seja, mesmo que o central
+  directory minta um tamanho pequeno pra tentar burlar o orçamento de
+  bytes (`extractMaxBytes`), a descompressão real não consegue
+  produzir mais que o declarado (checado depois via `crc32`/tamanho
+  exato), fechando o vetor clássico de zip bomb por tamanho mentido.
+  Não encontrei bypass. Sem achado — código bem escrito, bom sinal de
+  auditoria própria prévia da Vercel.
+- `skills/vercel-optimize/lib/auth-route.mjs` (completo, de
+  `vercel-labs/agent-skills`) — nome sugeria relevância
+  (auth/session), mas o conteúdo real é só um regex heurístico
+  (`/(login|logout|auth|...)/`) usado por uma ferramenta de
+  *otimização de performance* pra desqualificar rotas "parecidas com
+  auth" de sugestões de cache de CDN — não é código de autenticação de
+  verdade, é falso alarme de nome. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel-labs/skills` de 8 para 11
+arquivos, `vercel-labs/agent-skills` de 2 para 3). Nenhum achado novo
+nesta rodada — resultado normal e válido.
+
 ## Nota 2026-08-31 (revisão local, claude-local-review) — fecha a pendência de exploração dos 6 `mcp.ts`: refutado por documentação oficial
 
 Sessão local (não-cloud) revisitou os 6 achados `corroborated_static`
-acima especificamente para resolver a pergunta que a rodada anterior
-deixou em aberto ("não consegui confirmar... se o backend da Vercel
-proíbe aspas simples/metacaracteres de shell em nome de projeto/slug").
-`is-valid-name.ts` (client-side, fluxo errado) não respondia isso — a
-resposta certa está na documentação pública da própria Vercel, não no
-código do CLI: **vercel.com/docs/project-configuration/general-settings**,
-seção "Project name", confirma que nomes de projeto são restritos a
+acima especificamente para resolver a pergunta que a rodada que os
+corroborou deixou em aberto ("não consegui confirmar... se o backend
+da Vercel proíbe aspas simples/metacaracteres de shell em nome de
+projeto/slug"). `is-valid-name.ts` (client-side, fluxo errado) não
+respondia isso — a resposta certa está na documentação pública da
+própria Vercel, não no código do CLI:
+**vercel.com/docs/project-configuration/general-settings**, seção
+"Project name", confirma que nomes de projeto são restritos a
 minúsculas, dígitos e os caracteres `.`/`_`/`-` (sem a sequência `---`),
 até 100 caracteres — sem exceção documentada. Isso elimina aspas,
 ponto-e-vírgula, `&`, `|`, crase e espaço do valor que `serverName`
