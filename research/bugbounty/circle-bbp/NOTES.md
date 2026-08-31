@@ -4163,3 +4163,19 @@ profunda proativa em 3 arquivos ainda não lidos de
 Nenhum achado novo nesta rodada — resultado normal e válido.
 `deep-read-log.json` atualizado (`circlefin/arc-remote-signer` foi de
 21 para 24 arquivos).
+
+## Nota: rodada concorrente (mesmo push, sessão cloud paralela) — 2 arquivos adicionais lidos
+
+Uma segunda sessão de nuvem, disparada pelo mesmo evento de push,
+processou a fila de forma independente e chegou às mesmas conclusões
+para os 14 candidatos de Vercel Open Source e para os 3 arquivos de
+`arc-remote-signer` acima (evidência de reprodutibilidade da análise,
+não retrabalho perdido). Antes de perceber a sobreposição, esta sessão
+também tinha lido 2 arquivos a mais de `arc-remote-signer`, únicos em
+relação à lista acima — registrados aqui pra não se perderem:
+`internal/enclave/common/crypto/aes/aes.go` (tipo `Key` simétrico de
+32 bytes gerado via `rand.GenerateRandomBytes`, conformando à mesma
+interface genérica de chave usada por BLS/Ed25519 no keystore do
+enclave) e `internal/common/crypto/algorithm.go` (enum trivial
+`Algorithm`, só `bls`/`ed25519`). Nenhum achado em nenhum dos dois.
+`deep-read-log.json` atualizado de 24 para 26 arquivos.

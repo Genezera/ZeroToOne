@@ -342,7 +342,9 @@
     "internal/common/grpc/client/client.go",
     "internal/common/crypto/aes/aes.go",
     "internal/common/config/loader.go",
-    "internal/enclave/provider/enclave/enclave.go"
+    "internal/enclave/provider/enclave/enclave.go",
+    "internal/enclave/common/crypto/aes/aes.go",
+    "internal/common/crypto/algorithm.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
