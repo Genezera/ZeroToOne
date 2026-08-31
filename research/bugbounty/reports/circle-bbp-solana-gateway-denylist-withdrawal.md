@@ -329,6 +329,37 @@ describe("PoC: denylisted depositor can still withdraw pre-existing balance", ()
 
 Every call in this file (`deposit`, `denylist`, `initiateWithdrawal`, `withdraw`, balance reads) goes through `test_client.ts`'s existing methods, which in turn send real Anchor instructions to the real compiled program running inside `litesvm`. Nothing here simulates the vulnerable code path or asserts a made-up outcome — the two `expect()` calls are the only assertions, and both check real values read back from the program after real instructions executed.
 
+### How to reproduce this in your own environment
+
+This uses only the target repository's own documented build process, plus one added test file (full source above):
+
+```bash
+# 1. Clone and check out the exact commit this report analyzed
+git clone https://github.com/circlefin/solana-gateway-contracts.git
+cd solana-gateway-contracts
+git checkout 909373cdee3aad9e06fe37b599f9d29160f7ca4c
+
+# 2. Toolchain setup -- the repo documents this itself in its own README
+#    ("One-time setup (installs Rust, Solana CLI, Anchor, and creates a
+#    keypair)"). This report's analysis used Anchor CLI 0.31.1.
+./run.sh setup
+
+# 3. Install JS dependencies (package.json's own scripts are yarn-based)
+yarn install
+
+# 4. Build the program (generates the IDL that test_client.ts imports)
+anchor build
+
+# 5. Add the PoC test file below as:
+#    tests/gateway-wallet/poc_denylist_withdrawal_bypass.test.ts
+#    (full source in "What is mine vs. what is the target's" above)
+
+# 6. Run just this test
+npx ts-mocha -p tsconfig.json tests/gateway-wallet/poc_denylist_withdrawal_bypass.test.ts --timeout 60000
+```
+
+This should print the same step-by-step result shown below (transaction signature will differ each run — `litesvm` generates a fresh one every time — every other value is deterministic). No Solana wallet, devnet/mainnet access, or funded account is needed: `litesvm` runs the compiled program fully in-process, so this reproduces in seconds on any machine that can build the repo at all, with no network calls once dependencies are installed.
+
 Test sequence:
 1. Initialize the program, add a token mint, mint 2,000,000 units to a fresh depositor's token account.
 2. Depositor deposits 1,000,000 units into `gateway-wallet` (normal `deposit` call, succeeds — not denylisted yet).
