@@ -285,7 +285,10 @@
     "internal/common/grpc/server/interceptor/middleware.go",
     "internal/app/provider/secrets/secrets.go",
     "internal/enclave/provider/keystore/keystore.go",
-    "internal/enclave/service/enclave/enclave.go"
+    "internal/enclave/service/enclave/enclave.go",
+    "internal/enclave/public/public.go",
+    "internal/common/crypto/rand/random.go",
+    "internal/app/provider/awskms/awskms.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",

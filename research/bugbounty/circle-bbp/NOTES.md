@@ -2606,3 +2606,42 @@ cadeia de auth de `permit`/EIP-3009 que ainda faltava):
 
 `deep-read-log.json` atualizado (`circlefin/stablecoin-evm` agora com
 10 arquivos). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, `arc-remote-signer` (RNG + KMS provider + enclave-side gRPC wiring)
+
+`queue.jsonl` sem itens `pending` (0 pendentes; 2 `corroborated_static`
+seguem bloqueados por falta de deployment evidence confirmada, 2
+`human_ready` aguardando revisão humana — nenhum dos dois é desta rodada).
+Voltei a `circlefin/arc-remote-signer` por já ter produzido o único
+achado `human_ready` deste programa (`SignerService.Sign` sem
+interceptor de auth) — clone raso público via `git clone`, 3 arquivos
+ainda não cobertos em `deep-read-log.json`:
+
+1. `internal/enclave/public/public.go` — contraparte do lado enclave do
+   `internal/app/public/public.go` já investigado (onde está o achado
+   `human_ready`). Só wiring de servidor gRPC (`New()` registra
+   `EnclaveServiceServer`, escolhe transporte TCP vs VSOCK conforme
+   `NitroEnclaveEnabled`). Nenhuma lógica de autorização própria aqui —
+   não adiciona nem contradiz o achado já registrado. Sem achado novo.
+2. `internal/common/crypto/rand/random.go` — geração de bytes/string
+   aleatórios. Uso exclusivo de `crypto/rand` (`crand.Reader`,
+   `crand.Int`) em todas as funções, inclusive `GenerateRandomString`
+   (comentário no próprio código já registra a decisão consciente de
+   não usar `math/rand`). Sem fallback inseguro. Sem achado.
+3. `internal/app/provider/awskms/awskms.go` — provider que envolve o
+   AWS KMS pra `Decrypt`/`GenerateDataKey` com failover multi-região
+   (`p.call` reordena a lista de clients em caso de erro, tenta o
+   próximo). Controle de acesso real fica inteiramente do lado do IAM
+   policy da AWS (fora do escopo de código deste repo); nenhuma lógica
+   local de autorização pra revisar. `moveClientToBack` usa mutex
+   corretamente (sem race na lista compartilhada). Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal, consistente com o
+padrão desta missão (a maioria das rodadas não acha nada). `deep-read-log.json`
+atualizado com os 3 arquivos acima. Sugestão pra próxima rodada: os
+arquivos de crypto do lado enclave ainda não lidos
+(`internal/enclave/common/crypto/bls/bls.go`,
+`internal/enclave/common/crypto/ed25519/ed25519.go`,
+`internal/enclave/common/crypto/crypto.go`) — é onde a assinatura de
+verdade acontece (chave do validador), mais provável de conter lógica
+não-trivial do que os wiring/utilitários cobertos até agora.
