@@ -197,7 +197,8 @@
     "src/roles/v2/Denylistable.sol",
     "src/roles/Ownable.sol",
     "src/roles/Ownable2Step.sol",
-    "src/v2/MessageTransmitterV2.sol"
+    "src/v2/MessageTransmitterV2.sol",
+    "src/messages/v2/AddressUtils.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -225,7 +226,8 @@
     "src/msca/6900/v0.8/factories/UpgradableMSCAFactory.sol",
     "src/msca/6900/v0.7/factories/semi/SingleOwnerMSCAFactory.sol",
     "src/msca/6900/shared/erc712/BaseERC712CompliantModule.sol",
-    "src/msca/6900/v0.8/modules/BaseModule.sol"
+    "src/msca/6900/v0.8/modules/BaseModule.sol",
+    "src/account/CoreAccount.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
@@ -247,7 +249,9 @@
     "src/modules/wallet/Balances.sol",
     "src/modules/common/TransferSpecHashes.sol",
     "src/lib/EIP712Domain.sol",
-    "src/modules/common/Domain.sol"
+    "src/modules/common/Domain.sol",
+    "src/lib/BatchedDelta.sol",
+    "src/modules/wallet/Batches.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",

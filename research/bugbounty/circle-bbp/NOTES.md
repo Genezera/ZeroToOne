@@ -3841,3 +3841,50 @@ gap novo deste módulo Cosmos.
 Nenhum achado novo. `deep-read-log.json` atualizado (`circlefin/noble-cctp`
 ganhou os 4 arquivos acima, agora 13 no total — cobre toda a cadeia de
 burn/deposit/replace do módulo).
+
+## Rodada 2026-08-31 (push ba1c643) — leitura profunda proativa
+
+Fila (`list-pending`) vazia. Sem candidatos pendentes nos alvos ativos
+(evm-cctp-contracts, evm-gateway-contracts, buidl-wallet-contracts,
+evm-xreserve-contracts, evm-cpn-contracts, todos listados em STATUS.md).
+Segui pro passo de leitura profunda proativa e escolhi 3 arquivos ainda
+não lidos, priorizando lógica de negócio sobre interfaces/structs puros:
+
+1. `evm-cctp-contracts/src/messages/v2/AddressUtils.sol` — biblioteca de
+   conversão `address <-> bytes32` usada em `TokenMessengerV2._handleReceiveMessage`
+   (linha 473, decodifica `mintRecipient`) e `MessageTransmitterV2.receiveMessage`
+   (linha 318, decodifica `recipient` genérico). `toAddress()` trunca
+   silenciosamente os 12 bytes superiores, e o próprio comentário do
+   arquivo já avisa disso. Rastreei quem popula esses bytes32: em
+   `TokenMessengerV2._depositForBurn` o único check é
+   `mintRecipient != bytes32(0)` (linha 343) — não valida que os 12 bytes
+   superiores sejam zero. Isso permite, em tese, que o *próprio*
+   depositante burn com um `mintRecipient` "sujo" (bytes altos != 0) e o
+   mint do lado destino vá pra um endereço diferente do que ele
+   "achava" que ia. Mas quem escolhe `mintRecipient` é sempre o próprio
+   remetente do burn (`msg.sender` da chamada `depositForBurn`), nunca
+   um terceiro — então o pior caso é auto-lesão (o usuário perde o
+   próprio dinheiro pra um endereço errado que ele mesmo especificou),
+   não uma vulnerabilidade explorável contra outro usuário. Mesmo padrão
+   documentado e presente desde o CCTP v1 (já auditado publicamente).
+   Sem achado.
+2. `evm-gateway-contracts/src/lib/BatchedDelta.sol` — só a struct
+   (depositor + delta int256), sem lógica. Segui a cadeia até
+   `src/modules/wallet/Batches.sol` (`_processBatch`): batch só é aceito
+   com assinatura de um `batchSigner` registrado pelo `owner`
+   (`_verifyBatchSignerSignature`), `batchId` tem replay-protection
+   (`_checkAndMarkBatchIdUsed`), domain e endereço do proxy são checados
+   contra a assinatura, e a soma dos deltas é forçada a zerar
+   (`MustNetToZero`) antes de aplicar qualquer crédito/débito. Cast
+   `int256 -> uint256` em ambos os ramos (crédito/débito) é seguro
+   porque o sinal já foi checado antes (`delta.value > 0` / `< 0`), e
+   overflow do unário `-delta.value` no caso `type(int256).min` reverte
+   automaticamente (checked arithmetic do Solidity ^0.8). Sem achado.
+3. `buidl-wallet-contracts/src/account/CoreAccount.sol` — conta ERC-4337
+   base (`execute`/`executeBatch` exigem `_requireFromEntryPointOrOwner`,
+   `withdrawDepositTo`/`pause`/`unpause` exigem `onlyOwner`). Segue o
+   padrão de referência do `eth-infinitism/account-abstraction`
+   (`SimpleAccount`), sem desvio de controle de acesso. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
+3 arquivos acima.
