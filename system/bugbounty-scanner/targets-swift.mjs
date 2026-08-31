@@ -2,8 +2,12 @@
 // research/bugbounty/block-open-source/NOTES.md para o porquê da escolha.
 // Escopo restrito a Sources/ — exclui apps de demonstração/exemplo e
 // testes, que não é código que roda no app de quem instala o SDK.
-
-export const SWIFT_TARGETS = [
+//
+// PAUSADO (31/08/2026): mesmo motivo documentado em targets-jvm.mjs — as
+// regras do programa proíbem pesquisa assistida por IA, o que torna
+// qualquer achado deste pipeline não-enviável. Export ativo vazio até
+// revisitar essa decisão.
+const _PAUSED_SWIFT_TARGETS = [
   {
     program: 'Block Open Source',
     platform: 'Bugcrowd',
@@ -23,3 +27,5 @@ export const SWIFT_TARGETS = [
     pathPrefixes: ['Sources/'],
   },
 ];
+
+export const SWIFT_TARGETS = [];

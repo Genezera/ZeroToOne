@@ -36,5 +36,13 @@
   "Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::DirectoryRoot.resolve::path_traversal_risk": "confirmado",
   "Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials::ai_deep_read_finding": "falso_positivo",
   "StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding": "falso_positivo",
-  "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding": "falso_positivo"
+  "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding": "falso_positivo",
+  "Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding": "inconclusivo",
+  "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding": "confirmado",
+  "Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessage/verify::ai_deep_read_finding": "falso_positivo",
+  "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding": "confirmado",
+  "Circle BBP::circlefin/aptos-cctp/packages/token_messenger_minter_v2/sources/token_messenger_minter.move::prepare_mint_complete_mint::ai_deep_read_finding": "falso_positivo",
+  "StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding": "falso_positivo",
+  "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding": "confirmado",
+  "Vercel Open Source::vercel-labs/skills/src/sanitize.ts::function:stripTerminalEscapes::terminal_escape_injection_risk": "confirmado"
 }

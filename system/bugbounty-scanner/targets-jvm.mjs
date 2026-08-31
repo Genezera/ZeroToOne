@@ -4,8 +4,16 @@
 // principais/mais relevantes para segurança (core, crypto, injeção de
 // dependência, acesso a banco, runtime/schema de protobuf), não o repo
 // inteiro.
-
-export const JVM_TARGETS = [
+//
+// PAUSADO (31/08/2026): as regras do programa Bugcrowd do Block Open
+// Source proíbem explicitamente pesquisa assistida por IA ("Do not use
+// ChatGPT, Claude, DeepSeek, Google Gemini or any AI tools during your
+// research"), com risco de "point reduction or program expulsion". Todo
+// achado deste pipeline é, por definição, pesquisa assistida por IA —
+// nenhum relatório resultante pode ser responsavelmente enviado. Lista
+// mantida abaixo (não apagada) só como registro; export ativo fica
+// vazio até essa decisão ser revisitada.
+const _PAUSED_JVM_TARGETS = [
   {
     program: 'Block Open Source',
     platform: 'Bugcrowd',
@@ -43,3 +51,5 @@ export const JVM_TARGETS = [
     pathPrefixes: ['core/', 'ui-views/', 'ui-compose/', 'analytics-core/', 'logging/'],
   },
 ];
+
+export const JVM_TARGETS = [];
