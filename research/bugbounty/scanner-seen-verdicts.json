@@ -38,7 +38,7 @@
   "StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding": "falso_positivo",
   "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding": "falso_positivo",
   "Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding": "inconclusivo",
-  "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding": "confirmado",
+  "Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAllowedRecipients::ai_deep_read_finding": "falso_positivo",
   "Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessage/verify::ai_deep_read_finding": "falso_positivo",
   "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding": "confirmado",
   "Circle BBP::circlefin/aptos-cctp/packages/token_messenger_minter_v2/sources/token_messenger_minter.move::prepare_mint_complete_mint::ai_deep_read_finding": "falso_positivo",

@@ -1,19 +1,5 @@
 {
   "byTypeLanguage": {
-    "ai_deep_read_finding::typescript": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 0,
-      "other": 1,
-      "fpRate": 0
-    },
-    "ai_deep_read_finding::solidity": {
-      "reviewed": 3,
-      "confirmed": 1,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 0.6666666666666666
-    },
     "ai_deep_read_finding::go": {
       "reviewed": 2,
       "confirmed": 1,
@@ -28,7 +14,21 @@
       "other": 0,
       "fpRate": 1
     },
+    "ai_deep_read_finding::typescript": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
+    },
     "ai_deep_read_finding::clarity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unguarded_transfer::clarity": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
@@ -42,17 +42,10 @@
       "other": 1,
       "fpRate": 0.5
     },
-    "unguarded_transfer::clarity": {
-      "reviewed": 2,
+    "ai_deep_read_finding::solidity": {
+      "reviewed": 3,
       "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "auth_arg_inconsistency::clarity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
+      "falsePositive": 3,
       "other": 0,
       "fpRate": 1
     },
@@ -67,6 +60,13 @@
       "reviewed": 4,
       "confirmed": 0,
       "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "auth_arg_inconsistency::clarity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
       "other": 0,
       "fpRate": 1
     },
@@ -118,16 +118,16 @@
       "falsePositive": 0,
       "other": 0,
       "fpRate": 0
-    },
-    "terminal_escape_injection_risk::js": {
-      "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
     }
   },
   "byTypeProgram": {
+    "ai_deep_read_finding::Circle BBP": {
+      "reviewed": 7,
+      "confirmed": 2,
+      "falsePositive": 5,
+      "other": 0,
+      "fpRate": 0.7142857142857143
+    },
     "ai_deep_read_finding::Vercel Open Source": {
       "reviewed": 1,
       "confirmed": 0,
@@ -135,14 +135,14 @@
       "other": 1,
       "fpRate": 0
     },
-    "ai_deep_read_finding::Circle BBP": {
-      "reviewed": 7,
-      "confirmed": 3,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 0.5714285714285714
-    },
     "ai_deep_read_finding::StackingDAO": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unguarded_transfer::StackingDAO": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
@@ -156,10 +156,10 @@
       "other": 1,
       "fpRate": 0.6
     },
-    "unguarded_transfer::StackingDAO": {
-      "reviewed": 2,
+    "known_vulnerable_dependency::Block Open Source": {
+      "reviewed": 6,
       "confirmed": 0,
-      "falsePositive": 2,
+      "falsePositive": 6,
       "other": 0,
       "fpRate": 1
     },
@@ -167,13 +167,6 @@
       "reviewed": 1,
       "confirmed": 0,
       "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "known_vulnerable_dependency::Block Open Source": {
-      "reviewed": 6,
-      "confirmed": 0,
-      "falsePositive": 6,
       "other": 0,
       "fpRate": 1
     },
@@ -211,13 +204,6 @@
       "falsePositive": 1,
       "other": 0,
       "fpRate": 1
-    },
-    "terminal_escape_injection_risk::Vercel Open Source": {
-      "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
     }
   }
 }

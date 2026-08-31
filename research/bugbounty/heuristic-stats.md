@@ -11,7 +11,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | kotlin | 4 | 1 | 2 | 1 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | rust | 1 | 1 | 0 | 0 | 0% |
-| ai_deep_read_finding | solidity | 3 | 1 | 2 | 0 | 67% |
+| ai_deep_read_finding | solidity | 3 | 0 | 3 | 0 | 100% |
 | ai_deep_read_finding | swift | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | typescript | 1 | 0 | 0 | 1 | 0% |
 | auth_arg_inconsistency | clarity | 1 | 0 | 1 | 0 | 100% |
@@ -21,7 +21,6 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | prototype_pollution_risk | js | 2 | 0 | 2 | 0 | 100% |
 | reentrancy_risk | solidity | 3 | 0 | 3 | 0 | 100% |
 | ssrf_risk | js | 13 | 0 | 13 | 0 | 100% |
-| terminal_escape_injection_risk | js | 1 | 1 | 0 | 0 | 0% |
 | unchecked_call_return | solidity | 2 | 0 | 2 | 0 | 100% |
 | unguarded_transfer | clarity | 2 | 0 | 2 | 0 | 100% |
 
@@ -30,7 +29,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | Tipo | Programa | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
 | ai_deep_read_finding | Block Open Source | 5 | 1 | 3 | 1 | 60% |
-| ai_deep_read_finding | Circle BBP | 7 | 3 | 4 | 0 | 57% |
+| ai_deep_read_finding | Circle BBP | 7 | 2 | 5 | 0 | 71% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 1 | 0 | 0 | 1 | 0% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
@@ -39,6 +38,5 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | prototype_pollution_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |
 | reentrancy_risk | Circle BBP | 3 | 0 | 3 | 0 | 100% |
 | ssrf_risk | Vercel Open Source | 13 | 0 | 13 | 0 | 100% |
-| terminal_escape_injection_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
 | unchecked_call_return | Circle BBP | 2 | 0 | 2 | 0 | 100% |
 | unguarded_transfer | StackingDAO | 2 | 0 | 2 | 0 | 100% |

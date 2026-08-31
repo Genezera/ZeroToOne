@@ -141,3 +141,6 @@ warning: in the working copy of 'system/bugbounty-scanner/targets-jvm.mjs', LF w
 warning: in the working copy of 'system/bugbounty-scanner/targets-swift.mjs', LF will be replaced by CRLF the next time Git touches it
 To https://github.com/Genezera/ZeroToOne.git
    2fd85ca..91dbc2d  master -> master
+[31/08/2026 14:58:06,22] Iniciando scanner de bug bounty 
+[2026-08-31T17:59:11.084Z] AVISO: vercel/vercel tem 1272 arquivos rastreáveis, cortando para os primeiros 450 (não silencioso — registrado aqui).
+[2026-08-31T18:01:49.850Z] Varredura completa: 13 contratos Clarity + 588 arquivos (JS/TS+Go+JVM+Swift) + 15 manifesto(s) de dependência checados, 1 erros de busca, 14 achados NOVOS na fila (0 de dependência conhecida), 1 veredito(s) novo(s)/mudado(s), 50 suprimido(s) por regra em quarentena (ver quarantine-status.md).
