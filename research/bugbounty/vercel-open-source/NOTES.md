@@ -1569,3 +1569,77 @@ achado fica em `corroborated_static` até decisão humana).
 `deep-read-log.json` atualizado: `vercel-labs/skills` ganhou
 `src/sanitize.ts`, `src/list.ts`, `src/find.ts`, e os dois arquivos
 parciais viraram completos.
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — fila vazia, leitura profunda em `vercel/eve` (auth de canal HTTP)
+
+`list-pending` global = 0. Revisitados os 2 achados legados fora deste
+programa em estado intermediário (SSO `vercel/cli-auth` em
+`corroborated_static`, denylist Solana Circle em `reproduced_local`) —
+ambos já têm investigação exaustiva e recente (30-31/08) registrada no
+próprio `reasoning`, nada de novo para acrescentar nesta rodada
+(`api.hiro.so` também segue bloqueado nesta sessão cloud, mesmo
+resultado já documentado no NOTES do StackingDAO).
+
+Leitura profunda proativa: `vercel/eve` (pacote de canais/agentes,
+área HTTP-auth ainda não coberta). Sparse-clone público (sem conta) e
+leitura de 3 arquivos novos, priorizados por nome (auth/access/allow):
+
+- `packages/eve/src/channel/forwarded-principal.ts` (completo) — gate
+  de propagação de identidade entre deployments (`resolveForwardedPrincipal`).
+  Design correto: só aceita o campo `forwardedPrincipal` do corpo quando
+  o deployment opta explicitamente (`trustedForwarders !== undefined`,
+  senão 403), valida o payload contra um schema Zod `.strict()`, decide
+  confiança via um predicado explícito sobre o **principal de transporte
+  já verificado** (`input.forwarder`, nunca a identidade autoafirmada no
+  corpo), e sempre sobrescreve o atributo de auditoria
+  `eve:forwarded-by` com o valor verificado (não o que o forwarder
+  mandou). Sem achado.
+- `packages/eve/src/channel/ip-allow-list.ts` (completo) — parsing de
+  allowlist IP/CIDR via `node:net BlockList`. Rastreei o único call site
+  real (`packages/eve/src/public/channels/auth.ts::isIpAllowed`): a
+  função só recebe o IP já extraído pelo chamador (não lê
+  `X-Forwarded-For` nem nenhum header por conta própria) — a
+  responsabilidade de extrair o IP confiável (adapter-specific) fica
+  fora deste módulo, então este arquivo isolado não tem superfície de
+  spoofing. Sem achado.
+- `packages/eve/src/public/channels/auth.ts` (completo, 1246 linhas) —
+  o módulo central de autenticação HTTP do framework (Basic, JWT
+  HMAC/ECDSA, OIDC genérico, OIDC do Vercel com bypass de
+  "current-project", `routeAuth`, `oauthResource`). Ceticismo alto
+  aplicado nos pontos clássicos de bug desta classe de código:
+  - **Confusão de audience em OIDC do Vercel**: comentário no código já
+    documenta e corrige exatamente o vetor óbvio (token mintado pro
+    próprio projeto mas para uma audience federada externa, ex. AWS STS,
+    sendo reproduzido contra o agente) — `VERCEL_OIDC_AUDIENCE_PREFIX`
+    exige que pelo menos uma `aud` comece com `https://vercel.com/`
+    antes de aceitar. Confirmado presente e correto.
+  - **Bypass de ambiente via header**: `isLocalDevelopmentServer()`
+    decide só por variável de ambiente do processo (`VERCEL_ENV`/
+    `EVE_DEV`), nunca por header de request (`Host` citado
+    explicitamente no comentário como o vetor que NÃO funciona) — não
+    há como uma requisição externa forjar "sou local dev".
+  - **Confusão de issuer**: `isVercelOidcIssuer` compara a string
+    completa do issuer contra `https://oidc.vercel.com` (exato) ou
+    prefixo `https://oidc.vercel.com/` — não é comparação de hostname
+    (sem risco de bypass tipo `oidc.vercel.com.attacker.com`, que não
+    bate o prefixo com `/`).
+  - **`vercelSubject`**: `teamSlug`/`projectName` são explicitamente
+    proibidos de conter `*`/`:` (`assertVercelSubjectSegment`) — não dá
+    pra construir sem querer um matcher amplo demais via slug
+    controlado.
+  - **HTTP Basic**: comparação documentada como constant-time
+    (delegada a `authenticateHttpBasicStrategy`, já auditado em rodada
+    anterior).
+  - **`decodeUnverifiedJwtClaims`**: usado só para decidir *qual*
+    issuer/discovery usar antes da verificação completa de assinatura
+    (padrão comum e seguro de OIDC — o claim não-verificado nunca é
+    usado para decisão de autenticação, só de configuração), e para
+    `verifyVercelOidc` o issuer decodificado passa por
+    `isVercelOidcIssuer` antes de qualquer uso.
+  Nenhum achado. Módulo com nível de documentação e cuidado defensivo
+  incomum (vários comentários no próprio código já antecipam e
+  descrevem por que o vetor óbvio foi fechado) — bom sinal de que já
+  passou por revisão de segurança própria da Vercel.
+
+`deep-read-log.json` atualizado (`vercel/eve` ganhou os 3 arquivos
+acima). Nenhum achado novo nesta rodada — resultado normal e válido.
