@@ -258,7 +258,9 @@
     "src/lib/EIP712Domain.sol",
     "src/modules/common/Domain.sol",
     "src/lib/BatchedDelta.sol",
-    "src/modules/wallet/Batches.sol"
+    "src/modules/wallet/Batches.sol",
+    "src/lib/Attestations.sol",
+    "src/lib/Cursor.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
@@ -283,7 +285,8 @@
     "src/utils/Rescuable.sol",
     "src/utils/Configurable.sol",
     "src/utils/Pausable.sol",
-    "src/factory/Create2Factory.sol"
+    "src/factory/Create2Factory.sol",
+    "src/interfaces/IMinimalPermit2.sol"
   ],
   "circlefin/stablecoin-evm": [
     "contracts/minting/MintController.sol",
@@ -304,7 +307,7 @@
     "packages/world-vercel/src/encryption.ts",
     "packages/world-vercel/src/http-core.ts (partial: L1-390, token resolution + span/error handling)",
     "packages/world-vercel/src/utils.ts",
-    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
+    "packages/core/src/runtime/quickjs-runtime.ts (completo \u2014 fechadas as se\u00e7\u00f5es finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
   ],
   "circlefin/arc-remote-signer": [
     "internal/app/public/public.go",
@@ -551,7 +554,7 @@
   "circlefin/stablecoin-near": [
     "src/requires.rs",
     "src/role.rs",
-    "src/fiat_token.rs (parcial: mint/burn/approve/transfer_from/ft_transfer/ft_transfer_call/ft_resolve_transfer/storage_deposit/storage_unregister/pause/unpause — todas as funcoes com side-effect de saldo ou estado, via grep de require_not_blocklisted/require_only + leitura pontual de cada bloco)"
+    "src/fiat_token.rs (parcial: mint/burn/approve/transfer_from/ft_transfer/ft_transfer_call/ft_resolve_transfer/storage_deposit/storage_unregister/pause/unpause \u2014 todas as funcoes com side-effect de saldo ou estado, via grep de require_not_blocklisted/require_only + leitura pontual de cada bloco)"
   ],
   "sveltejs/svelte": [
     "packages/svelte/src/escaping.js",

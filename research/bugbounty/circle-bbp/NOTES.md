@@ -3962,3 +3962,38 @@ afeta o fluxo de burn/bridge (`gateway_burn` → `validate_signer_authorization`
 causa raiz, três rotas de saída afetadas: `initiate_withdrawal`,
 `withdraw`, `gateway_burn`), sem abrir achado separado nem mudar de
 estado.
+
+## Rodada 2026-08-31 (cloud-agent, disparada por push, 5338370)
+
+Fila `list-pending` vazia (0 candidates). O achado `initiate_withdrawal_withdraw`
+continua em `reproduced_local`, ainda bloqueado em `scope_verified` pelo
+mesmo motivo de sempre (Gateway Solana não está em mainnet) — nada de
+novo a fazer aqui, a barra segue funcionando como desenhado.
+
+Leitura profunda proativa (3 arquivos ainda não lidos, alvos ativos
+EVM):
+
+1. `evm-cpn-contracts/src/interfaces/IMinimalPermit2.sol` — só a
+   interface Permit2 (`permitWitnessTransferFrom` + structs). Usei essa
+   leitura pra também re-rastrear como `PaymentSettlementV2.sol` monta
+   os pares `(witnessHash, witnessType)` pro Permit2 witness transfer:
+   cada ação (`execute` payer/incentive, `cancel`, `refund`
+   payee/beneficiary) tem seu próprio `_WITNESS_*_TYPE_STR` com nome de
+   struct e conjunto de campos distintos, e cada chamada de
+   `_pullViaPermit2` usa o par certo (hash função ↔ type string) —
+   não há confusão de tipo entre os cinco fluxos. `_pullViaPermit2`
+   também confere delta de saldo real (`balanceOf` antes/depois) contra
+   o `amount` esperado, então mesmo um Permit2 mal-comportado não
+   passaria um valor menor sem reverter. Sem achado.
+2. `evm-gateway-contracts/src/lib/Attestations.sol` — só structs
+   (`Attestation`, `AttestationSet`) e constantes de offset/magic; a
+   lógica de parse/encode fica em `AttestationLib.sol` (já lido em
+   rodada anterior). Sem achado.
+3. `evm-gateway-contracts/src/lib/Cursor.sol` — só a struct `Cursor`
+   (iterador sobre burn intents/attestations); a manipulação de fato
+   está em `TransferSpecLib.sol`/`BurnIntentLib.sol` (já lidos). Sem
+   achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
+3 arquivos acima (`evm-cpn-contracts` agora com todos os 7 arquivos
+`.sol` do repo cobertos).
