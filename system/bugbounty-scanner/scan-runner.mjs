@@ -47,6 +47,7 @@ const DASHBOARD_PATH = path.join(BUGBOUNTY_DIR, 'dashboard', 'index.html');
 const QUARANTINE_OVERRIDES_PATH = path.join(BUGBOUNTY_DIR, 'quarantine-overrides.json');
 const QUARANTINE_STATUS_PATH = path.join(BUGBOUNTY_DIR, 'quarantine-status.md');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
+const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
 const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
@@ -306,6 +307,9 @@ export async function runScan() {
     outputPath: DASHBOARD_PATH,
     lastScanSummary: { contractsChecked, repoFilesChecked, manifestsChecked: depResult.filesChecked, fetchErrors },
     lastScanAt: scanTimestamp,
+    dbPath: DB_PATH,
+    quarantineOverridesPath: QUARANTINE_OVERRIDES_PATH,
+    promotionLogPath: PROMOTION_LOG_PATH,
   });
 
   log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) + ${depResult.filesChecked} manifesto(s) de dependência checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila (${depResult.findings.length} de dependência conhecida), ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s)${quarantinedTotal > 0 ? `, ${quarantinedTotal} suprimido(s) por regra em quarentena (ver quarantine-status.md)` : ''}.`);

@@ -45,10 +45,10 @@ test('buildDashboardData ordena atividade por ts, mais recente primeiro', () => 
   assert.equal(data.activityEntries[0].type, 'bugbounty_scan');
 });
 
-test('renderDashboardSections produz as 5 seções esperadas, cada uma com título/corpo', () => {
+test('renderDashboardSections produz as 6 seções esperadas, cada uma com título/corpo', () => {
   const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: { contractsChecked: 13, repoFilesChecked: 0, manifestsChecked: 273, fetchErrors: 1 }, lastScanAt: '2026-08-28T21:20:00Z' });
   const sections = renderDashboardSections(data);
-  assert.deepEqual(Object.keys(sections).sort(), ['activity', 'index', 'queue', 'stats', 'targets']);
+  assert.deepEqual(Object.keys(sections).sort(), ['activity', 'index', 'queue', 'signals', 'stats', 'targets']);
   for (const s of Object.values(sections)) {
     assert.equal(s.key, Object.keys(sections).find((k) => sections[k] === s));
     assert.ok(typeof s.title === 'string' && s.title.length > 0);
@@ -104,10 +104,10 @@ test('renderDashboardApp produz UM documento autocontido com as 5 seções e nav
   const html = renderDashboardApp(data);
   assert.ok(html.startsWith('<!doctype html>'));
   assert.ok(html.includes('<title>Centro de Sinais</title>'));
-  ['page-index', 'page-targets', 'page-queue', 'page-activity', 'page-stats'].forEach((id) => {
+  ['page-index', 'page-targets', 'page-queue', 'page-activity', 'page-signals', 'page-stats'].forEach((id) => {
     assert.ok(html.includes(`id="${id}"`), `esperava seção ${id}`);
   });
-  ['#index', '#targets', '#queue', '#activity', '#stats'].forEach((href) => {
+  ['#index', '#targets', '#queue', '#activity', '#signals', '#stats'].forEach((href) => {
     assert.ok(html.includes(`href="${href}"`), `esperava link de nav ${href}`);
   });
   assert.ok(html.includes('cashapp/hermit')); // conteúdo da página de alvos presente no mesmo doc
@@ -120,6 +120,75 @@ test('renderDashboardApp escapa conteúdo pra evitar quebra de HTML', () => {
   const html = renderDashboardApp(data);
   assert.ok(!html.includes('<script>evil</script>'));
   assert.ok(html.includes('&lt;script&gt;'));
+});
+
+test('funil de estado (banco v2) mostra só estados com pelo menos 1 achado, na ordem real do pipeline', () => {
+  const data = buildDashboardData({
+    queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null,
+    dbStateCounts: { candidate: 5, human_ready: 1, false_positive: 38, reproduced_local: 2 },
+  });
+  assert.deepEqual(data.statePipeline.map((s) => s.state), ['candidate', 'reproduced_local', 'human_ready', 'false_positive']);
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.index.bodyHtml.includes('Funil de estado'));
+  assert.ok(sections.index.bodyHtml.includes('funnel-row'));
+});
+
+test('página de atividade mostra transição de estado com from/to/rationale', () => {
+  const withTransition = [...ledgerEntries, { type: 'bugbounty_state_transition', ts: '2026-08-31T18:00:00Z', findingId: 'Circle BBP::x.rs::f::risk', from: 'scope_verified', to: 'human_ready', actor: 'claude', rationale: 'rascunho de relatório pronto + checagem de duplicata feita' }];
+  const data = buildDashboardData({ queueEntries, ledgerEntries: withTransition, stats, targetLists, lastScanSummary: null, lastScanAt: null });
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.activity.bodyHtml.includes('scope_verified'));
+  assert.ok(sections.activity.bodyHtml.includes('human_ready'));
+  assert.ok(sections.activity.bodyHtml.includes('checagem de duplicata feita'));
+});
+
+test('terminal de decisões na Visão geral mostra a transição mais recente com o motivo', () => {
+  const withTransition = [{ type: 'bugbounty_state_transition', ts: '2026-08-31T18:00:00Z', findingId: 'Block Open Source::wire.kt::f::path_traversal_risk', from: 'scope_verified', to: 'human_ready', actor: 'claude', rationale: 'programa bloqueado' }];
+  const data = buildDashboardData({ queueEntries, ledgerEntries: withTransition, stats, targetLists, lastScanSummary: null, lastScanAt: null });
+  assert.equal(data.decisionEntries.length, 1);
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.index.bodyHtml.includes('terminal-body'));
+  assert.ok(sections.index.bodyHtml.includes('programa bloqueado'));
+});
+
+test('terminal de decisões mostra estado vazio honesto quando não há transição nenhuma', () => {
+  const data = buildDashboardData({ queueEntries, ledgerEntries: [], stats, targetLists, lastScanSummary: null, lastScanAt: null });
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.index.bodyHtml.includes('nenhuma transição de estado registrada'));
+});
+
+test('página de Sinais mostra grau de evidência, política de programa, quarentena e promoção — cada um só quando há dado real', () => {
+  const data = buildDashboardData({
+    queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null,
+    dbFindings: [
+      { id: 'Block Open Source::wire.kt::f::path_traversal_risk', program: 'Block Open Source', state: 'scope_verified', evidenceGrade: 'E3' },
+      { id: 'Circle BBP::x.rs::f::risk', program: 'Circle BBP', state: 'reproduced_local', evidenceGrade: 'E3' },
+    ],
+    programPolicy: { 'Block Open Source': { aiResearchBanned: true, reason: 'proíbe pesquisa assistida por IA' } },
+    quarantined: [{ type: 'ssrf_risk', language: 'js', fpRate: 1, reviewed: 13, falsePositive: 13 }],
+    promotionLog: {
+      generatedAt: '2026-08-31T18:44:50Z',
+      totalActiveAutoPromoted: 2,
+      promotedThisRound: [{ program: 'Kubernetes', owner: 'kubernetes', repo: 'apimachinery', score: 20, reasons: ['901 estrelas'] }],
+      skippedThisRound: { blockedProgram: [], unsupportedLanguage: [{ owner: 'a', repo: 'b' }], tooLarge: [], insufficientSignal: [{ owner: 'c', repo: 'd', score: 0 }], metadataFetchFailed: [], deferredToNextRun: [], alreadyPromoted: 0 },
+    },
+  });
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.signals.bodyHtml.includes('E3'));
+  assert.ok(sections.signals.bodyHtml.includes('Block Open Source'));
+  assert.ok(sections.signals.bodyHtml.includes('proíbe pesquisa assistida por IA'));
+  assert.ok(sections.signals.bodyHtml.includes('ssrf_risk'));
+  assert.ok(sections.signals.bodyHtml.includes('kubernetes/apimachinery'));
+  assert.ok(sections.signals.bodyHtml.includes('901 estrelas'));
+  assert.ok(sections.signals.bodyHtml.includes('Linguagem não suportada'));
+});
+
+test('página de Sinais lida com tudo ausente sem quebrar (nenhuma política, quarentena ou promoção ainda)', () => {
+  const data = buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary: null, lastScanAt: null });
+  const sections = renderDashboardSections(data);
+  assert.ok(sections.signals.bodyHtml.includes('Nenhum programa bloqueado por política agora'));
+  assert.ok(sections.signals.bodyHtml.includes('Nenhuma regra quarentenada agora'));
+  assert.ok(sections.signals.bodyHtml.includes('Pipeline de promoção automática de alvo ainda não rodou') || sections.signals.bodyHtml.includes('ainda não rodou nesta cópia'));
 });
 
 test('lida com estado totalmente vazio sem quebrar (honesto, sem dado fabricado)', () => {

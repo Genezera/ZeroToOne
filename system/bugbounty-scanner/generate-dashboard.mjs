@@ -176,6 +176,7 @@ export function buildDashboardData({ queueEntries, ledgerEntries, stats, targetL
     totalDbFindings,
     evidenceGradeRows,
     policyBlockedFindings,
+    programPolicy,
     quarantined,
     promotionLog,
   };
@@ -444,7 +445,7 @@ ${FONT_LINK}
       requestAnimationFrame(step);
     });
     requestAnimationFrame(function () {
-      root.querySelectorAll('.bar-fill').forEach(function (el) { el.classList.add('show'); });
+      root.querySelectorAll('.bar-fill, .funnel-fill').forEach(function (el) { el.classList.add('show'); });
     });
   }
 
@@ -770,6 +771,141 @@ function renderActivityPage(data) {
 }
 
 // ---------------------------------------------------------------------
+// Página: Sinais (política de programa, quarentena, grau de evidência,
+// pipeline de promoção) -- consolida em UM lugar visual o que hoje só
+// existia espalhado em program-policy.json/quarantine-status.md/
+// targets-auto-promoted-log.json, sem nenhuma tela própria.
+// ---------------------------------------------------------------------
+
+function renderEvidenceGradeBar(evidenceGradeRows, totalDbFindings) {
+  if (!evidenceGradeRows.length) return `<div class="empty">Nenhum achado com grau de evidência calculado ainda.</div>`;
+  return `<div class="card-grid">${evidenceGradeRows
+    .map(
+      (g, i) => `
+    <div class="card" style="--i:${i}">
+      <div class="grade-row">
+        <div class="grade-badge g-${esc(g.grade)}">${esc(g.grade)}</div>
+        <div>
+          <div class="card-title">${g.count} achado(s)</div>
+          <div class="card-meta">${totalDbFindings ? Math.round((g.count / totalDbFindings) * 100) : 0}% do total</div>
+        </div>
+      </div>
+    </div>`
+    )
+    .join('')}</div>`;
+}
+
+function renderPolicyBlocks(policyBlockedFindings, programPolicy) {
+  const programs = Object.entries(programPolicy).filter(([, v]) => v.aiResearchBanned);
+  const policyHtml = programs.length
+    ? programs
+        .map(
+          ([name, v]) => `
+      <div class="signal-block">
+        <div class="signal-title">🚫 ${esc(name)}</div>
+        <div class="signal-meta">${esc(v.reason || 'pesquisa assistida por IA proibida pelas regras deste programa')}</div>
+      </div>`
+        )
+        .join('')
+    : `<div class="empty">Nenhum programa bloqueado por política agora.</div>`;
+
+  const findingsHtml = policyBlockedFindings.length
+    ? `<div class="card-grid">${policyBlockedFindings
+        .map(
+          (f, i) => `
+      <div class="card" style="--i:${i}">
+        <div class="card-eyebrow">${esc(f.program)}</div>
+        <div class="card-title">${esc(f.id.split('::').slice(1).join('::').slice(0, 60))}</div>
+        <div class="card-meta">estado: ${esc(STATE_LABEL[f.state] || f.state)}${f.evidenceGrade ? ' · grau ' + esc(f.evidenceGrade) : ''}</div>
+      </div>`
+        )
+        .join('')}</div>`
+    : `<div class="empty">Nenhum achado real afetado por bloqueio de programa agora.</div>`;
+
+  return `${policyHtml}${policyBlockedFindings.length ? `<h2 style="margin-top:22px">Achados travados por política</h2><div class="panel-sub">Investigação real, tecnicamente válida, mas que a state machine nunca deixa passar de human_ready por causa do programa.</div>${findingsHtml}` : ''}`;
+}
+
+function renderQuarantineBlock(quarantined) {
+  if (!quarantined.length) return `<div class="empty">Nenhuma regra quarentenada agora — toda heurística ativa ainda tem taxa de falso-positivo aceitável.</div>`;
+  return `<div class="card-grid">${quarantined
+    .map(
+      (q, i) => `
+    <div class="card" style="--i:${i}">
+      <div class="card-eyebrow">${esc(q.language)}</div>
+      <div class="card-title">${esc(q.type)}</div>
+      <div class="card-meta">${Math.round(q.fpRate * 100)}% falso-positivo (${q.falsePositive}/${q.reviewed} revisados)</div>
+    </div>`
+    )
+    .join('')}</div>`;
+}
+
+function renderPromotionBlock(promotionLog) {
+  if (!promotionLog) return `<div class="empty">Pipeline de promoção ainda não rodou nesta cópia do repositório.</div>`;
+  const promoted = promotionLog.promotedThisRound || [];
+  const skipped = promotionLog.skippedThisRound || {};
+  const promotedHtml = promoted.length
+    ? `<div class="card-grid">${promoted
+        .map(
+          (p, i) => `
+      <div class="card" style="--i:${i}">
+        <div class="card-eyebrow">${esc(p.program)} · score ${esc(p.score)}</div>
+        <div class="card-title">${esc(p.owner)}/${esc(p.repo)}</div>
+        <div class="card-meta">${(p.reasons || []).map((r) => esc(r)).join(' · ') || 'sem motivo registrado'}</div>
+      </div>`
+        )
+        .join('')}</div>`
+    : `<div class="empty">Nenhum alvo novo promovido na última rodada.</div>`;
+  const skipCounts = [
+    ['Programa bloqueado', skipped.blockedProgram?.length || 0],
+    ['Linguagem não suportada', skipped.unsupportedLanguage?.length || 0],
+    ['Repo grande demais', skipped.tooLarge?.length || 0],
+    ['Sem sinal positivo', skipped.insufficientSignal?.length || 0],
+    ['Erro de metadado', skipped.metadataFetchFailed?.length || 0],
+    ['Elegível, sem vaga na rodada', skipped.deferredToNextRun?.length || 0],
+    ['Já promovido antes', skipped.alreadyPromoted || 0],
+  ].filter(([, n]) => n > 0);
+  const skipHtml = skipCounts.length
+    ? `<div class="card-grid">${skipCounts.map(([label, n], i) => `<div class="card" style="--i:${i}"><div class="card-title">${n}</div><div class="card-meta">${esc(label)}</div></div>`).join('')}</div>`
+    : `<div class="empty">Nada recusado na última rodada.</div>`;
+  return `
+    <div class="panel-sub">Última rodada: ${esc(fmtTime(promotionLog.generatedAt))} — ${promotionLog.totalActiveAutoPromoted ?? 0} alvo(s) auto-promovido(s) ativo(s) no total.</div>
+    <h2 style="font-size:15px">Promovidos nesta rodada</h2>
+    ${promotedHtml}
+    <h2 style="font-size:15px;margin-top:18px">Recusados nesta rodada, por motivo</h2>
+    ${skipHtml}`;
+}
+
+function renderSignalsPage(data) {
+  const { policyBlockedFindings, programPolicy, quarantined, evidenceGradeRows, totalDbFindings, promotionLog } = data;
+  return {
+    key: 'signals',
+    title: 'Sinais',
+    subtitle: 'Tudo que hoje decide sozinho o que avança, o que é suprimido e o que nunca pode ser enviado — política de programa, quarentena de heurística, grau de evidência e promoção automática de alvo.',
+    bodyHtml: `
+    <div class="panel">
+      <h2>Grau de evidência (E0–E5)</h2>
+      <div class="panel-sub">Quão bem provado cada achado está, derivado do que já foi gravado — nunca uma opinião solta.</div>
+      ${renderEvidenceGradeBar(evidenceGradeRows, totalDbFindings)}
+    </div>
+    <div class="panel">
+      <h2>Política de programa</h2>
+      <div class="panel-sub">Programa cujas próprias regras proíbem pesquisa assistida por IA — bloqueado no gate scope_verified→human_ready, automaticamente, pra qualquer chamador.</div>
+      ${renderPolicyBlocks(policyBlockedFindings, programPolicy || {})}
+    </div>
+    <div class="panel">
+      <h2>Heurísticas em quarentena</h2>
+      <div class="panel-sub">Regra com taxa de falso-positivo no limiar para de gerar candidato novo, automaticamente, nos 3 pontos de entrada do scanner.</div>
+      ${renderQuarantineBlock(quarantined || [])}
+    </div>
+    <div class="panel">
+      <h2>Pipeline de promoção automática de alvo</h2>
+      <div class="panel-sub">Candidato descoberto que virou alvo de varredura ativa sozinho, por pontuação — e tudo que foi considerado e recusado, sem corte silencioso.</div>
+      ${renderPromotionBlock(promotionLog)}
+    </div>`,
+  };
+}
+
+// ---------------------------------------------------------------------
 // Página: Estatística
 // ---------------------------------------------------------------------
 
@@ -815,6 +951,7 @@ export function renderDashboardSections(data) {
     targets: renderTargetsPage(data),
     queue: renderQueuePage(data),
     activity: renderActivityPage(data),
+    signals: renderSignalsPage(data),
     stats: renderStatsPage(data),
   };
 }
@@ -828,13 +965,22 @@ export function renderDashboardApp(data) {
   return renderApp({ sections, lastScanAt: data.lastScanAt, extraScripts });
 }
 
-export function generateDashboard({ queuePath, statsJsonPath, ledgerEntries, targetLists, outputPath, lastScanSummary, lastScanAt }) {
+export function generateDashboard({ queuePath, statsJsonPath, ledgerEntries, targetLists, outputPath, lastScanSummary, lastScanAt, dbPath, quarantineOverridesPath, promotionLogPath }) {
   const queueEntries = loadQueue(queuePath);
   const stats = loadJson(statsJsonPath, { byTypeLanguage: {}, byTypeProgram: {} });
-  const RELEVANT_TYPES = new Set(['bugbounty_scan', 'bugbounty_verdict', 'bugbounty_discovery', 'bugbounty_digest']);
+  const RELEVANT_TYPES = new Set(['bugbounty_scan', 'bugbounty_verdict', 'bugbounty_discovery', 'bugbounty_digest', 'bugbounty_state_transition']);
   const relevantLedger = (ledgerEntries || []).filter((e) => RELEVANT_TYPES.has(e.type));
-  const data = buildDashboardData({ queueEntries, ledgerEntries: relevantLedger, stats, targetLists, lastScanSummary, lastScanAt });
+
+  const { findings: dbFindings, counts: dbStateCounts } = loadDbSnapshot(dbPath);
+  const programPolicy = loadProgramPolicy();
+  const quarantined = computeQuarantinedRules(stats, { overrides: loadQuarantineOverrides(quarantineOverridesPath) });
+  const promotionLog = promotionLogPath ? loadJson(promotionLogPath, null) : null;
+
+  const data = buildDashboardData({ queueEntries, ledgerEntries: relevantLedger, stats, targetLists, lastScanSummary, lastScanAt, dbFindings, dbStateCounts, programPolicy, quarantined, promotionLog });
   const html = renderDashboardApp(data);
 
   const outDir = path.dirname(outputPath);
-  if (!existsSync(outDir)) mkdirSync(outDir, { re
+  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+  writeFileSync(outputPath, html, 'utf8');
+  return data;
+}
