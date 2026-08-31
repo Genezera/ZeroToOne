@@ -1983,3 +1983,18 @@ refutado por rastreamento completo dos 3 call-sites, não por suposição.
 
 `deep-read-log.json` atualizado (cashapp/cash-app-pay-android-sdk ganhou
 os 3 arquivos acima).
+
+Rodada seguinte (2026-08-31, disparada por push): fila vazia de novo.
+Leitura profunda proativa em `cashapp/misk` (repo com mais superfície de
+auth/admin/crypto já mapeada, mas ainda com lacunas pequenas). Li
+`web/dashboard/AdminDashboardModule.kt`, `web/dashboard/DashboardTabLoader.kt`
+e `jooq/JooqSession.kt`. Sem achado: `AdminDashboardModule.kt` só
+compõe módulos Guice (nenhuma lógica de autorização própria — capabilities
+reais ficam em `AccessAnnotationEntry`/`AccessInterceptor`, já cobertos em
+rodada anterior); o `AdminDashboardTestingModule` com
+`ConfigTabMode.UNSAFE_LEAK_MISK_SECRETS` é explicitamente rotulado como
+módulo de teste/dev, não instalado em produção — não é achado, é
+comportamento documentado e isolado por nome de classe.
+`DashboardTabLoader.kt` é só dataclasses de roteamento (sem lógica).
+`JooqSession.kt` é gerência de hooks de transação, sem superfície de
+auth/crypto. `deep-read-log.json` atualizado.
