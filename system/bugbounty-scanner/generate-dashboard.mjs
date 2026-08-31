@@ -9,6 +9,46 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { openDb, listFindings, stateCounts, closeDb, getFinding, listValidations, latestPlatformOutcome } from './db.mjs';
+import { getEvidenceGrade } from './evidence-grade.mjs';
+import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
+import { computeQuarantinedRules } from './quarantine.mjs';
+
+/** Snapshot do banco v2 (state machine + grau de evidência) -- adicionado
+ * 31/08/2026. Até aqui o painel só conhecia queue.jsonl (status/verdict
+ * antigos); o pipeline de estado de verdade (candidate->...->human_ready
+ * ->submitted->outcome) nunca aparecia visualmente, apesar de ser onde
+ * mora todo achado avançado desta missão (Solana em reproduced_local,
+ * wire-schema bloqueado em human_ready por política de programa, etc.).
+ * Isolado em try/catch: banco ausente/erro de leitura vira painel vazio
+ * (honesto), nunca quebra a geração do resto do dashboard. */
+function loadDbSnapshot(dbPath) {
+  if (!dbPath || !existsSync(dbPath)) return { findings: [], counts: {} };
+  let db;
+  try {
+    db = openDb(dbPath);
+    const findings = listFindings(db, {}).map((f) => ({
+      ...f,
+      evidenceGrade: getEvidenceGrade(db, f.id, { getFinding, listValidations, latestPlatformOutcome }),
+    }));
+    const counts = stateCounts(db);
+    return { findings, counts };
+  } catch (err) {
+    return { findings: [], counts: {}, error: err.message };
+  } finally {
+    if (db) closeDb(db);
+  }
+}
+
+function loadQuarantineOverrides(filePath) {
+  if (!filePath || !existsSync(filePath)) return new Set();
+  try {
+    const arr = JSON.parse(readFileSync(filePath, 'utf8'));
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
 
 function loadQueue(filePath) {
   if (!existsSync(filePath)) return [];
@@ -26,13 +66,27 @@ function esc(s) {
 
 const LANGUAGE_LABEL = { clarity: 'Clarity', js: 'JS/TS', go: 'Go', jvm: 'Kotlin/Java', swift: 'Swift/ObjC', unknown: '?' };
 
+// Ordem conceitual do pipeline real (state-machine.mjs) -- não é ordem
+// alfabética nem de contagem, é a ordem em que um achado REALMENTE anda
+// (candidate -> ... -> human_ready -> submitted -> outcome), com os
+// estados de refutação (false_positive/inconclusive/known_duplicate) no
+// fim por serem saídas laterais, não passos do funil principal.
+const STATE_PIPELINE_ORDER = ['candidate', 'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready', 'submitted', 'triaged', 'paid', 'resolved', 'duplicate', 'informative', 'rejected', 'false_positive', 'inconclusive', 'known_duplicate'];
+const STATE_LABEL = {
+  candidate: 'Candidato', corroborated_static: 'Corroborado (estático)', reproduced_local: 'Reproduzido (local)',
+  scope_verified: 'Escopo verificado', human_ready: 'Pronto p/ humano', submitted: 'Enviado',
+  triaged: 'Triado', paid: 'Pago', resolved: 'Resolvido', duplicate: 'Duplicata', informative: 'Informativo',
+  rejected: 'Rejeitado', false_positive: 'Falso positivo', inconclusive: 'Inconclusivo', known_duplicate: 'Duplicata conhecida',
+};
+const EVIDENCE_GRADE_ORDER = ['E0', 'E1', 'E2', 'E3', 'E4', 'E5'];
+
 // ---------------------------------------------------------------------
 // Dados
 // ---------------------------------------------------------------------
 
 /** Molda todos os dados que as 5 páginas precisam — função pura, testável
  * sem tocar disco. ledgerEntries já deve vir filtrado (só bugbounty_*). */
-export function buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary, lastScanAt }) {
+export function buildDashboardData({ queueEntries, ledgerEntries, stats, targetLists, lastScanSummary, lastScanAt, dbFindings = [], dbStateCounts = {}, programPolicy = {}, quarantined = [], promotionLog = null }) {
   const pending = queueEntries.filter((e) => e.status === 'pending');
   const reviewed = queueEntries.filter((e) => e.status && e.status !== 'pending');
   const confirmed = reviewed.filter((e) => e.verdict === 'confirmado');
@@ -73,6 +127,31 @@ export function buildDashboardData({ queueEntries, ledgerEntries, stats, targetL
     })
     .sort((a, b) => (b.fpRate ?? -1) - (a.fpRate ?? -1));
 
+  // Funil real do state-machine.mjs -- só estados com pelo menos 1 achado
+  // aparecem (nunca fabrica uma barra de "0 de tudo" pra estado que a
+  // missão nunca alcançou ainda).
+  const statePipeline = STATE_PIPELINE_ORDER
+    .map((state) => ({ state, label: STATE_LABEL[state] || state, count: dbStateCounts[state] || 0 }))
+    .filter((s) => s.count > 0);
+  const totalDbFindings = Object.values(dbStateCounts).reduce((a, b) => a + b, 0);
+
+  const evidenceGradeCounts = {};
+  for (const f of dbFindings) {
+    const g = f.evidenceGrade || 'E0';
+    evidenceGradeCounts[g] = (evidenceGradeCounts[g] || 0) + 1;
+  }
+  const evidenceGradeRows = EVIDENCE_GRADE_ORDER.map((g) => ({ grade: g, count: evidenceGradeCounts[g] || 0 })).filter((g) => g.count > 0);
+
+  // Achado que só não avança porque o PROGRAMA está bloqueado (não porque
+  // faltou evidência) -- distinção real: isso é sobre elegibilidade, não
+  // sobre qualidade da investigação (mesmo princípio de evidence-grade.mjs).
+  const policyBlockedFindings = dbFindings
+    .map((f) => ({ f, reason: getBlockReason(f.program, programPolicy) }))
+    .filter((x) => x.reason)
+    .map((x) => ({ id: x.f.id, program: x.f.program, state: x.f.state, evidenceGrade: x.f.evidenceGrade, reason: x.reason }));
+
+  const decisionEntries = activitySorted.filter((e) => e.type === 'bugbounty_state_transition');
+
   return {
     lastScanAt,
     lastScanSummary: lastScanSummary || null,
@@ -85,12 +164,20 @@ export function buildDashboardData({ queueEntries, ledgerEntries, stats, targetL
       confirmed: confirmed.length,
       falsePositive: falsePositive.length,
       scanRuns: ledgerEntries.filter((e) => e.type === 'bugbounty_scan').length,
+      dbFindings: totalDbFindings,
     },
     targetRows,
     queueEntries: queueSorted,
     activityEntries: activitySorted,
+    decisionEntries,
     heuristicByLanguage,
     heuristicByProgram,
+    statePipeline,
+    totalDbFindings,
+    evidenceGradeRows,
+    policyBlockedFindings,
+    quarantined,
+    promotionLog,
   };
 }
 
@@ -196,6 +283,7 @@ h2 { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin
 .timeline-item[data-kind="verdict"]::before { background: var(--info); }
 .timeline-item[data-kind="discovery"]::before { background: var(--good); }
 .timeline-item[data-kind="digest"]::before { background: var(--critical); }
+.timeline-item[data-kind="transition"]::before { background: var(--accent); }
 .timeline-body a { color: var(--accent); }
 .timeline-time { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
 .timeline-title { font-size: 13.5px; font-weight: 500; margin-top: 2px; }
@@ -221,6 +309,39 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
 
 .nav a { transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease; }
 .nav a:active { transform: scale(0.97); }
+
+.funnel { display: flex; flex-direction: column; gap: 6px; }
+.funnel-row { display: grid; grid-template-columns: 150px 1fr auto; gap: 12px; align-items: center; }
+.funnel-label { font-size: 12.5px; color: var(--ink-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.funnel-track { height: 20px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+.funnel-fill { height: 100%; border-radius: 5px; width: var(--pct); min-width: 3px; transform: scaleX(0); transform-origin: left; transition: transform 0.7s cubic-bezier(.16,1,.3,1); transition-delay: calc(var(--i, 0) * 0.05s); background: linear-gradient(90deg, var(--info), var(--accent)); }
+.funnel-fill.terminal-good { background: linear-gradient(90deg, var(--good), #3fae8a); }
+.funnel-fill.terminal-bad { background: linear-gradient(90deg, var(--ink-faint), #47536a); }
+.funnel-fill.show { transform: scaleX(1); }
+.funnel-value { font-family: var(--font-mono); font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.terminal { background: #05070b; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.terminal-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: #0d1219; border-bottom: 1px solid var(--border); }
+.terminal-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--border); }
+.terminal-title { margin-left: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+.terminal-body { padding: 14px 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; max-height: 360px; overflow-y: auto; }
+.terminal-line { white-space: pre-wrap; overflow-wrap: anywhere; opacity: 0; animation: rise 0.3s ease forwards; animation-delay: calc(var(--i, 0) * 0.04s); }
+.terminal-prompt { color: var(--good); }
+.terminal-arrow { color: var(--accent); }
+.terminal-dim { color: var(--ink-faint); }
+.terminal-empty { color: var(--ink-faint); font-family: var(--font-mono); font-size: 12px; }
+
+.grade-row { display: flex; align-items: center; gap: 10px; }
+.grade-badge { font-family: var(--font-mono); font-weight: 700; font-size: 12px; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border: 1px solid var(--border); flex-shrink: 0; }
+.grade-badge.g-E0, .grade-badge.g-E1 { color: var(--ink-faint); }
+.grade-badge.g-E2 { color: var(--info); }
+.grade-badge.g-E3, .grade-badge.g-E4 { color: var(--accent); }
+.grade-badge.g-E5 { color: var(--good); }
+
+.signal-block { border-left: 3px solid var(--critical); background: var(--surface-2); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+.signal-block.ok { border-left-color: var(--good); }
+.signal-title { font-weight: 600; font-size: 13.5px; }
+.signal-meta { font-size: 12px; color: var(--ink-muted); margin-top: 4px; }
 `;
 
 const FONT_LINK = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">`;
@@ -230,6 +351,7 @@ const NAV_ITEMS = [
   { key: 'targets', label: 'Alvos', icon: '▤' },
   { key: 'queue', label: 'Fila completa', icon: '≡' },
   { key: 'activity', label: 'Atividade ao vivo', icon: '↯' },
+  { key: 'signals', label: 'Sinais', icon: '◈' },
   { key: 'stats', label: 'Estatística', icon: '▲' },
 ];
 
@@ -351,12 +473,59 @@ function statTile(value, label, i) {
   return `<div class="tile" style="--i:${i}"><div class="tile-value" data-countup="${value}">0</div><div class="tile-label">${esc(label)}</div></div>`;
 }
 
+/** Funil do pipeline real (state-machine.mjs) -- barra por estado, na
+ * ordem em que um achado de verdade progride, largura relativa ao maior
+ * valor presente (não ao total, senão candidate sempre dominaria tudo e
+ * esconderia a diferença entre os estados avançados). */
+function renderPipelineFunnel(statePipeline) {
+  if (!statePipeline.length) return `<div class="empty">Nenhum achado no banco de estado ainda.</div>`;
+  const max = Math.max(...statePipeline.map((s) => s.count));
+  const TERMINAL_GOOD = new Set(['paid', 'resolved', 'triaged']);
+  const TERMINAL_NEUTRAL = new Set(['false_positive', 'inconclusive', 'known_duplicate', 'duplicate', 'informative', 'rejected']);
+  return `<div class="funnel">${statePipeline
+    .map((s, i) => {
+      const pct = Math.max(3, Math.round((s.count / max) * 100));
+      const cls = TERMINAL_GOOD.has(s.state) ? 'terminal-good' : TERMINAL_NEUTRAL.has(s.state) ? 'terminal-bad' : '';
+      return `<div class="funnel-row" style="--i:${i}">
+        <div class="funnel-label">${esc(s.label)}</div>
+        <div class="funnel-track"><div class="funnel-fill ${cls}" style="--pct:${pct}%"></div></div>
+        <div class="funnel-value">${s.count}</div>
+      </div>`;
+    })
+    .join('')}</div>`;
+}
+
+function decisionLine(entry, i) {
+  const from = entry.from ? esc(entry.from) : '?';
+  const to = esc(entry.to || '?');
+  const actor = entry.actor ? ` <span class="terminal-dim">(${esc(entry.actor)})</span>` : '';
+  const rationale = entry.rationale ? `\n        <span class="terminal-dim">→ ${esc(entry.rationale)}</span>` : '';
+  return `<div class="terminal-line" style="--i:${i}"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">${esc((entry.findingId || '').slice(0, 70))}</span>
+        ${from} <span class="terminal-arrow">→</span> ${to}${actor}${rationale}</div>`;
+}
+
+/** "Terminal" com as últimas decisões reais da state machine (from->to +
+ * motivo) -- resposta direta a "o que está pensando, que decisão está
+ * tomando": não é log genérico, é literalmente a razão gravada por
+ * state-machine.mjs pra cada transição, no mesmo texto que reprova ou
+ * aprova a mudança de estado. */
+function renderDecisionTerminal(decisionEntries, limit = 12) {
+  const shown = decisionEntries.slice(0, limit);
+  const body = shown.length
+    ? shown.map((e, i) => decisionLine(e, i)).join('\n')
+    : `<div class="terminal-empty">$ nenhuma transição de estado registrada ainda</div>`;
+  return `<div class="terminal">
+    <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title">decisões-da-state-machine</span></div>
+    <div class="terminal-body">${body}</div>
+  </div>`;
+}
+
 // ---------------------------------------------------------------------
 // Página: Visão geral
 // ---------------------------------------------------------------------
 
 function renderOverviewPage(data) {
-  const { totals, targetRows, queueEntries, activityEntries, heuristicByLanguage, lastScanSummary, lastScanAt } = data;
+  const { totals, targetRows, queueEntries, activityEntries, heuristicByLanguage, lastScanSummary, lastScanAt, statePipeline, decisionEntries } = data;
 
   const scanLine = lastScanSummary
     ? `${lastScanSummary.contractsChecked ?? 0} contrato(s) Clarity, ${lastScanSummary.repoFilesChecked ?? 0} arquivo(s) de código e ${lastScanSummary.manifestsChecked ?? 0} manifesto(s) de dependência checados na última rodada, ${lastScanSummary.fetchErrors ?? 0} erro(s) de busca.`
@@ -389,6 +558,16 @@ function renderOverviewPage(data) {
       ${statTile(totals.scanRuns, 'Rodadas registradas', 3)}
       ${statTile(totals.pending, 'Sinais pendentes', 4)}
       ${statTile(totals.reviewed, 'Já revisados', 5)}
+    </div>
+    <div class="panel">
+      <h2>Funil de estado (banco v2)</h2>
+      <div class="panel-sub">Onde cada achado está de verdade no pipeline candidate → ... → human_ready → submitted → resultado — ver <a href="#signals">Sinais</a> pra grau de evidência e bloqueios de política.</div>
+      ${renderPipelineFunnel(statePipeline)}
+    </div>
+    <div class="panel">
+      <h2>Decisões em tempo real</h2>
+      <div class="panel-sub">As últimas transições de estado, com o motivo exato que a state machine aceitou ou recusou.</div>
+      ${renderDecisionTerminal(decisionEntries)}
     </div>
     <div class="panel">
       <h2>Últimos achados</h2>
@@ -555,6 +734,14 @@ function timelineItem(entry, i) {
       <div class="timeline-body">${entry.totalCandidatesInDatasets ?? 0} alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd)${entry.truncatedCount ? `, ${entry.truncatedCount} ficou pra próxima rodada` : ''}. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
     </div>`;
   }
+  if (entry.type === 'bugbounty_state_transition') {
+    return `
+    <div class="timeline-item" style="--i:${i}" data-kind="transition">
+      <div class="timeline-time">${esc(fmtTime(entry.ts))}</div>
+      <div class="timeline-title">Transição: ${esc(entry.from || '?')} → ${esc(entry.to || '?')}${entry.actor ? ' — ' + esc(entry.actor) : ''}</div>
+      <div class="timeline-body">${esc((entry.findingId || '').slice(0, 90))}${entry.rationale ? '<br>' + esc(entry.rationale) : ''}</div>
+    </div>`;
+  }
   if (entry.type === 'bugbounty_digest') {
     return `
     <div class="timeline-item" style="--i:${i}" data-kind="digest">
@@ -650,7 +837,4 @@ export function generateDashboard({ queuePath, statsJsonPath, ledgerEntries, tar
   const html = renderDashboardApp(data);
 
   const outDir = path.dirname(outputPath);
-  if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-  writeFileSync(outputPath, html, 'utf8');
-  return data;
-}
+  if (!existsSync(outDir)) mkdirSync(outDir, { re
