@@ -9,39 +9,6 @@ finding itself was correct — this was a timing loss, not a wrong
 finding. No bounty for duplicates per program rules. No further action
 needed on this one; kept here as a record.
 
----
-
-# ⚠️ REVIEW CHECKLIST — READ BEFORE SUBMITTING, THEN DELETE THIS SECTION
-
-Everything below the `---` line is the actual report — copy from there down. This section above the line is only for you; do not paste it.
-
-Before copying/pasting and submitting, check:
-
-- [ ] Scope confirmed — the affected asset is in the program's scope RIGHT NOW (scope can change; re-confirm on the program page before submitting)
-- [ ] Category confirmed — matches a category the program declares eligible for a reward (not metadata/cosmetic)
-- [ ] Evidence checked — the code excerpts and the PoC output below really exist/ran as described (not paraphrase/hallucination)
-- [ ] Not a duplicate — checked against reports you've already submitted to this program (zero related security advisories/ issues found in the repository at the time of this scan — see the duplicate-check section below)
-
-**⏱ TIMING:** Arc Chain is on private mainnet right now (100+ institutional/ecosystem builders onboarded), with public mainnet confirmed for **September 16, 2026** (~2 weeks away). Publicly announced founding validators: **BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE, MoneyGram, SBI Group, Sumitomo** (source: circle.com/pressroom, 2026-08-30). This is likely the software protecting real financial institutions' validator keys right now, with the window until public launch shrinking. Worth submitting soon.
-
-Re-checked on 2026-08-31, right before writing this: current `main` commit is `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` (2026-06-18, a trivial CI-only change, nothing security-relevant). `configs/app.yaml` still ships `tls.enabled: false` by default right now, and `public.go` still has no auth/interceptor/token/credential logic anywhere. Nothing has changed since the proof of concept below was run.
-
-**📸 SCREENSHOT CAPTURE GUIDE** (do this before submitting — the local clone already has the toolchain and generated protobuf code ready, no setup needed):
-
-Ready-to-open folder: `C:\Users\Renan\AppData\Local\Temp\claude\C--Users-Renan-ZeroToOne\f9545887-b43e-443f-9164-5533679014bd\scratchpad\arc-remote-signer` (open as a VS Code workspace: File > Open Folder — this is a temp folder, it may not survive a machine restart; re-clone at `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` and re-run `buf generate` if it's gone). Take one screenshot per item, only the relevant window on screen (no other apps, no visible username/paths beyond what's already in the public repo). Match each to its caption in "Evidence (screenshots)" below the `---` line.
-
-1. `internal/app/service/signer/signer.go` — Ctrl+F `func (s *Service) Sign`. Zoom ~140-160% (Ctrl + `+`) until `if len(req.Message) == 0` and `Message: req.Message` are both comfortably on screen.
-2. `internal/app/public/public.go` — Ctrl+F `RegisterSignerServiceServer`. Whole file is short enough to fit; show `grpcServer.NewServer(...)` through `pb.RegisterSignerServiceServer(...)`.
-3. `internal/common/grpc/server/server.go` — Ctrl+F `ChainUnaryInterceptor`. Show the whole interceptor list (Recovery/RequestID/Metrics/Logging). Don't add any "NO AUTH" annotation to the code itself.
-4. `internal/common/grpc/server/option.go` — Ctrl+F `func WithTLS`. Just the function body is enough.
-5. `configs/app.yaml` — whole file, it's short.
-6. **Most important one, put it last with the most visual weight.** Open a real terminal (Windows Terminal, large font e.g. Cascadia Mono 18-20pt looks best), `cd` into `scratchpad/arc-remote-signer`, run exactly: `go test ./internal/app/public/... -run TestUnauthenticatedSignIsAccepted -v -count=1` The test already prints a clean, labeled block (Authentication metadata: NONE / REQUEST ACCEPTED / gRPC status: OK / Signing backend: LOCAL STUB) — screenshot the real output, don't retype it.
-7. Clone `circlefin/arc-node` too, open `crates/remote-signer/src/client.rs`, Ctrl+F `SignRequest`, show `proto::SignRequest { message: message.to_vec() }`.
-8. *(optional)* Same file, Ctrl+F `ClientTlsConfig`, show `.ca_certificate(...)` with no `.identity(...)` nearby.
-
-Don't write anything like `// VULNERABILITY!!!` into any code before screenshotting it — the code is the evidence, keep it unmodified; put your framing in the HackerOne caption instead.
-
----
 
 ## Title
 Unauthenticated `SignerService.Sign` allows network-reachable callers to invoke a privileged validator signing operation
