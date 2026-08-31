@@ -315,7 +315,8 @@
     "crates/eth-engine/src/rpc/engine_rpc.rs",
     "crates/eth-engine/src/rpc/ethereum_rpc.rs",
     "crates/signer/src/remote.rs",
-    "crates/remote-signer/src/provider.rs"
+    "crates/remote-signer/src/provider.rs",
+    "crates/precompiles/src/native_coin_authority.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",
@@ -344,7 +345,12 @@
     "x/cctp/keeper/msg_server_add_remote_token_messenger.go",
     "x/cctp/keeper/msg_server_update_token_controller.go",
     "x/cctp/keeper/msg_server_link_token_pair.go",
-    "x/cctp/keeper/msg_server_receive_message.go"
+    "x/cctp/keeper/msg_server_receive_message.go",
+    "x/cctp/keeper/roles.go",
+    "x/cctp/keeper/msg_server_update_owner.go",
+    "x/cctp/keeper/msg_server_accept_owner.go",
+    "x/cctp/keeper/msg_server_update_pauser.go",
+    "x/cctp/keeper/msg_server_update_attester_manager.go"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
@@ -449,7 +455,8 @@
   ],
   "circlefin/sui-cctp": [
     "packages/message_transmitter/sources/auth.move",
-    "packages/token_messenger_minter/sources/admin/role_management.move"
+    "packages/token_messenger_minter/sources/admin/role_management.move",
+    "packages/message_transmitter/sources/admin/roles.move"
   ],
   "vercel/ai": [
     "packages/gateway/src/gateway-realtime-auth.ts",

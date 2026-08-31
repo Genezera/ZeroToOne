@@ -3287,3 +3287,45 @@ Sem achado novo nesta rodada. `deep-read-log.json` atualizado. Nenhum
 finding em `corroborated_static`/`human_ready` de rodadas anteriores foi
 tocado (fora do escopo desta rodada — eles não estão em `candidate`).
 `export-queue` + commit ao final.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, revalidação do bloqueio de rede + leitura profunda em noble-cctp/sui-cctp/arc-node
+
+`list-pending` vazio de novo. Antes de seguir pra leitura profunda,
+revalidei a limitação de PoC já registrada no achado
+`ColdStorageAddressBookModule::addAllowedRecipients` (Solidity,
+`corroborated_static`, sem PoC executável): `which forge` (ausente),
+`curl -L https://foundry.paradigm.xyz` → `403` no proxy
+(`connect_rejected`, política de organização), e por curiosidade testei
+também acesso genérico a `github.com/foundry-rs/foundry/releases` como
+via alternativa de download do binário — também `403`. Confirma que é
+bloqueio de política de rede desta sessão/ambiente, não algo transitório
+do host do Foundry especificamente; não tentei nenhuma outra rota
+(instrução do proxy é nunca tentar contornar 403/407). Achado permanece
+em `corroborated_static`, nada mudou no registro dele.
+
+Leitura profunda proativa (delegada a um agente, mesmo padrão de sempre):
+escolhidos 3 repos do Circle BBP com baixa cobertura no
+`deep-read-log.json`, focando em código de autorização/ownership ainda
+não lido:
+
+- `circlefin/noble-cctp`: `x/cctp/keeper/roles.go` (getters/setters
+  triviais, sem auth própria) + os 4 msg handlers de troca de role
+  (`update_owner`, `accept_owner`, `update_pauser`,
+  `update_attester_manager`). Padrão two-step ownership implementado
+  corretamente em todos (`UpdateOwner` seta pending, `AcceptOwner` exige
+  `msg.From == pendingOwner`; os demais exigem `msg.From == GetOwner`).
+  Sem achado.
+- `circlefin/sui-cctp`: `packages/message_transmitter/sources/admin/roles.move`
+  — struct `Roles` com owner via `TwoStepRole`, setters `public(package)`
+  (inacessíveis fora do módulo); gate real já está em
+  `role_management.move`, coberto em rodada anterior sem achado. Sem
+  achado.
+- `circlefin/arc-node`: `crates/precompiles/src/native_coin_authority.rs`
+  — precompile EVM de mint/burn/transfer do "native coin", restrito a
+  `ALLOWED_CALLER_ADDRESS` (endereço do FiatToken), com checagem de
+  delegatecall/staticcall, blocklist e overflow antes de qualquer
+  mutação de estado, na ordem correta. Sem achado.
+
+Sem achado novo nesta rodada. `deep-read-log.json` atualizado (5 arquivos
+em `noble-cctp`, 1 em `sui-cctp`, 1 em `arc-node`). `export-queue` +
+commit ao final.
