@@ -363,7 +363,12 @@
     "crates/precompiles/src/native_coin_authority.rs",
     "crates/signer/src/local.rs",
     "crates/quake/src/nodekey.rs",
-    "crates/malachite-cli/src/cmd/key.rs"
+    "crates/malachite-cli/src/cmd/key.rs",
+    "contracts/src/validator-manager/PermissionedValidatorManager.sol",
+    "contracts/src/validator-manager/roles/Controller.sol",
+    "contracts/src/validator-manager/ValidatorRegistry.sol",
+    "contracts/src/validator-manager/roles/ValidatorRegisterer.sol",
+    "contracts/src/proxy/AdminUpgradeableProxy.sol"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",
