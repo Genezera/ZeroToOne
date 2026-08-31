@@ -72,6 +72,27 @@ export async function listRepoFiles(owner, repo, branch, pathPrefixes) {
   return files;
 }
 
+/** Ordena a lista de arquivo pra priorizar quem NUNCA foi escaneado antes
+ * -- sem isso, um teto fixo de arquivo por rodada (MAX_FILES_PER_TARGET em
+ * scan-runner.mjs) sempre pega os mesmos primeiros N na ordem da git tree
+ * (que é estável entre chamadas, confirmado ao vivo), pra sempre. Mesmo
+ * bug, mesmo formato, do já corrigido em discover-targets.mjs::
+ * prioritizeCandidates -- descoberto em 31/08/2026 quando
+ * okx/go-wallet-sdk (1001 arquivos Go escaneáveis) revelou que 551 nunca
+ * eram lidos, 435 deles (79%) em caminho com nome de moeda/wallet/signing
+ * (Stellar, Tezos, TON inteiros, nunca vistos). `seenPaths` é um Set de
+ * paths já vistos ANTES desta rodada (de repoShas[repoKey], que já
+ * existe por outro motivo -- cache de SHA pra não rebuscar o que não
+ * mudou). Pura -- não sabe de onde `seenPaths` veio. */
+export function prioritizeFilesForScan(files, seenPaths = new Set()) {
+  const neverSeen = [];
+  const alreadySeen = [];
+  for (const f of files) {
+    (seenPaths.has(f.path) ? alreadySeen : neverSeen).push(f);
+  }
+  return [...neverSeen, ...alreadySeen];
+}
+
 export async function fetchRawFile(owner, repo, branch, filePath) {
   const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
   const res = await fetch(url);

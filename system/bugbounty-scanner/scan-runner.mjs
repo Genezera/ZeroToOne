@@ -18,7 +18,7 @@ import { GO_TARGETS } from './targets-go.mjs';
 import { JVM_TARGETS } from './targets-jvm.mjs';
 import { SWIFT_TARGETS } from './targets-swift.mjs';
 import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
-import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile } from './fetch-repo.mjs';
+import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile, prioritizeFilesForScan } from './fetch-repo.mjs';
 import { scanJsSource } from './heuristics-js.mjs';
 import { scanGoSource } from './heuristics-go.mjs';
 import { scanJvmSource } from './heuristics-jvm.mjs';
@@ -97,13 +97,21 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       continue;
     }
     files = files.filter((f) => isScannable(f.path));
-    if (files.length > MAX_FILES_PER_TARGET) {
-      log(`AVISO: ${target.owner}/${target.repo} tem ${files.length} arquivos rastreáveis, cortando para os primeiros ${MAX_FILES_PER_TARGET} (não silencioso — registrado aqui).`);
-      files = files.slice(0, MAX_FILES_PER_TARGET);
-    }
 
     const repoKey = `${target.owner}/${target.repo}`;
     repoShas[repoKey] = repoShas[repoKey] || {};
+
+    if (files.length > MAX_FILES_PER_TARGET) {
+      // Prioriza quem nunca foi visto (bug real encontrado em 31/08/2026:
+      // a ordem da git tree é estável entre rodadas, então sem isso o
+      // corte pega SEMPRE os mesmos primeiros arquivos, pra sempre --
+      // ver prioritizeFilesForScan em fetch-repo.mjs). A ordem da git
+      // tree é o desempate dentro de cada grupo (nunca-visto primeiro,
+      // já-visto depois), não descartada, só deixa de decidir sozinha.
+      files = prioritizeFilesForScan(files, new Set(Object.keys(repoShas[repoKey])));
+      log(`AVISO: ${target.owner}/${target.repo} tem ${files.length} arquivos rastreáveis, cortando para os primeiros ${MAX_FILES_PER_TARGET} priorizando quem nunca foi escaneado (não silencioso — registrado aqui).`);
+      files = files.slice(0, MAX_FILES_PER_TARGET);
+    }
 
     for (const file of files) {
       if (repoShas[repoKey][file.path] === file.sha) continue; // sem mudança desde a última rodada
