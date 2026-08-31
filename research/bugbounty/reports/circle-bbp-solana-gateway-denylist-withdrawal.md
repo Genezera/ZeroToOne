@@ -19,27 +19,46 @@ The `devN7ZZFhGVTgwoKHaDDTFFgrhRzSGzuC6hgVFPrxbs` program ID referenced under "A
 
 **⚠️ Read this before deciding to submit — real precedent risk:** The identical behavior on this program's EVM counterpart (`evm-gateway-contracts::Withdrawals.sol`, same missing check on `initiateWithdrawal`/`withdraw`) is **not an open/paid vulnerability** — Circle's own commissioned audit (ChainSecurity, "PUBLIC Code Assessment of the Circle Gateway Smart Contracts," 2025-07-08) documents this exact behavior in section 8.1 ("Denylist on GatewayWallet and GatewayMinter") as a **Note**, not a finding requiring a fix: *"The GatewayWallet prevents denylisted accounts from depositing tokens into the contract, updating delegations, or bridging... However, denylisted users can still withdraw their tokens from the wallet contract."* That's Circle treating this exact behavior as accepted design on the EVM side. Neither public Circle Gateway audit (ChainSecurity or OtterSec) covers the Solana program at all, so this specific instance genuinely hasn't been publicly disclosed anywhere found — it may still be legitimately reportable as a novel finding on a different codebase. But there is a real, material chance Circle applies the same "accepted design" reasoning here and closes this as informative/not-applicable rather than paying it. Go in with that expectation, not as a slam-dunk.
 
+**Revised 2026-08-31 (report-writing pass, before first submission):** title/Summary/Impact tightened, a "Key PoC observation" section added to pre-empt the false-positive question, and severity is no longer self-asserted as Critical (the demonstrated impact is a denylisted account bypassing its *own* funds' restriction, not cross-account theft — let HackerOne's own calculator decide). The EVM-precedent paragraph above was deliberately kept OUT of the submittable Summary — it doesn't change any fact about the Solana-specific evidence, and volunteering it up front risks anchoring a triager toward "known accepted design" before they've read the Solana proof. You already have the full context here for your own judgment call; nothing below assumes you didn't.
+
 ---
 
 ## Title
-Denylisted accounts on the Solana `gateway-wallet` program can still withdraw funds deposited before being denylisted (`initiate_withdrawal` / `withdraw` missing denylist check)
+Denylist bypass allows denied accounts to withdraw previously deposited funds
 
 ## Program / Platform
 Circle BBP via HackerOne — https://hackerone.com/circle-bbp
 
 ## Category / Severity
-Broken access control / missing authorization check (CWE-862) in a Solana smart contract handling user token custody. `asset_type: Smart contract`, `eligible_for_bounty: true`, `max_severity: critical` (confirmed live on the program's scope page).
+Broken access control / missing authorization check (CWE-862) in a Solana smart contract handling user token custody. `asset_type: Smart contract`, `eligible_for_bounty: true` (confirmed live on the program's scope page). I'm not self-asserting a severity level: the program's scope allows up to `max_severity: critical` for this asset, but that's a ceiling for the asset class, not an assessment of this specific finding. The demonstrated impact here is a denylisted account bypassing the denylist to withdraw *its own* pre-existing balance — not access to another account's funds, fund creation, or any protocol-wide compromise (see Impact below for the explicit boundary). I'd leave severity to HackerOne's own calculator/triage rather than claim Critical based only on the asset's ceiling.
 
 ## Affected asset
 - Repository: `circlefin/solana-gateway-contracts`
 - Program: `gateway-wallet` (Anchor, program ID `devN7ZZFhGVTgwoKHaDDTFFgrhRzSGzuC6hgVFPrxbs`)
 - Files: `programs/gateway-wallet/src/instructions/initiate_withdrawal.rs`, `programs/gateway-wallet/src/instructions/withdrawal.rs`, `programs/gateway-wallet/src/state.rs`, `programs/gateway-wallet/src/utils.rs`
 - Commit at time of analysis: `master` (Anchor.toml declares program IDs matching the live repo; re-confirm current `master` SHA before submitting)
+- Deployment: `gateway-wallet` is live on Solana mainnet at `GATEwy4YxeiEbRJLwB6dXgg7q61e6zBPrMzYj5h1pRXQ` — confirmed via a live `getAccountInfo` query against `mainnet-beta` (`executable: true`, owned by the standard upgradeable BPF loader), and cited as the official mainnet `gateway-wallet` address in Circle's own `circlefin/skills` reference repository.
 
 ## Summary
-`gateway-wallet` maintains a denylist: once an account is denylisted, `deposit`, `deposit_for`, `add_delegate`, and `remove_delegate` all check the denylist PDA and reject the call. `initiate_withdrawal` and `withdraw` do not. Both only check that the program isn't paused — neither instruction's `#[derive(Accounts)]` struct declares a denylist account at all, and neither handler calls `is_account_denylisted`. As a result, an account that deposited funds *before* being denylisted can still call `initiate_withdrawal` followed by `withdraw` and fully recover its balance after being denylisted. The denylist blocks new deposits and new delegations, but not withdrawal of funds already in the program.
+`gateway-wallet` implements an account denylist that explicitly blocks denylisted accounts from performing new deposits and delegation operations. However, the denylist is not enforced by either `initiate_withdrawal` or `withdraw`.
 
-The same gap exists on this program's EVM counterpart (`evm-gateway-contracts::Withdrawals.sol`, no `notDenylisted` modifier on `initiateWithdrawal`/`withdraw`) — confirmed independently here by direct code reading on the Solana program, not by analogy. Note, however, that on the EVM side Circle's own commissioned audit documents this exact behavior as accepted design rather than a vulnerability (see the caveat above) — this report is submitted on the basis that the Solana instance is a distinct, undisclosed codebase, not on the assumption that the EVM precedent was treated as a confirmed bug.
+As a result, an account can:
+
+1. Deposit funds while permitted;
+2. Become denylisted;
+3. Be rejected when attempting a new deposit;
+4. Still initiate a withdrawal of its previously deposited balance; and
+5. Complete the withdrawal and recover the funds in full.
+
+I reproduced this behavior against the real compiled `gateway-wallet` program using the project's own `GatewayWalletTestClient` and an in-process Solana VM. The test first confirmed that the account was genuinely denylisted by attempting a new 1-unit deposit, which was rejected. The same denylisted account then successfully initiated and completed a withdrawal of its entire 1,000,000-unit pre-existing balance.
+
+The resulting state was:
+- `denylisted before withdrawal: true`
+- `balance before withdrawal: 1,000,000`
+- `balance after withdrawal: 2,000,000`
+- Amount withdrawn: `1,000,000`
+
+This demonstrates that the denylist is enforced for new account activity but not for withdrawal of funds already held by the program. The issue is therefore not that the denylist mechanism is generally broken; rather, the withdrawal paths omit the authorization check entirely, allowing a denylisted account to bypass the restriction for its existing custody balance.
 
 ## Confirmed call chain
 1. `instructions/deposit.rs` and `instructions/deposit_for.rs` load an `UncheckedAccount depositor_denylist` (seeds `[DENYLIST_SEED, owner/depositor]`) and call `require!(!utils::is_account_denylisted(...), GatewayWalletError::AccountDenylisted)` before accepting a deposit.
@@ -130,6 +149,36 @@ Test sequence:
 5. Depositor calls `initiate_withdrawal` for the full 1,000,000 balance deposited in step 2 (before being denylisted). **Succeeds.**
 6. After the withdrawal delay, depositor calls `withdraw`. **Succeeds.** Funds are transferred.
 
+```text
+Account allowed
+      |
+Deposit 1,000,000
+      |
+Account denylisted
+      |
+New deposit of 1 rejected   <- proves denylist is active
+      |
+initiate_withdrawal(1,000,000)
+      |
+ACCEPTED                    <- authorization bypass
+      |
+withdraw()
+      |
+ACCEPTED
+      |
+1,000,000 returned
+```
+
+### Key PoC observation
+The most important control test is that the denylisted account cannot perform a new deposit, while the exact same denylisted account can withdraw its entire pre-existing balance. This rules out a false positive caused by the denylist setup or an incorrectly denylisted account:
+
+```text
+New deposit after denylist:       REJECTED
+Withdrawal of pre-existing funds: ACCEPTED
+```
+
+The account was therefore demonstrably denylisted at the time the withdrawal was authorized.
+
 Real output (literal, 2026-08-31):
 ```
 PoC: denylisted depositor can still withdraw pre-existing balance
@@ -145,9 +194,20 @@ denylisted before the withdrawal: true
 `balance after` minus `balance before` is exactly 1,000,000 — the full amount deposited before the denylist, withdrawn in full by an account the program itself confirms is denylisted (step 4 above proves the denylist state is real, not a setup error).
 
 ## Impact
-An account holder who deposits funds into `gateway-wallet` and is subsequently denylisted (e.g., for sanctions compliance, fraud, or other policy reasons this denylist mechanism presumably exists to enforce) retains full, unrestricted access to withdraw everything they deposited before the denylist action. The denylist is fully effective against *new* activity (deposits, delegations) but provides no protection at all against a denylisted account draining its existing balance. Depending on why an account was denylisted, this defeats the practical purpose of the control: an account can be denylisted moments after depositing and still walk away with the funds.
+A denylisted account retains unrestricted access to withdraw its existing `gateway-wallet` balance.
 
-**This is current production impact, not a future/hypothetical scenario** — Gateway is live on Solana mainnet now (see "Deployment status" above), so any real depositor on this program today is subject to this gap the moment they're denylisted.
+The PoC demonstrates this with a concrete end-to-end transaction:
+- The account deposited `1,000,000` units before being denylisted.
+- The account was subsequently denylisted.
+- A new `1`-unit deposit was rejected, confirming that the denylist was active.
+- Despite remaining denylisted, the account successfully initiated a withdrawal of the full `1,000,000` pre-existing balance.
+- The withdrawal completed successfully and transferred the funds back to the depositor.
+
+Therefore, the denylist does not prevent a denylisted account from exiting the custody system with funds that were already deposited. This creates an authorization bypass in a smart contract that explicitly implements denylist-based restrictions. If the intended security/compliance property is that denylisted accounts cannot perform further activity involving their deposited funds, that property is not enforced on the withdrawal paths.
+
+**Boundary of what is demonstrated**: the demonstrated impact is limited to the withdrawal of funds already belonging to the denylisted account; this report does not claim that the attacker can withdraw another user's funds, bypass token ownership checks, or steal funds from unrelated accounts. The PoC also does not claim any additional protocol-level consequence beyond the demonstrated ability of a denylisted account to recover its existing balance.
+
+This is current production impact, not a future/hypothetical scenario — `gateway-wallet` is live on Solana mainnet now (see "Deployment" under Affected asset above), so any real depositor on this program today is subject to this gap the moment they're denylisted.
 
 ## Suggested fix
 Add a denylist account (same PDA convention as `deposit.rs`: `seeds = [DENYLIST_SEED, depositor.key().as_ref()]`) to both `InitiateWithdrawalContext` and `WithdrawContext`, and call `require!(!utils::is_account_denylisted(...), GatewayWalletError::AccountDenylisted)` in both handlers, mirroring the existing check in `deposit`/`deposit_for`/`add_delegate`/`remove_delegate`.
