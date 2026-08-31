@@ -4385,3 +4385,31 @@ normal. `deep-read-log.json` atualizado (`circlefin/stablecoin-aptos`
 `aptos_extensions.move`. Esta rodada não tocou `Block Open Source`
 (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA.
+
+## Rodada 2026-08-31 (push automático seguinte, sessão cloud) — `circlefin/stablecoin-aptos` (Move, pause/upgrade/metadata)
+
+`list-pending` global vazio no início desta rodada. Continuei
+`circlefin/stablecoin-aptos` de onde a rodada anterior parou — 3 dos 5
+arquivos ainda não lidos, priorizando os dois de controle
+administrativo mais sensível (pause emergencial, upgrade de código):
+
+- `packages/aptos_extensions/sources/pausable.move` — `pause`/`unpause`
+  checam corretamente `pause_state.pauser == signer::address_of(caller)`;
+  `update_pauser` (troca de quem é o pauser) exige
+  `ownable::assert_is_owner` — só o owner pode reatribuir o papel de
+  pauser, não o próprio pauser. Sem achado.
+- `packages/aptos_extensions/sources/upgradable.move` — a função mais
+  sensível do módulo (`upgrade_package`, publica novo bytecode na conta
+  de recurso) exige `manageable::assert_is_admin(caller, resource_acct)`
+  antes de chamar `code::publish_package_txn`; `extract_signer_cap`
+  (extrai a capability que permite assinar como a conta de recurso, efetivamente
+  equivalente a controle total) também exige admin. Sem achado.
+- `packages/stablecoin/sources/metadata.move` — `update_metadata` checa
+  `caller == metadata_updater` (role dedicado, não owner); `update_metadata_updater`
+  (troca desse role) corretamente exige `ownable::assert_is_owner`. Sem
+  achado.
+
+Nenhum achado novo (`ai_deep_read_finding`) — resultado normal.
+`deep-read-log.json` atualizado (`circlefin/stablecoin-aptos` 5→8).
+Restam não lidos no mesmo repo: `stablecoin_utils.move`,
+`aptos_extensions.move`. Esta rodada não tocou `Block Open Source`.
