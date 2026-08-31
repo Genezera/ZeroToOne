@@ -2645,3 +2645,60 @@ arquivos de crypto do lado enclave ainda não lidos
 `internal/enclave/common/crypto/crypto.go`) — é onde a assinatura de
 verdade acontece (chave do validador), mais provável de conter lógica
 não-trivial do que os wiring/utilitários cobertos até agora.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, `arc-remote-signer` (crypto enclave: bls.go/ed25519.go/crypto.go)
+
+Fila de `candidate` vazia. Continuando a sugestão da rodada anterior:
+os 3 arquivos de crypto do lado enclave ainda não lidos.
+
+- `internal/enclave/common/crypto/crypto.go` — só dispatcher por
+  algoritmo (`NewSecretKey`/`DeserializeSecretKey`/`VerifySignedMessage`
+  escolhem `bls` ou `ed25519` conforme `Algorithm`). Sem lógica própria.
+  Sem achado.
+- `internal/enclave/common/crypto/ed25519/ed25519.go` — uso padrão de
+  `crypto/ed25519` da stdlib (`GenerateKey`/`Sign`/`Verify`), com
+  checagem de tamanho de chave/assinatura em toda entrada
+  (`Deserialize`/`VerifySignedMessage`). Sem achado.
+- `internal/enclave/common/crypto/bls/bls.go` (build tag `cgo`, usa
+  `github.com/supranational/blst` v0.3.14) — ponto que investiguei a
+  fundo: `verify()` chama `sig.Verify(true, pk, false, message, dst)`.
+  Cloneei `supranational/blst` na tag `v0.3.14` (mesma versão do
+  `go.mod`) pra confirmar a semântica exata dos parâmetros posicionais
+  — `bindings/go/blst.go:547` nomeia o 3º argumento `pkValidate`, que
+  flui até `PairingAggregatePkInG1(pairing, curPk, pkValidate, ...)`
+  (linha ~707), o group-check real da chave pública no subgrupo correto
+  de G1. Aqui está `false` — ou seja, a chave pública passada pra
+  verificação **não** é validada como pertencente ao subgrupo correto
+  antes do pairing (só a assinatura é group-checked, via
+  `sigGroupcheck=true`). Isso É um anti-padrão criptográfico real
+  (ataque de invalid-curve/small-subgroup em curvas com cofactor > 1,
+  caso do BLS12-381 G1) **se** a `publicKey` vier de uma fonte não
+  confiável.
+
+  Registrei como achado novo (`upsert-finding`,
+  `ai_deep_read_finding`) e tentei refutar rastreando alcançabilidade
+  real: `grep -rn VerifySignedMessage` em todo o repositório mostra que
+  o único chamador de `crypto.VerifySignedMessage`/`bls.VerifySignedMessage`
+  fora dos próprios testes unitários do pacote `bls`/`ed25519` é
+  `internal/smoke/public/public_test.go:84` — um smoke test que assina
+  uma mensagem via o próprio serviço e verifica contra a `publicKey`
+  que o próprio serviço acabou de devolver (self-check não-adversarial,
+  mesmo processo). Nenhum caminho de produção (`SignerService.Sign`,
+  o wiring gRPC, interceptors) chama `Verify` — só `NewSecretKey`/
+  `DeserializeSecretKey`/`SignMessage`. Ou seja, hoje não existe
+  nenhuma rota externa nem interna que passe uma `publicKey` arbitrária
+  pra essa função: é código de verificação efetivamente morto fora de
+  teste. Marcado `false_positive` — a análise criptográfica do
+  anti-padrão está correta (deveria ser `pkValidate=true`, é API
+  pública exportada que um caller futuro poderia usar com chave não
+  confiável), mas não há caminho de exploração alcançável hoje, então
+  não há impacto real a demonstrar nem PoC possível (Go, sem
+  infraestrutura de PoC no sistema — limitação real, não inventei
+  validador).
+
+`deep-read-log.json` atualizado (`circlefin/arc-remote-signer` agora
+com 18 arquivos, cobrindo todo o pacote `internal/enclave/common/crypto`).
+Um achado novo processado nesta rodada, refutado com justificativa
+completa (não é resultado "nenhum achado" nem submissão — é o ciclo
+funcionando: achado real de código, sem impacto real por falta de
+alcançabilidade).
