@@ -206,7 +206,11 @@
     "src/msca/6900/v0.7/managers/PluginExecutor.sol",
     "src/msca/6900/v0.7/managers/PluginManager.sol",
     "src/msca/6900/v0.7/managers/StandardExecutor.sol",
-    "src/msca/6900/shared/libs/ValidationDataLib.sol"
+    "src/msca/6900/shared/libs/ValidationDataLib.sol",
+    "src/libs/PublicKeyLib.sol",
+    "src/msca/6900/v0.8/account/UpgradableMSCA.sol",
+    "src/msca/6900/v0.8/account/BaseMSCA.sol",
+    "src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
