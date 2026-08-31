@@ -3209,3 +3209,49 @@ maior superfície de autorização que faltavam:
 Nenhum achado novo nesta rodada — resultado normal. `deep-read-log.json`
 atualizado (`circlefin/stablecoin-sui` ganhou os 3 arquivos acima).
 `export-queue` + commit ao final desta rodada.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, leitura profunda em `circlefin/arc-remote-signer` (caminho cliente-enclave via VSOCK)
+
+Fila de `candidate` vazia. Nenhum dos 3 findings existentes em
+`corroborated_static`/`human_ready` teve evidência nova pra avançar nesta
+rodada (nenhuma tentativa de contornar os bloqueios já documentados —
+proxy TLS pro Solana RPC e falta de validador Anchor/Solana continuam de
+pé como estavam).
+
+Leitura profunda proativa: 3 arquivos do `arc-remote-signer` ainda sem
+entrada em `deep-read-log.json`, escolhidos por serem o lado que faltava
+do caminho auth-adjacente já mapeado (o achado `human_ready` documentado
+é sobre a ausência de auth no `SignerService.Sign` público; esta rodada
+olhou o lado *interno* app<->enclave):
+
+- `internal/app/provider/enclave/enclave.go` — constrói a conexão gRPC
+  do processo app pro enclave Nitro. Usa
+  `client.NewInsecureClientConn` (sem TLS) e, quando `NitroEnclave.Enabled`,
+  troca o dialer padrão por `NewVsockDialer` (AF_VSOCK em vez de TCP).
+- `internal/app/provider/enclave/transport_vsock.go` — dialer VSOCK puro
+  (`github.com/mdlayher/vsock`), só adiciona timeout/cancelamento via
+  contexto sobre uma chamada de dial que não é nativamente
+  context-aware. Sem parsing de dado não confiável, sem lógica de auth.
+- `internal/common/grpc/client/client.go` — helper genérico
+  (`InsecureDialOptions`/`NewInsecureClientConn`) usado por
+  `enclave.go`. Confirmei via grep no repo inteiro que este helper
+  "inseguro" (`insecure.NewCredentials()`, sem TLS) só tem dois
+  consumidores: o provider do enclave acima e
+  `internal/smoke/provider/proxy/proxy.go` (ferramenta de smoke test,
+  não caminho de produção externo). Não é usado pelo servidor gRPC
+  público (`internal/app/public/public.go`/`internal/common/grpc/server`),
+  que é o componente já documentado no relatório `human_ready` como
+  carecendo de autenticação de aplicação — aqui a falta de TLS é uma
+  característica arquitetural esperada de VSOCK (canal hipervisor
+  ponto-a-ponto entre o processo pai e o enclave Nitro, não roteável
+  pela rede; o isolamento vem do próprio VSOCK/Nitro, não de TLS em
+  cima dele — mesmo padrão documentado pela AWS pra Nitro Enclaves).
+  Consistente com a conclusão já registrada em rodada anterior (30/08)
+  de que o acesso ao enclave via vsock já pressupõe privilégio local no
+  host, então a ausência de TLS aqui não é, por si só, uma superfície
+  nova de ataque de rede.
+
+Sem achado novo — resultado normal, e reforça (não contradiz) a análise
+já feita da arquitetura app<->enclave. `deep-read-log.json` atualizado
+(`circlefin/arc-remote-signer` ganhou os 3 arquivos acima). `export-queue`
++ commit ao final desta rodada.
