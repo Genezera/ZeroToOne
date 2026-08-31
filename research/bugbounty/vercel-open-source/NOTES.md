@@ -1691,3 +1691,30 @@ aresta direta `corroborated_static → scope_verified` pra achado
 não-Solidity sem validador local).
 
 `Vercel Open Source` fila agora: 0 `candidate` (era 14).
+
+## Nota 2026-08-31 (revisão local, claude-local-review) — fecha a pendência de exploração dos 6 `mcp.ts`: refutado por documentação oficial
+
+Sessão local (não-cloud) revisitou os 6 achados `corroborated_static`
+acima especificamente para resolver a pergunta que a rodada anterior
+deixou em aberto ("não consegui confirmar... se o backend da Vercel
+proíbe aspas simples/metacaracteres de shell em nome de projeto/slug").
+`is-valid-name.ts` (client-side, fluxo errado) não respondia isso — a
+resposta certa está na documentação pública da própria Vercel, não no
+código do CLI: **vercel.com/docs/project-configuration/general-settings**,
+seção "Project name", confirma que nomes de projeto são restritos a
+minúsculas, dígitos e os caracteres `.`/`_`/`-` (sem a sequência `---`),
+até 100 caracteres — sem exceção documentada. Isso elimina aspas,
+ponto-e-vírgula, `&`, `|`, crase e espaço do valor que `serverName`
+carrega em todos os 6 pontos (`vercel-${projectName}`,
+`getLinkedProject → getProjectByIdOrName`, uma chamada autenticada à
+API, nunca um arquivo local editável). Sem forma documentada/observada
+de fazer esse valor carregar metacaractere de shell, os 6 pontos
+continuam um anti-padrão de código real (deveria usar `execFileSync`
+com array de argumentos) mas não são exploráveis com o input que de
+fato os alcança hoje. Não testei criar um projeto real na Vercel com
+nome malicioso para tentar burlar a validação server-side — esta
+conclusão se apoia na documentação oficial, não em teste direto de
+bypass. Transicionados os 6 para `false_positive` (na base local desta
+sessão; a base da sessão cloud que os corroborou originalmente segue
+com seu próprio estado local, por design — ver comentário em
+`.gitignore` sobre `zerotoone.db` ser local a cada ambiente).
