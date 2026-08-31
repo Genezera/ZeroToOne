@@ -1151,3 +1151,47 @@ específica pro vetor que tentei refutar primeiro.
 
 `deep-read-log.json` ganhou chave nova `sveltejs/svelte` (6 arquivos).
 Nenhum item elegível pra relatório nesta rodada.
+
+## Rodada 2026-08-31 (push automático) — `list-pending` vazio; leitura profunda em `vercel/vercel` (fluxo de login/reauth)
+
+`list-pending` vazio (0 candidatos) e os 2 achados não-terminais restantes
+no sistema (Circle BBP/Solana denylist em `corroborated_static`, Circle
+BBP/stablecoin-evm em `inconclusive`) já tinham verificação independente
+completa registrada em rodadas anteriores hoje mesmo — não reabertos sem
+evidência nova, pra evitar retrabalho idêntico.
+
+Varri os scope snapshots dos 4 programas em busca de assets de código-fonte
+ainda sem nenhuma entrada em `deep-read-log.json`: `vercel-labs/agent-skills`
+(pacote `react-best-practices-build`, clonado e inspecionado — só parser/
+build/migrate de um linter de boas práticas React, sem superfície de auth/
+rede/crypto) e `vercel/ms`/`vercel/async-sema` (utilitários triviais) — nenhum
+continha caminho batendo com as palavras-chave prioritárias
+(auth/session/crypto/token/login/...), então não abriram achado nem
+consumiram uma das 3 vagas desta rodada.
+
+Em vez disso, aprofundei dentro de `vercel/vercel` (já parcialmente coberto)
+no pacote `packages/cli-auth` (esgotado: `oauth.ts`/`sso.ts`/
+`credentials-store.ts` já lidos antes; `user-agent.ts` é só string de UA) e
+achei 3 arquivos do fluxo de login/reautenticação ainda não lidos:
+`packages/cli/src/commands/login/index.ts` (parsing de flags, delega pra
+`future.ts` já auditado — sem lógica de auth própria),
+`packages/cli/src/util/login/reauthenticate.ts` (dispara o mesmo device-code
+flow de `future.ts` quando a API retorna erro SAML com `teamId`; testei a
+hipótese de o CLI aceitar/gravar um token sem validação de escopo local —
+não existe: o cliente só persiste o `access_token` devolvido pelo próprio
+endpoint OAuth da Vercel após aprovação humana no browser, a imposição real
+de escopo/SAML é 100% server-side, fora do que dá pra auditar por código-fonte)
+e `packages/cli/src/util/login/update-current-team-after-login.ts` (seta
+`currentTeam` a partir de `ssoTeamId` do próprio fluxo de login ou do
+`defaultTeamId` do usuário já autenticado via `getUser` — sem tomada de
+decisão de autorização local). Rastreei o chamador de `reauthenticate`
+(`client.ts::Client.reauthenticate`, usado no interceptor de retry de
+`fetch`) pra confirmar que não há reuso indevido do token antigo nem bypass
+do fluxo de aprovação. Sem achado — mesmo padrão de "confiar no backend,
+que é o ponto de aplicação real" já visto nas rodadas anteriores de
+`oauth.ts`/`sso.ts`.
+
+`deep-read-log.json` atualizado (`vercel/vercel` ganhou 3 arquivos:
+`login/index.ts`, `login/reauthenticate.ts`,
+`login/update-current-team-after-login.ts`). Nenhum achado novo nesta
+rodada — resultado normal.
