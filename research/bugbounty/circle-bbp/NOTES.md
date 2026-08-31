@@ -4136,3 +4136,30 @@ Fila Circle BBP agora: 1 `human_ready` (wire-schema, bloqueado por
 política, nunca vai ser enviado), 2 `duplicate` (arc-remote-signer,
 este achado), 2 `known_duplicate`, 87 `candidate` ainda não revisados,
 38 `false_positive`, 2 `inconclusive`.
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — leitura profunda em `circlefin/arc-remote-signer`
+
+`list-pending` global desta rodada não trouxe nenhum achado novo de
+Circle BBP (fila de candidatos deste programa seguiu em 0). Leitura
+profunda proativa em 3 arquivos ainda não lidos de
+`circlefin/arc-remote-signer` (já bem coberto em rodadas anteriores —
+21 arquivos), priorizados por nome (`crypto`/`config`/`enclave`):
+
+- `internal/common/crypto/aes/aes.go` — implementação AES-GCM
+  (`EncryptGCM`/`DecryptGCM`). Nonce sempre gerado fresco via
+  `crypto/rand` a cada chamada de `EncryptGCM` e retornado junto do
+  ciphertext (sem reuso), tamanho de nonce validado explicitamente no
+  decrypt. Sem achado.
+- `internal/common/config/loader.go` — carregamento de config via
+  Viper (arquivo + env vars com prefixo `APP_`). Nenhum segredo
+  logado (só `cfg.GetName()`), caminhos de config fixos/locais, não
+  vêm de request externo. Sem achado.
+- `internal/enclave/provider/enclave/enclave.go` — wrapper fino sobre
+  `edgebitio/nitro-enclaves-sdk-go` (decrypt de chave envelopada KMS e
+  attestation document); toda a lógica de criptografia/attestation é
+  delegada ao SDK do Nitro Enclave, sem lógica própria a auditar aqui.
+  Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal e válido.
+`deep-read-log.json` atualizado (`circlefin/arc-remote-signer` foi de
+21 para 24 arquivos).

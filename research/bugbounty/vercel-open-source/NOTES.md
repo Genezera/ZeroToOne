@@ -1643,3 +1643,51 @@ leitura de 3 arquivos novos, priorizados por nome (auth/access/allow):
 
 `deep-read-log.json` atualizado (`vercel/eve` ganhou os 3 arquivos
 acima). Nenhum achado novo nesta rodada — resultado normal e válido.
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — 14 candidatos processados
+
+`list-pending` trouxe 14 achados heurísticos novos de Vercel Open
+Source (8 `redos_risk`/`eval_usage` em `vercel-labs/skills`,
+`vercel-labs/agent-skills` e `vercel/vercel/packages/cli/evals`, 2
+`path_traversal_risk` em `vercel/vercel/packages/cli/scripts/build-binary.mjs`,
+6 `command_injection_risk` em `vercel/vercel/packages/cli/src/commands/mcp/mcp.ts`).
+
+**8 falsos positivos confirmados por leitura completa dos arquivos**:
+- `frontmatter.ts:5` e os 2 `eval_usage` em `evals/`: heurística casou a
+  substring "eval" dentro de comentário/identificador (`evals`,
+  `getEvalsFromEnv`), zero `eval()`/`Function()`/`vm.*` real nos
+  arquivos.
+- 3 `redos_risk`: todos variantes do padrão kebab-case
+  `^[a-z0-9]+(?:-[a-z0-9]+)*$` (ou equivalente com espaço) — classes de
+  caractere disjuntas entre o grupo repetido e o separador, sem
+  ambiguidade de particionamento, logo sem catastrophic backtracking
+  possível (falso positivo clássico de heurística ReDoS ingênua que só
+  olha a forma `(x+)*`).
+- 2 `path_traversal_risk` em `build-binary.mjs`: script de BUILD
+  (`packages/cli/scripts/`), path montado só a partir de
+  `packageRoot`/target de build local, nenhum componente externo;
+  também nunca é código do CLI publicado/alcançável por terceiros.
+
+**6 corroborados (`corroborated_static`, confidence "média")**:
+`mcp.ts` linhas 345/347/349 (fluxo `mcp add cursor`) e 467/469/471
+(fluxo `mcp add vscode`) — `execSync(`open '${oneClickUrl}'`)` (e
+variantes `xdg-open`/`start`) interpola `serverName`/`mcpUrl` sem
+escaping, e esses valores vêm ao vivo da API da Vercel
+(`org.slug`+`project.name`, via `getLinkedProject`) para o projeto
+vinculado localmente — não são literais fixos. Defeito de código real
+(uso de `execSync` com string interpolada em vez de `execFile`/`spawn`
+com array de args), mas não consegui confirmar pela leitura do CLI se
+o backend da Vercel proíbe aspas simples/metacaracteres de shell em
+nome de projeto/slug — o único validator client-side achado no repo
+(`is-valid-name.ts`) não cobre esses caracteres, mas é usado num fluxo
+diferente (deployment id), então isso não prova nada sobre o
+enforcement real do lado do projeto/org. `check-scope "Vercel Open
+Source" "vercel/vercel"` → `allowed=true`/`bountyEligible=true`
+(tier 1). Deployment evidence registrada com `confidence="unverified"`
+(não confirmei se o HEAD clonado bate com a versão publicada no npm).
+Tentativa de `scope_verified` recusada pela máquina de estados como
+esperado — mesmo caminho já documentado nas rodadas anteriores (sem
+aresta direta `corroborated_static → scope_verified` pra achado
+não-Solidity sem validador local).
+
+`Vercel Open Source` fila agora: 0 `candidate` (era 14).

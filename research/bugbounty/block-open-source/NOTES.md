@@ -2125,3 +2125,14 @@ NOVO deste programa consegue passar desse ponto daqui pra frente. Não
 resolve a causa raiz (por que o agente de nuvem ainda lê código deste
 programa) — só garante que o resultado dessa leitura não avança no
 pipeline.
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — banimento de IA respeitado
+
+Esta rodada NÃO leu, analisou nem tocou nenhum arquivo de repositório
+de Block Open Source (`cashapp/*`, `square/*`, `afterpay/*`),
+justamente por causa do aviso crítico acima
+(`aiResearchBanned: true`). A leitura profunda proativa desta rodada
+foi direcionada só a `circlefin/arc-remote-signer` (Circle BBP) — ver
+NOTES.md de Circle BBP. `list-pending` global confirmou 0 candidatos
+pendentes para este programa (nenhuma transição de estado feita
+aqui).

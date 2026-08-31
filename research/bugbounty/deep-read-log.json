@@ -339,7 +339,10 @@
     "internal/enclave/common/crypto/bls/bls.go",
     "internal/app/provider/enclave/enclave.go",
     "internal/app/provider/enclave/transport_vsock.go",
-    "internal/common/grpc/client/client.go"
+    "internal/common/grpc/client/client.go",
+    "internal/common/crypto/aes/aes.go",
+    "internal/common/config/loader.go",
+    "internal/enclave/provider/enclave/enclave.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
