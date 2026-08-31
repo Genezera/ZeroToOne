@@ -1,5 +1,5 @@
 {
-  "migratedAt": "2026-08-31T17:23:47.224Z",
+  "migratedAt": "2026-08-31T17:25:12.473Z",
   "total": 45,
   "driftCorrected": 0,
   "logs": [
@@ -70,17 +70,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
       "steps": [
         {
@@ -93,6 +82,17 @@
     },
     {
       "id": "StackingDAO::stacking-dao-core-ststxbtc-v1.clar::deposit::unguarded_transfer",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt::fetchCredentials::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -169,6 +169,17 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/android-kotlin-ksp-source-set/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.2.21::known_vulnerable_dependency",
       "steps": [
         {
@@ -180,7 +191,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:54::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -213,7 +224,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:54::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -246,17 +257,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:81::ssrf_risk",
       "steps": [
         {
@@ -269,17 +269,6 @@
     },
     {
       "id": "Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:157::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -312,7 +301,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -324,6 +313,17 @@
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -433,7 +433,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding",
+      "id": "Circle BBP::circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol::withdraw_attestation_reparse::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -444,7 +444,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol::withdraw_attestation_reparse::ai_deep_read_finding",
+      "id": "StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",

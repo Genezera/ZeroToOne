@@ -101,7 +101,11 @@
     "misk-admin/src/main/kotlin/misk/web/metadata/ServiceMetadataAction.kt",
     "misk-admin/src/main/kotlin/misk/web/v2/DashboardIndexAction.kt",
     "misk-admin/src/main/kotlin/misk/web/v2/DashboardV2RedirectAction.kt",
-    "misk-admin/src/main/kotlin/misk/web/dev/DevCheckReloadAction.kt"
+    "misk-admin/src/main/kotlin/misk/web/dev/DevCheckReloadAction.kt",
+    "misk-mcp/src/main/kotlin/misk/mcp/McpSessionHandlerModule.kt",
+    "wisp/wisp-resource-loader/src/main/kotlin/wisp/resources/OnePasswordResourceLoaderBackend.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryMetadata.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryFunctionMetadata.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -307,7 +311,7 @@
     "packages/world-vercel/src/encryption.ts",
     "packages/world-vercel/src/http-core.ts (partial: L1-390, token resolution + span/error handling)",
     "packages/world-vercel/src/utils.ts",
-    "packages/core/src/runtime/quickjs-runtime.ts (completo \u2014 fechadas as se\u00e7\u00f5es finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
+    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
   ],
   "circlefin/arc-remote-signer": [
     "internal/app/public/public.go",
@@ -487,7 +491,8 @@
   "circlefin/starknet-cctp": [
     "packages/components/src/attestable.cairo",
     "packages/message_transmitter/src/message_transmitter_v2.cairo",
-    "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo"
+    "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo",
+    "packages/components/src/rescuable.cairo"
   ],
   "circlefin/stablecoin-starknet": [
     "packages/components/src/blocklistable/blocklistable.cairo",
@@ -506,7 +511,9 @@
   "circlefin/sui-cctp": [
     "packages/message_transmitter/sources/auth.move",
     "packages/token_messenger_minter/sources/admin/role_management.move",
-    "packages/message_transmitter/sources/admin/roles.move"
+    "packages/message_transmitter/sources/admin/roles.move",
+    "packages/token_messenger_minter/sources/handle_receive_message.move",
+    "packages/message_transmitter/sources/receive_message.move"
   ],
   "vercel/ai": [
     "packages/gateway/src/gateway-realtime-auth.ts",
@@ -554,7 +561,9 @@
   "circlefin/stablecoin-near": [
     "src/requires.rs",
     "src/role.rs",
-    "src/fiat_token.rs (parcial: mint/burn/approve/transfer_from/ft_transfer/ft_transfer_call/ft_resolve_transfer/storage_deposit/storage_unregister/pause/unpause \u2014 todas as funcoes com side-effect de saldo ou estado, via grep de require_not_blocklisted/require_only + leitura pontual de cada bloco)"
+    "src/fiat_token.rs (parcial: mint/burn/approve/transfer_from/ft_transfer/ft_transfer_call/ft_resolve_transfer/storage_deposit/storage_unregister/pause/unpause — todas as funcoes com side-effect de saldo ou estado, via grep de require_not_blocklisted/require_only + leitura pontual de cada bloco)",
+    "src/fiat_token_action.rs",
+    "src/lib.rs (so declaracoes de modulo, sem logica)"
   ],
   "sveltejs/svelte": [
     "packages/svelte/src/escaping.js",

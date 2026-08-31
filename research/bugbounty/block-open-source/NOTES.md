@@ -1998,3 +1998,37 @@ comportamento documentado e isolado por nome de classe.
 `DashboardTabLoader.kt` é só dataclasses de roteamento (sem lógica).
 `JooqSession.kt` é gerência de hooks de transação, sem superfície de
 auth/crypto. `deep-read-log.json` atualizado.
+
+## Rodada 2026-08-31 (cloud-agent, disparada por push, bcd189b)
+
+Fila `list-pending` vazia. Leitura profunda proativa em `cashapp/misk`
+(clone raso fresco), filtrando arquivos com auth/session/crypto/token/
+login/password/admin/permission/access no caminho ainda não presentes
+no `deep-read-log.json` (48 candidatos sem contar testFixtures/Fake/
+samples). Li 4 arquivos:
+
+1. `misk-mcp/.../McpSessionHandlerModule.kt` — só módulo Guice de
+   binding opcional pro `McpSessionHandler` (interface já auditada em
+   rodada anterior); doc-comment do arquivo tem um exemplo de código
+   ilustrativo (não é instrução, é docstring de biblioteca). Sem lógica
+   de sessão própria. Sem achado.
+2. `wisp/.../OnePasswordResourceLoaderBackend.kt` — carrega segredos via
+   `op read` chamando `ProcessBuilder().command(list)` (exec direto,
+   sem shell — sem risco de injeção de shell mesmo que
+   `secretReference`/`account` viessem de entrada não confiável, já que
+   cada argumento é um elemento de array separado, não uma string
+   concatenada interpretada por `/bin/sh`). Path precisa começar com
+   `//` e vira sempre `op:...` como um único argv, então não dá pra
+   injetar uma flag do `op` mesmo controlando o conteúdo. Também é
+   `@Deprecated` (substituído pela versão em `misk.resources`, já teria
+   sido candidata de rodada anterior). Sem achado.
+3. `misk-admin/.../database/DatabaseQueryMetadata.kt` +
+   `DatabaseQueryFunctionMetadata.kt` — puro DTO/interface marcadora
+   (nomes de campos, sem lógica de execução). O `Action` que de fato
+   executa a query (`DatabaseQueryMetadataAction.kt`) já tinha sido lido
+   em rodada anterior sem achado; `DatabaseDashboardTabModule.kt`
+   confirma que o tab é gateado por `AdminDashboardAccess` (já
+   auditado). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(cashapp/misk agora com 80 arquivos lidos).
