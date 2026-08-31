@@ -452,7 +452,12 @@
     "programs/gateway-wallet/src/instructions/add_delegate.rs",
     "programs/gateway-wallet/src/instructions/remove_delegate.rs",
     "programs/gateway-wallet/src/state.rs",
-    "programs/gateway-wallet/src/utils.rs"
+    "programs/gateway-wallet/src/utils.rs",
+    "programs/gateway-wallet/src/instructions/update_denylister.rs",
+    "programs/gateway-wallet/src/instructions/add_burn_signer.rs",
+    "programs/gateway-wallet/src/instructions/remove_burn_signer.rs",
+    "programs/gateway-wallet/src/instructions/gateway_burn.rs",
+    "programs/gateway-minter/src/instructions/add_attester.rs"
   ],
   "circlefin/solana-cctp-contracts": [
     "programs/message-transmitter/src/instructions/receive_message.rs",

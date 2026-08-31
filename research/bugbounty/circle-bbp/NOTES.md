@@ -3932,3 +3932,33 @@ não lidos, priorizando lógica de negócio sobre interfaces/structs puros:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
 3 arquivos acima.
+
+## Rodada 2026-08-31 (cloud-agent, disparada por push)
+
+Fila `list-pending` vazia (0 candidates). O achado
+`initiate_withdrawal_withdraw` (denylist não bloqueia saque/burn de saldo
+pré-existente em `circlefin/solana-gateway-contracts`) segue em
+`reproduced_local` — PoC LiteSVM real já registrada em rodada anterior
+(local, pelo scanner do próprio usuário), transação
+`4pA4JX4bLT3sqDZmG6fM8TPYgU6vvn68cnrFrR8xUrobGpZyKnjcVwatosaD3KFSFd3ZzR9MDtcdnS4danRnhStk`
+com saldo antes/depois batendo exatamente com o valor sacado. Ainda
+bloqueado em `scope_verified` só por falta de deployment evidence real
+(Circle Gateway ainda não está em mainnet no Solana, confirmado no blog
+oficial da Circle) — não é um bug do sistema, é a barra funcionando
+como desenhado.
+
+Leitura profunda proativa desta rodada (5 arquivos em
+`circlefin/solana-gateway-contracts`, complementando a investigação já
+em andamento no mesmo repo):
+`programs/gateway-wallet/src/instructions/update_denylister.rs`,
+`add_burn_signer.rs`, `remove_burn_signer.rs` (todos com
+`has_one = owner @ InvalidAuthority` correto, sem achado) e
+`gateway-minter/src/instructions/add_attester.rs` (mesmo padrão, sem
+achado). O quinto, `gateway-wallet/src/instructions/gateway_burn.rs`,
+confirma que o MESMO gap de denylist do achado já existente também
+afeta o fluxo de burn/bridge (`gateway_burn` → `validate_signer_authorization`
+→ `deposit.reduce_balance`, nenhum deles checa `is_account_denylisted`)
+— registrado como adendo no `reasoning` do finding existente (mesma
+causa raiz, três rotas de saída afetadas: `initiate_withdrawal`,
+`withdraw`, `gateway_burn`), sem abrir achado separado nem mudar de
+estado.
