@@ -3362,3 +3362,42 @@ Revisão dos 2 achados Circle BBP em `corroborated_static`:
 Nenhuma transição de estado tentada nesta rodada (nenhum achado tinha
 evidência nova o suficiente pra justificar tentar avançar). `export-queue`
 + commit ao final.
+
+## Nova capacidade: Hacker API do HackerOne integrada ao pipeline (31/08/2026)
+
+Usuário forneceu credencial real da Hacker API do HackerOne (username
+`genezes` + API token) — guardada como variável de ambiente do Windows
+via `setx` (`HACKERONE_USERNAME`/`HACKERONE_API_TOKEN`), nunca escrita
+em nenhum arquivo. Testado ao vivo antes de integrar: `GET
+/hackers/me/reports` (confirma o report `#3981927` real, estado
+`duplicate`) e `GET /hackers/programs/circle-bbp/structured_scopes`
+(31 ativos reais, batendo com o snapshot manual já existente).
+
+Construído `system/bugbounty-scanner/h1-api.mjs` (cliente fino, paginação
+JSON:API via `links.next`, credenciais só de env var, nunca hardcoded) e
+4 comandos novos no `cli.mjs`:
+- `refresh-scope-live <program> <programHandle>` — substitui o snapshot
+  de escopo local pelo dado oficial ao vivo (novo `sourceType:
+  hackerone_api_live` no scope-registry, TTL 3 dias). Já rodado uma vez
+  pra Circle BBP: 31 ativos, `circle-bbp.json` atualizado.
+- `report-status <externalReportId>` / `my-reports` — status ao vivo
+  de um report ou de todos os do usuário.
+- `sync-report-status` — para todo finding em `submitted` com
+  `externalReportId` já registrado, compara o estado ao vivo com o
+  gravado; se mudou pra um estado terminal (duplicate/informative/
+  rejected/triaged), grava o outcome real e tenta a transição —
+  nunca inventa, só espelha o que a plataforma realmente diz.
+
+227/227 testes seguem passando (nada quebrado). Sem teste unitário
+próprio pro `h1-api.mjs` — exigiria mockar a API ou usar credencial
+real em CI, e o padrão deste projeto é evitar mock; fica registrado
+como limitação honesta, não esquecimento.
+
+**Importante**: `setx` só afeta processos NOVOS — a tarefa agendada
+(`ZeroToOne_BugBountyScanner`) vai pegar a variável automaticamente na
+próxima execução (processo novo), mas qualquer sessão de terminal já
+aberta antes do `setx` não vê a variável até abrir uma nova. Se o
+agente de nuvem (ambiente remoto separado) também precisar disso, o
+usuário precisa configurar a credencial lá separadamente — não tenho
+como propagar uma variável de ambiente local pra um ambiente remoto
+diferente.

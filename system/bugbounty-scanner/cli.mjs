@@ -1,5 +1,6 @@
-import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordReport, stateCounts, exportFindingsToQueueJsonl, closeDb } from './db.mjs';
-import { loadSnapshot, scopeGate } from './scope-registry.mjs';
+import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordReport, recordPlatformOutcome, latestPlatformOutcome, stateCounts, exportFindingsToQueueJsonl, closeDb } from './db.mjs';
+import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
+import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import path from 'node:path';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
@@ -78,6 +79,83 @@ export function cmdCheckScope(program, assetRef) {
   return scopeGate(snapshot, assetRef);
 }
 
+/**
+ * Busca o escopo estruturado oficial direto na Hacker API (fonte mais
+ * autoritativa que existe — não é scraping, é o dado que o próprio
+ * programa cadastrou no HackerOne) e substitui o snapshot local. TTL
+ * curto (3 dias, ver scope-registry.mjs) porque agora é barato re-buscar.
+ */
+export async function cmdRefreshScopeLive(program, programHandle) {
+  const assetsRaw = await getStructuredScope(programHandle);
+  const assets = assetsRaw.map((a) => ({
+    assetIdentifier: a.assetIdentifier,
+    eligibleForBounty: a.eligibleForBounty,
+    eligibleForSubmission: a.eligibleForSubmission,
+    maxSeverity: a.maxSeverity,
+    instruction: a.instruction,
+  }));
+  const snapshot = buildScopeSnapshot({
+    program,
+    platform: 'HackerOne',
+    officialUrl: `https://hackerone.com/${programHandle}`,
+    sourceType: 'hackerone_api_live',
+    sourceDetail: `GET /v1/hackers/programs/${programHandle}/structured_scopes`,
+    rawSourceContent: assetsRaw,
+    assets,
+    confidence: 'alta',
+  });
+  const file = saveSnapshot(snapshot);
+  return { savedTo: file, assetCount: assets.length };
+}
+
+/** Status ao vivo de um report específico, direto da Hacker API. */
+export async function cmdReportStatus(reportId) {
+  return getReport(reportId);
+}
+
+/** Lista todos os reports do usuário autenticado, direto da Hacker API. */
+export async function cmdMyReports() {
+  return getMyReports();
+}
+
+/**
+ * Pra todo finding em estado "submitted" que já tem um platformOutcome
+ * registrado (portanto um externalReportId conhecido), busca o status
+ * ao vivo na Hacker API e, se mudou pra um estado terminal reconhecido
+ * (duplicate/informative/rejected/triaged), registra o outcome real e
+ * tenta a transição — nunca inventa um outcome, só espelha o que a
+ * própria plataforma diz.
+ */
+export async function cmdSyncReportStatus(db) {
+  const submitted = listFindings(db, { state: 'submitted' });
+  const results = [];
+  for (const finding of submitted) {
+    const prior = latestPlatformOutcome(db, finding.id);
+    if (!prior || !prior.external_report_id) {
+      results.push({ id: finding.id, skipped: 'sem externalReportId registrado ainda' });
+      continue;
+    }
+    const live = await getReport(prior.external_report_id);
+    if (!live || live.state === prior.state) {
+      results.push({ id: finding.id, externalReportId: prior.external_report_id, unchanged: live?.state || null });
+      continue;
+    }
+    const outcome = recordPlatformOutcome(db, finding.id, {
+      platform: 'HackerOne',
+      externalReportId: prior.external_report_id,
+      submittedAt: prior.submitted_at,
+      state: live.state,
+      comments: `Sincronizado automaticamente via Hacker API (era "${prior.state}", agora "${live.state}").`,
+    });
+    let transition = null;
+    if (['duplicate', 'informative', 'rejected', 'triaged'].includes(live.state)) {
+      transition = recordTransition(db, finding.id, live.state, { actor: 'HackerOne API (sync automático)', context: { platformOutcome: { state: live.state } } });
+    }
+    results.push({ id: finding.id, externalReportId: prior.external_report_id, changedTo: live.state, outcome, transition });
+  }
+  return results;
+}
+
 function printJson(value) {
   console.log(JSON.stringify(value, null, 2));
 }
@@ -89,6 +167,19 @@ async function main() {
   if (command === 'check-scope') {
     const [program, assetRef] = positional;
     printJson(cmdCheckScope(program, assetRef));
+    return;
+  }
+  if (command === 'refresh-scope-live') {
+    const [program, programHandle] = positional;
+    printJson(await cmdRefreshScopeLive(program, programHandle));
+    return;
+  }
+  if (command === 'report-status') {
+    printJson(await cmdReportStatus(positional[0]));
+    return;
+  }
+  if (command === 'my-reports') {
+    printJson(await cmdMyReports());
     return;
   }
 
@@ -129,8 +220,11 @@ async function main() {
         printJson({ exported: n, path: queuePath });
         break;
       }
+      case 'sync-report-status':
+        printJson(await cmdSyncReportStatus(db));
+        break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, export-queue [path], check-scope <program> <assetRef>`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
         process.exitCode = 1;
     }
   } finally {

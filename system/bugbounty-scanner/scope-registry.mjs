@@ -13,6 +13,7 @@ export const TTL_DAYS_BY_SOURCE = {
   official_page_fetch: 30,
   community_dataset_structured: 14,
   manual_human_confirmed: 90,
+  hackerone_api_live: 3,
 };
 
 export function snapshotDir(baseDir = path.join('research', 'bugbounty', 'scope-snapshots')) {
