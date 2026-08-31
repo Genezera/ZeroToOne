@@ -4179,3 +4179,52 @@ interface genérica de chave usada por BLS/Ed25519 no keystore do
 enclave) e `internal/common/crypto/algorithm.go` (enum trivial
 `Algorithm`, só `bls`/`ed25519`). Nenhum achado em nenhum dos dois.
 `deep-read-log.json` atualizado de 24 para 26 arquivos.
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — 3 arquivos em evm-xreserve-contracts e evm-gateway-contracts
+
+`list-pending` global desta rodada trouxe 0 candidatos novos (nenhum
+programa). Leitura profunda proativa: antes de escolher arquivos,
+clonei `circlefin/evm-xreserve-contracts` (27 `.sol` no total, 15 já
+lidos) e `circlefin/evm-gateway-contracts` (34 no total, 24 já lidos)
+pra achar o que faltava de fato — a maior parte do restante em ambos
+os repos são interfaces/structs/enums puros (baixo valor, sem lógica
+a auditar), então priorizei os arquivos restantes que ainda tinham
+lógica real:
+
+- `evm-xreserve-contracts/src/modules/x-reserve/Domain.sol` —
+  contrato EIP-7201 trivial, guarda só o `domain` (uint32) setado uma
+  única vez em `__Domain_init` (chamado só durante inicialização via
+  proxy, protegido por `onlyInitializing` do OpenZeppelin
+  `Initializable`). Getter público `domain()` é só leitura. Sem
+  superfície de ataque — nem gate de acesso pra analisar, porque não
+  há função pública que mute o estado depois do init. Sem achado.
+- `evm-xreserve-contracts/src/modules/x-reserve/Immutables.sol` —
+  contrato só com 4 endereços `immutable` (gatewayMinter,
+  gatewayWallet, tokenMessenger, tokenMessengerV2) setados no
+  constructor, cada um validado com `AddressLib._checkNotZeroAddress`
+  antes de atribuir. Nenhuma lógica mutável, nenhum caminho de
+  chamada a rastrear. Sem achado.
+- `evm-gateway-contracts/src/modules/common/Pausing.sol` — papel
+  `pauser` separado de `owner` (padrão correto de separação de
+  responsabilidade): `pause()`/`unpause()` gateados por `onlyPauser`
+  (`pauser() != msg.sender` reverte com `UnauthorizedPauser`),
+  `updatePauser()` gateado por `onlyOwner`
+  (`Ownable2StepUpgradeable`). Único ponto que considerei como
+  possível achado e refutei: `_setPauser`/`updatePauser` não valida
+  `newPauser != address(0)` — mas setar pauser pro endereço zero só
+  trava `pause()`/`unpause()` temporariamente (`msg.sender` nunca é
+  `address(0)` numa tx normal), recuperável a qualquer momento pelo
+  `owner` chamando `updatePauser` de novo; é auto-inflingido pelo
+  próprio owner, não uma via de ataque de terceiro — não caracteriza
+  `unchecked_call_return` nem qualquer outro tipo válido de achado
+  desta missão. Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal e válido.
+`deep-read-log.json` atualizado (`evm-xreserve-contracts` 15→17,
+`evm-gateway-contracts` 24→25). Os 6 `corroborated_static` legados
+(mcp.ts) e o `human_ready` (wire-schema) seguem sem mudança de
+estado — nada de novo a fazer neles nesta rodada (já totalmente
+documentados em rodadas anteriores). Esta rodada não tocou
+`Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) — programa
+segue banido pra pesquisa assistida por IA, ver NOTES.md do próprio
+programa.

@@ -268,7 +268,8 @@
     "src/lib/BatchedDelta.sol",
     "src/modules/wallet/Batches.sol",
     "src/lib/Attestations.sol",
-    "src/lib/Cursor.sol"
+    "src/lib/Cursor.sol",
+    "src/modules/common/Pausing.sol"
   ],
   "circlefin/evm-xreserve-contracts": [
     "src/modules/x-reserve/Withdrawal.sol",
@@ -285,7 +286,9 @@
     "src/modules/x-reserve/Pausing.sol",
     "src/UpgradeablePlaceholder.sol",
     "src/lib/DepositIntentLib.sol",
-    "src/lib/AddressLib.sol"
+    "src/lib/AddressLib.sol",
+    "src/modules/x-reserve/Domain.sol",
+    "src/modules/x-reserve/Immutables.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
