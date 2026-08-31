@@ -15,6 +15,7 @@ import { SWIFT_TARGETS } from './targets-swift.mjs';
 import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
 import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
+import { sendTelegramMessage } from './telegram.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
 // usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
@@ -107,6 +108,22 @@ export async function runDiscovery() {
     }
   } catch (err) {
     log(`AVISO: falha ao sincronizar com o GitHub: ${err.message}`);
+  }
+
+  try {
+    const newestProgram = result.discovered
+      .filter((d) => d.newestProgramStartedAt)
+      .sort((a, b) => new Date(b.newestProgramStartedAt) - new Date(a.newestProgramStartedAt))[0];
+    await sendTelegramMessage(
+      [
+        '🗓️ <b>ZeroToOne — descoberta semanal</b>',
+        `${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} ainda não rastreado(s).`,
+        `${result.discovered.length} receberam metadado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficaram pra semana que vem)` : ''}.`,
+        newestProgram ? `Programa mais novo visto: ${newestProgram.programs?.[0]?.program || '?'} (${newestProgram.owner}/${newestProgram.repo}).` : null,
+      ].filter(Boolean).join('\n')
+    );
+  } catch (err) {
+    log(`Aviso: resumo semanal do Telegram falhou (não afeta a descoberta): ${err.message}`);
   }
 
   return result;

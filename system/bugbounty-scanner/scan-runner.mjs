@@ -29,7 +29,8 @@ import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
 import { runDependencyScan } from './dep-scanner.mjs';
 import { appendEntry, readLedger } from '../ledger/ledger.mjs';
-import { openDb, upsertFinding, closeDb } from './db.mjs';
+import { openDb, upsertFinding, closeDb, stateCounts } from './db.mjs';
+import { sendTelegramMessage } from './telegram.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -269,6 +270,27 @@ export async function runScan() {
   });
 
   log(`Varredura completa: ${contractsChecked} contratos Clarity + ${repoFilesChecked} arquivos (JS/TS+Go+JVM+Swift) + ${depResult.filesChecked} manifesto(s) de dependência checados, ${fetchErrors} erros de busca, ${newFindings.length} achados NOVOS na fila (${depResult.findings.length} de dependência conhecida), ${verdictResult.newlyReviewed.length} veredito(s) novo(s)/mudado(s).`);
+
+  // Resumo diário no Telegram — best-effort, nunca derruba o scan real
+  // se falhar. Manda todo dia (não só quando acha algo novo) porque essa
+  // é a única forma real de saber "ainda está rodando" sem abrir nada.
+  try {
+    const digestDb = openDb(DB_PATH);
+    const counts = stateCounts(digestDb);
+    closeDb(digestDb);
+    const countsLine = Object.entries(counts).map(([s, n]) => `${s}: ${n}`).join(' · ') || 'nenhum achado no banco ainda';
+    const emoji = newFindings.length > 0 ? '🔎' : '✅';
+    await sendTelegramMessage(
+      [
+        `${emoji} <b>ZeroToOne — scan diário</b>`,
+        `${repoFilesChecked} arquivo(s) + ${contractsChecked} contrato(s) Clarity verificados, ${fetchErrors} erro(s) de busca.`,
+        newFindings.length > 0 ? `<b>${newFindings.length} achado(s) NOVO(S)</b> na fila.` : 'Nenhum achado novo hoje.',
+        `Situação atual: ${countsLine}`,
+      ].join('\n')
+    );
+  } catch (err) {
+    log(`Aviso: resumo diário do Telegram falhou (não afeta o scan): ${err.message}`);
+  }
 
   if (newFindings.length > 0) {
     try {

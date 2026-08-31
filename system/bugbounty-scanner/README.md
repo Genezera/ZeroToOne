@@ -307,3 +307,36 @@ isso pra "quanta atividade tem o programa X" exigiria paginar o feed
 global inteiro e filtrar no cliente — caro demais pra ser prático como
 sinal de concorrência hoje. Fica registrado como caminho já tentado e
 descartado, não como pendência.
+
+## Notificações em tempo real via Telegram (31/08/2026)
+
+`telegram.mjs` — cliente fino pra Bot API do Telegram, mesmo padrão de
+`h1-api.mjs` (credenciais só via `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`,
+nunca em arquivo). Diferença importante: `sendTelegramMessage` **nunca
+lança** — uma falha de notificação (credencial ausente, rede fora) só
+vira um aviso no log, nunca derruba o scan/transição de estado real que
+a chamou. Três canais:
+
+1. **Transição de estado notável** — hookado direto em
+   `db.mjs::recordTransition`, então dispara TANTO do scanner local
+   QUANTO do agente de nuvem (os dois passam pela mesma função) sem
+   precisar editar o prompt da rotina. Só notifica pra
+   `reproduced_local`, `scope_verified`, `human_ready`,
+   `known_duplicate`, `duplicate`, `informative`, `rejected`,
+   `triaged`, `paid`, `resolved` (`NOTABLE_STATES` em `telegram.mjs`) —
+   `candidate`/`corroborated_static` ficam de fora de propósito (cedo
+   demais, a maioria vira `false_positive` logo em seguida — seria
+   ruído).
+2. **Resumo diário** (`scan-runner.mjs`, ao final de toda rodada,
+   achado novo ou não) — a resposta real pra "como sei que ainda está
+   rodando" sem abrir nenhum arquivo.
+3. **Resumo semanal** (`discovery-runner.mjs`) — candidatos novos e
+   qual o programa mais recentemente lançado visto na rodada.
+
+Envio é *fire-and-forget* (não `await`ado) só dentro de
+`recordTransition`, que continua síncrona de propósito — os processos
+que a chamam (scanner local, CLI do agente de nuvem) não usam
+`process.exit()` no caminho de sucesso, então a promessa solta tem
+tempo de completar antes do Node encerrar naturalmente. Os resumos
+diário/semanal SÃO `await`ados, já que `runScan()`/`runDiscovery()` já
+são funções assíncronas.

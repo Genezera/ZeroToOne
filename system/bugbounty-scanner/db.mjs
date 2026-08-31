@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { transition as smTransition } from './state-machine.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
+import { sendTelegramMessage, shouldNotifyForTransition, formatTransitionMessage } from './telegram.mjs';
 
 // Estado operacional local (SQLite/WAL) — substitui queue.jsonl como
 // fonte de verdade para leitura/escrita concorrente (seção 6.5 da
@@ -233,6 +234,16 @@ export function recordTransition(db, findingId, toState, { actor, context = {} }
   `).run(findingId, result.from, result.to, actor, result.reason, ts, JSON.stringify(context), ledgerEntry.hash);
 
   db.prepare('UPDATE findings SET state = ?, updated_at = ? WHERE id = ?').run(toState, ts, findingId);
+
+  // Best-effort, nunca aguardado: notificação de Telegram nunca pode
+  // atrasar nem quebrar uma transição real (função permanece síncrona de
+  // propósito — os dois automatismos, scanner local e agente de nuvem,
+  // chamam isso por processos que rodam até o fim naturalmente, sem
+  // process.exit() no caminho de sucesso, então a promessa solta tem
+  // tempo de completar antes do Node encerrar).
+  if (shouldNotifyForTransition(toState)) {
+    sendTelegramMessage(formatTransitionMessage(finding, toState, result.reason)).catch(() => {});
+  }
 
   return { ...result, ts, ledgerHash: ledgerEntry.hash };
 }
