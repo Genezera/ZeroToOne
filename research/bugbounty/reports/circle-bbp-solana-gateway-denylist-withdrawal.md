@@ -11,7 +11,9 @@ Before copying/pasting and submitting, check:
 
 **Live-verified 2026-08-31:** `circlefin/solana-gateway-contracts`, type "Smart contract", **In scope**, max severity **Critical**, **Eligible**, on `hackerone.com/circle-bbp`.
 
-**Deployment status:** Circle Gateway is **not yet on Solana mainnet** (confirmed via Circle's own blog, circle.com/blog/gateway-new-pre-mint-address-for-usdc-on-solana). This is actually a good time to report — before real funds are at risk. There is no program address to cite yet; when it deploys, that should be added.
+**Deployment status (re-verified 2026-08-31, supersedes the note below from an earlier draft):** Circle Gateway **is now live on Solana mainnet** — confirmed live via public RPC (`getAccountInfo` against `mainnet-beta`, `executable: true`, owned by the standard upgradeable BPF loader) and via Circle's own `circlefin/skills` reference repo, which cites this as the official mainnet `gateway-wallet` address: **`GATEwy4YxeiEbRJLwB6dXgg7q61e6zBPrMzYj5h1pRXQ`**. As of January 2026 Circle's own blog described Solana support as pre-launch (a separate pre-mint address, no program deployed yet); by August 2026 Circle's own materials list Solana among Gateway's actively supported chains. **This means real user funds are now at risk, not hypothetical future risk** — the impact below should be read as current, not "before launch."
+
+The `devN7ZZFhGVTgwoKHaDDTFFgrhRzSGzuC6hgVFPrxbs` program ID referenced under "Affected asset" below was found during an earlier pass and has not been independently re-confirmed as mainnet — treat `GATEwy4YxeiEbRJLwB6dXgg7q61e6zBPrMzYj5h1pRXQ` (above) as the current, verified mainnet address; reconcile the two before submitting.
 
 **Timing note:** don't sit on this one. This session already lost report-priority on a related Circle finding (arc-remote-signer) to another researcher who submitted first, even though our analysis was independently confirmed correct by Circle's own triage team.
 
@@ -144,6 +146,8 @@ denylisted before the withdrawal: true
 
 ## Impact
 An account holder who deposits funds into `gateway-wallet` and is subsequently denylisted (e.g., for sanctions compliance, fraud, or other policy reasons this denylist mechanism presumably exists to enforce) retains full, unrestricted access to withdraw everything they deposited before the denylist action. The denylist is fully effective against *new* activity (deposits, delegations) but provides no protection at all against a denylisted account draining its existing balance. Depending on why an account was denylisted, this defeats the practical purpose of the control: an account can be denylisted moments after depositing and still walk away with the funds.
+
+**This is current production impact, not a future/hypothetical scenario** — Gateway is live on Solana mainnet now (see "Deployment status" above), so any real depositor on this program today is subject to this gap the moment they're denylisted.
 
 ## Suggested fix
 Add a denylist account (same PDA convention as `deposit.rs`: `seeds = [DENYLIST_SEED, depositor.key().as_ref()]`) to both `InitiateWithdrawalContext` and `WithdrawContext`, and call `require!(!utils::is_account_denylisted(...), GatewayWalletError::AccountDenylisted)` in both handlers, mirroring the existing check in `deposit`/`deposit_for`/`add_delegate`/`remove_delegate`.

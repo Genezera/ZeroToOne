@@ -4050,3 +4050,51 @@ profunda proativa priorizando repos não-EVM ainda pouco cobertos
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (3
 repos não-EVM ganharam +1/+2 arquivos cada).
+
+## Solana `gateway-wallet` (denylist/withdraw) avança para `human_ready` (31/08/2026)
+
+Usuário perguntou se havia algo pronto pra analisar/testar/relatar. O
+achado do Solana estava parado em `reproduced_local` desde a rodada
+anterior, sem `deploymentEvidence` nem `duplicateCheck` gravados —
+genuinamente bloqueado, não só pausado. Resolvido os dois:
+
+**Duplicata**: 0 issues/PRs (de 6 no repo inteiro) mencionando
+denylist/withdraw/blacklist/freeze/sanction; 0 security advisories; 0
+commits via busca por "denylist". Repo de baixo tráfego, sem sinal de
+disclosure prévio.
+
+**Deploy**: pesquisa real via WebSearch/WebFetch revelou que o status do
+relatório já rascunhado estava DESATUALIZADO — dizia "Gateway ainda não
+está no Solana mainnet" (verdade em 14/01/2026, blog oficial da
+Circle), mas por agosto/2026 a Circle já lista Solana entre as chains
+suportadas ativamente pelo Gateway. Endereço mainnet real do
+`gateway-wallet` (`GATEwy4YxeiEbRJLwB6dXgg7q61e6zBPrMzYj5h1pRXQ`, citado
+no próprio `circlefin/skills` SKILL.md como referência oficial)
+confirmado AO VIVO via RPC público `mainnet-beta`:
+`executable: true`, dono `BPFLoaderUpgradeab1e` — conta real, não
+fantasma. `deploymentEvidence` gravado com confidence `medium` (não
+`high`: não fiz build reproduzível pra bater hash de bytecode contra o
+`master` atual, só confirmei que o programa existe e está ativo).
+
+Relatório em `reports/circle-bbp-solana-gateway-denylist-withdrawal.md`
+corrigido pra refletir isso — a versão antiga subestimava o impacto
+("bom momento pra reportar, antes de fundos reais estarem em risco");
+agora deixa claro que o impacto é ATUAL, não hipotético. Também
+sinalizado (não resolvido sozinho): o relatório citava um program ID
+antigo (`devN7ZZ...`, provavelmente devnet) que não bate com o endereço
+mainnet agora confirmado — os dois ficam citados lado a lado até
+alguém reconciliar antes de enviar.
+
+Com scope confirmado ao vivo (`check-scope`: `allowed=true`,
+`eligibleForBounty=true`, `maxSeverity=critical`) +
+`deploymentEvidence` + relatório + `duplicateCheck`, a transição
+`reproduced_local -> scope_verified -> human_ready` passou de verdade
+pela state machine (não forçada). Grau de evidência: **E3**. Fila:
+Circle BBP agora com 1 `human_ready` real e revisado nesta data.
+
+**O que falta pra decidir enviar**: só revisão humana mesmo — o
+relatório já tem PoC real (LiteSVM, programa compilado de verdade),
+cadeia de código citada linha a linha, e o aviso honesto sobre risco de
+precedente (o gap idêntico do lado EVM foi tratado como design aceito
+pela própria auditoria ChainSecurity da Circle — não é garantia de
+pagamento, é um achado novo genuíno num codebase diferente).

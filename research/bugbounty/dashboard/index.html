@@ -169,12 +169,12 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
     <div class="brand">Centro de Sinais</div>
     <ul class="nav"><li><a href="#index" data-nav="index" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="#targets" data-nav="targets"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="#queue" data-nav="queue"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="#activity" data-nav="activity"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="#signals" data-nav="signals"><span class="nav-icon">◈</span>Sinais</a></li><li><a href="#stats" data-nav="stats"><span class="nav-icon">▲</span>Estatística</a></li></ul>
-    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-31 19:28 UTC</div>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-08-31 19:31 UTC</div>
   </aside>
   <main class="main">
     <section class="page" id="page-index" data-page="index">
     <h1>Visão geral</h1>
-    <div class="page-sub">13 contrato(s) Clarity, 900 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 10 erro(s) de busca.</div>
+    <div class="page-sub">Varredura estática multi-linguagem, mais retroalimentação de veredito, cross-referência de dependência/CVE e revisão por IA.</div>
     
     <div class="tiles">
       <div class="tile" style="--i:0"><div class="tile-value" data-countup="12">0</div><div class="tile-label">Alvos ativos</div></div>
@@ -192,26 +192,22 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
         <div class="funnel-track"><div class="funnel-fill " style="--pct:100%"></div></div>
         <div class="funnel-value">87</div>
       </div><div class="funnel-row" style="--i:1">
-        <div class="funnel-label">Reproduzido (local)</div>
-        <div class="funnel-track"><div class="funnel-fill " style="--pct:3%"></div></div>
-        <div class="funnel-value">1</div>
-      </div><div class="funnel-row" style="--i:2">
         <div class="funnel-label">Pronto p/ humano</div>
         <div class="funnel-track"><div class="funnel-fill " style="--pct:3%"></div></div>
-        <div class="funnel-value">1</div>
-      </div><div class="funnel-row" style="--i:3">
+        <div class="funnel-value">2</div>
+      </div><div class="funnel-row" style="--i:2">
         <div class="funnel-label">Duplicata</div>
         <div class="funnel-track"><div class="funnel-fill terminal-bad" style="--pct:3%"></div></div>
         <div class="funnel-value">1</div>
-      </div><div class="funnel-row" style="--i:4">
+      </div><div class="funnel-row" style="--i:3">
         <div class="funnel-label">Falso positivo</div>
         <div class="funnel-track"><div class="funnel-fill terminal-bad" style="--pct:44%"></div></div>
         <div class="funnel-value">38</div>
-      </div><div class="funnel-row" style="--i:5">
+      </div><div class="funnel-row" style="--i:4">
         <div class="funnel-label">Inconclusivo</div>
         <div class="funnel-track"><div class="funnel-fill terminal-bad" style="--pct:3%"></div></div>
         <div class="funnel-value">2</div>
-      </div><div class="funnel-row" style="--i:6">
+      </div><div class="funnel-row" style="--i:5">
         <div class="funnel-label">Duplicata conhecida</div>
         <div class="funnel-track"><div class="funnel-fill terminal-bad" style="--pct:3%"></div></div>
         <div class="funnel-value">2</div>
@@ -222,42 +218,42 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="panel-sub">As últimas transições de estado, com o motivo exato que a state machine aceitou ou recusou.</div>
       <div class="terminal">
     <div class="terminal-bar"><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-title">decisões-da-state-machine</span></div>
-    <div class="terminal-body"><div class="terminal-line" style="--i:0"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
+    <div class="terminal-body"><div class="terminal-line" style="--i:0"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet</span>
+        scope_verified <span class="terminal-arrow">→</span> human_ready <span class="terminal-dim">(claude (relatório revisado e corrigido, duplicata checada))</span>
+        <span class="terminal-dim">→ rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md + checagem de duplicata feita (github_issues, github_advisories, 2026-08-31T19:25:28.981Z), aguardando revisão humana</span></div>
+<div class="terminal-line" style="--i:1"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet</span>
+        reproduced_local <span class="terminal-arrow">→</span> scope_verified <span class="terminal-dim">(claude (verificação ao vivo: RPC mainnet + docs oficiais Circle))</span>
+        <span class="terminal-dim">→ escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=medium)</span></div>
+<div class="terminal-line" style="--i:2"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
         human_ready <span class="terminal-arrow">→</span> known_duplicate <span class="terminal-dim">(Claude (verificação final antes de envio, pedida pelo usuário))</span>
         <span class="terminal-dim">→ comportamento real, mas já divulgado publicamente em &quot;`addAllowedRecipients()` Function Execution Manifest Skips All Validation, Allowing Anyone to Expand Any Account&#39;s Allowlist&quot; (issue) — não é novo, não é elegível para recompensa</span></div>
-<div class="terminal-line" style="--i:1"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
+<div class="terminal-line" style="--i:3"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
         scope_verified <span class="terminal-arrow">→</span> human_ready <span class="terminal-dim">(Claude (revisão humana assistida))</span>
         <span class="terminal-dim">→ rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-buidl-wallet-coldstorage-addressbook.md, aguardando revisão humana</span></div>
-<div class="terminal-line" style="--i:2"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
+<div class="terminal-line" style="--i:4"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
         reproduced_local <span class="terminal-arrow">→</span> scope_verified <span class="terminal-dim">(Claude (revisão humana assistida))</span>
         <span class="terminal-dim">→ escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=low)</span></div>
-<div class="terminal-line" style="--i:3"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
+<div class="terminal-line" style="--i:5"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
         corroborated_static <span class="terminal-arrow">→</span> reproduced_local <span class="terminal-dim">(Claude (revisão humana assistida))</span>
         <span class="terminal-dim">→ reprodução determinística local com sucesso (hardhat_evm_poc, 2026-08-31T12:28:07.131Z)</span></div>
-<div class="terminal-line" style="--i:4"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Vercel Open Source::vercel-labs/skills/src/sanitize.ts::function:strip</span>
+<div class="terminal-line" style="--i:6"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Vercel Open Source::vercel-labs/skills/src/sanitize.ts::function:strip</span>
         candidate <span class="terminal-arrow">→</span> corroborated_static <span class="terminal-dim">(cloud-agent)</span>
         <span class="terminal-dim">→ source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</span></div>
-<div class="terminal-line" style="--i:5"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_</span>
+<div class="terminal-line" style="--i:7"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_</span>
         corroborated_static <span class="terminal-arrow">→</span> inconclusive <span class="terminal-dim">(cloud-agent)</span>
         <span class="terminal-dim">→ marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</span></div>
-<div class="terminal-line" style="--i:6"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet</span>
+<div class="terminal-line" style="--i:8"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet</span>
         corroborated_static <span class="terminal-arrow">→</span> reproduced_local <span class="terminal-dim">(Renan)</span>
         <span class="terminal-dim">→ reprodução determinística local com sucesso (litesvm_poc, 2026-08-31T11:04:12.187Z)</span></div>
-<div class="terminal-line" style="--i:7"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerSer</span>
+<div class="terminal-line" style="--i:9"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerSer</span>
         submitted <span class="terminal-arrow">→</span> duplicate <span class="terminal-dim">(Renan)</span>
         <span class="terminal-dim">→ confirmado por resultado real da plataforma (duplicate)</span></div>
-<div class="terminal-line" style="--i:8"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerSer</span>
+<div class="terminal-line" style="--i:10"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerSer</span>
         human_ready <span class="terminal-arrow">→</span> submitted <span class="terminal-dim">(Genezera)</span>
         <span class="terminal-dim">→ aprovado por Genezera em 2026-08-31T06:43:02Z</span></div>
-<div class="terminal-line" style="--i:9"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
+<div class="terminal-line" style="--i:11"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressB</span>
         candidate <span class="terminal-arrow">→</span> corroborated_static <span class="terminal-dim">(cloud-agent)</span>
-        <span class="terminal-dim">→ source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</span></div>
-<div class="terminal-line" style="--i:10"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.g</span>
-        candidate <span class="terminal-arrow">→</span> false_positive <span class="terminal-dim">(cloud-agent)</span>
-        <span class="terminal-dim">→ refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</span></div>
-<div class="terminal-line" style="--i:11"><span class="terminal-prompt">$</span> transition <span class="terminal-dim">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerSer</span>
-        scope_verified <span class="terminal-arrow">→</span> human_ready <span class="terminal-dim">(renan)</span>
-        <span class="terminal-dim">→ rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-arc-remote-signer-missing-auth.md, aguardando revisão humana</span></div></div>
+        <span class="terminal-dim">→ source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</span></div></div>
   </div>
     </div>
     <div class="panel">
@@ -365,37 +361,35 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <h2>Atividade recente</h2>
       <div class="panel-sub"><a href="#activity">Ver o histórico completo →</a></div>
       <div class="timeline">
-    <div class="timeline-item" style="--i:0" data-kind="scan">
+    <div class="timeline-item" style="--i:0" data-kind="transition">
+      <div class="timeline-time">2026-08-31 19:31 UTC</div>
+      <div class="timeline-title">Transição: scope_verified → human_ready — claude (relatório revisado e corrigido, duplicata checada)</div>
+      <div class="timeline-body">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/in<br>rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md + checagem de duplicata feita (github_issues, github_advisories, 2026-08-31T19:25:28.981Z), aguardando revisão humana</div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="transition">
+      <div class="timeline-time">2026-08-31 19:29 UTC</div>
+      <div class="timeline-title">Transição: reproduced_local → scope_verified — claude (verificação ao vivo: RPC mainnet + docs oficiais Circle)</div>
+      <div class="timeline-body">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/in<br>escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=medium)</div>
+    </div>
+    <div class="timeline-item" style="--i:2" data-kind="scan">
       <div class="timeline-time">2026-08-31 19:28 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 900 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 450, Go: 450, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). 10 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="scan">
+    <div class="timeline-item" style="--i:3" data-kind="scan">
       <div class="timeline-time">2026-08-31 19:07 UTC</div>
       <div class="timeline-title">Rodada do scanner — 73 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 796 arquivo(s) de código, 36 manifesto(s) checados (JS/TS: 0, Go: 796, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:2" data-kind="discovery">
+    <div class="timeline-item" style="--i:4" data-kind="discovery">
       <div class="timeline-time">2026-08-31 18:44 UTC</div>
       <div class="timeline-title">Descoberta de alvo — 179 candidato(s) novo(s)</div>
       <div class="timeline-body">195 alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 149 ficou pra próxima rodada. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
     </div>
-    <div class="timeline-item" style="--i:3" data-kind="scan">
+    <div class="timeline-item" style="--i:5" data-kind="scan">
       <div class="timeline-time">2026-08-31 18:01 UTC</div>
       <div class="timeline-title">Rodada do scanner — 14 achado(s) novo(s), 1 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 588 arquivo(s) de código, 15 manifesto(s) checados (JS/TS: 588, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). 1 erro(s) de busca.</div>
-    </div>
-    <div class="timeline-item" style="--i:4" data-kind="verdict">
-      <div class="timeline-time">2026-08-31 18:01 UTC</div>
-      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Circle BBP (solidity) — Achado (ai_deep_read_finding, leitura profunda proativa, cadeia de chamada completa rastreada) em circlefin/buidl-wallet-contracts (Circle BBP / HackerOne), branch master, commit HEAD no momento da leitura.
-
-CADEIA DE CH…</div>
-    </div>
-    <div class="timeline-item" style="--i:5" data-kind="transition">
-      <div class="timeline-time">2026-08-31 13:25 UTC</div>
-      <div class="timeline-title">Transição: human_ready → known_duplicate — Claude (verificação final antes de envio, pedida pelo usuário)</div>
-      <div class="timeline-body">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAl<br>comportamento real, mas já divulgado publicamente em &quot;`addAllowedRecipients()` Function Execution Manifest Skips All Validation, Allowing Anyone to Expand Any Account&#39;s Allowlist&quot; (issue) — não é novo, não é elegível para recompensa</div>
     </div></div>
     </div>
     <div class="panel">
@@ -3037,85 +3031,95 @@ LIMITAÇÃO DE PoC NESTA RODADA: tentei instalar o Foundry (`curl -L https://fou
 <section class="page" id="page-activity" data-page="activity">
     <h1>Atividade ao vivo</h1>
     <div class="page-sub">Toda rodada de varredura e todo veredito registrado no ledger encadeado por hash (research/ledger.research.jsonl) — histórico auditável, nunca sobrescrito.</div>
-    <div class="panel"><div class="panel-sub">Mostrando as 80 mais recentes de 173 entradas totais no ledger.</div><div class="timeline">
-    <div class="timeline-item" style="--i:0" data-kind="scan">
+    <div class="panel"><div class="panel-sub">Mostrando as 80 mais recentes de 175 entradas totais no ledger.</div><div class="timeline">
+    <div class="timeline-item" style="--i:0" data-kind="transition">
+      <div class="timeline-time">2026-08-31 19:31 UTC</div>
+      <div class="timeline-title">Transição: scope_verified → human_ready — claude (relatório revisado e corrigido, duplicata checada)</div>
+      <div class="timeline-body">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/in<br>rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md + checagem de duplicata feita (github_issues, github_advisories, 2026-08-31T19:25:28.981Z), aguardando revisão humana</div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="transition">
+      <div class="timeline-time">2026-08-31 19:29 UTC</div>
+      <div class="timeline-title">Transição: reproduced_local → scope_verified — claude (verificação ao vivo: RPC mainnet + docs oficiais Circle)</div>
+      <div class="timeline-body">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/in<br>escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=medium)</div>
+    </div>
+    <div class="timeline-item" style="--i:2" data-kind="scan">
       <div class="timeline-time">2026-08-31 19:28 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 900 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 450, Go: 450, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). 10 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="scan">
+    <div class="timeline-item" style="--i:3" data-kind="scan">
       <div class="timeline-time">2026-08-31 19:07 UTC</div>
       <div class="timeline-title">Rodada do scanner — 73 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 796 arquivo(s) de código, 36 manifesto(s) checados (JS/TS: 0, Go: 796, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:2" data-kind="discovery">
+    <div class="timeline-item" style="--i:4" data-kind="discovery">
       <div class="timeline-time">2026-08-31 18:44 UTC</div>
       <div class="timeline-title">Descoberta de alvo — 179 candidato(s) novo(s)</div>
       <div class="timeline-body">195 alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 149 ficou pra próxima rodada. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
     </div>
-    <div class="timeline-item" style="--i:3" data-kind="scan">
+    <div class="timeline-item" style="--i:5" data-kind="scan">
       <div class="timeline-time">2026-08-31 18:01 UTC</div>
       <div class="timeline-title">Rodada do scanner — 14 achado(s) novo(s), 1 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 588 arquivo(s) de código, 15 manifesto(s) checados (JS/TS: 588, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). 1 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:4" data-kind="verdict">
+    <div class="timeline-item" style="--i:6" data-kind="verdict">
       <div class="timeline-time">2026-08-31 18:01 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Achado (ai_deep_read_finding, leitura profunda proativa, cadeia de chamada completa rastreada) em circlefin/buidl-wallet-contracts (Circle BBP / HackerOne), branch master, commit HEAD no momento da leitura.
 
 CADEIA DE CH…</div>
     </div>
-    <div class="timeline-item" style="--i:5" data-kind="transition">
+    <div class="timeline-item" style="--i:7" data-kind="transition">
       <div class="timeline-time">2026-08-31 13:25 UTC</div>
       <div class="timeline-title">Transição: human_ready → known_duplicate — Claude (verificação final antes de envio, pedida pelo usuário)</div>
       <div class="timeline-body">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAl<br>comportamento real, mas já divulgado publicamente em &quot;`addAllowedRecipients()` Function Execution Manifest Skips All Validation, Allowing Anyone to Expand Any Account&#39;s Allowlist&quot; (issue) — não é novo, não é elegível para recompensa</div>
     </div>
-    <div class="timeline-item" style="--i:6" data-kind="transition">
+    <div class="timeline-item" style="--i:8" data-kind="transition">
       <div class="timeline-time">2026-08-31 13:21 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — Claude (revisão humana assistida)</div>
       <div class="timeline-body">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAl<br>rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-buidl-wallet-coldstorage-addressbook.md, aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:7" data-kind="transition">
+    <div class="timeline-item" style="--i:9" data-kind="transition">
       <div class="timeline-time">2026-08-31 13:20 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — Claude (revisão humana assistida)</div>
       <div class="timeline-body">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAl<br>escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=low)</div>
     </div>
-    <div class="timeline-item" style="--i:8" data-kind="transition">
+    <div class="timeline-item" style="--i:10" data-kind="transition">
       <div class="timeline-time">2026-08-31 12:28 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — Claude (revisão humana assistida)</div>
       <div class="timeline-body">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAl<br>reprodução determinística local com sucesso (hardhat_evm_poc, 2026-08-31T12:28:07.131Z)</div>
     </div>
-    <div class="timeline-item" style="--i:9" data-kind="scan">
+    <div class="timeline-item" style="--i:11" data-kind="scan">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 8 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:10" data-kind="verdict">
+    <div class="timeline-item" style="--i:12" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: terminal_escape_injection_risk <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Vercel Open Source (JS/TS) — src/sanitize.ts implementa stripTerminalEscapes()/sanitizeMetadata() com a promessa explicita no docblock de &quot;Strips ALL terminal escape sequences&quot; antes de imprimir strings nao confiaveis (nome/descricao de skill vindo …</div>
     </div>
-    <div class="timeline-item" style="--i:11" data-kind="verdict">
+    <div class="timeline-item" style="--i:13" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Circle BBP (rust) — Cadeia de chamada completa lida em circlefin/solana-gateway-contracts (programa Anchor gateway-wallet), comparando o fluxo de saque com os demais fluxos que movem/afetam saldo do mesmo programa. Confirmado por leitura di…</div>
     </div>
-    <div class="timeline-item" style="--i:12" data-kind="verdict">
+    <div class="timeline-item" style="--i:14" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — Leitura profunda proativa (rodada 2026-08-30). Em compute-ratio (linha 32): active-supply = (- stbtc-supply (var-get pending-shares)) SEM guarda contra underflow. Comparei com o padrao irmao em data-stx-v2.clar::compute-…</div>
     </div>
-    <div class="timeline-item" style="--i:13" data-kind="verdict">
+    <div class="timeline-item" style="--i:15" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (move) — Leitura profunda proativa (rodada 2026-08-30), repositorio circlefin/aptos-cctp (repo irmao Move ainda nao coberto nesta missao, escopo confirmado). Hipotese investigada: assimetria no denylist do modulo token_messenger_…</div>
     </div>
-    <div class="timeline-item" style="--i:14" data-kind="verdict">
+    <div class="timeline-item" style="--i:16" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Circle BBP (Go) — Leitura profunda proativa (rodada 2026-08-30), repositorio circlefin/arc-remote-signer (nao coberto em rodadas anteriores, escolhido pelo nome sugerir superficie auth/crypto). Servico gRPC &quot;SignerService&quot; (proto/arc/sign…</div>
     </div>
-    <div class="timeline-item" style="--i:15" data-kind="verdict">
+    <div class="timeline-item" style="--i:17" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (Go) — REFUTACAO apos rastrear a cadeia de chamada completa.
@@ -3123,325 +3127,315 @@ CADEIA DE CH…</div>
 Confirmado via clone raso publico de github.com/circlefin/arc-remote-signer + github.com/supranational/blst v0.3.14 (versao pinada em go.mod):
 internal/enclave/commo…</div>
     </div>
-    <div class="timeline-item" style="--i:16" data-kind="verdict">
+    <div class="timeline-item" style="--i:18" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Circle BBP (solidity) — [Rodada 2026-08-31 (push 3a7dabd), quarta checagem consecutiva do bloqueio de Foundry] curl -L https://foundry.paradigm.xyz -m 20 novamente: connect_rejected / HTTP 403 via agent-proxy (organization policy), idêntico às …</div>
     </div>
-    <div class="timeline-item" style="--i:17" data-kind="verdict">
+    <div class="timeline-item" style="--i:19" data-kind="verdict">
       <div class="timeline-time">2026-08-31 12:00 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">Vercel Open Source (typescript) — [Rodada 2026-08-31 (push 3a7dabd)] Verificação independente e definitiva de alcançabilidade, desta vez via clone real (git clone --sparse de vercel/vercel, packages/cli/src + packages/cli-auth) em vez de busca por API/HT…</div>
     </div>
-    <div class="timeline-item" style="--i:18" data-kind="transition">
+    <div class="timeline-item" style="--i:20" data-kind="transition">
       <div class="timeline-time">2026-08-31 11:18 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">Vercel Open Source::vercel-labs/skills/src/sanitize.ts::function:stripTerminalEscapes::ter<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:19" data-kind="transition">
+    <div class="timeline-item" style="--i:21" data-kind="transition">
       <div class="timeline-time">2026-08-31 11:15 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → inconclusive — cloud-agent</div>
       <div class="timeline-body">Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:20" data-kind="transition">
+    <div class="timeline-item" style="--i:22" data-kind="transition">
       <div class="timeline-time">2026-08-31 11:04 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — Renan</div>
       <div class="timeline-body">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/in<br>reprodução determinística local com sucesso (litesvm_poc, 2026-08-31T11:04:12.187Z)</div>
     </div>
-    <div class="timeline-item" style="--i:21" data-kind="transition">
+    <div class="timeline-item" style="--i:23" data-kind="transition">
       <div class="timeline-time">2026-08-31 10:35 UTC</div>
       <div class="timeline-title">Transição: submitted → duplicate — Renan</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_r<br>confirmado por resultado real da plataforma (duplicate)</div>
     </div>
-    <div class="timeline-item" style="--i:22" data-kind="transition">
+    <div class="timeline-item" style="--i:24" data-kind="transition">
       <div class="timeline-time">2026-08-31 06:43 UTC</div>
       <div class="timeline-title">Transição: human_ready → submitted — Genezera</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_r<br>aprovado por Genezera em 2026-08-31T06:43:02Z</div>
     </div>
-    <div class="timeline-item" style="--i:23" data-kind="transition">
+    <div class="timeline-item" style="--i:25" data-kind="transition">
       <div class="timeline-time">2026-08-31 03:14 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">Circle BBP::src/msca/6900/v0.8/modules/addressbook/ColdStorageAddressBookModule.sol::addAl<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:24" data-kind="transition">
+    <div class="timeline-item" style="--i:26" data-kind="transition">
       <div class="timeline-time">2026-08-31 03:00 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — cloud-agent</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessa<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:25" data-kind="transition">
+    <div class="timeline-item" style="--i:27" data-kind="transition">
       <div class="timeline-time">2026-08-30 21:31 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — renan</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_r<br>rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-arc-remote-signer-missing-auth.md, aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:26" data-kind="transition">
+    <div class="timeline-item" style="--i:28" data-kind="transition">
       <div class="timeline-time">2026-08-30 21:29 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — renan</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_r<br>escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=low)</div>
     </div>
-    <div class="timeline-item" style="--i:27" data-kind="transition">
+    <div class="timeline-item" style="--i:29" data-kind="transition">
       <div class="timeline-time">2026-08-30 21:29 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — renan</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_r<br>reprodução determinística local com sucesso (go_grpc_poc, 2026-08-30T21:29:54.707Z)</div>
     </div>
-    <div class="timeline-item" style="--i:28" data-kind="transition">
+    <div class="timeline-item" style="--i:30" data-kind="transition">
       <div class="timeline-time">2026-08-30 16:46 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → false_positive — renan</div>
       <div class="timeline-body">StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:29" data-kind="transition">
+    <div class="timeline-item" style="--i:31" data-kind="transition">
       <div class="timeline-time">2026-08-30 16:44 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → inconclusive — cloud-agent</div>
       <div class="timeline-body">StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:30" data-kind="transition">
+    <div class="timeline-item" style="--i:32" data-kind="transition">
       <div class="timeline-time">2026-08-30 16:42 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — cloud-agent</div>
       <div class="timeline-body">Circle BBP::circlefin/aptos-cctp/packages/token_messenger_minter_v2/sources/token_messenge<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:31" data-kind="digest">
+    <div class="timeline-item" style="--i:33" data-kind="digest">
       <div class="timeline-time">2026-08-30 13:00 UTC</div>
       <div class="timeline-title">Digest de segurança — 16 advisory(s) em 3 pacote(s) observado(s)</div>
       <div class="timeline-body">Ver <a href="../security-digest.md">security-digest.md</a> pra decisão manual sobre heurística nova.</div>
     </div>
-    <div class="timeline-item" style="--i:32" data-kind="discovery">
+    <div class="timeline-item" style="--i:34" data-kind="discovery">
       <div class="timeline-time">2026-08-30 13:00 UTC</div>
       <div class="timeline-title">Descoberta de alvo — 186 candidato(s) novo(s)</div>
       <div class="timeline-body">194 alvo(s) com recompensa real no dataset inteiro (HackerOne+Bugcrowd), 156 ficou pra próxima rodada. Ver <a href="../discovered-targets.json">discovered-targets.json</a>.</div>
     </div>
-    <div class="timeline-item" style="--i:33" data-kind="transition">
+    <div class="timeline-item" style="--i:35" data-kind="transition">
       <div class="timeline-time">2026-08-30 12:24 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/in<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:34" data-kind="scan">
+    <div class="timeline-item" style="--i:36" data-kind="scan">
       <div class="timeline-time">2026-08-30 12:21 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 5 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:35" data-kind="verdict">
+    <div class="timeline-item" style="--i:37" data-kind="verdict">
       <div class="timeline-time">2026-08-30 12:21 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (Swift/ObjC) — Confirmei os dois defeitos de codigo isoladamente: (1) JWT.decode (JWT.swift:12-15) faz jwt.components(separatedBy: &quot;.&quot;)[1] sem checar o tamanho do array -- um jwtToken malformado (ex.: string sem nenhum ponto, ou vazia)…</div>
     </div>
-    <div class="timeline-item" style="--i:36" data-kind="verdict">
+    <div class="timeline-item" style="--i:38" data-kind="verdict">
       <div class="timeline-time">2026-08-30 12:21 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — Investiguei a fundo e a hipótese não se sustenta: request-stx-to-stack (stx-reserve-v2.clar linha 199-212) usa exclusivamente contract-caller — tanto para a checagem de autorização ((try! (contract-call? .dao check-is-pr…</div>
     </div>
-    <div class="timeline-item" style="--i:37" data-kind="verdict">
+    <div class="timeline-item" style="--i:39" data-kind="verdict">
       <div class="timeline-time">2026-08-30 12:21 UTC</div>
       <div class="timeline-title">Veredito: auth_arg_inconsistency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">StackingDAO (Clarity) — A inconsistência tx-sender vs contract-caller em set-token-uri (linhas 61-66) é real e confirmada por leitura direta do código (única função entre ~25 administrativas que usa tx-sender em vez de contract-caller). Porém, …</div>
     </div>
-    <div class="timeline-item" style="--i:38" data-kind="verdict">
+    <div class="timeline-item" style="--i:40" data-kind="verdict">
       <div class="timeline-time">2026-08-30 12:21 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Circle BBP (solidity) — Confirmei lendo o arquivo completo (research feito via clone público de circlefin/evm-gateway-contracts, branch master): Withdrawals.sol define `initiateWithdrawal(address token, uint256 value) external whenNotPaused tok…</div>
     </div>
-    <div class="timeline-item" style="--i:39" data-kind="verdict">
+    <div class="timeline-item" style="--i:41" data-kind="verdict">
       <div class="timeline-time">2026-08-30 12:21 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Block Open Source (kotlin) — O código monta ProcessBuilder(&quot;sh&quot;, &quot;-c&quot;, &quot;echo $registryUrl | $credentialCmd get&quot;) por interpolação de string sem sanitização — padrão clássico de command injection SE registryUrl/credStore fossem influenciáveis por um …</div>
     </div>
-    <div class="timeline-item" style="--i:40" data-kind="transition">
+    <div class="timeline-item" style="--i:42" data-kind="transition">
       <div class="timeline-time">2026-08-30 11:59 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:41" data-kind="transition">
+    <div class="timeline-item" style="--i:43" data-kind="transition">
       <div class="timeline-time">2026-08-30 11:33 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_r<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:42" data-kind="transition">
+    <div class="timeline-item" style="--i:44" data-kind="transition">
       <div class="timeline-time">2026-08-30 11:22 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:43" data-kind="transition">
+    <div class="timeline-item" style="--i:45" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:39 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — cloud-agent</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWi<br>rascunho de relatório pronto em research/bugbounty/reports/circle-bbp-withdrawals-denylist.md, aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:44" data-kind="transition">
+    <div class="timeline-item" style="--i:46" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:39 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — cloud-agent</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWi<br>escopo válido (ativo em escopo e elegível) + vínculo de deploy confirmado (confidence=medium)</div>
     </div>
-    <div class="timeline-item" style="--i:45" data-kind="transition">
+    <div class="timeline-item" style="--i:47" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:31 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — renan</div>
       <div class="timeline-body">Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::Dir<br>rascunho de relatório pronto em research/bugbounty/reports/block-open-source-wire-directoryroot-resolve.md, aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:46" data-kind="transition">
+    <div class="timeline-item" style="--i:48" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:31 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — cloud-agent</div>
       <div class="timeline-body">Block Open Source::cashapp/misk/misk-docker/src/main/kotlin/misk/docker/DockerCredentials.<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:47" data-kind="transition">
+    <div class="timeline-item" style="--i:49" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:30 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — renan</div>
       <div class="timeline-body">Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::Dir<br>escopo válido (ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready) + vínculo de deploy confirmado (confidence=low)</div>
     </div>
-    <div class="timeline-item" style="--i:48" data-kind="transition">
+    <div class="timeline-item" style="--i:50" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:30 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — renan</div>
       <div class="timeline-body">Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::Dir<br>reprodução determinística local com sucesso (jvm_okio_poc, 2026-08-29T23:30:56.544Z)</div>
     </div>
-    <div class="timeline-item" style="--i:49" data-kind="transition">
+    <div class="timeline-item" style="--i:51" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:30 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — cloud-agent</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWi<br>reprodução determinística local com sucesso (foundry_poc, sem timestamp)</div>
     </div>
-    <div class="timeline-item" style="--i:50" data-kind="transition">
+    <div class="timeline-item" style="--i:52" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:25 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → known_duplicate — renan</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWi<br>comportamento real, mas já divulgado publicamente em &quot;ChainSecurity — PUBLIC Code Assessment of the Circle Gateway Smart Contracts (08 jul 2025), seção 8.1 &quot;Denylist on GatewayWallet and GatewayMinter&quot;&quot; (public_audit) — não é novo, não é elegível para recompensa</div>
     </div>
-    <div class="timeline-item" style="--i:51" data-kind="transition">
+    <div class="timeline-item" style="--i:53" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:22 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → false_positive — cloud-agent</div>
       <div class="timeline-body">StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:52" data-kind="transition">
+    <div class="timeline-item" style="--i:54" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:53" data-kind="transition">
+    <div class="timeline-item" style="--i:55" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">StackingDAO::stacker-2.clar::stack-increase::ai_deep_read_finding<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:54" data-kind="transition">
+    <div class="timeline-item" style="--i:56" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — migration-v1-to-v2</div>
       <div class="timeline-body">Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::Dir<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:55" data-kind="transition">
+    <div class="timeline-item" style="--i:57" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-xreserve-contracts/src/lib/NoValidationAttestationLib.sol::withd<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:56" data-kind="transition">
+    <div class="timeline-item" style="--i:58" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Block Open Source::misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHan<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:57" data-kind="transition">
+    <div class="timeline-item" style="--i:59" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWi<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:58" data-kind="transition">
+    <div class="timeline-item" style="--i:60" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → inconclusive — migration-v1-to-v2</div>
       <div class="timeline-body">Block Open Source::afterpay/sdk-android::BootstrapJavascriptInterface.postMessage::ai_deep<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:59" data-kind="transition">
+    <div class="timeline-item" style="--i:61" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/buidl-wallet-contracts/src/utils/ExecutionUtils.sol::line:69::delega<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:60" data-kind="transition">
+    <div class="timeline-item" style="--i:62" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWeba<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:61" data-kind="transition">
+    <div class="timeline-item" style="--i:63" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageA<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:62" data-kind="transition">
+    <div class="timeline-item" style="--i:64" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:135:<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:63" data-kind="transition">
+    <div class="timeline-item" style="--i:65" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:116:<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:64" data-kind="transition">
+    <div class="timeline-item" style="--i:66" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reen<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:65" data-kind="transition">
+    <div class="timeline-item" style="--i:67" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/utils/ingest.ts::line:99::<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:66" data-kind="transition">
+    <div class="timeline-item" style="--i:68" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::pro<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:67" data-kind="transition">
+    <div class="timeline-item" style="--i:69" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:68" data-kind="transition">
+    <div class="timeline-item" style="--i:70" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:69" data-kind="transition">
+    <div class="timeline-item" style="--i:71" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:192:<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:70" data-kind="transition">
+    <div class="timeline-item" style="--i:72" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:157:<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:71" data-kind="transition">
+    <div class="timeline-item" style="--i:73" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-split/src/provider/index.ts::line:63::ss<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:72" data-kind="transition">
+    <div class="timeline-item" style="--i:74" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:73" data-kind="transition">
+    <div class="timeline-item" style="--i:75" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:65::<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:74" data-kind="transition">
+    <div class="timeline-item" style="--i:76" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:1<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:75" data-kind="transition">
+    <div class="timeline-item" style="--i:77" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
       <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:7<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:76" data-kind="transition">
-      <div class="timeline-time">2026-08-29 23:17 UTC</div>
-      <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
-      <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
-    </div>
-    <div class="timeline-item" style="--i:77" data-kind="transition">
-      <div class="timeline-time">2026-08-29 23:17 UTC</div>
-      <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
-      <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
-    </div>
     <div class="timeline-item" style="--i:78" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
-      <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:1<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
+      <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
     <div class="timeline-item" style="--i:79" data-kind="transition">
       <div class="timeline-time">2026-08-29 23:17 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — migration-v1-to-v2</div>
-      <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-flagsmith/src/provider/index.ts::line:86<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
+      <div class="timeline-body">Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div></div></div>
   </section>
 <section class="page" id="page-signals" data-page="signals">
