@@ -1902,3 +1902,52 @@ o achado Solidity `ColdStorageAddressBookModule` (Circle BBP, não deste
 programa) permanece em `corroborated_static` por esse motivo, registrado
 com nota desta rodada no próprio finding.
 `deep-read-log.json` ganhou os 3 arquivos acima na chave `cashapp/misk`.
+
+## Rodada 2026-08-31 (push automático) — fila vazia, leitura profunda nas rotas `@Unauthenticated`/dev do misk-admin v2
+
+Fila de `candidate` vazia. Continuando cobertura de `cashapp/misk`
+(`misk-admin`): desta vez, em vez de mais tabs `@AdminDashboardAccess`,
+mirei especificamente nas rotas marcadas `@Unauthenticated` do pacote
+`misk/web/v2` e `misk/web/dev` (ponto de maior risco relativo, já que
+qualquer bug de gating ali é bypass direto, sem precisar de bug em
+autenticação de verdade):
+
+- `DashboardIndexAction.kt` (`GET /{rest:.*}`, `@Unauthenticated`,
+  homepage do dashboard v2) — leitura completa. Design deliberado e
+  seguro: o comentário no próprio código (`// Only shown if
+  authenticated for at least 1 tab to limit potential for data leak
+  since index is unauthenticated.`) confirma que os blocos de conteúdo
+  (`allDashboardIndexBlocks`) só renderizam se
+  `authenticatedTabs.isNotEmpty()`, e `authenticatedTabs` é filtrado por
+  `caller.hasCapability(tab.capabilities)` por tab. O único dado exposto
+  a um caller totalmente anônimo é `callerProvider.get()?.user` (pode
+  ser `null`) e o nome do app/dashboard — nada sensível. Sem achado.
+- `DashboardV2RedirectAction.kt` (`GET /v2/_admin/{rest:.*}`,
+  `@Unauthenticated`) — redirect de compatibilidade da URL antiga
+  `/v2/_admin/*` pra `/*`. `rest` é derivado só do próprio
+  `httpCall.url` da requisição atual (path sem prefixo `/v2` + query +
+  fragment) — não há parâmetro tipo `returnUrl`/`next` controlável de
+  forma independente do path já resolvido pelo roteador, então não é um
+  open-redirect clássico (não redireciona pra origin arbitrário
+  controlado por atacante). Sem achado.
+- `DevCheckReloadAction.kt` (`GET /check-reload`, `@Unauthenticated`,
+  `@AvailableWhenDegraded`) — long-poll de hot-reload pra dev tooling.
+  `timeout` é `@QueryParam` sem cap superior, repassado direto pra
+  `reloadSignalService.awaitShutdown(timeout)`; em teoria um cliente
+  pode pedir um timeout arbitrariamente grande e segurar a conexão
+  aberta. Avaliado como não digno de achado: é um endpoint de dev/hot-reload
+  (o próprio pacote é `misk.web.dev`), não uma superfície de dado
+  sensível, e seguração de conexão longa é o comportamento normal de
+  long-polling — não decidi abrir finding de baixa severidade/DoS
+  marginal num endpoint de tooling de desenvolvimento sem evidência de
+  que roda exposto em produção.
+
+Também conferi por grep (sem leitura completa linha a linha, só
+confirmação de annotation) que as outras rotas do pacote `misk/web/v2` e
+`misk/web/metadata/{guice,servicegraph}` (`GuiceTabIndexAction`,
+`ServiceGraphTabIndexAction`, `DashboardIFrameTabAction`,
+`DashboardHotwireTabAction`) usam `@AdminDashboardAccess` de forma
+consistente — nenhuma tem `@Unauthenticated` inesperado.
+
+Sem achado novo nesta rodada. `deep-read-log.json` ganhou os 3 arquivos
+lidos por completo (cashapp/misk agora com 73 arquivos).
