@@ -1259,3 +1259,61 @@ caminho pra vazamento de token. Sem ação necessária.
 `turborepo-lib/src/commands/login/mod.rs`). Nenhum achado novo nesta
 rodada — resultado normal (hipótese de ataque real testada e refutada
 por controle já existente no código, não por falta de tentativa).
+
+## Rodada 2026-08-31 (push trigger seguinte) — sem candidatos novos, leitura profunda em `vercel/ai` (harness sandbox network policy)
+
+`list-pending` vazio. Os 2 achados legados em `corroborated_static`
+(Vercel `cli-auth/sso.ts` alcançabilidade, e Solana denylist do Circle
+BBP) seguem sem insumo novo desde a última re-verificação exaustiva —
+não reabertos.
+
+Leitura profunda proativa em `vercel/ai` (só 1 arquivo coberto antes,
+`packages/gateway/src/gateway-realtime-auth.ts`). Escolhi a superfície de
+controle de acesso de rede do sandbox de execução de agente (`packages/harness`
++ `packages/sandbox-vercel`) — é onde código gerado/potencialmente não
+confiável roda dentro de um sandbox, e a política de rede + injeção de
+credencial em requisições de saída é exatamente o tipo de controle de
+acesso que merece ceticismo (clone raso via `git clone` público):
+
+- `packages/harness/src/utils/get-restricted-sandbox-session.ts` e
+  `packages/harness/src/v1/harness-v1-network-sandbox-session.ts` —
+  definição de tipos/interface da "visão restrita" da sessão de sandbox
+  (`restricted()`: expõe só I/O de arquivo + exec, nunca `stop`/`destroy`/
+  `setNetworkPolicy`). Confirmado explicitamente no próprio comentário do
+  código que essa restrição é de superfície TypeScript (para o código
+  interno do harness não chamar por engano os métodos de infraestrutura),
+  não uma fronteira de segurança contra processo malicioso rodando DENTRO
+  do sandbox — o enforcement real de rede acontece no lado do provedor
+  (Vercel Sandbox), fora deste repositório.
+- `packages/sandbox-vercel/src/vercel-sandbox-session.ts` e
+  `vercel-network-sandbox-session.ts` — implementação concreta. `restricted()`
+  retorna um novo `VercelSandboxSession` sobre o MESMO `Sandbox` subjacente
+  (campera `protected readonly sandbox`) — em runtime JS puro isso não é uma
+  barreira de reflexão, mas o consumidor legítimo (código do harness, não
+  o processo dentro do sandbox) só enxerga os métodos do tipo `SandboxSession`
+  — consistente com o design documentado, não um bug.
+- `packages/sandbox-vercel/src/vercel-network-policy-manager.ts` (755
+  linhas, leitura completa) — a peça mais sensível: compõe a política de
+  rede (`allow-all`/`deny-all`/`custom` com CIDR allow/deny) E as regras de
+  transformação de requisição (injeção de header de credencial fora do
+  sandbox, nunca visível para o processo sandboxed) num único `NetworkPolicy`
+  enviado a `sandbox.update()`. Ceticismo aplicado especificamente em
+  `intersectHostPatterns`/`isHostPatternSubset` (a lógica que decide a quais
+  padrões de host uma regra de transformação de credencial fica anexada):
+  testei mentalmente casos de wildcard (`*`, `*.example.com` vs host
+  concreto, vs wildcard mais específico) — em todos os casos testados a
+  interseção retorna corretamente o padrão MAIS ESTREITO dos dois, nunca
+  mais amplo que o host original da transformação nem mais amplo que o
+  host permitido pela política de acesso. Único ponto residual notado (não
+  é achado, é observação): `isHostPatternSubset` só reconhece limite de
+  subdomínio quando o padrão wildcard tem literalmente um ponto após o
+  `*` (ex. `*.example.com`); um padrão malformado tipo `*example.com` (sem
+  ponto) casaria também com `evilexample.com` — mas `allowedHosts`/
+  `ruleHost` vêm da configuração do desenvolvedor/harness que monta a
+  sessão, não de conteúdo não confiável, então não é uma superfície
+  explorável por um atacante — só um jeito de o desenvolvedor se
+  configurar mal, já mitigável escrevendo `*.example.com` corretamente.
+  Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/ai` ganhou 5 arquivos, agora 6 no
+total). Nenhum achado novo nesta rodada — resultado normal.
