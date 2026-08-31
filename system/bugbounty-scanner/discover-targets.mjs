@@ -8,6 +8,8 @@
 // pathPrefixes pra monorepo grande exige julgamento que um script não
 // replica com segurança a partir de metadado em massa.
 
+import { githubHeaders } from './github-auth.mjs';
+
 const HACKERONE_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/hackerone_data.json';
 const BUGCROWD_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/bugcrowd_data.json';
 const MAX_METADATA_LOOKUPS = 30; // orçamento de API anônima do GitHub (60/hora) — rodada semanal própria, isolada do scan diário
@@ -165,7 +167,7 @@ export function attachProgramAge(candidates, ageByHandle = {}) {
 }
 
 async function fetchRepoMetadata(owner, repo) {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { 'User-Agent': 'ZeroToOne-bugbounty-scanner' } });
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: githubHeaders() });
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando metadado de ${owner}/${repo}`);
   const json = await res.json();
   return {
@@ -197,7 +199,7 @@ async function fetchRepoMetadata(owner, repo) {
  * não estiverem configuradas, todo esse passo é pulado com honestidade
  * (sem idade de programa, não trava a rodada inteira por isso). */
 export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProgramInfo = null) {
-  const [hackerOneRes, bugcrowdRes] = await Promise.all([fetch(HACKERONE_URL), fetch(BUGCROWD_URL)]);
+  const [hackerOneRes, bugcrowdRes] = await Promise.all([fetch(HACKERONE_URL, { headers: githubHeaders() }), fetch(BUGCROWD_URL, { headers: githubHeaders() })]);
   if (!hackerOneRes.ok) throw new Error(`HTTP ${hackerOneRes.status} buscando dataset HackerOne`);
   if (!bugcrowdRes.ok) throw new Error(`HTTP ${bugcrowdRes.status} buscando dataset Bugcrowd`);
   const hackerOneData = await hackerOneRes.json();

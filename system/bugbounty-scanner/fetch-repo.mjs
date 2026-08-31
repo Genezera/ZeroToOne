@@ -1,7 +1,10 @@
 // Busca lista de arquivos e código-fonte real de repositórios GitHub
-// públicos via API pública (sem conta, sem token — só limitada pelo rate
-// limit anônimo do GitHub). Genérico por linguagem — usado para todos os
-// alvos JS/TS, Go, Kotlin/Java e Swift/ObjC deste projeto.
+// públicos via API pública (token opcional via GITHUB_TOKEN -- ver
+// github-auth.mjs -- sem ele, cai no limite anônimo de 60 req/hora).
+// Genérico por linguagem — usado para todos os alvos JS/TS, Go,
+// Kotlin/Java e Swift/ObjC deste projeto.
+
+import { githubHeaders } from './github-auth.mjs';
 
 const EXCLUDED_DIR = /(^|\/)(node_modules|dist|build|\.next|out|coverage|\.turbo|\.git|vendor|Pods|\.gradle|target)(\/|$)/;
 const TEST_FILE_JS = /\.(test|spec)\.[jt]sx?$/;
@@ -61,7 +64,7 @@ export function isDependencyManifest(path) {
 
 export async function listRepoFiles(owner, repo, branch, pathPrefixes) {
   const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
-  const res = await fetch(url, { headers: { 'User-Agent': 'ZeroToOne-bugbounty-scanner' } });
+  const res = await fetch(url, { headers: githubHeaders() });
   if (!res.ok) throw new Error(`HTTP ${res.status} listando árvore de ${owner}/${repo}@${branch}`);
   const json = await res.json();
   if (!Array.isArray(json.tree)) throw new Error(`Resposta sem tree para ${owner}/${repo}: ${JSON.stringify(json).slice(0, 200)}`);
@@ -95,7 +98,7 @@ export function prioritizeFilesForScan(files, seenPaths = new Set()) {
 
 export async function fetchRawFile(owner, repo, branch, filePath) {
   const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: githubHeaders() });
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando ${owner}/${repo}/${filePath}`);
   return res.text();
 }

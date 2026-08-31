@@ -518,3 +518,45 @@ estrelas/atividade/idade, nunca por recompensa conhecida — significa
 que o ranking pode estar subestimando candidato HackerOne valioso
 frente a um Bugcrowd com `max_payout` público. Fica registrado como
 lacuna real, não como "resolvido".
+
+## Truncamento de arquivo sempre pegava os mesmos, para sempre (31/08/2026)
+
+Mesmo bug, mesmo formato, do já corrigido em `discover-targets.mjs::
+prioritizeCandidates` — só que na camada de escaneamento de
+código-fonte de verdade, não na de descoberta. Confirmado ao vivo:
+`listRepoFiles` usa a Git Trees API do GitHub, cuja ordem é **estável
+entre chamadas** (testei buscando duas vezes e comparando) — então
+`MAX_FILES_PER_TARGET=450` sempre cortava exatamente os mesmos
+primeiros 450, pra sempre. Achado real ao investigar `okx/go-wallet-sdk`
+(1001 arquivos Go): 551 nunca eram escaneados, **435 deles (79%)** em
+caminho de moeda/wallet/assinatura (`coins/stellar/`, `coins/tezos/`,
+`coins/ton/` inteiros, nunca lidos nenhuma vez). `vercel/vercel` era
+proporcionalmente pior: dentro do escopo já curado da "Vercel CLI",
+`packages/client`/`packages/vc-native` (22 arquivos) ficavam 100% no
+escuro.
+
+`prioritizeFilesForScan` (`fetch-repo.mjs`) resolve do mesmo jeito que
+a descoberta: usa `repoShas[repoKey]` (já existia, cache de SHA pra
+detectar mudança) como o "já visto", prioriza quem nunca foi visto
+antes de truncar. Um alvo de 1001 arquivos com teto 450 agora converge
+pra cobertura completa em 3 rodadas em vez de nunca — verificado
+matematicamente em teste, não só por inspeção.
+
+## Token opcional do GitHub via GITHUB_TOKEN (31/08/2026)
+
+Toda chamada à API do GitHub neste projeto (listagem de árvore, busca
+de arquivo, metadado de repo, dataset de descoberta, advisories do
+digest de segurança) passa por `githubHeaders()`
+(`github-auth.mjs`). Sem `GITHUB_TOKEN` no ambiente, continua 100%
+anônimo como sempre (60 req/hora por IP) — isso é estritamente
+aditivo, nunca virou obrigatório. Motivo de existir: uma sessão de
+pesquisa manual (checagem de duplicata + descoberta + scan, tudo no
+mesmo dia) esgotou esse limite de verdade (`0/60` confirmado via
+`GET /rate_limit`), causando erro 403 em 4 alvos Circle BBP numa
+rodada real. Um token pessoal sem NENHUM scope marcado (só lê
+repositório público, que já é anônimo por natureza) sobe o limite pra
+5.000/hora. Gerar em github.com → Settings → Developer settings →
+Personal access tokens → Tokens (classic) → Generate new token, sem
+marcar nenhuma permissão, e configurar como variável de ambiente do
+usuário (nunca em arquivo — mesmo padrão de `HACKERONE_API_TOKEN`/
+`TELEGRAM_BOT_TOKEN`).

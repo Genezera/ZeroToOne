@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { buildScopeSnapshot, saveSnapshot } from './scope-registry.mjs';
 import { TARGETS } from './targets.mjs';
+import { githubHeaders } from './github-auth.mjs';
 
 const H1_DATA_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/hackerone_data.json';
 const BC_DATA_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/bugcrowd_data.json';
@@ -32,7 +33,7 @@ const IMMUNEFI_STACKINGDAO_POLICY = {
 };
 
 async function fetchJson(url) {
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: githubHeaders() });
   if (!res.ok) throw new Error(`fetch ${url} -> HTTP ${res.status}`);
   return res.json();
 }
