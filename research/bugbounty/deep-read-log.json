@@ -92,7 +92,10 @@
     "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseTabIndexAction.kt",
     "misk-crypto/src/main/kotlin/misk/crypto/BucketNameSource.kt",
     "misk-config/src/main/kotlin/misk/config/Secret.kt",
-    "misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt"
+    "misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt",
+    "misk-admin/src/main/kotlin/misk/web/dashboard/MiskWebTabIndexAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/DashboardMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/ServiceMetadataAction.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",

@@ -3329,3 +3329,36 @@ não lido:
 Sem achado novo nesta rodada. `deep-read-log.json` atualizado (5 arquivos
 em `noble-cctp`, 1 em `sui-cctp`, 1 em `arc-node`). `export-queue` +
 commit ao final.
+
+## Rodada 2026-08-31 — fila vazia, retentativa de Foundry, sem novo achado
+
+Fila de `candidate` vazia. Todos os repos em escopo (13 assets
+SOURCE_CODE/SMART_CONTRACT de `circle-bbp.json`) já têm cobertura de
+leitura profunda em `deep-read-log.json`; leitura profunda proativa desta
+rodada foi direcionada ao Block Open Source (`cashapp/misk`) em vez de
+repetir Circle BBP sem sinal novo — ver NOTES.md de `block-open-source`.
+
+Revisão dos 2 achados Circle BBP em `corroborated_static`:
+
+- `ColdStorageAddressBookModule.sol::addAllowedRecipients` (Solidity) —
+  retentei `curl -L https://foundry.paradigm.xyz` neste ambiente Linux
+  novo/efêmero (disco e SO diferentes da rodada anterior). Mesmo bloqueio
+  de política de rede: `CONNECT tunnel failed, response 403` pra
+  `foundry.paradigm.xyz:443`. Confirma que é bloqueio de política do
+  proxy do ambiente, não falha pontual de uma máquina específica. Nota
+  registrada no próprio finding (`update-finding`); sem tentativa de
+  transição de estado (sei que falharia sem PoC PASS, não é recusa útil
+  de registrar de novo).
+- `solana-gateway-contracts::initiate_withdrawal/withdraw` (Rust/Anchor)
+  — sem mudança de conteúdo. Observação de ambiente: este runner tem
+  ~30GB livres em disco (rodada anterior relatou só ~2GB livres numa
+  máquina Windows e por isso não tentou compilar o toolchain SBF). Não
+  tentei construir um harness `solana-program-test`/LiteSVM mesmo assim
+  — o sistema não tem hoje um validador Anchor/Solana, e a própria
+  instrução da missão é explícita: não inventar um validador pra
+  linguagem sem um. Registrado aqui só como dado pra quem decidir, no
+  futuro, se vale a pena adicionar um validador desse tipo ao sistema.
+
+Nenhuma transição de estado tentada nesta rodada (nenhum achado tinha
+evidência nova o suficiente pra justificar tentar avançar). `export-queue`
++ commit ao final.

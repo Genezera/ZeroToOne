@@ -1858,3 +1858,47 @@ clássico hotspot de zip-slip/tar-slip. Análise cética linha a linha:
 Sem achado — código já hardened, com comentários no próprio arquivo
 citando explicitamente a pesquisa de zip-slip do Snyk. Resultado normal.
 `deep-read-log.json` ganhou `archive/archive.go` na chave `cashapp/hermit`.
+
+## Rodada 2026-08-31 — fila vazia, leitura profunda no dashboard admin do misk
+
+Fila de `candidate` vazia. Continuando a cobertura de `cashapp/misk`
+(monorepo grande, 67 arquivos sensíveis já lidos em rodadas anteriores):
+listei a árvore completa do repo via `git clone --filter=blob:none` (sem
+usar API GitHub, fora do escopo desta sessão) e filtrei por
+auth/session/crypto/token/login/password/admin/permission/access ainda
+não lidos — 280 candidatos, escolhi 3 na área do dashboard administrativo
+(`misk-admin`), já que `AdminDashboardAccess.kt` e
+`NoAdminDashboardDatabaseAccess.kt` (lidos em rodada anterior) mostraram
+que o controle de acesso do admin dashboard é um padrão recorrente vale a
+pena verificar em profundidade:
+
+- `MiskWebTabIndexAction.kt` (serve o HTML shell de uma tab do dashboard
+  em `/api/dashboard/tab/misk-web/{slug}`) — tem `@AdminDashboardAccess`
+  na própria função `get()`, corretamente gated. Mesmo sem essa
+  annotation o conteúdo servido é só um shell HTML com tags `<script>`
+  apontando pros bundles JS da tab (nenhum dado sensível embutido), então
+  o impacto de um bypass seria baixo de qualquer forma.
+- `DashboardMetadataAction.kt` (`/api/dashboard/{slug}/metadata`,
+  `@Unauthenticated`) — à primeira vista parece um endpoint aberto
+  servindo metadata de dashboard sem autenticação, mas o design é
+  deliberado e correto: usa `ActionScoped<MiskCaller?>` pra pegar
+  quem quer que seja o caller (pode ser `null` se de fato anônimo), e
+  filtra `authorizedDashboardTabs` com
+  `caller.isAllowed(it.capabilities, it.services)` antes de devolver
+  qualquer tab — ou seja, o endpoint em si não exige login, mas nunca
+  vaza metadata de tab pra quem não tem a capability/service exigida
+  por aquela tab especificamente. `caller == null` retorna
+  `DashboardMetadata()` vazio. Sem bypass encontrado.
+- `ServiceMetadataAction.kt` (`/api/service/metadata`,
+  `@Unauthenticated`) — devolve só `app_name` e `environment` (ex.:
+  "PRODUCTION"/"STAGING"). Exposição mínima de metadata de baixa
+  sensibilidade, comportamento claramente intencional (usado pelo
+  Misk-Web pra render de UI antes do login) — não é achado.
+
+Sem achado novo. Também usada esta rodada pra reconfirmar (com ambiente
+Linux fresco/efêmero) que a instalação do Foundry continua bloqueada
+pela política de rede do proxy (`foundry.paradigm.xyz` → CONNECT 403) —
+o achado Solidity `ColdStorageAddressBookModule` (Circle BBP, não deste
+programa) permanece em `corroborated_static` por esse motivo, registrado
+com nota desta rodada no próprio finding.
+`deep-read-log.json` ganhou os 3 arquivos acima na chave `cashapp/misk`.
