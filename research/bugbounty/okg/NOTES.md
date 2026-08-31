@@ -97,6 +97,51 @@ quando o OSV era alcançável) + leitura direta do código-fonte
 clonado. Isso é por que os falsos-positivos de x/crypto e
 go-ethereum ficaram com confiança "média", não "alta".
 
+## Nota 2026-08-31 (revisão local, claude-local-review) — fecha `cosmossdk.io/math` como falso-positivo, corrigindo o mecanismo hipotetizado
+
+A hipótese original apontava `Int.Unmarshal` (parsing de bytes protobuf)
+como onde o CVE GHSA-7225-m954-23v7/ASA-2024-010 se manifesta. Comparei
+o diff real entre `cosmossdk.io/math` v1.1.2/v1.3.0 (vulnerável) e
+v1.4.0 (corrigido): `int.go` **não tem nenhuma mudança funcional**
+entre as versões (só comentários/nomes) — `Int.Unmarshal` nunca foi o
+código vulnerável. O fix real está inteiramente em `dec.go`: todos os
+pontos corrigidos são métodos aritméticos do tipo `LegacyDec`
+(`Add`/`Sub`/`Mul`/`MulTruncate`/`MulRoundUp`/`MulInt`/`MulInt64`/
+`Quo`/`QuoTruncate`/`QuoRoundUp` + parsing de string), que faziam
+`panic("Int overflow")` com um limiar de bit-length (`maxDecBitLen`)
+desalinhado — substituído por `IsInValidRange()`, baseado numa faixa de
+valor real (±2^256×10^18).
+
+Busquei via GitHub code search API (autenticado — capacidade que a
+sessão cloud original explicitamente não tinha) por `LegacyDec`,
+`sdk.Dec`, `math.Dec` e `LegacyNewDec` em todo o repositório
+`okx/go-wallet-sdk`: **zero ocorrências**. O SDK usa exclusivamente o
+tipo `Int` (nunca teve o bug), nunca o tipo `Dec` (onde o bug de fato
+vive). Como consequência, mesmo a preocupação original ("um app cliente
+poderia chamar `Unmarshal` sobre bytes de RPC não confiável") aponta
+pra uma função que nunca foi vulnerável em nenhuma versão. Refutado com
+confiança alta — `update-finding` + `transition ... false_positive`.
+
+Aproveitado para criar `research/bugbounty/scope-snapshots/okg.json`
+(via `capture-scope-snapshots.mjs`, estendido nesta sessão para incluir
+o handle HackerOne `okg` do mesmo dataset comunitário já usado pelos
+outros 3 programas HackerOne) — `check-scope "OKG" "okx/go-wallet-sdk"`
+agora devolve `allowed: true`/`bountyEligible: true`/`maxSeverity:
+critical` em vez de falhar por "nenhum scope snapshot existe". Isso
+desbloqueia qualquer achado futuro real deste programa de ficar preso
+em `corroborated_static` para sempre por falta deste arquivo — mesma
+limitação estrutural já documentada nos outros NOTES.md, agora
+resolvida especificamente para OKG.
+
+Também adicionada ao `state-machine.mjs` a aresta
+`inconclusive->false_positive` (não existia — `inconclusive` era um
+estado sem saída), especificamente porque este achado precisava dela
+para ser fechado corretamente em vez de ficar só como comentário solto
+sem virar transição real.
+
+`OKG` fila agora: 0 `candidate`, 0 `inconclusive` (era 1) — os 72
+achados de dependência estão totalmente triados.
+
 ## Lição pro scanner (`dep-scanner.mjs`)
 `parseGoMod` descarta o comentário `// indirect` ao fazer parse do
 `go.mod` (`line.split('//')[0].trim()`) — trata dependência direta e

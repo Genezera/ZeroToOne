@@ -157,6 +157,15 @@ test('refutação (false_positive/inconclusive) é permitida a partir de qualque
   }
 });
 
+test('inconclusive->false_positive é permitido (investigação posterior resolve a incerteza pro lado cético)', () => {
+  assert.equal(transition(finding('inconclusive'), 'false_positive', {}).ok, true);
+});
+
+test('inconclusive não reabre pra estados "vivos" — só a saída pro lado cético existe', () => {
+  assert.equal(transition(finding('inconclusive'), 'corroborated_static', {}).ok, false);
+  assert.equal(transition(finding('inconclusive'), 'human_ready', {}).ok, false);
+});
+
 test('refutação exige reasoning — nunca falso_positivo/inconclusivo vazio', () => {
   assert.equal(transition(finding('candidate', { reasoning: '' }), 'false_positive', {}).ok, false);
 });

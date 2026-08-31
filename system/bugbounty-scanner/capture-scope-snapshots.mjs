@@ -62,6 +62,7 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
 
   const circle = h1Raw.find((p) => p.handle === 'circle-bbp');
   const vercel = h1Raw.find((p) => p.handle === 'vercel-open-source');
+  const okg = h1Raw.find((p) => p.handle === 'okg');
   const block = bcRaw.find((p) => (p.name || '').toLowerCase().includes('block open source'));
   const stackingDaoRaw = h1Raw.find((p) => p.handle === 'stackingdao' || (p.name || '').toLowerCase() === 'stackingdao');
 
@@ -94,6 +95,20 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
       confidence: 'medium',
       capturedAt,
       communitySourceNote: 'Mesma limitação do Circle BBP: página oficial não fetchável sem sessão autenticada. Estrutura de tier (Tier 1/2/3 OSS) confirmada pelos próprios rótulos do dataset.',
+    }));
+  }
+  if (okg) {
+    snapshots.push(buildScopeSnapshot({
+      program: 'OKG',
+      platform: 'HackerOne',
+      officialUrl: 'https://hackerone.com/okg',
+      sourceType: 'community_dataset_structured',
+      sourceDetail: 'arkadiyt/bounty-targets-data, hackerone_data.json, handle okg',
+      rawSourceContent: okg,
+      assets: toAssetList(okg.targets && okg.targets.in_scope),
+      confidence: 'medium',
+      capturedAt,
+      communitySourceNote: 'Programa auto-descoberto pelo pipeline de promoção (não um dos 4 alvos originais desta missão) — mesma limitação dos demais HackerOne: página oficial não fetchável sem sessão autenticada. Snapshot criado especificamente para desbloquear check-scope do achado cosmossdk.io/math (okx/go-wallet-sdk), que estava capado em corroborated_static por falta deste arquivo.',
     }));
   }
   if (block) {

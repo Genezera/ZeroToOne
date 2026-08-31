@@ -1870,3 +1870,47 @@ sessão) — então a conclusão de não-explorabilidade continua apoiada na
 citação já registrada acima, não em verificação de primeira mão
 adicional. Registro aqui só para constar a evidência de deploy npm real
 como reforço; não muda o veredito `false_positive` já fechado.
+
+## Nota 2026-08-31 (revisão local, claude-local-review) — reforça (sem fechar) o achado `inconclusive` da SSO com busca de código autenticada; rascunho de relatório criado
+
+O achado `packages/cli-auth/sso.ts::waitForVerification` (`inconclusive`)
+ficou travado numa pergunta que várias rodadas anteriores não
+conseguiram resolver por falta de acesso: "algum consumidor real (do
+GitHub público) chama `reauthorizeTeam`/`waitForVerification`?" — a
+sessão cloud original tinha isso explicitamente bloqueado ("GitHub code
+search via API: bloqueado (requer autenticação)"). Com `GITHUB_TOKEN`
+configurado nesta sessão, rodei a mesma pergunta pela primeira vez com
+autenticação real, contra **todo o GitHub público**, não só
+`vercel/vercel`:
+- `"reauthorizeTeam"` — 16 resultados totais; os únicos 3 que batem com
+  o arquivo real (`packages/cli-auth/sso.ts`) são o próprio
+  `vercel/vercel` e 2 forks pessoais do mesmo monorepo (mesmo path,
+  não um consumidor separado via import do pacote). Os outros 13 são
+  coincidência de nome em projetos completamente não relacionados
+  (Dropbox SDK, etc.).
+- `"waitForVerification"` — 2872 resultados, mas o único relacionado ao
+  arquivo real é o próprio `vercel/vercel`; todo o resto é função
+  homônima em bases de código sem nenhuma relação (Firefox, projetos
+  aleatórios).
+- `"cli-auth/sso"` e `"@vercel/cli-auth/sso.js"` (string de import
+  literal) — 0 resultados em qualquer lugar do GitHub público.
+
+Isso é o resultado mais forte possível vindo de busca de código pública
+— reforça bastante a conclusão já registrada (nenhum consumidor
+confirmado), mas **não** é prova absoluta o suficiente para fechar como
+`false_positive` (uma ferramenta interna da Vercel nunca publicada
+publicamente continua, por definição, fora do alcance de qualquer busca
+pública). Estado mantido em `inconclusive` — não existe (nem deveria
+existir) uma aresta `inconclusive -> corroborated_static` no
+`state-machine.mjs` que tornasse isso uma "confirmação"; isso é reforço
+de evidência, não mudança de veredito.
+
+Dado que este é, no momento desta nota, o único achado não-terminal e
+não bloqueado por política em todo o pipeline (Circle BBP com fila
+zerada, Vercel com fila zerada, OKG resolvido, Block Open Source
+banido para pesquisa), redigi um rascunho de relatório em
+`research/bugbounty/reports/vercel-cli-auth-sso-loopback-missing-state.md`
+com um aviso de confiança explícito no topo (baixa confiança de
+exploração, recomendado como achado de hardening, não como
+vulnerabilidade confirmada) — decisão de enviar ou não fica com o
+usuário, não uma conclusão automática desta rodada.

@@ -163,6 +163,20 @@ for (const from of REFUTABLE_FROM) {
   };
 }
 
+// `inconclusive` fica de fora de REFUTABLE_FROM de propósito (não é um
+// estado do qual normalmente se sai por otimismo), mas isso deixava sem
+// saída o caso real de "nova investigação resolve a incerteza pra
+// negativo" (ex.: OKG cosmossdk.io/math -- achado inicial hipotetizou o
+// mecanismo errado do CVE; nova leitura do diff real da correção mostrou
+// que o código vulnerável nem existe no caminho alcançável -- sem essa
+// aresta, essa conclusão não tinha como virar transição, só comentário
+// solto). Não abre `inconclusive->corroborated_static`/outros de volta
+// pra "vivo" -- só a saída pro lado cético, mesma assinatura das demais.
+PRECONDITIONS['inconclusive->false_positive'] = (f, ctx = {}) => {
+  if (!f.reasoning || f.reasoning.trim().length < 10) return fail('precisa de reasoning explicando por que foi refutado');
+  return ok('refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação, mesmo depois de "inconclusive"');
+};
+
 export function validTransitionsFrom(state) {
   return Object.keys(PRECONDITIONS)
     .filter((k) => k.startsWith(`${state}->`))
