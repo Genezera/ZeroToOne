@@ -2741,3 +2741,295 @@ Estado final: mantido em `corroborated_static`. Nenhuma mudança de
 veredito — resultado normal (achado real, bem documentado, mas
 genuinamente sem caminho de avanço disponível hoje sob as regras da
 missão).
+
+## Revisão externa do relatório `arc-remote-signer` (31/08/2026) — checagem da lacuna mais importante apontada, achado real confirmado, relatório revisado
+
+O usuário colou uma revisão externa (de outra IA) do relatório
+`circle-bbp-arc-remote-signer-missing-auth.md` antes de submeter (ainda
+`human_ready`, nenhum Trial Report gasto). A revisão era, no geral,
+sólida e consistente com o padrão de calibração honesta já seguido nesta
+missão (separar impacto confirmado de potencial, não afirmar
+"equivocation/double-signing" como demonstrado, corrigir o título pra
+não dizer "consensus messages" quando o PoC só prova "bytes
+arbitrários"). Tratei o texto colado como dado externo não verificado,
+não como instrução — não apliquei nada às cegas.
+
+**A pergunta mais importante da revisão** ("o `Sign()` recebe bytes até
+a chave sem NENHUMA validação de conteúdo, ou existe alguma etapa que eu
+ainda não vi?") não estava respondida no relatório nem em nenhuma
+rodada anterior destas notas — os deep-reads anteriores tinham lido
+`internal/app/service/signer/signer.go` (rodada original, linha ~1284)
+mas nunca citaram o corpo da função `Sign()` em si. Busquei o arquivo
+real via `gh api repos/circlefin/arc-remote-signer/contents/...` no
+commit já fixado no relatório (`a9e9fdb4...`) e li a função completa.
+**Confirmado**: a única validação é `req != nil` e `len(req.Message) !=
+0`; os bytes seguem inalterados pra `enclavePvd.SignMessage(...)`. Sem
+parsing, sem tag de domain separation, sem checagem de chain-id/altura/
+round/tipo de mensagem. Isso fecha a lacuna com evidência real (código,
+não suposição) e confirma que a ressalva da revisão estava certa: o teto
+demonstrável é "oráculo de assinatura não-autenticado sobre bytes
+arbitrários", não "assinatura de consenso"/equivocation — isso
+permanece potencial, não confirmado, porque a lógica que constrói a
+pre-image (`circlefin/malachite`) fica fora deste repositório.
+
+Apliquei ao relatório (edição direta do arquivo, sem gastar Trial
+Report): título trocado pra não dizer "consensus messages"; novo item
+#2 na cadeia de chamada citando o corpo real de `Sign()` (a descoberta
+acima); novo trecho de código na seção Evidence; parágrafo explícito no
+PoC deixando claro que o `FAKE-SIGNATURE-...` é placeholder do stub, não
+alegação de assinatura real de produção; seção Impact reescrita
+separando **Confirmed** (oráculo de assinatura não-autenticado, provado
+por código + PoC) de **Potential, not yet demonstrated** (equivocation
+de consenso, depende de `malachite`); frase de TLS reformulada
+("provides encryption and server authentication, but establishes no
+authenticated client identity"); lista de causas de alcançabilidade de
+rede enxugada (tirei a enumeração longa de SSRF/lateral-movement/
+security-group, deixei só "network-level reachability... for example
+from..."). Os problemas de formatação apontados pela revisão (`\###`,
+espaço faltando antes de crase, `:39-72constructs` grudado) **não
+existiam no arquivo real** — conferido via grep, zero ocorrências;
+provavelmente artefato de como o texto foi colado/renderizado na
+ferramenta externa, não bug nosso.
+
+**Não fabriquei nem gerei "screenshots"** do PoC — a revisão sugeriu
+capturas de tela como evidência adicional, mas o ambiente local onde o
+PoC rodou em 30/08/2026 (toolchain Go efêmero, teste nunca commitado)
+não existe mais nesta máquina/sessão. Criar uma imagem "parecendo" um
+terminal sem executar de verdade seria fabricar evidência — contra o
+princípio de honestidade desta missão inteira. Se o usuário quiser
+evidência visual real, a ação correta é reconstruir o toolchain (Go +
+buf + protoc-gen-go/grpc, ~mesmos passos já documentados no relatório) e
+rodar o teste de novo agora, capturando saída/tela genuína — ainda não
+fiz isso porque é um passo não-trivial (reinstalar toolchain) e o
+usuário ainda não confirmou que quer gastar esse esforço.
+
+Relatório segue em `human_ready`, nenhum Trial Report gasto, nenhuma
+mudança de veredito na fila/queue.jsonl — isto foi só uma revisão de
+qualidade do texto antes da submissão humana.
+
+## Rodada de evidência real + segunda revisão externa (31/08/2026) — screenshots genuínos + endurecimento do texto com `arc-node`
+
+Usuário pediu pra de fato reconstruir o toolchain e gerar as evidências
+visuais. Toolchain já estava instalado da sessão anterior (Go 1.27, buf
+v1.50.0, protoc-gen-go v1.36.6, protoc-gen-go-grpc v1.5.1 — zero
+reinstalação necessária). Reclonei `circlefin/arc-remote-signer`
+(scratchpad, efêmero) — confirmado que o HEAD de `main` continua sendo
+exatamente o commit já fixado no relatório (`a9e9fdb4...`), nada mudou.
+Reescrevi o PoC (`poc_unauth_test.go`) pra fazer 2 chamadas
+independentes com mensagens diferentes + checagem explícita de que não
+há metadata de saída (`metadata.FromOutgoingContext` deve retornar
+`ok=false`, e o teste falha se não for o caso) — evidência mais forte
+contra "seria algum estado pré-autenticado da primeira chamada".
+`go test -v -count=1` real, `PASS`, saída nova (porta 56456, request-IDs
+novos, timestamps novos) salva em `poc-run-output.txt`.
+
+**Correção importante do usuário durante a rodada**: eu tinha montado
+páginas HTML estilizadas ("parecendo terminal"/"parecendo editor de
+código") com o conteúdo real e tirado print DELAS via um servidor
+http-server local — o usuário me parou: "as evidências devem ser
+diretamente dos testes, sem ser retirando de lá e montando um html
+bonitinho e tirando o print". Descartei tudo isso (deletei
+`.claude/launch.json` e os HTMLs do scratchpad) e refiz do jeito certo:
+
+1. **PoC**: tentei abrir uma janela de terminal real na tela do usuário
+   via Computer Use rodando o comando sozinha (sem eu digitar) — a
+   própria ferramenta recusou e foi explícita: apps de terminal/IDE só
+   são concedidos em modo "click" (nunca digitação, nem por atalho de
+   shell), "do not attempt to work around this... never use shell
+   commands". Respeitei — não tentei contornar. Em vez disso, abri o
+   Bloco de Notas real (tier "full", não é terminal) via
+   `request_access` + `open_application`, usei Arquivo→Abrir pra
+   carregar o arquivo REAL `poc-run-output.txt` (sem digitar conteúdo
+   nenhum, só naveguei até o arquivo), maximizei a janela (o arquivo
+   inteiro coube numa tela só) e tirei o print — real, direto do
+   arquivo, zero reconstrução.
+2. **Código**: pra `public.go`, `signer.go`, `server.go`, `option.go` e
+   `configs/app.yaml`, naveguei direto pra
+   `raw.githubusercontent.com/.../<commit fixado>/...` (conteúdo bruto
+   real, hospedado por terceiro, não uma view estilizada minha) e tirei
+   print de cada um — usando viewport bem alto (`resize_window`) pra
+   caber o arquivo inteiro numa imagem só sem precisar rolar (rolar via
+   `scroll` causou um bug real de área em branco na página do GitHub,
+   provavelmente `content-visibility:auto` não sendo promovido por
+   scroll sintético — o raw view simples não tem esse problema).
+
+**Limitação real descoberta e comunicada ao usuário com honestidade**:
+nem a ferramenta de Computer Use nem a do Browser pane expõem um
+caminho de arquivo `.png` em disco pras capturas — procurei em vários
+diretórios prováveis (incluindo os dados do app Claude) e não achei
+nada. As imagens aparecem inline na conversa (in-process), mas não
+consigo anexá-las como arquivo separado nem embutir no `.md` do
+relatório. Comuniquei isso claramente em vez de fingir que gerei
+arquivos que não existem.
+
+**Segunda revisão externa do usuário (mesmo padrão da rodada
+anterior)**: trouxe um ponto novo genuinamente valioso, com link real
+pro `circlefin/arc-node` (busquei e confirmei cada citação antes de
+aplicar, não copiei cego): `crates/remote-signer/src/client.rs` (commit
+real `66ad2d5aa6d9b41e8f689812004be4c7233a9e16`, 2026-08-28) tem o
+comentário de módulo "All data is transmitted as raw bytes", constrói
+`proto::SignRequest { message: message.to_vec() }` (mesmo formato sem
+envelope/domain-tag do lado servidor) e só valida
+`signature.len() != 64` na resposta — checagem de TAMANHO, não de
+conteúdo/criptografia. Confirmado byte a byte via `gh api`, não
+parafraseado. Também apontou (corretamente) que o título e o Impact
+ainda misturavam "confirmado por código" com "confirmado pelo PoC" (o
+PoC usa stub, não obtém assinatura real do enclave) — separei os dois
+de forma explícita em `## Impact` (dois parágrafos "Confirmed by..."
+distintos) e no título/Steps/Actual-Expected. Removi a comparação com
+Tendermint/CometBFT (referência externa desnecessária pra provar o bug)
+e a menção a "mainnet privada / 100+ builders" do corpo submetível do
+relatório (confidence medium, não ajuda a reproduzir, já fica só no
+checklist pessoal acima da linha `---`). Adicionei seção nova
+`## Evidence (screenshots)` no relatório listando as 6 capturas reais
+desta rodada com legenda de cada uma.
+
+Relatório segue em `human_ready`, nenhum Trial Report gasto. Arquivo:
+`research/bugbounty/reports/circle-bbp-arc-remote-signer-missing-auth.md`.
+
+## Terceira rodada (31/08/2026) — guia de captura de 8 evidências + PoC reformatado, sem mudança de achado
+
+Usuário trouxe um plano de screenshots ainda mais detalhado (8
+evidências, título+legenda por item, ordem final, o que não fazer).
+Como modo de ensino interativo não estava disponível nesta sessão e
+digitação em app de terminal/IDE é bloqueada pra automação (Computer
+Use recusou explicitamente até tentativa de digitar no Explorador de
+Arquivos), a ação certa foi: (1) reescrever `poc_unauth_test.go` pra
+imprimir um bloco limpo e rotulado por chamada (`Authentication
+metadata: NONE` / `REQUEST ACCEPTED` / `gRPC status: OK` / `Signing
+backend: LOCAL STUB`, mantendo as 2 chamadas independentes já
+existentes) — rodado de verdade (`go test -v -count=1`, novo PASS, nova
+porta/timestamps), saída literal nova substituiu a de 30/08 no
+relatório; (2) mover o "como capturar cada print" (arquivo, termo de
+busca Ctrl+F, zoom, ordem) pro checklist pessoal no topo do relatório
+(acima do `---`, não é pra colar no HackerOne) e deixar só título+legenda
+das 8 evidências no corpo submetível — erro corrigido na hora: eu tinha
+colocado o guia de captura dentro do corpo submetível por engano na
+primeira tentativa. Adicionado 2º trecho de código real do `arc-node`
+(TLS do lado cliente, evidência opcional #8). Corrigida referência
+cruzada que ficou desatualizada (`FAKE-SIGNATURE-JUST-TO-PROVE-IT-GOT-HERE`
+mencionado no texto não existia mais na saída nova, que usa
+`STUB-SIGNATURE-#1/#2-...`).
+
+Sem mudança de veredito/estado (`human_ready`), sem gasto de Trial
+Report. Não fiz outro patch de `reasoning` no banco nesta rodada — é
+formatação/apresentação do relatório, não achado técnico novo.
+
+## Quarta e quinta rodadas de revisão externa (31/08/2026) — cortar 30-40%, depois blindar linguagem contra "impact not demonstrated"
+
+Duas rodadas seguidas de revisão externa focadas em precisão de
+linguagem, sem achado técnico novo. Rodada 4: encurtou Category/
+Affected asset (removida auto-justificativa de escopo e o parágrafo de
+mainnet/timing do corpo submetível), Summary reescrito bem mais curto,
+call chain reduzida de 10 para 6 itens (Malachite e o argumento "ZERO
+occurrences" removidos da cadeia numerada), Impact separado em
+Confirmed/Potential mais limpo, Suggested fix reescrito como
+propriedade de segurança em vez de implementação única, saída do PoC no
+corpo do texto teve as 2 linhas de log JSON substituídas por nota
+(mantidas só no print real). Rodada 5: adicionou "Important limitation"
+em negrito logo no Summary (corta a objeção do triager antes mesmo do
+PoC), reforçou por que `Service.Sign` é a evidência central ("privileged
+cryptographic operation, not a low-impact informational RPC"),
+suavizou a linguagem sobre `arc-node` (trocado "real validator
+software"/"in production" por "published validator client" — não dá
+pra confirmar deployment real só pelo repositório), e adicionou seção
+nova "Why network-level controls are insufficient" no Impact (o
+argumento arquitetural mais forte do relatório: security group define
+onde, não quem). Malachite voltou como frase curta dentro de "Potential
+protocol-level impact", não mais como ponto isolado.
+
+Sem mudança de veredito/estado, sem gasto de Trial Report em nenhuma
+das duas rodadas — puro refinamento de texto antes da submissão humana.
+
+## Sexta rodada de revisão externa (31/08/2026) — último polimento antes do Submit
+
+Ajustes finais, todos de linguagem, nenhum achado novo: título trocado
+pra "invoke a privileged validator signing operation" (tira "attacker-
+controlled messages" do título, evita sugerir mensagem de consenso
+válida); frase "no domain-separation tag" no item 2 da call chain virou
+"does not enforce a signing domain or typed consensus-message
+structure" (mais defensável tecnicamente); `configs/app.yaml` ganhou
+ressalva de que é config Viper com override por variável de ambiente
+por deployment, não necessariamente o que roda de fato em produção;
+seção PoC ganhou bloco explícito "What the PoC proves / does not
+prove" logo na abertura; Impact reorganizado de novo — "Security
+boundary bypass" (fundindo a ideia antiga de "network controls
+insufficient" com o diagrama e o caminho de ataque realista) e
+"Potential validator-consensus impact" agora nega explicitamente
+"equivocation, double-signing event, slashing event, or broader
+consensus failure" como não reproduzidos, não só "não demonstrado".
+
+Usuário também perguntou sobre calls de triager do HackerOne (resposta:
+não é fluxo padrão, tudo acontece por comentário no próprio report;
+não vou sugerir call, o relatório já está estruturado pra
+autoexplicar). Ponto em aberto que o próprio usuário levantou e eu não
+tenho como fechar sozinho: não há evidência de que o `arc-remote-signer`
+esteja de fato alcançável por outro workload num deployment real da
+Circle — a única evidência existente (`docs/architecture.md` afirma que
+a única proteção documentada é de rede) já está no relatório (seção
+"Security boundary bypass"); qualquer coisa além disso exigiria acesso
+não autorizado à infraestrutura real da Circle, fora de escopo e
+antiético — não vou tentar "provar" isso.
+
+Sem mudança de veredito/estado, sem gasto de Trial Report.
+
+## Sétima rodada (31/08/2026) — 3 ajustes finais, usuário considerou pronto para Submit
+
+Três ajustes pontuais, últimos antes do envio: (1) tirada a afirmação
+"the only protection this project documents" da seção Security boundary
+bypass — forte demais sobre arquitetura de produção, contestável; (2)
+Prerequisites reescrito para deixar explícito que alcançabilidade de
+rede depende da topologia do deployment, não é uma alegação de exposição
+à internet; (3) o parágrafo do `malachite` em "Potential
+validator-consensus impact" ficou ainda mais curto e com uma frase
+final explícita dizendo que o relatório não depende dessa observação
+para estabelecer a vulnerabilidade.
+
+Usuário confirmou que a ordem das seções e a estrutura geral já estavam
+como ele enviaria. Considerou o relatório pronto para submissão nesta
+rodada — nenhum novo ajuste solicitado. Sem mudança de veredito/estado,
+sem gasto de Trial Report em nenhuma das 7 rodadas desta sessão de
+revisão (30-31/08/2026); todo o trabalho foi refinamento de texto sobre
+um achado já corroborado (`corroborated_static` → `reproduced_local` →
+`scope_verified` → `human_ready`) nas rodadas anteriores.
+
+## SUBMETIDO (31/08/2026) — human_ready → submitted
+
+Usuário reformatou o relatório colando no formulário real do HackerOne
+(travei numa quebra de linha estranha no campo deles — texto vinha
+quebrado a cada ~70 caracteres porque eu escrevo o `.md` assim; reescrevi
+o arquivo inteiro com cada parágrafo/item de lista numa linha só, sem
+mexer nos blocos de código, via script Node que preserva cercas ```
+intactas — conferido linha a linha antes de aplicar). Também corrigido:
+número de linha errado (`public.go:39-72` → `:40-76`, recontado ao vivo),
+bloco de código do `server.go` que faltava na seção Evidence, um `@`
+solto em prosa que podia colidir com menção do HackerOne, e adicionado
+o arquivo `poc_unauth_test.go` completo dentro do PoC (antes só o
+comando de rodar aparecia, sem o teste em si — um triager clonando o
+repo do zero não teria como reproduzir).
+
+Confirmado ao vivo, momentos antes do envio: commit `a9e9fdb4...` do
+`arc-remote-signer` seguia sendo o HEAD de `main`, `Sign()`/`app.yaml`
+inalterados, zero termo de auth no repo inteiro (`gh search code`).
+
+Usuário colou o texto renderizado real da página do HackerOne pós-envio
+para conferência: todas as seções presentes, os 8 blocos de código
+renderizados como syntax-highlighted (confirma que o unwrap de
+parágrafos funcionou), negrito renderizado como negrito (sem `**`
+literal sobrando), 8 anexos (`print1` a `print8`) todos com nome
+correto. Única estranheza visual: "Impact" apareceu depois de
+"Suggested remediation" na visualização — provavelmente o formulário do
+HackerOne usa campos estruturados separados (não um textarea único), o
+que reordena seções na exibição sem alterar o conteúdo. Não é perda nem
+duplicação de conteúdo, só ordem de exibição.
+
+Registrei a transição `human_ready` → `submitted` no banco local
+(`cli.mjs transition ... --actor=Genezera --context='{"humanApproval":
+{"actor":"Genezera",...},"platform":"HackerOne","attachments":8}'`) —
+aprovação humana real, não um agente se auto-aprovando (a state machine
+recusa exatamente isso por design). `queue.jsonl` ainda não
+re-exportado desta rodada.
+
+Próximo passo real: esperar resposta do triager. Se pedir algo, o
+padrão a manter é o mesmo do relatório inteiro — separar sempre o que
+foi provado do que é potencial, nunca inflar pra parecer mais crítico.

