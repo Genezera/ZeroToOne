@@ -4386,30 +4386,58 @@ normal. `deep-read-log.json` atualizado (`circlefin/stablecoin-aptos`
 (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA.
 
-## Rodada 2026-08-31 (push automático seguinte, sessão cloud) — `circlefin/stablecoin-aptos` (Move, pause/upgrade/metadata)
+## Rodada 2026-08-31 (push automático seguinte, sessão cloud) — fecha `circlefin/stablecoin-aptos` (upgrade/pause/metadata), sem achado
 
-`list-pending` global vazio no início desta rodada. Continuei
-`circlefin/stablecoin-aptos` de onde a rodada anterior parou — 3 dos 5
-arquivos ainda não lidos, priorizando os dois de controle
-administrativo mais sensível (pause emergencial, upgrade de código):
+`list-pending` global trouxe 0 candidatos. Antes da leitura profunda, esta
+sessão havia commitado em cima de um `origin/master` já desatualizado — ao
+tentar dar push, o fetch revelou que uma sessão concorrente já tinha
+resolvido, no `queue.jsonl` compartilhado, a mesma pendência dos 6
+`corroborated_static` de `mcp.ts` (Vercel Open Source) que esta sessão
+também ia fechar (mesma refutação por documentação oficial da Vercel,
+mesmo resultado `false_positive` — ver NOTES.md de Vercel Open Source,
+rodada "aplica a refutação dos 6 mcp.ts ao estado compartilhado"). Rebasei
+esta sessão em cima do `origin/master` real e descartei o trabalho
+duplicado (o CLI já tinha sido chamado do outro lado; repetir a mesma
+transição não muda nada) — só o registro abaixo é trabalho novo desta
+sessão.
 
+Leitura profunda proativa: fechei a pendência explícita da rodada anterior
+em `circlefin/stablecoin-aptos` (clone `git clone --depth 1`, público, sem
+token) — os 3 arquivos de controle de acesso restantes na lista pendente:
+
+- `packages/aptos_extensions/sources/upgradable.move` — `upgrade_package`/
+  `extract_signer_cap` gateados por `manageable::assert_is_admin(caller,
+  resource_acct)` (módulo já auditado em rodada anterior). `new` exige
+  `manageable::assert_admin_exists` e confirma que o `SignerCapability`
+  passado corresponde de fato ao signer do `caller` antes de armazenar —
+  evita que alguém registre a signer cap de outra conta por engano/má-fé.
+  Sem achado.
 - `packages/aptos_extensions/sources/pausable.move` — `pause`/`unpause`
-  checam corretamente `pause_state.pauser == signer::address_of(caller)`;
-  `update_pauser` (troca de quem é o pauser) exige
-  `ownable::assert_is_owner` — só o owner pode reatribuir o papel de
-  pauser, não o próprio pauser. Sem achado.
-- `packages/aptos_extensions/sources/upgradable.move` — a função mais
-  sensível do módulo (`upgrade_package`, publica novo bytecode na conta
-  de recurso) exige `manageable::assert_is_admin(caller, resource_acct)`
-  antes de chamar `code::publish_package_txn`; `extract_signer_cap`
-  (extrai a capability que permite assinar como a conta de recurso, efetivamente
-  equivalente a controle total) também exige admin. Sem achado.
+  checam `pause_state.pauser == signer::address_of(caller)`;
+  `update_pauser` corretamente exige `ownable::assert_is_owner` (só o
+  owner pode trocar quem é o pauser, não o próprio pauser). Investiguei
+  `destroy(caller: &signer)` com ceticismo (não tem nenhum `assert!` de
+  role visível) — mas `move_from<PauseState>(signer::address_of(caller))`
+  só afeta o recurso armazenado no PRÓPRIO endereço do signer que chama;
+  como `PauseState` é armazenado no endereço do objeto (via `new(obj_signer,
+  ...)`), só quem já possui a capability de gerar o signer do objeto (ex.
+  via `ExtendRef`, fora deste módulo) consegue invocar isso de forma
+  relevante — não é uma rota de bypass externo, é o mesmo padrão de
+  autorização implícita por posse de signer já visto no resto do pacote.
+  Sem achado.
 - `packages/stablecoin/sources/metadata.move` — `update_metadata` checa
-  `caller == metadata_updater` (role dedicado, não owner); `update_metadata_updater`
-  (troca desse role) corretamente exige `ownable::assert_is_owner`. Sem
+  `caller == metadata_state.metadata_updater`; `update_metadata_updater`
+  corretamente exige `ownable::assert_is_owner` (separação de privilégio
+  entre quem atualiza metadata e quem pode trocar esse cargo). `new`/
+  `mutate_asset_metadata` são `public(friend)`, só alcançáveis pelo próprio
+  módulo `stablecoin` (não expostos a chamador externo arbitrário). Sem
   achado.
 
-Nenhum achado novo (`ai_deep_read_finding`) — resultado normal.
-`deep-read-log.json` atualizado (`circlefin/stablecoin-aptos` 5→8).
-Restam não lidos no mesmo repo: `stablecoin_utils.move`,
-`aptos_extensions.move`. Esta rodada não tocou `Block Open Source`.
+`deep-read-log.json` atualizado (`circlefin/stablecoin-aptos` 5→8 arquivos
+— cobertura desse repo agora essencialmente completa: só ficaram de fora
+`stablecoin_utils.move`, helper puro de resolução de endereço já usado
+indiretamente em todos os arquivos acima, e o barrel `aptos_extensions.move`,
+sem lógica própria). Nenhum achado novo (`ai_deep_read_finding`) nesta
+rodada — resultado normal e válido. Esta rodada não tocou `Block Open
+Source` (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA.
