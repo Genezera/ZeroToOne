@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { openDb, upsertFinding, getFinding, recordTransition, recordDeploymentEvidence, closeDb } from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
+import { readLedger } from '../ledger/ledger.mjs';
+import { deriveStatesFromLedger } from './state-machine.mjs';
 
 const BUGBOUNTY_DIR = path.join('research', 'bugbounty');
 const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
@@ -28,7 +30,7 @@ function assetRefFor(entry) {
  * alto que a evidência REAL já registrada sustenta, e o motivo da
  * parada fica no log de migração (nunca escondido).
  */
-export function migrateEntry(db, entry, { scopeSnapshots = {} } = {}) {
+export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = new Map() } = {}) {
   const log = { id: entry.id, steps: [] };
 
   // Idempotência precisa de DUAS checagens independentes, cobrindo os
@@ -49,15 +51,34 @@ export function migrateEntry(db, entry, { scopeSnapshots = {} } = {}) {
   // já aconteceram de verdade nesta sessão enquanto eu testava — por
   // isso as duas checagens, não uma só.
   if (entry.state && entry.state !== 'candidate') {
+    // O ledger é a fonte de verdade (append-only, nunca sofre a corrida
+    // de exportação entre ambientes efêmeros concorrentes — ver
+    // deriveStatesFromLedger). Se ele registra uma transição pra este id
+    // diferente do que a linha da fila diz, o ledger vence: a linha da
+    // fila pode ser um `state` mais velho que sobrescreveu por cima de
+    // um mais novo numa corrida real de export (já aconteceu nesta
+    // missão — Vercel SSO voltou de inconclusive pra corroborated_static
+    // silenciosamente).
+    const ledgerTruth = ledgerStates.get(entry.id);
+    const driftDetected = ledgerTruth && ledgerTruth.state !== entry.state;
+    const finalState = driftDetected ? ledgerTruth.state : entry.state;
+
     upsertFinding(db, {
       id: entry.id, exactFingerprint: entry.id, program: entry.program, platform: entry.platform,
       asset: assetRefFor(entry), type: entry.type, language: entry.language, file: entry.file, function: entry.function,
-      state: entry.state, confidence: entry.confidence, historicalConfidence: entry.historicalConfidence,
+      state: finalState, confidence: entry.confidence, historicalConfidence: entry.historicalConfidence,
       reasoning: entry.reasoning, filesRead: entry.filesRead || [], pocRun: !!entry.pocRun, pocResult: entry.pocResult || null,
       createdAt: entry.createdAt || entry.foundAt,
     });
-    log.finalState = entry.state;
-    log.steps.push({ to: entry.state, ok: true, reason: 'linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado' });
+    log.finalState = finalState;
+    if (driftDetected) {
+      log.steps.push({
+        to: finalState, ok: true,
+        reason: `DRIFT CORRIGIDO: fila trazia "${entry.state}", ledger registra "${ledgerTruth.state}" (${ledgerTruth.ts}) — ledger prevaleceu`,
+      });
+    } else {
+      log.steps.push({ to: entry.state, ok: true, reason: 'linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado' });
+    }
     return log;
   }
   const existing = getFinding(db, entry.id);
@@ -152,7 +173,7 @@ export function migrateEntry(db, entry, { scopeSnapshots = {} } = {}) {
   return log;
 }
 
-export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog = true } = {}) {
+export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog = true, ledgerEnv = 'research' } = {}) {
   const entries = readQueue(queuePath);
   const db = openDb(dbPath);
   const scopeSnapshots = {
@@ -161,13 +182,25 @@ export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog 
     'Block Open Source': loadSnapshot('Block Open Source'),
     'StackingDAO': loadSnapshot('StackingDAO'),
   };
-  const logs = entries.map((e) => migrateEntry(db, e, { scopeSnapshots }));
+  let ledgerStates = new Map();
+  try {
+    ledgerStates = deriveStatesFromLedger(readLedger(ledgerEnv));
+  } catch {
+    // Sem ledger legível (ex.: ambiente de teste isolado) — segue sem
+    // reconciliação, mesmo comportamento de antes desta função existir.
+  }
+  const logs = entries.map((e) => migrateEntry(db, e, { scopeSnapshots, ledgerStates }));
   closeDb(db);
+
+  const driftCount = logs.filter((l) => l.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO'))).length;
 
   if (writeLog) {
     const dir = path.dirname(MIGRATION_LOG_PATH);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    writeFileSync(MIGRATION_LOG_PATH, JSON.stringify({ migratedAt: new Date().toISOString(), total: entries.length, logs }, null, 2) + '\n', 'utf8');
+    writeFileSync(MIGRATION_LOG_PATH, JSON.stringify({ migratedAt: new Date().toISOString(), total: entries.length, driftCorrected: driftCount, logs }, null, 2) + '\n', 'utf8');
+  }
+  if (driftCount > 0) {
+    console.warn(`[migrate-to-v2] ${driftCount} finding(s) tinham drift entre queue.jsonl e o ledger — corrigido a favor do ledger. Ver migration-log.json.`);
   }
   return logs;
 }

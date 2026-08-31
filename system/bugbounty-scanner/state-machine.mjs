@@ -182,3 +182,76 @@ export function transition(finding, toState, context = {}) {
 export function isTerminal(state) {
   return TERMINAL_STATES.has(state);
 }
+
+/**
+ * Deriva o estado real de cada finding a partir do ledger (fonte de
+ * verdade append-only), não da última linha exportada pra queue.jsonl.
+ *
+ * Por quê: ambientes efêmeros do agente de nuvem rodam em paralelo sobre
+ * o mesmo push (visto de verdade nesta missão — dois runs concorrentes
+ * no mesmo push, cada um com seu próprio banco local). O run mais antigo
+ * pode exportar DEPOIS do mais novo, sobrescrevendo queue.jsonl com um
+ * `state` mais velho mesmo com o ledger já tendo registrado a transição
+ * real. O ledger nunca sofre esse problema (é só apensado), então ele é
+ * a fonte confiável pra detectar e corrigir esse tipo de drift — DESDE
+ * que a história de um mesmo finding seja mesmo uma linha reta.
+ *
+ * Ela nem sempre é: duas investigações concorrentes e independentes (uma
+ * interativa, uma do agente de nuvem) já divergiram de verdade a partir
+ * do MESMO `corroborated_static` nesta missão — uma foi direto pra
+ * `known_duplicate` (divulgação pública encontrada), a outra seguiu sem
+ * saber e construiu uma PoC real até `human_ready`. As duas transições
+ * são reais e ficam no ledger; "pegar só a de timestamp mais recente"
+ * teria revertido silenciosamente uma decisão correta e deliberada
+ * (não-enviar, já é duplicata pública conhecida) de volta pra
+ * "pronto pra enviar" — exatamente o oposto do que se quer de uma
+ * reconciliação. Por isso: detecta bifurcação (mesmo `from` levando a
+ * mais de um `to` distinto) e, quando ela existe, só resolve sozinho se
+ * exatamente um dos ramos chegou a um estado terminal (terminal =
+ * decisão final deliberada, sempre mais decisiva que uma ramificação
+ * ainda em andamento — mesmo precedente já usado numa reconciliação
+ * manual real desta missão). Bifurcação com zero ou mais de um terminal
+ * entre os ramos é ambígua demais pra resolver sozinho — o finding fica
+ * de fora do Map, e quem chama trata isso como "não reconciliar",
+ * preferindo não adivinhar a adivinhar errado.
+ *
+ * Pura — recebe as entradas já lidas do ledger (io fica pra quem chama),
+ * devolve um Map<findingId, {state, ts, forked}> com o estado resolvido
+ * de cada finding. Findings sem nenhuma transição no ledger, ou com
+ * bifurcação ambígua não resolvida, não aparecem no Map.
+ */
+export function deriveStatesFromLedger(ledgerEntries) {
+  const byFinding = new Map();
+  for (const entry of ledgerEntries) {
+    if (entry.type !== 'bugbounty_state_transition' || !entry.findingId || !entry.to) continue;
+    if (!byFinding.has(entry.findingId)) byFinding.set(entry.findingId, []);
+    byFinding.get(entry.findingId).push(entry);
+  }
+
+  const result = new Map();
+  for (const [findingId, transitions] of byFinding) {
+    transitions.sort((a, b) => new Date(a.ts) - new Date(b.ts));
+
+    const outgoingByFrom = new Map();
+    for (const t of transitions) {
+      if (!outgoingByFrom.has(t.from)) outgoingByFrom.set(t.from, new Set());
+      outgoingByFrom.get(t.from).add(t.to);
+    }
+    const hasFork = [...outgoingByFrom.values()].some((toSet) => toSet.size > 1);
+
+    if (!hasFork) {
+      const last = transitions[transitions.length - 1];
+      result.set(findingId, { state: last.to, ts: last.ts, forked: false });
+      continue;
+    }
+
+    const distinctToStates = [...new Set(transitions.map((t) => t.to))];
+    const terminalBranches = distinctToStates.filter((s) => isTerminal(s));
+    if (terminalBranches.length === 1) {
+      const winning = transitions.filter((t) => t.to === terminalBranches[0]).pop();
+      result.set(findingId, { state: winning.to, ts: winning.ts, forked: true });
+    }
+    // Senão (0 ou >1 terminal entre os ramos): não seta nada de propósito.
+  }
+  return result;
+}

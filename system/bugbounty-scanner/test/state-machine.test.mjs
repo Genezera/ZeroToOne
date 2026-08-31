@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { transition, validTransitionsFrom, isTerminal, STATES } from '../state-machine.mjs';
+import { transition, validTransitionsFrom, isTerminal, STATES, deriveStatesFromLedger } from '../state-machine.mjs';
 
 function finding(state, overrides = {}) {
   return { id: 'x', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
@@ -153,4 +153,62 @@ test('nenhuma transição sai de um estado terminal', () => {
 test('validTransitionsFrom lista exatamente as transições programadas', () => {
   assert.deepEqual(validTransitionsFrom('candidate').sort(), ['corroborated_static', 'false_positive', 'inconclusive', 'known_duplicate'].sort());
   assert.deepEqual(validTransitionsFrom('paid'), []);
+});
+
+test('deriveStatesFromLedger pega a transição mais recente por finding, ignorando outros tipos de entrada', () => {
+  const entries = [
+    { type: 'bugbounty_state_transition', findingId: 'A', from: 'candidate', to: 'corroborated_static', ts: '2026-01-01T00:00:00.000Z' },
+    { type: 'bugbounty_verdict', findingId: 'A', ts: '2026-01-01T00:05:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'B', from: 'candidate', to: 'false_positive', ts: '2026-01-01T00:02:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'A', from: 'corroborated_static', to: 'reproduced_local', ts: '2026-01-01T00:10:00.000Z' },
+  ];
+  const result = deriveStatesFromLedger(entries);
+  assert.equal(result.get('A').state, 'reproduced_local');
+  assert.equal(result.get('B').state, 'false_positive');
+  assert.equal(result.has('C'), false);
+});
+
+test('deriveStatesFromLedger não depende de ordem de chegada — usa timestamp, não posição no array', () => {
+  const entries = [
+    { type: 'bugbounty_state_transition', findingId: 'A', from: 'scope_verified', to: 'human_ready', ts: '2026-01-01T00:10:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'A', from: 'corroborated_static', to: 'reproduced_local', ts: '2026-01-01T00:01:00.000Z' },
+  ];
+  assert.equal(deriveStatesFromLedger(entries).get('A').state, 'human_ready');
+});
+
+test('deriveStatesFromLedger: bifurcação real (duas investigações concorrentes do mesmo `from`) prefere o ramo terminal, mesmo que não seja o mais recente — reprodução exata do caso real Withdrawals.sol', () => {
+  // Duas investigações independentes divergem do mesmo corroborated_static:
+  // ramo A vai direto pra known_duplicate (decisão final, divulgação
+  // pública); ramo B, sem saber do A, segue construindo uma PoC real e
+  // chega até human_ready DEPOIS do known_duplicate no tempo. A resposta
+  // certa é known_duplicate — divulgação pública já encontrada é mais
+  // decisiva que uma ramificação que só não sabia disso ainda.
+  const entries = [
+    { type: 'bugbounty_state_transition', findingId: 'W', from: 'candidate', to: 'corroborated_static', ts: '2026-01-01T00:00:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'W', from: 'corroborated_static', to: 'known_duplicate', ts: '2026-01-01T00:10:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'W', from: 'corroborated_static', to: 'reproduced_local', ts: '2026-01-01T00:15:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'W', from: 'reproduced_local', to: 'scope_verified', ts: '2026-01-01T00:20:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'W', from: 'scope_verified', to: 'human_ready', ts: '2026-01-01T00:25:00.000Z' },
+  ];
+  const result = deriveStatesFromLedger(entries);
+  assert.equal(result.get('W').state, 'known_duplicate', 'terminal deveria vencer sobre um ramo não-terminal mais recente no tempo');
+  assert.equal(result.get('W').forked, true);
+});
+
+test('deriveStatesFromLedger: bifurcação SEM nenhum ramo terminal fica de fora do resultado — não adivinha', () => {
+  const entries = [
+    { type: 'bugbounty_state_transition', findingId: 'X', from: 'candidate', to: 'corroborated_static', ts: '2026-01-01T00:00:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'X', from: 'corroborated_static', to: 'reproduced_local', ts: '2026-01-01T00:10:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'X', from: 'corroborated_static', to: 'scope_verified', ts: '2026-01-01T00:11:00.000Z' },
+  ]; // nem reproduced_local nem scope_verified são terminais — ambíguo de propósito.
+  assert.equal(deriveStatesFromLedger(entries).has('X'), false);
+});
+
+test('deriveStatesFromLedger: bifurcação com DOIS ramos terminais distintos é ambígua demais — fica de fora do resultado', () => {
+  const entries = [
+    { type: 'bugbounty_state_transition', findingId: 'Y', from: 'candidate', to: 'corroborated_static', ts: '2026-01-01T00:00:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'Y', from: 'corroborated_static', to: 'false_positive', ts: '2026-01-01T00:10:00.000Z' },
+    { type: 'bugbounty_state_transition', findingId: 'Y', from: 'corroborated_static', to: 'known_duplicate', ts: '2026-01-01T00:11:00.000Z' },
+  ];
+  assert.equal(deriveStatesFromLedger(entries).has('Y'), false, 'dois terminais divergentes não deveriam ser resolvidos automaticamente');
 });

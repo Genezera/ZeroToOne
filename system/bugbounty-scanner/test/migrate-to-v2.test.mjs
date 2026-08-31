@@ -6,7 +6,8 @@ import path from 'node:path';
 import { openDb, getFinding, exportFindingsToQueueLines, closeDb } from '../db.mjs';
 import { migrateEntry } from '../migrate-to-v2.mjs';
 import { buildScopeSnapshot } from '../scope-registry.mjs';
-import { verifyChain } from '../../ledger/ledger.mjs';
+import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
+import { deriveStatesFromLedger } from '../state-machine.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-migrate-test-'));
@@ -133,6 +134,49 @@ test('migrateEntry é idempotente MESMO quando a linha de entrada ainda está no
     const log2 = migrateEntry(db, legacyLine, { scopeSnapshots: {} });
     assert.equal(log2.finalState, 'false_positive');
     assert.equal(verifyChain('research').entries, entriesAfterRound1, 'reprocessar a MESMA linha v1 contra banco já migrado não deveria duplicar o ledger');
+    closeDb(db);
+  });
+});
+
+test('migrateAll (via migrateEntry + deriveStatesFromLedger): uma linha de fila desatualizada é corrigida pelo ledger, não aceita como está', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    // Estabelece o achado e transiciona de verdade pra inconclusive —
+    // isso grava no ledger real (mesmo diretório temporário do teste).
+    migrateEntry(db, {
+      id: 'x::drift2', program: 'Vercel Open Source', platform: 'HackerOne', type: 'ai_deep_read_finding', language: 'js',
+      file: 'vercel/vercel/x.ts', verdict: 'falso_positivo', status: 'reviewed', reasoning: 'sem alcançabilidade confirmada',
+    }, { scopeSnapshots: {} });
+    assert.equal(getFinding(db, 'x::drift2').state, 'false_positive');
+
+    const ledgerStates = deriveStatesFromLedger(readLedger('research'));
+    assert.equal(ledgerStates.get('x::drift2').state, 'false_positive');
+
+    // Simula uma linha de fila DESATUALIZADA: outro ambiente, cujo banco
+    // local nunca viu a transição real pra false_positive, exportou
+    // ANTES dela acontecer — chega aqui numa rodada de migração
+    // posterior ainda com state="corroborated_static".
+    const staleLine = {
+      id: 'x::drift2', program: 'Vercel Open Source', platform: 'HackerOne', type: 'ai_deep_read_finding', language: 'js',
+      file: 'vercel/vercel/x.ts', state: 'corroborated_static', confidence: 'baixa', reasoning: 'versão antiga, pré-refutação',
+    };
+    const log = migrateEntry(db, staleLine, { scopeSnapshots: {}, ledgerStates });
+    assert.equal(log.finalState, 'false_positive', 'o ledger deveria vencer sobre o state desatualizado da linha');
+    assert.equal(getFinding(db, 'x::drift2').state, 'false_positive');
+    assert.ok(log.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO')), 'deveria registrar explicitamente que corrigiu um drift');
+    closeDb(db);
+  });
+});
+
+test('migrateEntry: sem entrada correspondente no ledgerStates, o `state` da linha é aceito normalmente (comportamento antigo preservado)', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const log = migrateEntry(db, {
+      id: 'x::no-drift', program: 'Circle BBP', platform: 'HackerOne', type: 'reentrancy_risk', language: 'solidity',
+      file: 'circlefin/evm-gateway-contracts/x.sol', state: 'human_ready', confidence: 'alta', reasoning: 'pronto pra revisão',
+    }, { scopeSnapshots: {}, ledgerStates: new Map() });
+    assert.equal(log.finalState, 'human_ready');
+    assert.ok(!log.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO')));
     closeDb(db);
   });
 });
