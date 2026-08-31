@@ -475,7 +475,10 @@
     "src/index.ts"
   ],
   "circlefin/stablecoin-sui": [
-    "packages/stablecoin/sources/treasury.move"
+    "packages/stablecoin/sources/treasury.move",
+    "packages/stablecoin/sources/roles.move",
+    "packages/sui_extensions/sources/two_step_role.move",
+    "packages/stablecoin/sources/entry.move"
   ],
   "nitrojs/nitro": [
     "src/runtime/internal/static.ts",

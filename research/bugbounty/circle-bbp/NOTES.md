@@ -3159,3 +3159,53 @@ Nenhum achado novo nesta rodada — resultado normal, e evidência adicional
 caso isolado, não um padrão sistêmico do fork v0.8. `deep-read-log.json`
 atualizado (`circlefin/buidl-wallet-contracts` ganhou os 3 arquivos
 acima). `export-queue` + commit ao final desta rodada.
+
+## Rodada 2026-08-31 (push seguinte) — fila vazia, follow-up no achado Rust/Solana e leitura profunda em stablecoin-sui
+
+Fila de `candidate` vazia. Três achados já em `corroborated_static` de
+rodadas anteriores foram revisitados, sem candidatos novos:
+
+- `ColdStorageAddressBookModule.sol::addAllowedRecipients` (v0.8) —
+  tentei de novo instalar o Foundry pra rodar a PoC executável
+  (`curl -L https://foundry.paradigm.xyz`). Mesmo bloqueio de política
+  de rede desta sessão já documentado na rodada anterior
+  (`CONNECT tunnel failed, response 403`, confirmado via
+  `$HTTPS_PROXY/__agentproxy/status`) — sem mudança, não contornado.
+  Fica em `corroborated_static`.
+- `solana-gateway-contracts::initiate_withdrawal/withdraw` (denylist
+  bypass em saque, Rust/Anchor) — registrei formalmente
+  `record-deployment-evidence` (confidence=`unverified`, justificado:
+  Circle Gateway ainda não está em mainnet no Solana, confirmado via
+  blog oficial) e `record-validation --type=anchor_poc
+  --result=not_applicable` (nenhum validador Anchor/Solana existe no
+  sistema hoje). Tentei a transição direta pra `scope_verified`
+  (recusada corretamente pela máquina de estados — não existe uma
+  aresta `corroborated_static->scope_verified`, só via
+  `reproduced_local`) e a transição `->reproduced_local` com a
+  validação `not_applicable` (recusada corretamente com a mensagem
+  esperada: "nenhum validador local existe ainda... fica em
+  corroborated_static até Fase 2/4"). Ambas as recusas são o sistema
+  funcionando como projetado — não contornadas. Fica em
+  `corroborated_static`, evidência de deployment agora formalmente
+  registrada (antes só estava no reasoning em prosa).
+
+Leitura profunda proativa: `circlefin/stablecoin-sui`, que tinha só
+`treasury.move` lido em rodada anterior. Completei os 3 arquivos de
+maior superfície de autorização que faltavam:
+
+- `packages/stablecoin/sources/roles.move` — todo update de role
+  (master minter/blocklister/pauser/metadata updater) gateado por
+  `owner_role().assert_sender_is_active_role(ctx)`. Sem achado.
+- `packages/sui_extensions/sources/two_step_role.move` — primitiva de
+  ownership two-step (inspirada em `Ownable2Step` da OpenZeppelin);
+  `begin_role_transfer` exige sender == active_address,
+  `accept_role` exige sender == pending_address. Sem achado.
+- `packages/stablecoin/sources/entry.move` — wrappers `entry fun` pra
+  uso em PTBs; todos delegam diretamente pras funções já auditadas de
+  `roles.move`/`two_step_role.move` sem lógica de gate própria (nenhum
+  gap tipo o `addAllowedRecipients` do buidl-wallet-contracts v0.8, que
+  tinha uma função irmã simétrica sem o mesmo gate). Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal. `deep-read-log.json`
+atualizado (`circlefin/stablecoin-sui` ganhou os 3 arquivos acima).
+`export-queue` + commit ao final desta rodada.
