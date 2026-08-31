@@ -4279,3 +4279,71 @@ Nenhum achado novo nesta rodada — resultado normal e válido. Esta
 rodada não tocou `Block Open Source`
 (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA, ver NOTES.md do próprio programa.
+
+## Rodada 2026-08-31 (push automático seguinte, gatilho GitHub, HEAD 24e2be1) — fila vazia; `arc-node` contracts/validator-manager (Solidity, camada de permissão de validador)
+
+`list-pending` global trouxe 0 candidatos. Os 6 `corroborated_static`
+legados (`mcp.ts`, Vercel Open Source) e o `human_ready`
+(`wire-schema`, Block Open Source — congelado, ver aviso de banimento
+de IA) seguem sem mudança de estado, exatamente como documentado nas
+rodadas anteriores — `check-scope`/deployment evidence/tentativa de
+`scope_verified` já foram feitos e recusados como esperado, nada de
+novo a repetir neles.
+
+Leitura profunda proativa: `circlefin/arc-node` tinha um bloco Solidity
+ainda não coberto (`contracts/src/validator-manager/` +
+`contracts/src/proxy/`) — clonado via `git clone` público. 5 arquivos
+pequenos e fortemente acoplados lidos (mais que os 3 "padrão" porque
+não dá pra avaliar controle de acesso de um sem os outros):
+
+- `PermissionedValidatorManager.sol` + `roles/Controller.sol` +
+  `roles/ValidatorRegisterer.sol` + `ValidatorRegistry.sol` (arquitetura
+  de 3 camadas Owner → Controller → ValidatorRegisterer → Validator).
+  **Observação real, mas refutada como vulnerabilidade de segurança**:
+  `ValidatorRegistry._nextRegistrationId` começa em 0 (default de
+  `uint256`) e é pós-incrementado (`registrationId =
+  $._nextRegistrationId++`), então o PRIMEIRO validador jamais
+  registrado no sistema recebe `registrationId == 0`. Só que
+  `Controller.sol` usa `registrationOf[msg.sender] != 0` como sentinela
+  de "não é controller", e `configureController` explicitamente proíbe
+  `registrationId == 0` (`RegistrationIdIsZero`). Ou seja: o validador
+  com id 0 nunca pode ter um Controller delegado configurado pra
+  gerenciá-lo (`activateValidator`/`removeValidator`/
+  `updateValidatorVotingPower` via `onlyController` ficam permanentemente
+  inacessíveis pra esse registrationId específico). Rastreei se isso
+  vira bypass de autorização (ex.: `registrationOf[attacker] == 0`
+  sendo lido como "é controller do validador 0") — não é: o require é
+  `!= 0`, então endereço não configurado (valor default do mapping,
+  também 0) corretamente FALHA o check, não passa. O único efeito real é
+  negação de gerenciamento delegado (não de acesso indevido) pra um
+  único registrationId, e o `owner` retém controle total e direto sobre
+  esse validador via `ValidatorRegistry` (que ele possui) independente
+  da camada `Controller` — não há perda de fundos, não há bypass de
+  autorização, não há caminho pra um atacante ganhar privilégio. É um
+  off-by-one de UX/operação (o owner precisa saber para não depender do
+  fluxo `Controller` no primeiro validador registrado), não um dos tipos
+  de achado desta missão (`tx_origin_auth_risk` etc. pressupõem bypass
+  de autorização real). Não virou candidato formal — mesmo padrão das
+  rodadas anteriores pra observações refutadas (ex.: `Pausing.sol`
+  zero-pauser).
+- `proxy/AdminUpgradeableProxy.sol` — fork do `TransparentUpgradeableProxy`
+  da OZ, mas com `admin()`/`implementation()` expostos como `view`
+  públicas SEM `onlyAdmin` (diferente do original, que roteava tudo,
+  inclusive essas duas, pelo fallback pra não-admin). Investiguei se
+  isso reabre o clássico "selector clashing" de proxy transparente na
+  direção perigosa (não-admin herdando poder de admin, ou admin ficando
+  incapaz de chamar a própria função) — não: o efeito é simétrico pra
+  TODO chamador (admin ou não), sempre lê o slot ERC-1967 do proxy e
+  nunca faz delegatecall pra esse seletor específico; o único cenário
+  residual é a lógica de implementação por acaso definir uma função cujo
+  seletor de 4 bytes colida com `admin()`/`implementation()` — nesse
+  caso ficaria permanentemente inacessível pra QUALQUER chamador, não
+  uma escalada de privilégio. `upgradeTo`/`upgradeToAndCall`/
+  `changeAdmin` (as funções que de fato importam pra segurança)
+  continuam corretamente atrás de `onlyAdmin`. Sem achado.
+
+`deep-read-log.json` atualizado (`circlefin/arc-node` 12→17). Nenhum
+achado novo nesta rodada — resultado normal e válido. Esta rodada não
+tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
+programa segue banido pra pesquisa assistida por IA, ver NOTES.md do
+próprio programa.
