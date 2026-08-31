@@ -2084,3 +2084,30 @@ anteriores continuam pendentes — `misk-hibernate/`/`misk-jdbc/` (SQL
 injection via Hibernate/JDBC, ainda não atacado de fato apesar de
 sinalizado várias vezes) permanece a lacuna mais promissora do
 programa.
+
+## ⚠️ AVISO CRÍTICO (2026-08-31): este programa PROÍBE pesquisa assistida por IA — nada daqui pode ser enviado
+
+As próprias Regras de Engajamento do Bugcrowd pra este programa dizem
+literalmente: **"Do not use ChatGPT, Claude, DeepSeek, Google Gemini or
+any AI tools during your research"**, com risco explícito de "point
+reduction or program expulsion" pra quem violar. TODO o trabalho neste
+arquivo — desde a primeira linha — foi pesquisa conduzida por IA (esta
+mesma sessão). Isso significa que **nenhum achado deste NOTES.md pode
+ser enviado ao Block Open Source**, incluindo o mais forte:
+`wire-schema/.../Root.kt::DirectoryRoot.resolve::path_traversal_risk`
+(path traversal real, confirmado com PoC Java executável real usando o
+JAR de produção do okio-jvm 3.12.0 — grau de evidência E3, tecnicamente
+um dos achados mais sólidos de todo o projeto). Isso não é sobre
+esconder que teve ajuda de IA — é que a própria pesquisa, do jeito que
+foi feita, já é a coisa proibida pela regra, independente de quem
+assina o envio.
+
+`targets-jvm.mjs`/`targets-go.mjs`/`targets-swift.mjs` foram pausados
+(exportam array vazio) no dia 2026-08-30/31 exatamente por causa disso
+— mas uma rodada de leitura profunda (a seção logo acima, sobre
+`misk-admin`) rodou DEPOIS da pausa mesmo assim, confirmando que a
+pausa local (só esses 3 arquivos) não é suficiente sozinha pra parar
+100% da atividade — causa raiz ainda não identificada, provavelmente um
+sinal diferente usado pelo lado do agente de nuvem. Até isso ficar
+resolvido: **todo achado com `program: "Block Open Source"` deve ser
+tratado como só um registro técnico, nunca como candidato a envio.**

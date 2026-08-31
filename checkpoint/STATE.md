@@ -671,3 +671,30 @@ alimentação + dependência/CVE + painel), `ZeroToOne_TargetDiscovery`
 `ZeroToOne_DailyFloor`/`ZeroToOne_MarketMakerShadow` seguem arquivados/
 desativados (pivô pra 100% bug bounty). Nada pendente de ação — o sistema
 roda sozinho a partir daqui.
+
+## Migração completa para o disco E: (2026-08-31)
+Pedido do usuário: C: estava com só 0,6 GB livre (de 475 GB), E: tinha
+808 GB livres. Projeto inteiro (`.git`, `node_modules`, o `.db` do
+scanner que é gitignored, tudo) copiado via `robocopy /E` de
+`C:\Users\Renan\ZeroToOne` pra `E:\ZeroToOne` — 290 diretórios, 727
+arquivos, 0 falhas. Nenhum módulo nativo pra recompilar (`node:sqlite`
+embutido no Node, tree-sitter é o único native/wasm e não depende de
+caminho absoluto).
+
+As 4 tarefas agendadas do Windows citadas acima (`ZeroToOne_
+BugBountyScanner`, `ZeroToOne_TargetDiscovery`, e as 2 desativadas)
+tinham caminho absoluto pra `C:\...` embutido nos `.vbs`/`.cmd`
+wrapper — atualizados pra `E:\...` e testados de verdade: rodada manual
+completa do `ZeroToOne_BugBountyScanner` a partir de E: funcionou de
+ponta a ponta (scan real, 14 achados novos, commit e push reais pro
+GitHub). `npm test` (269/269) e `cli.mjs status` também confirmados
+rodando de E:.
+
+**A partir de agora, `E:\ZeroToOne` é a cópia de trabalho real.**
+`C:\Users\Renan\ZeroToOne` fica congelada nesta data como backup, NÃO
+recebe mais nenhuma mudança — abrir uma sessão nova do Claude Code
+nela mostraria um snapshot cada vez mais desatualizado. Decisão
+consciente de NÃO apagar a cópia antiga automaticamente (ação
+destrutiva) — fica pra o usuário confirmar quando quiser liberar o
+espaço (só ~64 MB; o problema real de espaço em C: é de outra coisa,
+não deste projeto).
