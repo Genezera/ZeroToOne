@@ -95,9 +95,26 @@ CREATE TABLE IF NOT EXISTS platform_outcomes (
   updated_at TEXT NOT NULL
 );
 
+-- Checagem obrigatória de duplicata antes de human_ready (state-machine.mjs,
+-- gate adicionado 31/08/2026 depois de 2 achados seguidos se revelarem
+-- duplicata pública já conhecida sem essa checagem). Tabela própria (não só
+-- context_json de state_transitions) pelo mesmo motivo de validations/
+-- deployment_evidence: precisa ser consultável sem reconstruir o histórico.
+CREATE TABLE IF NOT EXISTS duplicate_checks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  finding_id TEXT NOT NULL REFERENCES findings(id),
+  methods_json TEXT NOT NULL,
+  query TEXT,
+  found_existing INTEGER NOT NULL DEFAULT 0,
+  found_existing_ref TEXT,
+  notes TEXT,
+  ts TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_findings_state ON findings(state);
 CREATE INDEX IF NOT EXISTS idx_findings_program ON findings(program);
 CREATE INDEX IF NOT EXISTS idx_transitions_finding ON state_transitions(finding_id);
+CREATE INDEX IF NOT EXISTS idx_duplicate_checks_finding ON duplicate_checks(finding_id);
 `;
 
 export function openDb(dbPath) {
@@ -243,7 +260,36 @@ export function recordDeploymentEvidence(db, findingId, evidence) {
 }
 
 export function latestDeploymentEvidence(db, findingId) {
-  return db.prepare('SELECT * FROM deployment_evidence WHERE finding_id = ? ORDER BY ts DESC LIMIT 1').get(findingId) || null;
+  // ORDER BY ts DESC sozinho empata quando 2 chamadas caem no mesmo
+  // milissegundo (achado real testando duplicate_checks) -- id DESC
+  // desempata por ordem de inserção real, não por timestamp de string.
+  return db.prepare('SELECT * FROM deployment_evidence WHERE finding_id = ? ORDER BY ts DESC, id DESC LIMIT 1').get(findingId) || null;
+}
+
+export function recordDuplicateCheck(db, findingId, { methods, query, foundExisting, foundExistingRef, notes }) {
+  if (!Array.isArray(methods) || methods.length === 0) {
+    throw new Error('recordDuplicateCheck precisa de "methods" (array não-vazio, ex.: ["github_issues"])');
+  }
+  const ts = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO duplicate_checks (finding_id, methods_json, query, found_existing, found_existing_ref, notes, ts)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(findingId, JSON.stringify(methods), query || null, foundExisting ? 1 : 0, foundExistingRef || null, notes || null, ts);
+  return { findingId, methods, query, foundExisting: !!foundExisting, foundExistingRef, ts };
+}
+
+export function latestDuplicateCheck(db, findingId) {
+  const row = db.prepare('SELECT * FROM duplicate_checks WHERE finding_id = ? ORDER BY ts DESC, id DESC LIMIT 1').get(findingId);
+  if (!row) return null;
+  return {
+    findingId: row.finding_id,
+    methods: JSON.parse(row.methods_json),
+    query: row.query,
+    foundExisting: !!row.found_existing,
+    foundExistingRef: row.found_existing_ref,
+    notes: row.notes,
+    ts: row.ts,
+  };
 }
 
 export function recordReport(db, findingId, reportPath) {
@@ -253,7 +299,7 @@ export function recordReport(db, findingId, reportPath) {
 }
 
 export function latestReport(db, findingId) {
-  return db.prepare('SELECT * FROM reports WHERE finding_id = ? ORDER BY created_at DESC LIMIT 1').get(findingId) || null;
+  return db.prepare('SELECT * FROM reports WHERE finding_id = ? ORDER BY created_at DESC, id DESC LIMIT 1').get(findingId) || null;
 }
 
 export function recordPlatformOutcome(db, findingId, outcome) {
@@ -267,7 +313,7 @@ export function recordPlatformOutcome(db, findingId, outcome) {
 }
 
 export function latestPlatformOutcome(db, findingId) {
-  return db.prepare('SELECT * FROM platform_outcomes WHERE finding_id = ? ORDER BY updated_at DESC LIMIT 1').get(findingId) || null;
+  return db.prepare('SELECT * FROM platform_outcomes WHERE finding_id = ? ORDER BY updated_at DESC, id DESC LIMIT 1').get(findingId) || null;
 }
 
 const LEGACY_VERDICT_BY_STATE = {

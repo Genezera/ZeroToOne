@@ -6,6 +6,7 @@ import path from 'node:path';
 import {
   openDb, upsertFinding, getFinding, listFindings, recordTransition,
   recordValidation, listValidations, recordDeploymentEvidence, latestDeploymentEvidence,
+  recordDuplicateCheck, latestDuplicateCheck,
   recordReport, latestReport, recordPlatformOutcome, latestPlatformOutcome, stateCounts,
   exportFindingsToQueueLines, closeDb,
 } from '../db.mjs';
@@ -121,6 +122,13 @@ test('validations, deploymentEvidence, reports e platformOutcome gravam e "lates
 
     recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/x', commit: 'abc123', confidence: 'unverified' });
     assert.equal(latestDeploymentEvidence(db, SAMPLE.id).confidence, 'unverified');
+
+    recordDuplicateCheck(db, SAMPLE.id, { methods: ['github_issues'], query: 'foo bar', foundExisting: false });
+    recordDuplicateCheck(db, SAMPLE.id, { methods: ['github_issues', 'hacktivity'], query: 'foo bar v2', foundExisting: true, foundExistingRef: 'https://github.com/x/y/issues/1' });
+    const dup = latestDuplicateCheck(db, SAMPLE.id);
+    assert.deepEqual(dup.methods, ['github_issues', 'hacktivity']);
+    assert.equal(dup.foundExisting, true);
+    assert.equal(dup.foundExistingRef, 'https://github.com/x/y/issues/1');
 
     recordReport(db, SAMPLE.id, 'reports/x.md');
     assert.equal(latestReport(db, SAMPLE.id).path, 'reports/x.md');

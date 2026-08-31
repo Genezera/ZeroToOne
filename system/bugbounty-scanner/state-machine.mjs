@@ -47,6 +47,8 @@ const REFUTABLE_FROM = STATES.filter((s) => !TERMINAL_STATES.has(s) && s !== 'in
  * - report: { path } | null
  * - humanApproval: { actor, ts, rationale } | null
  * - platformOutcome: { state, severity, bounty } | null
+ * - duplicateCheck: { methods: string[], ts, query } | null — ver nota
+ *   abaixo em scope_verified->human_ready
  */
 const PRECONDITIONS = {
   'candidate->corroborated_static': (f, ctx = {}) => {
@@ -78,9 +80,26 @@ const PRECONDITIONS = {
     }
     return ok(`escopo válido (${ctx.scopeGateResult.reason}) + vínculo de deploy confirmado (confidence=${ctx.deploymentEvidence.confidence})`);
   },
+  // Exige checagem de duplicata via fonte pesquisável (issues/PRs do
+  // repo no mínimo — Hacktivity quando credencial disponível) ANTES de
+  // marcar human_ready. Adicionado em 31/08/2026 depois de dois achados
+  // seguidos (arc-remote-signer, ColdStorageAddressBookModule) chegarem
+  // até human_ready/enviados sem essa checagem e se revelarem duplicata
+  // pública já conhecida — a rodada original tinha até sinalizado a
+  // lacuna ("não consigo checar issues/PRs agora") e ninguém revisitou
+  // antes de recomendar envio. Isso não pode mais depender de alguém
+  // lembrar de perguntar "verifique tudo" no fim.
   'scope_verified->human_ready': (f, ctx = {}) => {
     if (!ctx.report || !ctx.report.path) return fail('nenhum rascunho de relatório foi gerado ainda');
-    return ok(`rascunho de relatório pronto em ${ctx.report.path}, aguardando revisão humana`);
+    const dup = ctx.duplicateCheck;
+    if (!dup || !Array.isArray(dup.methods) || dup.methods.length === 0) {
+      return fail('falta duplicateCheck com pelo menos um método usado (ex.: methods=["github_issues"]) — não pode chegar em human_ready sem uma checagem de duplicata rastreável, nunca "provavelmente é inédito"');
+    }
+    if (!dup.methods.includes('github_issues')) {
+      return fail('duplicateCheck.methods precisa incluir "github_issues" no mínimo (issues+PRs do repositório afetado) — outras fontes (hacktivity, web_search) são complementares, não substitutas');
+    }
+    if (!dup.ts) return fail('duplicateCheck precisa de timestamp (ts) — sem isso não dá pra saber se a checagem está desatualizada');
+    return ok(`rascunho de relatório pronto em ${ctx.report.path} + checagem de duplicata feita (${dup.methods.join(', ')}, ${dup.ts}), aguardando revisão humana`);
   },
   'human_ready->submitted': (f, ctx = {}) => {
     if (!ctx.humanApproval || !ctx.humanApproval.actor) {

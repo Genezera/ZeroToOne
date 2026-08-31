@@ -245,3 +245,34 @@ aviso de que precisa de revisão humana antes de qualquer envio real.**
 - Rodar o scanner manualmente: `node system/bugbounty-scanner/scan-runner.mjs`
 - Testes: `node --test "system/bugbounty-scanner/test/*.test.mjs"`
 - Ver o histórico de rodadas do agente de nuvem: página da routine acima.
+
+## Gate obrigatório de duplicata antes de human_ready (31/08/2026)
+Dois achados seguidos (arc-remote-signer, submetido e fechado como
+duplicata; ColdStorageAddressBookModule, achado publicamente na issue
+[#111](https://github.com/circlefin/buidl-wallet-contracts/issues/111)
+6+ meses antes) chegaram perto de envio sem que ninguém checasse
+issues/PRs do repositório afetado — numa das duas rodadas isso tinha
+até sido sinalizado explicitamente como lacuna ("sem acesso à API do
+GitHub agora") e ninguém revisitou antes de recomendar envio.
+
+`state-machine.mjs` agora **exige** `ctx.duplicateCheck = { methods:
+[...], ts, query }` com `"github_issues"` presente em `methods` antes
+de permitir `scope_verified -> human_ready` — sem isso a transição
+falha com uma razão explicando o que falta, não silenciosamente. Grave
+com `record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"...","foundExisting":false}'`
+(usa a API pública do GitHub, sem autenticação, pra repositório
+público — `GET /repos/{owner}/{repo}/issues?state=all`). Tabela própria
+`duplicate_checks` no banco (mesmo padrão de `validations`/
+`deployment_evidence`), consultável via `latestDuplicateCheck`.
+
+**Hacktivity da Hacker API — explorado, não deu certo pra este uso
+(deixado documentado pra não redescobrir depois):** `GET
+/hackers/hacktivity` funciona e devolve atividade real, mas é sempre o
+feed GLOBAL de toda a HackerOne — nenhuma das variantes de filtro
+testadas (`filter[program][]`, `filter[program_id][]`,
+`filter[handle][]`, `?program=`, nem o path aninhado
+`/hackers/programs/{handle}/hacktivity`) restringe por programa. Usar
+isso pra "quanta atividade tem o programa X" exigiria paginar o feed
+global inteiro e filtrar no cliente — caro demais pra ser prático como
+sinal de concorrência hoje. Fica registrado como caminho já tentado e
+descartado, não como pendência.

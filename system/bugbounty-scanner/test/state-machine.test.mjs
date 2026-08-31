@@ -86,7 +86,34 @@ test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E de
 test('scope_verified -> human_ready exige rascunho de relatório existente', () => {
   const f = finding('scope_verified');
   assert.equal(transition(f, 'human_ready', {}).ok, false);
-  assert.equal(transition(f, 'human_ready', { report: { path: 'reports/x.md' } }).ok, true);
+  const dup = { duplicateCheck: { methods: ['github_issues'], ts: '2026-08-31T00:00:00Z' } };
+  assert.equal(transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup }).ok, true);
+});
+
+test('scope_verified -> human_ready exige duplicateCheck com methods incluindo "github_issues" e timestamp', () => {
+  const f = finding('scope_verified');
+  const report = { report: { path: 'reports/x.md' } };
+  assert.equal(transition(f, 'human_ready', { ...report }).ok, false, 'sem duplicateCheck nenhum');
+  assert.equal(
+    transition(f, 'human_ready', { ...report, duplicateCheck: { methods: [] } }).ok,
+    false,
+    'methods vazio'
+  );
+  assert.equal(
+    transition(f, 'human_ready', { ...report, duplicateCheck: { methods: ['web_search'], ts: '2026-08-31T00:00:00Z' } }).ok,
+    false,
+    'github_issues precisa estar entre os métodos, não só web_search'
+  );
+  assert.equal(
+    transition(f, 'human_ready', { ...report, duplicateCheck: { methods: ['github_issues'] } }).ok,
+    false,
+    'falta timestamp'
+  );
+  const good = transition(f, 'human_ready', {
+    ...report,
+    duplicateCheck: { methods: ['github_issues', 'hacktivity'], ts: '2026-08-31T00:00:00Z', query: 'ColdStorageAddressBookModule' },
+  });
+  assert.equal(good.ok, true);
 });
 
 test('human_ready -> submitted exige humanApproval com actor humano (nunca agente/IA)', () => {
