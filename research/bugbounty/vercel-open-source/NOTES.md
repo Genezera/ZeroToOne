@@ -1431,3 +1431,47 @@ ambos repositórios pequenos (um único arquivo-fonte relevante cada).
 
 `deep-read-log.json` atualizado com as duas chaves novas. Nenhum
 achado nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 (2) — fila vazia, leitura profunda em vercel/vercel (`packages/connect`)
+
+Fila de `candidate` vazia (também nada em `corroborated_static`/
+`reproduced_local` com trabalho pendente nesta rodada — a única entrada em
+`corroborated_static` continua `packages/cli-auth/sso.ts::waitForVerification`,
+já documentada nas rodadas anteriores, sem fonte nova).
+
+Leitura profunda proativa em `vercel/vercel`, pacote `@vercel/connect`
+(cliente do Vercel Connect — provisiona/autoriza conectores OAuth de
+terceiros pra agentes rodando em deployments Vercel). Arquivos ainda não
+cobertos por `deep-read-log.json`, priorizados por nome (`authorization`,
+`token`, `credentials`):
+
+- `packages/connect/src/authorization.ts` (`startAuthorization`): valida
+  `callbackUrl`/`webhook` via `internal/url-validation.ts` antes de
+  montar o POST pra `api.vercel.com/v1/connect/authorize/:connector`.
+- `packages/connect/src/internal/url-validation.ts`: `callbackUrl` exige
+  `https:` ou `http://localhost`/`http://*.localhost`/`http://127.0.0.1`;
+  `webhook` exige `https:` estrito. Sem bypass óbvio (não aceita
+  `javascript:`, `data:`, IPs alternativos tipo `0.0.0.0`/octal/decimal não
+  testados a fundo, mas o uso é registrar destino de redirect/webhook
+  controlado pelo próprio operador do conector, não um input de
+  atacante externo — risco residual baixo mesmo que houvesse um bypass
+  de hostname).
+- `packages/connect/src/eve/connection-authorization.ts` (`connect()`,
+  helper que gera a `AuthorizationDefinition` do framework Eve): mapeia
+  `principal` -> `ConnectTokenSubject` corretamente (`user` inclui
+  `id`+`issuer`, nunca só `id`), `evict()` só derruba a entrada de cache
+  do `principal` resolvido (não zera o cache inteiro, exceto quando
+  `revoke:true`, que é o comportamento documentado/esperado). Sem
+  confusão entre principals nem escalação de `app`->`user` visível.
+- `packages/connect/src/token.ts` (`getTokenResponse`/`revokeToken`/cache
+  em processo): chave de cache é `JSON.stringify({connector, ...params})`
+  — inclui `subject` inteiro (tipo+id+issuer), então dois usuários
+  distintos nunca colidem na mesma entrada. `revokeToken` dá
+  `cache.clear()` (zera cache de *todos* os conectores/usuários no
+  processo) — ineficiente mas falha fechado (força re-fetch, não vaza
+  nem serve token errado), não é vulnerabilidade.
+
+Nenhum achado novo — código de autorização bem cotovelado, sem confusão
+de tenant/principal nem validação de URL claramente contornável a partir
+de input de atacante externo. `deep-read-log.json` atualizado com os 4
+arquivos acima sob a chave `vercel/vercel`.

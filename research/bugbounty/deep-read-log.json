@@ -373,7 +373,11 @@
     "packages/cli/src/util/login/update-current-team-after-login.ts",
     "packages/oidc/src/verify-vercel-oidc-token.ts",
     "packages/connect/src/mcp/connect-auth-provider.ts",
-    "packages/connect/src/eve/connect-oauth.ts"
+    "packages/connect/src/eve/connect-oauth.ts",
+    "packages/connect/src/authorization.ts",
+    "packages/connect/src/internal/url-validation.ts",
+    "packages/connect/src/eve/connection-authorization.ts",
+    "packages/connect/src/token.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
