@@ -3542,3 +3542,96 @@ agente de nuvem (ambiente remoto separado) também precisar disso, o
 usuário precisa configurar a credencial lá separadamente — não tenho
 como propagar uma variável de ambiente local pra um ambiente remoto
 diferente.
+
+## ColdStorageAddressBookModule: bloqueio de Foundry contornado de verdade, PoC real obtida (31/08/2026)
+
+Usuário pediu uma auditoria completa do estado do projeto (fila, achados,
+teste, viabilidade de relatório). Nessa auditoria, o achado
+`addAllowedRecipients` sem autorização em `buidl-wallet-contracts`
+(`corroborated_static`, confidence alta, bloqueado 5 rodadas seguidas por
+`curl foundry.paradigm.xyz` recusado pela política de rede) foi
+reexaminado com uma pergunta específica: o bloqueio é do Foundry
+especificamente, ou de rede em geral? Testado: `npm install solc`
+funciona normalmente. Isso muda o quadro — o próprio `remappings.txt`
+do repo real mapeia quase toda dependência (`@openzeppelin/contracts`,
+`@openzeppelin/contracts-upgradeable`, `solady`,
+`@erc6900/reference-implementation`) para `node_modules/`, não para
+submódulo git do Forge; só `@account-abstraction` mapeia pra um
+submódulo git real (`eth-infinitism/account-abstraction`, pinado em
+`.gitmodules` na branch `releases/v0.7`, commit real
+`7af70c8993a6f42973f520ae0752386a5032abe7` confirmado via API do
+GitHub) — que é só um `git clone` comum, não o instalador bloqueado.
+
+Construído um harness Foundry-free real: Hardhat v3.15 (framework novo,
+config diferente da v2 documentada, teve que ser descoberto via os
+templates que o próprio pacote instalado carrega, já que `hardhat --init`
+exige shell interativo que não tenho) + solc 0.8.24 nativo, mesmas
+configurações do `foundry.toml` do próprio repo (`evmVersion=paris`,
+`viaIR=true`, otimizador 200 execuções). Dependências reais instaladas
+via npm + git (não reimplementadas) nas versões exatas que o repo
+declara.
+
+**Obstáculo real e não-óbvio que consumiu a maior parte do esforço**: o
+resolvedor de import "estilo Foundry" (remappings.txt) do Hardhat v3
+tem um bug/limitação real quando o alvo de um remapeamento definido
+DENTRO do `remappings.txt` de um pacote aninhado (não o meu projeto,
+um pacote em `node_modules`) usa `../` pra sair da própria pasta do
+pacote — em vez de resolver corretamente, ele corrompe o path
+resultante de forma reprodutível (ex.: `interfaces/PackedUserOperation.sol`
+virava `s/PackedUserOperation.sol`, cortando exatamente o tamanho de
+uma palavra usada em outro trecho do path). Confirmado reproduzível
+mesmo com `package.json` sintético correto no destino — não era falta
+de metadado, é o próprio resolvedor. Contorno real (não um workaround
+frágil): em vez de tentar consertar o remapeamento cruzando fronteira
+de pacote, reapontei as ~12 linhas de import que usavam o alias
+alternativo (`@eth-infinitism/account-abstraction/...`, usado só
+dentro do pacote `@erc6900/reference-implementation`) pro MESMO alias
+que o `BaseMSCA.sol` do projeto principal já usa
+(`@account-abstraction/contracts/...`) — mudança de STRING de import
+apenas, o conteúdo real de cada arquivo de interface nunca foi tocado.
+Isso também resolve de quebra um problema mais sutil: sem isso, o
+Solidity trataria `PackedUserOperation` como dois tipos diferentes (um
+por caminho de resolução), quebrando a compatibilidade de override
+entre `BaseMSCA` e `IValidationHookModule` — sintoma que só apareceu
+depois de já ter resolvido o import em si, e que só fez sentido ao
+perceber que os dois caminhos precisavam convergir pro mesmo arquivo
+resolvido, não só pro mesmo conteúdo.
+
+**Resultado real**: 24 arquivos Solidity reais compilados com sucesso
+(o repo inteiro relevante, sem reescrever nenhuma linha de lógica).
+Teste real (Hardhat Network, mocha, ethers v6): deploy do `UpgradableMSCA`
+real + `ColdStorageAddressBookModule` real, módulo instalado via
+`installExecution` chamado como o endereço que faz o papel de
+EntryPoint (bypass legítimo, modela a instalação real e autorizada pelo
+próprio dono via EntryPoint — não um atalho em volta da vulnerabilidade
+em si), e então um endereço "attacker" totalmente alheio (sem
+assinatura, sem ser owner, sem ser EntryPoint) chama
+`addAllowedRecipients` diretamente pelo `fallback()` real da conta —
+**sucesso, sem reverter**. `getAllowedRecipients` confirma o attacker
+listado. Controle no mesmo teste: o mesmo attacker chamando
+`removeAllowedRecipients` (a função irmã, que exige autorização
+corretamente) reverte de verdade com erro Solidity real
+(`InvalidValidationFunction`) — prova que o ambiente aplica autorização
+normalmente e o bypass é específico da função vulnerável, não um
+artefato do setup. 2/2 testes passando.
+
+Verifiquei também ao vivo (não só citando a leitura antiga) que
+`RecipientAddressLib.sol` trata `approve`/`increaseAllowance`/
+`setApprovalForAll` como "recipient" pra fins de allowlist — confirma
+que o achado amplia pra aprovação de gasto, não só transferência
+direta.
+
+Achado avançado de `corroborated_static` pra `reproduced_local`
+(`record-validation` type=`hardhat_evm_poc`, result=pass +
+`transition`). Relatório completo escrito em
+`research/bugbounty/reports/circle-bbp-buidl-wallet-coldstorage-addressbook.md`
+(inglês, primeira pessoa, PoC completa embutida, sem menção a IA no
+corpo copiável). Não avançado pra `scope_verified` — falta
+DeploymentEvidence com confidence >= "low" (vínculo commit→deploy real
+pra uma instância MSCA v0.8 concreta), não levantado ainda.
+
+Mesmo padrão de ferramental-bloqueado-mas-contornável já visto no
+achado do Solana (LiteSVM em vez de `solana-test-validator`/Anchor CLI)
+— segunda vez nesta missão que um bloqueio de "ferramenta oficial"
+teve um caminho real alternativo que ninguém tinha tentado ainda.
+`export-queue` + relatório commitados ao final desta auditoria.

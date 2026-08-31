@@ -118,3 +118,26 @@ hint: 'git pull' before pushing again.
 hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 
 [31/08/2026  9:00:01,65] Iniciando scanner de bug bounty 
+[2026-08-31T12:00:56.823Z] Varredura completa: 13 contratos Clarity + 0 arquivos (JS/TS+Go+JVM+Swift) + 0 manifesto(s) de dependência checados, 0 erros de busca, 0 achados NOVOS na fila (0 de dependência conhecida), 8 veredito(s) novo(s)/mudado(s).
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-scanner.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/STATUS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/dashboard/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-repo-shas.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-verdicts.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/data-stbtc-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/data-stx-v2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacking-dao-core-btc-v3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacking-dao-core-ststxbtc-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'system/bugbounty-scanner/targets-go.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'system/bugbounty-scanner/targets-jvm.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'system/bugbounty-scanner/targets-swift.mjs', LF will be replaced by CRLF the next time Git touches it
+To https://github.com/Genezera/ZeroToOne.git
+   2fd85ca..91dbc2d  master -> master
