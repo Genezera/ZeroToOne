@@ -227,7 +227,11 @@
     "src/msca/6900/v0.7/factories/semi/SingleOwnerMSCAFactory.sol",
     "src/msca/6900/shared/erc712/BaseERC712CompliantModule.sol",
     "src/msca/6900/v0.8/modules/BaseModule.sol",
-    "src/account/CoreAccount.sol"
+    "src/account/CoreAccount.sol",
+    "src/msca/6900/v0.7/plugins/v1_0_0/multisig/BaseMultisigPlugin.sol",
+    "src/msca/6900/v0.7/account/UpgradableMSCA.sol",
+    "src/msca/6900/v0.7/account/WalletStorageInitializable.sol",
+    "src/paymaster/BasePaymaster.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

@@ -770,6 +770,50 @@ que ainda faltava (`account/`, `managers/`) em vez de mais plugins:
 
 Conclusão: nenhum achado novo. Código consistente com o padrão de
 
+## Rodada 2026-08-31 (push automático, gatilho GitHub) — fila vazia, `buidl-wallet-contracts` (multisig + upgrade + initializer)
+
+`queue.jsonl` sem itens `pending` no início (0 candidatos). Leitura profunda
+proativa cobriu 4 arquivos novos de `circlefin/buidl-wallet-contracts`,
+escolhidos por julgamento próprio (nenhum tem literalmente auth/session/
+crypto/token/login/password/admin/permission/access no nome, mas todos
+tocam verificação de assinatura ou controle do mecanismo de upgrade —
+superfície de maior risco pra uma smart wallet):
+
+1. `src/msca/6900/v0.7/plugins/v1_0_0/multisig/BaseMultisigPlugin.sol` —
+   `checkNSignatures` é abstrato aqui (implementado em
+   `BaseWeightedMultisigPlugin.sol`, já revisado em rodada anterior).
+   `_getMinimalUserOpDigest`/digest real via assembly conferido, sem gap
+   óbvio de leitura de calldata fora dos limites. Sem achado.
+2. `src/msca/6900/v0.7/account/UpgradableMSCA.sol` — `_authorizeUpgrade`
+   é intencionalmente vazio (delega ACL pro modifier `validateNativeFunction`
+   em `upgradeToAndCall`, documentado no próprio NatSpec). Suspeitei de
+   "uninitialized implementation" (padrão clássico de bug em proxy UUPS:
+   chamar `initializeUpgradableMSCA` direto na implementação, não na proxy,
+   pra depois abusar de alguma função). Rastreei até
+   `WalletStorageInitializable.sol` (item 3) e `BaseMSCA.sol` (já lido em
+   rodada anterior) — confirmado que o construtor de `BaseMSCA` chama
+   `_disableWalletStorageInitializers()`, travando `initialized` em
+   `type(uint8).max` na implementação assim que ela é deployada. Isso
+   fecha a suspeita: `initializeUpgradableMSCA` chamado direto na
+   implementação sempre reverte (`WalletStorageIsInitialized`). Sem achado.
+3. `src/msca/6900/v0.7/account/WalletStorageInitializable.sol` — fork do
+   `Initializable.sol` da OpenZeppelin com storage próprio
+   (EIP-7201/`WalletStorageV1Lib`). Lógica de `walletStorageInitializer`
+   (`initialSetup`/`deploying`) e `_disableWalletStorageInitializers`
+   confere exatamente com o padrão OZ original. Sem achado.
+4. `src/paymaster/BasePaymaster.sol` — mesmo padrão UUPS mas com
+   `_authorizeUpgrade` restrito a `onlyOwner` (diferente de
+   `UpgradableMSCA`, que delega pra plugin) e `_disableInitializers()`
+   chamado no construtor (OZ padrão, não o fork próprio da wallet). Único
+   ponto que mereceu atenção: `receive()` e `deposit()` são
+   `whenNotPaused`, então ETH enviado direto ao paymaster enquanto pausado
+   reverte em vez de ficar preso sem função de saque — comportamento
+   correto (falha explícita, não perda de fundo). Sem achado.
+
+Nenhum item novo na fila. `deep-read-log.json` atualizado com os 4
+arquivos. Resultado normal — mais uma rodada de reforço em cima de um
+programa já bastante coberto, sem achado novo confirmado.
+
 ## Rodada 2026-08-29 (máquina de estados v2, push automático) — fila vazia, sem candidato novo em Circle BBP
 
 `queue.jsonl` sem itens `pending`. `corroborated_static::Withdrawals.sol`
