@@ -3659,3 +3659,53 @@ arc-remote-signer, já resolvido, e wire-schema, bloqueado por regra do
 programa) — e o único hoje sem nenhum bloqueio conhecido (nem regra de
 programa, nem precedente de "design aceito", nem alcançabilidade
 duvidosa). `export-queue` + commit ao final.
+
+## CORREÇÃO CRÍTICA: ColdStorageAddressBookModule é duplicata pública, não human_ready (31/08/2026, mesma rodada)
+
+Usuário pediu verificação final antes de decidir enviar ("verifique se é
+atualizado e não algo já existente, verifique tudo"). Rodei a checagem
+que a rodada original (30/08/2026) tinha **explicitamente sinalizado
+como impossível na hora** ("Não tenho acesso de API GitHub a issues/PRs
+deste repositório nesta sessão... registro esse gap explicitamente: não
+é confirmação de ineditismo, é o limite real do que pude checar") — API
+pública do GitHub (sem autenticação, funciona normal pra repo público)
+pra buscar issues/PRs do repo.
+
+**Resultado: é duplicata confirmada.**
+[Issue #111](https://github.com/circlefin/buidl-wallet-contracts/issues/111),
+aberta em 26/02/2026 (mais de 6 meses antes desta análise) por outro
+pesquisador ("Schereo") — mesmo arquivo, mesma linha, mesmo mecanismo
+(`skipRuntimeValidation: true`), mesmo exploit
+(`account.addAllowedRecipients([attackerAddress])` sem autorização),
+mesmo contraste com `removeAllowedRecipients()`, mesma correção
+sugerida. Já tem 2 PRs de correção abertos por terceiros, nenhum
+mergeado ainda:
+[#113](https://github.com/circlefin/buidl-wallet-contracts/pull/113)
+(07/04/2026) e
+[#114](https://github.com/circlefin/buidl-wallet-contracts/pull/114)
+(07/04/2026, "Fixes #111 and #112").
+
+Achado revertido de `human_ready` pra `known_duplicate`
+(`knownIssueSource` citando a issue #111 com URL e trecho verificável,
+seção 6.16 da máquina de estados). Banner do relatório reescrito pra
+"DO NOT SUBMIT — already publicly disclosed", com a lição registrada
+explicitamente no próprio relatório: um gap de verificação sinalizado
+honestamente numa rodada anterior ("não consegui checar issues/PRs")
+não pode ser tratado como "provavelmente ok" na rodada seguinte só
+porque nenhuma opção melhor existia no momento — precisa ser revisitado
+ativamente antes de qualquer recomendação de envio, não só quando o
+usuário pedir explicitamente pra "verificar tudo".
+
+**Isso não invalida o trabalho técnico** — a cadeia de código, a
+descoberta do bloqueio de Foundry contornável, e a PoC executável real
+via Hardhat continuam corretas e são, pelo que consegui achar, a
+primeira PoC executável publicada pra esse bug especificamente (as
+issues/PRs públicos descrevem o mecanismo mas não incluem uma prova de
+conceito rodada). Só a novidade/elegibilidade pra recompensa que caiu.
+
+Estado da fila da missão: **nenhum achado hoje está pronto pra envio
+sem ressalva** — wire-schema bloqueado por regra de programa, Solana
+com risco real de precedente, e este agora confirmado duplicata. Fica
+registrado como resultado honesto de uma auditoria completa, não como
+falha — a auditoria fez exatamente o que devia: achar o problema antes
+do envio, não depois. `export-queue` + commit ao final.

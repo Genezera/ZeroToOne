@@ -1,15 +1,36 @@
-# REVIEW CHECKLIST — READ BEFORE SUBMITTING, THEN DELETE THIS SECTION
+# DO NOT SUBMIT — already publicly disclosed, not novel
 
-Everything below the `---` line is the actual report — copy from there down. This section above the line is only for you; do not paste it.
+**This exact vulnerability was already reported publicly on GitHub as
+[issue #111](https://github.com/circlefin/buidl-wallet-contracts/issues/111)
+on 2026-02-26 (6+ months before this analysis), by a different
+researcher ("Schereo"). It cites the same file, the same line, the
+same mechanism, the same exploit, and the same recommended fix as this
+report.** Two independent community fix PRs are already open against
+it: [#113](https://github.com/circlefin/buidl-wallet-contracts/pull/113)
+(2026-04-07) and [#114](https://github.com/circlefin/buidl-wallet-contracts/pull/114)
+(2026-04-07). Neither is merged yet — the vulnerable code is still live
+on `master` — but the finding itself is not new and is not eligible for
+a bounty. **Do not submit this to Circle BBP.** Kept here as a complete,
+independently-reproduced record of a real bug (including an executable
+PoC nobody else appears to have published), in case that has value on
+its own, but not as a report to send.
 
-Before copying/pasting and submitting, check:
+The gap that let this slip through: my first pass (30/08/2026) explicitly
+flagged "no GitHub API access this session, can't check issues/PRs — this
+is a real gap, not confirmation of novelty" and moved on anyway. This
+final check — searching the repo's issues via the GitHub API, something I
+could not do before — is what caught it. Lesson for next time: don't
+advance a finding past a self-flagged verification gap just because no
+better option was available in the moment; revisit it before recommending
+submission, not only when explicitly asked to "check everything."
 
-- [ ] Scope confirmed — the affected asset is in the program's scope RIGHT NOW (scope can change; re-confirm on the program page before submitting)
-- [ ] Category confirmed — matches a category the program declares eligible for a reward (not metadata/cosmetic)
-- [ ] Evidence checked — the code excerpts and the PoC output below really exist/ran as described
-- [ ] Not a duplicate — checked against reports already submitted; also do a fresh search on the program page right before submitting
+---
 
-**Live-verified 2026-08-31:** `circlefin/buidl-wallet-contracts` @ `master` commit `3c47aa94a8422bbd69a5e71ef21dbaa5ff6e1939` (confirmed current HEAD at verification time). No public advisory, issue, or audit report found covering this specific function (searched GitHub issues for "ColdStorageAddressBookModule" and "addAllowedRecipients skipRuntimeValidation" — no results).
+# REVIEW CHECKLIST (moot now — see the notice above)
+
+Everything below the next `---` line is the technical write-up, kept for the record.
+
+**Live-verified 2026-08-31:** `circlefin/buidl-wallet-contracts` @ `master` commit `3c47aa94a8422bbd69a5e71ef21dbaa5ff6e1939` (confirmed current HEAD at verification time, same commit the analysis was performed against — code unchanged). ~~No public advisory, issue, or audit report found covering this specific function~~ — **retracted, see notice above: issue #111 covers exactly this.**
 
 **Deployment status:** the repository's own README states it is "the official repository for all smart wallet contracts used by Circle web3 API/SDK," and `script/bytecode-deploy/100_Constants.sol` records real, deterministic factory addresses (via the standard `0x4e59b44...` CREATE2 factory) deployed across 14 real chains, including Ethereum mainnet, Base, Arbitrum, Optimism, Polygon, and Avalanche — so this deployment pipeline is real, not hypothetical. However, every deploy script and address I found in that directory is explicitly for **ERC-6900 v0.7** (`ColdStorageAddressBookPlugin`, the version that correctly requires authorization) — I found no equivalent deploy script or factory address for **v0.8** (`ColdStorageAddressBookModule`, where this vulnerability lives). I cannot confirm whether v0.8 has been deployed anywhere with a real account yet; if it has not, this is a good time to fix it, before it reaches the same production pipeline v0.7 already went through.
 
