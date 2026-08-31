@@ -1951,3 +1951,35 @@ consistente — nenhuma tem `@Unauthenticated` inesperado.
 
 Sem achado novo nesta rodada. `deep-read-log.json` ganhou os 3 arquivos
 lidos por completo (cashapp/misk agora com 73 arquivos).
+
+---
+
+Rodada seguinte (2026-08-31): fila (`list-pending`) veio vazia — sem
+achados em estado `candidate`. Leitura profunda proativa em
+`cashapp/cash-app-pay-android-sdk` (repo do Block com poucos arquivos
+lidos até agora), focada no mecanismo de redação de PII já parcialmente
+mapeado (`PiiStringClearTextAdapter.kt`, `MoshiProvider.kt` já lidos em
+rodada anterior). Li `models/pii/PiiString.kt`,
+`models/pii/PiiContent.kt` e `network/adapters/PiiStringRedactAdapter.kt`
+pra fechar o mecanismo por completo.
+
+Investiguei com ceticismo: `PiiString.toString()` devolve o valor em
+texto puro sem nenhuma redação — à primeira vista parece um vazamento de
+PII, já que a classe é literalmente um marcador "isto é dado sensível".
+Rastreei a cadeia de uso completa antes de abrir achado: a redação não é
+responsabilidade do `toString()` (que serve pro app usar o dado
+normalmente, ex. exibir nome/telefone do customer), e sim dos
+`JsonAdapter<PiiString>` registrados no Moshi via
+`MoshiProvider.provideDefault(redactPii: Boolean)`. Confirmei via grep
+os únicos 3 call-sites de `provideDefault` no repo inteiro:
+`NetworkManagerImpl.kt` (2x, chamadas reais de API — usa
+`redactPii=false`/`PiiStringClearTextAdapter`, correto, a API precisa do
+dado real) e `PayKitAnalyticsEventDispatcherImpl.kt` (telemetria — usa
+`redactPii=true`/`PiiStringRedactAdapter`, que serializa sempre como
+`"FILTERED"`). Ou seja, o único caminho de serialização que vai pra
+telemetria/analytics é sempre redigido; não existe um caminho de log
+que use o adapter errado. Design correto e consistente. Sem achado —
+refutado por rastreamento completo dos 3 call-sites, não por suposição.
+
+`deep-read-log.json` atualizado (cashapp/cash-app-pay-android-sdk ganhou
+os 3 arquivos acima).

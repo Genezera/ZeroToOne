@@ -106,7 +106,10 @@
     "core/src/main/java/app/cash/paykit/core/models/response/Grant.kt",
     "core/src/main/java/app/cash/paykit/core/network/MoshiProvider.kt",
     "core/src/main/java/app/cash/paykit/core/models/response/AuthFlowTriggers.kt",
-    "core/src/main/java/app/cash/paykit/core/impl/NetworkManagerImpl.kt"
+    "core/src/main/java/app/cash/paykit/core/impl/NetworkManagerImpl.kt",
+    "core/src/main/java/app/cash/paykit/core/models/pii/PiiString.kt",
+    "core/src/main/java/app/cash/paykit/core/models/pii/PiiContent.kt",
+    "core/src/main/java/app/cash/paykit/core/network/adapters/PiiStringRedactAdapter.kt"
   ],
   "cashapp/hermit": [
     "redact/redact.go",
