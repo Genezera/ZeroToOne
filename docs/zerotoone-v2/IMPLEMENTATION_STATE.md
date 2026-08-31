@@ -388,6 +388,24 @@ entrada do scanner). Ver seção própria em
 completo) continua não iniciado — essa foi deliberadamente a fatia
 pequena e barata, não uma tentativa de fechar a fase inteira de uma vez.
 
+**Também feito 31/08/2026, seção 6.12 da auditoria**: grau de evidência
+explícito E0-E5 (`evidence-grade.mjs`, comando `cli.mjs evidence-grade
+<id>`) — deriva de dados já gravados (`filesRead`/`validations`/
+`platformOutcome`), não pede fonte nova. E4 fica documentado como não
+usado (o sistema não distingue ambiente isolado end-to-end de reprodução
+local simples), não fingido. Testado ao vivo contra os 2 achados reais
+mais avançados: Solana → E3, arc-remote-signer → E3 (depois de corrigir
+um bug real pego nesse teste — a primeira versão dava E2 pro
+arc-remote-signer porque checava só o `state` atual, e "duplicate" não
+tava na lista de estados que provam E3; corrigido pra reconhecer que
+qualquer terminal pós-`human_ready`, incluindo os negativos, já prova
+que o gate de E3 foi passado). Isso também expôs uma lacuna real, ainda
+aberta: o `arc-remote-signer` tem PoC executável real (`go test` PASS)
+mas nunca teve um `record-validation` formal gravado, só prosa no
+NOTES.md — o grau contorna isso corretamente, mas o hábito de sempre
+gravar validação formal continua pendente. Ver seção própria em
+`system/bugbounty-scanner/README.md`.
+
 Fase 5 (outcomes reais de plataforma, calibrador, ranking de alvo)
 estava bloqueada esperando "pelo menos um envio real acontecer" — isso
 já aconteceu (arc-remote-signer, #3981927, fechado duplicata). Parte da

@@ -378,3 +378,45 @@ precision@K, mutation testing) — essa parte continua não iniciada
 SARIF, o que é um esforço bem maior). Esta é a fatia pequena e barata
 que resolve o problema concreto já confirmado (regra específica gerando
 100% de ruído), não a arquitetura de ensemble inteira.
+
+## Grau de evidência E0-E5 (31/08/2026 — seção 6.12 da auditoria)
+
+`evidence-grade.mjs` — rótulo explícito e consultável (`cli.mjs
+evidence-grade <id>`) pro "quão bem provado" de um achado, em vez de só
+citar "grau E2"/"grau E3" em prosa dentro do campo `reasoning`. Não é
+fonte de dado nova: deriva do que já está gravado (`filesRead`,
+`validations`, `platformOutcome`).
+
+| Grau | Significado |
+|------|-------------|
+| E0 | Só padrão textual, nenhum arquivo lido |
+| E1 | 1 arquivo lido, confirma condição suspeita isolada |
+| E2 | 2+ arquivos lidos (cadeia cross-file) ou `corroborated_static` |
+| E3 | Validação real com `result=pass`, ou avançou até `reproduced_local`/`scope_verified`/`human_ready`/`submitted`, ou chegou a qualquer terminal pós-submissão (`triaged`/`duplicate`/`informative`/`rejected`/`paid`/`resolved`) |
+| E4 | **Não usado.** Exigiria distinguir "ambiente isolado end-to-end" de `reproduced_local` simples, e o sistema hoje não guarda esse dado separado. Documentado como lacuna, não fingido. |
+| E5 | Resultado real de plataforma: `triaged`/`paid`/`resolved` |
+
+Um outcome negativo real (`duplicate`/`informative`/`rejected`) **não
+rebaixa** o grau já alcançado — grau de evidência mede "quão bem
+provado o comportamento está", não "quão pagável ficou depois".
+
+**Bug real pego ao testar ao vivo antes de commitar** (motivo de existir
+uma versão "certa" documentada aqui em vez de só a primeira que
+compilou): a primeira implementação checava o `state` ATUAL do achado
+contra uma lista que só incluía `reproduced_local`/`scope_verified`/
+`human_ready`/`submitted`. O arc-remote-signer (enviado, depois fechado
+como `duplicate` pelo próprio HackerOne) tem PoC real com `go test`
+passando, mas nunca recebeu uma chamada formal `record-validation` —
+só foi narrado em prosa no `NOTES.md`. Resultado: como o `state` de hoje
+é `duplicate` (não está na lista) e não há `validations` com
+`result=pass`, caiu pro balde de contagem de arquivo (E2), escondendo
+que o próprio gate de `human_ready` na state machine já exige evidência
+E3 pra deixar chegar até ali. Corrigido tratando qualquer terminal
+pós-`human_ready` (inclusive os negativos) como prova de que E3 foi
+alcançado em algum momento — e virou `arc-remote-signer -> E3` de
+verdade. Ficam duas lições: (1) todo grau novo precisa ser
+retro-testado contra achados reais antes de virar "pronto", exatamente
+como quarentena e o sinal de novidade de programa foram; (2) o gap real
+que isso expôs — achados com PoC executável real nem sempre têm
+`record-validation` formal gravado, só prosa — continua **aberto**, não
+é resolvido só por este grau saber contornar o sintoma.
