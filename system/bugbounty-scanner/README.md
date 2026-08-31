@@ -616,3 +616,50 @@ conhecidos o bastante pra virar gate rígido com segurança) — é aviso
 persistente, exposto em `cli.mjs check-program`, pra nunca depender de
 lembrar disso numa sessão futura. Circle BBP: 2 usados (ambos
 `duplicate`, sem pagamento), 2 restantes.
+
+## Geração automática de rascunho de relatório + `pipeline-status` (31/08/2026)
+
+Lacuna real que existia até aqui: `scope_verified->human_ready` já
+EXIGE `ctx.report.path` (ver `state-machine.mjs`), mas nada gerava esse
+arquivo automaticamente — o único jeito de satisfazer essa precondição
+era alguém escrever a prosa inteira à mão. `generate-report.mjs`
+fecha essa lacuna parcialmente, de propósito: monta o esqueleto
+completo do `TEMPLATE.md` a partir do que já está gravado no banco pra
+um achado em `scope_verified`/`human_ready`/`submitted` (arquivos
+lidos, saída real de PoC com `result="pass"`, evidência de deploy,
+checagem de duplicata), e grava via `recordReport`. O que ele
+**não** tenta automatizar: as seções "Resumo", "Impacto" e "Correção
+sugerida" saem como placeholder explícito — as duas rodadas de revisão
+de relatório desta missão (Solana denylist) mostraram que isso exige
+julgamento editorial de verdade (ordem da evidência, o que afirmar
+exatamente, calibração de severidade), não é tarefa pra template. O
+`reasoning` bruto completo do achado vai anexado no fim do documento
+como matéria-prima pra quem for escrever essas seções.
+
+```
+node cli.mjs generate-report <id>
+```
+
+Nunca inventa uma saída de PoC que não existe — se não há validação
+`result="pass"` registrada, a seção de PoC diz isso explicitamente em
+vez de fabricar conteúdo.
+
+`cli.mjs pipeline-status` complementa isso: varre todo achado
+não-terminal e devolve, pra cada um, exatamente o que falta pra
+avançar (leitura profunda pendente; PoC ainda não rodada vs. sem
+validador local pra aquela linguagem — bloqueio estrutural, não falta
+de esforço; relatório/checagem de duplicata faltando; bloqueio de
+política; ou "aguardando decisão humana"). É a mesma pergunta ("viável
+enviar? viável prosseguir? por quê não?") que antes exigia investigação
+manual achado por achado, agora como comando repetível — só leitura,
+nunca muda estado.
+
+**Limite estrutural real que isso expõe, não esconde**: hoje só existe
+validador de PoC local (`corroborated_static->reproduced_local`) pra
+achado Solidity (Foundry/Hardhat contra fork). JS/TS, Go e JVM não têm
+nenhum validador — `pipeline-status` reporta isso como "sem validador
+local pra linguagem X" pra cada achado parado em `corroborated_static`
+por esse motivo, em vez de deixar parecer que "ninguém investigou
+ainda". Construir esses validadores é o que de fato desbloquearia
+"fazer os testes" de ponta a ponta pras outras linguagens — próximo
+passo natural, ainda não feito.

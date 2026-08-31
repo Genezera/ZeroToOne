@@ -1,9 +1,11 @@
-import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb } from './db.mjs';
+import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb } from './db.mjs';
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
 import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
 import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-budget.mjs';
+import { isTerminal } from './state-machine.mjs';
+import { generateReport } from './generate-report.mjs';
 import path from 'node:path';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
@@ -75,6 +77,56 @@ export function cmdRecordDeploymentEvidence(db, id, patch) {
 
 export function cmdRecordReport(db, id, reportPath) {
   return recordReport(db, id, reportPath);
+}
+
+export function cmdGenerateReport(db, id, opts = {}) {
+  return generateReport(db, id, opts);
+}
+
+/**
+ * Varre todo achado não-terminal e diz exatamente o que falta pra
+ * avançar -- a mesma pergunta ("viável prosseguir ou não?") que antes
+ * exigia investigação manual finding por finding, agora como comando
+ * repetível. Não muda nada, só lê estado já gravado.
+ */
+export function cmdPipelineStatus(db) {
+  const nonTerminal = listFindings(db, {}).filter((f) => !isTerminal(f.state));
+  return nonTerminal.map((f) => {
+    let blocker;
+    switch (f.state) {
+      case 'candidate':
+        blocker = 'aguardando leitura profunda (deep-read) -- ainda não investigado';
+        break;
+      case 'corroborated_static': {
+        const validations = listValidations(db, f.id);
+        if (validations.some((v) => v.result === 'pass')) blocker = 'PoC já passou -- pronto pra tentar reproduced_local';
+        else if (validations.some((v) => v.result === 'not_applicable')) blocker = `sem validador local pra tipo/linguagem "${f.language}" -- bloqueio estrutural (não falta de esforço), ver README`;
+        else blocker = 'PoC ainda não foi rodada pra este achado';
+        break;
+      }
+      case 'reproduced_local':
+        blocker = 'falta confirmar scope gate + deploymentEvidence pra virar scope_verified';
+        break;
+      case 'scope_verified': {
+        const missing = [];
+        if (!latestReport(db, f.id)) missing.push('relatório (rodar `generate-report`)');
+        if (!latestDuplicateCheck(db, f.id)) missing.push('checagem de duplicata (rodar `record-duplicate-check`)');
+        blocker = missing.length > 0 ? `falta: ${missing.join('; ')}` : 'evidência completa -- pronto pra virar human_ready';
+        break;
+      }
+      case 'human_ready': {
+        const blockReason = getBlockReason(f.program, loadProgramPolicy());
+        blocker = blockReason ? `bloqueado por política: ${blockReason}` : 'aguardando decisão humana de enviar';
+        break;
+      }
+      case 'inconclusive':
+        blocker = 'sem próximo passo automático -- só sai por nova investigação que resolva a incerteza (transition ... false_positive) ou decisão humana';
+        break;
+      default:
+        blocker = '';
+    }
+    return { id: f.id, program: f.program, state: f.state, blocker };
+  });
 }
 
 export function cmdRecordDuplicateCheck(db, id, patch) {
@@ -259,6 +311,12 @@ async function main() {
       case 'record-report':
         printJson(cmdRecordReport(db, positional[0], positional[1]));
         break;
+      case 'generate-report':
+        printJson(cmdGenerateReport(db, positional[0]));
+        break;
+      case 'pipeline-status':
+        printJson(cmdPipelineStatus(db));
+        break;
       case 'record-duplicate-check':
         printJson(cmdRecordDuplicateCheck(db, positional[0], parseJsonFlag(flags, 'patch')));
         break;
@@ -278,7 +336,7 @@ async function main() {
         printJson(await cmdSyncReportStatus(db));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, generate-report <id>, pipeline-status, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
         process.exitCode = 1;
     }
   } finally {

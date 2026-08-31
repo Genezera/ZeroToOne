@@ -698,3 +698,98 @@ consciente de NÃO apagar a cópia antiga automaticamente (ação
 destrutiva) — fica pra o usuário confirmar quando quiser liberar o
 espaço (só ~64 MB; o problema real de espaço em C: é de outra coisa,
 não deste projeto).
+
+## Amplitude real de programas + primeira submissão real + orçamento escasso (2026-08-31)
+
+Usuário apontou que o esforço estava concentrado demais em Circle BBP.
+Verificação real (não suposição): o pipeline automatizado (agente de
+nuvem, rodando continuamente via webhook de push, independente desta
+conversa) nunca parou de cobrir todos os programas em paralelo —
+Vercel Open Source (dezenas de repos, muitas rodadas de leitura
+profunda), OKG (auto-descoberto pelo pipeline de promoção, 72 achados
+de dependência triados com verificação real de alcançabilidade de
+import), Circle BBP (7+ repositórios diferentes, não só o Solana
+gateway). A concentração real era desta conversa (submissão manual,
+prints, acompanhamento HackerOne), não do sistema.
+
+**Endurecimentos reais desta sessão**: `program-policy.mjs` (gate
+duro, impossível de contornar, bloqueia Block Open Source — proibido
+pra pesquisa assistida por IA — de chegar em `human_ready`, injetado
+automaticamente em toda transição via `db.mjs`); pipeline de
+auto-promoção de alvo (`promote-targets.mjs`, pontuação por
+payout/frescor/estrelas, cap de 5/rodada e 40 total); correção do
+truncamento de arquivo (mesmo subconjunto escaneado pra sempre — GitHub
+Trees API tem ordem estável); `GITHUB_TOKEN` opcional (60→5000 req/h);
+integração real com a Hacker API da HackerOne.
+
+**Primeiras submissões reais enviadas pelo usuário**: achado de
+denylist do Solana (`circlefin/solana-gateway-contracts`) e
+`arc-remote-signer` — **ambas fechadas como `duplicate` contra
+pesquisador terceiro, sem pagamento**, em menos de alguns minutos cada
+uma. Confirmado ao vivo (`HTTP 403` na Hacker API tentando ver o
+report concorrente) que não existe visibilidade de reports privados de
+terceiros — a "corrida" contra outros pesquisadores é limitação
+estrutural da plataforma, não da ferramenta. `program-submission-
+budget.json` criado pra nunca esquecer: **Circle BBP só tem mais 2
+envios confirmados como aceitáveis pelo usuário** — critério ficou
+mais seletivo (preferir achado que exige raciocínio mais profundo, não
+"falta um `require!` óbvio", exatamente o padrão que outro pesquisador
+acha em paralelo num programa maduro).
+
+**Investigação de amplitude, ao vivo**: corrigido o mecanismo
+hipotetizado do CVE do achado OKG `cosmossdk.io/math` (o código
+realmente vulnerável vive em `LegacyDec`, nunca usado pelo SDK —
+confirmado via GitHub code search autenticado, capacidade que a
+investigação original não tinha) — fechado como `false_positive` com
+confiança alta. Criado `research/bugbounty/scope-snapshots/okg.json`
+(faltava — qualquer achado real de OKG ficaria preso em
+`corroborated_static` pra sempre sem isso). Adicionada a aresta
+`inconclusive->false_positive` na máquina de estados (não existia
+nenhuma saída desse estado). Rascunho de relatório de hardening
+(loopback SSO sem state/nonce, `vercel/vercel`) criado com aviso
+explícito de baixa confiança — decisão de enviar fica com o usuário.
+
+**Estado real do pipeline neste momento**: tudo triado. 0 achados em
+estado intermediário "esquecido". 1 achado `human_ready` (Block Open
+Source, bloqueado por política, nunca será enviado). 1 rascunho de
+relatório pendente de decisão humana (Vercel SSO, baixa confiança). O
+resto é terminal (`false_positive`/`duplicate`/`known_duplicate`/
+`inconclusive`).
+
+**Automação de geração de relatório (pedido explícito do usuário:
+"eu quero esses relatórios automáticos também... deixar tudo pronto")**:
+`generate-report.mjs` monta o rascunho completo do `TEMPLATE.md` a
+partir do que já está gravado (arquivos lidos, saída de PoC, evidência
+de deploy, checagem de duplicata) assim que um achado chega em
+`scope_verified` — fecha a lacuna real de "a precondição já exige
+`report.path`, mas nada gerava esse arquivo sozinho". Deixa Resumo/
+Impacto/Correção-sugerida como placeholder de propósito (exige
+julgamento editorial, não é tarefa de template). `cli.mjs
+pipeline-status` varre todo achado não-terminal e diz exatamente o que
+falta pra avançar — a mesma pergunta "viável prosseguir ou não" que
+antes exigia investigação manual, agora repetível.
+
+**Gargalo estrutural real, identificado e não escondido**: só existe
+validador de PoC local (`reproduced_local`) pra achado Solidity
+(Foundry/Hardhat). JS/TS, Go e JVM não têm nenhum — é o motivo real
+pelo qual a maioria dos achados nessas linguagens nunca passa de
+`corroborated_static`, não falta de investigação. Construir esses
+validadores é a próxima fase natural pra "fazer os testes" valer pra
+todas as linguagens escaneadas, não só Solidity — ainda não construído.
+
+**Onde tudo isso roda de fato, no computador do usuário** (verificado
+via `Get-ScheduledTask`, não suposição): 4 tarefas do Windows Task
+Scheduler, cada uma um wrapper `.vbs` oculto (sem janela) chamando
+`wscript.exe` com um script Node:
+- `ZeroToOne_BugBountyScanner` — **ativa**, diária 9h, scanner local +
+  dependência/CVE + painel.
+- `ZeroToOne_TargetDiscovery` — **ativa**, semanal (domingo 10h),
+  descoberta de alvo novo + digest de segurança.
+- `ZeroToOne_DailyFloor` / `ZeroToOne_MarketMakerShadow` — **desativadas**
+  desde o pivô de 2026-08-28 (código mantido como histórico, não
+  apagado).
+Além disso, a investigação profunda de código (leitura de arquivo,
+julgamento sobre alcançabilidade, veredito de achado) roda numa sessão
+de nuvem separada (`trig_01QQeYvKRi9qJD4QkzkbqsSe`), disparada por
+webhook de push real no GitHub + cron diário de segurança — não roda
+no computador do usuário, só o scanner mecânico/heurístico roda local.
