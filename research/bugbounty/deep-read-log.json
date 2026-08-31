@@ -105,7 +105,11 @@
     "misk-mcp/src/main/kotlin/misk/mcp/McpSessionHandlerModule.kt",
     "wisp/wisp-resource-loader/src/main/kotlin/wisp/resources/OnePasswordResourceLoaderBackend.kt",
     "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryMetadata.kt",
-    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryFunctionMetadata.kt"
+    "misk-admin/src/main/kotlin/misk/web/metadata/database/DatabaseQueryFunctionMetadata.kt",
+    "misk-tokens/src/main/kotlin/misk/tokens/TokenGeneratorModule.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/guice/GuiceTabIndexAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/all/MetadataTabIndexAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/metadata/servicegraph/ServiceGraphTabIndexAction.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",

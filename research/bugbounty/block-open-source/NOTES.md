@@ -2032,3 +2032,55 @@ samples). Li 4 arquivos:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (cashapp/misk agora com 80 arquivos lidos).
+
+## Rodada 2026-08-31 (push automático, commit 62d4d52) — fila vazia, leitura profunda em cashapp/misk
+
+`list-pending` vazio (nenhum candidato em estado `candidate` após
+`migrate-to-v2.mjs`). Clone raso fresco de `cashapp/misk`
+(`git clone --depth 1`, público). Filtrei arquivos `.kt`/`.java` com
+auth/session/crypto/token/login/password/admin/permission/access no
+caminho, excluindo test/Fake/sample, ainda não presentes no
+`deep-read-log.json`: 30 candidatos novos, quase todos em
+`misk-admin/.../web/metadata/*` (dashboard admin) e `misk-admin/.../web/v2/*`
+(layout). Escolhi 4 pela relevância de segurança relativa dentro desse
+conjunto majoritariamente de UI/layout:
+
+1. `misk-tokens/.../TokenGeneratorModule.kt` — só módulo Guice de
+   binding (`TokenGenerator`→`RealTokenGenerator`,
+   `TokenGenerator2`→`RealTokenGenerator2`); a lógica real de geração
+   (`RealTokenGenerator.kt`) já tinha sido lida em rodada anterior. Sem
+   lógica própria. Sem achado.
+2. `misk-admin/.../metadata/guice/GuiceTabIndexAction.kt` — action HTTP
+   do dashboard `/_admin/guice/` que lista bindings Guice da aplicação.
+   Gateada por `@AdminDashboardAccess` (mesmo mecanismo já auditado em
+   `AccessInterceptor.kt`). Renderiza `binding.source`/`binding.provider`
+   (strings internas de metadata de DI, não input de request) via
+   `kotlinx.html` tipado — não há `unsafe{}`/HTML cru nesse arquivo. Sem
+   achado.
+3. `misk-admin/.../metadata/all/MetadataTabIndexAction.kt` — action
+   `/_admin/metadata/`, também `@AdminDashboardAccess`. `@QueryParam q`
+   só indexa um `Map` (`allMetadataAction.getAll(q).all.values`) pra
+   escolher qual metadata renderizar — sem uso do valor bruto de `q` em
+   HTML/JS não escapado (é usado só em `option { value = key }` e num
+   `href` construído por `.replace` num template de path interno fixo,
+   ambos via kotlinx.html tipado). Sem achado.
+4. `misk-admin/.../metadata/servicegraph/ServiceGraphTabIndexAction.kt`
+   — action `/_admin/service-graph/`, `@AdminDashboardAccess`. Único
+   ponto que chamou atenção: `script { unsafe { +"""var metadata =
+   $metadataArray;..."""} }` interpola JSON diretamente num bloco
+   `<script>` sem escapar `</script>`/`<!--`. Investiguei a origem do
+   dado: `serviceGraphMetadataProvider.get().graphVisual` vem do grafo
+   Guava de *serviços registrados pela própria aplicação* (nomes de
+   classe internos), não de request HTTP nem de dado de usuário — e a
+   action já exige `@AdminDashboardAccess` pra ser alcançada. Sem canal
+   de um atacante externo controlar o conteúdo interpolado; consistente
+   com o padrão de dashboards internos já vistos nesta série. Sem
+   achado.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado (cashapp/misk agora com 84
+arquivos lidos). Sugestão pra próxima rodada: os itens de rodadas
+anteriores continuam pendentes — `misk-hibernate/`/`misk-jdbc/` (SQL
+injection via Hibernate/JDBC, ainda não atacado de fato apesar de
+sinalizado várias vezes) permanece a lacuna mais promissora do
+programa.
