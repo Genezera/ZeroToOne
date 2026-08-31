@@ -1317,3 +1317,66 @@ acesso que merece ceticismo (clone raso via `git clone` público):
 
 `deep-read-log.json` atualizado (`vercel/ai` ganhou 5 arquivos, agora 6 no
 total). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 (push automático, máquina de estados v2) — fila vazia, leitura profunda em `vercel/vercel` (OIDC/Connect), sem achado
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` + `list-pending`).
+Revisitados os 2 achados legados em `corroborated_static` fora deste
+programa (SSO Vercel `cli-auth/sso.ts::waitForVerification`, confidence
+"baixa", e denylist Solana Circle) — ambos já exaustivamente
+investigados em rodadas anteriores (checagem de duplicata, escopo,
+alcançabilidade) sem evidência nova disponível nesta rodada; nenhuma
+ação adicional tomada para não repetir esforço já esgotado. Achado
+Circle/Solana especificamente: confirmado que o ambiente cloud atual
+tem espaço em disco suficiente (30G livre) pro toolchain Solana/Anchor
+que a rodada anterior tinha marcado como bloqueado por falta de disco —
+mas construir esse validador está fora do escopo desta rodada (a regra
+do sistema é clara: não inventar validador pra achado não-Solidity sem
+pedido explícito do usuário para esse investimento específico).
+
+Leitura profunda proativa — 3 arquivos novos em `vercel/vercel`
+(clonado via `git clone` raso), priorizando superfície OIDC/OAuth:
+
+- `packages/oidc/src/verify-vercel-oidc-token.ts` (184 linhas,
+  completo) — wrapper de `jose.jwtVerify` contra o JWKS remoto de
+  `oidc.vercel.com`. Ceticismo aplicado ao caso `projectId: '*'`: o
+  código exige explicitamente `ownerId` OU `audience` quando
+  `projectId` é wildcard (`hasAudienceVerification`), evitando que um
+  wildcard descontrolado aceite QUALQUER token OIDC válido de QUALQUER
+  projeto Vercel. `algorithms` default é `['RS256']` (não aceita
+  `none`/HMAC por padrão); pode ser sobrescrito pelo chamador, mas isso
+  é opção documentada do SDK, não uma falha da lib. Validação de
+  `iss`/`project_id`/`environment`/`owner_id` todas corretas e com
+  fallback seguro (lança erro se claim esperada não fornecida nem via
+  opção nem via env var, nunca aceita silenciosamente). Sem achado.
+- `packages/connect/src/mcp/connect-auth-provider.ts` (256 linhas,
+  completo) — adapta o `OAuthClientProvider` do MCP pra Vercel Connect.
+  `saveTokens`/`saveCodeVerifier` são no-ops documentados (Connect
+  possui PKCE e persistência de token no lado do servidor); `tokens()`
+  delega pra `getTokenResponse` (não lido nesta rodada, já citado como
+  dependência). Nenhuma lógica de verificação de assinatura acontece
+  aqui — é só orquestração de client, não achado.
+- `packages/connect/src/eve/connect-oauth.ts` (301 linhas, completo)
+  — `AuthFn` de gateway pra tokens OAuth do Connect. Ponto investigado
+  a fundo: `decodeJwtPayload` faz um decode BASE64 SEM verificação de
+  assinatura só pra escolher a lista de `audiences`/política de
+  `connector` ANTES de chamar `verifyOidc` (verificação criptográfica
+  real, em `eve/channels/auth`, lido via clone de `vercel/eve`). Testei
+  se isso permite bypass: não permite — o decode não-verificado e a
+  verificação real operam sobre os MESMOS bytes do token (mesma string
+  JWT), então se `verifyOidc` aceita o token, o payload que o
+  pre-check leu já era genuíno; se o token for forjado, `verifyOidc`
+  rejeita (retorna `ok:false` → função retorna `null`) independente do
+  que o pre-check "achou". Único ponto notado: a política de
+  `connectors` (`clientId`/`clientUid`) só é aplicada no pre-check
+  não-verificado, nunca incluída nos `claims` passados pra `verifyOidc`
+  (`buildClaimMatchers` só adiciona `tenantId`/`installationId`/`typ`)
+  — mas como estabelecido acima, isso não abre brecha real porque
+  ambos os decodes leem o mesmo payload assinado. Confirmado lendo
+  `verifyOidc`/`runOidcVerification` em `vercel/eve` (clone separado,
+  `packages/eve/src/public/channels/auth.ts`) — delega a verificação
+  de assinatura pra `authenticateOidcStrategy`, não reimplementada
+  aqui. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel` ganhou 3 arquivos,
+agora 15 no total). Nenhum achado novo nesta rodada — resultado normal.

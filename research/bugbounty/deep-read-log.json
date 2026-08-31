@@ -341,7 +341,10 @@
     "packages/cli/src/commands/teams/sso.ts",
     "packages/cli/src/commands/login/index.ts",
     "packages/cli/src/util/login/reauthenticate.ts",
-    "packages/cli/src/util/login/update-current-team-after-login.ts"
+    "packages/cli/src/util/login/update-current-team-after-login.ts",
+    "packages/oidc/src/verify-vercel-oidc-token.ts",
+    "packages/connect/src/mcp/connect-auth-provider.ts",
+    "packages/connect/src/eve/connect-oauth.ts"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",
