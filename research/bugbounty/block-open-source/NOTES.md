@@ -2111,3 +2111,17 @@ pausa local (só esses 3 arquivos) não é suficiente sozinha pra parar
 sinal diferente usado pelo lado do agente de nuvem. Até isso ficar
 resolvido: **todo achado com `program: "Block Open Source"` deve ser
 tratado como só um registro técnico, nunca como candidato a envio.**
+
+**Atualização (31/08/2026, mais tarde): isso virou trava técnica, não
+só aviso escrito.** `program-policy.mjs` marca este programa em
+`research/bugbounty/program-policy.json` com `aiResearchBanned: true`,
+e `state-machine.mjs` agora RECUSA a transição `scope_verified->
+human_ready` pra qualquer achado com `program: "Block Open Source"`,
+automaticamente, em qualquer ambiente (`db.mjs::recordTransition`
+injeta essa checagem sozinho, não depende de quem chama lembrar). O
+achado `DirectoryRoot.resolve` continua em `human_ready` (estado
+anterior à trava, não é rebaixado retroativamente), mas nenhum achado
+NOVO deste programa consegue passar desse ponto daqui pra frente. Não
+resolve a causa raiz (por que o agente de nuvem ainda lê código deste
+programa) — só garante que o resultado dessa leitura não avança no
+pipeline.
