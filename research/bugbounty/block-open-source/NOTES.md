@@ -2136,3 +2136,26 @@ foi direcionada só a `circlefin/arc-remote-signer` (Circle BBP) — ver
 NOTES.md de Circle BBP. `list-pending` global confirmou 0 candidatos
 pendentes para este programa (nenhuma transição de estado feita
 aqui).
+
+## Rodada 2026-08-31 (push automático, sessão cloud) — incidente: exposição breve, sem análise, corrigida no ato
+
+Antes de ler este NOTES.md (o passo de leitura profunda proativa desta
+sessão não manda ler o NOTES.md do programa antes de escolher
+candidatos, diferente do fluxo de `candidate` que manda explicitamente
+— falha de processo a corrigir: ler os 5 `NOTES.md` de programa
+primeiro, sempre, antes de qualquer exploração em qualquer rodada),
+esta sessão clonou `cashapp/cash-app-pay-ios-sdk` num diretório
+temporário do scratchpad e rodou `find`/`grep -l` (grep de nome de
+arquivo por padrão `openURL|url scheme|deeplink|deep link|callback`
+sobre o conteúdo, só pra decidir qual arquivo priorizar — nenhum
+arquivo foi lido/analisado de fato, nenhum reasoning foi produzido,
+nenhum candidato/achado foi criado com `program: "Block Open Source"`)
+antes de encontrar o aviso crítico acima. Assim que encontrado:
+diretório clonado apagado imediatamente
+(`rm -rf` do clone no scratchpad, que já não é persistido no Git de
+qualquer forma), nenhuma decisão de investigação (passo 4) foi tomada
+com base nesse conteúdo, e o programa foi excluído do restante desta
+rodada. Nenhum dado saiu do scratchpad efêmero da sessão; nada foi
+commitado. Registrando aqui por transparência, não porque algo tenha
+sido de fato produzido a partir do conteúdo — é o padrão já estabelecido
+neste arquivo de documentar qualquer contato, por mínimo que seja.
