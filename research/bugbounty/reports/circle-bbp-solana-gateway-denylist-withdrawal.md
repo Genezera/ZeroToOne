@@ -11,7 +11,15 @@ Before copying/pasting and submitting, check:
 - [ ] Screenshots attached — HackerOne needs these as separate file uploads on the submission form, not as pasted Markdown; the `![...]()` embeds below are for viewing this report locally/on GitHub, not for pasting into the report text box
 - [ ] **`01-poc-execution.png` re-cropped or retaken** (see below) — the current file shows my local machine's directory layout and WSL setup in the command line, which has no business going to Circle
 
-**Screenshots (2026-08-31):** 5 real screenshots, taken by you following the guide, verified here by actually looking at each one — all accurate, all legible, all matching the code/output already in this report. Files at `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/`, embedded inline below at their matching section. Suggested upload order on HackerOne: `01-poc-execution.png` first (it's the whole story in one image), then `02` through `05` in the order they appear in Evidence. `01` shows a third independent run (different tx signature again) — three separate live executions now, same deterministic result every time.
+**Screenshots (2026-08-31):** 5 real screenshots, taken by you following the guide, verified here by actually looking at each one — all accurate, all legible, all matching the code/output already in this report. Files at `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/`. The submittable body now calls them out by number in the actual prose (not just the `![...]()` embeds, which won't survive being pasted as plain text) — **upload them to HackerOne in this exact order so "Screenshot N" in the text matches attachment N**:
+
+1. `01-poc-execution.png` (once fixed — see below) — Screenshot 1
+2. `02-deposit-rs.png` — Screenshot 2
+3. `03-initiate-withdrawal-rs.png` — Screenshot 3
+4. `04-withdrawal-rs.png` — Screenshot 4
+5. `05-utils-rs.png` — Screenshot 5
+
+`01` shows a third independent run (different tx signature again) — three separate live executions now, same deterministic result every time.
 
 **Problem with `01-poc-execution.png`, needs fixing before you send anything to Circle:** the top of that screenshot shows the actual command line — `wsl -d kali-linux -- bash -c "cd /mnt/e/dev-toolchains/solana-poc/solana-gateway-contracts && ..."`. That reveals my local folder structure and WSL distro name, which is irrelevant to Circle and not something an external report should expose (it's not a security issue, just unprofessional clutter — reads like an internal note leaked into a customer-facing document). I can't edit pixels in an existing image, so pick one:
 
@@ -59,17 +67,17 @@ The Solana `gateway-wallet` program enforces its denylist on deposits and delega
 
 A depositor can deposit funds while permitted, become denylisted afterward, and still call `initiate_withdrawal` followed by `withdraw` to recover the full pre-existing balance. Neither withdrawal instruction declares or checks the depositor's denylist PDA, while the corresponding deposit path explicitly rejects denylisted accounts.
 
-I reproduced this behavior against the real compiled `gateway-wallet` program using the project's own `GatewayWalletTestClient` and an in-process Solana VM. The test first deposited 1,000,000 tokens, denylisted the depositor, confirmed that a subsequent new deposit was rejected, and then successfully withdrew the entire 1,000,000-token pre-existing balance.
+I reproduced this behavior against the real compiled `gateway-wallet` program using the project's own `GatewayWalletTestClient` and an in-process Solana VM (full execution in **Screenshot 1**). The test first deposited 1,000,000 tokens, denylisted the depositor, confirmed that a subsequent new deposit was rejected, and then successfully withdrew the entire 1,000,000-token pre-existing balance.
 
 This demonstrates that the denylist is effective against new deposits but does not prevent a denylisted account from withdrawing funds already held by the program.
 
 ## Confirmed call chain
-1. `instructions/deposit.rs` and `instructions/deposit_for.rs` load an `UncheckedAccount depositor_denylist` (seeds `[DENYLIST_SEED, owner/depositor]`) and call `require!(!utils::is_account_denylisted(...), GatewayWalletError::AccountDenylisted)` before accepting a deposit.
+1. `instructions/deposit.rs` and `instructions/deposit_for.rs` load an `UncheckedAccount depositor_denylist` (seeds `[DENYLIST_SEED, owner/depositor]`) and call `require!(!utils::is_account_denylisted(...), GatewayWalletError::AccountDenylisted)` before accepting a deposit (**Screenshot 2**).
 2. `instructions/add_delegate.rs` and `remove_delegate.rs` run the same check for both the depositor and the delegate.
-3. `utils.rs::is_account_denylisted` checks only `!denylist_account.data_is_empty()` — the PDA's mere existence (created by `instructions/denylist.rs` via `init_if_needed`, no data fields) is the denylist signal.
-4. `instructions/initiate_withdrawal.rs` (`InitiateWithdrawalContext`) does **not** declare a denylist account in its `Accounts` struct. Its only gate is `!gateway_wallet.paused`. No `require!` involving denylist anywhere in the file.
+3. `utils.rs::is_account_denylisted` checks only `!denylist_account.data_is_empty()` — the PDA's mere existence (created by `instructions/denylist.rs` via `init_if_needed`, no data fields) is the denylist signal (**Screenshot 5**).
+4. `instructions/initiate_withdrawal.rs` (`InitiateWithdrawalContext`) does **not** declare a denylist account in its `Accounts` struct. Its only gate is `!gateway_wallet.paused`. No `require!` involving denylist anywhere in the file (**Screenshot 3**).
 5. `state.rs::GatewayDeposit::initiate_withdrawal` (called by the handler) only validates `amount > 0`, supported token, and sufficient available balance — no denylist check.
-6. `instructions/withdrawal.rs` (`WithdrawContext`) also only checks `!gateway_wallet.paused`. No denylist account, no denylist check.
+6. `instructions/withdrawal.rs` (`WithdrawContext`) also only checks `!gateway_wallet.paused`. No denylist account, no denylist check (**Screenshot 4**).
 7. `state.rs::GatewayDeposit::complete_withdrawal` only debits `withdrawing_amount` and performs the `token::transfer` CPI — no denylist check.
 
 ## Steps to reproduce
@@ -78,9 +86,11 @@ This demonstrates that the denylist is effective against new deposits but does n
 3. Depositor calls `initiate_withdrawal` for their existing balance. **This succeeds** — no denylist check exists on this instruction.
 4. After the program's withdrawal delay elapses, depositor calls `withdraw`. **This succeeds** — no denylist check exists on this instruction either. Funds are transferred to the depositor's token account in full.
 
+This exact sequence was executed end to end against the real compiled program — see **Screenshot 1** and the "Executable proof of concept" section below.
+
 ## Evidence
 
-**1. `deposit.rs` — the denylist check that the program DOES apply on the deposit path:**
+**1. `deposit.rs` — the denylist check that the program DOES apply on the deposit path (Screenshot 2):**
 ```rust
 // instructions/deposit.rs — DepositContext
 /// CHECK: Depositor denylist PDA. Account is denylisted if it exists at the expected PDA.
@@ -92,7 +102,7 @@ pub depositor_denylist: UncheckedAccount<'info>,
 ![Denylist enforcement exists on the deposit path](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/02-deposit-rs.png)
 *Denylist enforcement exists on the deposit path — `deposit.rs`, lines 37-91 at the pinned commit.*
 
-**2. `initiate_withdrawal.rs` — the same check does not exist at the start of a withdrawal:**
+**2. `initiate_withdrawal.rs` — the same check does not exist at the start of a withdrawal (Screenshot 3):**
 ```rust
 // instructions/initiate_withdrawal.rs — InitiateWithdrawalContext
 #[event_cpi]
@@ -120,7 +130,7 @@ pub struct InitiateWithdrawalContext<'info> {
 ![initiate_withdrawal has no denylist account or denylist check](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/03-initiate-withdrawal-rs.png)
 *`initiate_withdrawal` has no denylist account or denylist check — full `InitiateWithdrawalContext` struct plus the start of the handler, lines 33-62.*
 
-**3. `withdrawal.rs` — nor at the completion of a withdrawal:**
+**3. `withdrawal.rs` — nor at the completion of a withdrawal (Screenshot 4):**
 ```rust
 // instructions/withdrawal.rs — WithdrawContext
 #[event_cpi]
@@ -154,7 +164,7 @@ pub struct WithdrawContext<'info> {
 
 `InitiateWithdrawalContext` and `WithdrawContext` do not receive the denylist PDA and contain no denylist check. The absence is demonstrated by the code itself.
 
-**4. `utils.rs` — how the denylist check that IS applied on deposit is determined:**
+**4. `utils.rs` — how the denylist check that IS applied on deposit is determined (Screenshot 5):**
 ```rust
 // utils.rs — the same function deposit.rs/add_delegate.rs/remove_delegate.rs all call
 pub fn is_account_denylisted<'info>(denylist_account: &UncheckedAccount<'info>) -> bool {
@@ -330,7 +340,7 @@ Test sequence:
 ### Key PoC observation
 The most important control test is step [4] below: the denylisted account cannot perform a new deposit (`REJECTED`, error `AccountDenylisted`), while the exact same denylisted account can initiate and complete a withdrawal (steps [5]-[6], both `SUCCESS`). This rules out a false positive caused by the denylist setup or an incorrectly denylisted account — the account was demonstrably denylisted, by the program's own error, at the moment the withdrawal was authorized.
 
-Real output (literal, re-verified live on 2026-08-31 against the pinned commit above — this is a fresh, independent run, not a copy of an earlier one; the transaction signature is different each run by design, everything else is deterministic):
+Real output (literal, re-verified live on 2026-08-31 against the pinned commit above — this is a fresh, independent run, not a copy of an earlier one; the transaction signature is different each run by design, everything else is deterministic). **Screenshot 1** is a separate, independently re-run capture of this same test from a plain terminal window:
 ```
 ============================================================
 PoC: Denylisted account can withdraw pre-existing funds
