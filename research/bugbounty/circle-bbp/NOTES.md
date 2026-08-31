@@ -3415,3 +3415,51 @@ SMART_CONTRACT do `circle-bbp.json` já têm cobertura de leitura profunda
 prévia.
 
 `export-queue` + commit ao final.
+
+## Rodada 2026-08-31 (push 3a7dabd) — fila vazia, quarta reconfirmação
+do bloqueio de Foundry, tentativa de scope_verified pro achado Solana
+reproduced_local, leitura profunda em circlefin/arc-node
+
+Fila de `candidate` vazia (`list-pending` → `[]`).
+
+- `ColdStorageAddressBookModule` (corroborated_static, Solidity):
+  reconfirmado o bloqueio de rede pro instalador do Foundry
+  (`connect_rejected`/403 via agent-proxy, política de organização) —
+  quarta rodada consecutiva com o mesmo resultado. Checagem rápida
+  desta vez (sem reabrir toda a investigação, seguindo a decisão já
+  registrada na rodada anterior de não repetir o trabalho completo a
+  cada vez). Sem PoC possível, sem mudança de estado.
+- Denylist Solana gateway-wallet (`reproduced_local`, PoC LiteSVM PASS
+  já registrada em rodada anterior): tentei avançar pra
+  `scope_verified` — `check-scope "Circle BBP"
+  "circlefin/solana-gateway-contracts"` → `allowed=true`,
+  `bountyEligible=true`, `maxSeverity=critical`; re-registrei a
+  deployment evidence (ainda `confidence="unverified"`, Circle Gateway
+  segue fora do mainnet Solana, sem endereço de programa real pra
+  citar). Transição recusada como esperado: "declarar o gap não é o
+  mesmo que fechá-lo; precisa de vínculo real (commit↔release↔deploy)
+  com confidence >= low". Comportamento correto da máquina de estados
+  — não é um bloqueio a contornar, é o gate funcionando. Acompanhar em
+  rodadas futuras: assim que o Gateway for pro mainnet Solana, buscar o
+  endereço real do programa implantado pra fechar esse gap.
+
+Leitura profunda proativa desta rodada: `circlefin/arc-node` (Rust),
+3 arquivos novos ligados a gestão de chave ainda não lidos —
+`crates/signer/src/local.rs` (assinatura de voto/proposta do
+validador Malachite; `Debug` redige a chave privada corretamente,
+testado; separação de domínio entre escopos de vote-extension também
+testada — sem achado), `crates/quake/src/nodekey.rs` (geração/gravação
+de nodekey P2P do Reth pra orquestração de testnet — grava o arquivo
+via `fs::write` puro, sem `mode(0o600)` explícito, diferente do padrão
+usado por `malachite-cli/src/file.rs::save()` pra a chave de validador
+real; não abri achado porque é ferramenta de dev/testnet
+(`testnet_dir`), não custódia de fundos nem chave de consenso real, e
+severidade de um nodekey P2P vazado é baixa — mas vale re-olhar se
+`quake` algum dia virar caminho de deploy de produção) e
+`crates/malachite-cli/src/cmd/key.rs` (CLI que só lê e exibe a chave
+pública/endereço a partir do arquivo de chave privada do validador,
+sem transmitir nada — confirmei que `save_priv_validator_key`, usada
+por `init.rs`, grava com `mode(0o600)` explícito em Unix). Nenhum
+achado novo. `deep-read-log.json` atualizado.
+
+`export-queue` + commit ao final.

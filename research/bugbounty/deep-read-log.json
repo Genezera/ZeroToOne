@@ -322,7 +322,10 @@
     "crates/eth-engine/src/rpc/ethereum_rpc.rs",
     "crates/signer/src/remote.rs",
     "crates/remote-signer/src/provider.rs",
-    "crates/precompiles/src/native_coin_authority.rs"
+    "crates/precompiles/src/native_coin_authority.rs",
+    "crates/signer/src/local.rs",
+    "crates/quake/src/nodekey.rs",
+    "crates/malachite-cli/src/cmd/key.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",

@@ -1475,3 +1475,31 @@ Nenhum achado novo — código de autorização bem cotovelado, sem confusão
 de tenant/principal nem validação de URL claramente contornável a partir
 de input de atacante externo. `deep-read-log.json` atualizado com os 4
 arquivos acima sob a chave `vercel/vercel`.
+
+## Rodada 2026-08-31 (push 3a7dabd) — fechamento do achado SSO como
+inconclusive
+
+Fila de `candidate` vazia. Retomei o achado `corroborated_static`
+(`packages/cli-auth/sso.ts`, `waitForVerification`/`reauthorizeTeam`,
+`confidence="baixa"`) que rodadas anteriores deixaram em aberto após
+busca exaustiva (API GitHub bloqueada por auth, registro npm inteiro
+do escopo `@vercel/*` enumerado, socket.dev bloqueado por checkpoint).
+Desta vez, em vez de mais uma busca via API/HTML, fiz `git clone
+--sparse` real de `vercel/vercel` (`packages/cli/src` +
+`packages/cli-auth`) e rodei `grep` direto no código-fonte: o único
+import de `@vercel/cli-auth` em `packages/cli/src` é
+`credentials-store.js` (sem relação); `waitForVerification`/
+`reauthorizeTeam` não aparecem em nenhum arquivo fora do próprio
+`sso.ts` que as declara. Isso é uma confirmação definitiva (leitura
+direta do código real, não inferência de busca) de que não há
+chamador dentro do monorepo público. O padrão de código (callback
+loopback OAuth sem state/nonce, RFC 8252 §8.3) continua real e
+tecnicamente correto de apontar, mas sem alcançabilidade demonstrável
+dentro do escopo auditável — não dá pra decidir entre "vulnerabilidade
+real" e "código morto/produto externo não verificável", então
+transicionei pra `inconclusive` (não é `false_positive`: o padrão de
+código é genuíno; não ficou preso pra sempre em `corroborated_static`
+sem trabalho produtivo restante). `update-finding` + `transition ...
+inconclusive` ambos com sucesso.
+
+Nenhum achado novo nesta rodada.
