@@ -436,7 +436,8 @@
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
-    ".github/workflows/react-best-practices-ci.yml"
+    ".github/workflows/react-best-practices-ci.yml",
+    "skills/vercel-optimize/lib/auth-route.mjs"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",
@@ -446,7 +447,10 @@
     "src/installer.ts (completo)",
     "src/sanitize.ts",
     "src/list.ts",
-    "src/find.ts"
+    "src/find.ts",
+    "src/install.ts (completo)",
+    "src/download-source.ts (completo)",
+    "src/archive.ts (completo)"
   ],
   "vercel/next.js": [
     "packages/next/src/server/app-render/encryption.ts",
