@@ -1431,3 +1431,141 @@ ambos repositórios pequenos (um único arquivo-fonte relevante cada).
 
 `deep-read-log.json` atualizado com as duas chaves novas. Nenhum
 achado nesta rodada — resultado normal.
+
+## Rodada 2026-08-31 (2) — fila vazia, leitura profunda em vercel/vercel (`packages/connect`)
+
+Fila de `candidate` vazia (também nada em `corroborated_static`/
+`reproduced_local` com trabalho pendente nesta rodada — a única entrada em
+`corroborated_static` continua `packages/cli-auth/sso.ts::waitForVerification`,
+já documentada nas rodadas anteriores, sem fonte nova).
+
+Leitura profunda proativa em `vercel/vercel`, pacote `@vercel/connect`
+(cliente do Vercel Connect — provisiona/autoriza conectores OAuth de
+terceiros pra agentes rodando em deployments Vercel). Arquivos ainda não
+cobertos por `deep-read-log.json`, priorizados por nome (`authorization`,
+`token`, `credentials`):
+
+- `packages/connect/src/authorization.ts` (`startAuthorization`): valida
+  `callbackUrl`/`webhook` via `internal/url-validation.ts` antes de
+  montar o POST pra `api.vercel.com/v1/connect/authorize/:connector`.
+- `packages/connect/src/internal/url-validation.ts`: `callbackUrl` exige
+  `https:` ou `http://localhost`/`http://*.localhost`/`http://127.0.0.1`;
+  `webhook` exige `https:` estrito. Sem bypass óbvio (não aceita
+  `javascript:`, `data:`, IPs alternativos tipo `0.0.0.0`/octal/decimal não
+  testados a fundo, mas o uso é registrar destino de redirect/webhook
+  controlado pelo próprio operador do conector, não um input de
+  atacante externo — risco residual baixo mesmo que houvesse um bypass
+  de hostname).
+- `packages/connect/src/eve/connection-authorization.ts` (`connect()`,
+  helper que gera a `AuthorizationDefinition` do framework Eve): mapeia
+  `principal` -> `ConnectTokenSubject` corretamente (`user` inclui
+  `id`+`issuer`, nunca só `id`), `evict()` só derruba a entrada de cache
+  do `principal` resolvido (não zera o cache inteiro, exceto quando
+  `revoke:true`, que é o comportamento documentado/esperado). Sem
+  confusão entre principals nem escalação de `app`->`user` visível.
+- `packages/connect/src/token.ts` (`getTokenResponse`/`revokeToken`/cache
+  em processo): chave de cache é `JSON.stringify({connector, ...params})`
+  — inclui `subject` inteiro (tipo+id+issuer), então dois usuários
+  distintos nunca colidem na mesma entrada. `revokeToken` dá
+  `cache.clear()` (zera cache de *todos* os conectores/usuários no
+  processo) — ineficiente mas falha fechado (força re-fetch, não vaza
+  nem serve token errado), não é vulnerabilidade.
+
+Nenhum achado novo — código de autorização bem cotovelado, sem confusão
+de tenant/principal nem validação de URL claramente contornável a partir
+de input de atacante externo. `deep-read-log.json` atualizado com os 4
+arquivos acima sob a chave `vercel/vercel`.
+
+## Rodada 2026-08-31 (push 3a7dabd) — fechamento do achado SSO como
+inconclusive
+
+Fila de `candidate` vazia. Retomei o achado `corroborated_static`
+(`packages/cli-auth/sso.ts`, `waitForVerification`/`reauthorizeTeam`,
+`confidence="baixa"`) que rodadas anteriores deixaram em aberto após
+busca exaustiva (API GitHub bloqueada por auth, registro npm inteiro
+do escopo `@vercel/*` enumerado, socket.dev bloqueado por checkpoint).
+Desta vez, em vez de mais uma busca via API/HTML, fiz `git clone
+--sparse` real de `vercel/vercel` (`packages/cli/src` +
+`packages/cli-auth`) e rodei `grep` direto no código-fonte: o único
+import de `@vercel/cli-auth` em `packages/cli/src` é
+`credentials-store.js` (sem relação); `waitForVerification`/
+`reauthorizeTeam` não aparecem em nenhum arquivo fora do próprio
+`sso.ts` que as declara. Isso é uma confirmação definitiva (leitura
+direta do código real, não inferência de busca) de que não há
+chamador dentro do monorepo público. O padrão de código (callback
+loopback OAuth sem state/nonce, RFC 8252 §8.3) continua real e
+tecnicamente correto de apontar, mas sem alcançabilidade demonstrável
+dentro do escopo auditável — não dá pra decidir entre "vulnerabilidade
+real" e "código morto/produto externo não verificável", então
+transicionei pra `inconclusive` (não é `false_positive`: o padrão de
+código é genuíno; não ficou preso pra sempre em `corroborated_static`
+sem trabalho produtivo restante). `update-finding` + `transition ...
+inconclusive` ambos com sucesso.
+
+Nenhum achado novo nesta rodada.
+
+## Rodada 2026-08-31 (push d0643e1) — achado novo em `vercel-labs/skills` (sanitização de terminal)
+
+Fila de `candidate` vazia. Sem trabalho novo nos achados já existentes
+em `corroborated_static`/`reproduced_local`/`inconclusive` (essa parte
+já foi tratada em paralelo por outra execução desta mesma rotina sobre
+o mesmo push, vista no histórico do Git como o commit imediatamente
+anterior a este).
+
+Leitura profunda proativa fechou os dois arquivos que estavam marcados
+"(parcial)" em `deep-read-log.json` sob `vercel-labs/skills`
+(`src/installer.ts` completo — `sanitizeName`/`isPathSafe`/
+`writeSkillFiles` — e `src/update.ts` completo). Ambos seguem corretos:
+`isPathSafe` usa `resolve()+normalize()` com checagem de prefixo com
+separador (não vulnerável ao bug clássico de `startsWith` sem `sep`),
+`sanitizeName` sobrevive a `..`/`../../etc` (o regex de strip de bordas
+remove runs de `.`/`-` só no início/fim, e como não há `/` restante
+após a sanitização não há como reconstruir travessia real), e
+`update.ts` já documenta explicitamente (em comentário) por que usa
+`shell: false` + `process.execPath` absoluto para não permitir injeção
+de comando via `installUrl`/`ref` vindos do lock file. Sem achado nesses
+dois arquivos.
+
+Isso levou a uma leitura nova: `src/sanitize.ts`
+(`stripTerminalEscapes`/`sanitizeMetadata`), a função que o próprio
+projeto usa para sanear nome/descrição de skill (dado não confiável —
+vem de `SKILL.md` remoto ou da API `skills.sh`) antes de imprimir no
+terminal do usuário, com defesa documentada contra CWE-150 (terminal
+escape injection). **Achado novo**: as 6 regexes do arquivo têm uma
+lacuna real — testei isso rodando o código real das regexes isolado
+(sem rede, puramente determinístico) e confirmei que um ESC (`0x1b`)
+que aparece (a) como último byte da string, ou (b) seguido de um byte
+fora de `0x20-0x7e`, sobrevive intacto a `sanitizeMetadata()`, porque
+`SIMPLE_ESC_RE` exige o próximo char em `0x20-0x7e` e `CONTROL_RE`
+exclui `0x1b` de propósito (assumindo que as regexes de sequência já
+cobrem todo ESC, o que não é verdade nesses 2 casos de borda). Isso
+contradiz a garantia do próprio docblock ("Strips ALL terminal escape
+sequences"). Rastreei os ~12 call-sites de `sanitizeMetadata` no repo
+inteiro (`list.ts`, `find.ts`, `update.ts`, `blob.ts`, `skills.ts`,
+`providers/wellknown.ts`) tentando refutar/avaliar impacto real: em
+todo call-site encontrado, o valor saneado é sempre seguido, no
+template literal, por um código ANSI hardcoded do próprio app (ex.
+`${RESET}`, que começa com um novo ESC e por convenção de parser de
+terminal cancela/absorve o ESC órfão anterior) ou por um separador
+literal seguro (`", "`, espaço de `padEnd`) — não encontrei dois campos
+vindos de fontes remotas encostados sem separador do app no meio, então
+não montei uma sequência CSI/OSC completa controlada de ponta a ponta
+pelo atacante hoje. Registrado como
+`terminal_escape_injection_risk` (`sanitize.ts::stripTerminalEscapes`),
+confidence "média" (defeito real e verificável na função, garantia
+documentada é falsa nesses 2 casos de borda, mas impacto atual mitigado
+pela forma como cada call-site existente envolve o valor — um reforço
+de hardening a corrigir, não uma exploração completa demonstrada hoje).
+Avançou `candidate` → `corroborated_static`. `check-scope "Vercel Open
+Source" "vercel-labs/skills"` → `allowed=true`/`bountyEligible=true`;
+deployment evidence registrada com `confidence="unverified"` (não
+confirmei se o HEAD lido corresponde ao pacote publicado no npm/versão
+exata do `npx skills`). Tentativa de `scope_verified` recusada pela
+máquina de estados como esperado (mesmo caminho documentado nas notas
+do Circle BBP — não existe aresta direta `corroborated_static` →
+`scope_verified`; sem validador local para achados não-Solidity, o
+achado fica em `corroborated_static` até decisão humana).
+
+`deep-read-log.json` atualizado: `vercel-labs/skills` ganhou
+`src/sanitize.ts`, `src/list.ts`, `src/find.ts`, e os dois arquivos
+parciais viraram completos.

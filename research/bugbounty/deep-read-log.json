@@ -95,7 +95,10 @@
     "misk-docker/src/main/kotlin/misk/docker/DockerCredentials.kt",
     "misk-admin/src/main/kotlin/misk/web/dashboard/MiskWebTabIndexAction.kt",
     "misk-admin/src/main/kotlin/misk/web/metadata/DashboardMetadataAction.kt",
-    "misk-admin/src/main/kotlin/misk/web/metadata/ServiceMetadataAction.kt"
+    "misk-admin/src/main/kotlin/misk/web/metadata/ServiceMetadataAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/v2/DashboardIndexAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/v2/DashboardV2RedirectAction.kt",
+    "misk-admin/src/main/kotlin/misk/web/dev/DevCheckReloadAction.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -255,7 +258,10 @@
     "src/xReserve.sol",
     "src/modules/x-reserve/RemoteDomainRegistration.sol",
     "src/lib/WithdrawHookDataLib.sol",
-    "src/modules/x-reserve/Pausing.sol"
+    "src/modules/x-reserve/Pausing.sol",
+    "src/UpgradeablePlaceholder.sol",
+    "src/lib/DepositIntentLib.sol",
+    "src/lib/AddressLib.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
@@ -319,7 +325,10 @@
     "crates/eth-engine/src/rpc/ethereum_rpc.rs",
     "crates/signer/src/remote.rs",
     "crates/remote-signer/src/provider.rs",
-    "crates/precompiles/src/native_coin_authority.rs"
+    "crates/precompiles/src/native_coin_authority.rs",
+    "crates/signer/src/local.rs",
+    "crates/quake/src/nodekey.rs",
+    "crates/malachite-cli/src/cmd/key.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",
@@ -370,7 +379,11 @@
     "packages/cli/src/util/login/update-current-team-after-login.ts",
     "packages/oidc/src/verify-vercel-oidc-token.ts",
     "packages/connect/src/mcp/connect-auth-provider.ts",
-    "packages/connect/src/eve/connect-oauth.ts"
+    "packages/connect/src/eve/connect-oauth.ts",
+    "packages/connect/src/authorization.ts",
+    "packages/connect/src/internal/url-validation.ts",
+    "packages/connect/src/eve/connection-authorization.ts",
+    "packages/connect/src/token.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
@@ -380,8 +393,11 @@
     "src/github-host.ts",
     "src/skill-lock.ts",
     "src/blob.ts",
-    "src/update.ts (parcial)",
-    "src/installer.ts (parcial — writeSkillFiles/isPathSafe/sanitizeName)"
+    "src/update.ts (completo)",
+    "src/installer.ts (completo)",
+    "src/sanitize.ts",
+    "src/list.ts",
+    "src/find.ts"
   ],
   "vercel/next.js": [
     "packages/next/src/server/app-render/encryption.ts",

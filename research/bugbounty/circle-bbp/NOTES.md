@@ -3363,6 +3363,147 @@ Nenhuma transição de estado tentada nesta rodada (nenhum achado tinha
 evidência nova o suficiente pra justificar tentar avançar). `export-queue`
 + commit ao final.
 
+## Rodada 2026-08-31 (push automático) — fila vazia, terceira retentativa de Foundry + esclarecimento da máquina de estados v2
+
+Fila de `candidate` vazia. Migração pra v2 rodada (`migrate-to-v2.mjs`),
+banco local reconstruído a partir do `queue.jsonl` (fonte única de
+verdade compartilhada) — 45 findings, 3 em `corroborated_static`, 1 em
+`human_ready`, 1 em `inconclusive`, resto terminal.
+
+- Retentei `curl -L https://foundry.paradigm.xyz -m 20` nesta rodada
+  (ambiente novo/efêmero, terceira tentativa consecutiva em rodadas
+  distintas). Mesmo resultado: `CONNECT tunnel failed, response 403`
+  pra `foundry.paradigm.xyz:443`, confirmado via
+  `$HTTPS_PROXY/__agentproxy/status` como `connect_rejected`/negação de
+  política. Três rodadas seguidas com o mesmo bloqueio confirmam que é
+  política estável do proxy desta classe de ambiente, não falha
+  transitória de host — não vou reabrir essa tentativa em toda rodada
+  futura a menos que haja sinal de que o bloqueio mudou.
+- Esclarecimento importante sobre a máquina de estados v2 (útil pra
+  rodadas futuras, pra não repetir o mesmo teste): tentei, só por
+  curiosidade de entender o grafo de transições exposto pelo
+  `state-machine.mjs`, uma transição direta `corroborated_static` →
+  `scope_verified` no achado `ColdStorageAddressBookModule` (depois de
+  `check-scope "Circle BBP" "circlefin/buidl-wallet-contracts"` →
+  `allowed=true`/`bountyEligible=true` e
+  `record-deployment-evidence` com `confidence="unverified"`, ambos
+  registrados no finding). O CLI recusou corretamente com "transição
+  `corroborated_static` → `scope_verified` não é permitida pela máquina
+  de estados" — **não é um edge que exista no grafo**: o único caminho é
+  `corroborated_static` → `reproduced_local` → `scope_verified`, e a
+  precondição de `corroborated_static→reproduced_local` já documenta
+  explicitamente que, sem um `validations[].result==="pass"`, e sem
+  `not_applicable` também servindo de atalho ("nenhum validador local
+  existe ainda... não é pra simular um"), o achado Solidity fica preso
+  em `corroborated_static` até o PoC `forge test` rodar de verdade. Ou
+  seja: não existe hoje NENHUM caminho legítimo pra este achado avançar
+  além de `corroborated_static` sem o Foundry instalado e um teste
+  `.t.sol` de fato passando — confirma que a limitação é só de
+  ferramental de rede desta sessão, não de decisão do sistema, e que
+  não há atalho a explorar. Achado permanece em `corroborated_static`,
+  `confidence="alta"`, com a deployment evidence unverified já anexada
+  (não muda o estado, só documenta o gap de vínculo on-chain real, como
+  a instrução manda).
+- Os outros 2 achados `corroborated_static` (SSO Vercel, denylist Solana
+  Circle) não têm evidência nova nesta rodada — sem tentativa de
+  transição.
+
+Leitura profunda proativa desta rodada foi direcionada ao Block Open
+Source (`cashapp/misk`, rotas `@Unauthenticated` do dashboard v2) — ver
+NOTES.md de `block-open-source`. Todos os 13 assets SOURCE_CODE/
+SMART_CONTRACT do `circle-bbp.json` já têm cobertura de leitura profunda
+prévia.
+
+`export-queue` + commit ao final.
+
+## Rodada 2026-08-31 (push 3a7dabd) — fila vazia, quarta reconfirmação
+do bloqueio de Foundry, tentativa de scope_verified pro achado Solana
+reproduced_local, leitura profunda em circlefin/arc-node
+
+Fila de `candidate` vazia (`list-pending` → `[]`).
+
+- `ColdStorageAddressBookModule` (corroborated_static, Solidity):
+  reconfirmado o bloqueio de rede pro instalador do Foundry
+  (`connect_rejected`/403 via agent-proxy, política de organização) —
+  quarta rodada consecutiva com o mesmo resultado. Checagem rápida
+  desta vez (sem reabrir toda a investigação, seguindo a decisão já
+  registrada na rodada anterior de não repetir o trabalho completo a
+  cada vez). Sem PoC possível, sem mudança de estado.
+- Denylist Solana gateway-wallet (`reproduced_local`, PoC LiteSVM PASS
+  já registrada em rodada anterior): tentei avançar pra
+  `scope_verified` — `check-scope "Circle BBP"
+  "circlefin/solana-gateway-contracts"` → `allowed=true`,
+  `bountyEligible=true`, `maxSeverity=critical`; re-registrei a
+  deployment evidence (ainda `confidence="unverified"`, Circle Gateway
+  segue fora do mainnet Solana, sem endereço de programa real pra
+  citar). Transição recusada como esperado: "declarar o gap não é o
+  mesmo que fechá-lo; precisa de vínculo real (commit↔release↔deploy)
+  com confidence >= low". Comportamento correto da máquina de estados
+  — não é um bloqueio a contornar, é o gate funcionando. Acompanhar em
+  rodadas futuras: assim que o Gateway for pro mainnet Solana, buscar o
+  endereço real do programa implantado pra fechar esse gap.
+
+Leitura profunda proativa desta rodada: `circlefin/arc-node` (Rust),
+3 arquivos novos ligados a gestão de chave ainda não lidos —
+`crates/signer/src/local.rs` (assinatura de voto/proposta do
+validador Malachite; `Debug` redige a chave privada corretamente,
+testado; separação de domínio entre escopos de vote-extension também
+testada — sem achado), `crates/quake/src/nodekey.rs` (geração/gravação
+de nodekey P2P do Reth pra orquestração de testnet — grava o arquivo
+via `fs::write` puro, sem `mode(0o600)` explícito, diferente do padrão
+usado por `malachite-cli/src/file.rs::save()` pra a chave de validador
+real; não abri achado porque é ferramenta de dev/testnet
+(`testnet_dir`), não custódia de fundos nem chave de consenso real, e
+severidade de um nodekey P2P vazado é baixa — mas vale re-olhar se
+`quake` algum dia virar caminho de deploy de produção) e
+`crates/malachite-cli/src/cmd/key.rs` (CLI que só lê e exibe a chave
+pública/endereço a partir do arquivo de chave privada do validador,
+sem transmitir nada — confirmei que `save_priv_validator_key`, usada
+por `init.rs`, grava com `mode(0o600)` explícito em Unix). Nenhum
+achado novo. `deep-read-log.json` atualizado.
+
+`export-queue` + commit ao final.
+
+## Rodada 2026-08-31 (push 47d8c81)
+
+Fila de `candidate` vazia. Achado `corroborated_static`
+(`ColdStorageAddressBookModule.sol::addAllowedRecipients`, PoC
+pendente de Foundry): quinta checagem consecutiva de
+`curl -L https://foundry.paradigm.xyz` — mesmo resultado das 4
+rodadas anteriores (`connect_rejected`/403, política de organização
+do agent-proxy). Confirma de vez que o bloqueio é permanente neste
+ambiente, não transitório — vou parar de repetir essa checagem em
+toda rodada a partir de agora (vou revisitar só se algo mudar na
+política de rede, não por rotina) pra não gastar esforço em uma
+verificação cujo resultado já é previsível. Achado permanece em
+`corroborated_static`, sem PoC executável possível.
+
+Leitura profunda proativa desta rodada: `circlefin/evm-xreserve-contracts`
+(Solidity), 3 arquivos novos —
+`src/UpgradeablePlaceholder.sol` (implementação UUPS no-op usada
+como placeholder antes do deploy real do `xReserve`; `_disableInitializers`
+no construtor, `initialize` valida owner não-zero via `AddressLib`,
+`_authorizeUpgrade` restrito a `onlyOwner` via `Ownable2StepUpgradeable`
+— padrão OZ padrão, sem achado), `src/lib/DepositIntentLib.sol`
+(codifica/decodifica o `DepositIntent` usando `TypedMemView`;
+`_validateDepositIntent` checa versão, `localToken`/`localDepositor`
+não-zero e `amount>0`, mas note-se que NÃO valida `remoteToken`/
+`remoteRecipient` como não-zero — investiguei se isso é explorável:
+não é, porque esses dois campos são responsabilidade de validação do
+lado remoto/destino, não do lado que decodifica localmente; quem
+efetivamente usa `decodeDepositIntent` hoje é só `USDCx.sol`, que o
+próprio código rotula explicitamente como
+"example... not audited or production-ready... for illustrative
+purposes" — não é um contrato de produção implantável, então não abre
+achado reportável neste programa) e `src/lib/AddressLib.sol`
+(`_checkNotZeroAddress`/`_checkNotZeroBytes32`/`_bytes32ToAddressSafe`
+— utilitários simples, `_bytes32ToAddressSafe` corretamente rejeita
+padding não-zero nos 12 bytes superiores antes de truncar pra
+`address`). Nenhum achado novo. `deep-read-log.json` atualizado
+(circlefin/evm-xreserve-contracts agora com 15 arquivos lidos).
+
+`export-queue` + commit ao final.
+
 ## Nova capacidade: Hacker API do HackerOne integrada ao pipeline (31/08/2026)
 
 Usuário forneceu credencial real da Hacker API do HackerOne (username
