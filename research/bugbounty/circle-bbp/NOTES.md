@@ -4347,3 +4347,41 @@ achado novo nesta rodada — resultado normal e válido. Esta rodada não
 tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
 programa segue banido pra pesquisa assistida por IA, ver NOTES.md do
 próprio programa.
+
+## Rodada 2026-08-31 (push automático seguinte, gatilho GitHub, sessão cloud) — fila vazia; `circlefin/stablecoin-aptos` (Move, controle de acesso owner/admin/blocklist)
+
+`list-pending` global trouxe 0 candidatos. Os 6 `corroborated_static`
+legados (Vercel Open Source) e o `human_ready` (`wire-schema`, Block Open
+Source — congelado, ver aviso de banimento de IA no NOTES.md daquele
+programa) seguem sem mudança de estado, nada de novo a repetir.
+
+Leitura profunda proativa: `circlefin/stablecoin-aptos` era o repo do
+programa com menos cobertura (só 2 arquivos lidos em rodadas antigas,
+`stablecoin.move`/`treasury.move`). Clonado via `git clone --depth 1`
+(público, sem conta/token). Priorizei os 3 módulos de controle de acesso
+ainda não lidos:
+
+- `packages/aptos_extensions/sources/ownable.move` — role de owner com
+  transferência em duas etapas (inspirado no `Ownable2Step` da OZ).
+  `transfer_ownership`/`accept_ownership` checam corretamente
+  `signer::address_of(caller)` contra `owner`/`pending_owner` via
+  `assert!` antes de mutar estado; `accept_ownership` exige
+  `pending_owner` setado (`EPENDING_OWNER_NOT_SET`) antes de aceitar.
+  Sem achado.
+- `packages/aptos_extensions/sources/manageable.move` — mesmo padrão
+  para role de admin (`AdminRole`), duas etapas idênticas
+  (`change_admin`/`accept_admin`). Sem achado.
+- `packages/stablecoin/sources/blocklistable.move` — `blocklist`/
+  `unblocklist` checam `signer::address_of(caller) ==
+  blocklist_state.blocklister` antes de mutar a tabela; `update_blocklister`
+  corretamente exige `ownable::assert_is_owner` (não é auto-gerenciável
+  pelo próprio blocklister, só pelo owner do stablecoin — desenho
+  correto de separação de privilégio). Sem achado.
+
+Nenhum achado novo (`ai_deep_read_finding`) nesta rodada — resultado
+normal. `deep-read-log.json` atualizado (`circlefin/stablecoin-aptos`
+2→5). Restam não lidos no mesmo repo: `metadata.move`,
+`stablecoin_utils.move`, `pausable.move`, `upgradable.move`,
+`aptos_extensions.move`. Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA.

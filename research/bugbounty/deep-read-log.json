@@ -509,7 +509,10 @@
   ],
   "circlefin/stablecoin-aptos": [
     "packages/stablecoin/sources/stablecoin.move",
-    "packages/stablecoin/sources/treasury.move"
+    "packages/stablecoin/sources/treasury.move",
+    "packages/aptos_extensions/sources/ownable.move",
+    "packages/aptos_extensions/sources/manageable.move",
+    "packages/stablecoin/sources/blocklistable.move"
   ],
   "circlefin/starknet-cctp": [
     "packages/components/src/attestable.cairo",
