@@ -3033,3 +3033,67 @@ re-exportado desta rodada.
 Próximo passo real: esperar resposta do triager. Se pedir algo, o
 padrão a manter é o mesmo do relatório inteiro — separar sempre o que
 foi provado do que é potencial, nunca inflar pra parecer mais crítico.
+## Rodada 2026-08-31 (push automático) — achado novo: `addAllowedRecipients` sem autorização em `ColdStorageAddressBookModule` (v0.8, buidl-wallet-contracts)
+
+Fila de `candidate` vazia. Leitura profunda proativa continuou em
+`circlefin/buidl-wallet-contracts` (16 arquivos já lidos em rodadas
+anteriores, ainda sem cobrir `src/msca/6900/v0.8/account/BaseMSCA.sol`
+nem os módulos de addressbook v0.8). Ordem de leitura: `PublicKeyLib.sol`
+(usado só como identificador/dedup de owner via WebAuthn, não como gate
+de verificação criptográfica — a verificação real de assinatura já foi
+confirmada segura em `WebAuthnLib.sol` numa rodada anterior; sem achado)
+→ `UpgradableMSCA.sol`/`BaseMSCA.sol` (mecanismo de upgrade via
+`_authorizeUpgrade` vazio + `wrapNativeExecutionFunction`; padrão
+consistente com o próprio framework ERC-6900 já auditado publicamente,
+incluindo a proteção de recursão de self-call em `executeBatch`; sem
+achado) → `ColdStorageAddressBookModule.sol` (v0.8), onde encontrei o
+achado real.
+
+**Achado (`ai_deep_read_finding`, confidence `alta`, estado
+`corroborated_static`):** o manifesto de execução do módulo
+(`executionManifest()`) declara `addAllowedRecipients` com
+`skipRuntimeValidation: true` — e `BaseMSCA._checkCallPermission()`
+(linha 941) pula a checagem de autorização (`_checkValidationForCalldata`,
+que exigiria assinatura de owner) para QUALQUER chamador quando esse
+flag está ligado, não só para EntryPoint/self-call. Ou seja: uma vez que
+uma MSCA v0.8 instala este módulo, **qualquer endereço externo, sem
+posse de nenhuma chave, pode chamar `account.addAllowedRecipients([...])`
+diretamente e se auto-adicionar à lista de destinatários "confiáveis"**
+da conta-alvo — o que anula completamente o propósito do módulo (limitar
+para onde um signer comprometido pode mandar fundos). Confirmei que é
+regressão (não design deliberado) comparando com a versão v0.7 do mesmo
+módulo (`ColdStorageAddressBookPlugin.sol`), que exige corretamente
+`ownerRuntimeValidationFunction`/`ownerUserOpValidationFunction` para a
+mesma função — e reforçado pelos próprios comentários `// TODO: allow
+global validation` / `// WIP module` deixados no código v0.8. A função
+irmã `removeAllowedRecipients` exige autorização normalmente no v0.8 —
+só `addAllowedRecipients` (a mais sensível: adicionar, não remover) ficou
+sem gate. Também confirmei via `RecipientAddressLib.sol` que a extração
+de "recipient" cobre `approve`/`setApprovalForAll` além de
+`transfer`/`transferFrom` — reforça a gravidade (atacante auto-adicionado
+também consegue fazer a conta aprovar ele como spender).
+
+Registrado via `upsert-finding`, avançado pra `corroborated_static` via
+`transition` (aceito). Tentativa de PoC Foundry: `curl -L
+https://foundry.paradigm.xyz | bash` foi **bloqueado pela política de
+rede desta sessão** (`403` no CONNECT, confirmado via
+`$HTTPS_PROXY/__agentproxy/status` como `connect_rejected` pro host
+`foundry.paradigm.xyz:443`) — não tentei contornar (proibido pelo README
+do proxy). `record-validation` registrado com `result=fail` e a saída
+literal do bloqueio; `transition -> reproduced_local` tentada e
+**corretamente recusada** ("precisa de pelo menos uma validação com
+result=pass"). Fica em `corroborated_static` — bloqueio real de
+ferramental/rede desta rodada, não recusa de contornar a máquina de
+estados. Verificação de duplicata feita via busca na web (sem resultado
+público encontrado) e checagem visual do repo (sem pasta docs/audit na
+clonagem rasa); sem acesso à API de issues/PRs do repositório nesta
+sessão (fora do escopo anexado) — gap registrado explicitamente, não
+tratado como confirmação de ineditismo.
+
+`deep-read-log.json` atualizado (`circlefin/buidl-wallet-contracts` agora
+com 20 arquivos). Se uma rodada futura tiver acesso de rede a
+`foundry.paradigm.xyz` (ou o Foundry já vier pré-instalado no ambiente),
+este achado é candidato natural a virar o próximo `reproduced_local`: o
+teste seria simplesmente instalar o módulo numa MSCA v0.8 de teste e
+chamar `addAllowedRecipients` de um endereço aleatório sem nenhuma
+validação configurada, confirmando que o storage do módulo muda.
