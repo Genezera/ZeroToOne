@@ -420,3 +420,101 @@ como quarentena e o sinal de novidade de programa foram; (2) o gap real
 que isso expôs — achados com PoC executável real nem sempre têm
 `record-validation` formal gravado, só prosa — continua **aberto**, não
 é resolvido só por este grau saber contornar o sintoma.
+
+## Bloqueio de programa por política (31/08/2026) — conserta a pausa do Block Open Source de vez
+
+A pausa do Block Open Source por arquivo (`targets-jvm/go/swift.mjs`
+exportando array vazio) não bastou sozinha: uma rodada de leitura
+profunda (`misk-admin`, ver `block-open-source/NOTES.md`) rodou HORAS
+depois da pausa ser publicada, provando que o agente de nuvem não
+decide o que investigar só a partir desses 3 arquivos.
+
+`program-policy.mjs` + `research/bugbounty/program-policy.json`
+resolvem isso na raiz: `db.mjs::recordTransition` injeta
+`ctx.programPolicy` automaticamente em TODA chamada — não fica a cargo
+de quem chama (CLI local, CLI do agente de nuvem, qualquer conta)
+lembrar de passar isso. `state-machine.mjs` checa no gate
+`scope_verified->human_ready` e recusa a transição pra qualquer
+`f.program` marcado com `aiResearchBanned: true`, com o motivo exato
+citado na razão de falha. Isso não impede a pesquisa em si (que já
+aconteceu antes de qualquer chamada a `transition`) — só impede o
+achado de avançar formalmente no pipeline, em QUALQUER ambiente que
+compartilhe o mesmo `state-machine.mjs` via git, o que cobre os dois
+lados hoje (local e agente de nuvem).
+
+`cli.mjs check-program "<nome>"` expõe a mesma checagem ANTES de
+investir tempo de investigação — resposta sempre idêntica à que o gate
+de `human_ready` daria depois, porque consultam a mesma fonte.
+
+O achado mais forte já descoberto em Block Open Source
+(`wire-schema/.../DirectoryRoot.resolve`, path traversal real, E3, PoC
+Java executado de verdade) agora tem essa trava formal, além do aviso
+já escrito em `block-open-source/NOTES.md`.
+
+## Pipeline de promoção automática de alvo (31/08/2026)
+
+Até aqui, o único jeito de um programa virar alvo de varredura ativa
+era eu escolher manualmente um por um — o gargalo real por trás da
+"amplitude estreita" identificada em 31/08/2026: só 4 programas com
+achado (Circle BBP, Vercel Open Source, Block Open Source, StackingDAO)
+de milhares disponíveis no dataset HackerOne+Bugcrowd que
+`discover-targets.mjs` já cobre há semanas. A descoberta em si sempre
+foi ampla; a promoção pra varredura de verdade é que era 100% manual.
+
+`promote-targets.mjs` fecha essa lacuna reusando o candidato que
+`discover-targets.mjs` já buscou e enriqueceu (linguagem, estrelas,
+payout conhecido, idade do programa) — nenhuma chamada de rede nova.
+Cada candidato vira exatamente um veredito, nunca some em silêncio:
+
+- `blocked_program` — programa em `program-policy.json` (defesa em
+  profundidade; o gate de verdade é o de `state-machine.mjs` acima).
+- `unsupported_language` — só entra quem já tem heurística de verdade
+  hoje (JS/TS, Go, Kotlin/Java, Swift/ObjC, Solidity); Rust/Python/
+  Move/Cairo/C++/etc. ficam de fora não por serem menos importantes,
+  mas por não existir detector ainda — problema maior, não escondido
+  aqui.
+- `too_large` (> 20MB) — monorepo grande demais pra escanear sem
+  `pathPrefixes` curados à mão (o motivo original, já documentado em
+  `discover-targets.mjs`, pelo qual a descoberta nunca escreveu
+  targets-*.mjs sozinha); listado à parte pra revisão manual, não
+  descartado nem promovido às cegas.
+- `insufficient_signal` (score 0) — ver o bug real abaixo.
+- `eligible` — pontuado (`scoreCandidate`, cada componente vira uma
+  frase em `reasons`, nunca "score misterioso": até 100 pontos por
+  teto de recompensa conhecido, até 30 por programa lançado há menos
+  de 180 dias, +10 por 100+ estrelas, +10 por push nos últimos 90
+  dias) e ranqueado; top-N (padrão 5 por rodada, teto absoluto 40 no
+  total) vira alvo de verdade em `targets-auto-promoted.mjs`.
+
+Cada `targets-<linguagem>.mjs` importa `AUTO_PROMOTED_TARGETS` e faz
+`[...manual, ...automático.filter(linguagem)]` — curadoria à mão e
+promoção automática nunca se misturam na mesma lista escrita à mão.
+`targets-auto-promoted.mjs` é 100% gerado (cabeçalho avisa "não editar
+à mão"); `research/bugbounty/targets-auto-promoted-log.json` guarda o
+histórico completo de toda rodada, incluindo tudo que foi considerado
+e recusado.
+
+**Bug real pego na primeira rodada ao vivo** (mesmo padrão de todo
+outro recurso desta sessão: testar contra dado real antes de
+considerar pronto): ranquear por score e pegar o topo-N garante só "o
+menos pior do lote", não "bom o bastante" — a rodada promoveu
+`ExodusOSS/crypto` e `ExodusOSS/hydra` com score=0 e `reasons: []`
+(candidato HackerOne sem payout conhecido no dataset em massa, sem
+estrelas relevantes, sem push recente registrado). Corrigido com
+`MIN_SCORE_TO_PROMOTE` — score precisa ser > 0 (pelo menos um sinal
+positivo real) pra sequer entrar no ranking; sem isso vira
+`insufficient_signal`, nunca promovido só pra preencher a rodada.
+Aplicado retroativamente ao arquivo já publicado usando o score já
+gravado em cada entrada (sem re-buscar nada) — `GO_TARGETS` ativo hoje:
+só `kubernetes/apimachinery` e `okx/go-wallet-sdk`, ambos com sinal
+real (estrelas + atividade recente).
+
+**Limite honesto ainda aberto**: candidato HackerOne nunca pontua por
+payout hoje (o dataset em massa do HackerOne não expõe isso por ativo,
+diferente do Bugcrowd) — só `getStructuredScope` (API ao vivo,
+autenticada) teria esse dado por ativo, e chamar isso pra todo
+candidato sairia caro. Hoje um programa HackerOne só pontua por
+estrelas/atividade/idade, nunca por recompensa conhecida — significa
+que o ranking pode estar subestimando candidato HackerOne valioso
+frente a um Bugcrowd com `max_payout` público. Fica registrado como
+lacuna real, não como "resolvido".

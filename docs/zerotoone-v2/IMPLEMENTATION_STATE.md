@@ -416,6 +416,60 @@ citados na auditoria, não todos). O calibrador (usar resultado real de
 plataforma pra ajustar confiança de heurística) continua não
 implementado.
 
+## Bloqueio de programa por política + pipeline de promoção automática (31/08/2026)
+
+Usuário percebeu (corretamente) que só Circle BBP tinha investigação de
+verdade, apesar da descoberta já cobrir o dataset HackerOne+Bugcrowd
+inteiro há semanas — confirmado com número real: só 4 programas com
+QUALQUER achado (Circle BBP 13, Vercel Open Source 30, Block Open
+Source 11, StackingDAO 5), de milhares de programas disponíveis. A
+causa raiz não era a descoberta (ampla desde sempre) — era a promoção
+pra varredura ativa ser 100% manual, um programa por vez.
+
+Duas peças, construídas juntas porque a segunda depende da primeira
+pra ser segura:
+
+1. **`program-policy.mjs`** — resolve de vez o problema (já flagrado
+   antes hoje) de a pausa por arquivo do Block Open Source não bastar
+   sozinha (uma rodada de leitura profunda rodou horas depois da pausa
+   ser publicada). Agora `db.mjs::recordTransition` injeta
+   `ctx.programPolicy` automaticamente em TODA transição, e
+   `state-machine.mjs` recusa `scope_verified->human_ready` pra
+   qualquer programa marcado `aiResearchBanned` em
+   `research/bugbounty/program-policy.json` — vale pra qualquer
+   chamador (CLI local, CLI do agente de nuvem), não só quem lembra de
+   checar. `cli.mjs check-program "<nome>"` expõe a mesma checagem
+   antes de investir tempo de investigação.
+2. **`promote-targets.mjs`** — pontua e promove automaticamente os
+   candidatos que `discover-targets.mjs` já enriquece (linguagem,
+   estrelas, payout, idade de programa), sem chamada de rede nova.
+   Filtra por linguagem suportada (só as 5 com heurística de verdade
+   hoje), tamanho de repo (>20MB vira "revisão manual", não descarte
+   nem promoção às cegas), e política de programa (item 1 acima, defesa
+   em profundidade). Gera `targets-auto-promoted.mjs` (nunca editado à
+   mão) que cada `targets-<linguagem>.mjs` importa e mescla com a lista
+   curada à mão, sempre separadas.
+
+Rodada real ao vivo (não simulada): 195 candidatos no dataset, 30 com
+metadado buscado nesta rodada, 4 promovidos inicialmente —
+`kubernetes/apimachinery`, `okx/go-wallet-sdk`, e **2 com score=0 e
+`reasons: []`** (`ExodusOSS/crypto`, `ExodusOSS/hydra`). Bug real: pegar
+o topo-N por ranking garante só "o menos pior do lote", não "bom o
+bastante" pra gastar orçamento de scan diário nele pra sempre. Corrigido
+com `MIN_SCORE_TO_PROMOTE` (score precisa ser > 0, pelo menos um sinal
+positivo real) e aplicado retroativamente ao arquivo já publicado
+usando o score já gravado (sem re-buscar nada) — `GO_TARGETS` ativo
+hoje: só os 2 com sinal real. Ver seção própria em
+`system/bugbounty-scanner/README.md` pro detalhe completo, incluindo a
+lacuna ainda aberta (candidato HackerOne nunca pontua por payout hoje —
+só Bugcrowd expõe isso no dataset em massa).
+
+Isso não resolve a amplitude de linguagem (Rust/Python/Move/Cairo/C++
+continuam sem heurística — 19 candidatos reais dessa rodada ficaram de
+fora só por isso, ver `targets-auto-promoted-log.json`) nem substitui
+`getStructuredScope` ao vivo como fonte de elegibilidade por ativo —
+ambos continuam lacunas reais, documentadas, não escondidas.
+
 ## Bloqueios externos conhecidos
 
 - Nenhum ainda identificado que exija credencial ou acesso que o usuário
