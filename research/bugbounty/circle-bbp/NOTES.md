@@ -2552,3 +2552,57 @@ os componentes de controle de acesso mais críticos e ainda não lidos):
 
 `deep-read-log.json` atualizado com os 4 arquivos acima. Nenhum
 achado novo nesta rodada.
+
+## Rodada 2026-08-31 (push trigger seguinte) — sem candidatos novos, leitura profunda em `stablecoin-evm` (FiatTokenV2/V2_1/V2_2, permit + init)
+
+`list-pending` vazio de novo. Os dois achados em `corroborated_static`
+seguem sem insumo novo (mesmo ambiente efêmero, nenhum release/PoC
+validator novo) — não retrabalhados nesta rodada, mesma decisão da
+rodada anterior.
+
+Leitura profunda proativa (3 arquivos novos, `circlefin/stablecoin-evm`
+— nunca coberto além de `MintController`/`Controller`/`Blacklistable`/
+`EIP3009`/`SignatureChecker`/`ECRecover`/`FiatTokenV1`, priorizando a
+cadeia de auth de `permit`/EIP-3009 que ainda faltava):
+
+- `contracts/v2/FiatTokenV2.sol` — `initializeV2(newName)` é `external`
+  sem `onlyOwner`, só gateado por `require(initialized &&
+  _initializedVersion == 0)`. À primeira vista parece um clássico
+  "front-run de initializer de proxy" (qualquer um chama antes do
+  admin, fixando `newName`/domain separator maliciosos e travando o
+  `_initializedVersion` em 1 pra sempre). Persegui isso a fundo: o
+  fluxo real de upgrade usa `contracts/v2/upgrader/V2Upgrader.sol`, que
+  faz `_proxy.upgradeTo(_implementation)` **e** `v2.initializeV2(_newName)`
+  na mesma função `upgrade()` (`onlyOwner`), atomicamente — antes dessa
+  tx o proxy nem aponta pra V2, então não existe janela de mempool pra
+  um atacante inserir a própria chamada entre o upgrade e o init.
+  `scripts/deploy/DeployImpl.sol` reforça o mesmo padrão pro contrato de
+  implementação isolado (`getOrDeployImpl`): inicializa com valores
+  dummy logo após o `new FiatTokenV2_2()`, comentário explícito
+  ("prevents the contract from being reinitialized later on with
+  different values"). Sem achado — mitigação por design já existente,
+  não uma omissão.
+- `contracts/v2/FiatTokenV2_1.sol` — mesmo padrão em `initializeV2_1`
+  (drena saldo travado no próprio contrato pro `lostAndFound` e
+  blacklista `address(this)`); mesma dependência do upgrader atômico.
+  Sem achado novo (é o fix já conhecido publicamente do incidente de
+  fundos travados em EIP-3009, não uma superfície nova).
+- `contracts/v2/FiatTokenV2_2.sol` — ponto que investiguei com
+  ceticismo real: os overrides de `permit`/`approve`/
+  `increaseAllowance`/`decreaseAllowance` nesta versão **removeram** os
+  modifiers `notBlacklisted(owner)`/`notBlacklisted(spender)` que
+  existiam em `FiatTokenV2`. Hipótese testada: conta blacklistada
+  conseguir aprovar/alterar allowance mesmo bloqueada. Rastreei até
+  `contracts/v1/FiatTokenV1.sol::transferFrom` (linhas 258-269): exige
+  `notBlacklisted(msg.sender)`, `notBlacklisted(from)` e
+  `notBlacklisted(to)` — ou seja, mesmo que uma conta blacklistada
+  consiga setar uma allowance via `permit`/`approve`, ninguém consegue
+  de fato mover os fundos dela (`transferFrom` bloqueia porque `from`
+  está blacklistado). A remoção do modifier é intencional e inofensiva:
+  aprovar não move valor, só quem pode gastar (`transferFrom`) é que
+  precisa checar blacklist, e essa checagem continua intacta. Sem
+  achado — comportamento real do USDC em produção há anos, não uma
+  regressão.
+
+`deep-read-log.json` atualizado (`circlefin/stablecoin-evm` agora com
+10 arquivos). Nenhum achado novo nesta rodada — resultado normal.
