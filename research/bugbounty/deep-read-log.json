@@ -391,12 +391,16 @@
     "packages/stablecoin/sources/treasury.move"
   ],
   "circlefin/starknet-cctp": [
+    "packages/components/src/attestable.cairo",
+    "packages/message_transmitter/src/message_transmitter_v2.cairo",
     "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo"
   ],
   "circlefin/stablecoin-starknet": [
-    "packages/stablecoin/src/fiat_token/fiat_token.cairo",
+    "packages/components/src/blocklistable/blocklistable.cairo",
     "packages/components/src/denylistable/denylistable.cairo",
-    "packages/components/src/blocklistable/blocklistable.cairo"
+    "packages/components/src/manageable/manageable.cairo",
+    "packages/components/src/ownable/ownable.cairo",
+    "packages/stablecoin/src/fiat_token/fiat_token.cairo"
   ],
   "circlefin/stablecoin-xlm": [
     "soroban/contracts/fiat-token-admin/src/blocklistable.rs",

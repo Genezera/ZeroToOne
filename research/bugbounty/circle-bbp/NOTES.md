@@ -2516,3 +2516,39 @@ nesta rodada:
   `reproduced_local` assim que (a) um validador Anchor/Solana existir
   no sistema, ou (b) o programa for lançado em mainnet e um endereço
   real puder ser citado como deployment evidence com confidence >= low.
+
+## Rodada 2026-08-31 (push trigger) — sem candidatos novos, leitura profunda em componentes de auth do Starknet CCTP
+
+`list-pending` vazio. Os dois achados em `corroborated_static`
+(Solana denylist acima, e Vercel SSO alcançabilidade) já tinham sido
+re-verificados de forma independente e exaustiva na rodada anterior
+(mesmo dia); ambiente desta rodada é um container efêmero novo (30G
+livres, sem toolchain Anchor/Solana instalado) — nada mudou que
+justifique reabrir a investigação sem novo insumo (nenhum release de
+mainnet novo, nenhum PoC validator novo no sistema). Não retrabalhado.
+
+Leitura profunda proativa (3 arquivos novos, todos em
+`circlefin/starknet-cctp` / `circlefin/stablecoin-starknet`, priorizando
+os componentes de controle de acesso mais críticos e ainda não lidos):
+
+- `starknet-cctp/packages/message_transmitter/src/message_transmitter_v2.cairo`
+  — `receive_message`/`validate_received_message`: nonce vem do próprio
+  `MessageV2` (não é contador incremental), domínio de destino, destino
+  de caller e versão são validados antes de marcar nonce usado. Sem
+  achado — mesmo shape do MessageTransmitter EVM já auditado.
+- `starknet-cctp/packages/components/src/attestable.cairo` —
+  `verify_attestation_signatures`: M-de-N assinaturas ECDSA
+  secp256k1, ordem estritamente crescente de endereço recuperado
+  (impede duplicata), rejeita high-S (anti-malleability), valida
+  range de `v`. Port fiel do multisig já auditado no EVM
+  (`SimpleMultisig`/CCTP MessageTransmitter). Sem achado.
+- `stablecoin-starknet/packages/components/src/ownable/ownable.cairo`
+  e `.../manageable/manageable.cairo` — transferência de
+  owner/admin em duas etapas (`propose`→`accept`), checagem de
+  endereço zero, `assert_only_owner`/`assert_only_admin` corretos.
+  Componentes compartilhados por ambos os produtos Starknet da Circle
+  (CCTP e stablecoin) — sem achado, mas alto valor por serem
+  primitivas de acesso reutilizadas amplamente.
+
+`deep-read-log.json` atualizado com os 4 arquivos acima. Nenhum
+achado novo nesta rodada.
