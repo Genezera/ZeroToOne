@@ -8,6 +8,9 @@ Before copying/pasting and submitting, check:
 - [ ] Category confirmed — matches a category the program declares eligible for a reward (not metadata/cosmetic)
 - [ ] Evidence checked — the code excerpts and the PoC output below really exist/ran as described
 - [ ] Not a duplicate — checked against reports already submitted; also do a fresh search on the program page right before submitting (a live public program with real activity can get new duplicates fast — this session already lost a race on a different finding)
+- [ ] Screenshots attached — HackerOne needs these as separate file uploads on the submission form, not as pasted Markdown; the `![...]()` embeds below are for viewing this report locally/on GitHub, not for pasting into the report text box
+
+**Screenshots (2026-08-31):** 5 real screenshots, taken by you following the guide, verified here by actually looking at each one — all accurate, all legible, all matching the code/output already in this report. Files at `research/bugbounty/reports/screenshots/circle-bbp-solana-gateway-denylist-withdrawal/`, embedded inline below at their matching section. Suggested upload order on HackerOne: `01-poc-execution.png` first (it's the whole story in one image), then `02` through `05` in the order they appear in Evidence. `01` shows a third independent run (different tx signature again) — three separate live executions now, same deterministic result every time.
 
 **Live-verified 2026-08-31:** `circlefin/solana-gateway-contracts`, type "Smart contract", **In scope**, max severity **Critical**, **Eligible**, on `hackerone.com/circle-bbp`.
 
@@ -78,6 +81,8 @@ pub depositor_denylist: UncheckedAccount<'info>,
 // ... and in the handler:
 // require!(!utils::is_account_denylisted(&ctx.accounts.depositor_denylist), GatewayWalletError::AccountDenylisted);
 ```
+![Denylist enforcement exists on the deposit path](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/02-deposit-rs.png)
+*Denylist enforcement exists on the deposit path — `deposit.rs`, lines 37-91 at the pinned commit.*
 
 **2. `initiate_withdrawal.rs` — the same check does not exist at the start of a withdrawal:**
 ```rust
@@ -104,6 +109,8 @@ pub struct InitiateWithdrawalContext<'info> {
     // no denylist account declared anywhere in this struct
 }
 ```
+![initiate_withdrawal has no denylist account or denylist check](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/03-initiate-withdrawal-rs.png)
+*`initiate_withdrawal` has no denylist account or denylist check — full `InitiateWithdrawalContext` struct plus the start of the handler, lines 33-62.*
 
 **3. `withdrawal.rs` — nor at the completion of a withdrawal:**
 ```rust
@@ -134,6 +141,8 @@ pub struct WithdrawContext<'info> {
     // no denylist account declared anywhere in this struct
 }
 ```
+![withdraw also lacks denylist enforcement](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/04-withdrawal-rs.png)
+*`withdraw` also lacks denylist enforcement — full `WithdrawContext` struct, lines 34-69.*
 
 `InitiateWithdrawalContext` and `WithdrawContext` do not receive the denylist PDA and contain no denylist check. The absence is demonstrated by the code itself.
 
@@ -145,6 +154,8 @@ pub fn is_account_denylisted<'info>(denylist_account: &UncheckedAccount<'info>) 
     !denylist_account.data_is_empty()
 }
 ```
+![Denylist state is determined by the existence of the depositor's denylist PDA](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/05-utils-rs.png)
+*Denylist state is determined by the existence of the depositor's denylist PDA — `utils.rs`, lines 37-40.*
 
 ## Executable proof of concept
 Built the real `gateway-wallet` program from source (`cargo-build-sbf`, official Solana/Agave CLI, no reimplementation) and generated the real Anchor IDL (`anchor-cli` 0.31.1). Ran the test against the real compiled program using `litesvm` (an in-process Solana VM) via **the project's own real test helper class**, `GatewayWalletTestClient` from `tests/gateway-wallet/test_client.ts` — the exact same client the project's own `deposit.test.ts`/`withdrawal.test.ts`/`denylist.test.ts` use, not a custom reimplementation.
@@ -195,6 +206,8 @@ UNAUTHORIZED WITHDRAWAL ACCEPTED
 
   1 passing (875ms)
 ```
+![Executable PoC — denylisted account successfully withdraws its pre-existing balance](screenshots/circle-bbp-solana-gateway-denylist-withdrawal/01-poc-execution.png)
+*Executable PoC — denylisted account successfully withdraws its pre-existing balance. This is a separate live run from the literal text above (same command, run again from a plain PowerShell window) — different transaction signature (`4YFCbs5U...`) than the text block's `5fWLeusE...`, identical deterministic numbers. Two independent runs, same result.*
 
 ## Impact
 A denylisted account can retain and withdraw funds that were deposited before the denylist action.
