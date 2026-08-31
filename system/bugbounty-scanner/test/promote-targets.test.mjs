@@ -142,16 +142,23 @@ test('promoteTargets: nunca promove o mesmo repo duas vezes entre rodadas (exist
 });
 
 test('promoteTargets: respeita o teto TOTAL de alvos auto-promovidos, não só o teto por rodada', () => {
-  const candidates = [candidate({ owner: 'a', repo: '1' }), candidate({ owner: 'b', repo: '2' })];
+  const candidates = [candidate({ owner: 'a', repo: '1', stars: 500 }), candidate({ owner: 'b', repo: '2', stars: 500 })];
   const result = promoteTargets(candidates, { maxPromotionsPerRun: 5, maxTotalPromoted: 10, currentTotalPromoted: 9, now: NOW });
   assert.equal(result.promoted.length, 1); // só 1 vaga sobrando, mesmo com orçamento por rodada de 5
 });
 
 test('promoteTargets: teto total já esgotado reporta atCap=true em vez de promover além do limite', () => {
-  const candidates = [candidate()];
+  const candidates = [candidate({ stars: 500 })];
   const result = promoteTargets(candidates, { maxTotalPromoted: 10, currentTotalPromoted: 10, now: NOW });
   assert.equal(result.promoted.length, 0);
   assert.equal(result.skipped.atCap, true);
+});
+
+test('promoteTargets: candidato sem NENHUM sinal positivo (score 0) nunca é promovido só pra preencher a rodada — bug real pego na primeira rodada ao vivo (ExodusOSS/crypto, ExodusOSS/hydra)', () => {
+  const candidates = [candidate({ owner: 'sem-sinal', repo: 'x' })]; // sem payout, sem estrelas, sem push recente, sem idade de programa
+  const result = promoteTargets(candidates, { now: NOW });
+  assert.equal(result.promoted.length, 0);
+  assert.deepEqual(result.skipped.insufficientSignal, [{ owner: 'sem-sinal', repo: 'x', score: 0 }]);
 });
 
 test('promoteTargets: nenhum candidato desaparece em silêncio — todo mundo aparece em promoted OU em algum balde de skipped', () => {
@@ -160,7 +167,8 @@ test('promoteTargets: nenhum candidato desaparece em silêncio — todo mundo ap
     candidate({ owner: 'b', repo: '2', language: 'Python' }),
     candidate({ owner: 'c', repo: '3', sizeKb: MAX_REPO_SIZE_KB + 1 }),
     candidate({ owner: 'd', repo: '4', language: null, metadataError: 'timeout' }),
-    candidate({ owner: 'e', repo: '5' }),
+    candidate({ owner: 'e', repo: '5', stars: 500 }), // único com sinal real — vira o "promoted" desta lista
+    candidate({ owner: 'f', repo: '6' }), // sem sinal nenhum — vira insufficientSignal
   ];
   const policy = { Bloqueado: { aiResearchBanned: true, reason: 'x' } };
   const result = promoteTargets(candidates, { programPolicy: policy, now: NOW });
@@ -170,8 +178,15 @@ test('promoteTargets: nenhum candidato desaparece em silêncio — todo mundo ap
     result.skipped.unsupportedLanguage.length +
     result.skipped.tooLarge.length +
     result.skipped.metadataFetchFailed.length +
+    result.skipped.insufficientSignal.length +
     result.skipped.deferredToNextRun.length;
   assert.equal(accountedFor, candidates.length);
+});
+
+test('classifyCandidate: score exatamente 0 (nenhum sinal) vira insufficient_signal, não eligible', () => {
+  const r = classifyCandidate(candidate(), { now: NOW });
+  assert.equal(r.verdict, 'insufficient_signal');
+  assert.equal(r.score, 0);
 });
 
 test('promoteTargets: entrada promovida tem o formato exato que scan-runner.mjs espera de um target', () => {
@@ -191,7 +206,7 @@ test('promoteTargets: entrada promovida tem o formato exato que scan-runner.mjs 
 });
 
 test('promoteTargets: sem defaultBranch, usa "main" como fallback', () => {
-  const result = promoteTargets([candidate({ defaultBranch: undefined })], { now: NOW });
+  const result = promoteTargets([candidate({ defaultBranch: undefined, stars: 500 })], { now: NOW });
   assert.equal(result.promoted[0].branch, 'main');
 });
 

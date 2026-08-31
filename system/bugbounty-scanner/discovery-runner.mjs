@@ -145,7 +145,7 @@ export async function runDiscovery() {
   } else {
     log(`Idade de programa buscada com sucesso pra ${result.programsWithAgeFound} programa(s) HackerOne distinto(s) — usada pra priorizar candidato de programa mais novo primeiro.`);
   }
-  log(`Promoção automática: ${promotionResult.promoted.length} alvo(s) novo(s) promovido(s) pra varredura ativa (${mergedAutoPromoted.length} no total agora), ${promotionResult.skipped.blockedProgram.length} recusado(s) por política de programa, ${promotionResult.skipped.unsupportedLanguage.length} por linguagem não suportada, ${promotionResult.skipped.tooLarge.length} por repo grande demais (revisão manual sugerida), ${promotionResult.skipped.deferredToNextRun.length} elegível(is) mas sem vaga nesta rodada.`);
+  log(`Promoção automática: ${promotionResult.promoted.length} alvo(s) novo(s) promovido(s) pra varredura ativa (${mergedAutoPromoted.length} no total agora), ${promotionResult.skipped.blockedProgram.length} recusado(s) por política de programa, ${promotionResult.skipped.unsupportedLanguage.length} por linguagem não suportada, ${promotionResult.skipped.tooLarge.length} por repo grande demais (revisão manual sugerida), ${promotionResult.skipped.insufficientSignal.length} sem nenhum sinal positivo (score 0), ${promotionResult.skipped.deferredToNextRun.length} elegível(is) mas sem vaga nesta rodada.`);
   if (promotionResult.skipped.tooLarge.length > 0) {
     log(`Repos grandes demais pra promoção automática (curadoria de pathPrefix manual recomendada, ver ${PROMOTION_LOG_PATH}): ${promotionResult.skipped.tooLarge.map((r) => `${r.owner}/${r.repo}`).join(', ')}`);
   }

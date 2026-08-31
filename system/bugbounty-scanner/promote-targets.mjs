@@ -25,6 +25,17 @@
 import { getBlockReason } from './program-policy.mjs';
 
 export const MAX_REPO_SIZE_KB = 20000; // ~20MB — acima disso, scan-runner.mjs já teria que truncar (ver MAX_FILES_PER_TARGET) sem pathPrefix curado escolhendo o que fica de fora; melhor sinalizar pra revisão manual que promover às cegas
+// Bug real pego na primeira rodada ao vivo (31/08/2026): ranquear por score
+// e pegar o topo-N não garante NENHUM sinal positivo -- só garante que é o
+// "menos pior" do lote. Duas entradas (ExodusOSS/crypto, ExodusOSS/hydra)
+// foram promovidas com score=0 e reasons=[] (candidato HackerOne sem
+// payout conhecido -- HackerOne não expõe isso no dataset em massa, só
+// Bugcrowd -- sem estrelas>=100, sem push recente registrado). "Melhor do
+// que nada" não é o mesmo que "bom o bastante pra gastar orçamento de scan
+// diário nele pra sempre". Qualquer score > 0 já teve PELO MENOS um sinal
+// positivo real (ver scoreCandidate); score 0 vira `insufficient_signal`,
+// nunca promovido, mas também nunca escondido (aparece no log de rodada).
+export const MIN_SCORE_TO_PROMOTE = 0;
 export const DEFAULT_MAX_PROMOTIONS_PER_RUN = 5; // orçamento de API do GitHub é compartilhado com o scan diário — crescer aos poucos, não inundar de uma vez
 export const DEFAULT_MAX_TOTAL_PROMOTED = 40; // teto absoluto — cada alvo a mais é mais chamada de API por dia, pra sempre; ao atingir, promoção para e reporta em vez de crescer sem fim
 
@@ -106,7 +117,7 @@ export function scoreCandidate(candidate, now = Date.now()) {
  * um dos dois. Pura -- `programPolicy` já carregado é passado por quem
  * chama (io fica fora, mesmo padrão de state-machine.mjs).
  */
-export function classifyCandidate(candidate, { programPolicy = {}, maxRepoSizeKb = MAX_REPO_SIZE_KB, now = Date.now() } = {}) {
+export function classifyCandidate(candidate, { programPolicy = {}, maxRepoSizeKb = MAX_REPO_SIZE_KB, minScoreToPromote = MIN_SCORE_TO_PROMOTE, now = Date.now() } = {}) {
   if (candidate.metadataError) {
     return { verdict: 'metadata_fetch_failed', candidate, reason: candidate.metadataError };
   }
@@ -124,6 +135,9 @@ export function classifyCandidate(candidate, { programPolicy = {}, maxRepoSizeKb
     return { verdict: 'too_large', candidate, sizeKb: candidate.sizeKb, reason: `${candidate.sizeKb}KB > ${maxRepoSizeKb}KB — monorepo grande demais pra escanear sem pathPrefixes curados à mão; revisão manual recomendada, não descartado` };
   }
   const { score, reasons } = scoreCandidate(candidate, now);
+  if (score <= minScoreToPromote) {
+    return { verdict: 'insufficient_signal', candidate, score };
+  }
   return { verdict: 'eligible', candidate, language, score, reasons, bestProgram };
 }
 
@@ -144,9 +158,10 @@ export function promoteTargets(discoveredCandidates, {
   maxTotalPromoted = DEFAULT_MAX_TOTAL_PROMOTED,
   currentTotalPromoted = 0,
   maxRepoSizeKb = MAX_REPO_SIZE_KB,
+  minScoreToPromote = MIN_SCORE_TO_PROMOTE,
   now = Date.now(),
 } = {}) {
-  const skipped = { blockedProgram: [], unsupportedLanguage: [], tooLarge: [], metadataFetchFailed: [], alreadyPromoted: 0 };
+  const skipped = { blockedProgram: [], unsupportedLanguage: [], tooLarge: [], metadataFetchFailed: [], insufficientSignal: [], alreadyPromoted: 0 };
   const eligible = [];
 
   for (const candidate of discoveredCandidates) {
@@ -155,7 +170,7 @@ export function promoteTargets(discoveredCandidates, {
       skipped.alreadyPromoted++;
       continue;
     }
-    const result = classifyCandidate(candidate, { programPolicy, maxRepoSizeKb, now });
+    const result = classifyCandidate(candidate, { programPolicy, maxRepoSizeKb, minScoreToPromote, now });
     switch (result.verdict) {
       case 'blocked_program':
         skipped.blockedProgram.push({ owner: candidate.owner, repo: candidate.repo, program: result.program, reason: result.reason });
@@ -168,6 +183,9 @@ export function promoteTargets(discoveredCandidates, {
         break;
       case 'metadata_fetch_failed':
         skipped.metadataFetchFailed.push({ owner: candidate.owner, repo: candidate.repo, reason: result.reason });
+        break;
+      case 'insufficient_signal':
+        skipped.insufficientSignal.push({ owner: candidate.owner, repo: candidate.repo, score: result.score });
         break;
       case 'eligible':
         eligible.push(result);

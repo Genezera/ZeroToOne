@@ -41,31 +41,5 @@ export const AUTO_PROMOTED_TARGETS = [
       "574 estrelas no GitHub — indício de uso real, não projeto de brinquedo"
     ],
     "promotedAt": "2026-08-31T18:44:50.517Z"
-  },
-  {
-    "program": "Exodus",
-    "platform": "HackerOne",
-    "owner": "ExodusOSS",
-    "repo": "crypto",
-    "branch": "master",
-    "maxBountyUsd": null,
-    "pathPrefixes": [],
-    "language": "js",
-    "score": 0,
-    "reasons": [],
-    "promotedAt": "2026-08-31T18:44:50.517Z"
-  },
-  {
-    "program": "Exodus",
-    "platform": "HackerOne",
-    "owner": "ExodusOSS",
-    "repo": "hydra",
-    "branch": "master",
-    "maxBountyUsd": null,
-    "pathPrefixes": [],
-    "language": "js",
-    "score": 0,
-    "reasons": [],
-    "promotedAt": "2026-08-31T18:44:50.517Z"
   }
 ];

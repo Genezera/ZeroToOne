@@ -201,5 +201,9 @@
     "deferredToNextRun": [],
     "atCap": false
   },
-  "note": "skippedThisRound cobre TODO candidato considerado e recusado nesta rodada (linguagem não suportada, repo grande demais, programa bloqueado, erro de metadado, já promovido antes, ou elegível mas sem vaga nesta rodada) -- nunca um corte silencioso."
+  "note": "skippedThisRound cobre TODO candidato considerado e recusado nesta rodada (linguagem não suportada, repo grande demais, programa bloqueado, erro de metadado, já promovido antes, ou elegível mas sem vaga nesta rodada) -- nunca um corte silencioso.",
+  "retroactiveCorrection": {
+    "at": "2026-08-31T19:00:00.000Z",
+    "reason": "Esta rodada real (a primeira ao vivo) promoveu ExodusOSS/crypto e ExodusOSS/hydra com score=0 e reasons=[] -- nenhum sinal positivo real (candidato HackerOne sem payout conhecido no dataset em massa, sem estrelas>=100, sem push recente registrado). O ranking por score sem piso mínimo garantia só 'menos pior do lote', não 'bom o bastante'. Corrigido em promote-targets.mjs (MIN_SCORE_TO_PROMOTE, verdict insufficient_signal) e as duas entradas foram removidas de targets-auto-promoted.mjs (permanecem AQUI, em promotedThisRound acima, como registro histórico real do que aconteceu -- não reescrito). GO_TARGETS ativo hoje: só kubernetes/apimachinery e okx/go-wallet-sdk."
+  }
 }
