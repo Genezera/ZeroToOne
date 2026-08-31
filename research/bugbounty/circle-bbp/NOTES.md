@@ -3997,3 +3997,56 @@ EVM):
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado com os
 3 arquivos acima (`evm-cpn-contracts` agora com todos os 7 arquivos
 `.sol` do repo cobertos).
+
+---
+
+Rodada seguinte — sem candidatos em `list-pending` (fila vazia). Leitura
+profunda proativa priorizando repos não-EVM ainda pouco cobertos
+(clone raso fresco de cada um):
+
+1. `stablecoin-near/src/fiat_token_action.rs` (+ `src/lib.rs`, só
+   declarações de módulo, sem lógica) — mapeia `FiatTokenAction` para o
+   `Role` exigido via `role_required()`. Rastreei o call site real em
+   `fiat_token.rs` (já lido em rodada anterior): `create_multisig_request`,
+   `approve_multisig_request`, `execute_multisig_request` e
+   `remove_multisig_request` todos chamam `require_only(request.action
+   .role_required())` a partir da action já armazenada na request — não
+   há como confundir a action original com uma diferente no momento da
+   execução. Único detalhe notável: `ConfigureMultisigRole`/
+   `RevokeMultisigRole` exigem `Role::Admin` apenas quando o `role` alvo
+   da ação também é `Admin`; para qualquer outro role (Controller,
+   MasterMinter, Pauser, Blocklister) só exige `Role::Owner`. Isso é
+   design intencional (Owner gerencia roles operacionais, só Admin pode
+   promover/rebaixar outro Admin) e consistente com `role.rs` (hierarquia
+   já auditada). Sem achado.
+2. `sui-cctp/packages/token_messenger_minter/sources/handle_receive_message.move`
+   + `sui-cctp/packages/message_transmitter/sources/receive_message.move`
+   (este último ainda não estava no log apesar de ser o módulo mais
+   crítico do pacote — prioridade ajustada) — rastreei a cadeia completa
+   de mint: `receive_message`/`receive_message_with_package_auth` exigem
+   `attestation::verify_attestation_signatures` (já auditado) antes de
+   devolver o `Receipt` (hot potato, sem `copy`/`drop`, só pode ser
+   criado por essa função); `handle_receive_message` consome o `Receipt`,
+   valida remote token messenger/versão/token local/mint cap e só então
+   minta via `treasury::mint`; `stamp_receipt` exige
+   `receipt.recipient == auth_caller_identifier<Auth>()` antes de deixar
+   completar. Cogitei se mintar *antes* de validar o `recipient` seria um
+   problema (o recipient só é conferido depois, em `stamp_receipt`) —
+   não é: `recipient` é sempre o identificador fixo do próprio pacote
+   `token_messenger_minter` para mensagens padrão (dado atestado, não
+   controlável por quem chama `handle_receive_message`), o valor
+   mintado/destinatário do mint (`burn_message.mint_recipient()`) também
+   vem só da mensagem atestada, e o nonce já foi marcado usado em
+   `receive_message`. Mesmo modelo permissionless-relayer do lado EVM
+   (qualquer um pode completar a entrega, mas não pode alterar valor ou
+   destinatário). Sem achado.
+3. `starknet-cctp/packages/components/src/rescuable.cairo` — `rescue_erc20`
+   é gateado por `assert_only_rescuer` (endereço definido só pelo owner via
+   `update_rescuer`), com zero-address/zero-amount checks e verificação do
+   retorno do `transfer`. `token_contract` é parâmetro livre do rescuer,
+   mas rescuer já é papel privilegiado/confiável (mesmo padrão do
+   `Rescuable.sol` já usado nos contratos EVM do próprio Circle). Sem
+   achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (3
+repos não-EVM ganharam +1/+2 arquivos cada).
