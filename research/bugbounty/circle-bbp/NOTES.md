@@ -4486,3 +4486,29 @@ próprio). Sugestão pra próxima rodada: repos com cobertura ainda rasa —
 (4 arquivos), `circlefin/sui-cctp` (5 arquivos) — ou revisitar
 `circlefin/stablecoin-near` (`fiat_token_action.rs`, coberto só por
 menção, sem leitura linha a linha registrada nesta missão).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `buidl-wallet-contracts`/`evm-xreserve-contracts`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa:
+`src/utils/ExecutionUtils.sol` e `src/utils/PaymasterUtils.sol`
+(`circlefin/buidl-wallet-contracts`) — bibliotecas de baixo nível
+(`call`/`delegatecall`/decodificação de `returndata` via assembly) que
+seguem o mesmo padrão de referência do `eth-infinitism/account-abstraction`
+(bubble-up de revert reason, `success` sempre retornado para o chamador
+decidir, nunca engolido). Usadas só internamente por `PluginExecutor.sol`/
+`StandardExecutor.sol` (já auditados em rodada anterior), que checam
+`success` antes de prosseguir. Sem achado.
+
+Também li `src/examples/USDCx.sol` (`circlefin/evm-xreserve-contracts`)
+— contrato inteiro é explicitamente marcado no NatSpec como
+"illustrative purposes... not audited or production-ready" (fica em
+`src/examples/`, fora do path `src/` principal do protocolo). Ainda
+assim, rastreei a cadeia de `mint()`: `_verifySignature` usa
+`ECDSA.recover` da OpenZeppelin (reverte em assinatura malformada/
+malleável, não retorna `address(0)` silenciosamente), nonce marcado
+como usado antes dos efeitos (`usedNonces[nonce] = true` antes dos
+`balances[...] +=`, protege contra reentrância mesmo sem `nonReentrant`
+porque não há call externo no meio). Sem achado — e mesmo que houvesse,
+código de exemplo explicitamente fora de produção tende a estar fora do
+escopo elegível de um BBP real. `deep-read-log.json` atualizado com os
+3 arquivos (2 em `buidl-wallet-contracts`, 1 em `evm-xreserve-contracts`).

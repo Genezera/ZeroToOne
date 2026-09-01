@@ -1914,3 +1914,21 @@ com um aviso de confiança explícito no topo (baixa confiança de
 exploração, recomendado como achado de hardening, não como
 vulnerabilidade confirmada) — decisão de enviar ou não fica com o
 usuário, não uma conclusão automática desta rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `vercel/flags`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa em
+`packages/vercel-flags-core/src/controller/stream-connection.ts` +
+`stream-source.ts` (conexão SSE de streaming de flags, com backoff e
+timeout de ping) e `packages/vercel-flags-core/src/utils/ingest.ts`
+(telemetria de uso) — todas as chamadas de rede usam o token resolvido
+via `Auth.resolveToken()` só no header `Authorization: Bearer`, nunca em
+querystring/URL (não vaza em logs de acesso). `packages/flags/src/lib/
+serialization.ts` (assinatura/verificação HS256 via `jose`
+`CompactSign`/`compactVerify`, usado por `verify-access.ts` já auditado
+em rodada anterior) — comentário `// TODO what happens when verification
+fails?` chamou atenção, mas `compactVerify` do `jose` lança exceção em
+falha de verificação (não retorna silenciosamente um payload inválido),
+então o TODO é só falta de comentário explicativo, não uma lacuna de
+tratamento de erro real. Sem achado novo. `deep-read-log.json`
+atualizado com os 4 arquivos.

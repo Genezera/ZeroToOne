@@ -441,3 +441,17 @@ Leitura profunda proativa — os 3 arquivos pendentes da rodada anterior:
 `deep-read-log.json` atualizado (StackingDAO agora com 15 arquivos
 lidos). Nenhum achado novo nesta rodada — os 3 arquivos pendentes de
 rodadas anteriores foram fechados.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, sem achado novo
+
+`list-pending` global = 0. Revisitei `return-stx-from-stacking` em
+`stx-reserve-v2.clar` (rastreando de novo a cadeia `tx-sender` vs
+`contract-caller` via `stacker-1.clar` linha 179) de forma independente,
+sem antes checar as notas de rodadas passadas — cheguei à mesma
+conclusão já registrada acima (`as-contract` no call site redefine
+`tx-sender` para o próprio stacker, seguro). Achado zero de valor
+incremental, mas serve como segunda confirmação independente do mesmo
+resultado. Todos os 15 arquivos já lidos linha a linha nesta missão
+seguem sem arquivo novo candidato óbvio nesta rodada (a leitura profunda
+proativa desta sessão foi direcionada a Vercel Open Source e Circle BBP
+— ver NOTES.md respectivos).

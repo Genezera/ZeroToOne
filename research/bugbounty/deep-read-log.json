@@ -23,7 +23,11 @@
     "packages/flags/src/next/create-flags-discovery-endpoint.ts",
     "packages/flags/src/next/overrides.ts",
     "packages/vercel-flags-core/src/utils/sdk-keys.ts",
-    "packages/flags/src/spec-extension/cookies.ts"
+    "packages/flags/src/spec-extension/cookies.ts",
+    "packages/vercel-flags-core/src/controller/stream-connection.ts",
+    "packages/vercel-flags-core/src/controller/stream-source.ts",
+    "packages/flags/src/lib/serialization.ts",
+    "packages/vercel-flags-core/src/utils/ingest.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -244,7 +248,9 @@
     "src/msca/6900/v0.7/account/WalletStorageInitializable.sol",
     "src/paymaster/BasePaymaster.sol",
     "src/account/v1/factory/ECDSAAccountFactory.sol",
-    "src/callback/DefaultCallbackHandler.sol"
+    "src/callback/DefaultCallbackHandler.sol",
+    "src/utils/ExecutionUtils.sol",
+    "src/utils/PaymasterUtils.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
@@ -290,7 +296,8 @@
     "src/lib/DepositIntentLib.sol",
     "src/lib/AddressLib.sol",
     "src/modules/x-reserve/Domain.sol",
-    "src/modules/x-reserve/Immutables.sol"
+    "src/modules/x-reserve/Immutables.sol",
+    "src/examples/USDCx.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
