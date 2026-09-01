@@ -2413,3 +2413,31 @@ da rodada 12. `aiResearchBanned: true` ainda vigente. Leitura profunda
 proativa desta rodada foi em `circlefin/arc-node` (Circle BBP, ver
 NOTES.md desse programa) — nenhum repo `cashapp/*`/`afterpay/*`/
 `square/wire` tocado. Nenhum candidate pendente para este programa.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 15ª rodada do dia)
+
+`program-policy.json` checado ANTES de qualquer outra ação, seguindo a
+disciplina estabelecida desde o incidente da 11ª rodada (ver seção
+"INCIDENTE" acima). `aiResearchBanned: true` ainda vigente para "Block
+Open Source". Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire` clonado,
+lido ou tocado nesta rodada — leitura profunda proativa desta rodada foi
+inteiramente em `vercel/vercel` (ver NOTES.md de Vercel Open Source).
+`list-pending` global = 0, sem candidate pendente para este programa.
+
+Nota permanente ainda válida: o achado `js_injection_unescaped_token_risk`
+(afterpay/sdk-ios, criado em violação da policy na 11ª rodada, marcado
+com aviso no reasoning) segue intocado e não deve ser usado como base
+para nenhuma pesquisa ou relatório futuro. O achado em `human_ready`
+(`Root.kt::DirectoryRoot.resolve::path_traversal_risk`, `square/wire`,
+criado ANTES da policy ser registrada em 2026-08-31) também segue
+intocado nesta rodada.
+
+Recomendação ainda pendente (fora do alcance desta sessão resolver): a
+proteção contra repetir o incidente da 11ª rodada é hoje só disciplina de
+sessão (ler esta nota antes de agir) — não há gate técnico que impeça uma
+sessão futura de pular a checagem de novo, só o avanço até
+`human_ready`/relatório é bloqueado de verdade pela state machine. Seria
+mais robusto se o prompt da rotina (configurado fora deste repositório)
+nomeasse explicitamente "carregar program-policy.json e excluir programas
+banidos" como sub-etapa do passo de leitura profunda proativa, em vez de
+depender de cada sessão lembrar via NOTES.md.

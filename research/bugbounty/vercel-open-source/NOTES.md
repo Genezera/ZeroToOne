@@ -3067,3 +3067,40 @@ achado fora de Solidity, então a transição pra `reproduced_local`/
 `scope_verified` é recusada pelo state machine de propósito — não é bug,
 é o sistema esperando um humano decidir se compensa validar manualmente
 esse tipo de achado antes de reportar.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 15ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer leitura (nenhuma entrada
+pra "Vercel Open Source" — sem restrição). `list-pending` global = 0.
+
+Leitura profunda proativa nos 4 candidatos deixados pendentes na rodada
+anterior: `packages/connect/src/chat/github-adapter.ts`,
+`packages/connect/src/chat/linear-adapter.ts` (clone raso de
+`vercel/vercel`, mesmo commit `e06cc643cec6a47bd9344af7f4589c736d95ed15`
+já lido antes) e, em `packages/oidc/src`,
+`get-vercel-oidc-token-with-refresh.ts` + `token.ts` (o `refreshToken`
+que ele chama via import dinâmico).
+
+- `github-adapter.ts`/`linear-adapter.ts`: mesmo padrão já confirmado
+  seguro nos outros adapters (`slack`, `discord`, `photon`) — `subject:
+  { type: 'app' }` é escrito depois do spread de `...params` no literal
+  passado a `getToken`, então a chave literal subsequente sempre
+  sobrescreve qualquer tentativa de override em runtime. Sem achado.
+- `get-vercel-oidc-token-with-refresh.ts::getVercelOidcToken` +
+  `token.ts::refreshToken`: cadeia rastreada ponta a ponta —
+  `getVercelOidcToken` só chama `refreshToken`/re-lê o token sync quando
+  `!token || isExpired(...)`, e `refreshToken` resolve `projectId`/
+  `teamId` (params explícitos > `.vercel/project.json`), carrega token
+  cacheado local via `loadToken(projectId)` (chave só por projectId, sem
+  cross-referenciar teamId no cache) e, se ausente/expirado, re-obtém via
+  keyring da CLI ou `getVercelOidcToken(authToken, projectId, teamId)`.
+  Isso é cache/refresh 100% local (arquivo de config do próprio usuário
+  na própria máquina) — não é um limite de confiança entre tenants/
+  usuários diferentes, então mesmo sem correlação teamId no cache local
+  não há um atacante de terceiro alcançando esse caminho. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado tentada.
+`deep-read-log.json` atualizado (+4 em `vercel/vercel`). Os 4 achados
+`corroborated_static` deste programa continuam presos nesse estado pela
+mesma limitação estrutural (sem validador local pra JS/TS) — não
+revisitados nesta rodada, sem informação nova que mudasse isso.

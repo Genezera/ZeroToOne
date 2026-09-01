@@ -562,7 +562,11 @@
   "packages/connect/src/eve/linear-credentials.ts",
   "packages/connect/src/eve/photon-credentials.ts",
   "packages/connect/src/chat/slack-adapter.ts",
-  "packages/connect/src/internal/team-id.ts"
+  "packages/connect/src/internal/team-id.ts",
+  "packages/connect/src/chat/github-adapter.ts",
+  "packages/connect/src/chat/linear-adapter.ts",
+  "packages/oidc/src/get-vercel-oidc-token-with-refresh.ts",
+  "packages/oidc/src/token.ts"
  ],
  "vercel-labs/agent-skills": [
   ".github/workflows/agent-skills-discovery.yml",
