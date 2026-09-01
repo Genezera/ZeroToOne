@@ -707,7 +707,10 @@
   "packages/harness/src/v1/harness-v1-network-sandbox-session.ts",
   "packages/sandbox-vercel/src/vercel-network-sandbox-session.ts",
   "packages/sandbox-vercel/src/vercel-sandbox-session.ts",
-  "packages/sandbox-vercel/src/vercel-network-policy-manager.ts"
+  "packages/sandbox-vercel/src/vercel-network-policy-manager.ts",
+  "packages/ai/src/generate-text/tool-approval-signature.ts",
+  "packages/ai/src/util/canonical-hash.ts",
+  "packages/ai/src/generate-text/validate-tool-approvals.ts"
  ],
  "vercel/eve": [
   "packages/eve/src/channel/auth/jwt-hmac.ts",

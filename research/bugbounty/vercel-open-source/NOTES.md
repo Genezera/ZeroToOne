@@ -3104,3 +3104,43 @@ Nenhum achado novo, nenhuma transição de estado tentada.
 `corroborated_static` deste programa continuam presos nesse estado pela
 mesma limitação estrutural (sem validador local pra JS/TS) — não
 revisitados nesta rodada, sem informação nova que mudasse isso.
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 16ª rodada do dia)
+
+`list-pending` vazio (nenhum achado em `candidate`). Os 3 achados JS/TS
+já em `corroborated_static` (`update-remix-run-dev.js` command
+injection, `image-optimizer.ts` SSRF redirect bypass, `verify-claim.mjs`
+path traversal) foram conferidos — reasoning e histórico já documentam
+que ficam presos ali de propósito (sem validador local pra JS/TS, state
+machine só aceita `reproduced_local -> scope_verified`), nenhuma ação
+nova necessária.
+
+Leitura profunda proativa: `vercel/ai` (tier 1, `check-scope` confirmado
+`allowed=true`/`eligibleForBounty=true`/`maxSeverity=critical`), 3
+arquivos novos em `packages/ai/src/generate-text/` e
+`packages/ai/src/util/`: `tool-approval-signature.ts`,
+`canonical-hash.ts`, `validate-tool-approvals.ts` — o mecanismo de
+assinatura HMAC-SHA256 (v1, payload JSON injetivo com domain-separation)
+que autentica aprovações humanas de chamadas de tool antes de execução.
+
+Investigado com ceticismo: `canonicalJSON` (canonical-hash.ts) colapsa
+`NaN`, `Infinity` e `null` no mesmo literal `"null"` (herdado do
+comportamento de `JSON.stringify` para esses valores), o que em teoria
+permite dois inputs logicamente distintos produzirem o mesmo
+`inputDigest` e portanto a mesma assinatura válida. Refutado: por
+`validate-tool-approvals.ts` (docstring: "reconstructed from
+client-supplied message history"), o `input` verificado sempre chega
+depois de ter cruzado a fronteira de transporte JSON real (HTTP
+JSON-serializado) entre o momento da aprovação humana e a verificação —
+e `NaN`/`Infinity` não são representáveis em JSON (`JSON.parse` rejeita
+o literal, não silenciosamente vira `null`), então um atacante nunca
+consegue de fato entregar um valor `NaN`/`Infinity` nesse ponto do
+código pra explorar a colisão; ela só existiria num cenário same-process
+sem serialização JSON no meio, que não é o caminho real de uso.
+Verificação de assinatura em si (`crypto.subtle.verify`, HMAC-SHA256,
+formato legado só aceito quando os campos não contêm o delimitador `\n`
+que o tornava ambíguo) e lookup de tool via `getOwn` (blindado contra
+poluição de protótipo por `toolName` tipo `constructor`) sem problema.
+Sem achado novo — resultado normal e válido, não um problema a inventar.
+
+`deep-read-log.json` atualizado (+3 em `vercel/ai`). Nenhuma transição
+de estado tentada nesta rodada (nada em `candidate`, nada progrediu).
