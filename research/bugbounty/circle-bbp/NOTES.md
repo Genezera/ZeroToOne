@@ -5573,3 +5573,37 @@ escopo via `scope-snapshots/circle-bbp.json`, `eligibleForBounty: true`),
 
 `deep-read-log.json` atualizado (+3 em `circlefin/arc-node`, agora 25
 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 14ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0, nenhum candidato pendente.
+Leitura profunda proativa em `circlefin/stablecoin-evm` (escopo confirmado
+via `scope-snapshots/circle-bbp.json`), 3 arquivos novos ainda não lidos,
+priorizando controle de acesso/admin (nome do arquivo com "Ownable"/"Admin"):
+
+- `contracts/v1/Ownable.sol` — implementação clássica de ownership
+  (fork do openzeppelin-labs antigo, slot único `_owner`). `onlyOwner`
+  correto, `transferOwnership` valida `newOwner != address(0)`. Sem
+  achado — código trivial e maduro, sem lógica customizada da Circle.
+- `contracts/upgradeability/AdminUpgradeabilityProxy.sol` — proxy
+  admin transparente clássico (fork do zos-lib), `ifAdmin` delega pro
+  fallback quando `msg.sender != admin`, `_willFallback` bloqueia o
+  admin de cair no fallback (proteção contra "selector clash" entre
+  função do admin e função da implementação). Slot de admin é o hash
+  keccak canônico `org.zeppelinos.proxy.admin`, validado via `assert`
+  no construtor. Padrão auditado há anos, usado por milhares de
+  contratos — sem achado.
+- `contracts/v1/FiatTokenProxy.sol` — wrapper trivial de 3 linhas em
+  cima de `AdminUpgradeabilityProxy`, zero lógica customizada da Circle
+  além do construtor. Sem achado.
+
+Nenhuma customização própria da Circle nesses 3 arquivos foge do padrão
+OpenZeppelin/zos-lib original — consistente com o fato de FiatToken/USDC
+ser um dos contratos mais auditados do ecossistema. `deep-read-log.json`
+atualizado (+3 em `circlefin/stablecoin-evm`, agora 19 arquivos).
+
+Nenhum finding novo, nenhuma transição de estado tentada nesta rodada.
+Rebaseado sobre `origin/master` atualizado (que já inclui o gate mecânico
+`list-deep-read-candidates.mjs` contra programas banidos, adicionado por
+outra sessão nesta mesma janela) — nenhum conflito, já excluía
+Block Open Source por disciplina manual antes de checar isso.
