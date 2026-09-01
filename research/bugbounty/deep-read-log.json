@@ -730,7 +730,10 @@
   "packages/eve/src/tasks/task-inbox-token.ts",
   "packages/eve/src/tasks/task-id.ts",
   "packages/eve/src/harness/workflow-continuation-security.ts",
-  "packages/eve/src/shared/continuation-token.ts"
+  "packages/eve/src/shared/continuation-token.ts",
+  "packages/eve/src/public/models/openai/chatgpt/unsigned-jwt.ts",
+  "packages/eve/src/execution/authorization-callback-match.ts",
+  "packages/eve/src/runtime/connections/resolve-authorization.ts"
  ],
  "nuxt/nuxt": [
   "packages/nuxt/src/app/island-props.ts",

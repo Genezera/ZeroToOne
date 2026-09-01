@@ -3144,3 +3144,43 @@ Sem achado novo — resultado normal e válido, não um problema a inventar.
 
 `deep-read-log.json` atualizado (+3 em `vercel/ai`). Nenhuma transição
 de estado tentada nesta rodada (nada em `candidate`, nada progrediu).
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 17ª rodada do dia)
+
+`list-pending` global = 0 (`node migrate-to-v2.mjs` + `cli.mjs
+list-pending` confirmados). `program-policy.json` checado antes de
+qualquer leitura — `Block Open Source` segue `aiResearchBanned: true`,
+nada tocado ali.
+
+Leitura profunda proativa: `vercel/eve`, 3 arquivos novos ainda não no
+log, priorizando auth/token: `packages/eve/src/public/models/openai/
+chatgpt/unsigned-jwt.ts`, `packages/eve/src/execution/
+authorization-callback-match.ts`, `packages/eve/src/runtime/
+connections/resolve-authorization.ts`.
+
+- `unsigned-jwt.ts`: nome soa alarmante ("JWT sem assinatura"), mas o
+  próprio docstring já avisa "Test fixture only — no crypto involved" e
+  confirmei via grep: os únicos importadores são `token-broker.test.ts`
+  e `auth.test.ts`. Não participa de nenhum caminho de verificação real.
+  Sem achado.
+- `authorization-callback-match.ts`: correlaciona callbacks OAuth
+  recebidos (`DeliverPayload`) com desafios pendentes (`pending.
+  challenges`) por `connectionName` + `attemptId` (ou modo legado sem
+  `attemptId`). Puramente correlação de estado — não faz nenhuma
+  verificação de assinatura/token aqui; isso deve viver em outro lugar
+  do pipeline (já coberto em rodadas anteriores via `jwt-hmac.ts`/
+  `jwt-ecdsa.ts`/`token-claims.ts`/`shared/session-auth.ts`). Não
+  refutei uma hipótese de `attemptId` previsível permitir sequestro de
+  callback de outro usuário porque não vi neste arquivo onde/como
+  `attemptId` é gerado nem o escopo de sessão do `pending` — fica como
+  fio solto de baixo valor para rastrear numa rodada futura se o mesmo
+  arquivo for revisitado com mais contexto, não achado registrável hoje
+  (evidência insuficiente pra `corroborated_static`).
+- `resolve-authorization.ts`: cache por-execução (`AsyncLocalStorage`)
+  do provider de autorização resolvido para uma conexão, evita resolver
+  o mesmo provider dinâmico mais de uma vez na mesma execução. Wiring
+  puro, sem lógica de verificação. Sem achado.
+
+Sem achado novo — resultado normal e válido. `deep-read-log.json`
+atualizado (+3 em `vercel/eve`, agora 21 arquivos). Nenhuma transição de
+estado tentada (nada em `candidate`).
