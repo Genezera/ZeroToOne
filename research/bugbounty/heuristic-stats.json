@@ -1,86 +1,37 @@
 {
   "byTypeLanguage": {
-    "ai_deep_read_finding::go": {
-      "reviewed": 2,
+    "command_injection_risk::js": {
+      "reviewed": 7,
       "confirmed": 1,
-      "falsePositive": 1,
+      "falsePositive": 6,
       "other": 0,
-      "fpRate": 0.5
+      "fpRate": 0.8571428571428571
     },
-    "ai_deep_read_finding::move": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::typescript": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 0,
-      "other": 1,
-      "fpRate": 0
-    },
-    "ai_deep_read_finding::clarity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "unguarded_transfer::clarity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::kotlin": {
-      "reviewed": 4,
-      "confirmed": 1,
-      "falsePositive": 2,
-      "other": 1,
-      "fpRate": 0.5
-    },
-    "ai_deep_read_finding::solidity": {
+    "eval_usage::js": {
       "reviewed": 3,
       "confirmed": 0,
       "falsePositive": 3,
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::go": {
+    "path_traversal_risk::js": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::jvm": {
-      "reviewed": 4,
+    "redos_risk::js": {
+      "reviewed": 3,
       "confirmed": 0,
-      "falsePositive": 4,
+      "falsePositive": 3,
       "other": 0,
       "fpRate": 1
     },
-    "auth_arg_inconsistency::clarity": {
-      "reviewed": 1,
+    "ai_deep_read_finding::solidity": {
+      "reviewed": 3,
       "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ssrf_risk::js": {
-      "reviewed": 13,
-      "confirmed": 0,
-      "falsePositive": 13,
-      "other": 0,
-      "fpRate": 1
-    },
-    "prototype_pollution_risk::js": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
+      "falsePositive": 3,
       "other": 0,
       "fpRate": 1
     },
@@ -91,7 +42,21 @@
       "other": 0,
       "fpRate": 1
     },
+    "ai_deep_read_finding::rust": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
     "unchecked_call_return::solidity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::clarity": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
@@ -112,77 +77,119 @@
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::rust": {
-      "reviewed": 1,
+    "ai_deep_read_finding::kotlin": {
+      "reviewed": 4,
       "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
-    }
-  },
-  "byTypeProgram": {
-    "ai_deep_read_finding::Circle BBP": {
-      "reviewed": 7,
-      "confirmed": 2,
-      "falsePositive": 5,
-      "other": 0,
-      "fpRate": 0.7142857142857143
-    },
-    "ai_deep_read_finding::Vercel Open Source": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 0,
-      "other": 1,
-      "fpRate": 0
-    },
-    "ai_deep_read_finding::StackingDAO": {
-      "reviewed": 2,
-      "confirmed": 0,
       "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "unguarded_transfer::StackingDAO": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::Block Open Source": {
-      "reviewed": 5,
-      "confirmed": 1,
-      "falsePositive": 3,
       "other": 1,
-      "fpRate": 0.6
+      "fpRate": 0.5
     },
-    "known_vulnerable_dependency::Block Open Source": {
-      "reviewed": 6,
-      "confirmed": 0,
-      "falsePositive": 6,
-      "other": 0,
-      "fpRate": 1
-    },
-    "auth_arg_inconsistency::StackingDAO": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ssrf_risk::Vercel Open Source": {
+    "ssrf_risk::js": {
       "reviewed": 13,
       "confirmed": 0,
       "falsePositive": 13,
       "other": 0,
       "fpRate": 1
     },
-    "prototype_pollution_risk::Vercel Open Source": {
+    "prototype_pollution_risk::js": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
       "other": 0,
       "fpRate": 1
+    },
+    "known_vulnerable_dependency::jvm": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unguarded_transfer::clarity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::go": {
+      "reviewed": 74,
+      "confirmed": 0,
+      "falsePositive": 74,
+      "other": 0,
+      "fpRate": 1
+    },
+    "auth_arg_inconsistency::clarity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::typescript": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
+    },
+    "ai_deep_read_finding::move": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::go": {
+      "reviewed": 2,
+      "confirmed": 1,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.5
+    },
+    "insecure_tls::go": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    }
+  },
+  "byTypeProgram": {
+    "command_injection_risk::Vercel Open Source": {
+      "reviewed": 7,
+      "confirmed": 1,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 0.8571428571428571
+    },
+    "eval_usage::Vercel Open Source": {
+      "reviewed": 3,
+      "confirmed": 0,
+      "falsePositive": 3,
+      "other": 0,
+      "fpRate": 1
+    },
+    "path_traversal_risk::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "redos_risk::Vercel Open Source": {
+      "reviewed": 3,
+      "confirmed": 0,
+      "falsePositive": 3,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::Circle BBP": {
+      "reviewed": 7,
+      "confirmed": 2,
+      "falsePositive": 5,
+      "other": 0,
+      "fpRate": 0.7142857142857143
     },
     "reentrancy_risk::Circle BBP": {
       "reviewed": 3,
@@ -198,7 +205,77 @@
       "other": 0,
       "fpRate": 1
     },
+    "ai_deep_read_finding::StackingDAO": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
     "delegatecall_risk::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::Block Open Source": {
+      "reviewed": 5,
+      "confirmed": 1,
+      "falsePositive": 3,
+      "other": 1,
+      "fpRate": 0.6
+    },
+    "ssrf_risk::Vercel Open Source": {
+      "reviewed": 13,
+      "confirmed": 0,
+      "falsePositive": 13,
+      "other": 0,
+      "fpRate": 1
+    },
+    "prototype_pollution_risk::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::Block Open Source": {
+      "reviewed": 6,
+      "confirmed": 0,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unguarded_transfer::StackingDAO": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "auth_arg_inconsistency::StackingDAO": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::Vercel Open Source": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
+    },
+    "known_vulnerable_dependency::OKG": {
+      "reviewed": 72,
+      "confirmed": 0,
+      "falsePositive": 72,
+      "other": 0,
+      "fpRate": 1
+    },
+    "insecure_tls::Kubernetes": {
       "reviewed": 1,
       "confirmed": 0,
       "falsePositive": 1,
