@@ -259,7 +259,10 @@
     "src/msca/6900/v0.8/libs/SelectorRegistryLib.sol",
     "src/msca/6900/v0.7/factories/UpgradableMSCAFactory.sol",
     "src/msca/6900/v0.7/libs/WalletStorageV1Lib.sol",
-    "src/msca/6900/v0.7/libs/SelectorRegistryLib.sol"
+    "src/msca/6900/v0.7/libs/SelectorRegistryLib.sol",
+    "src/msca/6900/v0.7/libs/FunctionReferenceDLLLib.sol",
+    "src/msca/6900/v0.7/plugins/BasePlugin.sol",
+    "src/msca/6900/v0.8/libs/WalletStorageV2Lib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

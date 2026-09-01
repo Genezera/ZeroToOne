@@ -4997,3 +4997,50 @@ ainda não lidos (interfaces, structs simples tipo `TransferSpec.sol`/
 `DepositIntent.sol`/`WithdrawHookData.sol`, `Constants.sol`) — candidatos
 de próxima rodada se a fila continuar vazia. StackingDAO e Vercel Open
 Source seguem sem pendência nova conhecida.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, execução em paralelo)
+
+Pelo menos duas outras sessões cloud foram disparadas pelo mesmo evento
+de push e já deram push antes desta (`fdf9ff1` leitura profunda em Circle
+BBP/`buidl-wallet-contracts`, `32f11a8` leitura profunda em
+`vercel/vercel`). `list-pending` global já estava em 0 quando esta sessão
+rodou seu passo 0. Sem coordenação entre as sessões, esta e a de
+`fdf9ff1` fizeram leitura profunda proativa em
+`circlefin/buidl-wallet-contracts` no mesmo horário, escolhendo arquivos
+diferentes (sem sobreposição) — `fdf9ff1` leu `WalletStorageV1Lib.sol` e
+`SelectorRegistryLib.sol` (v0.7); esta sessão, antes de perceber a
+corrida (via `git push` rejeitado + `git fetch`), já tinha lido:
+
+- `src/msca/6900/v0.7/libs/FunctionReferenceDLLLib.sol` — doubly-linked-list
+  sentinela (`SENTINEL_BYTES21`) usada para listar function references
+  (plugins/hooks instalados). `append`/`remove` seguem o padrão clássico
+  sentinel-DLL (rewire de `prev`/`next` em O(1), `contains` checa
+  existência antes de ambas operações, sem chance de duplicata ou de
+  remover item inexistente sem revert). Sem achado — implementação
+  padrão.
+- `src/msca/6900/v0.7/plugins/BasePlugin.sol` — implementação default
+  abstrata do EIP-6900 (todo hook não sobrescrito reverte com
+  `NotImplemented`). Puro boilerplate do padrão de referência da Alchemy;
+  nenhuma lógica de estado própria. Sem achado.
+- `src/msca/6900/v0.8/libs/WalletStorageV2Lib.sol` — slot de storage
+  ERC-7201 (`WALLET_STORAGE_SLOT`) para a v2.x.y das MSCAs. Comparei a
+  constante com a de `WalletStorageV1Lib.sol` (v1, lida em `fdf9ff1`) —
+  bytes32 válidos e DIFERENTES (`0x1ffef77...` vs `0xc6a0cc2...`), sem
+  colisão de storage entre v1/v2. Não recomputei o keccak256 da string
+  do id (`"circle.msca.v2.storage"`) porque não havia `cast`/lib keccak
+  disponível no ambiente sem instalar Foundry — confirmei apenas
+  ausência de colisão entre os dois slots, não que o valor bate
+  exatamente com a fórmula ERC-7201 do comentário. Risco residual
+  conhecido, registrado em vez de forçar conclusão sem verificar. Sem
+  achado (mas verificação incompleta, ver acima).
+
+`deep-read-log.json` mesclado (união dos arquivos das sessões, sem perda
+de nenhum lado). `queue.jsonl` era byte-a-byte equivalente em conteúdo
+entre as sessões (mesmos 132 findings, mesmos estados — nenhuma mudou
+estado de achado algum), então o merge não teve conflito real de dado,
+só de formatação/ordem de re-serialização do SQLite local (resolvido
+descartando e regenerando localmente via `migrate-to-v2.mjs` +
+`export-queue` em vez de merge manual de JSON gerado por máquina).
+Nenhum achado novo nesta rodada. `Block Open Source` não tocado por
+nenhuma das sessões conhecidas (`aiResearchBanned` em
+`program-policy.json`, conferido antes de qualquer clone).
