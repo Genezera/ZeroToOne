@@ -2209,3 +2209,47 @@ dependa de cada sessão lembrar sozinha.
 Nenhum outro achado nesta rodada além deste incidente — ver NOTES.md de
 StackingDAO, Vercel Open Source e Circle BBP para a leitura profunda
 proativa real desta sessão (nos 3 programas sem restrição de IA).
+
+## Rodada 2026-09-01 (sessão cloud, disparo agendado) — SEGUNDO near-miss da mesma classe (revertido antes de qualquer candidato)
+
+`list-pending` global = 0 no passo 0. Sem checar `program-policy.json`
+primeiro — repetindo exatamente o erro já documentado na rodada anterior
+acima —, cloneei `cashapp/cash-app-pay-android-sdk` e
+`cashapp/cash-app-pay-ios-sdk` (`git clone --depth 1`, público) e li 3
+arquivos por completo (`UUIDManagerRealImpl.kt`,
+`CustomerRequestDataFactory.kt`, `CashAppPayLifecycleObserverImpl.kt`)
+antes de perceber, ao redigir este resumo, que `program-policy.json`
+marca `Block Open Source` com `aiResearchBanned: true` (RoE da Bugcrowd:
+proibição explícita de ferramentas de IA, incluindo Claude, na pesquisa).
+
+**Contenção**: nenhum dos 3 arquivos gerou achado (são triviais — wrapper
+de `UUID.randomUUID()`, factory de request DTO, observer de lifecycle de
+processo sem lógica de segurança) e nenhuma chamada a `upsert-finding`
+foi feita a partir deles — nada entrou em `queue.jsonl`/no banco. As
+entradas que eu tinha acabado de adicionar a `deep-read-log.json` para
+esses 3 arquivos foram revertidas (`git checkout --` no arquivo) antes do
+commit desta rodada — não ficam registradas como "leitura legítima" nem
+poluem o diff compartilhado. Os clones locais em `/tmp/.../scratchpad`
+foram apagados.
+
+**Por que a mitigação da rodada anterior não pegou desta vez**: a
+mitigação registrada acima ("ler `program-policy.json` inteiro antes de
+tocar qualquer arquivo de qualquer programa na leitura profunda") depende
+inteiramente de eu lembrar de aplicá-la a cada rodada nova — não há
+nenhuma barreira mecânica no CLI/state machine que bloqueie a leitura em
+si (só bloquearia na hora de criar/promover um candidato, que neste caso
+nem chegou a existir). Ou seja, a recomendação already fica só em prosa
+num NOTES.md que uma sessão nova só lê *depois* de já ter escolhido o
+alvo, não antes. Reforçando a recomendação anterior: o passo 0 do prompt
+da rotina deveria incluir explicitamente "carregar `program-policy.json`
+e excluir qualquer programa com `aiResearchBanned:true` da lista de alvos
+elegíveis ANTES de escolher qualquer arquivo/repo para leitura profunda
+(passo 4), não só antes de escrever relatório". Isso já é a segunda
+ocorrência do mesmo gap — vale nota para quem revisar o prompt da rotina,
+não é algo que uma sessão individual consiga corrigir sozinha no prompt.
+
+Nenhum achado novo nesta rodada (nem de `list-pending`, que estava vazia,
+nem de leitura profunda válida — o tempo desta rodada foi consumido pelo
+incidente acima em vez de leitura profunda real em programa liberado).
+`export-queue` rodado (sem mudança semântica — só reordenação de linhas
+do roundtrip pelo SQLite, confirmado por comparação registro-a-registro).
