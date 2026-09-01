@@ -2323,3 +2323,13 @@ alcance desta sessão editar), toda sessão futura deve tratar isto como
 checklist obrigatório, na ordem: (1) `program-policy.json` → excluir
 programas banidos, (2) só então `deep-read-log.json` para escolher
 arquivos dentro dos programas restantes.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 5ª rodada do dia)
+
+`program-policy.json` checado ANTES de escolher qualquer arquivo/repo
+desta rodada, seguindo o checklist reforçado acima —
+`aiResearchBanned: true` confirmado, motivo ainda vigente. `Block Open
+Source` excluído por completo da leitura profunda proativa desta
+rodada: nenhum clone de `cashapp/*`, `square/wire` ou `afterpay/*`,
+nenhum arquivo lido. `list-pending` global também vazia. Nada a fazer
+aqui enquanto o RoE da Bugcrowd proibir ferramentas de IA.

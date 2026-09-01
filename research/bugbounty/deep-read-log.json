@@ -397,7 +397,9 @@
     "internal/common/grpc/client/config.go",
     "internal/smoke/provider/proxy/proxy.go",
     "internal/enclave/config.go",
-    "internal/app/config.go"
+    "internal/app/config.go",
+    "internal/enclave/common/crypto/bls/bls_nocgo.go",
+    "internal/enclave/common/crypto/bls/const.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -511,7 +513,8 @@
     "packages/oidc/src/token-util.ts",
     "packages/cli/src/util/validate-cron-secret.ts",
     "packages/oidc/src/oauth.ts",
-    "packages/functions/src/oidc/aws-credentials-provider.ts"
+    "packages/functions/src/oidc/aws-credentials-provider.ts",
+    "packages/cli-auth/oauth.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

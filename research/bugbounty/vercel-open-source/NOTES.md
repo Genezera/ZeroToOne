@@ -2489,3 +2489,31 @@ Leitura profunda proativa desta rodada direcionada a Circle BBP (ver
 NOTES.md respectivo) — nenhum arquivo novo óbvio de `vercel/vercel` pra
 reler que já não tenha sido coberto nas ~37 leituras anteriores com
 palavras-chave de auth/segurança.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 5ª rodada do dia)
+
+`program-policy.json` conferido antes de qualquer leitura (checklist do
+NOTES.md de Block Open Source aplicado, na ordem certa desta vez).
+`list-pending` global vazia, nenhum candidato deste programa a revisar.
+
+Leitura profunda proativa: clonei `vercel/vercel` raso e busquei por
+palavras-chave auth/session/token/login/crypto/secret ainda não cobertas
+em `deep-read-log.json` (37 arquivos até então). Achei
+`packages/cli-auth/oauth.ts` sem leitura prévia — chamou atenção porque
+os arquivos vizinhos do mesmo pacote (`sso.ts`, `credentials-store.ts`)
+já estavam lidos, mas o fluxo OAuth em si (Device Authorization Grant,
+RFC 8628) não. Lido linha a linha (353 linhas): implementa discovery
+(`.well-known/openid-configuration`) com checagem `as.issuer !==
+issuer.origin` (compara origin, não a URL completa — aceitável pro uso
+aqui já que `issuer` é passado como origem sem path pelo chamador, não é
+um bypass de confusão de issuer), device authorization request, polling
+de token, revoke, refresh e introspect — todos com `client_id` fixo (sem
+client secret, esperado pra CLI pública) e validação via `zod/mini`.
+Nenhum ponto de token sendo logado, nenhuma validação de assinatura
+faltando (esse pacote não valida JWT localmente, só troca códigos com o
+servidor — a validação de assinatura de ID token, quando existe, é feita
+em `verify-vercel-oidc-token.ts`, já lido e sem achado em rodada
+anterior). Sem achado.
+
+`deep-read-log.json` atualizado (+1 em `vercel/vercel`, agora 38
+arquivos).

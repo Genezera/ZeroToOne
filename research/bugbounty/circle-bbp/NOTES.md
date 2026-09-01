@@ -5341,3 +5341,30 @@ Nesta mesma rodada, revisitado o achado `command_injection_risk` de
 Vercel Open Source (`corroborated_static`, travado por falta de
 validador local pra JS) — ver NOTES.md de Vercel Open Source. Não afeta
 Circle BBP, registrado aqui só por completude do log da rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 5ª rodada do dia)
+
+`program-policy.json` conferido antes de qualquer leitura — `Circle
+BBP` não está banido. `list-pending` global vazia, nenhum candidato
+deste programa a revisar.
+
+Leitura profunda proativa: clonei `circlefin/arc-remote-signer` raso de
+novo e busquei arquivos não lidos com palavras-chave
+auth/sign/key/crypto/secret (37 arquivos já cobertos até então). Achei
+2 novos em `internal/enclave/common/crypto/bls/`:
+- `bls_nocgo.go` (`//go:build !cgo`) — stub compilado quando CGO está
+  desabilitado. Toda função (`New`, `PublicKey`, `SignMessage`,
+  `Serialize`, `Deserialize`, `VerifySignedMessage`) retorna
+  imediatamente `ErrCGODisabled`, sem nenhuma lógica criptográfica real.
+  É fail-closed por design (a build sem cgo simplesmente não consegue
+  assinar nem verificar nada) — não é um caminho alternativo mais fraco,
+  é a ausência total da funcionalidade. Sem achado.
+- `const.go` — só constantes de tamanho (IKM/PublicKey/Signature/SecretKey,
+  em bytes) e a domain separation tag `DSTSignature =
+  "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_"` (esquema básico,
+  variante `NUL_` = non-augmented, conforme BLS IETF draft). A lógica
+  real de assinatura/verificação que usa essas constantes já foi lida em
+  `bls.go` (rodada anterior, sem achado). Sem achado aqui.
+
+`deep-read-log.json` atualizado (+2 em `circlefin/arc-remote-signer`,
+agora 39 arquivos).
