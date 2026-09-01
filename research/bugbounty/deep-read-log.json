@@ -789,9 +789,11 @@
   "circlefin/stablecoin-near": [
     "src/requires.rs",
     "src/role.rs",
-    "src/fiat_token.rs (parcial: mint/burn/approve/transfer_from/ft_transfer/ft_transfer_call/ft_resolve_transfer/storage_deposit/storage_unregister/pause/unpause — todas as funcoes com side-effect de saldo ou estado, via grep de require_not_blocklisted/require_only + leitura pontual de cada bloco)",
+    "src/fiat_token.rs (completo — inclui multisig request flow: create/approve/execute/remove_multisig_request, configure_multisig_role, controller-check logic; invariante verificada: toda role multisig-gated so pode ser concedida via _grant_multisig_role, que sempre concede Role::Multisig junto, entao require_only(role_required()) sem checar Multisig explicitamente nao é bypass)",
     "src/fiat_token_action.rs",
-    "src/lib.rs (so declaracoes de modulo, sem logica)"
+    "src/lib.rs (so declaracoes de modulo, sem logica)",
+    "src/events.rs (structs de evento, sem logica)",
+    "src/fiat_token_storage_key.rs (enum de storage key, sem logica)"
   ],
   "sveltejs/svelte": [
     "packages/svelte/src/escaping.js",

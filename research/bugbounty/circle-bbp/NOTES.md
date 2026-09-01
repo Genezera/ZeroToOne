@@ -5837,3 +5837,33 @@ transição de estado tentada.
 direcionada a `vercel/ai` (ver NOTES.md de Vercel Open Source, achado
 novo registrado lá) — sem arquivo novo lido em nenhum repo `circlefin/*`
 nesta rodada. Sem achado, sem mudança de estado neste programa.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Leitura profunda proativa direcionada a
+`circlefin/stablecoin-near` (repo NEAR/Rust, escopo Circle BBP): completei
+a cobertura do repo inteiro (8/8 arquivos não-teste). Fechei o `fiat_token.rs`
+que estava parcial (faltavam o fluxo de multisig completo —
+`create_multisig_request`/`approve_multisig_request`/`execute_multisig_request`/
+`remove_multisig_request`/`configure_multisig_role`/`revoke_multisig_role`) e
+li `events.rs` e `fiat_token_storage_key.rs` (structs/enum triviais, sem
+lógica). Investiguei com ceticismo o padrão `require_only(action.role_required())`
+em approve/execute/remove_multisig_request: à primeira vista parece não
+verificar explicitamente `Role::Multisig` do chamador, mas confirmei que
+isso não é bypass — toda role multisig-gated (`Admin`, `MasterMinter`,
+`Owner`, `Pauser`, `Controller`) só pode ser concedida via
+`_grant_multisig_role`, que sempre concede `Role::Multisig` junto no mesmo
+call; não existe caminho de código que conceda essas roles sem também
+conceder Multisig. `Role::Blocklister`/`Role::Minter` são non-multisig por
+design documentado (comentário explícito no código) e suas actions
+(`blocklist`/`unblocklist`/`mint`/`burn`) não passam pelo `ApprovalManager`,
+então não é inconsistência. Também revisei o `requires_controller_check`
+em approve/execute/remove (compara o minter do controller-alvo da action
+com o minter do controller chamador) — permite que qualquer controller
+responsável pelo mesmo minter aprove/execute/remova a request, o que bate
+com o comentário do código ("of your own minter", não "of your own
+controller_id") — comportamento intencional, não vulnerabilidade. Sem
+achado.
+
+`deep-read-log.json` atualizado (`circlefin/stablecoin-near` agora 8/8
+arquivos completos). Nenhuma transição de estado tentada.
