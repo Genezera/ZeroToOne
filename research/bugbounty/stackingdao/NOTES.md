@@ -463,3 +463,9 @@ direcionada a `vercel/vercel` (ver NOTES.md de Vercel Open Source) — os
 13 contratos Clarity deste programa já estão com os 15 arquivos
 relevantes cobertos desde rodadas anteriores, sem candidato óbvio novo
 para reler. Sem achado, sem mudança de estado.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 8ª rodada do dia)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `circlefin/stablecoin-evm` (ver NOTES.md de Circle BBP) —
+sem arquivo novo lido de StackingDAO. Sem achado, sem mudança de estado.

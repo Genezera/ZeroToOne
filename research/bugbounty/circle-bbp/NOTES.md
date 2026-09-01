@@ -5473,3 +5473,53 @@ mecanismo como um todo.
 
 `deep-read-log.json` atualizado (+3 em `circlefin/stablecoin-evm`, agora
 13 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 8ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0, nenhum candidato deste
+ou de qualquer outro programa. `program-policy.json` conferido antes de
+qualquer leitura (Block Open Source segue `aiResearchBanned:true`,
+excluído por completo desta rodada).
+
+Leitura profunda proativa direcionada a `circlefin/stablecoin-evm`
+novamente, dado o achado real da rodada anterior ali (blacklist ausente
+em `NativeFiatTokenV2_2`). Hipótese testada: será que o mesmo padrão de
+"variante especializada do FiatToken esquece um modifier que a versão
+base tem" se repete em outro lugar do repo? Clonei de novo (raso) e
+escolhi 3 arquivos ainda não lidos, function-a-function contra o
+padrão-base já auditado:
+
+- `contracts/v2/celo/FiatTokenCeloV2_2.sol` — variante Celo (gas token
+  nativo), mesma família estrutural de "override de função de valor" que
+  gerou o achado em `NativeFiatTokenV2_2`. Diferente daquele caso, aqui
+  `debitGasFees`/`creditGasFees` TÊM os modifiers corretos
+  (`notBlacklisted(from)` em debit; `notBlacklisted(from)` +
+  `notBlacklisted(feeRecipient)` + `notBlacklisted(communityFund)` em
+  credit, cobrindo os três endereços que recebem valor via `_transfer`/
+  `_transferReservedGas` internos). `updateFeeCaller` é `onlyOwner`,
+  correto. Sem achado — hipótese refutada para este arquivo
+  especificamente.
+- `contracts/v2/celo/FiatTokenFeeAdapterV1.sol` — adapter que só repassa
+  chamadas pro `adaptedToken` (a própria `FiatTokenCeloV2_2` acima);
+  `debitGasFees`/`creditGasFees` aqui são `onlyCeloVm` (`msg.sender ==
+  address(0)`, inalcançável por qualquer conta real, só pelo protocolo
+  Celo em si) e não fazem nenhuma checagem de saldo/blacklist própria —
+  delegam 100% pro `adaptedToken`, que já valida. `initializeV1` é
+  `public` sem controle de acesso, mas gateado por
+  `_initializedVersion == 0` (padrão comum de proxy initializer,
+  front-runnable em teoria mas sem esta função corretamente inicializada
+  o contrato não faz nada de valor — mesmo padrão aceito em
+  `AbstractV2Upgrader`/outros initializers já lidos em rodadas
+  anteriores, não é um achado novo). Sem achado.
+- `contracts/minting/MasterMinter.sol` — 31 linhas, é só uma subclasse
+  vazia de `MintController` (já lido, sem achado) que fixa o construtor.
+  Zero lógica nova. Sem achado.
+
+Hipótese de "padrão de modifier esquecido se repetindo" não se confirmou
+nestes 3 arquivos — o `NativeFiatTokenV2_2` parece ser caso isolado (é o
+único que reimplementa `transfer`/`transferFrom`/`mint`/
+`transferWithAuthorization` do zero ao invés de herdar/delegar). Achado
+zero nesta rodada, sem mudança de estado em nenhum finding.
+
+`deep-read-log.json` atualizado (+3 em `circlefin/stablecoin-evm`, agora
+16 arquivos).

@@ -352,7 +352,10 @@
     "contracts/v2/FiatTokenV2_2.sol",
     "contracts/v2/NativeFiatTokenV2_2.sol",
     "contracts/interface/NativeFiatToken/INativeCoinAuthority.sol",
-    "contracts/interface/NativeFiatToken/INativeCoinControl.sol"
+    "contracts/interface/NativeFiatToken/INativeCoinControl.sol",
+    "contracts/minting/MasterMinter.sol",
+    "contracts/v2/celo/FiatTokenCeloV2_2.sol",
+    "contracts/v2/celo/FiatTokenFeeAdapterV1.sol"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

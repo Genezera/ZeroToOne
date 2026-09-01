@@ -2517,3 +2517,16 @@ anterior). Sem achado.
 
 `deep-read-log.json` atualizado (+1 em `vercel/vercel`, agora 38
 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 8ª rodada do dia)
+
+`list-pending` global vazia — nada deste programa pra revisar. O achado
+`command_injection_risk` em `utils/update-remix-run-dev.js` segue
+travado em `corroborated_static` pelo motivo já documentado nas 4
+rodadas anteriores (sem validador local pra JS/TS, sem atalho definido
+na máquina de estados de `corroborated_static` direto pra
+`scope_verified`). Nada de novo a fazer nele.
+
+Leitura profunda proativa desta rodada direcionada a `circlefin/
+stablecoin-evm` (ver NOTES.md de Circle BBP) — nenhuma leitura adicional
+de `vercel/vercel` nesta rodada.
