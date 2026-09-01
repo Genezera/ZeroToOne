@@ -253,7 +253,8 @@
     "src/utils/ExecutionUtils.sol",
     "src/utils/PaymasterUtils.sol",
     "src/erc712/BaseERC712CompliantAccount.sol",
-    "src/msca/6900/v0.8/account/WalletStorageInitializable.sol"
+    "src/msca/6900/v0.8/account/WalletStorageInitializable.sol",
+    "src/msca/6900/v0.7/factories/UpgradableMSCAFactory.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
@@ -434,7 +435,9 @@
     "x/cctp/keeper/msg_server_set_max_burn_amount_per_message.go",
     "x/cctp/keeper/attestation.go",
     "x/cctp/keeper/attesters.go",
-    "x/cctp/keeper/keeper.go"
+    "x/cctp/keeper/keeper.go",
+    "x/cctp/keeper/msg_server_enable_attester.go",
+    "x/cctp/keeper/msg_server_disable_attester.go"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",

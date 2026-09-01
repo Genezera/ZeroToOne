@@ -4817,3 +4817,53 @@ scratchpad ao fim da rodada. Esta rodada não tocou `Block Open Source`.
 Próxima rodada em `noble-cctp`: `msg_server_enable_attester.go`/
 `msg_server_disable_attester.go` (ainda não lidos, portão de quem pode
 alterar o conjunto de atestadores — mudança de custódia de confiança).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 5) — fila vazia, leitura profunda em `noble-cctp` (governança de atestadores) e `buidl-wallet-contracts` (factory), sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0): só `Block Open Source` segue banido para pesquisa com IA.
+
+- `circlefin/noble-cctp`: `msg_server_enable_attester.go` e
+  `msg_server_disable_attester.go` (sugeridos na rodada anterior —
+  portão de governança do conjunto de atestadores CCTP). Ambos gateiam
+  via `attesterManager := k.GetAttesterManager(ctx); if attesterManager
+  != msg.From`. Confirmei que `msg.From` não é um campo livre: o proto
+  (`proto/circle/cctp/v1/tx.proto`) declara `option
+  (cosmos.msg.v1.signer) = "from"` para `MsgEnableAttester`/
+  `MsgDisableAttester` — mesmo mecanismo do Cosmos SDK que amarra esse
+  campo à assinatura criptográfica real verificada pelo ante handler
+  antes do dispatch (equivalente direto do `tx-sender` do Clarity já
+  documentado como seguro nos contratos StackingDAO). `EnableAttester`
+  valida endereço não-vazio e ausência de duplicata antes de
+  `SetAttester`. `DisableAttester` tem duas guardas de segurança
+  adicionais bem desenhadas: recusa remover o último atestador
+  (`len(storedAttesters) == 1`) e recusa remover se isso derrubar o
+  número de atestadores abaixo do `signatureThreshold` (m-de-n
+  multisig) — ambas essenciais pra não travar o sistema ou baixar o
+  threshold de segurança "de fato" abaixo do nominal. Sem achado.
+- `circlefin/buidl-wallet-contracts`: `src/msca/6900/v0.7/factories/
+  UpgradableMSCAFactory.sol` (factory ERC-4337/6900 genérica, versão
+  "upgradable" da já lida `SingleOwnerMSCAFactory.sol`). `createAccount`
+  usa CREATE2 com `mixedSalt = keccak256(_sender, _salt)` e hash do
+  bytecode de init incluindo `_plugins`/`_manifestHashes`/
+  `_pluginInstallData` — investiguei hipótese de front-running de
+  endereço counterfactual (alguém deployar em um endereço antes do
+  dono pretendido, com plugins maliciosos): refutada, porque o
+  endereço final depende dos dados de init completos, não só de
+  `_sender`/`_salt` — um atacante não pode produzir o MESMO endereço
+  com dados de instalação diferentes dos que o usuário real pretende
+  usar (resistência a colisão do CREATE2 sobre o hash do bytecode +
+  args). `_getAddress` também valida `isPluginAllowed[plugin]` pra
+  cada plugin ANTES de computar o endereço, então só plugins
+  aprovados pelo owner da factory entram na lista de instalação
+  inicial — mesmo padrão de allowlist já visto em outras factories do
+  mesmo repo. `setPlugins`/`addStake`/`unlockStake`/`withdrawStake`
+  todos `onlyOwner` (Ownable2Step), sem problema. Sem achado — mesma
+  classe de desenho já auditada nas demais factories deste programa.
+
+`deep-read-log.json` atualizado (`noble-cctp` agora 21 arquivos,
+`buidl-wallet-contracts` agora 38). Clones temporários apagados do
+scratchpad ao fim da rodada. Esta rodada não tocou `Block Open Source`.
+Nenhum achado novo. StackingDAO e Vercel Open Source seguem sem
+pendência nova conhecida (cobertura já registrada em rodadas
+anteriores).
