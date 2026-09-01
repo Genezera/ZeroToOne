@@ -5303,3 +5303,20 @@ política `aiResearchBanned` ao ler 4 arquivos de `cashapp/misk` antes de
 perceber que era o repo do Block Open Source — ver o NOTES.md desse
 programa, seção "INCIDENTE". Não afeta Circle BBP diretamente, registrado
 aqui só para referência cruzada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 2ª rodada do dia)
+
+`program-policy.json` conferido antes de qualquer leitura (aplicando a
+recomendação do incidente registrado no NOTES.md do Block Open Source);
+`Circle BBP` não está banido, prosseguiu normalmente. `list-pending`
+global vazia — nenhum candidato deste programa a revisar.
+
+Leitura profunda proativa: `circlefin/arc-node`, 1 arquivo novo lido
+(`crates/remote-signer/src/lib.rs` — só `pub mod`/`pub use`, reexporta
+tipos de `client.rs`/`config.rs`/`error.rs`/`metrics.rs`/`provider.rs`
+já lidos em rodada anterior, sem lógica própria) e
+`crates/signer/tests/cross.rs` (teste de integração cross-provider:
+assina com `LocalSigningProvider`, verifica com `RemoteSigningProvider`
+e vice-versa; usa `PrivateKey::generate` de teste, não achado). Sem
+achado novo. `deep-read-log.json` atualizado (+2 em `circlefin/arc-node`,
+agora 22 arquivos).

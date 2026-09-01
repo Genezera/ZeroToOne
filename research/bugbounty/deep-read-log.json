@@ -416,7 +416,9 @@
     "contracts/src/proxy/AdminUpgradeableProxy.sol",
     "crates/types/src/signing.rs",
     "crates/consensus-db/src/keys.rs",
-    "crates/signer/src/lib.rs"
+    "crates/signer/src/lib.rs",
+    "crates/remote-signer/src/lib.rs",
+    "crates/signer/tests/cross.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",
@@ -502,7 +504,8 @@
     "packages/cli/src/commands/curl/bypass-token.ts",
     "packages/cli/src/commands/curl/trace-session-token-provider.ts",
     "packages/cli/src/util/env/refresh-oidc-token.ts",
-    "packages/cli/src/util/env/update-oidc-token-contents.ts"
+    "packages/cli/src/util/env/update-oidc-token-contents.ts",
+    "packages/oidc/src/token-util.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

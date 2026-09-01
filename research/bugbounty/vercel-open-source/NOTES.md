@@ -2388,3 +2388,27 @@ coloquei aqui no NOTES.md em prosa. Não é um bug que eu deva corrigir
 sozinho agora (mudar o formato de export é decisão de design que afeta
 todo o pipeline), só um gap real a registrar — mesma categoria do gap de
 `aiResearchBanned` já documentado no NOTES.md do Block Open Source.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 2ª rodada do dia)
+
+`list-pending` global vazia — nenhum candidato deste programa a revisar
+nesta rodada (o achado `command_injection_risk` em
+`utils/update-remix-run-dev.js` segue travado em `corroborated_static`
+pelo motivo já documentado na rodada anterior: sem validador local pra
+JS/TS, não há caminho válido pra `reproduced_local`/`scope_verified`
+sem contornar a máquina de estados).
+
+Leitura profunda proativa: 1 arquivo novo em `vercel/vercel` —
+`packages/oidc/src/token-util.ts`. `getTokenPayload()` faz decode de
+JWT (base64url do segundo segmento) SEM checar assinatura — mas rastreei
+os dois call sites (`get-vercel-oidc-token-with-refresh.ts`, `token.ts`)
+e o uso é só local: decide se o token do CLI local está perto de
+expirar pra disparar refresh proativo. A decisão de autorização de
+verdade acontece no servidor (`api.vercel.com`), que valida a assinatura
+de forma independente quando o token é enviado como Bearer — o client
+nunca usa o payload decodificado aqui pra conceder acesso a nada. Sem
+caminho de exploração (não é o mesmo código que `verify-vercel-oidc-
+token.ts`, que já foi lido em rodada anterior e faz verificação de
+assinatura de verdade do lado que importa). Sem achado.
+`deep-read-log.json` atualizado (+1 em `vercel/vercel`, agora 34
+arquivos).
