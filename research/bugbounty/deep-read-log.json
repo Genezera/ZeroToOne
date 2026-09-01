@@ -555,7 +555,13 @@
     "packages/next/src/server/app-render/encryption-utils-server.ts",
     "packages/next/src/server/next-server.ts",
     "packages/next/src/server/lib/router-utils/resolve-routes.ts",
-    "packages/next/src/server/web/spec-extension/adapters/next-request.ts"
+    "packages/next/src/server/web/spec-extension/adapters/next-request.ts",
+    "packages/next/src/server/image-optimizer.ts",
+    "packages/next/src/server/is-private-ip.ts",
+    "packages/next/src/shared/lib/match-remote-pattern.ts",
+    "test/unit/image-optimizer/fetch-external-image.test.ts",
+    "test/e2e/image-optimizer/maximum-redirects-1.test.ts",
+    "test/e2e/image-optimizer/util.ts"
   ],
   "vercel/turborepo": [
     "crates/turborepo-auth/src/device_flow.rs",

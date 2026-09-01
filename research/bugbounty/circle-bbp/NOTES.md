@@ -5523,3 +5523,11 @@ zero nesta rodada, sem mudança de estado em nenhum finding.
 
 `deep-read-log.json` atualizado (+3 em `circlefin/stablecoin-evm`, agora
 16 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 10ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0, nenhum candidato deste
+programa. Leitura profunda proativa desta rodada direcionada a
+`vercel/next.js` (ver NOTES.md de Vercel Open Source, achado novo
+registrado lá) — nenhuma leitura adicional de repos `circlefin/*` nesta
+rodada.

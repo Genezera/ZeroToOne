@@ -2342,3 +2342,11 @@ leitura, nenhuma ação neste programa nesta rodada. O achado já em
 `human_ready` (`Root.kt::DirectoryRoot.resolve::path_traversal_risk`,
 `wire-schema`) não foi tocado — não está em `candidate`, e mesmo que
 estivesse, o RoE proíbe qualquer pesquisa nova aqui.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 10ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer leitura, seguindo o
+checklist: `aiResearchBanned: true` ainda vigente. Nenhum clone, nenhuma
+leitura, nenhuma ação neste programa nesta rodada. O achado já em
+`human_ready` (`Root.kt::DirectoryRoot.resolve::path_traversal_risk`,
+`wire-schema`) não foi tocado.

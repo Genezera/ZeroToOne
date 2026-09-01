@@ -2562,3 +2562,49 @@ requisição/fetch remoto/cookies:
 
 Achado zero nesta rodada. `deep-read-log.json` atualizado (+3 em
 `vercel/flags`, agora 14 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 10ª rodada do dia)
+
+`list-pending` global = 0. Achado `command_injection_risk` em
+`utils/update-remix-run-dev.js` segue travado em `corroborated_static`
+pelo mesmo motivo documentado nas rodadas anteriores (sem validador
+local pra JS/TS).
+
+Leitura profunda proativa direcionada a `vercel/next.js` (clone raso
+novo de `packages/next/src/server`), 3 arquivos novos priorizados por
+tocarem fetch remoto/allowlist de host (`is-private-ip.ts`,
+`image-optimizer.ts`, `match-remote-pattern.ts`):
+
+**Achado novo, real, código confirmado linha a linha**: em
+`image-optimizer.ts::fetchExternalImage`, o allowlist de host
+configurado pelo desenvolvedor (`images.remotePatterns`/`domains`, via
+`hasRemoteMatch`) só é checado UMA VEZ, no ponto de entrada
+(`validateParams`). Quando o host upstream (já allowlisted) responde
+com um redirect HTTP, `fetchExternalImage` chama a si mesma
+recursivamente pra seguir o `Location` — mas NUNCA revalida o novo host
+contra `hasRemoteMatch`, só contra o filtro de IP privado
+(`isPrivateIp`, que por sua vez tem uma janela TOCTOU/DNS-rebinding
+própria: `dns/promises.lookup()` uma vez antes, `fetch()` global resolve
+de novo depois, sem pinning). Confirmei que nenhum teste existente
+(`fetch-external-image.test.ts`, `maximum-redirects-1.test.ts`) cobre
+redirect pra um host DIFERENTE do validado — os testes de redirect só
+usam path relativo no MESMO host. Confirmei ainda que o mesmo código
+está presente na última versão estável publicada no npm
+(`next@16.3.4`, verificado via `registry.npmjs.org` + tag real
+`v16.3.4` no GitHub, não só no branch canary não lançado).
+
+Criado finding novo (`upsert-finding`, tipo `ai_deep_read_finding`),
+avançado pra `corroborated_static` (transição aceita — cadeia de
+código real confirmada). Tentativa de `scope_verified` recusada pela
+máquina de estados como esperado (não-Solidity sem validador não pode
+pular `reproduced_local` — mesma limitação já documentada pro achado de
+`update-remix-run-dev.js`). `check-scope` confirmou `vercel/next.js`
+em escopo, tier 1, elegível pra recompensa. Deployment evidence
+registrada com confidence `medium` (código confirmado na release
+estável real, mas sem confirmação de deploy de terceiro específico
+explorável). Finding fica parado em `corroborated_static` até o
+sistema ganhar um validador pra JS/TS ou um humano revisar diretamente.
+
+`deep-read-log.json` atualizado (+6 em `vercel/next.js`, incluindo os 3
+arquivos de teste lidos como parte da verificação, agora 12 arquivos no
+total pra este repo).
