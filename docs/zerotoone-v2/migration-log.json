@@ -1,7 +1,7 @@
 {
-  "migratedAt": "2026-08-31T23:14:22.543Z",
+  "migratedAt": "2026-09-01T03:32:45.337Z",
   "total": 132,
-  "driftCorrected": 0,
+  "driftCorrected": 1,
   "logs": [
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/util/proxy/dial.go::line:71::insecure_tls",
@@ -172,12 +172,12 @@
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::cosmossdk.io/math@v1.1.2::known_vulnerable_dependency",
       "steps": [
         {
-          "to": "inconclusive",
+          "to": "false_positive",
           "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+          "reason": "DRIFT CORRIGIDO: fila trazia \"inconclusive\", ledger registra \"false_positive\" (2026-08-31T23:27:09.343Z) — ledger prevaleceu"
         }
       ],
-      "finalState": "inconclusive"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::github.com/btcsuite/btcd@v0.23.0::known_vulnerable_dependency",

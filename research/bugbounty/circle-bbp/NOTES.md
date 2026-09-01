@@ -4441,3 +4441,48 @@ sem lógica própria). Nenhum achado novo (`ai_deep_read_finding`) nesta
 rodada — resultado normal e válido. Esta rodada não tocou `Block Open
 Source` (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA.
+
+## Rodada 2026-09-01 (push automático, gatilho GitHub, sessão cloud) — fila vazia; `circlefin/noble-cctp` (SendMessage/SendMessageWithCaller/SetMaxBurnAmountPerMessage), sem achado
+
+`list-pending` global trouxe 0 candidatos (todos os programas). Segui a
+sugestão explícita da rodada anterior: dentro de `circlefin/noble-cctp`,
+os handlers de `x/cctp/keeper` ainda cobertos só na parte administrativa
+(roles/pause/link) tinham 3 arquivos de fato ainda não lidos que
+movimentam mensagem/autorização — `msg_server_send_message.go`,
+`msg_server_send_message_with_caller.go` e
+`msg_server_set_max_burn_amount_per_message.go` (`deposit_for_burn.go`/
+`receive_message.go` já constavam no log, a sugestão da rodada anterior
+estava desatualizada nesse ponto). Sparse-clone raso via
+`git clone --depth 1 --filter=blob:none --sparse` (público, sem
+conta/token), apagado ao final.
+
+Ponto investigado com ceticismo real: `SendMessage`/`SendMessageWithCaller`
+constroem `messageSender` a partir de `msg.From` (endereço fornecido no
+próprio corpo da mensagem, não derivado automaticamente do assinante da
+tx) — à primeira vista parece o mesmo padrão de confused-deputy já visto
+em Clarity (StackingDAO) e Solidity neste projeto (checar uma identidade
+mas usar outra para side-effect). Não é o caso aqui: `proto/circle/cctp/
+v1/tx.proto` declara `option (cosmos.msg.v1.signer) = "from";` em
+`MsgSendMessage`/`MsgSendMessageWithCaller` — esse é o mecanismo padrão
+do Cosmos SDK que torna `GetSigners()` derivado exatamente do campo
+`from`, e o `AnteHandler` (`SigVerificationDecorator`, fora deste repo,
+parte do SDK) exige que a lista de assinaturas da tx bata exatamente com
+`GetSigners()` antes de a mensagem sequer chegar ao `msgServer` — ou
+seja, `msg.From` só pode ser a conta que de fato assinou a transação,
+nunca um endereço arbitrário de terceiro. Mesmo padrão de segurança já
+confirmado em `msg_server_deposit_for_burn.go` (lido em rodada anterior)
+e consistente com o resto do módulo. `SetMaxBurnAmountPerMessage`
+compara `tokenController != msg.From` (mesmo campo `from` amarrado ao
+signer) antes de mutar `PerMessageBurnLimit` — checagem de autorização
+correta, mesmo padrão dos outros `msg_server_update_*` já auditados.
+
+Sem achado. `deep-read-log.json` atualizado (`circlefin/noble-cctp`
+13→16 arquivos — agora cobre todos os `msg_server_*.go` não-query do
+módulo). Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA (`aiResearchBanned: true`, ver NOTES.md
+próprio). Sugestão pra próxima rodada: repos com cobertura ainda rasa —
+`circlefin/stellar-cctp` (3 arquivos), `circlefin/starknet-cctp`
+(4 arquivos), `circlefin/sui-cctp` (5 arquivos) — ou revisitar
+`circlefin/stablecoin-near` (`fiat_token_action.rs`, coberto só por
+menção, sem leitura linha a linha registrada nesta missão).

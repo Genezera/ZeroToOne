@@ -411,7 +411,10 @@
     "x/cctp/keeper/msg_server_update_owner.go",
     "x/cctp/keeper/msg_server_update_pauser.go",
     "x/cctp/keeper/msg_server_update_token_controller.go",
-    "x/cctp/keeper/roles.go"
+    "x/cctp/keeper/roles.go",
+    "x/cctp/keeper/msg_server_send_message.go",
+    "x/cctp/keeper/msg_server_send_message_with_caller.go",
+    "x/cctp/keeper/msg_server_set_max_burn_amount_per_message.go"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
