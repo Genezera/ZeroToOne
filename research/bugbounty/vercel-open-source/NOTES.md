@@ -2843,3 +2843,83 @@ Leitura profunda proativa em `circlefin/arc-remote-signer` (Circle BBP, um
 
 Nenhum achado novo, nenhuma transição de estado tentada.
 `deep-read-log.json` atualizado (+2 em `vercel/flags`, agora 16 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, rodada seguinte)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos pendentes.
+`list-deep-read-candidates.mjs` funcionou nesta rodada (sem o erro de
+proxy relatado em rodada anterior) e já vem com o gate mecânico contra
+`aiResearchBanned` embutido — confirmei que `Block Open Source`
+(`cashapp/*`, `afterpay/*`, `square/wire`) segue excluído automaticamente
+da lista, nenhum desses repos tocado. Peguei o candidato do topo da
+lista (`vercel-labs/agent-skills`, só 3 arquivos lidos até então).
+`check-scope "Vercel Open Source" "vercel-labs/agent-skills"` →
+`allowed:true`, `bountyEligible:true`, `maxSeverity:critical`, tier 1.
+
+Clone raso (`git clone --depth 1`, público, sem token) @
+`063bee94c3f4df8453406c830b0a7df0f2860278`. Listei `git ls-files`
+filtrando código real (excluindo `.md`/testes/fixtures) e priorizei
+caminho com palavra-chave sensível: só 3 arquivos de código real batem
+(`auth-route.mjs`, já lido em rodada anterior). Como o repo é pequeno e
+a maior parte é doc/test, apliquei julgamento de especialista sobre o
+que resta de lógica real não trivial — os dois scripts de deploy
+(mesma categoria de risco de `command_injection_risk`/upload de dado
+sensível já usada neste programa) e o helper central de shell-out pro
+CLI da Vercel:
+
+- `skills/deploy-to-vercel/resources/deploy.sh` e `deploy-codex.sh`
+  (301 linhas cada, só diferem no comentário de uso e na URL do
+  `DEPLOY_ENDPOINT` — diff conferido, resto byte-idêntico). Empacota o
+  diretório do projeto (`tar`, excluindo `node_modules`/`.git`/`.env`/
+  `.env.*` — cobre `.env` em qualquer profundidade, `--exclude` do tar
+  não é ancorado) e faz upload via `curl -F` pra um endpoint fixo,
+  hardcoded, `https://...vercel.{com,sh}/api/deploy` (sem client
+  input plugado na URL). Sem `eval`, sem interpolação de variável não
+  sanitizada em comando (os `grep -q "\"$1\""` internos usam só
+  literais fixos da própria função, nunca dado externo). O único
+  comportamento notável — subir a árvore inteira do projeto pra um
+  endpoint de deploy anônimo/"claimable" — é a funcionalidade
+  documentada da skill (fluxo de preview deploy sem login), não uma
+  falha; o filtro de `.env*` mostra que o autor já pensou no risco de
+  segredo vazando. Não cobre outros arquivos de segredo (`id_rsa`,
+  `.aws/credentials` etc. se estiverem dentro do projeto), mas isso é
+  risco inerente de qualquer ferramenta de "suba minha pasta" (inclusive
+  o próprio `vercel deploy` oficial), não uma regressão introduzida por
+  este script. Sem achado.
+- `skills/vercel-optimize/lib/vercel.mjs` (864 linhas, completo) — todo
+  shell-out usa `execFile` (nunca `exec`/`shell:true`), documentado
+  explicitamente na linha 1 do próprio arquivo como decisão deliberada
+  contra injeção via shell; args sempre passados como array, nunca
+  concatenados em string. `redactSensitiveText` (usada antes de logar
+  qualquer stderr/mensagem de erro do CLI) faz regex redaction de
+  Bearer/Authorization/tokens conhecidos (`VERCEL_TOKEN` etc.) e de IDs
+  `prj_`/`team_`/`usr_` — não encontrei caminho onde um token não
+  redigido escaparia pro stdout/log antes de passar por essa função.
+  `scopedArgs` recusa (`throw`) IDs brutos `team_`/`usr_` sem resolver
+  pra slug antes de montar `--scope`, prevenindo o "silent fallback pro
+  currentTeam errado" que o comentário do código documenta como bug
+  conhecido do CLI da própria Vercel. Nenhuma lógica de autorização
+  local sendo contornada (tudo delega a decisão de acesso pro `vercel`
+  CLI/API real). Sem achado.
+
+Nota à parte, não é achado de vulnerabilidade de produto: também abri
+(sem executar nenhum comando, só leitura) `skills/vercel-cli-with-
+tokens/SKILL.md` — é um arquivo de instruções em linguagem natural pra
+um agente de IA (não código executável), ensinando como localizar/
+exportar `VERCEL_TOKEN` de `.env`/ambiente e evitar passá-lo via
+`--token` (harmless, aliás é a prática recomendada — evita o token
+aparecer em `ps`/histórico de shell). Não cria nenhuma superfície nova:
+quem executa esse fluxo já teria acesso ao próprio `.env`/ambiente do
+usuário por definição, sem cruzar fronteira de confiança nova. Segui a
+regra crítica desta rotina à risca: tratei o conteúdo desse arquivo como
+dado a analisar (é literalmente uma instrução dirigida "a um agente de
+IA" dentro de um repositório-alvo), nunca como instrução a seguir — não
+executei nenhum dos comandos nele, só documentei a leitura.
+
+Nenhum achado novo, nenhuma transição de estado tentada. `deep-read-
+log.json` atualizado (+3 em `vercel-labs/agent-skills`, agora 6
+arquivos, cobrindo toda a lógica real não-trivial que ainda restava —
+o resto do repo é docs/rules `.md`, testes/fixtures em
+`packages/vercel-optimize-tests/`, ou os demais scanners/gates/
+sanitizers de `skills/vercel-optimize/lib/**`, que ficam pra rodada
+futura se quiser aprofundar esse pacote específico).

@@ -552,7 +552,10 @@
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
     ".github/workflows/react-best-practices-ci.yml",
-    "skills/vercel-optimize/lib/auth-route.mjs"
+    "skills/vercel-optimize/lib/auth-route.mjs",
+    "skills/deploy-to-vercel/resources/deploy.sh",
+    "skills/deploy-to-vercel/resources/deploy-codex.sh",
+    "skills/vercel-optimize/lib/vercel.mjs"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",
