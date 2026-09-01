@@ -5368,3 +5368,47 @@ auth/sign/key/crypto/secret (37 arquivos já cobertos até então). Achei
 
 `deep-read-log.json` atualizado (+2 em `circlefin/arc-remote-signer`,
 agora 39 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 6ª rodada do dia)
+
+`program-policy.json` checado ANTES de escolher qualquer arquivo/repo,
+seguindo o checklist do NOTES.md de Block Open Source — `Block Open
+Source` tem `aiResearchBanned:true`, excluído por completo (nenhum
+clone/leitura de `cashapp/*`, `square/wire` ou `afterpay/*` nesta
+rodada). `Circle BBP` não está banido. `list-pending` global vazia,
+nenhum candidato deste programa a revisar.
+
+Leitura profunda proativa: clonei `circlefin/buidl-wallet-contracts`
+raso de novo (77 arquivos `.sol` no total, 50 já lidos em rodadas
+anteriores) e filtrei os 27 restantes contra `deep-read-log.json`. A
+maioria são interfaces/structs/constantes/erros puros (sem lógica).
+Escolhi os 3 arquivos com lógica real e mais sensíveis a bug de
+manipulação de estado: as bibliotecas de lista duplamente encadeada
+genéricas usadas em várias partes do wallet MSCA —
+`src/msca/6900/shared/libs/AddressDLLLib.sol`,
+`src/msca/6900/shared/libs/Bytes32DLLLib.sol` e
+`src/msca/6900/shared/libs/Bytes4DLLLib.sol` (154/144/146 linhas,
+completos).
+
+As três são a mesma estrutura (variante "item único, sem repetição")
+já auditada em `FunctionReferenceDLLLib.sol` (v0.7, rodada anterior,
+sem achado) — sentinela `address(0)`/`bytes32(0)`/`bytes4(0)`,
+validada explicitamente em `append`/`remove` via modifier
+`validAddress`/`validBytes32`/`validBytes4` (rejeita o próprio valor
+sentinela como item, prevenindo o bug clássico de corrupção de lista
+tipo GnosisSafe-OwnerManager). Diferente do padrão vulnerável histórico
+do OwnerManager (que aceitava um `prevOwner` fornecido pelo chamador em
+`removeOwner`, permitindo remover o nó errado se o ponteiro `prev`
+mentisse), aqui `remove(dll, item)` sempre busca `dll.prev[item]`/
+`dll.next[item]` diretamente do storage — não há parâmetro de ponteiro
+anterior controlado externamente, então essa classe de bug não se
+aplica. `append`/`remove` são O(1) e não fazem chamada externa (sem
+superfície de reentrância). `contains()` tratado com cuidado
+específico para o caso de lista com um único item (`getHead(dll) ==
+item` cobre o caso em que `next[item]==prev[item]==SENTINEL`
+simultaneamente) — correto. Sem overflow/underflow de `count`
+(aritmética checked do 0.8.24, e `remove` só decrementa após confirmar
+`contains`). Sem achado.
+
+`deep-read-log.json` atualizado (+3 em `circlefin/buidl-wallet-contracts`,
+agora 53 arquivos).

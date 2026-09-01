@@ -272,7 +272,10 @@
     "src/msca/6900/v0.7/libs/ExecutionHookLib.sol",
     "src/libs/CastLib.sol",
     "src/libs/AddressBytesLib.sol",
-    "src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol"
+    "src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol",
+    "src/msca/6900/shared/libs/AddressDLLLib.sol",
+    "src/msca/6900/shared/libs/Bytes32DLLLib.sol",
+    "src/msca/6900/shared/libs/Bytes4DLLLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/lib/AddressLib.sol",
