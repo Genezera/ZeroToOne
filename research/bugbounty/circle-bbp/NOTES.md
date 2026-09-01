@@ -5264,3 +5264,42 @@ caminho crítico de assinatura/KMS/enclave/AES/ed25519/BLS — o que resta
 arquivo-alvo com valor incremental claro nesta rodada, então a leitura
 profunda proativa foi direcionada a `vercel/vercel` (ver NOTES.md de
 Vercel Open Source). Sem achado, sem mudança de estado neste programa.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, segunda passada)
+
+`list-pending` global = 0 de novo. Desta vez `circlefin/buidl-
+wallet-contracts` ganhou 3 arquivos novos de leitura profunda (dos 30
+que restavam, os únicos com lógica real em vez de interface/struct/
+constante): `src/libs/CastLib.sol`, `src/libs/AddressBytesLib.sol` e
+`src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol`.
+
+- `CastLib.toAddressArray` reinterpreta `SetValue[]` (bytes30 com
+  endereço nos 20 bytes altos) como `address[]` via assembly
+  (`memory-safe`, sem cópia) + shift `>>= 96` por item — código forkado
+  do CastLib da Alchemy (`modular-account-libs`), documentado como não
+  verificando o tipo de entrada. Uso interno sempre com `SetValue`
+  vindos de owners/signers já validados no ponto de inserção (não de
+  input de usuário livre neste arquivo) — sem caminho de exploração
+  encontrado.
+- `AddressBytesLib.toBytes30` é conversão trivial `address ->
+  uint240 -> bytes30`, sem lógica de risco.
+- `RepeatableFunctionReferenceDLLLib` (DLL com contador de repetição):
+  tracei `append`/`remove`/`removeAllRepeated` linha a linha contra a
+  invariante da sentinela (`SENTINEL_BYTES21`) e o modifier
+  `validFunctionReference` (bloqueia inserir a própria sentinela na
+  lista). `remove` com `currentCount==1` desfaz o link corretamente
+  (`prev.next=next; next.prev=prev`) antes de `delete`; `removeAllRepeated`
+  faz o mesmo unlink incondicional e decrementa `totalItems` pelo
+  `currentCount` cheio (não só 1) — consistente com o nome da função.
+  Sem overflow/underflow (aritmética checked do 0.8.24 protege os
+  decrementos, todos guardados por checagem de `currentCount==0` antes).
+  Sem achado.
+
+Sem achado novo, sem mudança de estado neste programa. `deep-read-log.json`
+atualizado (+3 em `circlefin/buidl-wallet-contracts`, agora 50 arquivos).
+
+Nesta mesma rodada, a sessão cometeu (e auto-reportou) uma violação da
+política `aiResearchBanned` ao ler 4 arquivos de `cashapp/misk` antes de
+perceber que era o repo do Block Open Source — ver o NOTES.md desse
+programa, seção "INCIDENTE". Não afeta Circle BBP diretamente, registrado
+aqui só para referência cruzada.

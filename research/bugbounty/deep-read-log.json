@@ -113,7 +113,11 @@
     "misk-tokens/src/main/kotlin/misk/tokens/TokenGeneratorModule.kt",
     "misk-admin/src/main/kotlin/misk/web/metadata/guice/GuiceTabIndexAction.kt",
     "misk-admin/src/main/kotlin/misk/web/metadata/all/MetadataTabIndexAction.kt",
-    "misk-admin/src/main/kotlin/misk/web/metadata/servicegraph/ServiceGraphTabIndexAction.kt"
+    "misk-admin/src/main/kotlin/misk/web/metadata/servicegraph/ServiceGraphTabIndexAction.kt",
+    "misk-crypto/src/testFixtures/kotlin/misk/crypto/testing/CryptoTestModule.kt",
+    "misk-mcp/src/testFixtures/kotlin/misk/mcp/testing/InMemoryMcpSessionHandler.kt",
+    "misk-mcp/src/testFixtures/kotlin/misk/mcp/testing/tools/SessionIdentifierTool.kt",
+    "samples/exemplar/src/main/kotlin/com/squareup/exemplar/ExemplarAccessModule.kt"
   ],
   "cashapp/cash-app-pay-android-sdk": [
     "core/src/main/java/app/cash/paykit/core/impl/CashAppPayImpl.kt",
@@ -265,7 +269,10 @@
     "src/msca/6900/v0.7/plugins/BasePlugin.sol",
     "src/msca/6900/v0.8/libs/WalletStorageV2Lib.sol",
     "src/msca/6900/v0.7/libs/FunctionReferenceLib.sol",
-    "src/msca/6900/v0.7/libs/ExecutionHookLib.sol"
+    "src/msca/6900/v0.7/libs/ExecutionHookLib.sol",
+    "src/libs/CastLib.sol",
+    "src/libs/AddressBytesLib.sol",
+    "src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/lib/AddressLib.sol",

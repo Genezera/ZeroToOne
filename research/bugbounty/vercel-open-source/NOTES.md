@@ -2329,3 +2329,62 @@ cobertos neste repo). 4 arquivos novos lidos por completo:
 
 `deep-read-log.json` atualizado (+4 em `vercel/vercel`, agora 33
 arquivos). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, segunda passada)
+
+`list-pending` vazio de novo, mas havia um achado recuperado da rodada
+anterior ainda em `corroborated_static`: `command_injection_risk` em
+`utils/update-remix-run-dev.js` (workflow_dispatch input `new-version`
+interpolado sem sanitização em 3 chamadas `execSync` — ver reasoning
+completo no finding). Reverifiquei o código-fonte de verdade nesta rodada
+(`raw.githubusercontent.com/vercel/vercel/main/...`, não só confiando no
+reasoning já salvo) e o padrão vulnerável ainda está lá, idêntico ao
+descrito. `git ls-remote` confirmou HEAD atual de `main`:
+`e06cc643cec6a47bd9344af7f4589c736d95ed15`.
+
+`check-scope "Vercel Open Source" "vercel/vercel"` → `allowed=true`,
+`bountyEligible=true`, `maxSeverity=critical`, tier 1 (mesmo resultado de
+antes). `record-deployment-evidence` registrado com `confidence="high"`
+(commit real confirmado no HEAD do branch default, não é código morto/
+deletado). Adicionei ao reasoning uma ressalva de severidade que faltava:
+`workflow_dispatch` só pode ser disparado por quem já tem permissão
+*write* no repo, então o ganho real de um atacante é RCE no runner de
+Actions (exfiltração de segredo do job / pivot lateral), não escalada de
+privilégio a partir de zero — e o comentário no YAML indica que o secret
+`VERCEL_CLI_RELEASE_BOT_TOKEN` foi deletado, então o impacto prático de
+exfiltração hoje pode ser nulo até o secret ser recriado. A vulnerabilidade
+de injeção em si continua real e vale reportar, mas a severidade no
+rascunho de relatório (quando chegar lá) deve refletir essa ressalva, não
+"critical" automático só porque o programa aceita até critical.
+
+Tentei `transition ... scope_verified` mas a máquina de estados recusou
+corretamente: não existe transição `corroborated_static->scope_verified`
+no `state-machine.mjs`, só `reproduced_local->scope_verified`. Para chegar
+em `reproduced_local` a partir de `corroborated_static` a precondição
+exige `validations` com `result="pass"` — e não existe validador local
+para `command_injection_risk` em JS hoje (só haveria PoC pra Solidity via
+Foundry). `not_applicable` é tratado explicitamente como falha, não como
+bypass. Ou seja: **este achado está genuinamente travado em
+`corroborated_static`** até o sistema ganhar um validador de verdade pra
+findings JS/TS (ou até uma sessão futura decidir que o reasoning por si
+só + deployment evidence bastam e isso for adicionado como nova
+precondição válida no state machine — decisão de design, não algo pra
+uma sessão individual forçar). Isso bate com o que o passo 3g do prompt
+da rotina já antecipava ("limitação real do sistema, não invente um
+validador") — deployment evidence registrada mesmo assim, porque
+documentar o gap tem valor por si só e deixa a próxima rodada sem
+precisar reinvestigar do zero.
+
+**Gap de persistência notado nesta rodada:** `exportFindingsToQueueLines`
+(`db.mjs`) só serializa `state/confidence/reasoning/filesRead/pocRun/
+pocResult` pra `queue.jsonl` — `deployment_evidence`, `validations`,
+`duplicateCheck` e `report` ficam só no SQLite local (`zerotoone.db`,
+no `.gitignore`, efêmero por design). Ou seja, o `record-deployment-
+evidence` desta rodada é real e consultável enquanto este container
+viver, mas ao rodar `migrate-to-v2.mjs` numa rodada futura (container
+novo, banco reconstruído do zero a partir de `queue.jsonl`) essa
+evidência específica desaparece do banco — só sobra o resumo que eu
+coloquei aqui no NOTES.md em prosa. Não é um bug que eu deva corrigir
+sozinho agora (mudar o formato de export é decisão de design que afeta
+todo o pipeline), só um gap real a registrar — mesma categoria do gap de
+`aiResearchBanned` já documentado no NOTES.md do Block Open Source.
