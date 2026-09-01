@@ -215,7 +215,8 @@
     "src/v2/MessageTransmitterV2.sol",
     "src/messages/v2/AddressUtils.sol",
     "src/proxy/Initializable.sol",
-    "src/roles/Rescuable.sol"
+    "src/roles/Rescuable.sol",
+    "src/messages/v2/MessageV2.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -262,7 +263,9 @@
     "src/msca/6900/v0.7/libs/SelectorRegistryLib.sol",
     "src/msca/6900/v0.7/libs/FunctionReferenceDLLLib.sol",
     "src/msca/6900/v0.7/plugins/BasePlugin.sol",
-    "src/msca/6900/v0.8/libs/WalletStorageV2Lib.sol"
+    "src/msca/6900/v0.8/libs/WalletStorageV2Lib.sol",
+    "src/msca/6900/v0.7/libs/FunctionReferenceLib.sol",
+    "src/msca/6900/v0.7/libs/ExecutionHookLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",

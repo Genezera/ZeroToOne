@@ -5149,4 +5149,47 @@ são só `*_mock.go`/`*_test.go`, fora do critério de leitura profunda).
 Nenhum achado novo nesta rodada — resultado normal. `Block Open Source`
 seguiu não tocado (`aiResearchBanned: true`). `api.hiro.so` (StackingDAO,
 os 3 contratos `ststxbtc-*` ainda bloqueados) segue com CONNECT 403 no
+
+---
+
+## Rodada 2026-09-01 (push automático, migração pra state machine v2)
+
+`migrate-to-v2.mjs` rodou limpo: 132 findings migrados de `queue.jsonl`
+para o SQLite local (`false_positive`: 125, `duplicate`: 2,
+`known_duplicate`: 2, `inconclusive`: 2, `human_ready`: 1). `list-pending`
+devolveu fila vazia — nenhum finding em `candidate` para revisar nesta
+rodada.
+
+O único finding em `human_ready` (Block Open Source, `wire-schema`
+`DirectoryRoot.resolve`, path traversal) já tinha rascunho de relatório
+gravado (`reports/block-open-source-wire-directoryroot-resolve.md`) de
+rodada anterior — nada novo a fazer nele, só confirmei que segue íntegro.
+
+Leitura profunda proativa (3 arquivos, priorizando lógica real sobre
+interface/constante/script de deploy, já que a maioria dos alvos ativos
+de Circle BBP tinha só interfaces/erros/structs não lidos):
+
+- `circlefin/buidl-wallet-contracts` — `src/msca/6900/v0.7/libs/
+  FunctionReferenceLib.sol` (pack/unpack de `FunctionReference` em
+  `bytes21`) e `src/msca/6900/v0.7/libs/ExecutionHookLib.sol`
+  (processamento de pre/post execution hooks do MSCA ERC-6900). Pack/
+  unpack é bitwise puro e determinístico, sem caminho de exploração.
+  `ExecutionHookLib` é biblioteca interna chamada só pelo próprio
+  contrato de conta (MSCA) durante `execute`/`executeFromPlugin` — não
+  há superfície de chamada externa direta nem checagem de autorização
+  ausente que eu tenha conseguido confirmar nesta leitura; é o mesmo
+  padrão de hook chain já usado no ERC-6900 de referência (Alchemy).
+  Sem achado — precisaria de rastreamento bem mais profundo (instalação
+  de plugin, ordem de hooks maliciosos) para afirmar algo, e isso
+  extrapola o escopo de uma leitura proativa de 3 arquivos.
+- `circlefin/evm-cctp-contracts` — `src/messages/v2/MessageV2.sol`
+  (biblioteca de parsing de mensagem CCTP v2, `TypedMemView`). Indexação
+  de campo fixo com `_validateMessageFormat` conferindo `isValid()` e
+  tamanho mínimo antes de qualquer leitura — código maduro, já em
+  produção e amplamente auditado (CCTP é a ponte oficial de USDC). Sem
+  achado.
+
+`deep-read-log.json` atualizado (+2 em `circlefin/buidl-wallet-contracts`,
+agora 47; +1 em `circlefin/evm-cctp-contracts`, agora 20). Nenhum achado
+novo nesta rodada — resultado normal, nada digno de nota.
 agent-proxy, testado novamente nesta rodada, sem mudança.
