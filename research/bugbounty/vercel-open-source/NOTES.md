@@ -2073,3 +2073,42 @@ arquivos, cobertura completa) e Circle BBP (alvos EVM ativos já
 exaustivamente cobertos em rodadas anteriores). Esta rodada não tocou
 `Block Open Source` (`aiResearchBanned: true`, conferido antes de
 qualquer clone). Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila global vazia, leitura profunda proativa em `vercel/vercel`
+
+`list-pending` global = 0. Confirmei `program-policy.json` inteiro antes
+de tocar qualquer arquivo (checagem de bloqueio de IA aplicada a todos os
+programas, não só ao alvo da vez). `vercel/vercel` já tinha 21 arquivos
+lidos em rodadas anteriores, quase todos em torno de auth/OAuth/OIDC/
+credenciais (`cli-auth`, `cli-config`, `packages/connect`, `packages/oidc`).
+Sparse-checkout (`packages/connect/src`, `packages/oidc/src`,
+`packages/cli-auth`, `packages/cli/src/commands/login`,
+`packages/cli/src/commands/teams`, `packages/cli/src/util/login`,
+`packages/cli-config/src`) pra achar os 3 arquivos ainda não cobertos
+mais próximos do critério de prioridade (auth/token/permission):
+
+- `packages/connect/src/eve/provision-oauth-connector.ts` (147 linhas,
+  completo) — provisiona um "managed OAuth connector" via POST autenticado
+  por Bearer (`getVercelOidcToken()`) a `api.vercel.com`. Validação de
+  `connector` (uid) rejeita chars de controle/espaço/`%`/`#` e prefixos
+  reservados (`vc/`, `*.vercel.com/`, `scl_`/`sca_`/`store_`/`ir_`), com
+  única exceção deliberada `mcp.vercel.com/`. Cache de provisionamento em
+  memória por processo, chaveado por hash do token — usa SHA-256 quando
+  `crypto.subtle` existe, e cai pra um FNV-1a não-criptográfico só como
+  fallback de chave de cache (nunca usado como segredo/autenticação em si,
+  o token real vai só no header `Authorization`), então a debilidade do
+  fallback não é uma vulnerabilidade — na pior hipótese, colisão de chave
+  de cache faria reusar/reprovisionar a promise errada, não vazar nada.
+  Sem achado.
+- `packages/oidc/src/exchange-vercel-oidc-token.ts` (219 linhas, completo)
+  — troca token OIDC por token com audience customizada via POST a
+  `oidc.vercel.com/~token`. Cache LRU em memória, limitado a 1000
+  entradas, chaveado por SHA-256 de `[token, audience, jti]` (nunca guarda
+  o token bruto como chave), só cacheia quando a API devolve `expiry` no
+  futuro, e checa expiração no `get()` antes de reusar. Sem achado.
+- `packages/connect/src/authorization-details.ts` (15 linhas, completo) —
+  só tipos (`ConnectAuthorizationDetail`), sem lógica. Sem achado.
+
+`deep-read-log.json` atualizado (+3 arquivos em `vercel/vercel`, agora
+24). Clone sparse temporário apagado do scratchpad ao fim da rodada.
+Nenhum achado novo nesta rodada — resultado normal.
