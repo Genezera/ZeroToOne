@@ -2392,3 +2392,16 @@ e excluir programas banidos ANTES de tocar em `deep-read-log.json`" como
 sub-etapa nomeada, não como algo que cada sessão precisa lembrar sozinha —
 essa mudança está fora do alcance desta sessão editar (o prompt da rotina
 é configurado fora do repositório).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 12ª rodada do dia)
+
+`program-policy.json` checado ANTES de qualquer outra ação nesta rodada,
+seguindo à risca a correção aplicada no incidente da rodada 11 (ver seção
+acima). `aiResearchBanned: true` ainda vigente. Repos deste programa
+(`cashapp/*`, `afterpay/*`, `square/wire`) excluídos explicitamente da
+seleção de leitura profunda proativa desta rodada — confirmado via
+`scope-snapshots/block-open-source.json` antes de escolher qualquer
+arquivo. Nenhum clone, nenhuma leitura, nenhuma ação neste programa. O
+achado `js_injection_unescaped_token_risk` (afterpay/sdk-ios, marcado com
+aviso permanente na rodada 11) e o achado em `human_ready`
+(`Root.kt::DirectoryRoot.resolve::path_traversal_risk`) não foram tocados.

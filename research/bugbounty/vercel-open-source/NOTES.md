@@ -2608,3 +2608,31 @@ sistema ganhar um validador pra JS/TS ou um humano revisar diretamente.
 `deep-read-log.json` atualizado (+6 em `vercel/next.js`, incluindo os 3
 arquivos de teste lidos como parte da verificação, agora 12 arquivos no
 total pra este repo).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 12ª rodada do dia)
+
+`program-policy.json` checado ANTES de qualquer leitura (lição do incidente
+da rodada 11, ver `block-open-source/NOTES.md`). `list-pending` vazio — sem
+candidates novos na fila.
+
+Achado `ssrf_redirect_allowlist_bypass_risk` (image-optimizer.ts) já em
+`corroborated_static` desde a rodada 10: faltava registrar formalmente a
+tentativa de validação. `record-validation --result=not_applicable`
+registrado (mesma limitação já documentada: sem validador local pra JS/TS)
+e `transition -> reproduced_local` tentada — recusada como esperado pela
+máquina de estados. Finding permanece em `corroborated_static`, sem mudança
+de veredito. Achado `command_injection_risk` (update-remix-run-dev.js) já
+tinha essa etapa registrada em rodada anterior — nada a fazer.
+
+Leitura profunda proativa: 3 arquivos novos em `vercel/workflow`
+(`workbench/vitest/workflows/hook-token-reuse.ts`,
+`packages/cli/src/lib/inspect/auth.ts`,
+`packages/core/src/serialization/encryption.ts`). Nenhum achado novo:
+o primeiro é teste de regressão (comportamento correto sendo validado, não
+bug); o segundo é refresh de OAuth padrão de CLI local, sem anomalia; o
+terceiro é a camada de encriptação por capability (`SealTarget` vs
+`RunPayloadKeys`) — design com branding de tipo deliberado pra tornar
+confusão de chave simétrica/assimétrica um erro de compilação, não um bug
+de runtime; nenhuma falha encontrada na lógica de encrypt/decrypt.
+`deep-read-log.json` atualizado (+3 em `vercel/workflow`, agora 10
+arquivos).
