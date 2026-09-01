@@ -4938,3 +4938,62 @@ scratchpad ao fim da rodada. Esta rodada não tocou `Block Open Source`.
 Nenhum achado novo. StackingDAO e Vercel Open Source seguem sem
 pendência nova conhecida (cobertura já registrada em rodadas
 anteriores).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda proativa
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` +
+`cli.mjs list-pending`). `program-policy.json` conferido primeiro (passo
+0, antes de qualquer clone): só `Block Open Source` segue banido para
+pesquisa com IA — esta rodada não tocou nenhum repo desse programa.
+
+Cloneei os 5 repos EVM ativos (`evm-cctp-contracts`,
+`evm-gateway-contracts`, `buidl-wallet-contracts`, `evm-xreserve-contracts`,
+`evm-cpn-contracts`) num diretório temporário do scratchpad e comparei a
+árvore de arquivos `.sol` de produção (excluindo `test/`, `mock*/`,
+`script/`, `broadcast/`, `deploy-contracts/`) contra `deep-read-log.json`
+pra achar candidatos novos ainda não lidos, priorizando os que soam
+relacionados a papéis/permissão (nome com "roles"/"admin"-adjacent) ou
+storage/controle de acesso interno:
+
+- `circlefin/evm-cctp-contracts`: `src/roles/Rescuable.sol` — contrato
+  base (herdado por `TokenMinter`/`MessageTransmitter`/`TokenMessenger`)
+  que permite resgatar ERC20 travado no contrato. `onlyRescuer` exige
+  `msg.sender == _rescuer` (setter só via `onlyOwner` em
+  `updateRescuer`), `_updateRescuer` rejeita endereço zero,
+  `rescueERC20` usa `SafeERC20.safeTransfer`. Fork quase idêntico do
+  `centrehq/centre-tokens` já auditado externamente (rescuer não é o
+  msg.sender comum, é role administrativa separada do owner — modelo
+  correto de defesa em profundidade). Sem achado.
+- `circlefin/buidl-wallet-contracts`: `src/msca/6900/v0.7/libs/
+  WalletStorageV1Lib.sol` — biblioteca de storage "diamond-style"
+  (slot fixo derivado de `keccak256(keccak256("circle.msca.v1.storage")
+  - 1)`, comentário do próprio código explica que não seguiram EIP-7201
+  completo de propósito, decisão de design documentada, não erro).
+  Verifiquei o literal do slot é de fato 32 bytes (contei os hex
+  digits um a um pra descartar erro de truncamento/overflow no
+  literal) — correto. Sem achado.
+- `circlefin/buidl-wallet-contracts`: `src/msca/6900/v0.7/libs/
+  SelectorRegistryLib.sol` (versão v0.7, distinta da v0.8 já lida em
+  rodada anterior) — três funções puras de allowlist de seletor
+  (`_isNativeFunctionSelector`/`_isErc4337FunctionSelector`/
+  `_isIPluginFunctionSelector`), usadas (rastreei o consumo até
+  `PluginManager.sol`, já lido em rodada anterior sem achado) para
+  impedir que um plugin instalado sobrescreva funções nativas
+  críticas (`execute`, `installPlugin`, transferência de ownership,
+  `upgradeToAndCall`, etc.) via seletor colidente. Todas comparações
+  são `==` diretas contra `.selector` de interfaces reais, sem typo
+  óbvio. Não tentei provar exaustivamente que a lista cobre 100% das
+  funções nativas existentes (isso exigiria enumerar cada função de
+  cada contrato base e cruzar uma a uma) — registrando essa lacuna de
+  cobertura de análise aqui explicitamente em vez de reivindicar
+  confirmação total; nenhum gap concreto encontrado nesta passada. Sem
+  achado (nesta profundidade de análise).
+
+`deep-read-log.json` atualizado (+1 arquivo em `evm-cctp-contracts`,
++2 em `buidl-wallet-contracts`). Clones temporários apagados do
+scratchpad ao fim da rodada. Nenhum achado novo. `evm-gateway-contracts`
+e `evm-xreserve-contracts` têm alguns arquivos de baixo risco aparente
+ainda não lidos (interfaces, structs simples tipo `TransferSpec.sol`/
+`DepositIntent.sol`/`WithdrawHookData.sol`, `Constants.sol`) — candidatos
+de próxima rodada se a fila continuar vazia. StackingDAO e Vercel Open
+Source seguem sem pendência nova conhecida.
