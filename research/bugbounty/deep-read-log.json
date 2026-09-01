@@ -349,7 +349,10 @@
     "contracts/v1/FiatTokenV1.sol",
     "contracts/v2/FiatTokenV2.sol",
     "contracts/v2/FiatTokenV2_1.sol",
-    "contracts/v2/FiatTokenV2_2.sol"
+    "contracts/v2/FiatTokenV2_2.sol",
+    "contracts/v2/NativeFiatTokenV2_2.sol",
+    "contracts/interface/NativeFiatToken/INativeCoinAuthority.sol",
+    "contracts/interface/NativeFiatToken/INativeCoinControl.sol"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
