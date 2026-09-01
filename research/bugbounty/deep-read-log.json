@@ -708,7 +708,10 @@
     "src/_internal/utils/hash.ts",
     "src/_internal/utils/serialize.ts",
     "src/_internal/utils/cache.ts",
-    "src/_internal/utils/mutate.ts"
+    "src/_internal/utils/mutate.ts",
+    "src/index/use-swr.ts",
+    "src/mutation/index.ts",
+    "src/_internal/utils/subscribe-key.ts"
   ],
   "vercel/ms": [
     "src/index.ts"

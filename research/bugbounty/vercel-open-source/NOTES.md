@@ -2750,3 +2750,49 @@ totalmente lidos, não deveriam reaparecer como candidatos.)
 
 `deep-read-log.json` atualizado (+3 em `vercel/swr`, agora 4 arquivos).
 Nenhum finding novo, nenhuma transição de estado tentada nesta rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 17ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos pendentes.
+`program-policy.json` checado antes de qualquer leitura — `Block Open
+Source` continua `aiResearchBanned: true`, nenhum repo `cashapp/*`/
+`afterpay/*`/`square/wire` tocado nesta rodada.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` (com o mesmo
+contorno `GITHUB_TOKEN=` já documentado em rodadas anteriores, pra evitar
+o header `Authorization: Bearer proxy-injected` inválido) apontou
+`vercel/swr` como o repo do programa com menor cobertura relativa (4 de
+39 arquivos). Clonado via `git clone --depth 1` (público, sem conta/
+token). Nenhum arquivo com auth/session/crypto/token/login/password/
+admin/permission/access no nome (biblioteca de data-fetching client-side,
+não tem essas categorias por natureza) — segui julgamento de
+especialista: os arquivos de lógica real ainda não lidos, não só tipos/
+helpers triviais.
+
+3 arquivos lidos por completo:
+- `src/index/use-swr.ts` (1031 linhas, implementação central do hook
+  `useSWR`) — revisado com atenção à lógica de deduplicação/corrida de
+  requisições concorrentes (`revalidate`): `FETCH[key]` guarda
+  `[promise, startAt]`, e depois do `await` compara `FETCH[key][1] !==
+  startAt` para descartar respostas de requisições mais antigas que já
+  foram substituídas — mesmo padrão para `MUTATION[key]` (ignora resposta
+  de revalidação que se sobrepôs a uma mutação mais recente). Não há
+  cruzamento de fronteira de confiança aqui: cache é `WeakMap`/objeto em
+  memória do processo do próprio cliente, chave derivada da própria
+  aplicação (nunca de resposta do servidor), sem lógica de autorização
+  para auditar. Sem achado.
+- `src/mutation/index.ts` (`useSWRMutation`) — `ditchMutationsUntilRef`
+  usa timestamp para descartar resultados de trigger obsoletos (mesmo
+  padrão de race-safety do arquivo acima). Sem achado.
+- `src/_internal/utils/subscribe-key.ts` — helper trivial de
+  subscribe/unsubscribe por chave (swap-with-last para remoção O(1)). Sem
+  lógica de auditar.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/swr` agora
+com 7 arquivos, cobrindo toda a lógica não-trivial do pacote — os
+arquivos restantes são tipos/context/presets já visitados ou triviais).
+Sugestão pra próxima rodada: repos do programa ainda com pouca cobertura
+segundo `list-deep-read-candidates.mjs` — `vercel-labs/agent-skills` (3
+arquivos), `circlefin/*` de Circle BBP com poucas leituras (ver NOTES.md
+desse programa) — ou aprofundar em `vercel/next.js`/`vercel/vercel`
+(repos grandes, cobertura parcial).
