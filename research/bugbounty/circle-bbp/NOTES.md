@@ -4441,3 +4441,256 @@ sem lógica própria). Nenhum achado novo (`ai_deep_read_finding`) nesta
 rodada — resultado normal e válido. Esta rodada não tocou `Block Open
 Source` (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA.
+
+## Rodada 2026-09-01 (push automático, gatilho GitHub, sessão cloud) — fila vazia; `circlefin/noble-cctp` (SendMessage/SendMessageWithCaller/SetMaxBurnAmountPerMessage), sem achado
+
+`list-pending` global trouxe 0 candidatos (todos os programas). Segui a
+sugestão explícita da rodada anterior: dentro de `circlefin/noble-cctp`,
+os handlers de `x/cctp/keeper` ainda cobertos só na parte administrativa
+(roles/pause/link) tinham 3 arquivos de fato ainda não lidos que
+movimentam mensagem/autorização — `msg_server_send_message.go`,
+`msg_server_send_message_with_caller.go` e
+`msg_server_set_max_burn_amount_per_message.go` (`deposit_for_burn.go`/
+`receive_message.go` já constavam no log, a sugestão da rodada anterior
+estava desatualizada nesse ponto). Sparse-clone raso via
+`git clone --depth 1 --filter=blob:none --sparse` (público, sem
+conta/token), apagado ao final.
+
+Ponto investigado com ceticismo real: `SendMessage`/`SendMessageWithCaller`
+constroem `messageSender` a partir de `msg.From` (endereço fornecido no
+próprio corpo da mensagem, não derivado automaticamente do assinante da
+tx) — à primeira vista parece o mesmo padrão de confused-deputy já visto
+em Clarity (StackingDAO) e Solidity neste projeto (checar uma identidade
+mas usar outra para side-effect). Não é o caso aqui: `proto/circle/cctp/
+v1/tx.proto` declara `option (cosmos.msg.v1.signer) = "from";` em
+`MsgSendMessage`/`MsgSendMessageWithCaller` — esse é o mecanismo padrão
+do Cosmos SDK que torna `GetSigners()` derivado exatamente do campo
+`from`, e o `AnteHandler` (`SigVerificationDecorator`, fora deste repo,
+parte do SDK) exige que a lista de assinaturas da tx bata exatamente com
+`GetSigners()` antes de a mensagem sequer chegar ao `msgServer` — ou
+seja, `msg.From` só pode ser a conta que de fato assinou a transação,
+nunca um endereço arbitrário de terceiro. Mesmo padrão de segurança já
+confirmado em `msg_server_deposit_for_burn.go` (lido em rodada anterior)
+e consistente com o resto do módulo. `SetMaxBurnAmountPerMessage`
+compara `tokenController != msg.From` (mesmo campo `from` amarrado ao
+signer) antes de mutar `PerMessageBurnLimit` — checagem de autorização
+correta, mesmo padrão dos outros `msg_server_update_*` já auditados.
+
+Sem achado. `deep-read-log.json` atualizado (`circlefin/noble-cctp`
+13→16 arquivos — agora cobre todos os `msg_server_*.go` não-query do
+módulo). Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA (`aiResearchBanned: true`, ver NOTES.md
+próprio). Sugestão pra próxima rodada: repos com cobertura ainda rasa —
+`circlefin/stellar-cctp` (3 arquivos), `circlefin/starknet-cctp`
+(4 arquivos), `circlefin/sui-cctp` (5 arquivos) — ou revisitar
+`circlefin/stablecoin-near` (`fiat_token_action.rs`, coberto só por
+menção, sem leitura linha a linha registrada nesta missão).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `buidl-wallet-contracts`/`evm-xreserve-contracts`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa:
+`src/utils/ExecutionUtils.sol` e `src/utils/PaymasterUtils.sol`
+(`circlefin/buidl-wallet-contracts`) — bibliotecas de baixo nível
+(`call`/`delegatecall`/decodificação de `returndata` via assembly) que
+seguem o mesmo padrão de referência do `eth-infinitism/account-abstraction`
+(bubble-up de revert reason, `success` sempre retornado para o chamador
+decidir, nunca engolido). Usadas só internamente por `PluginExecutor.sol`/
+`StandardExecutor.sol` (já auditados em rodada anterior), que checam
+`success` antes de prosseguir. Sem achado.
+
+Também li `src/examples/USDCx.sol` (`circlefin/evm-xreserve-contracts`)
+— contrato inteiro é explicitamente marcado no NatSpec como
+"illustrative purposes... not audited or production-ready" (fica em
+`src/examples/`, fora do path `src/` principal do protocolo). Ainda
+assim, rastreei a cadeia de `mint()`: `_verifySignature` usa
+`ECDSA.recover` da OpenZeppelin (reverte em assinatura malformada/
+malleável, não retorna `address(0)` silenciosamente), nonce marcado
+como usado antes dos efeitos (`usedNonces[nonce] = true` antes dos
+`balances[...] +=`, protege contra reentrância mesmo sem `nonReentrant`
+porque não há call externo no meio). Sem achado — e mesmo que houvesse,
+código de exemplo explicitamente fora de produção tende a estar fora do
+escopo elegível de um BBP real. `deep-read-log.json` atualizado com os
+3 arquivos (2 em `buidl-wallet-contracts`, 1 em `evm-xreserve-contracts`).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em módulos de `token_controller`/role management, sem achado
+
+`list-pending` global = 0 (confirmado nos 4 programas via `migrate-to-v2.mjs`
++ `list-pending`). Seguindo a sugestão de cobertura rasa da rodada
+anterior, li o padrão de autorização do papel "token controller" em 3
+repos CCTP menos cobertos, priorizando por nome de caminho (`admin`/
+`role`/`controller`) como pede o passo 4 do prompt:
+
+- `circlefin/stellar-cctp`: `packages/cctp-roles/src/token_controller/mod.rs`
+  (trait/interface, só docs) + `storage.rs` (implementação real). Toda
+  função mutante (`link_token_pair`, `unlink_token_pair`,
+  `set_max_burn_amount_per_message`, `set_token_decimal_config`,
+  `set_swap_minter_config`, `remove_swap_minter_config`) é decorada com
+  `#[enforce_role_auth(TOKEN_CONTROLLER)]` — mesma macro declarativa de
+  autorização já usada de forma consistente nos outros módulos de
+  `cctp-roles` (`denylistable`, `min_fee_controller`,
+  `remote_token_messenger`) auditados em rodadas passadas. `set_swap_minter_config`
+  chamou atenção por não ter validação extra de endereço (ex.: não
+  rejeitar `swap_minter`/`allow_asset` iguais a `local_token`), mas é
+  puro registro de configuração sem efeito colateral de fundos nesta
+  função — o risco real (se algum) estaria em quem *consome* essa config
+  para de fato mover fundos, não lido nesta rodada.
+- `circlefin/starknet-cctp`: `packages/components/src/token_controller.cairo`
+  — `assert_only_token_controller` compara `get_caller_address()` com o
+  endereço armazenado (padrão Starknet correto, equivalente ao
+  `contract-caller` do Clarity, não ao "tx origin"). `set_token_controller`
+  gateado por `assert_only_owner` (componente `Ownable` separado). Dois
+  níveis de autorização corretos e consistentes com o resto do protocolo.
+- `circlefin/sui-cctp`: `packages/message_transmitter/sources/admin/role_management.move`
+  — `update_pauser`/`update_attester_manager` exigem
+  `owner_role().assert_sender_is_active_role(ctx)` (papel de dono
+  ativo, dois-passos). `transfer_ownership`/`accept_ownership` delegam
+  pro módulo `two_step_role` já auditado em rodada anterior via
+  `roles.move`. Sem achado.
+
+Os 3 repos seguem o mesmo padrão de autorização (dono define
+controlador de papel específico; controlador de papel específico gateia
+as próprias operações), replicado de forma consistente em 3 linguagens
+diferentes (Rust/Soroban, Cairo, Move) — nenhuma inconsistência entre
+implementações que sugerisse um bug introduzido na portabilidade entre
+chains. `deep-read-log.json` atualizado (4 arquivos novos). Esta rodada
+não tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
+programa segue banido pra pesquisa assistida por IA
+(`aiResearchBanned: true`, ver NOTES.md próprio e `program-policy.json`,
+conferido antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `arc-remote-signer`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa em `circlefin/arc-remote-signer`
+(serviço de assinatura remota para validadores Arc, arquitetura dual-processo
+com Nitro Enclave). Li `internal/common/grpc/server/config.go` (struct `TLSConfig`,
+só `Enabled`/`Cert`/`Key` — sem campo de CA/verificação de certificado de
+cliente) e, para entender o efeito real, revisitei `option.go` e
+`interceptor/middleware.go` (já lidos em rodadas anteriores): `WithTLS`
+carrega apenas `credentials.NewServerTLSFromFile` (TLS de servidor puro,
+sem `tls.RequireAndVerifyClientCert` nem CA pool), e a cadeia de
+interceptors do gRPC (`WithRecovery`, `WithRequestID`, `WithMetrics`,
+`WithLogging`) não inclui nenhum interceptor de autenticação/autorização
+por requisição — nenhum token, API key ou mTLS de cliente é exigido no
+nível da aplicação.
+
+Investiguei se isso é uma falha real: `docs/architecture.md` (já lido)
+documenta explicitamente que o Arc Remote Signer é implantado como
+**sidecar 1-para-1 por validador** ("VPC configuration with security
+groups that allow inbound traffic from the validator node to the
+signer's gRPC port") — controle de acesso é por design de rede
+(security group), não por autenticação de protocolo. Isso é consistente
+com uma superfície de ataque já esperada e documentada pelo próprio
+projeto, não uma lacuna não intencional. Sem achado novo — reforça
+(não contradiz) a leitura de rodadas anteriores sobre `public.go`/
+`signer.go`/`enclave.go`. `deep-read-log.json` atualizado (1 arquivo
+novo). Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA (`aiResearchBanned: true`, conferido em
+`program-policy.json` antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 2) — fila vazia, leitura profunda em `arc-node`, sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0): só `Block Open Source` segue banido; StackingDAO, Vercel
+Open Source e Circle BBP liberados. Clone raso de `circlefin/arc-node`
+(`git clone --depth 1`, público, sem conta) pra leitura profunda
+proativa em 3 arquivos ainda não lidos: `crates/types/src/signing.rs`,
+`crates/consensus-db/src/keys.rs`, `crates/signer/src/lib.rs`.
+
+- `crates/types/src/signing.rs` define o trait `SigningProvider`
+  (`sign_bytes`/`verify_signed_bytes` — assinatura de bytes crus). O
+  comentário do próprio arquivo chamou atenção: "Upstream removed raw
+  byte signing from the signing traits to enforce domain separation;
+  Arc re-exposes it here". Investiguei se essa reintrodução de
+  assinatura de bytes crus (sem domain-separation tag) cria confusão
+  cross-tipo entre `Vote`, `Proposal` e proposal-parts — rastreei a
+  cadeia completa: `crates/signer/src/remote.rs`/`remote-signer/src/provider.rs`
+  (já lidos, RemoteSigningProvider) mostram que `sign_vote`/`sign_proposal`
+  chamam `self.sign_bytes(vote.to_sign_bytes())`/`self.sign_bytes(proposal.to_sign_bytes())`
+  — ou seja, o mesmo primitivo genérico de baixo nível assina os três
+  tipos de mensagem (`Vote`, `Proposal` e o hash Keccak256 dos
+  proposal-parts, usado em `malachite-app/src/proposal_parts.rs`).
+  Comparei os preimages: `Vote::to_sign_bytes()` é SSZ do struct
+  inteiro (primeiro campo é o discriminante `VoteType`, 1 byte);
+  `Proposal::to_sign_bytes()` é SSZ de outro struct (primeiro campo é
+  `Height`, sem discriminante); o hash de proposal-parts é
+  `Keccak256(height_be(8) || round_be(8) || dados do payload)`, um
+  digest de 32 bytes bruto, não SSZ. Os três formatos têm layouts de
+  byte estruturalmente distintos (campos diferentes, larguras
+  diferentes, um é hash vs os outros são serialização direta) — uma
+  colisão de bytes exigiria quebrar SSZ/Keccak256, não é uma confusão
+  de parsing exploitável na prática (o verificador sempre recomputa o
+  preimage esperado a partir da mensagem já conhecida, nunca decodifica
+  bytes arbitrários assumindo um tipo). Também notei que extensões de
+  voto (`vote_extension_sign_bytes` em `signer/local.rs`, já lido) usam
+  um domain separator explícito (`VOTE_EXTENSION_DOMAIN`) — mostra que
+  o time já pensa em domain separation onde julga necessário; a
+  ausência de tag em `sign_bytes`/`verify_signed_bytes` genérico é uma
+  escolha de design (mitigada pela distinção estrutural natural dos
+  três formatos), não uma lacuna. Sem achado — documentado aqui como
+  padrão intencional e já rastreado, não candidato.
+- `crates/consensus-db/src/keys.rs` — apesar do nome, são apenas chaves
+  de tabela do banco `redb` local (`HeightKey`/`RoundKey`/`BlockHashKey`,
+  codificação de bytes fixos pra ordenação), não chaves criptográficas.
+  Sem lógica de segurança. Sem achado.
+- `crates/signer/src/lib.rs` — só o enum dispatcher `ArcSigningProvider`
+  (`Local`/`Remote`), delega cada método pro provider concreto sem
+  lógica própria. Sem achado.
+
+`deep-read-log.json` atualizado (3 arquivos novos em `circlefin/arc-node`).
+Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA (`aiResearchBanned: true`, conferido em
+`program-policy.json` antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 3) — fila vazia, leitura profunda nos alvos EVM ativos, sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0, antes de qualquer clone): só `Block Open Source` segue
+banido. Como os alvos "ativos" do dashboard pra Circle BBP são todos
+Solidity (`evm-cctp-contracts`, `evm-gateway-contracts`,
+`buidl-wallet-contracts`, `evm-xreserve-contracts`,
+`evm-cpn-contracts`), fiz `git clone --depth 1` raso de cada um deles
+pra achar arquivo novo ainda não lido. `evm-cpn-contracts` já estava
+100% lido (todos os 7 arquivos `.sol` do repo já em
+`deep-read-log.json`). Nos outros 4, a maioria dos arquivos ainda não
+lidos são interfaces puras (`interface I...` sem lógica) ou
+constantes/errors — não valem leitura profunda dedicada. Escolhi 3
+arquivos com lógica de segurança real, priorizando nome
+auth/token/init:
+
+- `buidl-wallet-contracts/src/erc712/BaseERC712CompliantAccount.sol` —
+  wrapper de "replay safe hash" EIP-712 (usado pelas contas MSCA pra
+  assinar mensagens de forma que não sejam reutilizáveis entre contas
+  diferentes). `domainSeparator` inclui `_getAccountName()`,
+  `_getAccountVersion()`, `block.chainid` e `address(this)`;
+  `structHash` inclui `_getAccountTypeHash()` (fornecido pela
+  implementação concreta) e o hash da mensagem. Padrão EIP-712 correto
+  e completo — nenhum campo do domain separator ausente que permitiria
+  replay cross-chain ou cross-account. Sem achado.
+- `buidl-wallet-contracts/src/msca/6900/v0.8/account/WalletStorageInitializable.sol` —
+  fork do `Initializable` da OpenZeppelin (comentário do próprio
+  arquivo confirma), com reinicialização removida (só inicialização
+  única). Lógica `initialSetup`/`deploying` (via
+  `address(this).code.length == 0`, que só é verdadeiro durante a
+  execução do constructor) segue exatamente o padrão original da OZ —
+  nenhuma modificação que abriria brecha de reinicialização. Sem
+  achado.
+- `evm-cctp-contracts/src/proxy/Initializable.sol` — mesmo padrão,
+  fork mais explícito ainda (comentário cita commit exato da OZ de
+  origem e lista as 3 modificações: pin pra Solidity 0.7.6, `require`
+  em vez de custom error, `Address.isContract` em vez de
+  `address.code.length` — mudanças cosméticas/de compatibilidade,
+  não de lógica). Mantém `reinitializer`/`onlyInitializing`/
+  `_disableInitializers` idênticos à semântica original. Sem achado.
+
+`deep-read-log.json` atualizado (3 arquivos novos: 2 em
+`buidl-wallet-contracts`, 1 em `evm-cctp-contracts`). Esta rodada não
+tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
+programa segue banido pra pesquisa assistida por IA
+(`aiResearchBanned: true`, conferido em `program-policy.json` antes de
+qualquer clone). Todos os clones temporários (`evm-cpn-contracts`,
+`evm-xreserve-contracts`, `evm-gateway-contracts`,
+`buidl-wallet-contracts`, `evm-cctp-contracts`) apagados do scratchpad
+ao fim da rodada.

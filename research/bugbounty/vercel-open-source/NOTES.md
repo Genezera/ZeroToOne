@@ -1914,3 +1914,56 @@ com um aviso de confiança explícito no topo (baixa confiança de
 exploração, recomendado como achado de hardening, não como
 vulnerabilidade confirmada) — decisão de enviar ou não fica com o
 usuário, não uma conclusão automática desta rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `vercel/flags`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa em
+`packages/vercel-flags-core/src/controller/stream-connection.ts` +
+`stream-source.ts` (conexão SSE de streaming de flags, com backoff e
+timeout de ping) e `packages/vercel-flags-core/src/utils/ingest.ts`
+(telemetria de uso) — todas as chamadas de rede usam o token resolvido
+via `Auth.resolveToken()` só no header `Authorization: Bearer`, nunca em
+querystring/URL (não vaza em logs de acesso). `packages/flags/src/lib/
+serialization.ts` (assinatura/verificação HS256 via `jose`
+`CompactSign`/`compactVerify`, usado por `verify-access.ts` já auditado
+em rodada anterior) — comentário `// TODO what happens when verification
+fails?` chamou atenção, mas `compactVerify` do `jose` lança exceção em
+falha de verificação (não retorna silenciosamente um payload inválido),
+então o TODO é só falta de comentário explicativo, não uma lacuna de
+tratamento de erro real. Sem achado novo. `deep-read-log.json`
+atualizado com os 4 arquivos.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `vercel/vercel`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa em dois arquivos
+novos de `vercel/vercel` ainda não lidos, sparse-checkout de
+`packages/cli-auth`, `packages/oidc`, `packages/connect`,
+`packages/cli-config` pra achar candidatos não cobertos por rodadas
+anteriores (que já tinham auditado exaustivamente `cli-auth/oauth.ts`,
+`cli-auth/sso.ts`, `oidc/verify-vercel-oidc-token.ts`,
+`connect/authorization.ts`, `connect/token.ts` etc.):
+
+- `packages/connect/src/chat/webhook-verifier.ts` — verificador de
+  webhook para os adapters do Chat SDK (Slack/GitHub/Linear). Em vez de
+  validar o segredo de assinatura nativo do provedor, extrai um Bearer
+  token do header `Authorization` e delega para `verifyVercelOidcToken`
+  (já auditado em rodada anterior) com `issuer` fixado em
+  `https://oidc.vercel.com` e `project_id`/`environment` derivados do
+  deployment atual — falha fechado (lança exceção) se o token estiver
+  ausente ou a verificação falhar; a doc do próprio arquivo já registra
+  corretamente o trust boundary (qualquer token OIDC válido para esse
+  projeto+ambiente, não pinado a um conector específico). Implementação
+  consistente com o design documentado. Sem achado.
+- `packages/cli-config/src/cred-storage.ts` — resolve modo de storage de
+  credencial (`file` vs `keyring`) por precedência
+  `VERCEL_TOKEN_STORAGE` env > config global > heurística "auto" (usa
+  `file` só se já existe token utilizável em `auth.json`, senão
+  `keyring`). Não é o código que de fato grava o token (isso é
+  `credentials-store.ts`, coberto em rodada anterior) — é só resolução
+  de política. Notei que o modo "auto" preserva `file` (menos seguro que
+  `keyring`) quando já há token ali, em vez de migrar — comportamento de
+  compatibilidade deliberado, não uma superfície de ataque nova (mesmo
+  arquivo em disco, mesma permissão de FS de sempre). Sem achado.
+
+`deep-read-log.json` atualizado (2 arquivos novos). Esta rodada não
+tocou `Block Open Source` — banido para pesquisa com IA.
