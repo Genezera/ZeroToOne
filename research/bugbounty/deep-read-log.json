@@ -356,7 +356,8 @@
     "internal/common/config/loader.go",
     "internal/enclave/provider/enclave/enclave.go",
     "internal/enclave/common/crypto/aes/aes.go",
-    "internal/common/crypto/algorithm.go"
+    "internal/common/crypto/algorithm.go",
+    "internal/common/grpc/server/config.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -442,7 +443,9 @@
     "packages/connect/src/authorization.ts",
     "packages/connect/src/internal/url-validation.ts",
     "packages/connect/src/eve/connection-authorization.ts",
-    "packages/connect/src/token.ts"
+    "packages/connect/src/token.ts",
+    "packages/connect/src/chat/webhook-verifier.ts",
+    "packages/cli-config/src/cred-storage.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

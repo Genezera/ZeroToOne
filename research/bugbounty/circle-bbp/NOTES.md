@@ -4558,3 +4558,33 @@ não tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
 programa segue banido pra pesquisa assistida por IA
 (`aiResearchBanned: true`, ver NOTES.md próprio e `program-policy.json`,
 conferido antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em `arc-remote-signer`, sem achado
+
+`list-pending` global = 0. Leitura profunda proativa em `circlefin/arc-remote-signer`
+(serviço de assinatura remota para validadores Arc, arquitetura dual-processo
+com Nitro Enclave). Li `internal/common/grpc/server/config.go` (struct `TLSConfig`,
+só `Enabled`/`Cert`/`Key` — sem campo de CA/verificação de certificado de
+cliente) e, para entender o efeito real, revisitei `option.go` e
+`interceptor/middleware.go` (já lidos em rodadas anteriores): `WithTLS`
+carrega apenas `credentials.NewServerTLSFromFile` (TLS de servidor puro,
+sem `tls.RequireAndVerifyClientCert` nem CA pool), e a cadeia de
+interceptors do gRPC (`WithRecovery`, `WithRequestID`, `WithMetrics`,
+`WithLogging`) não inclui nenhum interceptor de autenticação/autorização
+por requisição — nenhum token, API key ou mTLS de cliente é exigido no
+nível da aplicação.
+
+Investiguei se isso é uma falha real: `docs/architecture.md` (já lido)
+documenta explicitamente que o Arc Remote Signer é implantado como
+**sidecar 1-para-1 por validador** ("VPC configuration with security
+groups that allow inbound traffic from the validator node to the
+signer's gRPC port") — controle de acesso é por design de rede
+(security group), não por autenticação de protocolo. Isso é consistente
+com uma superfície de ataque já esperada e documentada pelo próprio
+projeto, não uma lacuna não intencional. Sem achado novo — reforça
+(não contradiz) a leitura de rodadas anteriores sobre `public.go`/
+`signer.go`/`enclave.go`. `deep-read-log.json` atualizado (1 arquivo
+novo). Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA (`aiResearchBanned: true`, conferido em
+`program-policy.json` antes de qualquer clone).
