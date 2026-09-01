@@ -5867,3 +5867,20 @@ achado.
 
 `deep-read-log.json` atualizado (`circlefin/stablecoin-near` agora 8/8
 arquivos completos). Nenhuma transição de estado tentada.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 21ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer leitura (sem restrição
+pra "Circle BBP"). `list-pending` global = 0. Li o arquivo que ficara
+explicitamente pendente da rodada anterior: `circlefin/stablecoin-sui`
+`packages/usdc/sources/usdc.move` (último não-teste do repo, agora
+8/8... na verdade 8 arquivos cobertos no total incluindo este). Só o
+`init()` do módulo, que cria `Treasury<USDC>` e `UpgradeService<USDC>`
+e atribui todos os papéis administrativos (owner/master minter/
+blocklister/pauser/metadata updater) a `ctx.sender()` — padrão-padrão
+de bootstrap de deploy, sem lógica de autorização própria pra auditar.
+Sem achado.
+
+`deep-read-log.json` atualizado (+1 em `circlefin/stablecoin-sui`, agora
+8 arquivos — repo `.move` não-teste 100% coberto). Nenhuma transição de
+estado tentada.

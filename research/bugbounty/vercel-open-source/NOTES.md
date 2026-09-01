@@ -3292,3 +3292,24 @@ autenticação de rede, é só pareamento de request/response dentro do
 mesmo processo; sem achado).
 
 `deep-read-log.json` atualizado (+7 em `vercel/ai`, agora 16 arquivos).
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 21ª rodada do dia)
+
+`list-pending` global = 0. Revisitei rapidamente os achados
+`corroborated_static` deste programa (SSRF em `image-optimizer.ts`,
+command injection em `update-remix-run-dev.js`, path traversal em
+`verify-claim.mjs`, timing attack em `packages/harness/src/bridge/
+index.ts`) — nenhuma mudança de estado tentada, mesma limitação
+estrutural de sempre (sem validador PoC local pra JS/TS).
+
+Leitura profunda proativa nesta rodada em `vercel/vercel`, área de
+tokens/auth do CLI ainda não coberta: `packages/cli/src/commands/blob/
+signed-token.ts` (plumbing de CLI que só repassa flags pra
+`blob.issueSignedToken()` do SDK `@vercel/blob` — a lógica de
+assinatura em si vive fora deste repo, fora de escopo pra ler aqui;
+sem achado) e `packages/cli/src/util/domains/get-auth-code.ts` (só
+valida que o código de transferência de domínio não é vazio antes de
+repassar pro backend; sem lógica de auth local, sem achado).
+
+`deep-read-log.json` atualizado (+2 em `vercel/vercel`, agora 51
+arquivos). Sem achado novo, nenhuma transição de estado tentada.

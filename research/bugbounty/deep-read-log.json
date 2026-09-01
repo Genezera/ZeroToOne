@@ -566,7 +566,9 @@
     "packages/connect/src/chat/github-adapter.ts",
     "packages/connect/src/chat/linear-adapter.ts",
     "packages/oidc/src/get-vercel-oidc-token-with-refresh.ts",
-    "packages/oidc/src/token.ts"
+    "packages/oidc/src/token.ts",
+    "packages/cli/src/commands/blob/signed-token.ts",
+    "packages/cli/src/util/domains/get-auth-code.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
@@ -776,7 +778,8 @@
     "packages/stablecoin/sources/entry.move",
     "packages/sui_extensions/sources/upgrade_service.move",
     "packages/stablecoin/sources/version_control.move",
-    "packages/stablecoin/sources/mint_allowance.move"
+    "packages/stablecoin/sources/mint_allowance.move",
+    "packages/usdc/sources/usdc.move"
   ],
   "nitrojs/nitro": [
     "src/runtime/internal/static.ts",
