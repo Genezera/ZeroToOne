@@ -5531,3 +5531,45 @@ programa. Leitura profunda proativa desta rodada direcionada a
 `vercel/next.js` (ver NOTES.md de Vercel Open Source, achado novo
 registrado lá) — nenhuma leitura adicional de repos `circlefin/*` nesta
 rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 13ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0, nenhum candidato. Leitura
+profunda proativa desta rodada em `circlefin/arc-node` (confirmado em
+escopo via `scope-snapshots/circle-bbp.json`, `eligibleForBounty: true`),
+3 arquivos novos ainda não lidos:
+
+- `crates/types/src/ssz/v1/signature.rs` — wrapper SSZ encode/decode de
+  `Signature`, delega pra `[u8; 64]`. Sem lógica própria, sem achado.
+- `docs/adr/0005-eip7702-authorization-list-recovery-bound.md` — ADR
+  (status "Draft") descrevendo um risco real de DoS: recuperação de
+  endereço EIP-7702 (`recover_authority()`) rodava por autorização na
+  lista, sem cap direto, antes dos checks de saldo/fee — custo de CPU por
+  tx não limitado de forma independente do tamanho da lista. Decisão do
+  ADR foi adicionar `MAX_AUTHORIZATIONS_PER_TX = 100`, checado logo após
+  a validação stateless e ANTES do denylist/recuperação de autoridade.
+  Verifiquei o código-fonte em `crates/execution-txpool/src/validator.rs`
+  e `error.rs` (não apenas o ADR) e confirmei que a mitigação está
+  implementada exatamente como descrito — a checagem de `auth_count >
+  MAX_AUTHORIZATIONS_PER_TX` ocorre antes de `check_for_blocklisted_addresses`
+  e `check_for_denylisted_addresses`, com teste unitário cobrindo a ordem
+  (`validator.rs` linha ~991-1010: testa que `TooManyAuthorizations` é
+  retornado antes da recuperação de autoridade do denylist). Documento
+  descreve um fix já aplicado no código, não um gap real — sem achado
+  (refutado por leitura do código real, não só da ADR).
+- `crates/remote-signer/proto/arc/signer/v1/signer.proto` — serviço gRPC
+  `SignerService` com RPC `Sign(bytes message) -> bytes signature`: assina
+  qualquer blob de bytes sem tipo/domínio no nível do proto ("blind
+  signing" na superfície da interface). Autorização de quem pode chamar
+  esse RPC depende inteiramente da camada de transporte (isolamento de
+  enclave/vsock, mTLS) já lida em rodadas anteriores
+  (`internal/app/provider/enclave/transport_vsock.go`,
+  `internal/common/grpc/server/interceptor/middleware.go`, ambos em
+  `circlefin/arc-remote-signer`) — não reli essa camada de novo nesta
+  rodada por orçamento de tempo, então não é uma refutação completa, só
+  uma nota: se uma rodada futura tiver tempo, vale conferir se HÁ
+  validação de conteúdo da mensagem (ex.: domain separation) antes de
+  assinar, não só controle de acesso ao canal. Sem achado nesta rodada.
+
+`deep-read-log.json` atualizado (+3 em `circlefin/arc-node`, agora 25
+arquivos).

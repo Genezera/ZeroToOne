@@ -2405,3 +2405,11 @@ arquivo. Nenhum clone, nenhuma leitura, nenhuma ação neste programa. O
 achado `js_injection_unescaped_token_risk` (afterpay/sdk-ios, marcado com
 aviso permanente na rodada 11) e o achado em `human_ready`
 (`Root.kt::DirectoryRoot.resolve::path_traversal_risk`) não foram tocados.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 13ª rodada do dia)
+
+`program-policy.json` checado ANTES de qualquer leitura, mesma disciplina
+da rodada 12. `aiResearchBanned: true` ainda vigente. Leitura profunda
+proativa desta rodada foi em `circlefin/arc-node` (Circle BBP, ver
+NOTES.md desse programa) — nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire` tocado. Nenhum candidate pendente para este programa.

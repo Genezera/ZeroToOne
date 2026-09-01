@@ -444,7 +444,10 @@
     "crates/consensus-db/src/keys.rs",
     "crates/signer/src/lib.rs",
     "crates/remote-signer/src/lib.rs",
-    "crates/signer/tests/cross.rs"
+    "crates/signer/tests/cross.rs",
+    "crates/types/src/ssz/v1/signature.rs",
+    "docs/adr/0005-eip7702-authorization-list-recovery-bound.md",
+    "crates/remote-signer/proto/arc/signer/v1/signer.proto"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",
