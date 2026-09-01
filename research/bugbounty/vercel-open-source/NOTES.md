@@ -2530,3 +2530,35 @@ na máquina de estados de `corroborated_static` direto pra
 Leitura profunda proativa desta rodada direcionada a `circlefin/
 stablecoin-evm` (ver NOTES.md de Circle BBP) — nenhuma leitura adicional
 de `vercel/vercel` nesta rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 9ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Achado
+`command_injection_risk` em `utils/update-remix-run-dev.js` segue
+travado em `corroborated_static` pelo mesmo motivo documentado nas
+rodadas anteriores — sem mudança.
+
+Leitura profunda proativa direcionada a `vercel/flags` (clone raso
+novo, 11 arquivos já lidos em rodadas anteriores). Escolhidos 3 arquivos
+ainda não lidos em `packages/vercel-flags-core/src` e
+`packages/flags/src`, priorizando os que tocam contexto de
+requisição/fetch remoto/cookies:
+
+- `utils/request-context.ts` — só lê do symbol global
+  `@vercel/request-context`, que é gerenciado pelo runtime da Vercel
+  (não por este pacote); isolamento por requisição é responsabilidade
+  de quem popula o symbol, não deste getter. Sem achado.
+- `controller/fetch-datafile.ts` — monta `${host}/v1/datafile` com
+  `Authorization: Bearer <token>`. Verifiquei a origem de `host`:
+  default `'https://flags.vercel.com'` em `normalized-options.ts`,
+  configurado pelo desenvolvedor da app hospedeira, não vem de input de
+  requisição (header/query/cookie) em nenhum call site
+  (`controller/index.ts`, `controller/polling-source.ts`). Sem SSRF —
+  não é atacante-controlável. Sem achado.
+- `spec-extension/adapters/request-cookies.ts` — cópia reduzida de
+  código interno do Next.js (comentário confirma a origem), só um
+  wrapper Proxy pra tornar cookies de request somente-leitura. Sem
+  lógica nova. Sem achado.
+
+Achado zero nesta rodada. `deep-read-log.json` atualizado (+3 em
+`vercel/flags`, agora 14 arquivos).

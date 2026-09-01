@@ -27,7 +27,10 @@
     "packages/vercel-flags-core/src/controller/stream-connection.ts",
     "packages/vercel-flags-core/src/controller/stream-source.ts",
     "packages/flags/src/lib/serialization.ts",
-    "packages/vercel-flags-core/src/utils/ingest.ts"
+    "packages/vercel-flags-core/src/utils/ingest.ts",
+    "packages/vercel-flags-core/src/utils/request-context.ts",
+    "packages/vercel-flags-core/src/controller/fetch-datafile.ts",
+    "packages/flags/src/spec-extension/adapters/request-cookies.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
