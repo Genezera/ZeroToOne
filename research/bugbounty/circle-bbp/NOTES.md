@@ -4745,3 +4745,60 @@ tiveram capacidade de rodada dedicada nesta execução (orçamento de
 leitura desta sessão concentrado em Circle BBP); ambos seguem com
 cobertura já registrada em rodadas anteriores no mesmo dia, sem
 pendência conhecida.
+
+## Rodada 2026-09-01 (cloud-agent, disparada por push)
+
+Fila `list-pending` vazia no início da rodada (nenhum finding em
+`candidate`). Leitura profunda proativa focada em
+`circlefin/buidl-wallet-contracts` (3 arquivos ainda não lidos,
+priorizados por relevância a controle de acesso/validação):
+
+- `src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol`
+  — módulo de validação multisig ponderado (v0.8), não lido em rodadas
+  anteriores (só a contraparte v0.7 tinha sido lida). Rastreei
+  `checkNSignatures` (loop de acúmulo de peso, decodificação de
+  assinatura EOA/contrato/WebAuthn via assembly) e `validateRuntime`/
+  `validateUserOp`/`validateSignature`. Ponto que pareceu suspeito à
+  primeira vista: o peso do signer (`currentSignerMetadata.weight`) é
+  somado a `accumulatedWeight` mesmo quando a assinatura individual
+  falha (`response.success` vira `false` mas o loop continua); porém
+  confirmei que a decisão final em todos os três call sites depende
+  exclusivamente de `response.success` (nunca é resetado pra `true`
+  depois de marcado `false`), então não há bypass de fato — é uma
+  escolha de implementação (evitar revert antecipado, "fail-safe" por
+  flag) e não uma falha de controle de acesso. `_getSigDynamicPart`
+  usa assembly pra ler offset/tamanho dentro do blob de assinaturas;
+  os bounds-checks (`sigDynamicPartOffset > signatures.length`,
+  `sigDynamicPartOffset + sigDynamicPartTotalLen > signatures.length`)
+  cobrem leitura fora dos limites de forma consistente. Sem achado.
+- `src/utils/CalldataUtils.sol` — `calldataKeccak` é o mesmo padrão
+  usado em `UserOperationLib` do eth-infinitism/account-abstraction
+  (copia calldata pra memória "scratch" sem avançar o free memory
+  pointer). Padrão aceito e amplamente usado na comunidade AA. Sem
+  achado.
+- `src/msca/6900/v0.8/libs/SelectorRegistryLib.sol` — apenas
+  classificação estática de seletores conhecidos (native/ERC4337/
+  IModule), sem lógica de decisão de acesso própria — o enforcement
+  real fica em `BaseMSCA.sol` (já lido em rodada anterior). Sem achado.
+
+`deep-read-log.json` atualizado (3 arquivos novos em
+`circlefin/buidl-wallet-contracts`, agora 39 no total). Clones
+temporários (`buidl-wallet-contracts`, `evm-cpn-contracts`,
+`vercel-labs/agent-skills`, `vercel/flags`) usados só pra inspecionar
+árvore de arquivos e conferir cobertura; apagados do scratchpad ao fim
+da rodada. Nenhum achado novo nesta rodada.
+
+**Nota operacional (não é achado de segurança do alvo, é sobre este
+próprio pipeline):** o prompt agendado desta rodada pediu pesquisa nos
+4 programas incluindo "Block Open Source" — mas `program-policy.json`
+marca esse programa como `aiResearchBanned: true` desde 2026-08-31
+(regras do Bugcrowd proíbem explicitamente ferramentas de IA, com
+risco de expulsão do programa), e `targets-jvm.mjs`/`targets-go.mjs`/
+`targets-swift.mjs` já documentam que uma rodada anterior do agente de
+nuvem continuou lendo código do Block Open Source horas depois da
+pausa ser publicada. Por isso esta rodada não abriu nenhum arquivo de
+`cashapp/*`, `square/*` ou `afterpay/*` — tratei o prompt agendado
+(que pode ter sido escrito antes da pausa) como não podendo sobrepor
+essa trava de segurança do próprio projeto. StackingDAO e Vercel Open
+Source não tiveram capacidade de rodada dedicada (orçamento
+concentrado em Circle BBP); seguem sem pendência conhecida.

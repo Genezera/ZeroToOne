@@ -253,7 +253,10 @@
     "src/utils/ExecutionUtils.sol",
     "src/utils/PaymasterUtils.sol",
     "src/erc712/BaseERC712CompliantAccount.sol",
-    "src/msca/6900/v0.8/account/WalletStorageInitializable.sol"
+    "src/msca/6900/v0.8/account/WalletStorageInitializable.sol",
+    "src/msca/6900/v0.8/modules/multisig/WeightedMultisigValidationModule.sol",
+    "src/utils/CalldataUtils.sol",
+    "src/msca/6900/v0.8/libs/SelectorRegistryLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
