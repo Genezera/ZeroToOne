@@ -5750,3 +5750,41 @@ Nenhum achado novo, nenhuma transição de estado tentada. `deep-read-
 log.json` atualizado (+1 em `circlefin/buidl-wallet-contracts`, agora
 52 arquivos — cobre toda a lógica não-trivial do repo, resta só
 interfaces/structs/constants triviais).
+
+## Rodada 2026-09-01 (cloud, push trigger, sessão separada)
+
+`list-pending` vazio de novo. Confirmado `program-policy.json` antes de
+escolher arquivo: `Block Open Source` continua `aiResearchBanned: true`
+— nenhum clone/leitura/ação em `cashapp/*`/`afterpay/*`/`square/wire`.
+
+Escolhi `circlefin/arc-remote-signer` (remote signer — assina fora de
+contratos Solidity, mas listado explicitamente em escopo; superfície de
+auth/chave é real). Clone raso, diff `git ls-files` (filtrando
+`_test.go`, `/vendor/`, `/mocks/`) contra `deep-read-log.json`: 33 de 73
+arquivos não-teste ainda não lidos, maioria mock/telemetria/métrica/
+logging — baixo valor. Priorizei os relacionados a enclave/kms
+(isolamento de chave):
+
+- `internal/app/provider/enclave/transport_vsock_stub.go` — dialer
+  VSOCK stub, só compila em `!linux` (`//go:build !linux`), corpo é só
+  um `panic` explicando que VSOCK exige Linux. Sem lógica real, sem
+  achado.
+- `internal/app/provider/enclave/config.go` — só struct de config
+  (`NitroEnclave{Enabled, CID, Port}` + `Client`), lógica de
+  autenticação/transporte já coberta em rodada anterior via
+  `internal/common/grpc/client/{client,config}.go`. Sem achado.
+- `internal/app/provider/awskms/config.go` — struct de config do
+  provider AWS KMS. Nota de design (não bug): default de
+  `NewProviderConfig()` tem `Localstack.Enabled: true` apontando pra
+  `localhost:4566`, mas é claramente default de dev/test (mesmo padrão
+  dos ARNs de exemplo `000000000000`), não evidência de nada rodando
+  contra localstack em produção. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado tentada.
+`deep-read-log.json` atualizado (+3 em `circlefin/arc-remote-signer`,
+agora 46 arquivos — dos 33 que restavam não-lidos, os únicos com
+potencial de superfície de auth/chave já foram cobertos; o resto é
+mock/telemetria/métrica, valor residual baixo pras próximas rodadas).
+
+`list-pending` vazio + leitura profunda sem achado → rodada encerrada
+sem novos candidatos, conforme passo 2 das instruções.
