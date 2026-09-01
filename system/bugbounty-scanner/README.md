@@ -863,13 +863,22 @@ texto. Cada alvo tem seu próprio try/catch.
    foi a única forma que funcionou de verdade — seguro aqui porque o
    único argumento é a string literal `'install'`, nunca dado externo.
 
-**O que não deu certo ainda** (não escondido): `evm-xreserve-contracts`
-tem árvore de submódulo funda demais pro MAX_PATH mesmo com
-`core.longpaths`; `buidl-wallet-contracts` tem um nome de pacote
-inválido no `package.json` (`@modular-account-libs`) que trava `npm
-install` (Slither provavelmente ainda funcionaria nas partes só-Foundry,
-não testado). Dos 5 alvos Solidity curados, `evm-cctp-contracts` rodou
-de ponta a ponta com sucesso real.
+**O que não deu certo ainda** (não escondido, e agora CONFIRMADO ao vivo
+em 01/09/2026, não só suposição): `evm-xreserve-contracts` tem árvore
+de submódulo funda demais pro MAX_PATH mesmo com `core.longpaths` —
+`npm install` falha e o próprio Slither trava na compilação em
+seguida. `buidl-wallet-contracts` tem um nome de pacote inválido no
+`package.json` (`@modular-account-libs`) que trava `npm install`; ao
+contrário do que se supunha antes ("Slither provavelmente ainda
+funcionaria nas partes só-Foundry"), rodar de verdade mostrou que NÃO
+funciona — o Slither também trava na compilação sem os imports que o
+`npm install` resolveria. Nenhum dos dois é corrigível sem editar
+configuração do SISTEMA operacional (registry do Windows pro limite de
+MAX_PATH) ou o repositório de terceiro em si — fora do escopo desta
+missão (nunca mexo em configuração de sistema/segurança da máquina).
+Dos alvos Solidity curados, `evm-cctp-contracts`, `evm-gateway-contracts`
+e `evm-cpn-contracts` rodam de ponta a ponta com sucesso real; 2 de 5
+permanecem genuinamente bloqueados, documentados, não escondidos.
 
 **Resultado real da primeira rodada** (`circlefin/evm-cctp-contracts`,
 o bridge CCTP oficial da Circle — 49 contratos, 102 detectores, 127
@@ -1079,3 +1088,78 @@ Nenhuma mudança de comportamento em `classifyCandidate` além do peso —
 o veredito (`eligible`/`insufficient_signal`/`too_large`/
 `unsupported_language`/`blocked_program`) e o `MIN_SCORE_TO_PROMOTE >
 0` (bug do score=0 já documentado acima) continuam exatamente iguais.
+
+## Bug real e sério: 98% de ruído de `examples/`/`test/fixtures` no OSV-Scanner (01/09/2026)
+
+Rodando `discovery-runner.mjs` de ponta a ponta pela primeira vez com
+os tetos novos de promoção (seção acima) pra provar que tudo funciona
+junto de verdade — não só em teste isolado — o OSV-Scanner contra
+`vercel/vercel` (repositório real do Vercel Open Source, curado à mão,
+não um submódulo de terceiro) devolveu **4364 "vulnerabilidade" de
+severidade 7.0+, todas marcadas como achado novo**. Antes de aceitar
+isso como sucesso ("achei 4364 coisas!"), investiguei — mesma disciplina
+já aplicada a cada ferramenta nova nesta sessão (nunca confiar no
+número bruto sem entender de onde vem).
+
+**Causa raiz**: `vercel/vercel` é um monorepo com `examples/` contendo
+**333 lockfiles separados** — um template de demonstração por
+framework (`examples/gatsby`, `examples/nextjs`, `examples/docusaurus`,
+etc., cada um "como fazer deploy de X na Vercel"), nunca executado
+contra tráfego real, e com dependência deliberadamente desatualizada
+pra estabilidade do exemplo. Some a isso dezenas de `**/test/fixtures/
+**/yarn.lock` — lockfile CONGELADO de propósito dentro de teste do
+detector de build (`packages/build-utils/test/fixtures/05-zero-config-
+gatsby/yarn.lock`), existe só pra determinismo do teste, nunca é
+instalado/rodado de verdade. Diferente do problema de submódulo já
+resolvido pro Slither/OSV-Scanner (aquele era conteúdo de FORA do
+repositório, resolvido não inicializando submódulo) — aqui o ruído
+está DENTRO do próprio repositório principal, então aquele fix não
+ajuda em nada.
+
+**Medição real** (script ad-hoc, apagado depois de usar): dos 4364,
+**4283 (98,1%)** caem em `examples/`, `test/`, `tests/`, `fixtures/`
+ou `mocks/`; sobraram **81 achados genuínos** — o `pnpm-lock.yaml` da
+raiz do monorepo (dependência real do produto), 2 lockfile de script
+interno (`scripts/internal-dependency-trace`, `scripts/node_bench`,
+`packages/config`), e um punhado de achado real de Semgrep em código
+de aplicação de verdade (`command_injection_risk` em
+`packages/cli/src/commands/mcp/mcp.ts`, `path_traversal_risk` em
+`packages/cli/scripts/build-binary.mjs`).
+
+**Corrigido** com um filtro compartilhado novo
+(`path-noise-filter.mjs`, `isNonProductionPath`) — casa por SEGMENTO
+exato do path relativo (`examples`, `test`, `tests`, `__tests__`,
+`testdata`, `fixture`, `fixtures`, `__fixtures__`, `mock`, `mocks`,
+`__mocks__`, `demo`, `demos`, `sample`, `samples`), nunca por substring
+cru (evita falso positivo tipo um diretório real `latest/` ou
+`contest/` sendo pego por engano). Aplicado dentro de
+`parseOsvScannerJson` e `parseSemgrepJson`, logo após relativizar o
+caminho — acha real de qualquer um dos dois nunca mais entra na fila
+vindo de pasta de teste/demo/fixture/mock. `vendor/` foi
+propositalmente deixado DE FORA da lista: dependência vendorizada é
+código real, embarcado no binário final, genuinamente alcançável —
+diferente de fixture de teste.
+
+**Contenção real**: o processo foi interrompido manualmente assim que
+o número (4364, "novo desta vez") apareceu no log, ANTES da etapa de
+`commitAndPush` — nada disso chegou a ser commitado/empurrado pro
+repositório compartilhado. Só o banco SQLite LOCAL (gitignored, por
+ambiente) ficou com os 4286 achados ruins por alguns minutos; limpos
+com um `DELETE` restrito a `state='candidate'` (nunca toca achado já
+revisado por humano) via script ad-hoc. Depois do fix, rodar o
+OSV-Scanner e o Semgrep de novo contra o MESMO clone de
+`vercel/vercel` confirmou: filtro elimina o ruído, os achados
+genuínos (incluindo os de código de aplicação real do Semgrep)
+continuam passando normalmente.
+
+**Não escondido**: o filtro reduz RUÍDO ÓBVIO (nome de pasta
+conhecido), não julga alcançabilidade de verdade — `scripts/
+internal-dependency-trace` e `scripts/node_bench` continuam na fila
+como `candidate` mesmo sendo tooling interno, não o produto publicado;
+fica pra revisão humana decidir se isso está dentro do escopo do
+programa, o filtro automático não tenta resolver essa nuance sozinho.
+4 testes novos (`test/path-noise-filter.test.mjs`) mais 2 teste de
+regressão (um em cada runner) confirmando que a mesma pasta que causou
+o problema real (`examples/`, `test/fixtures/`) é ignorada, e que
+código de produção real (`packages/cli/src/...`) nunca é afetado.
+`npm test`: 394/394 depois do fix.

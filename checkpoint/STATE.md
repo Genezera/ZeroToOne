@@ -1011,3 +1011,33 @@ extra, assim que houver amostra suficiente revisada.
 
 Ver seções próprias em `system/bugbounty-scanner/README.md` pro
 detalhe completo de cada um destes itens.
+
+## Bug sério pego rodando tudo junto de verdade: 98% de ruído no OSV-Scanner (2026-09-01)
+
+Rodei `discovery-runner.mjs` de ponta a ponta pra provar os novos
+tetos de promoção funcionando — não só teste isolado. Resultado real:
+11 novos alvos promovidos (contra o teto antigo de 5), mas o
+OSV-Scanner contra `vercel/vercel` devolveu 4364 "vulnerabilidade"
+novas. Antes de comemorar o número, investiguei — e achei que **98,1%
+(4283 de 4364)** vinham de `examples/` (templates de demo tipo "como
+fazer deploy de Gatsby na Vercel") e `test/fixtures/` (lockfile
+congelado de propósito pra teste determinístico), nunca alcançável por
+tráfego real. Só 81 achados genuínos sobraram.
+
+Diferente do problema de submódulo já resolvido antes (conteúdo de
+FORA do repositório) — aqui o ruído está DENTRO do próprio repositório
+principal, causa raiz nova, fix novo: filtro compartilhado
+(`path-noise-filter.mjs`) que ignora path com segmento exato
+`examples/test/fixtures/mocks/demo/sample` (nunca por substring —
+não pega `latest/` nem `contest/`), aplicado no OSV-Scanner E no
+Semgrep (mesma exposição, mesma causa).
+
+**Contido a tempo**: processo interrompido manualmente assim que o
+número apareceu no log, ANTES do commit+push — nada disso chegou a
+ser compartilhado. Só o banco local (gitignored) teve os 4286 achados
+ruins por alguns minutos, limpos com `DELETE` restrito a
+`state='candidate'`. Fix verificado ao vivo: rodar de novo contra o
+mesmo repositório confirma que o ruído some e o achado genuíno
+(incluindo achado real de `command_injection_risk` em código de
+aplicação de verdade da própria Vercel) continua passando. `npm test`:
+394/394. Ver seção própria em `system/bugbounty-scanner/README.md`.

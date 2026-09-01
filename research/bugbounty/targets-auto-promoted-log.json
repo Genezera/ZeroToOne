@@ -1,209 +1,262 @@
 {
-  "generatedAt": "2026-08-31T18:44:50.518Z",
-  "totalActiveAutoPromoted": 4,
+  "generatedAt": "2026-09-01T03:33:31.925Z",
+  "totalActiveAutoPromoted": 13,
   "promotedThisRound": [
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "apimachinery",
+      "repo": "cli-runtime",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "901 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "306 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-08-31T18:44:50.517Z"
+      "promotedAt": "2026-09-01T03:33:31.924Z"
     },
     {
-      "program": "OKG",
+      "program": "Kubernetes",
       "platform": "HackerOne",
-      "owner": "okx",
-      "repo": "go-wallet-sdk",
+      "owner": "kubernetes",
+      "repo": "cloud-provider",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "284 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "cloud-provider-aws",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "463 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "cloud-provider-openstack",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "721 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "code-generator",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "1834 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "component-base",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "121 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "cri-api",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "475 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "klog",
       "branch": "main",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "561 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "cluster-bootstrap",
+      "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 10,
       "reasons": [
-        "574 estrelas no GitHub — indício de uso real, não projeto de brinquedo"
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-08-31T18:44:50.517Z"
+      "promotedAt": "2026-09-01T03:33:31.924Z"
     },
     {
-      "program": "Exodus",
+      "program": "Kubernetes",
       "platform": "HackerOne",
-      "owner": "ExodusOSS",
-      "repo": "crypto",
+      "owner": "kubernetes",
+      "repo": "csi-translation-lib",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
-      "language": "js",
-      "score": 0,
-      "reasons": [],
-      "promotedAt": "2026-08-31T18:44:50.517Z"
+      "language": "go",
+      "score": 10,
+      "reasons": [
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
     },
     {
-      "program": "Exodus",
+      "program": "Kubernetes",
       "platform": "HackerOne",
-      "owner": "ExodusOSS",
-      "repo": "hydra",
+      "owner": "kubernetes",
+      "repo": "gengo",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
-      "language": "js",
-      "score": 0,
-      "reasons": [],
-      "promotedAt": "2026-08-31T18:44:50.517Z"
+      "language": "go",
+      "score": 10,
+      "reasons": [
+        "581 estrelas no GitHub — indício de uso real, não projeto de brinquedo"
+      ],
+      "promotedAt": "2026-09-01T03:33:31.924Z"
     }
   ],
   "skippedThisRound": {
     "blockedProgram": [],
     "unsupportedLanguage": [
       {
-        "owner": "circlefin",
-        "repo": "stablecoin-near",
-        "githubLanguage": "Rust"
+        "owner": "kubernetes",
+        "repo": "community",
+        "githubLanguage": "Jupyter Notebook"
       },
       {
-        "owner": "circlefin",
-        "repo": "stablecoin-starknet",
-        "githubLanguage": "Cairo"
+        "owner": "kubernetes",
+        "repo": "examples",
+        "githubLanguage": "Shell"
       },
       {
-        "owner": "circlefin",
-        "repo": "stablecoin-sui",
-        "githubLanguage": "Move"
+        "owner": "kubernetes",
+        "repo": "git-sync",
+        "githubLanguage": "Shell"
       },
       {
-        "owner": "circlefin",
-        "repo": "stablecoin-xlm",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "circlefin",
-        "repo": "starknet-cctp",
-        "githubLanguage": "Cairo"
-      },
-      {
-        "owner": "circlefin",
-        "repo": "stellar-cctp",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "circlefin",
-        "repo": "sui-cctp",
-        "githubLanguage": "Move"
-      },
-      {
-        "owner": "Chia-Network",
-        "repo": "chia-blockchain",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "Chia-Network",
-        "repo": "chia_rs",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "Chia-Network",
-        "repo": "chiapos",
-        "githubLanguage": "HTML"
-      },
-      {
-        "owner": "Chia-Network",
-        "repo": "chiavdf",
-        "githubLanguage": "C++"
-      },
-      {
-        "owner": "Chia-Network",
-        "repo": "clvm_rs",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-core",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-firmware",
-        "githubLanguage": "C"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-messages",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-relay-messages",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-rustzone",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-secure-element",
-        "githubLanguage": "C"
-      },
-      {
-        "owner": "worldcoin",
-        "repo": "orb-software",
-        "githubLanguage": "Rust"
+        "owner": "kubernetes",
+        "repo": "k8s.io",
+        "githubLanguage": "HCL"
       }
     ],
     "tooLarge": [
       {
-        "owner": "Chia-Network",
-        "repo": "chia-blockchain-gui",
-        "sizeKb": 136546
-      },
-      {
-        "owner": "tronprotocol",
-        "repo": "java-tron",
-        "sizeKb": 214820
-      },
-      {
-        "owner": "DopplerHQ",
-        "repo": "cli",
-        "sizeKb": 39315
-      },
-      {
-        "owner": "ExodusOSS",
-        "repo": "bytes",
-        "sizeKb": 41401
+        "owner": "kubernetes",
+        "repo": "autoscaler",
+        "sizeKb": 268084
       },
       {
         "owner": "kubernetes",
-        "repo": "api",
-        "sizeKb": 84550
+        "repo": "client-go",
+        "sizeKb": 32119
       },
       {
         "owner": "kubernetes",
-        "repo": "apiextensions-apiserver",
-        "sizeKb": 29285
+        "repo": "cloud-provider-alibaba-cloud",
+        "sizeKb": 103761
       },
       {
         "owner": "kubernetes",
-        "repo": "apiserver",
-        "sizeKb": 29937
+        "repo": "cloud-provider-azure",
+        "sizeKb": 148836
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "cloud-provider-gcp",
+        "sizeKb": 190079
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "cloud-provider-vsphere",
+        "sizeKb": 78787
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "dns",
+        "sizeKb": 51712
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "enhancements",
+        "sizeKb": 59123
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "kompose",
+        "sizeKb": 45218
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "kops",
+        "sizeKb": 499430
       }
     ],
     "metadataFetchFailed": [],
+    "insufficientSignal": [],
     "alreadyPromoted": 0,
     "deferredToNextRun": [],
     "atCap": false
   },
-  "note": "skippedThisRound cobre TODO candidato considerado e recusado nesta rodada (linguagem não suportada, repo grande demais, programa bloqueado, erro de metadado, já promovido antes, ou elegível mas sem vaga nesta rodada) -- nunca um corte silencioso.",
-  "retroactiveCorrection": {
-    "at": "2026-08-31T19:00:00.000Z",
-    "reason": "Esta rodada real (a primeira ao vivo) promoveu ExodusOSS/crypto e ExodusOSS/hydra com score=0 e reasons=[] -- nenhum sinal positivo real (candidato HackerOne sem payout conhecido no dataset em massa, sem estrelas>=100, sem push recente registrado). O ranking por score sem piso mínimo garantia só 'menos pior do lote', não 'bom o bastante'. Corrigido em promote-targets.mjs (MIN_SCORE_TO_PROMOTE, verdict insufficient_signal) e as duas entradas foram removidas de targets-auto-promoted.mjs (permanecem AQUI, em promotedThisRound acima, como registro histórico real do que aconteceu -- não reescrito). GO_TARGETS ativo hoje: só kubernetes/apimachinery e okx/go-wallet-sdk."
-  }
+  "note": "skippedThisRound cobre TODO candidato considerado e recusado nesta rodada (linguagem não suportada, repo grande demais, programa bloqueado, erro de metadado, já promovido antes, ou elegível mas sem vaga nesta rodada) -- nunca um corte silencioso."
 }
