@@ -360,7 +360,10 @@
     "internal/enclave/provider/enclave/enclave.go",
     "internal/enclave/common/crypto/aes/aes.go",
     "internal/common/crypto/algorithm.go",
-    "internal/common/grpc/server/config.go"
+    "internal/common/grpc/server/config.go",
+    "internal/common/grpc/server/interceptor/recovery.go",
+    "internal/common/grpc/server/interceptor/request_id.go",
+    "internal/app/provider/secrets/config.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",

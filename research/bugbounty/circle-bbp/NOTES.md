@@ -4694,3 +4694,54 @@ qualquer clone). Todos os clones temporários (`evm-cpn-contracts`,
 `evm-xreserve-contracts`, `evm-gateway-contracts`,
 `buidl-wallet-contracts`, `evm-cctp-contracts`) apagados do scratchpad
 ao fim da rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — leitura profunda em `arc-remote-signer` (Go)
+
+`list-pending` global = 0 (nenhum candidate na fila no início da
+rodada). Leitura profunda proativa dirigida a `circlefin/arc-remote-signer`
+(asset confirmado em `scope-snapshots/circle-bbp.json`,
+`eligibleForBounty:true`), que já tinha cobertura extensa de rodadas
+anteriores (crypto/keystore/enclave/awskms/signer core, 28 arquivos).
+Não havia arquivo não lido batendo literalmente com as palavras-chave
+prioritárias (auth/session/crypto/token/login/password/admin/permission/
+access) — usei julgamento próprio pra escolher os 3 arquivos restantes
+de maior valor esperado:
+
+- `internal/common/grpc/server/interceptor/recovery.go` — interceptor
+  gRPC de recuperação de panic. Ponto verificado com ceticismo: a
+  branch não-broken-pipe devolve `status.Errorf(codes.Internal,
+  "something went wrong: %v", r)` ao CALLER, ecoando o valor bruto do
+  panic (não só logando — como fazem com `debug.Stack()`, que fica só
+  no log). Isso seria vazamento de informação interna se algum
+  `panic()` em caminho de tratamento de request pudesse carregar dado
+  sensível (chave, segredo). Busquei todos os `panic(` do repo
+  (excluindo testes): todos ficam em inicialização (`app.go`,
+  `run_enclave.go`, `random.go`, `enclave.go` — falhas de setup antes
+  do servidor gRPC aceitar requests) ou em código de plataforma
+  (`transport_vsock_stub.go`, mensagem estática sem dado sensível).
+  Nenhum panic identificado no caminho de tratamento de request em si
+  que pudesse carregar chave/segredo. Sem achado — o padrão é uma
+  prática abaixo do ideal (mensagem de erro interna refletida ao
+  cliente em vez de mensagem genérica), mas sem cadeia concreta de
+  vazamento de segredo demonstrada.
+- `internal/common/grpc/server/interceptor/request_id.go` — aceita
+  `x-request-id` do metadata de entrada sem sanitização e usa como
+  span attribute/log correlation ID; padrão comum de correlation ID,
+  não usado em decisão de autenticação/autorização. Risco teórico de
+  log injection não demonstrado como explorável nesta base (sem
+  achado).
+- `internal/app/provider/secrets/config.go` — `NewConfig()` tem
+  default `Localstack.Enabled: true` apontando pra
+  `http://localhost:4566` (emulador AWS local de dev/teste, não AWS
+  real). Configuração de produção (`configs/app.yaml`, já lido em
+  rodada anterior) sobrescreve esse default. Sem exposição real —
+  Localstack não é acessível/relevante fora de ambiente de dev local.
+
+`deep-read-log.json` atualizado (3 arquivos novos em
+`circlefin/arc-remote-signer`, agora 31 no total). Nenhum achado novo
+nesta rodada. Clone temporário de `arc-remote-signer` apagado do
+scratchpad ao fim da rodada. StackingDAO e Vercel Open Source não
+tiveram capacidade de rodada dedicada nesta execução (orçamento de
+leitura desta sessão concentrado em Circle BBP); ambos seguem com
+cobertura já registrada em rodadas anteriores no mesmo dia, sem
+pendência conhecida.
