@@ -4588,3 +4588,58 @@ novo). Esta rodada não tocou `Block Open Source`
 (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA (`aiResearchBanned: true`, conferido em
 `program-policy.json` antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 2) — fila vazia, leitura profunda em `arc-node`, sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0): só `Block Open Source` segue banido; StackingDAO, Vercel
+Open Source e Circle BBP liberados. Clone raso de `circlefin/arc-node`
+(`git clone --depth 1`, público, sem conta) pra leitura profunda
+proativa em 3 arquivos ainda não lidos: `crates/types/src/signing.rs`,
+`crates/consensus-db/src/keys.rs`, `crates/signer/src/lib.rs`.
+
+- `crates/types/src/signing.rs` define o trait `SigningProvider`
+  (`sign_bytes`/`verify_signed_bytes` — assinatura de bytes crus). O
+  comentário do próprio arquivo chamou atenção: "Upstream removed raw
+  byte signing from the signing traits to enforce domain separation;
+  Arc re-exposes it here". Investiguei se essa reintrodução de
+  assinatura de bytes crus (sem domain-separation tag) cria confusão
+  cross-tipo entre `Vote`, `Proposal` e proposal-parts — rastreei a
+  cadeia completa: `crates/signer/src/remote.rs`/`remote-signer/src/provider.rs`
+  (já lidos, RemoteSigningProvider) mostram que `sign_vote`/`sign_proposal`
+  chamam `self.sign_bytes(vote.to_sign_bytes())`/`self.sign_bytes(proposal.to_sign_bytes())`
+  — ou seja, o mesmo primitivo genérico de baixo nível assina os três
+  tipos de mensagem (`Vote`, `Proposal` e o hash Keccak256 dos
+  proposal-parts, usado em `malachite-app/src/proposal_parts.rs`).
+  Comparei os preimages: `Vote::to_sign_bytes()` é SSZ do struct
+  inteiro (primeiro campo é o discriminante `VoteType`, 1 byte);
+  `Proposal::to_sign_bytes()` é SSZ de outro struct (primeiro campo é
+  `Height`, sem discriminante); o hash de proposal-parts é
+  `Keccak256(height_be(8) || round_be(8) || dados do payload)`, um
+  digest de 32 bytes bruto, não SSZ. Os três formatos têm layouts de
+  byte estruturalmente distintos (campos diferentes, larguras
+  diferentes, um é hash vs os outros são serialização direta) — uma
+  colisão de bytes exigiria quebrar SSZ/Keccak256, não é uma confusão
+  de parsing exploitável na prática (o verificador sempre recomputa o
+  preimage esperado a partir da mensagem já conhecida, nunca decodifica
+  bytes arbitrários assumindo um tipo). Também notei que extensões de
+  voto (`vote_extension_sign_bytes` em `signer/local.rs`, já lido) usam
+  um domain separator explícito (`VOTE_EXTENSION_DOMAIN`) — mostra que
+  o time já pensa em domain separation onde julga necessário; a
+  ausência de tag em `sign_bytes`/`verify_signed_bytes` genérico é uma
+  escolha de design (mitigada pela distinção estrutural natural dos
+  três formatos), não uma lacuna. Sem achado — documentado aqui como
+  padrão intencional e já rastreado, não candidato.
+- `crates/consensus-db/src/keys.rs` — apesar do nome, são apenas chaves
+  de tabela do banco `redb` local (`HeightKey`/`RoundKey`/`BlockHashKey`,
+  codificação de bytes fixos pra ordenação), não chaves criptográficas.
+  Sem lógica de segurança. Sem achado.
+- `crates/signer/src/lib.rs` — só o enum dispatcher `ArcSigningProvider`
+  (`Local`/`Remote`), delega cada método pro provider concreto sem
+  lógica própria. Sem achado.
+
+`deep-read-log.json` atualizado (3 arquivos novos em `circlefin/arc-node`).
+Esta rodada não tocou `Block Open Source`
+(`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
+pesquisa assistida por IA (`aiResearchBanned: true`, conferido em
+`program-policy.json` antes de qualquer clone).

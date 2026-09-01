@@ -376,7 +376,10 @@
     "contracts/src/validator-manager/roles/Controller.sol",
     "contracts/src/validator-manager/ValidatorRegistry.sol",
     "contracts/src/validator-manager/roles/ValidatorRegisterer.sol",
-    "contracts/src/proxy/AdminUpgradeableProxy.sol"
+    "contracts/src/proxy/AdminUpgradeableProxy.sol",
+    "crates/types/src/signing.rs",
+    "crates/consensus-db/src/keys.rs",
+    "crates/signer/src/lib.rs"
   ],
   "circlefin/noble-fiattokenfactory": [
     "x/fiattokenfactory/keeper/msg_server_mint.go",
