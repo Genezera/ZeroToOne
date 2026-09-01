@@ -2702,3 +2702,51 @@ colisão entre principals). `deep-read-log.json` atualizado (+7 em
 `vercel/eve`, agora 18 arquivos).
 
 Nenhum achado novo nesta rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 16ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer ação (disciplina do
+incidente da rodada 11 em `block-open-source/NOTES.md`) — `Block Open
+Source` continua `aiResearchBanned: true`, nenhum repo `cashapp/*`/
+`afterpay/*`/`square/wire` tocado. `list-pending` global = 0.
+
+**Nota de infraestrutura**: tentei usar `list-deep-read-candidates.mjs`
+(gate mecânico contra programa banido) e ele falhou com `SyntaxError:
+Unexpected non-whitespace character after JSON` — causa raiz é
+`GITHUB_TOKEN=proxy-injected` (valor sentinela injetado neste ambiente
+pro servidor MCP do GitHub) sendo enviado como `Authorization: Bearer
+proxy-injected` em `githubHeaders()` pras chamadas a
+`raw.githubusercontent.com`, que devolve 404 HTML em vez do JSON
+esperado com esse token inválido (confirmado isolando a chamada: sem
+esse header, `curl`/`fetch` puro devolvem 200 JSON normal). Contornado
+rodando `GITHUB_TOKEN= node system/bugbounty-scanner/
+list-deep-read-candidates.mjs` (variável vazia só pra esse comando) —
+funcionou, listou 38 candidatos seguros e confirmou os 7 repos `Block
+Open Source` excluídos. Pendência real de engenharia pra rodadas
+futuras neste tipo de ambiente cloud: o script deveria ignorar
+`GITHUB_TOKEN` quando ele não parece um PAT de verdade (ou cair pra
+request anônimo em vez de falhar) — não é específico deste programa,
+afeta a ferramenta de seleção segura usada por todos.
+
+Leitura profunda proativa usando a lista segura: `vercel/swr` tinha só
+1 arquivo lido (`hash.ts`) no log, mas o repo real tem 39 arquivos (o
+log estava desatualizado — não é mais um pacote de arquivo único).
+Lidos 3 arquivos novos, priorizando o caminho de serialização de
+chave/cache (o mais próximo de "processamento de entrada" numa lib
+client-side de data-fetching): `src/_internal/utils/serialize.ts`
+(serializa a key do hook em string via `stableHash`, sem eval/injeção),
+`src/_internal/utils/cache.ts` (inicialização do provider de
+cache/pub-sub interno, tudo em memória do próprio cliente, sem cruzar
+borda de confiança) e `src/_internal/utils/mutate.ts` (mutação
+otimista + revalidação; timestamps resolvem corrida entre mutações
+concorrentes, não são usados pra autorização). Nenhum dos três cruza
+uma borda de confiança de rede/servidor nem lida com dado de terceiro
+não confiável além do que o próprio usuário do app já controla — é
+gerência de estado client-side pura. Sem achado.
+
+(`vercel/ms` e `vercel/async-sema` confirmados como pacotes de arquivo
+único de verdade — `src/index.ts` é tudo que existe em cada um, já
+totalmente lidos, não deveriam reaparecer como candidatos.)
+
+`deep-read-log.json` atualizado (+3 em `vercel/swr`, agora 4 arquivos).
+Nenhum finding novo, nenhuma transição de estado tentada nesta rodada.

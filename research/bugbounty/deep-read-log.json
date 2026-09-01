@@ -705,7 +705,10 @@
     "packages/nitro-server/src/runtime/utils/renderer/islands.ts"
   ],
   "vercel/swr": [
-    "src/_internal/utils/hash.ts"
+    "src/_internal/utils/hash.ts",
+    "src/_internal/utils/serialize.ts",
+    "src/_internal/utils/cache.ts",
+    "src/_internal/utils/mutate.ts"
   ],
   "vercel/ms": [
     "src/index.ts"
