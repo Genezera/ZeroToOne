@@ -491,7 +491,11 @@
     ".github/workflows/update-remix-run-dev.yml",
     "packages/connect/src/authjs/connect-provider.ts",
     "packages/connect/src/betterauth/connect-provider.ts",
-    "packages/oidc/src/token-io.ts"
+    "packages/oidc/src/token-io.ts",
+    "packages/cli/src/commands/curl/bypass-token.ts",
+    "packages/cli/src/commands/curl/trace-session-token-provider.ts",
+    "packages/cli/src/util/env/refresh-oidc-token.ts",
+    "packages/cli/src/util/env/update-oidc-token-contents.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

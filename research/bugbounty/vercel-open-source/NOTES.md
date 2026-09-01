@@ -2284,3 +2284,48 @@ clone sparso temporário — `packages/oidc`, `packages/connect`,
 
 `deep-read-log.json` atualizado (+3 em `vercel/vercel`). Nenhum achado
 novo nesta rodada — resultado normal.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila global vazia
+
+`list-pending` = 0 (nenhum finding em `candidate` em nenhum programa).
+Leitura profunda proativa direcionada a `vercel/vercel`, sparse-checkout
+de `packages/` (main, sem depth extra), filtrando por palavras-chave
+auth/session/crypto/token/login/password/admin/permission/access nos
+caminhos ainda não lidos (`deep-read-log.json` já tinha 29 arquivos
+cobertos neste repo). 4 arquivos novos lidos por completo:
+
+- `packages/cli/src/commands/curl/bypass-token.ts` — nome soou suspeito
+  (isolado, "bypass"), mas é feature legítima e documentada: gera/reusa
+  um "Protection Bypass for Automation" token via API autenticada
+  (`client.authConfig.token` do próprio usuário logado) para permitir que
+  `vercel curl` acesse deployments protegidos por Deployment Protection
+  em fluxos de automação/CI. Sem escalonamento de privilégio — exige
+  sessão já autenticada do dono do projeto. Sem achado.
+- `packages/cli/src/commands/curl/trace-session-token-provider.ts` (linha
+  a linha) — cache de cookie de sessão de trace em
+  `~/.vercel/cache/traces/<sha256(teamId:host)>.json`. Ponto investigado:
+  permissão do arquivo — `writeFile` já usa `mode: 0o600`, e reforça com
+  `chmod` explícito pós-escrita (comentário no código explica que o
+  `mode` do `writeFile` só vale na criação, não em overwrite — proteção
+  correta contra world/group-readable em overwrite). Nome do arquivo de
+  cache é hash do `teamId:host`, evitando colisão entre deployments/times
+  diferentes. Sem achado.
+- `packages/cli/src/util/env/refresh-oidc-token.ts` — usa
+  `decodeJwt` (jose) sem verificar assinatura para ler apenas o claim
+  `exp` do próprio token OIDC que o CLI já puxou de forma autenticada de
+  `pullEnvRecords` — não decodifica token de origem não confiável, então
+  ausência de verificação de assinatura aqui não é problema (só é usado
+  como "quando devo re-pedir", nunca como decisão de autorização). Sem
+  achado.
+- `packages/cli/src/util/env/update-oidc-token-contents.ts` — escreve
+  `VERCEL_OIDC_TOKEN="<valor>"` em `.env.local`. `escapeValue` só escapa
+  `\n`/`\r`, não aspas duplas — em teoria um valor de token com `"` dentro
+  quebraria a string e poderia injetar conteúdo extra no arquivo. Rastreada
+  a origem do valor: sempre um JWT retornado pela própria API da Vercel
+  (alfabeto base64url + pontos, nunca contém aspas), nunca input de
+  usuário nem de terceiro. Risco teórico sem caminho de exploração real
+  hoje. Sem achado, mas registrado para não reinvestigar do zero numa
+  rodada futura caso o formato do token mude.
+
+`deep-read-log.json` atualizado (+4 em `vercel/vercel`, agora 33
+arquivos). Nenhum achado novo nesta rodada — resultado normal.

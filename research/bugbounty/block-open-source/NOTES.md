@@ -2253,3 +2253,15 @@ nem de leitura profunda válida — o tempo desta rodada foi consumido pelo
 incidente acima em vez de leitura profunda real em programa liberado).
 `export-queue` rodado (sem mudança semântica — só reordenação de linhas
 do roundtrip pelo SQLite, confirmado por comparação registro-a-registro).
+
+## Rodada 2026-09-01 (push automático, sessão cloud)
+
+`program-policy.json` checado ANTES de escolher qualquer arquivo/repo
+desta rodada (aplicando a recomendação da rodada anterior) —
+`aiResearchBanned: true` confirmado, motivo Bugcrowd RoE ainda vigente.
+`Block Open Source` excluído por completo da leitura profunda proativa
+desta rodada: nenhum clone, nenhum arquivo lido, nenhuma leitura de
+`list-pending` filtrada por este programa. `list-pending` global também
+estava vazia, então não havia achado pendente deste programa a revisar
+de qualquer forma. Nada a fazer aqui — resultado esperado enquanto o
+RoE proibir ferramentas de IA.

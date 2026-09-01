@@ -5247,3 +5247,20 @@ sem necessidade.
 3 arquivos: `AddressLib.sol`, `UpgradeablePlaceholder.sol`,
 `TransferSpec.sol`). `Block Open Source` seguiu não tocado
 (`aiResearchBanned: true`).
+
+## Rodada 2026-09-01 (push automático, sessão cloud)
+
+`list-pending` global = 0, nada a revisar deste programa. Investiguei
+candidatos de leitura profunda antes de escolher o alvo da rodada:
+`circlefin/evm-cpn-contracts` (todos os 7 arquivos `.sol` de `src/` já
+lidos, nada novo); `circlefin/evm-xreserve-contracts` (18/26 arquivos
+lidos, os 8 restantes são interfaces/`common/Constants.sol`/`Errors.sol`
+— sem lógica, baixo valor); `circlefin/buidl-wallet-contracts` (47
+arquivos lidos, os 30 restantes são todos interfaces `I*.sol`/structs/
+constantes/errors do padrão ERC-6900, não implementação); e
+`circlefin/arc-remote-signer` (39 arquivos lidos, cobrindo já todo o
+caminho crítico de assinatura/KMS/enclave/AES/ed25519/BLS — o que resta
+é majoritariamente teste/métrica/logging). Nenhum desses tinha um
+arquivo-alvo com valor incremental claro nesta rodada, então a leitura
+profunda proativa foi direcionada a `vercel/vercel` (ver NOTES.md de
+Vercel Open Source). Sem achado, sem mudança de estado neste programa.

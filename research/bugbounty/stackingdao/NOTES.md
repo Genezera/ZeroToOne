@@ -455,3 +455,11 @@ resultado. Todos os 15 arquivos já lidos linha a linha nesta missão
 seguem sem arquivo novo candidato óbvio nesta rodada (a leitura profunda
 proativa desta sessão foi direcionada a Vercel Open Source e Circle BBP
 — ver NOTES.md respectivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/vercel` (ver NOTES.md de Vercel Open Source) — os
+13 contratos Clarity deste programa já estão com os 15 arquivos
+relevantes cobertos desde rodadas anteriores, sem candidato óbvio novo
+para reler. Sem achado, sem mudança de estado.
