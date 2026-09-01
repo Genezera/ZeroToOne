@@ -46,3 +46,22 @@ export function getBlockReason(program, policy = {}) {
   }
   return null;
 }
+
+/** Wrapper booleano de getBlockReason -- pra quem só precisa de sim/não,
+ * sem o motivo (ex.: filtrar uma lista antes de decidir o que ler). Pura. */
+export function isProgramBanned(program, policy = {}) {
+  return getBlockReason(program, policy) !== null;
+}
+
+/** Filtra fora todo candidato cujo `.program` esteja bloqueado -- gate
+ * MECÂNICO pra usar ANTES de escolher o que ler, não só depois de já ter
+ * lido (ver list-deep-read-candidates.mjs, criado depois de 4 incidentes
+ * em 2 dias de leitura de Block Open Source por não checar isto primeiro
+ * -- ver research/bugbounty/block-open-source/NOTES.md, "INCIDENTE").
+ * Espera candidato no formato `{program, ...}` (o mesmo já usado em
+ * targets-*.mjs/queue.jsonl) -- pra candidato com `programs: [...]`
+ * (plural, formato de extractGithubCandidates), filtre chamando
+ * isProgramBanned em cada item da lista, não isto aqui. Pura. */
+export function filterBannedTargets(candidates, policy = {}) {
+  return candidates.filter((c) => !isProgramBanned(c.program, policy));
+}

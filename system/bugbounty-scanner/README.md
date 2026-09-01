@@ -1163,3 +1163,66 @@ regressão (um em cada runner) confirmando que a mesma pasta que causou
 o problema real (`examples/`, `test/fixtures/`) é ignorada, e que
 código de produção real (`packages/cli/src/...`) nunca é afetado.
 `npm test`: 394/394 depois do fix.
+
+## Trava mecânica contra ler repositório de programa banido (01/09/2026)
+
+Quarto incidente da mesma classe em 2 dias (ver
+`research/bugbounty/block-open-source/NOTES.md`, seções "INCIDENTE" e
+"near-miss", 31/08 a 01/09/2026): uma rodada de leitura profunda
+proativa ia direto em `deep-read-log.json` escolher o repositório menos
+lido, sem carregar `program-policy.json` antes, e acabava clonando/
+lendo repositório do Block Open Source (`aiResearchBanned: true` — RoE
+da Bugcrowd proíbe explicitamente uso de ferramenta de IA "durante a
+pesquisa", ponto, independente do resultado). Sempre autocorrigido na
+mesma rodada, nunca com achado promovido nem dado vazado a terceiro (o
+gate `scope_verified->human_ready` de `state-machine.mjs` já bloqueia
+isso automaticamente) — mas a LEITURA em si já configura a violação, e
+a nota do próprio incidente mais recente é direta: "não há nenhuma
+barreira mecânica no CLI/state machine que bloqueie a leitura em si",
+só recomendação de prompt — e depender de disciplina de prompt já
+falhou 4 vezes.
+
+**Fix real, não só mais uma instrução pra lembrar**: `program-policy.mjs`
+ganhou dois exports novos, `isProgramBanned(programa, policy)` (wrapper
+booleano de `getBlockReason`) e `filterBannedTargets(candidatos,
+policy)` (filtra fora candidato `{program, ...}` de programa bloqueado,
+reusável por qualquer script). Em cima disso, `list-deep-read-candidates.mjs`
+(novo) cruza `deep-read-log.json` (o que já foi lido, por repositório)
+contra o MESMO dataset público que `discover-targets.mjs` já usa
+(`hackerone_data.json`/`bugcrowd_data.json`) pra descobrir o(s)
+programa(s) de cada repositório — cobre muito mais que os `targets-*.mjs`
+curados, que nunca incluíram `cashapp/misk`/`circlefin/malachite`/etc.,
+mas que já apareciam em `deep-read-log.json` por leitura profunda
+proativa anterior.
+
+Falha fechado em duas frentes independentes: (1) repositório com
+QUALQUER programa associado banido é excluído, mesmo que outro
+programa do mesmo repositório não esteja banido (um repositório pode
+estar no escopo de mais de um programa); (2) repositório que não bate
+com nenhum programa conhecido no dataset público vai pra lista
+`unresolved`, nunca pra lista `safe` em silêncio — dataset desatualizado
+ou repositório removido do escopo público merecem checagem manual, não
+a suposição de "não achei = seguro pra ler".
+
+Rodado ao vivo contra o estado real do projeto: 38 candidatos seguros
+surgem corretamente ranqueados do menos lido pro mais lido, e os 7
+repositórios do Block Open Source hoje em `deep-read-log.json`
+(`cashapp/misk`, `cashapp/hermit`, `square/wire`, etc.) aparecem
+corretamente na lista de excluídos, nunca na de seguros — a ferramenta
+é literalmente mais rápida de rodar (`node list-deep-read-candidates.mjs`)
+do que cruzar os dois JSON à mão, que é o ponto: o caminho mais fácil
+também precisa ser o seguro, não só existir um caminho seguro que
+ninguém usa. 24 testes novos (`test/program-policy.test.mjs` +
+`test/list-deep-read-candidates.test.mjs`), cobrindo o núcleo puro
+(`buildRepoProgramIndex`/`selectDeepReadCandidates`) sem precisar de
+rede nos testes. `npm test`: 410/410 depois do fix.
+
+**Limite honesto**: isto reduz drasticamente a chance de o incidente se
+repetir (a lista de saída já vem sem o programa banido, não depende de
+quem chama lembrar de filtrar), mas não FORÇA nenhuma sessão futura a
+rodar esta ferramenta em vez de continuar lendo `deep-read-log.json`
+direto — o prompt da rotina do agente de nuvem continua fora do alcance
+de qualquer sessão individual editar. A trava mecânica de verdade
+(impedir o achado de avançar até `human_ready`) já existia e continua
+valendo; isto aqui ataca a causa (a leitura em si) tornando o caminho
+seguro também o mais conveniente, não substitui o gate existente.
