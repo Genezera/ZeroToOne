@@ -929,3 +929,48 @@ licença) pra melhorar a varredura de dependência além do
 `dep-scanner.mjs` caseiro, e resolver os 2 alvos Solidity que ainda não
 rodaram Slither com sucesso (`evm-xreserve-contracts`,
 `buidl-wallet-contracts`).
+
+## Telegram "mesma coisa várias vezes" + OSV-Scanner + Go inteiro pra E: (2026-09-01)
+
+Usuário reportou de novo o Telegram, pedindo verificação real. Conferi
+o ledger inteiro: nenhum evento duplicado de verdade. Causa real,
+achada nos timestamps: um achado cruza `reproduced_local ->
+scope_verified -> human_ready` em segundos (achado real: 8ms entre
+duas transições), cada uma disparando push separado — 16 dos 19 pushes
+já enviados eram Circle BBP. `NOTABLE_STATES` não inclui mais essas
+duas etapas intermediárias, só `human_ready` + desfechos terminais: 1
+achado real = 1 push agora, não 3.
+
+Usuário confirmou seguir com OSV-Scanner, reforçando 2x a regra "nada
+em C:". No meio do caminho: `go install` tinha ido pra C:
+(`C:\Users\Renan\go\bin`) — GOPATH/GOBIN/GOMODCACHE/GOCACHE do Go
+inteiro nunca tinham sido configurados pra E: nesta missão. Medido
+antes de mexer: **mais de 4GB** acumulados em C: (cache de módulo +
+cache de build, incluindo o toolchain Go do PoC do arc-remote-signer de
+uma sessão anterior). Corrigido de vez (`go env -w` + `setx GOPATH`,
+mesmo padrão de credencial já usado nesta missão) e os 4 binários
+(osv-scanner + os 3 do PoC anterior) reinstalados em E: antes de apagar
+os originais em C:.
+
+OSV-Scanner integrado (`osv-scanner-runner.mjs`) contra alvos JS/Go/JVM
+(nunca Solidity — testado ao vivo que um clone com submódulo
+inicializado, necessário pro Slither, faz o OSV-Scanner ver centenas
+de "vulnerabilidade" de dev/teste de submódulo vendorizado de
+terceiro, ruído puro). **3 bugs reais achados e corrigidos ANTES de
+rodar contra produção**, testando contra `okx/go-wallet-sdk` (OKG):
+(1) `upsertFinding` sempre sobrescreve `state` — sem proteção, rodar
+isto toda semana resetaria achado já resolvido de volta pra
+`candidate`, mesmo problema retroativamente corrigido no bloco do
+Slither também; (2) caminho de arquivo vinha absoluto
+(`E:/dev-toolchains/...`), vazando caminho local da máquina no
+id/banco compartilhado; (3) OSV-Scanner tira o prefixo "v" de versão Go
+(`1.1.2`) mas `dep-scanner.mjs` sempre preserva (`v1.1.2`) — sem
+normalizar, os dois scanners nunca reconhecem que é o MESMO pacote.
+Confirmado ao vivo, depois dos 3 fixes: o achado `cosmossdk.io/math`
+(já `false_positive` desta sessão) foi corretamente preservado, os 23
+outros pacotes genuinamente não vistos localmente antes entraram como
+`candidate` de verdade.
+
+`npm test`: 379/379. Ver seções próprias em
+`system/bugbounty-scanner/README.md` pro detalhe completo de cada um
+destes 3 (Telegram, limpeza do Go, OSV-Scanner).

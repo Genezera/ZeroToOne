@@ -922,3 +922,80 @@ Bug secundário corrigido no mesmo lote: o digest (`telegram-digest.mjs`)
 rodava DEPOIS do commit+push em `scan-runner.mjs` — a atualização do
 próprio checkpoint nunca entrava no commit do dia, ficava sempre "um
 dia atrasada". Invertida a ordem.
+
+## Toolchain Go inteiro estava indo pra C: — corrigido, ~4GB reclamados (01/09/2026)
+
+Usuário reforçou (2x) a regra permanente: nada instalado por este
+projeto pode ir pra C:, tudo em E:. `go install` (usado pro OSV-Scanner
+abaixo) tinha ido pra `C:\Users\Renan\go\bin\osv-scanner.exe` — GOPATH/
+GOBIN/GOMODCACHE/GOCACHE do Go inteiro apontavam pra C: por padrão,
+nunca configurados nesta missão antes. Medido antes de mexer:
+`C:\Users\Renan\go` (2,67 GB de cache de módulo) +
+`C:\Users\Renan\AppData\Local\go-build` (1,4 GB de cache de build) —
+**mais de 4 GB acumulados em C:** de trabalho anterior desta missão
+(toolchain Go do PoC do arc-remote-signer: `buf`, `protoc-gen-go`,
+`protoc-gen-go-grpc`).
+
+Corrigido pra valer, não só pro binário novo: `go env -w GOBIN/
+GOMODCACHE/GOCACHE` pra `E:\dev-toolchains\...` (arquivo de config do
+próprio Go, não config de sistema) + `setx GOPATH` (GOPATH tinha uma
+variável de ambiente do SO conflitando, `go env -w` sozinho não bastava
+pra esse um — mesmo padrão de credencial já usado nesta missão, afeta
+só processo novo). Reinstalados os 4 binários em E: (confirmados
+funcionando), DEPOIS apagado o `C:\Users\Renan\go` e `...\go-build`
+antigos (nunca antes de confirmar o substituto funcionando). C: agora
+livre desses ~4GB; qualquer `go install` futuro nesta máquina já cai em
+E: automaticamente (variável persistente).
+
+## OSV-Scanner contra os alvos JS/Go/JVM — gratuito, 100% local, em E: (01/09/2026)
+
+Mesma filosofia do Slither: binário gratuito mantido por terceiro
+(Google, Apache-2.0), `go install` (ver seção acima pro cuidado de
+manter tudo em E:), sem conta/token. Complementa `dep-scanner.mjs`
+(que continua existindo) em vez de substituir: reconhece muito mais
+formato de manifesto (`yarn.lock`, `requirements.txt`, não só os 3 que
+o parser caseiro entende), usa o matcher de versão mantido pelo
+próprio Google.
+
+**Decisão real de escopo**: roda contra JS/Go/JVM, NUNCA contra
+Solidity. Testado ao vivo contra `evm-cctp-contracts` (Circle) com
+submódulo Foundry inicializado (necessário pro Slither compilar):
+o OSV-Scanner viu o `yarn.lock` de CADA submódulo vendorizado de
+terceiro também (`lib/centre-tokens.git`, uma dependência-de-
+dependência) — **centenas** de "vulnerabilidade" em pacote de dev/teste
+(`express`, `handlebars`, `body-parser`) de um submódulo alheio, nunca
+alcançável pelo contrato em si. Por isso `osv-scanner-runner.mjs` usa
+cache PRÓPRIO (nunca reaproveita o clone do Slither) e nunca inicializa
+submódulo — mantém o mesmo escopo "só o repositório em si" que
+`dep-scanner.mjs` já tinha por natureza (a API do GitHub não expande
+submódulo).
+
+**3 bugs reais encontrados e corrigidos testando isto ao vivo contra
+`okx/go-wallet-sdk` (OKG), antes de deixar rodar de verdade**:
+1. **`upsertFinding` sempre sobrescreve `state`** (`ON CONFLICT DO
+   UPDATE SET state=excluded.state`) — rodar isto (ou o Slither) toda
+   semana contra um achado JÁ RESOLVIDO (`false_positive`/`human_ready`)
+   resetaria ele pra `candidate` de novo, apagando investigação real.
+   Achado ANTES de rodar contra um alvo real (não em produção) —
+   corrigido em `discovery-runner.mjs`: só insere quando o id é
+   genuinamente novo, nunca toca achado que já existe. Mesmo fix
+   retroativo aplicado ao bloco do Slither.
+2. **Caminho do arquivo vinha absoluto** (`result.source.path` do
+   OSV-Scanner devolve `E:/dev-toolchains/osv-scanner-cache/...`, não
+   relativo ao repositório) — sem corrigir, o id do achado vazava
+   caminho local desta máquina pro banco/queue.jsonl compartilhado.
+   Corrigido com `path.relative(repoDir, ...)`.
+3. **Versão Go sem o prefixo "v"** — OSV-Scanner devolve `1.1.2` pra
+   ecosystem Go, mas `dep-scanner.mjs::parseGoMod` (regex sobre o texto
+   cru do go.mod) sempre preserva `v1.1.2`. Sem normalizar, os dois
+   scanners geram id DIFERENTE pro MESMO pacote, e a proteção do item 1
+   nunca encontra o achado antigo pra comparar. Confirmado ao vivo: o
+   achado `cosmossdk.io/math` (já resolvido `false_positive` nesta
+   sessão) só foi corretamente preservado, sem resetar, DEPOIS deste
+   fix — antes dele, viraria `candidate` de novo silenciosamente.
+
+Rodando na cadência semanal, mesmo motivo do Slither (mais lento que
+heurística de texto). 13 testes novos
+(`test/osv-scanner-runner.test.mjs`), incluindo o OSV-Scanner rodando
+de verdade contra um `package-lock.json` sintético com uma dependência
+realmente vulnerável (`minimist` 1.2.5, CVE-2021-44906).

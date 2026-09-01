@@ -19,7 +19,8 @@ import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
-import { runSlitherAgainstTarget, toQueueFindings } from './slither-runner.mjs';
+import { runSlitherAgainstTarget, toQueueFindings as slitherToQueueFindings } from './slither-runner.mjs';
+import { runOsvScannerAgainstTarget, toQueueFindings as osvToQueueFindings } from './osv-scanner-runner.mjs';
 import { openDb, upsertFinding, closeDb } from './db.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
@@ -181,11 +182,21 @@ export async function runDiscovery() {
             continue;
           }
           slitherReposOk++;
-          const findings = toQueueFindings(target, result.findings);
+          const findings = slitherToQueueFindings(target, result.findings);
           let newHere = 0;
           for (const f of findings) {
+            // upsertFinding SEMPRE sobrescreve state (ON CONFLICT DO
+            // UPDATE SET state=excluded.state) -- chamar de novo pra um
+            // id já resolvido (false_positive/human_ready/o que for)
+            // resetaria o achado pra candidate toda semana, apagando
+            // investigação real já feita. Só insere quando é
+            // GENUINAMENTE novo -- achado já existente nunca é tocado
+            // aqui, mesmo padrão de segurança que o "seen" cache do
+            // scanner de heurística já usa.
             const existing = db.prepare('SELECT id FROM findings WHERE id = ?').get(f.id);
-            if (!existing) { newHere++; slitherNewFindings++; }
+            if (existing) continue;
+            newHere++;
+            slitherNewFindings++;
             upsertFinding(db, f);
           }
           log(`Slither: ${target.owner}/${target.repo} -- ${result.rawResultCount} achado(s) bruto(s), ${findings.length} em Medium+ impacto, ${newHere} realmente novo(s) desta vez.`);
@@ -200,10 +211,61 @@ export async function runDiscovery() {
   }
   log(`Slither: ${slitherReposOk} repositório(s) analisado(s) com sucesso, ${slitherReposFailed} com falha, ${slitherNewFindings} achado(s) novo(s) (Medium+ impacto) na fila.`);
 
+  // OSV-Scanner (Google, gratuito, `go install`) contra os alvos
+  // JS/Go/JVM -- mesmo escopo de dep-scanner.mjs (que continua existindo,
+  // os dois se complementam), nunca contra Solidity: testado ao vivo
+  // que um clone com submódulo inicializado (necessário pro Slither)
+  // expõe centenas de "vulnerabilidade" em dependência de dev/teste de
+  // submódulo vendorizado de terceiro, nunca alcançável pelo contrato
+  // em si. Ver osv-scanner-runner.mjs pro detalhe completo. Cache
+  // próprio (nunca reaproveita o clone do Slither, que TEM submódulo).
+  let osvNewFindings = 0;
+  let osvReposOk = 0;
+  let osvReposFailed = 0;
+  {
+    const db = openDb(DB_PATH);
+    try {
+      for (const target of [...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS]) {
+        try {
+          const result = runOsvScannerAgainstTarget(target, { log });
+          if (!result.ok) {
+            osvReposFailed++;
+            log(`AVISO: OSV-Scanner não rodou em ${target.owner}/${target.repo}: ${result.reason}`);
+            continue;
+          }
+          osvReposOk++;
+          const findings = osvToQueueFindings(target, result.findings);
+          let newHere = 0;
+          for (const f of findings) {
+            // Mesmo cuidado do bloco do Slither acima: upsertFinding
+            // sempre sobrescreve state -- só insere quando o id é
+            // genuinamente novo, nunca toca achado que já existe
+            // (dep-scanner.mjs já triou boa parte destes mesmos
+            // pacotes em rodadas anteriores; re-rodar isso toda semana
+            // não pode reabrir o que já foi resolvido).
+            const existing = db.prepare('SELECT id FROM findings WHERE id = ?').get(f.id);
+            if (existing) continue;
+            newHere++;
+            osvNewFindings++;
+            upsertFinding(db, f);
+          }
+          log(`OSV-Scanner: ${target.owner}/${target.repo} -- ${result.rawPackageCount} pacote(s) verificado(s), ${findings.length} vulnerabilidade(s) de severidade 7.0+, ${newHere} realmente novo(s) desta vez.`);
+        } catch (err) {
+          osvReposFailed++;
+          log(`AVISO: OSV-Scanner falhou de forma inesperada em ${target.owner}/${target.repo}: ${err.message.split('\n')[0]}`);
+        }
+      }
+    } finally {
+      closeDb(db);
+    }
+  }
+  log(`OSV-Scanner: ${osvReposOk} repositório(s) analisado(s) com sucesso, ${osvReposFailed} com falha, ${osvNewFindings} achado(s) novo(s) (severidade 7.0+) na fila.`);
+
   {
     const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
     const slitherNote = slitherNewFindings > 0 ? `, ${slitherNewFindings} achado(s) novo(s) do Slither` : '';
-    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}`, log);
+    const osvNote = osvNewFindings > 0 ? `, ${osvNewFindings} achado(s) novo(s) do OSV-Scanner` : '';
+    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}`, log);
     if (syncResult.ok) {
       if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
     } else {
@@ -226,6 +288,7 @@ export async function runDiscovery() {
           : `Nenhum alvo novo promovido nesta rodada (${mergedAutoPromoted.length} ativo(s) no total).`,
         promotionResult.skipped.tooLarge.length > 0 ? `${promotionResult.skipped.tooLarge.length} repo(s) grande(s) demais pra promoção automática — revisão manual sugerida.` : null,
         `🔬 Slither: ${slitherReposOk}/${SOLIDITY_TARGETS.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
+        `📦 OSV-Scanner: ${osvReposOk}/${JS_TARGETS.length + GO_TARGETS.length + JVM_TARGETS.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {
