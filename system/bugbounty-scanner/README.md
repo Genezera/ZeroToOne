@@ -814,3 +814,83 @@ também falhar, pra nunca deixar o repositório num estado quebrado pra
 próxima execução). 5 testes reais (`test/git-sync.test.mjs`) — incluindo
 o cenário exato da corrida real (dois clones de um bare repo, um
 empurra primeiro, o outro recupera) rodando `git` de verdade, não mock.
+
+## Slither contra os alvos Solidity — gratuito, 100% local (2026-09-01)
+
+Pedido explícito do usuário: seguir pelo melhor caminho, mas **sem
+gastar nada, só ferramenta gratuita/local, tudo em E:**. Slither
+(Trail of Bits, AGPL-3.0, `pip install slither-analyzer`) já estava
+instalado neste ambiente (`py -m slither`) — ~100 detectores reais
+contra o projeto Solidity COMPILADO de verdade (via Foundry, que
+também já estava instalado), não regex em texto como as 4 heurísticas
+próprias em `heuristics-solidity.mjs` (que continuam existindo — são
+rápidas e cobrem os casos mais óbvios; Slither é mais lento e mais
+profundo, os dois se complementam).
+
+`slither-runner.mjs`: clona (ou atualiza) o repositório em
+`E:/dev-toolchains/slither-cache/` (fora do repo git do projeto, mesmo
+padrão já usado pro toolchain Solana), roda `py -m slither . --json`,
+filtra por impacto (`Medium`+ por padrão — `Informational` sozinho é
+~86% do volume real observado, majoritariamente estilo/nomeação, não
+segurança) e converte pro mesmo formato de achado que o resto do
+pipeline usa (mesma convenção de id `program::owner/repo/arquivo::
+função::tipo` de `scan-runner.mjs`, mapeando detector conhecido pro
+vocabulário já existente — `reentrancy-eth`→`reentrancy_risk`,
+`tx-origin`→`tx_origin_auth_risk` — e prefixando o resto com `slither_`
+pra manter a proveniência rastreável). Roda na cadência SEMANAL
+(`discovery-runner.mjs`, junto da descoberta de alvo), não na diária —
+clonar+compilar é ordens de magnitude mais lento que heurística de
+texto. Cada alvo tem seu próprio try/catch.
+
+**Fricção real do Windows encontrada e contornada construindo isto**
+(documentada, não escondida):
+1. **MAX_PATH de 260 caracteres**: um clone com árvore de submódulo
+   Foundry funda o bastante (`evm-xreserve-contracts` tem submódulo
+   dentro de submódulo dentro de submódulo) estoura o limite mesmo
+   num caminho-base curto. `core.longpaths=true` (config LOCAL do git
+   nesse clone específico, nunca `--global`) ajuda mas não resolve
+   toda árvore excepcionalmente funda — esse repo específico ficou de
+   fora por ora (ver "O que não deu certo" abaixo).
+2. **Submódulo com URL SSH** (`git@github.com:...`) falha em clone
+   anônimo sem chave configurada — reescrito direto no `.gitmodules`
+   pra HTTPS antes do `submodule update` (truque padrão de CI).
+3. **Slither sempre sai com código != 0** quando encontra qualquer
+   achado (até `Informational`) — não é falha da ferramenta; só é
+   tratado como falha de verdade se o JSON de saída nunca foi escrito.
+4. **`npm install` via `execFileSync` sem shell dá `ENOENT`** no
+   Windows (`npm` é `.cmd`, não `.exe`) — e `npm.cmd` explícito dá
+   `EINVAL` (bug conhecido do Node nessa combinação). `shell:true`
+   foi a única forma que funcionou de verdade — seguro aqui porque o
+   único argumento é a string literal `'install'`, nunca dado externo.
+
+**O que não deu certo ainda** (não escondido): `evm-xreserve-contracts`
+tem árvore de submódulo funda demais pro MAX_PATH mesmo com
+`core.longpaths`; `buidl-wallet-contracts` tem um nome de pacote
+inválido no `package.json` (`@modular-account-libs`) que trava `npm
+install` (Slither provavelmente ainda funcionaria nas partes só-Foundry,
+não testado). Dos 5 alvos Solidity curados, `evm-cctp-contracts` rodou
+de ponta a ponta com sucesso real.
+
+**Resultado real da primeira rodada** (`circlefin/evm-cctp-contracts`,
+o bridge CCTP oficial da Circle — 49 contratos, 102 detectores, 127
+achados brutos): **7 achados reais em impacto Medium+** persistidos na
+fila (`candidate`), todos em código de proxy/upgrade
+(`AdminUpgradableProxy.sol`, `Create2Factory.sol`) — 4
+`incorrect-return` (High), 3 `unchecked_call_return` (Medium).
+**Calibração honesta, não só "achei 7 coisas"**: li a descrição
+completa de um dos `incorrect-return` — descreve `ifAdmin()` chamando
+`Proxy._fallback()` (que interrompe execução via assembly inline) —
+esse é exatamente o padrão conhecido e intencional de proxy
+transparente estilo OpenZeppelin (parar propositalmente a execução
+Solidity depois do fallback/delegatecall), uma classe de
+falso-positivo já documentada na comunidade pra esse detector
+específico do Slither. Ferramenta madura tem sua própria classe de
+falso-positivo também — não é motivo pra desconfiar da ferramenta,
+é exatamente por isso que a fila continua em `candidate`, esperando a
+mesma leitura profunda cética que qualquer outro achado desta missão
+recebe antes de virar `corroborated_static`.
+
+11 testes novos (`test/slither-runner.test.mjs`), incluindo Slither
+rodando de VERDADE (não fixture) contra um contrato `tx.origin`
+sintético mínimo (~1,5s, sem dependência externa) pra provar que a
+invocação real funciona, não só o parser.

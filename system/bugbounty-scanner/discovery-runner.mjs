@@ -19,6 +19,8 @@ import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
+import { runSlitherAgainstTarget, toQueueFindings } from './slither-runner.mjs';
+import { openDb, upsertFinding, closeDb } from './db.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
 // usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
@@ -39,6 +41,7 @@ const DISCOVERED_PATH = path.join(BUGBOUNTY_DIR, 'discovered-targets.json');
 const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.json');
 const AUTO_PROMOTED_MODULE_PATH = path.join(__dirname, 'targets-auto-promoted.mjs');
 const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
+const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
 
 function loadSeenMap() {
   if (!existsSync(SEEN_METADATA_PATH)) return {};
@@ -151,9 +154,56 @@ export async function runDiscovery() {
     log(`Repos grandes demais pra promoção automática (curadoria de pathPrefix manual recomendada, ver ${PROMOTION_LOG_PATH}): ${promotionResult.skipped.tooLarge.map((r) => `${r.owner}/${r.repo}`).join(', ')}`);
   }
 
+  // Slither (github.com/crytic/slither, Trail of Bits) contra os alvos
+  // Solidity curados -- gratuito, 100% local (pip install slither-analyzer,
+  // já presente neste ambiente), ~100 detectores reais contra o projeto
+  // COMPILADO, não regex em texto. Roda na cadência SEMANAL (não na
+  // diária) de propósito: clonar+instalar dependência+compilar é bem
+  // mais lento que a heurística de texto (segundos a minutos por repo,
+  // não milissegundos), e é aqui que o orçamento mais lento já vive
+  // (descoberta de alvo). Cada alvo tem seu próprio try/catch -- um
+  // repositório com fricção real (submódulo SSH, árvore funda demais
+  // pro limite de caminho do Windows, package.json quebrado) nunca
+  // derruba a análise dos outros. Ver slither-runner.mjs pro detalhe
+  // completo da fricção real já encontrada e contornada.
+  let slitherNewFindings = 0;
+  let slitherReposOk = 0;
+  let slitherReposFailed = 0;
+  {
+    const db = openDb(DB_PATH);
+    try {
+      for (const target of SOLIDITY_TARGETS) {
+        try {
+          const result = runSlitherAgainstTarget(target, { log });
+          if (!result.ok) {
+            slitherReposFailed++;
+            log(`AVISO: Slither não rodou em ${target.owner}/${target.repo}: ${result.reason}`);
+            continue;
+          }
+          slitherReposOk++;
+          const findings = toQueueFindings(target, result.findings);
+          let newHere = 0;
+          for (const f of findings) {
+            const existing = db.prepare('SELECT id FROM findings WHERE id = ?').get(f.id);
+            if (!existing) { newHere++; slitherNewFindings++; }
+            upsertFinding(db, f);
+          }
+          log(`Slither: ${target.owner}/${target.repo} -- ${result.rawResultCount} achado(s) bruto(s), ${findings.length} em Medium+ impacto, ${newHere} realmente novo(s) desta vez.`);
+        } catch (err) {
+          slitherReposFailed++;
+          log(`AVISO: Slither falhou de forma inesperada em ${target.owner}/${target.repo}: ${err.message.split('\n')[0]}`);
+        }
+      }
+    } finally {
+      closeDb(db);
+    }
+  }
+  log(`Slither: ${slitherReposOk} repositório(s) analisado(s) com sucesso, ${slitherReposFailed} com falha, ${slitherNewFindings} achado(s) novo(s) (Medium+ impacto) na fila.`);
+
   {
     const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
-    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}`, log);
+    const slitherNote = slitherNewFindings > 0 ? `, ${slitherNewFindings} achado(s) novo(s) do Slither` : '';
+    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}`, log);
     if (syncResult.ok) {
       if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
     } else {
@@ -175,6 +225,7 @@ export async function runDiscovery() {
           ? `🚀 <b>${promotionResult.promoted.length} alvo(s) novo(s) promovido(s)</b> pra varredura ativa: ${promotionResult.promoted.map((p) => `${p.owner}/${p.repo} (${p.program})`).join(', ')}. Total agora: ${mergedAutoPromoted.length}.`
           : `Nenhum alvo novo promovido nesta rodada (${mergedAutoPromoted.length} ativo(s) no total).`,
         promotionResult.skipped.tooLarge.length > 0 ? `${promotionResult.skipped.tooLarge.length} repo(s) grande(s) demais pra promoção automática — revisão manual sugerida.` : null,
+        `🔬 Slither: ${slitherReposOk}/${SOLIDITY_TARGETS.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {

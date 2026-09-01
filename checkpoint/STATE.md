@@ -875,3 +875,57 @@ repositório em escopo em nenhum dos 3 programas escaneados no momento
 `npm test` seguiu 335/335 durante todo este trabalho (os exemplos de
 PoC ficam fora de qualquer pasta `test/`, de propósito, pra nunca
 entrar na suíte principal via glob).
+
+## Integração real com Slither, gratuita e 100% local (2026-09-01)
+
+Usuário confirmou seguir pelo caminho já recomendado (OSV-Scanner +
+Slither), reforçando o requisito permanente da missão: **zero gasto,
+só ferramenta gratuita/local, tudo em E:**. Slither (Trail of Bits,
+`pip install slither-analyzer`) já estava instalado neste ambiente.
+Comecei por ele (mais barato de integrar que OSV-Scanner, e Circle BBP
+— o programa com toda a tração real da missão — é justamente Solidity).
+
+Construído `slither-runner.mjs`: clona/atualiza alvo em
+`E:/dev-toolchains/slither-cache/`, roda `py -m slither . --json`,
+filtra por impacto Medium+, converte pro formato de achado do resto do
+pipeline. Rodado de ponta a ponta contra `circlefin/evm-cctp-contracts`
+(o bridge CCTP oficial da Circle) de verdade: **7 achados reais
+persistidos na fila** (4 `incorrect-return` High + 3
+`unchecked_call_return` Medium, todos em código de proxy/upgrade) —
+primeira vez que algo além das 4 heurísticas regex próprias encontra
+algo real em Circle BBP. Calibração honesta feita na hora: um dos
+achados High já bate com uma classe de falso-positivo conhecida do
+Slither pra proxy transparente estilo OpenZeppelin (parada de execução
+intencional via assembly) — registrado como ressalva no README, não
+escondido; fica em `candidate` esperando a mesma leitura cética de
+sempre, não foi fechado nem promovido às pressas.
+
+**Erro real cometido e corrigido na hora**: tentei aplicar
+`git config --global url.".insteadOf` pra contornar um submódulo com
+URL SSH — violação direta da regra de nunca mexer em config global do
+git. Revertido imediatamente (`--global --unset`) antes de continuar;
+resolvido de verdade reescrevendo o `.gitmodules` diretamente (só texto,
+sem tocar config nenhuma) e com config LOCAL (`git config` sem
+`--global`, só dentro daquele clone específico) pra `core.longpaths`.
+
+**Fricção real de Windows documentada** (não escondida, ver seção
+própria em `system/bugbounty-scanner/README.md`): MAX_PATH de 260
+caracteres estourado por árvore de submódulo Foundry funda demais
+(`evm-xreserve-contracts` ficou de fora por ora); `npm install` via
+`execFileSync` sem shell dá `ENOENT` no Windows (`npm` é `.cmd`) e
+`npm.cmd` direto dá `EINVAL` (bug conhecido do Node) — `shell:true`
+foi a única combinação que funcionou de verdade, seguro aqui porque o
+único argumento é a string literal `'install'`, nunca dado externo.
+
+Rodando na cadência semanal (`discovery-runner.mjs`, junto da
+descoberta de alvo) — mais lento que a heurística de texto, não faz
+sentido na diária. 11 testes novos, incluindo Slither rodando de
+verdade (não fixture) contra um contrato sintético em ~1,5s. `npm
+test`: 365/365.
+
+**Próximo passo natural, ainda não feito**: OSV-Scanner (mesma
+filosofia — binário gratuito, mantido por terceiro, sem custo de
+licença) pra melhorar a varredura de dependência além do
+`dep-scanner.mjs` caseiro, e resolver os 2 alvos Solidity que ainda não
+rodaram Slither com sucesso (`evm-xreserve-contracts`,
+`buidl-wallet-contracts`).
