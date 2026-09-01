@@ -1,14 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { openDb, upsertFinding, getFinding, recordTransition, recordDeploymentEvidence, closeDb } from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { readLedger } from '../ledger/ledger.mjs';
 import { deriveStatesFromLedger } from './state-machine.mjs';
 
-const BUGBOUNTY_DIR = path.join('research', 'bugbounty');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
+const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
-const MIGRATION_LOG_PATH = path.join('docs', 'zerotoone-v2', 'migration-log.json');
+const MIGRATION_LOG_PATH = path.join(REPO_ROOT, 'docs', 'zerotoone-v2', 'migration-log.json');
 
 function readQueue(queuePath = QUEUE_PATH) {
   if (!existsSync(queuePath)) return [];

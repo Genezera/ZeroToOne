@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Scope Registry — verdade temporal e versionada sobre autorização de
 // programa. Nunca é a fonte de curadoria de alvo (isso continua sendo
@@ -16,7 +19,7 @@ export const TTL_DAYS_BY_SOURCE = {
   hackerone_api_live: 3,
 };
 
-export function snapshotDir(baseDir = path.join('research', 'bugbounty', 'scope-snapshots')) {
+export function snapshotDir(baseDir = path.resolve(__dirname, '..', '..', 'research', 'bugbounty', 'scope-snapshots')) {
   return baseDir;
 }
 

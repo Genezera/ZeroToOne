@@ -7,6 +7,7 @@ import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-
 import { isTerminal } from './state-machine.mjs';
 import { generateReport } from './generate-report.mjs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
 // acesso MCP ao banco) uma forma estruturada de mudar estado — em vez de
@@ -15,7 +16,12 @@ import path from 'node:path';
 // do sistema usa; o CLI não contorna a precondição, só empacota o
 // contexto que ela pede.
 
-const DB_PATH = path.join('research', 'bugbounty', 'zerotoone.db');
+// Absoluto (relativo a este arquivo), não a process.cwd() -- caminho
+// relativo aqui já causou achado real de arquivo/DB perdido nesta
+// sessão sempre que o CLI foi invocado de dentro de
+// system/bugbounty-scanner/ em vez da raiz do repo.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DB_PATH = path.resolve(__dirname, '..', '..', 'research', 'bugbounty', 'zerotoone.db');
 
 function parseArgs(argv) {
   const positional = [];
@@ -327,7 +333,7 @@ async function main() {
         printJson(cmdEvidenceGrade(db, positional[0]));
         break;
       case 'export-queue': {
-        const queuePath = positional[0] || path.join('research', 'bugbounty', 'queue.jsonl');
+        const queuePath = positional[0] || path.resolve(__dirname, '..', '..', 'research', 'bugbounty', 'queue.jsonl');
         const n = exportFindingsToQueueJsonl(db, queuePath);
         printJson({ exported: n, path: queuePath });
         break;
