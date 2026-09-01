@@ -191,8 +191,53 @@ achado Go em `corroborated_static` ainda depende de alguém (agente de
 nuvem ou humano) escrever a PoC específica pra aquele achado — não tem
 como isso ser 100% automático (a PoC precisa entender o bug
 específico), mas agora existe um caminho conhecido e testado, igual já
-existia pra Solidity. JVM/Kotlin e JS/TS continuam sem convenção
-equivalente — próximo passo natural se algum achado real chegar lá.
+existia pra Solidity.
+
+## Prova de conceito executável (JVM, via `javac`/`java` puro) — 31/08/2026
+
+`insecure_deserialization` (o achado JVM mais sério que
+`heuristics-jvm.mjs` sinaliza — `ObjectInputStream` sobre bytes não
+confiáveis) não precisa de Gradle/Maven pra provar o mecanismo: uma
+classe "estágio-de-prova" com `readObject()` sobrescrito (seta uma flag
+observável, NUNCA um gadget de RCE de verdade — nunca
+`Runtime.exec`/`ProcessBuilder`) já prova o núcleo do CWE-502: o
+desserializador instancia e roda código de uma classe que o ATACANTE
+escolheu, não a vítima. Exemplo real e executável (não achado novo, só
+demonstra o mecanismo — os alvos Kotlin reais desta missão,
+`wire-schema`/`hermit`, são do Block Open Source, banido pra pesquisa
+assistida por IA):
+`system/bugbounty-scanner/poc-examples/jvm-insecure-deserialization/`
+(`javac *.java && java PocMain`, saída real PASS capturada).
+
+**Ressalva real**: pra achado de verdade num projeto Kotlin/Gradle real
+(não este exemplo standalone), o comando certo é o runner do próprio
+projeto (`./gradlew test --tests "..."` ou `mvn test -Dtest=...`), não
+`javac` direto — este exemplo prova que a JVM em si é insegura por
+design nesse padrão, não substitui rodar dentro do build system real
+quando houver achado Kotlin de verdade.
+
+## Prova de conceito executável (JS/TS, via `node --test`) — 31/08/2026
+
+Diferente de Solidity/Go/JVM, não precisa de convenção nova nenhuma —
+é literalmente a MESMA ferramenta (`node --test`) que já roda a suíte
+inteira deste projeto. Exemplo real pro padrão
+`prototype_pollution_risk`:
+`system/bugbounty-scanner/poc-examples/js-prototype-pollution/`
+(`node --test .../poc.test.mjs`) — prova que `JSON.parse` sozinho não
+aciona o setter especial de `__proto__` (cria uma propriedade comum de
+string), mas um merge recursivo ingênuo que depois faz
+`target[key] = ...` com essa chave SIM aciona, poluindo
+`Object.prototype` globalmente (confirmado testando um objeto novo,
+sem nenhuma relação com o ataque). Inclui teste de controle (a mesma
+entrada contra uma versão com a checagem `__proto__`/`constructor`/
+`prototype`, que não é afetada) — mesmo padrão de "sempre mostrar o
+caso que NÃO quebra" já estabelecido nos relatórios desta missão.
+
+**Cobertura de convenção de PoC agora**: Solidity (Foundry/Hardhat),
+Go (`go test`), JVM (`javac`/`java`, ou o build system real do
+projeto), JS/TS (`node --test`). Só falta Swift (sem alvo ativo hoje —
+os 3 programas escaneados não têm repositório Swift em escopo no
+momento).
 
 ## Solidity (Circle BBP, HackerOne — emissora do USDC)
 `targets-solidity.mjs` + `heuristics-solidity.mjs` — o primeiro alvo

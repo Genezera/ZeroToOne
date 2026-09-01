@@ -27,13 +27,16 @@ REGRAS ANTES DE GERAR (o agente de nuvem confere isso, não pula):
    geradas localmente (`makeAddr`/`vm.deal`), financiadas apenas dentro do
    fork.
    Para achado Go: escreva e RODE um `_test.go` real contra o pacote
-   clonado (`go test -run Teste -v`) — ver
-   `system/bugbounty-scanner/README.md`, seção "Prova de conceito
-   executável (Go...)" e o exemplo real em
-   `system/bugbounty-scanner/poc-examples/`. Ainda não existe convenção
-   equivalente pra JVM/Kotlin ou JS/TS — se não der pra rodar PoC de
-   verdade nessas linguagens, registre `record-validation
-   --result=not_applicable` explicitamente (nunca simule/invente saída).
+   clonado (`go test -run Teste -v`). Para achado JVM/Kotlin: classe
+   "estágio-de-prova" (nunca gadget de RCE de verdade) rodada via
+   `javac`/`java` ou, se houver projeto Gradle/Maven real, o runner
+   dele. Para achado JS/TS: `node --test` (mesma ferramenta que já roda
+   a suíte deste projeto). Ver `system/bugbounty-scanner/README.md` e
+   os exemplos reais em `system/bugbounty-scanner/poc-examples/` pra
+   cada uma. Se mesmo assim não der pra rodar PoC de verdade pro tipo
+   de achado (ex.: config pura, sem lógica pra exercitar), registre
+   `record-validation --result=not_applicable` explicitamente — nunca
+   simule/invente saída.
 4. Nunca é rascunho final — todo relatório carrega o aviso de revisão
    humana obrigatória no topo, sempre.
 -->
@@ -109,22 +112,25 @@ de usuário real.}}
 {{Se aplicável: saída de comando, resultado de trace, referência externa
 (ex.: ID da vulnerabilidade em GHSA/CVE/OSV para achado de dependência).}}
 
-## Prova de conceito executável (Solidity/Go — quando aplicável)
+## Prova de conceito executável
 {{SÓ preencher esta seção se um teste de verdade foi escrito e rodado.
 Solidity: Foundry contra um FORK LOCAL (nunca rede real, nunca
-conta/chave privada com fundo real). Go: `_test.go` real contra o
-pacote clonado, via `go test` (ver `system/bugbounty-scanner/README.md`
-e `poc-examples/`). Inclua:
+conta/chave privada com fundo real). Go: `_test.go` real via
+`go test`. JVM/Kotlin: `javac`/`java` ou o runner real do projeto
+(Gradle/Maven). JS/TS: `node --test`. Ver
+`system/bugbounty-scanner/README.md` e `poc-examples/` pra exemplo real
+de cada uma. Inclua:
 - O código do teste completo ou trecho relevante
 - O comando exato rodado, ex.: `forge test --fork-url <RPC público>
-  --match-test test_X -vvv` ou `go test -run TestX -v ./pkg/...`
+  --match-test test_X -vvv`, `go test -run TestX -v ./pkg/...`, `java
+  PocMain`, ou `node --test caminho/do/teste.test.mjs`
 - A saída REAL do comando (PASS/FAIL + trace relevante) — cole o
   resultado literal, nunca parafraseado
 Se a PoC FALHOU (ex.: um modifier/checagem bloqueou o ataque que a
 leitura de código sugeria), isso é evidência forte de falso-positivo —
 documente aqui mesmo assim, é informação real e valiosa, não descarte.
-Para JVM/Kotlin e JS/TS, ainda não existe convenção de PoC local
-equivalente — registre `not_applicable` explicitamente em vez de pular
+Se o tipo de achado genuinamente não tem lógica pra exercitar (ex.:
+config pura), registre `not_applicable` explicitamente em vez de pular
 a seção em silêncio.}}
 
 ## Impacto

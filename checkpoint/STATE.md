@@ -834,6 +834,44 @@ foi corrigido, lição deixada explícita pra próxima PoC do tipo.
 
 `README.md`/`TEMPLATE.md` atualizados com a convenção Go (clonar no
 commit certo, escrever `_test.go` externo quando a API pública já
-basta, `go test -run X -v`, colar saída real). JVM/Kotlin e JS/TS
-continuam sem convenção equivalente — próximo passo natural se algum
-achado real chegar lá antes.
+basta, `go test -run X -v`, colar saída real).
+
+## PoC executável pra JVM e JS/TS — cobertura de convenção completa (2026-08-31)
+
+Usuário pediu "siga tudo, faça tudo oque está pendente" — completei as
+duas linguagens que faltavam.
+
+**JVM**: sem Gradle/Maven/`kotlinc` instalados neste ambiente, usei
+Java puro (`javac`/`java`, sem dependência) pra provar o padrão real
+que `heuristics-jvm.mjs` sinaliza (`insecure_deserialization` —
+`ObjectInputStream` sobre bytes não confiáveis). Classe
+"estágio-de-prova" (`readObject()` só seta uma flag observável, NUNCA
+gadget de RCE de verdade) prova o núcleo do CWE-502 — desserializador
+roda código de classe escolhida pelo atacante — com o mínimo de dano
+possível, mesmo princípio já usado nas PoCs Solidity/Go. Achado real
+rodando isso: os alvos Kotlin reais desta missão (`wire-schema`/
+`hermit`) são do Block Open Source, banido pra pesquisa assistida por
+IA — por isso o exemplo usa classe sintética, não um repositório real
+do programa, e documenta explicitamente que achado Kotlin real precisa
+rodar pelo build system real do projeto (`./gradlew test`), não
+`javac` direto. Commitado em
+`system/bugbounty-scanner/poc-examples/jvm-insecure-deserialization/`.
+
+**JS/TS**: não precisou de convenção nova nenhuma — é literalmente
+`node --test`, a mesma ferramenta que já roda a suíte inteira deste
+projeto. Exemplo real pro padrão `prototype_pollution_risk`
+(`system/bugbounty-scanner/poc-examples/js-prototype-pollution/`),
+incluindo uma nuance real capturada e documentada: `JSON.parse`
+sozinho não aciona o setter especial de `__proto__` (cria propriedade
+comum de string) — o perigo real está inteiramente em como o código
+consumidor itera e escreve essa chave depois. Inclui teste de controle
+(mesma entrada contra versão com checagem, não afetada).
+
+**Cobertura de convenção de PoC agora**: Solidity, Go, JVM, JS/TS —
+todas as linguagens com alvo ativo hoje. Só falta Swift, sem
+repositório em escopo em nenhum dos 3 programas escaneados no momento
+— não é uma lacuna real enquanto não houver alvo.
+
+`npm test` seguiu 335/335 durante todo este trabalho (os exemplos de
+PoC ficam fora de qualquer pasta `test/`, de propósito, pra nunca
+entrar na suíte principal via glob).
