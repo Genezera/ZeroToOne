@@ -288,6 +288,7 @@
     "src/msca/6900/v0.8/libs/WalletStorageV2Lib.sol",
     "src/msca/6900/v0.7/libs/FunctionReferenceLib.sol",
     "src/msca/6900/v0.7/libs/ExecutionHookLib.sol",
+    "src/libs/SetValueLib.sol",
     "src/libs/CastLib.sol",
     "src/libs/AddressBytesLib.sol",
     "src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol",
@@ -551,7 +552,14 @@
     "packages/cli/src/util/validate-cron-secret.ts",
     "packages/oidc/src/oauth.ts",
     "packages/functions/src/oidc/aws-credentials-provider.ts",
-    "packages/cli-auth/oauth.ts"
+    "packages/cli-auth/oauth.ts",
+    "packages/connect/src/eve/github-credentials.ts",
+    "packages/connect/src/eve/slack-credentials.ts",
+    "packages/connect/src/eve/discord-credentials.ts",
+    "packages/connect/src/eve/linear-credentials.ts",
+    "packages/connect/src/eve/photon-credentials.ts",
+    "packages/connect/src/chat/slack-adapter.ts",
+    "packages/connect/src/internal/team-id.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

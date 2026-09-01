@@ -3006,3 +3006,64 @@ em `vercel-labs/agent-skills` e `circlefin/evm-cctp-contracts`,
 respectivamente, ambas sem achado — sem sobreposição com o achado
 acima, que é num arquivo/módulo diferente do que a rodada concorrente
 leu).
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0 (rebase confirmado: o achado `verify-claim.mjs
+repoPaths` da rodada concorrente anterior já está em `corroborated_static`
+no branch atualizado — 4 achados nesse estado no total agora).
+
+Leitura profunda proativa direcionada a `vercel/vercel`: diff de
+`git ls-files` (sparse-checkout de `packages/cli-auth`, `packages/oidc`,
+`packages/connect`, `packages/cli-config`) contra `deep-read-log.json`
+mostrou 7 arquivos novos não lidos em `packages/connect/src/eve/**` e
+`packages/connect/src/chat/**` — a família de helpers `connect*Credentials`/
+`connect*Adapter` que empacota credenciais de bot por canal (GitHub,
+Slack, Discord, Linear, Photon) pra uso no Eve:
+
+- `eve/github-credentials.ts`, `eve/slack-credentials.ts`,
+  `eve/linear-credentials.ts` — mesmo padrão nas três: `subject:
+  { type: 'app' }` é escrito *depois* do spread de `...params` no
+  literal de objeto passado a `getToken`, então mesmo que um chamador
+  burle o tipo `Omit<ConnectTokenParams, 'subject'>` em runtime (JS puro,
+  sem enforcement de tipo) e injete um `subject` custom em `params`, a
+  chave literal subsequente sobrescreve — não é só proteção de
+  TypeScript, é proteção real da ordem de avaliação do objeto. Nenhuma
+  validação de rota nova a burlar; `webhookVerifier` delega pro mesmo
+  `vercelOidc()`/`createConnectWebhookVerifier()` já revisado em rodada
+  anterior (`chat/webhook-verifier.ts`). Sem achado.
+- `eve/discord-credentials.ts`, `eve/photon-credentials.ts` — mesma
+  blindagem de `subject`, mas com uma etapa a mais: valida o
+  `applicationId`/`projectId` retornado em `response.metadata` (`typeof
+  === 'string' && length > 0`) antes de expor a credencial, com erro
+  explícito se o Connect devolver metadata malformada — sem TOCTOU
+  visível (o campo é lido uma vez do mesmo `response` já resolvido, não
+  há segunda leitura de fonte mutável entre check e uso). Sem achado.
+- `chat/slack-adapter.ts` (73 linhas) — wrapper fino em cima do mesmo
+  `getToken`/`createConnectWebhookVerifier()`, zero lógica nova de
+  autorização própria. Sem achado.
+- `connect/src/internal/team-id.ts` — decodifica o JWT OIDC da própria
+  Vercel (`getVercelOidcTokenSync()`) sem checar assinatura, mas o
+  comentário do próprio arquivo já documenta a razão: é o token do
+  *próprio* processo (não input de terceiro), usado só pra preencher
+  `?teamId=` num link de consentimento de UI — falha é silenciosa
+  (`undefined`) e cai pra URL sem qualificação de time. Nenhuma decisão
+  de autorização depende deste valor. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado tentada. `deep-read-
+log.json` atualizado (+7 em `vercel/vercel`). Resta ainda não lido em
+`packages/connect/src/chat/`: `github-adapter.ts`/`linear-adapter.ts`
+(mesmo padrão do `slack-adapter.ts` já confirmado, baixa prioridade) e
+`packages/oidc/src/{get-context,get-vercel-oidc-token-sync,
+get-vercel-oidc-token-with-refresh,token}.ts` — candidatos pra rodada
+futura.
+
+Nota de status: o achado `verify-claim.mjs repoPaths` (path traversal /
+oracle de leitura arbitrária de arquivo, tier 1, `eligibleForBounty=true`,
+`maxSeverity=critical`) segue preso em `corroborated_static` pela mesma
+limitação estrutural já documentada pros outros 2 achados JS/TS deste
+programa: não existe validador local (PoC executável) pra esse tipo de
+achado fora de Solidity, então a transição pra `reproduced_local`/
+`scope_verified` é recusada pelo state machine de propósito — não é bug,
+é o sistema esperando um humano decidir se compensa validar manualmente
+esse tipo de achado antes de reportar.

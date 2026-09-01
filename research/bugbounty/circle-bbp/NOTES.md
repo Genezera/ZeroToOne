@@ -5726,3 +5726,27 @@ Nenhum achado novo, nenhuma transição de estado tentada.
 `deep-read-log.json` atualizado (+4 em `circlefin/evm-cctp-contracts`,
 agora 27 arquivos — cobre toda a lógica não-trivial do repo; o que resta
 são só `src/interfaces/*.sol`).
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Revisitei `circlefin/evm-cpn-contracts`
+(clone raso @ `fb1f115601db3c04d60ce2ca2dbbdc662d86613c`) — `find src -name
+"*.sol"` retorna exatamente os 7 arquivos já em `deep-read-log.json`,
+repo 100% coberto. Mesma checagem em `circlefin/evm-xreserve-contracts`:
+os únicos arquivos não lidos são `src/common/{Constants,Errors}.sol` e
+4 interfaces em `src/interfaces/*.sol` — sem lógica (só declarações),
+mesmo padrão já tratado como sem valor em rodadas anteriores.
+
+`circlefin/buidl-wallet-contracts` (77 arquivos `.sol`, 51 já lidos):
+diff mostrou 24 arquivos novos, 23 deles interfaces/structs/constants/
+errors triviais (`I*.sol`, `*Constants.sol`, `*Structs.sol`,
+`*Errors.sol`) — só 1 com lógica real: `src/libs/SetValueLib.sol`
+(17 linhas efetivas) — uma única função pura,
+`toBytes30Array(SetValue[] memory) -> bytes30[] memory`, apenas
+`SetValue.unwrap` em loop, sem estado, sem side-effect, sem overflow
+possível (bound pelo próprio `.length` do array de entrada). Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado tentada. `deep-read-
+log.json` atualizado (+1 em `circlefin/buidl-wallet-contracts`, agora
+52 arquivos — cobre toda a lógica não-trivial do repo, resta só
+interfaces/structs/constants triviais).

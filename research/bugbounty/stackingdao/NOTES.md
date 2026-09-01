@@ -475,3 +475,11 @@ sem arquivo novo lido de StackingDAO. Sem achado, sem mudança de estado.
 `list-pending` global = 0. Leitura profunda proativa desta rodada
 direcionada a `vercel/next.js` (ver NOTES.md de Vercel Open Source, achado
 novo registrado lá) — sem arquivo novo lido de StackingDAO.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/vercel` e `circlefin/buidl-wallet-contracts`/
+`evm-xreserve-contracts`/`evm-cpn-contracts` (ver NOTES.md de Vercel Open
+Source e Circle BBP) — sem arquivo novo candidato em StackingDAO (os 15
+contratos Clarity seguem 100% cobertos desde rodadas anteriores).
