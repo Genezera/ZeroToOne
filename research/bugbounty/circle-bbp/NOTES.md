@@ -5795,3 +5795,38 @@ sem novos candidatos, conforme passo 2 das instruções.
 direcionada a `vercel/next.js` (crypto-utils/preview-mode, ver NOTES.md
 de Vercel Open Source, sem achado) — sem arquivo novo lido neste
 programa. Nenhum achado, nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-01 (2ª, push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Revisitei os 4 findings em `corroborated_static`
+existentes (nenhum é Solidity — 3 JS/TS, 1 Swift/Kotlin): a máquina de
+estados (`corroborated_static->reproduced_local`) exige `validations`
+com `result=pass`, e sem validador local pra essas linguagens a única
+transição possível seria `result=not_applicable`, que a própria
+precondição rejeita de propósito ("fica em corroborated_static até
+Fase 2/4 do plano adicionar um validador de verdade"). Nenhum desses 4
+é deste programa (Circle BBP), então nada a registrar aqui — mas
+confirmado que não há trabalho pendente neles nesta rodada, de
+qualquer programa.
+
+Leitura profunda proativa: `check-scope "Circle BBP" "circlefin/stablecoin-sui"`
+confirmou em escopo (`allowed=true`, `bountyEligible=true`,
+`maxSeverity=critical`). Dos 9 arquivos `.move` não-teste do repo, 4 já
+lidos em rodadas anteriores (`treasury.move`, `roles.move`,
+`two_step_role.move`, `entry.move`); li os 3 restantes com
+"admin/permission" no escopo: `upgrade_service.move`
+(custódia de `UpgradeCap` por admin via `TwoStepRole` — todo `entry fun`
+sensível chama `assert_sender_is_active_role`, `deposit` não precisa de
+checagem porque a posse do objeto `UpgradeCap` já é a autorização no
+modelo de objeto-capacidade do Sui; sem achado), `version_control.move`
+(guard de versão trivial, sem achado) e `mint_allowance.move`
+(`increase()` usa `assert!(value < (u64::MAX - self.value), EOverflow)`
+— off-by-one que rejeita o caso-limite exato em que
+`value == u64::MAX - self.value` mesmo sem overflow real; é
+excessivamente restritivo, não uma vulnerabilidade exploitável — sem
+impacto de segurança, não vale finding). `usdc.move` (o único arquivo
+não-teste restante do repo) fica para próxima rodada.
+
+`deep-read-log.json` atualizado (+3 em `circlefin/stablecoin-sui`,
+agora 7/9 arquivos não-teste lidos). Nenhum achado novo, nenhuma
+transição de estado tentada.
