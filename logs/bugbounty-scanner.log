@@ -180,3 +180,36 @@ To https://github.com/Genezera/ZeroToOne.git
    5426422..0af8ed1  master -> master
 [2026-08-31T18:01:54.252Z] Sincronizado com o GitHub — agente de nuvem vai ver na próxima checagem.
 [01/09/2026  9:00:02,11] Iniciando scanner de bug bounty 
+[2026-09-01T12:01:14.182Z] AVISO: vercel/vercel tem 1272 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
+[2026-09-01T12:03:06.813Z] AVISO: okx/go-wallet-sdk tem 1001 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
+[2026-09-01T12:05:02.164Z] AVISO: kubernetes/code-generator tem 795 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
+[2026-09-01T12:08:42.558Z] Varredura completa: 13 contratos Clarity + 1548 arquivos (JS/TS+Go+JVM+Swift) + 16 manifesto(s) de dependência checados, 0 erros de busca, 32 achados NOVOS na fila (31 de dependência conhecida), 88 veredito(s) novo(s)/mudado(s), 6 suprimido(s) por regra em quarentena (ver quarantine-status.md).
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-scanner.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/STATUS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/dashboard/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/quarantine-status.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/queue.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-repo-shas.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-verdicts.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/dao.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/data-stbtc-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/data-stx-v2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/signer-admin-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacker-3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacking-dao-core-btc-v3.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stacking-dao-core-ststxbtc-v1.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stbtc-reserve.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stbtc-token.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/ststx-token.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/stackingdao/stx-reserve-v2.clar', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/telegram-digest-checkpoint.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/reports/vercel-remix-updater-workflow-command-injection.md', LF will be replaced by CRLF the next time Git touches it
+[2026-09-01T12:08:46.507Z] AVISO: git push falhou (provável divergência com origin) -- tentando pull + push uma vez: Command failed: git push
+[2026-09-01T12:08:49.298Z] AVISO: pull de recuperação falhou (provável conflito de verdade) -- abortando merge parcial e desistindo desta rodada: Command failed: git pull --no-rebase --no-edit
+[2026-09-01T12:08:49.369Z] AVISO: falha ao sincronizar com o GitHub: pull de recuperação falhou: Command failed: git pull --no-rebase --no-edit

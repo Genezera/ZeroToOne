@@ -69,13 +69,13 @@ no runner do GitHub Actions que executa este workflow.
 3. `utils/update-remix-run-dev.js:20` — `newVersion = newVersion.trim();`
    — única transformação aplicada ao valor inteiro do input. Nenhuma
    validação de formato semver, nenhum allowlist de caracteres.
-4. `utils/update-remix-run-dev.js:30` — `const branch =
-   \`vercel-remix-run-dev-${newVersion.replaceAll('.', '-')}\`;` — só
+4. `utils/update-remix-run-dev.js:30` — `` const branch =
+   `vercel-remix-run-dev-${newVersion.replaceAll('.', '-')}`; `` — só
    substitui o caractere "." por "-"; qualquer outro caractere
    (crase, `$(`, `;`, `&&`, `|`, quebra de linha) é preservado
    literalmente.
-5. `utils/update-remix-run-dev.js:32` — `execSync(\`git ls-remote
-   --heads origin ${branch}\`, { encoding: 'utf-8' })` — `branch`
+5. `utils/update-remix-run-dev.js:32` — `` execSync(`git ls-remote
+   --heads origin ${branch}`, { encoding: 'utf-8' }) `` — `branch`
    interpolado direto numa template string passada para `execSync`,
    que por padrão roda via `/bin/sh -c` no Node.js (diferente de
    `spawn(cmd, args[])`, que passa argumentos direto ao `execve()` sem
@@ -86,8 +86,8 @@ no runner do GitHub Actions que executa este workflow.
    `spawn()` com array de argumentos, nunca uma template string.
 6. O mesmo `branch` (já contendo o valor injetado) é reutilizado sem
    nova sanitização em `utils/update-remix-run-dev.js:64`
-   (`execSync(\`git checkout -b ${branch}\`)`) e `:66`
-   (`execSync(\`git commit -m ${branch}\`)`) — três pontos de injeção
+   (`` execSync(`git checkout -b ${branch}`) ``) e `:66`
+   (`` execSync(`git commit -m ${branch}`) ``) — três pontos de injeção
    independentes, mesma causa raiz.
 
 ## Pré-requisitos
