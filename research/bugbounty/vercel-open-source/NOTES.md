@@ -2112,3 +2112,54 @@ mais próximos do critério de prioridade (auth/token/permission):
 `deep-read-log.json` atualizado (+3 arquivos em `vercel/vercel`, agora
 24). Clone sparse temporário apagado do scratchpad ao fim da rodada.
 Nenhum achado novo nesta rodada — resultado normal.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila global vazia, leitura profunda proativa em `vercel/eve`
+
+`list-pending` global = 0. Antes de tocar qualquer arquivo, conferi
+`program-policy.json` inteiro (não só o NOTES.md do programa da vez) —
+confirma `aiResearchBanned: true` só para "Block Open Source"; os outros
+3 programas (StackingDAO, Vercel Open Source, Circle BBP) seguem
+liberados. StackingDAO revisitado primeiro: os 15 arquivos curados em
+`targets.mjs` já estão todos lidos, sem contrato novo candidato.
+
+Sparse-checkout de `vercel/eve` (`packages/eve/src`, já com 7 arquivos
+lidos em rodadas anteriores, quase todos em `channel/auth/*`). Rastreei
+a cadeia real de resolução/cache de token por chamador, que ainda não
+tinha sido lida ponta a ponta:
+
+- `packages/eve/src/execution/tool-auth.ts` (419 linhas, completo) —
+  adaptador fino que expõe `ctx.getToken`/`ctx.requireAuth` a tools
+  autoradas, delegando toda a lógica de cache/park-resume para
+  `scoped-authorization.ts`. Guarda de loop explícita: um token
+  recém-autorizado nesta mesma turn que ainda é rejeitado falha
+  terminalmente (`token_rejected_after_authorization`) em vez de
+  re-desafiar infinitamente. Sem achado.
+- `packages/eve/src/runtime/connections/scoped-authorization.ts` (259
+  linhas, completo) — cache de bearer por escopo, chaveado por
+  `(instanceId ?? scope, principalKey(principal))`; leitura/escrita
+  passam por `authorization-tokens.ts` (já indiretamente coberto).
+  Eviction em duas camadas (cache do eve + hook opcional
+  `authorization.evict` da própria estratégia, ex. `@vercel/connect`) —
+  best-effort, nunca mascara o erro de autorização original que a
+  disparou. Sem achado.
+- `packages/eve/src/runtime/connections/principal.ts` (159 linhas,
+  completo, não estava na lista de leitura mas é dependência direta da
+  cadeia de cache acima — a fronteira de segurança real: se a resolução
+  de principal puder ser falsificada/colidir, o cache de token cruza
+  usuários) — `principalKey` prefixa por `issuer` para evitar colisão
+  entre provedores de identidade diferentes com o mesmo `id`
+  (ex. Slack `U123` vs Google `U123`). Único ramo que produz uma chave
+  **sem** prefixo de issuer é `isVercelDevelopmentUser` (token OIDC da
+  Vercel com `authenticator==="oidc"`, issuer OIDC da própria Vercel,
+  `attributes.environment==="development"` e `subject===attributes.user_id`)
+  — carve-out documentado e restrito a ambiente de desenvolvimento local,
+  não alcançável com credencial de produção. Sem achado (mas registrado
+  aqui porque é o tipo de detalhe que merece releitura se `principal.ts`
+  ou o schema de attributes do OIDC dev mudar em rodada futura).
+- `packages/eve/src/shared/session-auth.ts` (40 linhas, completo) — só
+  tipos/schema Zod (`RuntimeSessionAuthContext`), sem lógica. Sem achado.
+
+`deep-read-log.json` atualizado (+4 arquivos em `vercel/eve`, agora 11).
+Clone sparse temporário apagado do scratchpad ao fim da rodada. Circle
+BBP e Block Open Source (banido para pesquisa por IA) não tocados nesta
+rodada. Nenhum achado novo — resultado normal.

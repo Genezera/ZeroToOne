@@ -612,7 +612,11 @@
     "packages/eve/src/channel/auth/token-claims.ts",
     "packages/eve/src/channel/forwarded-principal.ts",
     "packages/eve/src/channel/ip-allow-list.ts",
-    "packages/eve/src/public/channels/auth.ts (completo, 1246 linhas)"
+    "packages/eve/src/public/channels/auth.ts (completo, 1246 linhas)",
+    "packages/eve/src/shared/session-auth.ts",
+    "packages/eve/src/execution/tool-auth.ts",
+    "packages/eve/src/runtime/connections/scoped-authorization.ts",
+    "packages/eve/src/runtime/connections/principal.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
