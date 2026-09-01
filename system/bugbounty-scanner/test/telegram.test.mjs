@@ -4,7 +4,6 @@ import { shouldNotifyForTransition, formatTransitionMessage, NOTABLE_STATES } fr
 
 test('shouldNotifyForTransition é true só pros estados que valem aviso em tempo real', () => {
   assert.equal(shouldNotifyForTransition('human_ready'), true);
-  assert.equal(shouldNotifyForTransition('reproduced_local'), true);
   assert.equal(shouldNotifyForTransition('known_duplicate'), true);
   assert.equal(shouldNotifyForTransition('paid'), true);
 });
@@ -14,6 +13,18 @@ test('shouldNotifyForTransition é false pros estados cedo demais ou "não é na
   assert.equal(shouldNotifyForTransition('corroborated_static'), false);
   assert.equal(shouldNotifyForTransition('false_positive'), false);
   assert.equal(shouldNotifyForTransition('inconclusive'), false);
+});
+
+test('shouldNotifyForTransition é false pra reproduced_local/scope_verified -- correção real de 01/09/2026', () => {
+  // Não removidos por serem "não é nada" (são progresso real) -- removidos
+  // porque um achado real cruza os dois em segundos/milissegundos a
+  // caminho de human_ready (achado real no ledger: 8ms entre as duas
+  // transições de um mesmo achado), então cada achado virava 3
+  // notificações separadas em sequência imediata. Usuário reportou isso
+  // como "recebendo a mesma coisa várias vezes". O painel continua
+  // mostrando as duas -- isso só afeta o que interrompe o celular.
+  assert.equal(shouldNotifyForTransition('reproduced_local'), false);
+  assert.equal(shouldNotifyForTransition('scope_verified'), false);
 });
 
 test('NOTABLE_STATES nunca inclui um estado que não existe na máquina de estados real', async () => {

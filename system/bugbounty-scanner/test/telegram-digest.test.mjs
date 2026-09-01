@@ -68,7 +68,7 @@ test('findNewNotableTransitions: só processa o que vem DEPOIS do hash de checkp
   const entries = [
     transition({ hash: 'h1', to: 'human_ready' }),
     transition({ hash: 'h2', to: 'duplicate' }),
-    transition({ hash: 'h3', to: 'reproduced_local' }),
+    transition({ hash: 'h3', to: 'paid' }),
   ];
   const notable = findNewNotableTransitions(entries, 'h1');
   assert.deepEqual(notable.map((n) => n.hash), ['h2', 'h3']);
@@ -136,7 +136,7 @@ test('runTelegramDigest: poucas transições notáveis -- uma mensagem por trans
     const checkpointPath = path.join(dir, 'checkpoint.json');
     const entries = [
       transition({ hash: 'h1', to: 'human_ready', findingId: 'Circle BBP::a::b::c' }),
-      transition({ hash: 'h2', to: 'reproduced_local', findingId: 'OKG::x::y::z' }),
+      transition({ hash: 'h2', to: 'duplicate', findingId: 'OKG::x::y::z' }),
     ];
     const sent = [];
     const result = await runTelegramDigest({

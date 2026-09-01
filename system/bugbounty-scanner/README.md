@@ -894,3 +894,31 @@ recebe antes de virar `corroborated_static`.
 rodando de VERDADE (não fixture) contra um contrato `tx.origin`
 sintético mínimo (~1,5s, sem dependência externa) pra provar que a
 invocação real funciona, não só o parser.
+
+## "Recebendo a mesma coisa várias vezes, só de Circle" — não era duplicata, era demais de uma vez (01/09/2026)
+
+Usuário reportou de novo. Desta vez conferi o LEDGER inteiro (fonte
+real, não suposição): **todo evento é único** — nenhuma transição
+repetida pro mesmo achado/estado. Não era bug de duplicação.
+
+O problema real, achado nos timestamps: um achado avança
+`corroborated_static -> reproduced_local -> scope_verified ->
+human_ready` inteiro em segundos — às vezes **8 milissegundos** entre
+duas transições — e cada uma das 3 disparava notificação separada.
+16 dos 19 pushes já enviados eram Circle BBP (mesma causa raiz já
+documentada: único programa com investigação real até agora) — na
+prática, cada achado real virava 3 mensagens em sequência imediata,
+todas dizendo "Circle BBP". Isso é o que o usuário via como "a mesma
+coisa várias vezes".
+
+Correção: `NOTABLE_STATES` (`telegram.mjs`) não inclui mais
+`reproduced_local`/`scope_verified` — só `human_ready` (o momento real
+de "olha isso") e os desfechos terminais. 1 achado real agora gera 1
+notificação, não 3. Nada foi perdido — o painel continua mostrando o
+funil completo de qualquer jeito, isso só afeta o que interrompe o
+celular.
+
+Bug secundário corrigido no mesmo lote: o digest (`telegram-digest.mjs`)
+rodava DEPOIS do commit+push em `scan-runner.mjs` — a atualização do
+próprio checkpoint nunca entrava no commit do dia, ficava sempre "um
+dia atrasada". Invertida a ordem.

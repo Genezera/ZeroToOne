@@ -67,13 +67,25 @@ export async function getLatestChatId() {
 // TRANSICIONA pra eles. Deliberadamente NÃO inclui candidate/
 // corroborated_static (cedo demais — a maioria vira false_positive
 // logo depois, seria ruído) nem false_positive/inconclusive (é
-// exatamente o "não é nada", não precisa de aviso). human_ready e
-// reproduced_local são o "achei algo real"; known_duplicate/duplicate/
-// informative/rejected/triaged/paid/resolved são desfechos reais —
-// bons ou ruins, valem saber.
+// exatamente o "não é nada", não precisa de aviso).
+//
+// Correção real (01/09/2026, usuário reportou "recebendo a mesma
+// coisa várias vezes, só de Circle"): `reproduced_local` e
+// `scope_verified` SAIRAM desta lista de propósito. Não eram
+// duplicata de verdade (cada evento no ledger é único, conferido) —
+// era pior pro usuário na prática: um achado real passa por
+// `corroborated_static -> reproduced_local -> scope_verified ->
+// human_ready` inteiro em SEGUNDOS (às vezes MILISSEGUNDOS — achado
+// real no ledger: duas transições 8ms uma da outra), então cada
+// achado de verdade virava 3 notificações separadas em sequência
+// imediata. 16 dos 19 pushes já enviados eram Circle BBP (único
+// programa com investigação real até agora, causa raiz já
+// documentada) — sem essas duas serem notáveis, isso vira 1 push por
+// achado (`human_ready`, quando fica pronto pra revisão de verdade),
+// não 3. O painel continua mostrando o funil completo (todas as
+// transições, notáveis ou não) pra quem quiser o detalhe granular —
+// isso só afeta o que interrompe o celular do usuário.
 export const NOTABLE_STATES = new Set([
-  'reproduced_local',
-  'scope_verified',
   'human_ready',
   'known_duplicate',
   'duplicate',

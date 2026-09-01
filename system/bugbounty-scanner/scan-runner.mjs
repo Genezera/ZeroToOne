@@ -350,6 +350,21 @@ export async function runScan() {
     log(`Aviso: resumo diário do Telegram falhou (não afeta o scan): ${err.message}`);
   }
 
+  // Digest de transições notáveis do LEDGER compartilhado (não do banco
+  // local) -- pega trabalho que a sessão de nuvem fez sozinha também,
+  // já que aquele ambiente não tem credencial de Telegram pra notificar
+  // por conta própria. Ver telegram-digest.mjs pro motivo completo.
+  // Roda ANTES do commit+push de propósito (bug real corrigido
+  // 01/09/2026: rodava depois, então a atualização do checkpoint nunca
+  // entrava no commit do dia -- ficava sempre "um dia atrasada",
+  // arrastada pro commit seguinte em vez do commit certo).
+  try {
+    const digestResult = await runTelegramDigest();
+    if (digestResult.notable > 0) log(`Digest do Telegram: ${digestResult.notable} transição(ões) notável(is), ${digestResult.sent} mensagem(ns) enviada(s).`);
+  } catch (err) {
+    log(`Aviso: digest do Telegram falhou (não afeta o scan): ${err.message}`);
+  }
+
   const commitMessage = newFindings.length > 0
     ? `Scanner: ${newFindings.length} novo(s) candidato(s) na fila de bug bounty`
     : 'Scanner: atualização de código-fonte rastreado, sem achados novos';
@@ -358,17 +373,6 @@ export async function runScan() {
     if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''} — agente de nuvem vai ver na próxima checagem.`);
   } else {
     log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
-  }
-
-  // Digest de transições notáveis do LEDGER compartilhado (não do banco
-  // local) -- pega trabalho que a sessão de nuvem fez sozinha também,
-  // já que aquele ambiente não tem credencial de Telegram pra notificar
-  // por conta própria. Ver telegram-digest.mjs pro motivo completo.
-  try {
-    const digestResult = await runTelegramDigest();
-    if (digestResult.notable > 0) log(`Digest do Telegram: ${digestResult.notable} transição(ões) notável(is), ${digestResult.sent} mensagem(ns) enviada(s).`);
-  } catch (err) {
-    log(`Aviso: digest do Telegram falhou (não afeta o scan): ${err.message}`);
   }
 
   return { contractsChecked, fetchErrors, newFindings };
