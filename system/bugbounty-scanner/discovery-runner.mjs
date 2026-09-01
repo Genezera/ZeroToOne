@@ -6,7 +6,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 import { runTargetDiscovery } from './discover-targets.mjs';
 import { promoteTargets, renderAutoPromotedModule, DEFAULT_MAX_PROMOTIONS_PER_RUN, DEFAULT_MAX_TOTAL_PROMOTED } from './promote-targets.mjs';
 import { loadProgramPolicy } from './program-policy.mjs';
@@ -19,6 +18,7 @@ import { AUTO_PROMOTED_TARGETS } from './targets-auto-promoted.mjs';
 import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
+import { pullLatest, commitAndPush } from './git-sync.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
 // usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
@@ -54,6 +54,7 @@ function log(msg) {
 }
 
 export async function runDiscovery() {
+  pullLatest(REPO_ROOT, log);
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const seenMap = loadSeenMap();
@@ -150,17 +151,14 @@ export async function runDiscovery() {
     log(`Repos grandes demais pra promoção automática (curadoria de pathPrefix manual recomendada, ver ${PROMOTION_LOG_PATH}): ${promotionResult.skipped.tooLarge.map((r) => `${r.owner}/${r.repo}`).join(', ')}`);
   }
 
-  try {
-    execSync('git add -A', { cwd: REPO_ROOT });
-    const status = execSync('git status --porcelain', { cwd: REPO_ROOT }).toString().trim();
-    if (status) {
-      const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
-      execSync(`git commit -m "Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}"`, { cwd: REPO_ROOT });
-      execSync('git push', { cwd: REPO_ROOT });
-      log('Sincronizado com o GitHub.');
+  {
+    const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
+    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}`, log);
+    if (syncResult.ok) {
+      if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
+    } else {
+      log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
     }
-  } catch (err) {
-    log(`AVISO: falha ao sincronizar com o GitHub: ${err.message}`);
   }
 
   try {

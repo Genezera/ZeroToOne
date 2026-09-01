@@ -753,3 +753,64 @@ por esse motivo, em vez de deixar parecer que "ninguém investigou
 ainda". Construir esses validadores é o que de fato desbloquearia
 "fazer os testes" de ponta a ponta pras outras linguagens — próximo
 passo natural, ainda não feito.
+
+## "Só recebo coisas da Circle BBP no Telegram" — causa real, não impressão (31/08/2026)
+
+Usuário perguntou se isso era normal. Investigação real (não suposição)
+achou DUAS causas mecânicas, independentes:
+
+1. **`shouldNotifyForTransition` (`telegram.mjs`) só notifica em
+   `NOTABLE_STATES`** (`reproduced_local`, `scope_verified`,
+   `human_ready`, `duplicate`, `known_duplicate`, `informative`,
+   `rejected`, `triaged`, `paid`, `resolved`) — de propósito, pra não
+   virar ruído a cada `false_positive`/`inconclusive`. Até a convenção
+   de PoC cobrir Go/JVM/JS-TS (ver seções acima, mesmo dia), **só
+   Solidity conseguia sair de `corroborated_static`** — então só Circle
+   BBP (o único alvo Solidity) algum dia alcançava um estado notável.
+   Vercel/OKG tiveram investigação real e extensa, só que toda ela
+   terminou em `false_positive`/`inconclusive` — silenciosos por
+   desenho, não por falha.
+2. **Mais sério**: a sessão de nuvem roda num ambiente separado que
+   NÃO tem `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` (credencial só
+   existe via `setx` nesta máquina Windows — o sandbox de nuvem não
+   herda isso). `sendTelegramMessage` dentro de `recordTransition` é
+   fire-and-forget (`.catch(() => {})`) — quando a credencial não
+   existe, ela só devolve `{ok:false}` silenciosamente, nunca lança.
+   **Resultado prático: nenhuma transição que a sessão de nuvem faz
+   sozinha jamais conseguiu notificar, não importa quão notável** — só
+   transições que eu executei localmente (via `cli.mjs` numa sessão
+   real, aqui, com credencial de verdade) notificaram. Como a
+   submissão/revisão de relatório do Circle BBP sempre passou por
+   interação local comigo, foi exatamente essa a única fatia que
+   sempre teve credencial disponível no momento da transição.
+
+**Correção real** (não dá pra configurar variável de ambiente dentro do
+sandbox de nuvem a partir daqui): `telegram-digest.mjs` lê o **ledger
+compartilhado** (`ledger/ledger.research.jsonl`, git-sincronizado,
+reflete transição de QUALQUER ambiente) desde um checkpoint salvo, acha
+toda transição notável nova — de qualquer programa, de qualquer ator —
+e notifica a partir DAQUI (ambiente local, que tem a credencial de
+verdade). Mensagem individual se poucas (≤6), resumo agrupado por
+programa se muitas (nunca vira spam de dezenas de mensagens numa
+rodada só). Rodado como parte da tarefa diária já agendada
+(`ZeroToOne_BugBountyScanner`), depois do scan e do sync com o GitHub.
+Checkpoint semeado na ponta real do ledger no momento da construção
+(31/08/2026) — a primeira rodada real não despeja as ~293 transições
+históricas de uma vez, só notifica atividade genuinamente nova daqui
+pra frente. 19 testes novos (`test/telegram-digest.test.mjs`).
+
+## Sincronização git resiliente pras tarefas agendadas (31/08/2026)
+
+Achado real em `logs/bugbounty-scanner.log` (30/08/2026, 12:21:37Z):
+`git push` do scanner diário foi rejeitado (`! [rejected] master ->
+master (fetch first)`) porque a sessão de nuvem tinha empurrado no meio
+tempo — o código só logava o aviso e desistia, sem nunca ter puxado
+antes de escanear nem tentado de novo depois. `git-sync.mjs`
+(`pullLatest`/`commitAndPush`) corrige isso nos dois pontos: puxa antes
+de cada rodada (scan diário E descoberta semanal), e se o push final
+for rejeitado por divergência, tenta puxar-e-empurrar de novo UMA vez
+antes de desistir (abortando qualquer merge parcial se a recuperação
+também falhar, pra nunca deixar o repositório num estado quebrado pra
+próxima execução). 5 testes reais (`test/git-sync.test.mjs`) — incluindo
+o cenário exato da corrida real (dois clones de um bare repo, um
+empurra primeiro, o outro recupera) rodando `git` de verdade, não mock.

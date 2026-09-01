@@ -9,7 +9,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 import { TARGETS } from './targets.mjs';
 import { fetchContractSource } from './fetch.mjs';
 import { scanSource } from './heuristics.mjs';
@@ -32,6 +31,8 @@ import { runDependencyScan } from './dep-scanner.mjs';
 import { appendEntry, readLedger } from '../ledger/ledger.mjs';
 import { openDb, upsertFinding, closeDb, stateCounts } from './db.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
+import { pullLatest, commitAndPush } from './git-sync.mjs';
+import { runTelegramDigest } from './telegram-digest.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -156,6 +157,11 @@ function loadQuarantineOverrides() {
 }
 
 export async function runScan() {
+  // Puxa o trabalho da sessão de nuvem ANTES de escanear -- sem isso,
+  // a tarefa agendada podia escanear em cima de estado desatualizado
+  // e, pior, perder o próprio commit se uma corrida de push acontecesse
+  // (achado real em logs/bugbounty-scanner.log, 30/08/2026).
+  pullLatest(REPO_ROOT, log);
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
   const seen = loadSeen();
   const newFindings = [];
@@ -344,28 +350,25 @@ export async function runScan() {
     log(`Aviso: resumo diário do Telegram falhou (não afeta o scan): ${err.message}`);
   }
 
-  if (newFindings.length > 0) {
-    try {
-      execSync('git add -A', { cwd: REPO_ROOT });
-      execSync(`git commit -m "Scanner: ${newFindings.length} novo(s) candidato(s) na fila de bug bounty"`, { cwd: REPO_ROOT });
-      execSync('git push', { cwd: REPO_ROOT });
-      log('Sincronizado com o GitHub — agente de nuvem vai ver na próxima checagem.');
-    } catch (err) {
-      log(`AVISO: falha ao sincronizar com o GitHub: ${err.message}`);
-    }
+  const commitMessage = newFindings.length > 0
+    ? `Scanner: ${newFindings.length} novo(s) candidato(s) na fila de bug bounty`
+    : 'Scanner: atualização de código-fonte rastreado, sem achados novos';
+  const syncResult = commitAndPush(REPO_ROOT, commitMessage, log);
+  if (syncResult.ok) {
+    if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''} — agente de nuvem vai ver na próxima checagem.`);
   } else {
-    // Mesmo sem achados novos, sincroniza o estado do "seen"/arquivos .clar
-    // atualizados, silenciosamente, só se algo mudou.
-    try {
-      execSync('git add -A', { cwd: REPO_ROOT });
-      const status = execSync('git status --porcelain', { cwd: REPO_ROOT }).toString().trim();
-      if (status) {
-        execSync('git commit -m "Scanner: atualização de código-fonte rastreado, sem achados novos"', { cwd: REPO_ROOT });
-        execSync('git push', { cwd: REPO_ROOT });
-      }
-    } catch (err) {
-      log(`AVISO: falha ao sincronizar estado sem achados: ${err.message}`);
-    }
+    log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
+  }
+
+  // Digest de transições notáveis do LEDGER compartilhado (não do banco
+  // local) -- pega trabalho que a sessão de nuvem fez sozinha também,
+  // já que aquele ambiente não tem credencial de Telegram pra notificar
+  // por conta própria. Ver telegram-digest.mjs pro motivo completo.
+  try {
+    const digestResult = await runTelegramDigest();
+    if (digestResult.notable > 0) log(`Digest do Telegram: ${digestResult.notable} transição(ões) notável(is), ${digestResult.sent} mensagem(ns) enviada(s).`);
+  } catch (err) {
+    log(`Aviso: digest do Telegram falhou (não afeta o scan): ${err.message}`);
   }
 
   return { contractsChecked, fetchErrors, newFindings };

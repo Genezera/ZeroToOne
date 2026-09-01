@@ -88,7 +88,7 @@ export function shouldNotifyForTransition(toState) {
   return NOTABLE_STATES.has(toState);
 }
 
-const STATE_EMOJI = {
+export const STATE_EMOJI = {
   reproduced_local: '🧪',
   scope_verified: '📍',
   human_ready: '🚨',
@@ -116,6 +116,6 @@ export function formatTransitionMessage(finding, toState, reason) {
   ].filter(Boolean).join('\n');
 }
 
-function escapeHtml(s) {
+export function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
