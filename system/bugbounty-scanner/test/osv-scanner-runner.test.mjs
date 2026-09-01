@@ -80,6 +80,19 @@ test('parseOsvScannerJson relativiza o caminho contra repoDir -- nunca vaza cami
   assert.equal(comRepoDir[0].file, 'coins/bitcoin/go.mod');
 });
 
+test('parseOsvScannerJson ignora manifesto dentro de examples//test//fixtures -- nunca alcançável por tráfego real', () => {
+  const json = {
+    results: [
+      { source: { path: 'examples/gatsby/yarn.lock' }, packages: [pkg()] },
+      { source: { path: 'packages/build-utils/test/fixtures/05/yarn.lock' }, packages: [pkg()] },
+      { source: { path: 'pnpm-lock.yaml' }, packages: [pkg()] },
+    ],
+  };
+  const findings = parseOsvScannerJson(json);
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].file, 'pnpm-lock.yaml');
+});
+
 test('parseOsvScannerJson devolve [] pra JSON vazio/sem results, nunca lança', () => {
   assert.deepEqual(parseOsvScannerJson({}), []);
   assert.deepEqual(parseOsvScannerJson({ results: [] }), []);

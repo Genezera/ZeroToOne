@@ -54,6 +54,19 @@ test('parseSemgrepJson relativiza caminho absoluto contra repoDir', () => {
   assert.equal(f.file, 'coins/bitcoin/src20inscribe.go');
 });
 
+test('parseSemgrepJson ignora achado dentro de examples//test//fixtures -- nunca alcançável por tráfego real', () => {
+  const json = {
+    results: [
+      result({ path: 'examples/gatsby/build.js' }),
+      result({ path: 'packages/cli/__tests__/mcp.ts' }),
+      result({ path: 'packages/cli/src/commands/mcp/mcp.ts' }),
+    ],
+  };
+  const findings = parseSemgrepJson(json, { minSeverity: 'INFO' });
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].file, 'packages/cli/src/commands/mcp/mcp.ts');
+});
+
 test('parseSemgrepJson devolve [] pra JSON vazio/sem results, nunca lança', () => {
   assert.deepEqual(parseSemgrepJson({}), []);
   assert.deepEqual(parseSemgrepJson({ results: [] }), []);

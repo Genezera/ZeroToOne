@@ -33,6 +33,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { isNonProductionPath } from './path-noise-filter.mjs';
 
 const OSV_SCANNER_BIN = 'E:/dev-toolchains/go/bin/osv-scanner.exe';
 const DEFAULT_CACHE_DIR = path.resolve('E:/', 'dev-toolchains', 'osv-scanner-cache');
@@ -87,7 +88,12 @@ function severityOf(pkg) {
  * banco/queue.jsonl COMPARTILHADO (git), e nunca bate com o id que
  * dep-scanner.mjs já usa pro mesmo pacote (quebra a proteção contra
  * reabrir achado já resolvido). Achado real, pego rodando isto pela
- * primeira vez contra okx/go-wallet-sdk. */
+ * primeira vez contra okx/go-wallet-sdk.
+ *
+ * Ignora path de teste/demo/fixture/mock (ver path-noise-filter.mjs) --
+ * achado real, pego rodando contra vercel/vercel: 4364 "vulnerabilidade"
+ * reportadas, 4283 (98%) dentro de `examples/*` ou `**\/test/fixtures/**`,
+ * nunca alcançável por tráfego real. */
 export function parseOsvScannerJson(json, { minSeverity = DEFAULT_MIN_SEVERITY, repoDir = null } = {}) {
   const findings = [];
   for (const result of json?.results || []) {
@@ -95,6 +101,7 @@ export function parseOsvScannerJson(json, { minSeverity = DEFAULT_MIN_SEVERITY, 
     if (filePath && repoDir) {
       filePath = path.relative(repoDir, filePath).split(path.sep).join('/');
     }
+    if (isNonProductionPath(filePath)) continue;
     for (const pkg of result.packages || []) {
       const severity = severityOf(pkg);
       if ((severity ?? 0) < minSeverity) continue;

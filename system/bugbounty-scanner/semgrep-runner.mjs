@@ -21,6 +21,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { isNonProductionPath } from './path-noise-filter.mjs';
 
 const SEMGREP_BIN = 'E:/dev-toolchains/venv-security/Scripts/semgrep.exe';
 const DEFAULT_CACHE_DIR = path.resolve('E:/', 'dev-toolchains', 'semgrep-cache');
@@ -60,7 +61,13 @@ export function prepareRepoForSemgrep(target, { cacheDir = DEFAULT_CACHE_DIR, lo
 /** Pura -- não toca disco/rede. Filtra por severidade mínima e
  * normaliza pro shape de achado que o resto do pipeline usa. `repoDir`
  * (opcional) relativiza o caminho e troca `\` por `/` -- Semgrep no
- * Windows devolve caminho com separador nativo. */
+ * Windows devolve caminho com separador nativo.
+ *
+ * Ignora path de teste/demo/fixture/mock (ver path-noise-filter.mjs) --
+ * mesma causa raiz do bug real achado no OSV-Scanner contra
+ * vercel/vercel (98% do achado bruto era `examples/`/`test/fixtures/`,
+ * nunca alcançável por tráfego real); aplicado aqui também de saída,
+ * não só depois de repetir o problema. */
 export function parseSemgrepJson(json, { minSeverity = DEFAULT_MIN_SEVERITY, repoDir = null } = {}) {
   const minRank = SEVERITY_RANK[minSeverity] ?? SEVERITY_RANK[DEFAULT_MIN_SEVERITY];
   const findings = [];
@@ -72,6 +79,7 @@ export function parseSemgrepJson(json, { minSeverity = DEFAULT_MIN_SEVERITY, rep
       filePath = path.isAbsolute(filePath) ? path.relative(repoDir, filePath) : filePath;
     }
     if (filePath) filePath = filePath.split('\\').join('/');
+    if (isNonProductionPath(filePath)) continue;
     findings.push({
       checkId: r.check_id,
       file: filePath,
