@@ -4643,3 +4643,54 @@ Esta rodada não tocou `Block Open Source`
 (`cashapp/*`/`square/*`/`afterpay/*`) — programa segue banido pra
 pesquisa assistida por IA (`aiResearchBanned: true`, conferido em
 `program-policy.json` antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 3) — fila vazia, leitura profunda nos alvos EVM ativos, sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0, antes de qualquer clone): só `Block Open Source` segue
+banido. Como os alvos "ativos" do dashboard pra Circle BBP são todos
+Solidity (`evm-cctp-contracts`, `evm-gateway-contracts`,
+`buidl-wallet-contracts`, `evm-xreserve-contracts`,
+`evm-cpn-contracts`), fiz `git clone --depth 1` raso de cada um deles
+pra achar arquivo novo ainda não lido. `evm-cpn-contracts` já estava
+100% lido (todos os 7 arquivos `.sol` do repo já em
+`deep-read-log.json`). Nos outros 4, a maioria dos arquivos ainda não
+lidos são interfaces puras (`interface I...` sem lógica) ou
+constantes/errors — não valem leitura profunda dedicada. Escolhi 3
+arquivos com lógica de segurança real, priorizando nome
+auth/token/init:
+
+- `buidl-wallet-contracts/src/erc712/BaseERC712CompliantAccount.sol` —
+  wrapper de "replay safe hash" EIP-712 (usado pelas contas MSCA pra
+  assinar mensagens de forma que não sejam reutilizáveis entre contas
+  diferentes). `domainSeparator` inclui `_getAccountName()`,
+  `_getAccountVersion()`, `block.chainid` e `address(this)`;
+  `structHash` inclui `_getAccountTypeHash()` (fornecido pela
+  implementação concreta) e o hash da mensagem. Padrão EIP-712 correto
+  e completo — nenhum campo do domain separator ausente que permitiria
+  replay cross-chain ou cross-account. Sem achado.
+- `buidl-wallet-contracts/src/msca/6900/v0.8/account/WalletStorageInitializable.sol` —
+  fork do `Initializable` da OpenZeppelin (comentário do próprio
+  arquivo confirma), com reinicialização removida (só inicialização
+  única). Lógica `initialSetup`/`deploying` (via
+  `address(this).code.length == 0`, que só é verdadeiro durante a
+  execução do constructor) segue exatamente o padrão original da OZ —
+  nenhuma modificação que abriria brecha de reinicialização. Sem
+  achado.
+- `evm-cctp-contracts/src/proxy/Initializable.sol` — mesmo padrão,
+  fork mais explícito ainda (comentário cita commit exato da OZ de
+  origem e lista as 3 modificações: pin pra Solidity 0.7.6, `require`
+  em vez de custom error, `Address.isContract` em vez de
+  `address.code.length` — mudanças cosméticas/de compatibilidade,
+  não de lógica). Mantém `reinitializer`/`onlyInitializing`/
+  `_disableInitializers` idênticos à semântica original. Sem achado.
+
+`deep-read-log.json` atualizado (3 arquivos novos: 2 em
+`buidl-wallet-contracts`, 1 em `evm-cctp-contracts`). Esta rodada não
+tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
+programa segue banido pra pesquisa assistida por IA
+(`aiResearchBanned: true`, conferido em `program-policy.json` antes de
+qualquer clone). Todos os clones temporários (`evm-cpn-contracts`,
+`evm-xreserve-contracts`, `evm-gateway-contracts`,
+`buidl-wallet-contracts`, `evm-cctp-contracts`) apagados do scratchpad
+ao fim da rodada.

@@ -213,7 +213,8 @@
     "src/roles/Ownable.sol",
     "src/roles/Ownable2Step.sol",
     "src/v2/MessageTransmitterV2.sol",
-    "src/messages/v2/AddressUtils.sol"
+    "src/messages/v2/AddressUtils.sol",
+    "src/proxy/Initializable.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",
@@ -250,7 +251,9 @@
     "src/account/v1/factory/ECDSAAccountFactory.sol",
     "src/callback/DefaultCallbackHandler.sol",
     "src/utils/ExecutionUtils.sol",
-    "src/utils/PaymasterUtils.sol"
+    "src/utils/PaymasterUtils.sol",
+    "src/erc712/BaseERC712CompliantAccount.sol",
+    "src/msca/6900/v0.8/account/WalletStorageInitializable.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/modules/common/Denylist.sol",
