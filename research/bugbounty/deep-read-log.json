@@ -531,7 +531,8 @@
     "packages/components/src/attestable.cairo",
     "packages/message_transmitter/src/message_transmitter_v2.cairo",
     "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo",
-    "packages/components/src/rescuable.cairo"
+    "packages/components/src/rescuable.cairo",
+    "packages/components/src/token_controller.cairo"
   ],
   "circlefin/stablecoin-starknet": [
     "packages/components/src/blocklistable/blocklistable.cairo",
@@ -552,7 +553,8 @@
     "packages/token_messenger_minter/sources/admin/role_management.move",
     "packages/message_transmitter/sources/admin/roles.move",
     "packages/token_messenger_minter/sources/handle_receive_message.move",
-    "packages/message_transmitter/sources/receive_message.move"
+    "packages/message_transmitter/sources/receive_message.move",
+    "packages/message_transmitter/sources/admin/role_management.move"
   ],
   "vercel/ai": [
     "packages/gateway/src/gateway-realtime-auth.ts",
@@ -618,6 +620,8 @@
   "circlefin/stellar-cctp": [
     "contracts/token-messenger-minter-v2/src/receive.rs",
     "contracts/token-messenger-minter-v2/src/deposit.rs",
-    "contracts/token-messenger-minter-v2/src/contract.rs"
+    "contracts/token-messenger-minter-v2/src/contract.rs",
+    "packages/cctp-roles/src/token_controller/mod.rs",
+    "packages/cctp-roles/src/token_controller/storage.rs"
   ]
 }

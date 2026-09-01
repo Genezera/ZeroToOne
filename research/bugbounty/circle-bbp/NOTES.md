@@ -4512,3 +4512,49 @@ porque não há call externo no meio). Sem achado — e mesmo que houvesse,
 código de exemplo explicitamente fora de produção tende a estar fora do
 escopo elegível de um BBP real. `deep-read-log.json` atualizado com os
 3 arquivos (2 em `buidl-wallet-contracts`, 1 em `evm-xreserve-contracts`).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, leitura profunda em módulos de `token_controller`/role management, sem achado
+
+`list-pending` global = 0 (confirmado nos 4 programas via `migrate-to-v2.mjs`
++ `list-pending`). Seguindo a sugestão de cobertura rasa da rodada
+anterior, li o padrão de autorização do papel "token controller" em 3
+repos CCTP menos cobertos, priorizando por nome de caminho (`admin`/
+`role`/`controller`) como pede o passo 4 do prompt:
+
+- `circlefin/stellar-cctp`: `packages/cctp-roles/src/token_controller/mod.rs`
+  (trait/interface, só docs) + `storage.rs` (implementação real). Toda
+  função mutante (`link_token_pair`, `unlink_token_pair`,
+  `set_max_burn_amount_per_message`, `set_token_decimal_config`,
+  `set_swap_minter_config`, `remove_swap_minter_config`) é decorada com
+  `#[enforce_role_auth(TOKEN_CONTROLLER)]` — mesma macro declarativa de
+  autorização já usada de forma consistente nos outros módulos de
+  `cctp-roles` (`denylistable`, `min_fee_controller`,
+  `remote_token_messenger`) auditados em rodadas passadas. `set_swap_minter_config`
+  chamou atenção por não ter validação extra de endereço (ex.: não
+  rejeitar `swap_minter`/`allow_asset` iguais a `local_token`), mas é
+  puro registro de configuração sem efeito colateral de fundos nesta
+  função — o risco real (se algum) estaria em quem *consome* essa config
+  para de fato mover fundos, não lido nesta rodada.
+- `circlefin/starknet-cctp`: `packages/components/src/token_controller.cairo`
+  — `assert_only_token_controller` compara `get_caller_address()` com o
+  endereço armazenado (padrão Starknet correto, equivalente ao
+  `contract-caller` do Clarity, não ao "tx origin"). `set_token_controller`
+  gateado por `assert_only_owner` (componente `Ownable` separado). Dois
+  níveis de autorização corretos e consistentes com o resto do protocolo.
+- `circlefin/sui-cctp`: `packages/message_transmitter/sources/admin/role_management.move`
+  — `update_pauser`/`update_attester_manager` exigem
+  `owner_role().assert_sender_is_active_role(ctx)` (papel de dono
+  ativo, dois-passos). `transfer_ownership`/`accept_ownership` delegam
+  pro módulo `two_step_role` já auditado em rodada anterior via
+  `roles.move`. Sem achado.
+
+Os 3 repos seguem o mesmo padrão de autorização (dono define
+controlador de papel específico; controlador de papel específico gateia
+as próprias operações), replicado de forma consistente em 3 linguagens
+diferentes (Rust/Soroban, Cairo, Move) — nenhuma inconsistência entre
+implementações que sugerisse um bug introduzido na portabilidade entre
+chains. `deep-read-log.json` atualizado (4 arquivos novos). Esta rodada
+não tocou `Block Open Source` (`cashapp/*`/`square/*`/`afterpay/*`) —
+programa segue banido pra pesquisa assistida por IA
+(`aiResearchBanned: true`, ver NOTES.md próprio e `program-policy.json`,
+conferido antes de qualquer clone).
