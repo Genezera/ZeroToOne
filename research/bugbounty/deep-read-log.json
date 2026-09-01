@@ -229,7 +229,10 @@
     "src/messages/v2/AddressUtils.sol",
     "src/proxy/Initializable.sol",
     "src/roles/Rescuable.sol",
-    "src/messages/v2/MessageV2.sol"
+    "src/messages/v2/MessageV2.sol",
+    "src/messages/Message.sol",
+    "src/messages/BurnMessage.sol",
+    "src/examples/CCTPHookWrapper.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",

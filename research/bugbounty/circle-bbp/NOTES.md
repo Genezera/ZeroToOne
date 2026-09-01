@@ -5607,3 +5607,52 @@ Rebaseado sobre `origin/master` atualizado (que já inclui o gate mecânico
 `list-deep-read-candidates.mjs` contra programas banidos, adicionado por
 outra sessão nesta mesma janela) — nenhum conflito, já excluía
 Block Open Source por disciplina manual antes de checar isso.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 16ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` = 0 candidatos pendentes (136 findings
+migrados; 125 falso_positivo, 3 corroborated_static, 3 known_duplicate,
+2 duplicate, 2 inconclusive, 1 human_ready).
+
+`list-deep-read-candidates.mjs` falhou nesta rodada (SyntaxError ao parsear
+resposta HTTP — o proxy do ambiente devolveu não-JSON no `fetchDatasets`).
+Seleção de arquivos feita à mão: clonei os repos Circle em escopo e diferenciei
+`git ls-files` contra `deep-read-log.json`. Achado do levantamento: em
+`evm-cpn-contracts`, `buidl-wallet-contracts`, `evm-gateway-contracts` e
+`evm-xreserve-contracts` os arquivos ainda não lidos são só interfaces,
+structs e constantes — baixo rendimento. O único repo com implementação real
+não lida era `circlefin/evm-cctp-contracts` (escopo confirmado via
+`check-scope`: allowed=true, bountyEligible=true, maxSeverity=critical).
+
+Lidos 3 arquivos em `circlefin/evm-cctp-contracts` @ `a92a2b4e7e6ef99bf0b05dca71780f5ec190e729`:
+
+- `src/messages/Message.sol` — parsing do envelope CCTP v1 via TypedMemView.
+  Tentei refutar via bounds: `_messageBody` faz `slice(116, len()-116, 0)`,
+  o que underflowaria em solidity 0.7.6 (sem checked math) se `len() < 116`.
+  Mas `_validateMessageFormat` exige `len() >= MESSAGE_BODY_INDEX (116)` e é
+  chamado antes em `MessageTransmitter.receiveMessage`. Sem achado.
+  Nota de design (não é bug): `bytes32ToAddress` não valida que os 12 bytes
+  altos são zero, então múltiplos `bytes32` colidem no mesmo `address` — o
+  próprio NatSpec documenta isso e manda validar quem precisar. Como o campo
+  vai para `recipient`/`destinationCaller`, colisão só amplia o conjunto de
+  bytes32 que mapeiam pro mesmo endereço já autorizado, não desvia fundos.
+- `src/messages/BurnMessage.sol` — `_validateBurnMessageFormat` exige
+  `len() == 132` exato (igualdade, não `>=`), e todos os offsets de campo
+  (0/4/36/68/100 + 32) cabem dentro de 132. Sem leitura fora de limite
+  possível. Sem achado.
+- `src/examples/CCTPHookWrapper.sol` — `_executeHook` faz `call` bruto para
+  `_target` e `_hookCalldata` extraídos do hook data da burn message, ou seja,
+  primitiva de chamada arbitrária com o wrapper como `msg.sender`. Rastreei a
+  cadeia antes de chamar de achado: (1) `relay()` começa com `_checkOwner()`,
+  então só o owner dispara; (2) o wrapper não detém fundos nem papel
+  privilegiado — `transferOwnership` é `onlyOwner` e num hook o `msg.sender`
+  seria o próprio wrapper, não o owner, então o hook não consegue tomar o
+  contrato; (3) o não-atomicidade e o risco de relay permissionless já estão
+  documentados em NatSpec no próprio arquivo (linhas 76-81); (4) está em
+  `src/examples/` — é contrato de amostra, modelo de ameaça mais fraco, mesma
+  categoria de `script/`/`.s.sol`. Sem achado. Vale como nota para integradores
+  (quem copiar esse wrapper e deixá-lo segurar saldo ou aprovações vira alvo de
+  chamada arbitrária), não como submissão contra a Circle.
+
+Nenhum finding novo, nenhuma transição de estado tentada.
+`deep-read-log.json` atualizado (+3 em `circlefin/evm-cctp-contracts`, agora 23).
