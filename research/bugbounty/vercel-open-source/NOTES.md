@@ -2796,3 +2796,50 @@ segundo `list-deep-read-candidates.mjs` — `vercel-labs/agent-skills` (3
 arquivos), `circlefin/*` de Circle BBP com poucas leituras (ver NOTES.md
 desse programa) — ou aprofundar em `vercel/next.js`/`vercel/vercel`
 (repos grandes, cobertura parcial).
+
+## Rodada 2026-09-01 (push automático, sessão cloud)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos pendentes (136
+findings migrados: 125 falso_positivo, 3 corroborated_static, 3
+known_duplicate, 2 duplicate, 2 inconclusive, 1 human_ready — nenhuma
+mudança de estado desta rodada, nada específico de Vercel Open Source em
+`candidate`).
+
+Confirmado via `program-policy.json`: `Block Open Source` está marcado
+`aiResearchBanned: true` (RoE da Bugcrowd proíbe uso de ferramentas de IA
+na pesquisa, com risco explícito de "point reduction or program
+expulsion") — excluído inteiramente da leitura profunda proativa desta
+rodada, nenhum arquivo de `cashapp/*`, `square/wire` ou `afterpay/*`
+tocado.
+
+`list-deep-read-candidates.mjs` falhou de novo (mesmo erro de rodadas
+anteriores: proxy do ambiente devolve HTTP não-JSON no `fetchDatasets`).
+Seleção manual: `git clone --depth 1` de `vercel/flags`, diff de
+`git ls-files` contra `deep-read-log.json`. `packages/docs/**` (a maior
+parte do não-lido) é conteúdo de documentação, baixo valor de segurança —
+priorizei `packages/` restante:
+
+- `packages/flags/src/next/evaluate.ts` — fecha a cadeia de chamada do
+  pipeline de overrides já auditado em rodadas anteriores
+  (`overrides.ts`/`crypto.ts`/`verify-access.ts`, JWE autenticado): aqui é
+  onde o cookie decriptado é efetivamente CONSUMIDO. `readOverrides` só
+  chama `getOverrides` (decriptação autenticada) se o cookie
+  `vercel-flag-overrides` existir e não for vazio; `hasOverride` checa
+  `overrides[key] !== undefined` antes de usar o valor decriptado
+  diretamente como decisão da flag (via `applyResult`), sem revalidar tipo/
+  shape contra a declaração da flag — mas como o cookie só é aceito depois
+  de autenticação AEAD (só quem tem a chave de encriptação consegue gerar
+  um cookie válido), não há caminho de um atacante externo injetar um
+  override sem a chave. Cache por `(headers, flagKey, entitiesKey)`
+  isolado por request (WeakMap por objeto `Headers`), sem risco óbvio de
+  vazamento cross-request. Sem achado.
+- `packages/vercel-flags-core/src/controller/bundled-source.ts` — wrapper
+  trivial de cache (`Promise` memoizada) em cima de
+  `readBundledDefinitions` (não lido nesta rodada), zero lógica de
+  autorização própria. Sem achado.
+
+Leitura profunda proativa em `circlefin/arc-remote-signer` (Circle BBP, um
+3º arquivo, ver `research/bugbounty/circle-bbp/NOTES.md`).
+
+Nenhum achado novo, nenhuma transição de estado tentada.
+`deep-read-log.json` atualizado (+2 em `vercel/flags`, agora 16 arquivos).

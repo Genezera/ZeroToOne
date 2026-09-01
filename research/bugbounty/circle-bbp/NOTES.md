@@ -5656,3 +5656,29 @@ Lidos 3 arquivos em `circlefin/evm-cctp-contracts` @ `a92a2b4e7e6ef99bf0b05dca71
 
 Nenhum finding novo, nenhuma transição de estado tentada.
 `deep-read-log.json` atualizado (+3 em `circlefin/evm-cctp-contracts`, agora 23).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, rodada seguinte)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos pendentes.
+`check-scope "Circle BBP" "circlefin/arc-remote-signer"` = allowed=true,
+bountyEligible=true, maxSeverity=critical. Leitura profunda proativa (1
+arquivo desta rodada; os outros 2 foram em `vercel/flags`, ver NOTES.md
+do Vercel Open Source):
+
+- `internal/app/service/signer/config.go` — `Config` trivial (`KeyID`,
+  `Algorithm`), `NewConfig()` retorna `KeyID` placeholder
+  (`00000000-0000-0000-0000-000000000000`) e `AlgorithmEd25519` como
+  default. Rastreei o consumo: `signer.NewConfig()` só é chamado dentro
+  de `app.NewConfig()` (`internal/app/config.go:100`), que por sua vez
+  serve de valor-base pro carregamento real de config (mapstructure/viper
+  — YAML + env vars sobrescrevem os campos depois, mesmo padrão do resto
+  do `Config` — ex. `Public.Server.TLS.Enabled: false` por default,
+  comentário no código confirma que é assim de propósito pra permitir
+  `APP_PUBLIC_SERVER_TLS_*` bindar mesmo sem bloco `tls` no YAML). Sem
+  lógica de autorização/parsing de secret neste arquivo — é só o
+  "shape" da config, não o carregamento real. Consistente com o comentário
+  explícito `"default dev (non-prod) environment"`. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado tentada.
+`deep-read-log.json` atualizado (+1 em `circlefin/arc-remote-signer`,
+agora 43 arquivos).

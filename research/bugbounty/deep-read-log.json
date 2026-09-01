@@ -30,7 +30,9 @@
     "packages/vercel-flags-core/src/utils/ingest.ts",
     "packages/vercel-flags-core/src/utils/request-context.ts",
     "packages/vercel-flags-core/src/controller/fetch-datafile.ts",
-    "packages/flags/src/spec-extension/adapters/request-cookies.ts"
+    "packages/flags/src/spec-extension/adapters/request-cookies.ts",
+    "packages/flags/src/next/evaluate.ts",
+    "packages/vercel-flags-core/src/controller/bundled-source.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -426,7 +428,8 @@
     "internal/enclave/config.go",
     "internal/app/config.go",
     "internal/enclave/common/crypto/bls/bls_nocgo.go",
-    "internal/enclave/common/crypto/bls/const.go"
+    "internal/enclave/common/crypto/bls/const.go",
+    "internal/app/service/signer/config.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
