@@ -559,7 +559,16 @@
     "skills/vercel-optimize/lib/auth-route.mjs",
     "skills/deploy-to-vercel/resources/deploy.sh",
     "skills/deploy-to-vercel/resources/deploy-codex.sh",
-    "skills/vercel-optimize/lib/vercel.mjs"
+    "skills/vercel-optimize/lib/vercel.mjs",
+    "skills/vercel-optimize/scripts/check-citations.mjs",
+    "skills/vercel-optimize/lib/verify-claim.mjs",
+    "skills/vercel-optimize/scripts/verify-finding.mjs",
+    "skills/vercel-optimize/scripts/verify-and-regen.mjs",
+    "skills/vercel-optimize/lib/extract-claims.mjs",
+    "skills/vercel-optimize/lib/investigation-brief.mjs",
+    "skills/vercel-optimize/lib/dedup-recs.mjs",
+    "skills/vercel-optimize/lib/grade-recommendation.mjs",
+    "skills/vercel-optimize/lib/repo-root.mjs"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",

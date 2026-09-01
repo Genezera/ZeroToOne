@@ -2923,3 +2923,86 @@ o resto do repo é docs/rules `.md`, testes/fixtures em
 `packages/vercel-optimize-tests/`, ou os demais scanners/gates/
 sanitizers de `skills/vercel-optimize/lib/**`, que ficam pra rodada
 futura se quiser aprofundar esse pacote específico).
+
+## Rodada 2026-09-01 (push automático, sessão cloud)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos pendentes.
+Confirmado de novo via `program-policy.json`: `Block Open Source`
+continua `aiResearchBanned: true` desde 2026-08-31 — o achado
+`corroborated_static` já existente em `afterpay/sdk-ios` (deste
+programa) foi deliberadamente NÃO tocado nesta rodada; nenhum outro
+repo `cashapp/*`/`square/wire`/`afterpay/*` foi lido.
+
+Revisados os 2 achados `corroborated_static` já existentes de Vercel
+Open Source (`ssrf_redirect_allowlist_bypass_risk` em
+`image-optimizer.ts` e `command_injection_risk` em
+`update-remix-run-dev.js`): ambos confirmados presos permanentemente em
+`corroborated_static` pela própria máquina de estados
+(`corroborated_static->reproduced_local` só aceita `validations` com
+`result="pass"`; JS/TS não tem validador local neste sistema, então
+`not_applicable` é o único resultado possível — e
+`corroborated_static->scope_verified` nem existe como transição
+definida em `state-machine.mjs`, só `reproduced_local->scope_verified`).
+Nenhuma tentativa nova de transição — já documentado em rodadas
+anteriores, recusa seria idêntica.
+
+Leitura profunda proativa em `vercel-labs/agent-skills` (mais lógica
+real ainda não coberta em `skills/vercel-optimize/lib/**`, seguindo a
+sugestão da rodada anterior): li `lib/vercel.mjs` (wrapper do CLI da
+Vercel — `execFile` corretamente, sem shell injection, redação de
+segredo em `redactSensitiveText`; sem achado, mesma conclusão
+independente já registrada por uma rodada concorrente) e
+`lib/verify-claim.mjs`, o módulo que verifica mecanicamente as "claims"
+que o sub-agente de IA da própria skill produz sobre o código escaneado
+(defesa contra alucinação do LLM).
+
+**Achado novo**: `verify-claim.mjs::repoPaths`/`firstAccessiblePath`
+(L1221-1244) monta o caminho de um arquivo citado numa claim via
+`join(repoRoot, file)` sem nunca confirmar que o resultado continua
+dentro de `repoRoot` — path absoluto é aceito direto, e `..` no `file`
+escapa via `path.join` normal do Node. Rastreei a cadeia completa: esse
+`file` vem de `rec.affectedFiles`/`rec.findingRefs`, e `rec` é o JSON de
+recomendação gerado pelo SUB-AGENTE DE IA que roda a skill
+`vercel-optimize` sobre o codebase que o usuário pediu pra otimizar —
+`verify-and-regen.mjs` lê esse JSON de um arquivo e passa direto pra
+`extractClaims`/`verifyClaim`, sem nenhuma validação de schema/allowlist
+de path. A única barreira contra o sub-agente citar um path fora do
+repo é uma instrução em prosa dentro do prompt
+(`investigation-brief.mjs` L547), nunca validada em código. Resultado:
+um repositório de terceiro malicioso escaneado pela skill pode, via
+prompt injection indireta, induzir o sub-agente a emitir um
+`affectedFiles`/`findingRefs` com path traversal ou absoluto — e o
+pipeline de auto-verificação (cujo propósito é justamente desconfiar do
+LLM) vai ler esse arquivo fora do repo sem perceber, expondo um oracle
+de existência/conteúdo (booleano) de arquivos arbitrários no disco de
+quem roda a skill.
+
+Registrado como
+`Vercel Open Source::vercel-labs/agent-skills/skills/vercel-optimize/lib/verify-claim.mjs::repoPaths::path_traversal_arbitrary_file_read_risk`,
+escopo confirmado via `check-scope` (`allowed=true`,
+`eligibleForBounty=true`, `maxSeverity=critical`, tier 1). Avançado até
+`corroborated_static` (reasoning + filesRead completos, 8 arquivos da
+cadeia de chamada lidos). `record-validation` com
+`result=not_applicable` (mesma limitação dos outros 2 achados JS/TS do
+programa — sem validador local) e tentativa de `reproduced_local`
+recusada como esperado — fica preso em `corroborated_static` até
+existir validador real pra este tipo de achado. Confidence: média (a
+falha de path-containment no código está 100% confirmada linha a
+linha; o que fica em aberto é o quão fácil é induzir o sub-agente real
+via prompt injection e qual canal de exfiltração o atacante teria
+disponível no fim da cadeia — não simulado nesta rodada, fora do
+escopo de leitura de código público autorizada).
+
+`deep-read-log.json` atualizado (+9 em `vercel-labs/agent-skills`,
+agora 15 arquivos — inclui toda a cadeia de chamada rastreada pro
+achado acima: `verify-finding.mjs`, `verify-and-regen.mjs`,
+`extract-claims.mjs`, `investigation-brief.mjs`, `dedup-recs.mjs`,
+`grade-recommendation.mjs`, `repo-root.mjs`, além de
+`check-citations.mjs`/`verify-claim.mjs`).
+
+Nota operacional: esta rodada rebaseou sobre `origin/master` (duas
+rodadas concorrentes já tinham avançado o branch com leitura profunda
+em `vercel-labs/agent-skills` e `circlefin/evm-cctp-contracts`,
+respectivamente, ambas sem achado — sem sobreposição com o achado
+acima, que é num arquivo/módulo diferente do que a rodada concorrente
+leu).
