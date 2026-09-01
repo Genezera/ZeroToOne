@@ -689,7 +689,10 @@
     "packages/nuxt/src/app/island-props.ts",
     "packages/nuxt/src/app/components/island-renderer.ts",
     "packages/nitro-server/src/runtime/handlers/island.ts",
-    "packages/nuxt/src/app/island-hash.ts"
+    "packages/nuxt/src/app/island-hash.ts",
+    "packages/nitro-server/src/runtime/utils/island-props.ts",
+    "packages/nuxt/src/app/components/nuxt-island.ts",
+    "packages/nitro-server/src/runtime/utils/renderer/islands.ts"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts"

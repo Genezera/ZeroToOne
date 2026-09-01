@@ -2636,3 +2636,36 @@ confusão de chave simétrica/assimétrica um erro de compilação, não um bug
 de runtime; nenhuma falha encontrada na lógica de encrypt/decrypt.
 `deep-read-log.json` atualizado (+3 em `vercel/workflow`, agora 10
 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 14ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer ação: `Block Open Source`
+segue `aiResearchBanned: true`, nada tocado desse programa. `list-pending`
+global = 0, nenhum candidate novo em nenhum programa.
+
+Leitura profunda proativa direcionada a `nuxt/nuxt` (asset Tier 1 deste
+programa, confirmado em `scope-snapshots/vercel-open-source.json`), 3
+arquivos novos relacionados ao sistema de Server Components ("islands"),
+seguindo a trilha das rodadas anteriores sobre esse mesmo subsistema:
+`packages/nitro-server/src/runtime/utils/island-props.ts` (funções
+`exceedsMaxDepth`/`exceedsMaxBytes`, guarda de profundidade/tamanho contra
+payload de island não autenticado antes do parse/hash — confirmei em
+`handlers/island.ts` que as duas guardas são chamadas ANTES de `destr()` e
+do cálculo de hash, tanto pra leitura em streaming do corpo POST quanto
+pra query string do GET, sem gap de ordem), `packages/nuxt/src/app/
+components/nuxt-island.ts` (componente cliente que injeta `res.html`
+vindo do servidor via `createStaticVNode` sem sanitização adicional — é
+o mecanismo de renderização de island por design, não um bug: quando
+`remoteComponentIslands` está ligado e `props.source` aponta pra uma
+origem controlada pelo desenvolvedor da app, isso é equivalente a `v-html`
+documentado, não dado de usuário final sendo injetado por essa rota) e
+`packages/nitro-server/src/runtime/utils/renderer/islands.ts` (stitching
+de teleports de slot/componente no HTML streamado — uid/slot/clientId
+usados nos regexes de âncora vêm de chaves de teleport geradas pelo
+próprio Vue no servidor, não de entrada do cliente). Nenhum achado novo:
+o subsistema de islands já recebeu tratamento defensivo cuidadoso
+(comentários no próprio código documentam as guardas de DoS e validação
+de `scopeId` via regex antes de interpolar em HTML). Sem candidato óbvio
+de vulnerabilidade nova nesta leitura.
+
+`deep-read-log.json` atualizado (+3 em `nuxt/nuxt`, agora 7 arquivos).
