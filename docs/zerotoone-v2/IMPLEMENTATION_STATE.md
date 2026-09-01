@@ -360,61 +360,177 @@ Fila: 2 `corroborated_static` (Solana, Vercel SSO), 37 `false_positive`,
 1 `inconclusive`, 1 `known_duplicate`, **2 `human_ready`**. Ledger: 170
 entradas.
 
-## Fases 2, 4 e 5
+## Fases 2, 4 e 5 — reconciliação completa (2026-09-01)
 
-**Nota (31/08/2026): esta seção ficou desatualizada por 2 dias de
-trabalho real não registrado aqui** — arc-remote-signer foi submetido e
-fechado como duplicata, o achado do Solana avançou até `reproduced_local`
-com PoC real, Block Open Source foi pausado (regras do programa proíbem
-pesquisa assistida por IA), ColdStorageAddressBookModule percorreu o
-ciclo inteiro até ser identificado como duplicata pública, e a Hacker
-API do HackerOne + Telegram foram integrados ao pipeline. Ver
-`research/bugbounty/circle-bbp/NOTES.md`, `block-open-source/NOTES.md`
-e `system/bugbounty-scanner/README.md` pro registro completo — reescrita
-completa desta seção fica pra uma rodada dedicada só a isso, não junto
-de uma mudança de código.
+**Contexto desta reescrita**: o usuário re-entregou o mesmo documento de
+auditoria (`ZeroToOneRelatoriodoSistema.pdf`, 29/08/2026) numa sessão
+posterior, sem saber quanto dele já tinha sido implementado nos dias
+entre a entrega original e agora. Esta seção substitui a nota de "ficou
+desatualizada" por um reconciliamento real, seção por seção do prompt
+mestre (item 13 da auditoria), contra o estado verdadeiro do
+repositório — não contra o que "deveria" ter sido feito.
 
-Fase 2 (adapters SARIF, Slither/OSV-Scanner/CodeQL, benchmark de
-detector) e Fase 4 (validadores web/API/mobile) seguem majoritariamente
-não iniciadas — são esforços grandes, ficam mais valiosos depois de mais
-verticais completas confirmarem o padrão. **Exceção parcial, feita
-31/08/2026**: o item específico de quarentena do `ssrf_risk` citado
-aqui (seção 6.11 da auditoria) foi implementado de verdade —
-`quarantine.mjs`, mecanismo genérico (não hardcoded só pro ssrf_risk),
-confirmado ao vivo contra `heuristic-stats.json` real (`ssrf_risk::js`:
-13/13 revisões falso-positivo, 100%, agora suprimido nas 3 vias de
-entrada do scanner). Ver seção própria em
-`system/bugbounty-scanner/README.md`. O resto da Fase 2 (ensemble SARIF
-completo) continua não iniciado — essa foi deliberadamente a fatia
-pequena e barata, não uma tentativa de fechar a fase inteira de uma vez.
+### O que a auditoria pediu e JÁ ESTÁ FEITO (com evidência verificável)
 
-**Também feito 31/08/2026, seção 6.12 da auditoria**: grau de evidência
-explícito E0-E5 (`evidence-grade.mjs`, comando `cli.mjs evidence-grade
-<id>`) — deriva de dados já gravados (`filesRead`/`validations`/
-`platformOutcome`), não pede fonte nova. E4 fica documentado como não
-usado (o sistema não distingue ambiente isolado end-to-end de reprodução
-local simples), não fingido. Testado ao vivo contra os 2 achados reais
-mais avançados: Solana → E3, arc-remote-signer → E3 (depois de corrigir
-um bug real pego nesse teste — a primeira versão dava E2 pro
-arc-remote-signer porque checava só o `state` atual, e "duplicate" não
-tava na lista de estados que provam E3; corrigido pra reconhecer que
-qualquer terminal pós-`human_ready`, incluindo os negativos, já prova
-que o gate de E3 foi passado). Isso também expôs uma lacuna real, ainda
-aberta: o `arc-remote-signer` tem PoC executável real (`go test` PASS)
-mas nunca teve um `record-validation` formal gravado, só prosa no
-NOTES.md — o grau contorna isso corretamente, mas o hábito de sempre
-gravar validação formal continua pendente. Ver seção própria em
-`system/bugbounty-scanner/README.md`.
+- **6.1 Scope Registry canônico** — feito na Fase 1 (`scope-registry.mjs`,
+  TTL por tipo de fonte, `scopeGate` nunca trata `null` como elegível).
+  Estendido depois: `program-policy.mjs` (bloqueio duro por política de
+  programa, injetado automaticamente em toda transição), snapshot do
+  OKG criado (estava faltando, capava achado real em
+  `corroborated_static` pra sempre por falta de arquivo, não por mérito
+  técnico).
+- **6.2 DeploymentEvidence** — schema feito na Fase 1
+  (`recordDeploymentEvidence`/`latestDeploymentEvidence`: repo, commit,
+  branch/tag, endereço de deploy, chainId, blockNumber, bytecodeHash,
+  confidence, notes). Usado de verdade nos 2 achados que chegaram a
+  `human_ready`/`submitted` (endereço mainnet real do Gateway Wallet
+  confirmado por 3 fontes independentes).
+- **6.3 Máquina de estados rigorosa** — feito na Fase 1, os 14 estados
+  exatos do prompt mestre + `known_duplicate` (Fase 3) +
+  `inconclusive->false_positive` (única saída de um estado que antes
+  não tinha nenhuma, achado real construindo o validador de PoC do OKG).
+- **6.5 Persistência real** — SQLite via `node:sqlite` nativo (Fase 1),
+  substituindo `queue.jsonl`+Git como banco operacional. `queue.jsonl`
+  continua existindo só como *export* legível, não como fonte de
+  verdade.
+- **6.6 Ledger auditável** — cadeia hash-encadeada já existia; nomeada
+  corretamente como *tamper-evident* (não *tamper-proof*, correção
+  terminológica direta da auditoria, seção "Ledger à prova de
+  adulteração"); `verifyChain()` roda de verdade e foi usada pra validar
+  toda reconciliação de merge concorrente desta missão. Checkpoint
+  assinado/externo (o resto do pedido 6.6) **não** foi feito — ver lista
+  de pendências abaixo.
+- **6.11 Quarentena automática de regra ruim** — feito 31/08/2026
+  (`quarantine.mjs`), mecanismo genérico, não hardcoded pro caso
+  `ssrf_risk` que a auditoria cita — confirmado ao vivo: `ssrf_risk::js`
+  tinha 13/13 revisões falso-positivo, agora suprimido nas 3 vias de
+  entrada do scanner.
+- **6.12 Grau de evidência E0-E5** — feito 31/08/2026
+  (`evidence-grade.mjs`, `cli.mjs evidence-grade <id>`), deriva de dado
+  já gravado, E4 documentado como não-usado (não fingido).
+- **Primeira vertical completa obrigatória (seção "PRIMEIRA VERTICAL
+  OBRIGATÓRIA" + os 2 casos nomeados)** — feito na Fase 3, e os 2 casos
+  específicos que a auditoria manda revalidar (`Withdrawals.sol`
+  denylist e `wire-schema` path traversal) foram literalmente
+  revalidados: o primeiro virou `known_duplicate` (achado público da
+  ChainSecurity, 1 ano antes), o segundo chegou a `human_ready` com PoC
+  Java real contra o JAR de produção do Maven Central.
+- **Sandbox parcial** — nunca houve container/VM isolado dedicado (não
+  construído, ver pendências), mas a separação real que existe e
+  importa hoje é: cada ambiente (Windows local / sessão de nuvem) tem
+  seu próprio banco SQLite nunca commitado, o conteúdo do repositório-alvo
+  nunca é tratado como instrução (regra explícita no prompt da rotina
+  desde a Fase 1), e nenhuma ferramenta de PoC roda contra rede
+  real/conta com fundo real em nenhum dos exemplos construídos.
 
-Fase 5 (outcomes reais de plataforma, calibrador, ranking de alvo)
-estava bloqueada esperando "pelo menos um envio real acontecer" — isso
-já aconteceu (arc-remote-signer, #3981927, fechado duplicata). Parte da
-Fase 5 já está parcialmente feita também: `h1-api.mjs` sincroniza status
-real de relatório (`sync-report-status`), e `discover-targets.mjs` agora
-prioriza por idade de programa (um dos fatores de ranking de alvo
-citados na auditoria, não todos). O calibrador (usar resultado real de
-plataforma pra ajustar confiança de heurística) continua não
-implementado.
+### Trabalho real que a auditoria NÃO previu, mas que resolveu problemas reais encontrados no caminho
+
+- **Migração pro disco E:** (espaço em C: esgotado) — puramente
+  operacional, sem relação com a auditoria.
+- **Autenticação GitHub opcional** (`GITHUB_TOKEN`, 60→5000 req/h) e
+  **integração real com a Hacker API da HackerOne** (`h1-api.mjs`,
+  endpoint correto `/hackers/reports/{id}`) — infraestrutura de apoio
+  que a auditoria não menciona mas que se provou necessária na prática
+  (rate limit de verdade batido, precisava acompanhar submissão real).
+- **Pipeline de auto-promoção de alvo** (`promote-targets.mjs`) — a
+  auditoria pede "ranking de alvo por valor esperado" (6.18) num nível
+  mais sofisticado; o que foi construído é uma versão mais simples
+  (pontuação por payout/frescor/estrelas/atividade, cap de 5/rodada) que
+  resolveu o problema real e mais urgente primeiro: **quase nenhum
+  programa fora de Circle BBP tinha QUALQUER varredura ativa**, apesar
+  da descoberta já cobrir o dataset inteiro há semanas.
+- **2 submissões reais enviadas e fechadas como duplicate** (Solana
+  denylist, arc-remote-signer) — a auditoria pede "outcome feedback"
+  (6.21) de forma genérica; na prática isso gerou algo mais específico e
+  imediatamente útil: `program-submission-budget.mjs`, rastreando que
+  só restam 2 envios aceitáveis pro Circle BBP, com critério mais
+  seletivo daqui pra frente.
+- **Convenção de PoC executável pra Go, JVM e JS/TS** (31/08/2026,
+  `poc-examples/`) — a auditoria (seção L) descreve perfis de PoC por
+  *tipo de alvo* (contrato/backend/web/mobile), não por linguagem. O que
+  foi construído resolve o gargalo real e mais imediato: até então, só
+  Solidity conseguia sair de `corroborated_static` (nenhum validador
+  local existia pras outras 3 linguagens ativamente escaneadas) — agora
+  as 4 linguagens com alvo ativo hoje têm um caminho real e testado.
+- **Automação de rascunho de relatório** (`generate-report.mjs`) e
+  **`pipeline-status`** (visão do que falta pra cada achado avançar,
+  sem investigação manual) — não citados explicitamente na auditoria,
+  mas resolvem a lacuna prática que ficaria entre "grau de evidência
+  E0-E5 calculado" e "relatório pronto pra revisão humana".
+- **Notificação cross-ambiente via Telegram + sincronização git
+  resiliente** (2026-09-01, `telegram-digest.mjs`/`git-sync.mjs`) —
+  achado real: a sessão de nuvem nunca conseguia notificar (sem
+  credencial no sandbox) e a tarefa agendada local podia perder o
+  próprio push numa corrida com a nuvem (achado direto em log de
+  produção, não hipotético). Nenhum dos dois estava no escopo da
+  auditoria original.
+
+### O que a auditoria pediu e CONTINUA genuinamente pendente
+
+- **6.4 Sandbox de execução isolado de verdade** (container efêmero,
+  usuário sem privilégio, rede bloqueada por padrão com allowlist de
+  egress, limites de CPU/RAM/disco) — não construído. Mitigação parcial
+  existente (regra explícita contra tratar conteúdo do alvo como
+  instrução, `.db` nunca compartilhado entre ambientes) não substitui
+  isolamento real de processo/rede. Seção "Bloqueios externos
+  conhecidos" já documentava isso; segue igual.
+- **6.6 Checkpoints assinados/ancorados externamente** pro ledger — a
+  cadeia hash existe e é verificada, mas continua *tamper-evident*
+  reescrevendo o arquivo inteiro, não *tamper-proof*. Não implementado.
+- **6.7/6.8 Ensemble de múltiplos analisadores (Slither, OSV-Scanner,
+  CodeQL) + fluxo interprocedural/call-graph real** além do que
+  `heuristics-js-ast.mjs` já faz (AST intraprocedural em JS/TS) — só a
+  quarentena (6.11) foi feita da Fase 2 inteira. Nenhum adapter SARIF
+  existe.
+- **6.10 Benchmark de detector com corpus rotulado** (positivo/negativo
+  por regra, CVEs com commit de correção, mutação) — não construído. A
+  quarentena hoje reage a taxa de falso-positivo observada na produção
+  real, não a um benchmark prévio.
+- **Fase 4 inteira — validadores web/API/mobile** (extração de rota,
+  matriz de autorização, duas contas de teste, laboratório mobile) —
+  não iniciada. Ver avaliação de proporcionalidade abaixo.
+- **Calibrador real (6.9 confiança multidimensional / seção "Calibrator"
+  da arquitetura-alvo)** — usar resultado real de plataforma pra ajustar
+  peso de heurística/severidade prevista. Ainda não dá: só 2 outcomes
+  reais existem até agora (ambos `duplicate`), amostra insuficiente pra
+  calibrar qualquer coisa com significado estatístico.
+- **SBOM/VEX (seção H)** — `dep-scanner.mjs` cruza manifest contra
+  OSV.dev, mas não produz CycloneDX nem registra estado VEX explícito
+  por CVE.
+
+### Avaliação honesta de proporcionalidade (não estava na auditoria, mas precisa estar aqui)
+
+A auditoria foi escrita como um documento de arquitetura genérico —
+correto tecnicamente, mas sem visibilidade de que este é um projeto de
+UMA pessoa, capital de missão de US$200, sem financiamento pra
+infraestrutura paga. Alguns itens ainda pendentes valem muito mais que
+outros nesse contexto real:
+
+- **Alto valor, custo baixo, ainda não feito**: OSV-Scanner via CLI
+  (binário único, sem servidor, substituiria parte do `dep-scanner.mjs`
+  caseiro por uma ferramenta mantida por terceiros) e Slither pra
+  Solidity (mesma lógica — já existe toolchain Solidity no projeto,
+  Slither é `pip install` local, sem custo de licença). Candidatos
+  naturais pro próximo lote pequeno.
+- **Alto valor, custo alto**: sandbox de execução isolado de verdade
+  (6.4) — genuinamente importante se o volume de repositórios
+  analisados crescer, mas hoje o "sandbox" real é: Windows local só
+  lê/computa heurística de texto (nunca executa código do alvo), e a
+  sessão de nuvem já opera com regra explícita contra tratar conteúdo
+  do alvo como instrução. O risco residual é real mas o custo de
+  construir isolamento de container de verdade não compensa ainda no
+  volume atual.
+- **Baixo valor pra este projeto específico, alto custo**: CodeQL
+  (complexidade de licença pra repositório de terceiro, seção 6.7 da
+  própria auditoria já reconhece isso), Fase 4 inteira (web/API/mobile)
+  — os 4 programas ativos hoje (Circle BBP, Vercel, OKG, StackingDAO)
+  são 100% SAST-de-repositório-público; nenhum deles tem uma superfície
+  web/API/mobile dentro do escopo real de bounty que justifique
+  construir extração de rota + matriz de autorização + laboratório
+  mobile antes de ter um alvo concreto que precise disso.
+- **Não vale a pena ainda**: benchmark de detector com corpus rotulado
+  (6.10) — valioso quando há histórico suficiente de outcome real pra
+  validar contra; com 2 outcomes totais, seria benchmark contra ruído.
 
 ## Bloqueio de programa por política + pipeline de promoção automática (31/08/2026)
 
