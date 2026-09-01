@@ -3243,3 +3243,52 @@ Leitura profunda proativa desta rodada (3 arquivos, todos em
 Sem achado novo — resultado normal e válido. `deep-read-log.json`
 atualizado (+3 em `vercel/next.js`, agora 15 arquivos). Nenhuma transição
 de estado nova tentada.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 20ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer leitura (sem restrição
+pra "Vercel Open Source"). `list-pending` global = 0. Muitas outras
+sessões cloud rodaram em paralelo sobre o mesmo push nesta rodada
+(vercel/eve, vercel/ai::tool-approval-signature.ts, revisita SSRF em
+vercel/next.js, circlefin/stablecoin-sui — todas sem achado novo). Esta
+sessão continuou em `vercel/ai` numa área nunca lida antes: o bridge
+WebSocket dentro do sandbox (`packages/harness/src/`).
+
+**Achado novo**: `packages/harness/src/bridge/index.ts::runBridge` —
+`timing_attack_risk`, confidence baixa, movido pra `corroborated_static`.
+O bridge WebSocket (media comandos de controle — `start`/`resume`/
+`stop`/`destroy`/`tool-result`/`user-message` — entre o processo host
+do ai-sdk e o CLI do coding agent real rodando dentro do sandbox: codex,
+claude-code, opencode, cline, deepagents) liga em `0.0.0.0` e é exposto
+ao host via `sandbox.domain(port)` (`@vercel/sandbox`, domínio HTTPS/
+WSS publicamente roteável — modelo de rede intencional do sandbox, não
+é o achado em si). A única autenticação é `agent_bridge_token`,
+comparado com `!==` direto (não-constant-time, CWE-208), e
+`expectedToken` cai pra string vazia (`''`) se nem `options.token` nem
+a env `BRIDGE_CHANNEL_TOKEN` forem passados — sem throw. Rastreei os 5
+harnesses embutidos (codex, claude-code, opencode, deepagents, acp) até
+o spawn do processo bridge: todos SEMPRE geram um token real de 256
+bits (`createBridgeToken()`) ou delegam a `settings.mintBridgeToken`, e
+sempre setam `BRIDGE_CHANNEL_TOKEN` no `env` — então o fallback pra
+vazio é código morto no caminho de produção empacotado do próprio
+ai-sdk; só seria alcançado por um consumidor externo de `runBridge`
+(API pública de `@ai-sdk/harness/bridge`) que a chamasse sem configurar
+token nem a env var. A comparação não-constant-time em si é um padrão
+de código real (CWE-208), mas ataque de timing prático contra ela via
+rede pública (TLS + WAN, jitter em escala de milissegundos vs.
+diferença de timing em escala de nanossegundos, 256 bits de espaço de
+chave) não tem sustentação — reduz a severidade prática a baixa. Preso
+em `corroborated_static` pela mesma limitação estrutural dos outros 4
+achados JS/TS/Swift deste conjunto de programas (sem validador PoC
+local pra esse tipo de achado).
+
+Outros 2 arquivos lidos sem achado: `packages/harness/src/agent/
+internal/permission-mode.ts` (`DEFAULT_PERMISSION_MODE = 'allow-all'` —
+default explícito e tipado, decisão de design do integrador, não bug) e
+`packages/harness-codex/src/bridge/tool-relay-auth.ts` +
+`packages/harness-opencode/src/bridge/tool-relay-auth.ts` (correlação
+de chamada de ferramenta por chave/TTL em memória — não é mecanismo de
+autenticação de rede, é só pareamento de request/response dentro do
+mesmo processo; sem achado).
+
+`deep-read-log.json` atualizado (+7 em `vercel/ai`, agora 16 arquivos).

@@ -491,3 +491,10 @@ direcionada a `vercel/next.js` (crypto-utils/preview-mode, ver NOTES.md
 de Vercel Open Source, sem achado) — sem arquivo novo candidato em
 StackingDAO, os 15 contratos Clarity seguem 100% cobertos. Nenhum
 achado, nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 20ª rodada do dia)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/ai` (ver NOTES.md de Vercel Open Source, achado
+novo registrado lá) — sem arquivo novo candidato em StackingDAO (os 15
+contratos Clarity seguem 100% cobertos desde rodadas anteriores).

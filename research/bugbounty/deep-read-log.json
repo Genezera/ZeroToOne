@@ -713,7 +713,14 @@
     "packages/sandbox-vercel/src/vercel-network-policy-manager.ts",
     "packages/ai/src/generate-text/tool-approval-signature.ts",
     "packages/ai/src/util/canonical-hash.ts",
-    "packages/ai/src/generate-text/validate-tool-approvals.ts"
+    "packages/ai/src/generate-text/validate-tool-approvals.ts",
+    "packages/harness/src/bridge/index.ts",
+    "packages/harness/src/utils/bridge-token.ts",
+    "packages/harness-codex/src/codex-harness.ts",
+    "packages/harness-codex/src/bridge/index.ts",
+    "packages/harness/src/agent/internal/permission-mode.ts",
+    "packages/harness-codex/src/bridge/tool-relay-auth.ts",
+    "packages/harness-opencode/src/bridge/tool-relay-auth.ts"
   ],
   "vercel/eve": [
     "packages/eve/src/channel/auth/jwt-hmac.ts",

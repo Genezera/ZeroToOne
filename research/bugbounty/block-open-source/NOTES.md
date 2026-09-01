@@ -2454,3 +2454,12 @@ global = 0, sem candidate pendente para este programa. Os achados
 `js_injection_unescaped_token_risk` (aviso permanente, não usar) e
 `Root.kt::DirectoryRoot.resolve::path_traversal_risk` (`human_ready`)
 seguem intocados.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud, 20ª rodada do dia)
+
+`program-policy.json` checado ANTES de qualquer outra ação. `aiResearchBanned:
+true` ainda vigente para "Block Open Source". Nenhum repo `cashapp/*`/
+`afterpay/*`/`square/wire` clonado, lido ou tocado nesta rodada — leitura
+profunda proativa desta rodada foi inteiramente em `vercel/ai` (ver
+NOTES.md de Vercel Open Source, achado novo registrado lá). `list-
+pending` global = 0, sem candidate pendente para este programa.
