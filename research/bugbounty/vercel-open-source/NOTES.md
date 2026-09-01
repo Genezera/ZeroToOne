@@ -2003,3 +2003,73 @@ lógica real, ver NOTES.md próprio) não tinham candidato óbvio de baixo
 esforço para esta rodada além do que já foi coberto exaustivamente em
 rodadas anteriores do mesmo dia. Nenhum achado novo em nenhum dos 3
 programas nesta rodada — resultado normal.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 4) — fila vazia, leitura profunda em `vercel-labs/skills`, hipótese de argument injection investigada e refutada
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro (passo
+0, antes de qualquer clone): só `Block Open Source` segue banido para
+pesquisa com IA. `vercel-labs/skills` (11 arquivos já lidos em rodadas
+anteriores, cobrindo o núcleo de download/instalação —
+`download-source.ts`, `install.ts`, `installer.ts`, `sanitize.ts`,
+`archive.ts`) tinha 3 arquivos de superfície de segurança real ainda não
+lidos: `src/git.ts`, `src/source-parser.ts`, `src/plugin-manifest.ts`.
+
+- `src/git.ts` (`cloneRepo`) — hipótese séria levantada e investigada a
+  fundo: o `url`/`ref` de um source string (`skills add <source>`) chega
+  em `cloneRepo(url, ref)`, que monta `createGitClient().clone(url,
+  tempDir, ['--depth','1','--branch', ref])` via `simple-git@^3.36.0`.
+  Preocupação: se `url` (caminho "fallback: treat as direct git URL" em
+  `source-parser.ts`, que aceita QUALQUER string não reconhecida como
+  URL de git literal, sem validação de prefixo) começar com `-` (ex.
+  `--upload-pack=touch$IFS/tmp/pwned`), isso é o padrão clássico de
+  argument injection em wrappers de `git clone` (mesma classe de bug de
+  CVEs conhecidas em ferramentas que passam URL de repo direto pro CLI
+  do git sem terminador `--`). Refutação via leitura do código-fonte
+  publicado do próprio `simple-git@3.36.0` (pacote baixado via `npm
+  pack`, não é código do programa-alvo, é dependência pública de
+  terceiros): a task `cloneTask` em `src/lib/tasks/clone.ts` envolve
+  tanto `repo` quanto `directory` em `pathspec(...)` (de
+  `@simple-git/args-pathspec`), e o plugin `suffixPathsPlugin` (`src/lib/
+  plugins/suffix-paths.plugin.ts`) move qualquer argumento marcado como
+  pathspec pro final do array de args, precedido por um separador `--`
+  literal, no momento de montar o `spawn.args` real. Ou seja, o comando
+  de fato executado é `git clone --depth 1 --branch <ref> -- <url>
+  <tempDir>` — o `--` impede o git de interpretar `<url>` como opção
+  mesmo que comece com `-`. Confirmado isso lendo o JS compilado
+  (`dist/cjs/index.js`) da versão exata pinada (`^3.36.0` resolve pra
+  `3.36.0` via `npm pack`). Quanto ao `ref` (não envolvido em
+  `pathspec()`, fica antes do `--`): como é consumido como valor
+  obrigatório de `--branch <valor>` (semântica padrão de long option do
+  `git`/`getopt_long`, o próximo argv é sempre o valor, mesmo que comece
+  com `-`), não há como o `ref` injetar uma flag adicional nesse ponto —
+  ele vira literalmente o nome de branch buscado (que falhará como "not
+  found" se malicioso, não executa nada). `getGitTreeHash` (mesma
+  arquivo) também usa `--end-of-options` antes do revision string, outra
+  camada de defesa contra a mesma classe de bug. **Hipótese refutada**:
+  o mecanismo de proteção existe e está ativo na versão pinada — não é
+  uma lacuna de validação própria do `skills`, é mitigado pela
+  dependência. O comentário do código-fonte ("the clone URL and ref
+  cannot configure them", referindo-se às opções `unsafe.allowUnsafe*`)
+  é sobre a config `filter.lfs.*` hard-coded, não sobre isso — mas a
+  conclusão de que não há injection continua correta, só por um
+  mecanismo diferente do que o comentário sugere. Documentando aqui o
+  raciocínio completo pra próxima rodada não reinvestigar do zero.
+- `src/source-parser.ts` — revisado no mesmo processo acima (é a origem
+  do `url`/`ref` que chegam em `git.ts`). `sanitizeSubpath` rejeita
+  segmentos `..` corretamente. Nenhuma outra lacuna nova encontrada além
+  da hipótese já refutada acima. Sem achado.
+- `src/plugin-manifest.ts` — leitura de `marketplace.json`/`plugin.json`
+  de um plugin clonado, usado só pra descobrir diretórios de skills.
+  `isContainedIn` (resolve + normalize + prefixo com `sep`) barra
+  qualquer path resolvido fora de `basePath`, aplicado depois de montar
+  o path com `join`, então mesmo um `skillPath`/`source` como
+  `./../../etc` (passa em `isValidRelativePath` por começar com `./`) é
+  barrado pelo containment check subsequente. Só leitura, nunca
+  escrita/execução a partir desses caminhos. Sem achado.
+
+`deep-read-log.json` atualizado (3 arquivos novos em `vercel-labs/skills`).
+Também confirmados sem candidato novo de baixo esforço: StackingDAO (15/15
+arquivos, cobertura completa) e Circle BBP (alvos EVM ativos já
+exaustivamente cobertos em rodadas anteriores). Esta rodada não tocou
+`Block Open Source` (`aiResearchBanned: true`, conferido antes de
+qualquer clone). Nenhum achado novo nesta rodada — resultado normal.

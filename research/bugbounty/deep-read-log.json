@@ -472,7 +472,10 @@
     "src/find.ts",
     "src/install.ts (completo)",
     "src/download-source.ts (completo)",
-    "src/archive.ts (completo)"
+    "src/archive.ts (completo)",
+    "src/git.ts (completo)",
+    "src/source-parser.ts (completo)",
+    "src/plugin-manifest.ts (completo)"
   ],
   "vercel/next.js": [
     "packages/next/src/server/app-render/encryption.ts",
