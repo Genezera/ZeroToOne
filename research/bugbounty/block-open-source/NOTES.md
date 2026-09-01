@@ -2441,3 +2441,16 @@ mais robusto se o prompt da rotina (configurado fora deste repositório)
 nomeasse explicitamente "carregar program-policy.json e excluir programas
 banidos" como sub-etapa do passo de leitura profunda proativa, em vez de
 depender de cada sessão lembrar via NOTES.md.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado ANTES de qualquer outra ação, seguindo a
+disciplina estabelecida desde o incidente da 11ª rodada. `aiResearchBanned:
+true` ainda vigente para "Block Open Source". Nenhum repo
+`cashapp/*`/`afterpay/*`/`square/wire` clonado, lido ou tocado nesta
+rodada — leitura profunda proativa desta rodada foi inteiramente em
+`vercel/next.js` (ver NOTES.md de Vercel Open Source). `list-pending`
+global = 0, sem candidate pendente para este programa. Os achados
+`js_injection_unescaped_token_risk` (aviso permanente, não usar) e
+`Root.kt::DirectoryRoot.resolve::path_traversal_risk` (`human_ready`)
+seguem intocados.

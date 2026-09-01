@@ -3184,3 +3184,62 @@ connections/resolve-authorization.ts`.
 Sem achado novo — resultado normal e válido. `deep-read-log.json`
 atualizado (+3 em `vercel/eve`, agora 21 arquivos). Nenhuma transição de
 estado tentada (nada em `candidate`).
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` +
+`cli.mjs list-pending`). Revisitei os 4 achados em `corroborated_static`
+antes da leitura profunda: 3 são deste programa
+(`ssrf_redirect_allowlist_bypass_risk` em `vercel/next.js`,
+`command_injection_risk` em `vercel/vercel`,
+`path_traversal_arbitrary_file_read_risk` em `vercel-labs/agent-skills`).
+Todos JS/TS, sem validador local disponível (limitação estrutural já
+documentada) — `corroborated_static->reproduced_local` exige
+`result="pass"` de uma validação real, que não existe pra esta
+linguagem, então nenhuma transição nova foi tentada nesses achados
+(forçar seria contornar a máquina de estados). Reli o código-fonte atual
+de `packages/next/src/server/image-optimizer.ts` (clone raso fresco,
+HEAD `9c626ac94b8bcd8195e4f4d789824f90e0c95fe5`, branch canary) pra
+confirmar que o achado SSRF-via-redirect ainda bate linha a linha com o
+`reasoning` já salvo: confirmado — `fetchExternalImage` (L521-587) ainda
+recursiona em redirect (L580-586) sem re-chamar `hasRemoteMatch`/
+`validateParams`, só reaplica o guard de IP privado a cada recursão.
+Achado segue válido, nenhuma mudança necessária no reasoning.
+
+Leitura profunda proativa desta rodada (3 arquivos, todos em
+`vercel/next.js`, com foco em crypto/auth):
+
+- `packages/next/src/server/crypto-utils.ts`: `encryptWithSecret`/
+  `decryptWithSecret`, AES-256-GCM com salt+IV aleatórios por chamada
+  (`crypto.randomBytes`), chave derivada via PBKDF2-SHA512 (100k
+  iterações), tag de autenticação verificado no decrypt
+  (`setAuthTag`/`getAuthTag`). Esquema correto, sem reuso de nonce, sem
+  falha óbvia. Sem achado.
+- `packages/next/src/server/api-utils/node/api-resolver.ts` (função
+  `setPreviewData`, L165-221): assina o payload de Preview/Draft Mode
+  com `jsonwebtoken.sign(..., options.previewModeSigningKey, {algorithm:
+  'HS256', ...})` — algoritmo sempre fixado explicitamente como HS256,
+  chave é simétrica (nunca um par de chave RSA/EC), então não há
+  superfície pra confusão de algoritmo (o clássico "RS256→HS256 usando a
+  chave pública como segredo HMAC" não se aplica aqui, já que só existe
+  segredo simétrico em todo o fluxo). Também confirma
+  `isValidData(previewModeId/EncryptionKey/SigningKey)` antes de assinar
+  — sem achado.
+- `packages/next/src/server/api-utils/node/try-get-preview-data.ts`:
+  lado da verificação — `jsonwebtoken.verify(tokenPreviewData,
+  options.previewModeSigningKey)` sem passar `algorithms` explicitamente
+  no options. Investiguei se isso abre brecha pro clássico "alg:none"
+  bypass do `jsonwebtoken`: não abre — a lib só aceita `none` se
+  `algorithms` incluir `'none'` explicitamente (nunca é o default), e o
+  default (quando `algorithms` não é passado) é inferido do tipo da
+  chave: como `previewModeSigningKey` é uma string/Buffer comum (não
+  começa com `BEGIN CERTIFICATE`/`BEGIN PUBLIC KEY`), a lib assume
+  `HS256`/`HS384`/`HS512` — bate com o que `setPreviewData` de fato
+  assina. Também comparei `previewModeId` do cookie contra
+  `options.previewModeId` antes de sequer chamar `verify` (L43-48,
+  L77-82) — sem bypass óbvio de fixação de sessão entre builds
+  diferentes. Sem achado.
+
+Sem achado novo — resultado normal e válido. `deep-read-log.json`
+atualizado (+3 em `vercel/next.js`, agora 15 arquivos). Nenhuma transição
+de estado nova tentada.

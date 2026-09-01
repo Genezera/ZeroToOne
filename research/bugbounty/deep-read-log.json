@@ -613,7 +613,10 @@
   "packages/next/src/shared/lib/match-remote-pattern.ts",
   "test/unit/image-optimizer/fetch-external-image.test.ts",
   "test/e2e/image-optimizer/maximum-redirects-1.test.ts",
-  "test/e2e/image-optimizer/util.ts"
+  "test/e2e/image-optimizer/util.ts",
+  "packages/next/src/server/crypto-utils.ts",
+  "packages/next/src/server/api-utils/node/try-get-preview-data.ts",
+  "packages/next/src/server/api-utils/node/api-resolver.ts"
  ],
  "vercel/turborepo": [
   "crates/turborepo-auth/src/device_flow.rs",

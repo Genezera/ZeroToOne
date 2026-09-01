@@ -5788,3 +5788,10 @@ mock/telemetria/métrica, valor residual baixo pras próximas rodadas).
 
 `list-pending` vazio + leitura profunda sem achado → rodada encerrada
 sem novos candidatos, conforme passo 2 das instruções.
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/next.js` (crypto-utils/preview-mode, ver NOTES.md
+de Vercel Open Source, sem achado) — sem arquivo novo lido neste
+programa. Nenhum achado, nenhuma transição de estado neste programa.
