@@ -1967,3 +1967,39 @@ anteriores (que já tinham auditado exaustivamente `cli-auth/oauth.ts`,
 
 `deep-read-log.json` atualizado (2 arquivos novos). Esta rodada não
 tocou `Block Open Source` — banido para pesquisa com IA.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila vazia, fechando leitura pendente de `vercel/workflow`, sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0): só `Block Open Source` segue banido para pesquisa com IA.
+`check-scope "Vercel Open Source" "vercel/workflow"` confirmado
+`allowed:true`/`bountyEligible:true` (tier 1) antes de tocar o repo.
+
+Fechei a leitura marcada como parcial em rodada anterior:
+`packages/world-vercel/src/http-core.ts` (linhas 391-658, restante do
+arquivo — L1-390 já lido antes). Ponto verificado com ceticismo:
+`instrumentedFetch` chama `logCurlRepro(method, url, headers)` numa
+resposta não-2xx para imprimir um `curl` reproduzível em modo debug —
+padrão que classicamente vaza credenciais em log. Confirmado que não é
+o caso aqui: `logCurlRepro` (linha 174-187) filtra explicitamente
+qualquer header `authorization` (case-insensitive, linha 181) antes de
+montar a string do curl, e a função inteira só roda quando
+`process.env.DEBUG` está setado (uso local de desenvolvedor, não em
+produção) — não há vazamento de token nem por essa via nem por
+`httpLog` (que só loga status/timing, nunca headers). Resto do arquivo
+(`withHttpClientSpan`, `recordClientSpanStatus`, `instrumentedFetch`)
+é instrumentação OTEL + wrapper de timeout/erro sobre `fetch`/
+`node:http`, sem lógica de autenticação própria. Sem achado.
+`deep-read-log.json` atualizado (entrada do arquivo marcada como
+completa).
+
+Verifiquei também os outros 2 programas sem restrição de IA antes de
+fechar a rodada: StackingDAO (15 arquivos já lidos, cobertura completa
+dos contratos ativos, ver NOTES.md próprio) e Circle BBP (Solidity
+ativo — `evm-cctp-contracts`, `evm-gateway-contracts`,
+`buidl-wallet-contracts`, `evm-xreserve-contracts`, `evm-cpn-contracts`
+— com deep-read-log já cobrindo praticamente todos os arquivos com
+lógica real, ver NOTES.md próprio) não tinham candidato óbvio de baixo
+esforço para esta rodada além do que já foi coberto exaustivamente em
+rodadas anteriores do mesmo dia. Nenhum achado novo em nenhum dos 3
+programas nesta rodada — resultado normal.
