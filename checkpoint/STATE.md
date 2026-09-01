@@ -974,3 +974,40 @@ outros pacotes genuinamente não vistos localmente antes entraram como
 `npm test`: 379/379. Ver seções próprias em
 `system/bugbounty-scanner/README.md` pro detalhe completo de cada um
 destes 3 (Telegram, limpeza do Go, OSV-Scanner).
+
+## Autonomia total concedida pelo usuário — Semgrep, pipeline de promoção, revisão completa (2026-09-01)
+
+Usuário deu autonomia explícita e ampla: melhorar identificação de
+alvo, achado que paga, achado que ninguém reportou ainda, instalar o
+que for preciso, revisar tudo e implementar o que faltar, só reportar
+no final (Telegram) e então desligar a máquina. Motivo declarado: por
+que só Circle BBP aparece com frequência havendo centenas de outros
+programas HackerOne disponíveis.
+
+**Terceira ferramenta externa integrada**: Semgrep (`semgrep-runner.mjs`,
+venv própria em `E:/dev-toolchains/venv-security`, nunca Python global)
+— olha padrão perigoso no CÓDIGO da aplicação JS/Go/JVM (RC4,
+`math/rand` como criptografia, deserialização insegura, etc.), lacuna
+que nem Slither (só Solidity) nem OSV-Scanner (só dependência
+conhecida) cobriam. Verificado ao vivo contra `okx/go-wallet-sdk`: 40
+achados genuínos, mesma proteção de `upsertFinding` (não sobrescrever
+achado já resolvido) já aplicada de saída desta vez.
+
+**Pipeline de promoção**: teto 5→20 por rodada / 40→200 total (o teto
+antigo era sobre o limite de 60req/h do GitHub sem token — obsoleto
+desde que `GITHUB_TOKEN` deu 5000/h); peso de "programa novo" dobrado
+(30pts/180d → 60pts/365d), servindo diretamente o pedido de priorizar
+"achado que ninguém reportou ainda". Sinal `average_time_to_bounty_
+awarded === null` do dataset HackerOne foi considerado como proxy de
+"baixa competição" e **rejeitado** — mistura programa novo com
+programa antigo-porém-difícil (Node.js, Django, Ruby aparecem na
+mesma lista).
+
+**Confirmado sem precisar mudar código**: `verdict-stats.mjs`/
+`quarantine.mjs` já são genéricos por `type`+`language` lidos do banco
+compartilhado — quarentena automática de regra ruim já vale pros 3
+novos tipos de achado (Slither/OSV-Scanner/Semgrep) sem trabalho
+extra, assim que houver amostra suficiente revisada.
+
+Ver seções próprias em `system/bugbounty-scanner/README.md` pro
+detalhe completo de cada um destes itens.

@@ -999,3 +999,83 @@ heurística de texto). 13 testes novos
 (`test/osv-scanner-runner.test.mjs`), incluindo o OSV-Scanner rodando
 de verdade contra um `package-lock.json` sintético com uma dependência
 realmente vulnerável (`minimist` 1.2.5, CVE-2021-44906).
+
+## Semgrep contra os alvos JS/Go/JVM — terceiro scanner estático, gratuito, em E: (01/09/2026)
+
+Terceira ferramenta externa integrada (mesmo padrão arquitetural do
+Slither/OSV-Scanner: `prepareRepoFor*`/`run*OnRepo`/`parse*Json` puro/
+`toQueueFindings` na mesma convenção de id). Diferença real de escopo:
+Slither olha só corretude de contrato Solidity, OSV-Scanner olha só
+dependência conhecida-vulnerável — nenhum dos dois olha o CÓDIGO da
+própria aplicação JS/Go/JVM em busca de padrão perigoso (uso de
+criptografia fraca, deserialização insegura, injeção). Semgrep (r2c/
+Semgrep Inc., LGPL 2.1, `p/security-audit` — registro público de
+regras, sem conta/API key) fecha essa lacuna.
+
+Instalado numa **venv própria em E:**
+(`E:/dev-toolchains/venv-security`), nunca no Python global do sistema
+onde o Slither historicamente já vive (esse não foi movido — não fui
+eu quem o instalou nesta missão, e mover um Python global em uso é
+mais arriscado que isolar só o que é novo). Mesmo cuidado "nada novo em
+C:" já aplicado ao Go inteiro na seção acima.
+
+Mesma decisão de escopo do OSV-Scanner e pelo mesmo motivo (ruído de
+submódulo vendorizado de terceiro): roda contra JS/Go/JVM, nunca contra
+Solidity, clone próprio sem inicializar submódulo, cache isolado
+(`E:/dev-toolchains/semgrep-cache/`) nunca compartilhado com as outras
+duas ferramentas. Mesma proteção de `upsertFinding` (item 1 do OSV-
+Scanner acima) aplicada de saída, não descoberta de novo — já sabia do
+risco desta vez.
+
+Verificado ao vivo contra `okx/go-wallet-sdk` (OKG): 40 achados reais
+genuínos (uso de RC4, `math/rand` onde deveria ser `crypto/rand`,
+`unsafe.Pointer`, SHA1), todos com caminho corretamente relativizado e
+normalizado (`\` → `/`), todos novos (0 colisão de id com achado
+pré-existente). ~14s para 1000 arquivos com o ruleset `p/golang` em
+teste isolado — rápido o bastante pra cadência semanal junto dos outros
+dois. 9 testes novos (`test/semgrep-runner.test.mjs`), incluindo o
+Semgrep rodando de verdade contra um arquivo Go sintético com RC4 real.
+
+Detector conhecido (RC4, deserialização insegura, SQLi, command
+injection, path traversal, SSRF, prototype pollution, secret
+hardcoded) mapeia pro mesmo vocabulário de tipo já usado pelas
+heurísticas próprias, pra herdar quarentena/dashboard sem mudança
+nenhuma; o Semgrep tem MUITO mais regra que isso, então o resto vira
+`semgrep_<nome-curto-da-regra>` — rastreável, nunca escondido atrás de
+um tipo genérico.
+
+## Pipeline de promoção: throughput e peso de novidade aumentados (01/09/2026)
+
+Usuário perguntou diretamente por que só Circle BBP aparece com
+frequência quando o HackerOne tem centenas de outros programas
+disponíveis, inclusive vários sem nenhum report ainda — e deu
+autonomia explícita pra melhorar identificação de alvo, achado que
+paga, e achado que ninguém reportou ainda. Resposta em dois ajustes no
+`promote-targets.mjs` já existente (não um recurso novo):
+
+1. **Teto de promoção por rodada/total**: 5→**20** por rodada semanal,
+   40→**200** total ativo. O teto de 5/40 original foi dimensionado
+   pro limite de 60 requisições/hora do GitHub sem autenticação — desde
+   a introdução do `GITHUB_TOKEN` (seção própria abaixo) o limite real
+   é 5000/hora, então o teto artificial de 5/40 estava sobrando
+   capacidade de sobra na mesa sem motivo técnico que ainda se aplique.
+2. **Peso de novidade em dobro, janela quase o dobro**: sinal de
+   "programa lançado há pouco tempo" (proxy direto pra "ninguém
+   reportou ainda", pedido explícito do usuário) subiu de até 30 pontos
+   em até 180 dias pra até **60 pontos em até 365 dias** — programa
+   lançado há 300 dias antes marcava 0 ponto de novidade, hoje ainda
+   marca ~10.
+
+**Sinal considerado e rejeitado**: `average_time_to_bounty_awarded ===
+null` no dataset do HackerOne (15 dos 226 programas ativos) parecia à
+primeira vista um proxy direto de "baixa competição" — mas
+investigação mostrou que mistura programa genuinamente novo com
+programa antigo onde quase nada nunca é aprovado (Node.js, Django,
+Ruby, Phabricator aparecem todos nesta lista, nenhum deles novo).
+Descartado por ser ruidoso demais pra usar como pontuação; registrado
+aqui como pesquisa real feita e não só ideia não tentada.
+
+Nenhuma mudança de comportamento em `classifyCandidate` além do peso —
+o veredito (`eligible`/`insufficient_signal`/`too_large`/
+`unsupported_language`/`blocked_program`) e o `MIN_SCORE_TO_PROMOTE >
+0` (bug do score=0 já documentado acima) continuam exatamente iguais.

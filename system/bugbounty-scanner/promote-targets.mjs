@@ -36,8 +36,18 @@ export const MAX_REPO_SIZE_KB = 20000; // ~20MB — acima disso, scan-runner.mjs
 // positivo real (ver scoreCandidate); score 0 vira `insufficient_signal`,
 // nunca promovido, mas também nunca escondido (aparece no log de rodada).
 export const MIN_SCORE_TO_PROMOTE = 0;
-export const DEFAULT_MAX_PROMOTIONS_PER_RUN = 5; // orçamento de API do GitHub é compartilhado com o scan diário — crescer aos poucos, não inundar de uma vez
-export const DEFAULT_MAX_TOTAL_PROMOTED = 40; // teto absoluto — cada alvo a mais é mais chamada de API por dia, pra sempre; ao atingir, promoção para e reporta em vez de crescer sem fim
+// Aumentado de 5/40 pra 20/200 em 01/09/2026 -- usuário apontou (com razão)
+// que a amplitude real era artificialmente estreitada por este teto, não
+// por falta de candidato descoberto (o dataset já tinha 195+ candidatos
+// reais esperando havia semanas). O caso original que motivou 5/40 (só
+// 60 req/h anônimo, orçamento de API compartilhado com o scan diário) não
+// existe mais -- `GITHUB_TOKEN` (github-auth.mjs) dá 5000 req/h desde
+// 31/08/2026, ordem de magnitude de folga. Continua tendo teto (nunca
+// "sem limite") pelo mesmo motivo original: cada alvo a mais é tempo de
+// scan diário a mais pra sempre: 200 é generoso o bastante pra absorver a
+// maior parte do dataset atual sem se tornar prático "sem teto".
+export const DEFAULT_MAX_PROMOTIONS_PER_RUN = 20;
+export const DEFAULT_MAX_TOTAL_PROMOTED = 200;
 
 // GitHub retorna a linguagem "primária" (mais bytes) detectada por linguist.
 // Só mapeia pra um balde que scan-runner.mjs realmente sabe escanear hoje —
@@ -87,10 +97,19 @@ export function scoreCandidate(candidate, now = Date.now()) {
     reasons.push(`teto de recompensa conhecido: US$${bestProgram.maxPayoutUsd.toLocaleString('en-US')}`);
   }
 
+  // Peso de "programa novo" subiu de até-30/180 dias pra até-60/365 dias
+  // em 01/09/2026 -- pedido explícito do usuário de priorizar achar
+  // "oportunidade que ninguém reportou ainda" tanto quanto "vai pagar".
+  // Continua sendo o melhor proxy honestamente disponível pra "menos
+  // escrutinado" (o dataset público não expõe contagem de report/hacker
+  // por programa -- average_time_to_bounty_awarded=null foi avaliado e
+  // descartado como sinal: conflaria "programa realmente novo" com
+  // "programa maduro onde quase nada é aprovado", ex. Node.js/Django/Ruby
+  // aparecem nessa lista por serem difíceis, não por serem novos).
   if (candidate.newestProgramStartedAt) {
     const ageDays = (now - new Date(candidate.newestProgramStartedAt).getTime()) / 86400000;
-    if (ageDays >= 0 && ageDays < 180) {
-      score += 30 * (1 - ageDays / 180); // até 30 pontos, decai linear até 180 dias
+    if (ageDays >= 0 && ageDays < 365) {
+      score += 60 * (1 - ageDays / 365); // até 60 pontos, decai linear até 365 dias
       reasons.push(`programa lançado há ${Math.round(ageDays)} dia(s) — menos escrutinado por outros pesquisadores`);
     }
   }

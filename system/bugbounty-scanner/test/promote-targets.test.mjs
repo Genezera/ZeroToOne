@@ -68,10 +68,10 @@ test('scoreCandidate: payout maior aumenta score, capado em US$100.000', () => {
   assert.match(low.reasons[0], /teto de recompensa/);
 });
 
-test('scoreCandidate: programa lançado recentemente pontua mais que um lançado há mais tempo, e nada além de 180 dias', () => {
+test('scoreCandidate: programa lançado recentemente pontua mais que um lançado há mais tempo, e nada além de 365 dias', () => {
   const recent = scoreCandidate(candidate({ newestProgramStartedAt: '2026-08-20T00:00:00Z' }), NOW); // 11 dias atrás
   const older = scoreCandidate(candidate({ newestProgramStartedAt: '2026-06-01T00:00:00Z' }), NOW); // ~91 dias atrás
-  const tooOld = scoreCandidate(candidate({ newestProgramStartedAt: '2025-01-01T00:00:00Z' }), NOW); // bem mais que 180 dias
+  const tooOld = scoreCandidate(candidate({ newestProgramStartedAt: '2025-01-01T00:00:00Z' }), NOW); // bem mais que 365 dias
   assert.ok(recent.score > older.score);
   assert.ok(older.score > 0);
   assert.equal(tooOld.score, 0);
