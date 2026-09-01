@@ -790,6 +790,50 @@ Scheduler, cada uma um wrapper `.vbs` oculto (sem janela) chamando
   apagado).
 Além disso, a investigação profunda de código (leitura de arquivo,
 julgamento sobre alcançabilidade, veredito de achado) roda numa sessão
-de nuvem separada (`trig_01QQeYvKRi9qJD4QkzkbqsSe`), disparada por
-webhook de push real no GitHub + cron diário de segurança — não roda
-no computador do usuário, só o scanner mecânico/heurístico roda local.
+de nuvem separada, disparada por webhook de push real no GitHub + cron
+diário de segurança — não roda no computador do usuário, só o scanner
+mecânico/heurístico roda local.
+
+**Correção**: o ID de trigger citado em rodadas anteriores desta
+missão (`trig_01QQeYvKRi9qJD4QkzkbqsSe`) devolveu `404` ao ser
+consultado de verdade via `RemoteTrigger get` nesta sessão, e
+`RemoteTrigger list` não mostra nenhum trigger pra esta identidade —
+zero. Consistente com o que já se sabia (a sessão de nuvem roda numa
+conta Claude diferente desta) — **esta sessão não tem (e não tinha)
+acesso de leitura/edição ao prompt real da rotina de nuvem**, ao
+contrário do que rodadas anteriores pareciam implicar. Efeito prático:
+mudar o comportamento futuro do agente de nuvem só é possível
+indiretamente, via os arquivos que ele já lê como convenção
+(`README.md`, `TEMPLATE.md`, `NOTES.md` de cada programa) — não existe
+hoje um jeito direto de editar as instruções da rotina a partir daqui.
+
+## PoC executável pra Go — convenção documentada + exemplo real (31/08/2026)
+
+Pedido do usuário: "comece pelo melhor caminho e siga sozinho" (depois
+de eu sugerir o validador de PoC em Go como próximo passo). Descoberta
+importante antes de construir: diferente de Solidity, **não existe
+(nem deveria existir) um script genérico pra isso** — a PoC Solidity
+também não tem script próprio, é só o agente de nuvem instalando
+Foundry e escrevendo um teste específico pra cada achado via Bash. A
+máquina de estados já aceita `validations.result="pass"`
+genericamente, de qualquer `type` — o que faltava era convenção
+documentada + prova real de que funciona, não código novo.
+
+Construído e RODADO de verdade (não só descrito): PoC real contra
+`cosmossdk.io/math@v1.1.2` (a mesma dependência do achado OKG desta
+sessão, mas usada aqui só como exemplo de processo — vulnerabilidade
+já pública/corrigida/retratada pelo próprio autor, segura de
+demonstrar). `go test -v` real, panic real (`"Int overflow"`)
+capturado, commitado em
+`system/bugbounty-scanner/poc-examples/go-legacy-dec-overflow/` como
+referência. `README.md` do próprio exemplo documenta uma armadilha
+real encontrada na hora: um valor "grande o bastante pra estourar o
+limite antigo" também estoura o limite novo corrigido (ambos limitam
+magnitude, cálculo diferente) — não prova sozinho qual CVE específico
+foi corrigido, lição deixada explícita pra próxima PoC do tipo.
+
+`README.md`/`TEMPLATE.md` atualizados com a convenção Go (clonar no
+commit certo, escrever `_test.go` externo quando a API pública já
+basta, `go test -run X -v`, colar saída real). JVM/Kotlin e JS/TS
+continuam sem convenção equivalente — próximo passo natural se algum
+achado real chegar lá antes.

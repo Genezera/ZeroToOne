@@ -149,6 +149,51 @@ vira evidência forte de falso-positivo, documentada como tal — não
 descartada. Ver `research/bugbounty/reports/TEMPLATE.md`, seção "Prova de
 conceito executável".
 
+## Prova de conceito executável (Go, via `go test` real) — 31/08/2026
+
+Mesmo princípio da PoC Solidity (rodar de verdade, nunca só ler), bem
+mais simples de montar: Go não precisa de fork/rede nem de framework
+especial — `go test` já é parte do toolchain padrão. Convenção:
+
+1. Clonar o repositório afetado no commit já registrado como
+   `deploymentEvidence` (ou anotar o commit se ainda não estiver
+   registrado).
+2. Escrever um arquivo `_test.go` chamando a função exportada real
+   (nunca reimplementar a lógica) — preferir pacote `_test` externo
+   (`package foo_test`) quando a API pública já basta pra disparar o
+   bug, já que isso reproduz exatamente como um consumidor downstream
+   real chamaria, o mesmo tipo de pergunta de alcançabilidade que já é
+   central nesta missão (ex.: achado `cosmossdk.io/math` do OKG).
+3. Rodar `go test -run TestNomeDoTeste -v ./caminho/do/pacote/...` a
+   partir da raiz do módulo clonado.
+4. Colar a saída REAL (PASS/FAIL + qualquer panic/trace), nunca
+   parafrasear — `record-validation --type=go_test_poc
+   --result=pass|fail --output="..."`.
+
+Exemplo de referência real e executável (não é achado novo — usa uma
+vulnerabilidade já pública/corrigida/retratada de propósito, só pra
+provar que o mecanismo funciona de ponta a ponta):
+`system/bugbounty-scanner/poc-examples/go-legacy-dec-overflow/` — PoC
+real contra `cosmossdk.io/math@v1.1.2` (GHSA-7225-m954-23v7), rodada de
+verdade (`go test -v`, panic real `"Int overflow"` capturado). O
+próprio `README.md` do exemplo documenta uma armadilha real capturada
+durante a construção: um valor "grande o bastante pra estourar o
+limite antigo" também estoura o limite novo (corrigido) pelo mesmo
+motivo (ambos limitam magnitude, só com cálculo diferente) — não prova
+sozinho qual CVE específico foi corrigido. PoC de overflow/limite
+precisa mirar a janela estreita de discrepância, não só "usar um número
+gigante".
+
+**Gargalo real que isso NÃO resolve sozinho**: a máquina de estados já
+aceita qualquer `validations.result="pass"` genericamente — o que
+faltava não era código, era convenção documentada + exemplo real. Acha
+achado Go em `corroborated_static` ainda depende de alguém (agente de
+nuvem ou humano) escrever a PoC específica pra aquele achado — não tem
+como isso ser 100% automático (a PoC precisa entender o bug
+específico), mas agora existe um caminho conhecido e testado, igual já
+existia pra Solidity. JVM/Kotlin e JS/TS continuam sem convenção
+equivalente — próximo passo natural se algum achado real chegar lá.
+
 ## Solidity (Circle BBP, HackerOne — emissora do USDC)
 `targets-solidity.mjs` + `heuristics-solidity.mjs` — o primeiro alvo
 descoberto pelo próprio módulo de descoberta automática (Lote 5), não

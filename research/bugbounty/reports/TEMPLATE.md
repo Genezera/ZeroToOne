@@ -26,6 +26,14 @@ REGRAS ANTES DE GERAR (o agente de nuvem confere isso, não pula):
    NUNCA rede real, NUNCA conta/chave privada com fundo real — só contas
    geradas localmente (`makeAddr`/`vm.deal`), financiadas apenas dentro do
    fork.
+   Para achado Go: escreva e RODE um `_test.go` real contra o pacote
+   clonado (`go test -run Teste -v`) — ver
+   `system/bugbounty-scanner/README.md`, seção "Prova de conceito
+   executável (Go...)" e o exemplo real em
+   `system/bugbounty-scanner/poc-examples/`. Ainda não existe convenção
+   equivalente pra JVM/Kotlin ou JS/TS — se não der pra rodar PoC de
+   verdade nessas linguagens, registre `record-validation
+   --result=not_applicable` explicitamente (nunca simule/invente saída).
 4. Nunca é rascunho final — todo relatório carrega o aviso de revisão
    humana obrigatória no topo, sempre.
 -->
@@ -101,18 +109,23 @@ de usuário real.}}
 {{Se aplicável: saída de comando, resultado de trace, referência externa
 (ex.: ID da vulnerabilidade em GHSA/CVE/OSV para achado de dependência).}}
 
-## Prova de conceito executável (Solidity — quando aplicável)
-{{SÓ preencher esta seção se um teste Foundry de verdade foi escrito e
-rodado contra um FORK LOCAL (nunca rede real, nunca conta/chave privada
-com fundo real). Inclua:
-- O código do teste Solidity (`.t.sol` completo ou trecho relevante)
+## Prova de conceito executável (Solidity/Go — quando aplicável)
+{{SÓ preencher esta seção se um teste de verdade foi escrito e rodado.
+Solidity: Foundry contra um FORK LOCAL (nunca rede real, nunca
+conta/chave privada com fundo real). Go: `_test.go` real contra o
+pacote clonado, via `go test` (ver `system/bugbounty-scanner/README.md`
+e `poc-examples/`). Inclua:
+- O código do teste completo ou trecho relevante
 - O comando exato rodado, ex.: `forge test --fork-url <RPC público>
-  --match-test test_X -vvv`
-- A saída REAL do `forge test` (PASS/FAIL + trace relevante) — cole o
+  --match-test test_X -vvv` ou `go test -run TestX -v ./pkg/...`
+- A saída REAL do comando (PASS/FAIL + trace relevante) — cole o
   resultado literal, nunca parafraseado
-Se a PoC FALHOU (ex.: um modifier bloqueou o ataque que a leitura de
-código sugeria), isso é evidência forte de falso-positivo — documente
-aqui mesmo assim, é informação real e valiosa, não descarte.}}
+Se a PoC FALHOU (ex.: um modifier/checagem bloqueou o ataque que a
+leitura de código sugeria), isso é evidência forte de falso-positivo —
+documente aqui mesmo assim, é informação real e valiosa, não descarte.
+Para JVM/Kotlin e JS/TS, ainda não existe convenção de PoC local
+equivalente — registre `not_applicable` explicitamente em vez de pular
+a seção em silêncio.}}
 
 ## Impacto
 {{O que um atacante ganha de verdade — concreto, não genérico, baseado no
