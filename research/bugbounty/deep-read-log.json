@@ -683,7 +683,14 @@
     "packages/eve/src/shared/session-auth.ts",
     "packages/eve/src/execution/tool-auth.ts",
     "packages/eve/src/runtime/connections/scoped-authorization.ts",
-    "packages/eve/src/runtime/connections/principal.ts"
+    "packages/eve/src/runtime/connections/principal.ts",
+    "packages/eve/src/internal/http/basic-auth.ts",
+    "packages/eve/src/runtime/connections/authorization-tokens.ts",
+    "packages/eve/src/execution/session-callback-route.ts",
+    "packages/eve/src/tasks/task-inbox-token.ts",
+    "packages/eve/src/tasks/task-id.ts",
+    "packages/eve/src/harness/workflow-continuation-security.ts",
+    "packages/eve/src/shared/continuation-token.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",

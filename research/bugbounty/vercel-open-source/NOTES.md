@@ -2669,3 +2669,36 @@ de `scopeId` via regex antes de interpolar em HTML). Sem candidato óbvio
 de vulnerabilidade nova nesta leitura.
 
 `deep-read-log.json` atualizado (+3 em `nuxt/nuxt`, agora 7 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 15ª rodada do dia)
+
+`program-policy.json` checado antes de qualquer leitura — sem entrada pra
+Vercel Open Source (não banido). `list-pending` vazio, sem candidates
+novos. Os 3 findings já em `corroborated_static` (deste programa: o
+`ssrf_redirect_allowlist_bypass_risk` em `image-optimizer.ts` e o
+`command_injection_risk` em `update-remix-run-dev.js`) já têm a etapa de
+`record-validation --result=not_applicable` registrada de rodadas
+anteriores — nada novo a fazer neles, permanecem presos em
+`corroborated_static` pela mesma limitação (sem validador local pra JS/TS,
+`scope_verified` recusado como esperado).
+
+Leitura profunda proativa: clonado `vercel/eve` (`git clone --depth 1`) e
+rastreada a cadeia de autorização do callback de sub-agente
+(`session-callback-route.ts` -> `readTaskIdFromInboxToken` ->
+`deriveTaskInboxToken`/`deriveTaskId` em `tasks/task-id.ts` ->
+`workflow-continuation-security.ts`). O design é bearer-token deliberado
+("posse do token de callback é a autorização", comentário explícito no
+próprio arquivo): o token de inbox da task é `sha256(taskId \0
+parentContinuationToken)`, determinístico de propósito (replay idempotente),
+mas só é inadivinhável porque `parentContinuationToken` é gerado com
+`randomBytes(32)` (256 bits) em `workflow-continuation-security.ts` e nunca
+é renderizado pro modelo nem serializado no payload durável — confirmado
+lendo a geração real, não assumido pelo comentário. Nenhuma falha
+encontrada nessa cadeia. Também lidos `internal/http/basic-auth.ts`
+(encoding trivial, sem lógica de auth real ali) e
+`runtime/connections/authorization-tokens.ts` (cache de token por
+`(authorizationScope, principalKey)`, escopo correto, sem risco de
+colisão entre principals). `deep-read-log.json` atualizado (+7 em
+`vercel/eve`, agora 18 arquivos).
+
+Nenhum achado novo nesta rodada.
