@@ -5193,3 +5193,57 @@ de Circle BBP tinha só interfaces/erros/structs não lidos):
 agora 47; +1 em `circlefin/evm-cctp-contracts`, agora 20). Nenhum achado
 novo nesta rodada — resultado normal, nada digno de nota.
 agent-proxy, testado novamente nesta rodada, sem mudança.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — recuperação de achado perdido + leitura profunda em `evm-gateway-contracts`, sem achado novo
+
+**Recuperação de estado perdido.** Antes de investigar qualquer coisa
+nova, `migrate-to-v2.mjs` só trouxe 132 findings (nenhum `corroborated_static`),
+mas `research/bugbounty/vercel-open-source/NOTES.md` (commit `0fa8920`,
+sessão local anterior) documentava um achado real de command injection
+em `vercel/vercel/utils/update-remix-run-dev.js` com estado
+`corroborated_static` já confirmado. Comparando os arquivos do commit
+`0fa8920` (`git show --stat`), `queue.jsonl` NÃO foi tocado nessa sessão —
+só `NOTES.md`/`deep-read-log.json`/`ledger.research.jsonl` foram commitados,
+ou seja, `export-queue` não rodou (ou rodou mas não foi commitado) antes do
+push. O achado ficou órfão: documentado em prosa e no ledger, mas ausente
+da fonte de verdade compartilhada (`queue.jsonl`), então nenhuma sessão
+subsequente (incluindo `migrate-to-v2.mjs` desta rodada) conseguia
+enxergá-lo. Recuperado via `cli.mjs upsert-finding` (mesmo `id`, mesmo
+reasoning já documentado, sem nova investigação) + `cli.mjs transition ...
+corroborated_static` — restaura a continuidade sem reinventar a análise.
+Isso será exportado de volta pro `queue.jsonl` nesta rodada (ver passo 7).
+**Nota para o usuário**: esse gap (export-queue esquecido antes do commit)
+já é conhecido no sistema como causa de perda de trabalho — vale reforçar
+no fluxo de sessão local o mesmo lembrete que já existe pro agente de
+nuvem.
+
+**Leitura profunda proativa** (3 arquivos novos, `circlefin/evm-gateway-contracts`,
+priorizando lib de baixo nível ainda não coberta): `src/lib/AddressLib.sol`,
+`src/UpgradeablePlaceholder.sol`, `src/lib/TransferSpec.sol`. Investigação
+com ceticismo, seguindo a cadeia de chamada real: `AddressLib._bytes32ToAddress`
+trunca um `bytes32` pros 20 bytes baixos **sem validar que os 12 bytes
+altos são zero** — hipótese investigada: um `sourceSigner`/`sourceDepositor`
+com lixo nos bytes altos poderia confundir uma verificação de identidade em
+algum ponto da cadeia (`Burns.sol::_validateSignatureAndGetSigner` →
+`_wasEverAllowlistedContractSigner` → EIP-1271, ou o caminho ECDSA →
+`_validateBurnIntentTransferSpec`). Rastreada a cadeia completa: o `digest`
+assinado (EIP-712) inclui o `bytes32` CRU (com qualquer lixo), então
+qualquer alteração nos bytes altos muda o digest e invalida a assinatura
+existente — sem malha de reforja. Toda comparação posterior
+(`sourceSigner != signer` em `Burns.sol:445`, `_wasEverAllowlistedContractSigner`)
+trunca os DOIS lados do mesmo jeito, então não há confusão de identidade
+dentro deste contrato. `TransferSpec.sol` confirma que o design de campos
+`bytes32` genéricos é intencional (multi-chain: destino pode ser um domínio
+não-EVM com endereços de 32 bytes de verdade, ex. Solana) — não é um
+descuido, é o formato do protocolo. `UpgradeablePlaceholder.sol` é
+padrão UUPS correto (`_disableInitializers` no construtor, `initializer`
+guard, upgrade restrito a `onlyOwner`). **Sem achado** — a falta de
+validação de zero-padding em `_bytes32ToAddress` é só falta de defesa em
+profundidade (nenhum caminho de exploração real encontrado nesta sessão);
+registrado aqui para não repetir a mesma investigação numa rodada futura
+sem necessidade.
+
+`deep-read-log.json` atualizado (`circlefin/evm-gateway-contracts` ganhou
+3 arquivos: `AddressLib.sol`, `UpgradeablePlaceholder.sol`,
+`TransferSpec.sol`). `Block Open Source` seguiu não tocado
+(`aiResearchBanned: true`).
