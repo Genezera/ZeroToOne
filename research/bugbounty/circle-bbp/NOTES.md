@@ -5086,3 +5086,67 @@ confiança host↔enclave, wiring de auth/config):
 `deep-read-log.json` atualizado (+3 arquivos em
 `circlefin/arc-remote-signer`, agora 34). Nenhum achado novo nesta
 rodada — resultado normal. `Block Open Source` seguiu não tocado.
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila global vazia, fechamento de `circlefin/arc-remote-signer` (resta só teste/mock)
+
+`node system/bugbounty-scanner/migrate-to-v2.mjs` + `list-pending` = 0
+candidatos em todo o sistema. `program-policy.json` conferido primeiro
+(passo 0): só `Block Open Source` segue `aiResearchBanned: true` — não
+tocado nesta rodada. `git clone --depth 1` de `circlefin/arc-remote-signer`
+num diretório temporário do scratchpad (apagado ao final) pra enumerar
+todo `.go` não-teste/não-mock ainda sem entrada em `deep-read-log.json`
+(34 arquivos já cobertos em rodadas anteriores). Restavam 10 arquivos;
+li os 6 mais próximos do critério de prioridade (config/wiring de
+auth-adjacent — TLS, ambiente de deploy, credenciais AWS):
+
+- `internal/common/config/config.go` + `internal/common/config/environment.go`
+  — `BaseConfig`/`Environment` (enum `dev`/`qa`/`stg`/`prod`), puro tipo
+  base sem lógica de decisão. Sem achado.
+- `internal/common/grpc/client/config.go` — struct de config de retry/timeout
+  do cliente gRPC outbound (`NewClientConfig`), só defaults numéricos e
+  lista de `codes.Code` retryable. Sem achado.
+- `internal/enclave/config.go` — `Config` do lado enclave, `NewConfig()`
+  tem `NitroEnclave.Enabled: true` como default (diferente do
+  `internal/app/provider/enclave/config.go` já lido em rodada anterior,
+  que tinha `Enabled=false` — são dois structs `NitroEnclaveConfig`
+  distintos, um por processo/pacote, não uma inconsistência de código:
+  o lado app/host default pra modo dev-sem-enclave, o lado enclave
+  default pra "estou rodando dentro de um enclave real", coerente com
+  cada processo assumir seu próprio contexto de execução por padrão).
+  Sem achado.
+- `internal/app/config.go` — `Config` do lado app/host completo, incluindo
+  `NewConfig()`/`MergeAwsConfigWithLocalstack`/`retrieveAWSConfig`.
+  Investiguei com ceticismo se `MergeAwsConfigWithLocalstack` (credenciais
+  estáticas fake `"test"/"test"` injetadas quando `Localstack.Endpoint`
+  não é vazio) poderia vazar pra produção: `retrieveAWSConfig` só chama
+  esse caminho quando `cfg.Env == config.Dev || cfg.Env == config.QA` **E**
+  `Localstack.Enabled && Localstack.Endpoint != ""` — dupla guarda (env
+  de deploy + flag explícita), `Stg`/`Prod` sempre caem no
+  `awsSdkConfig.LoadDefaultConfig(ctx)` puro independente do que o YAML
+  de secrets contenha. Sem achado — a guarda de ambiente está correta e
+  é checada antes de qualquer uso das credenciais fake.
+  Também notei o comentário inline em `NewConfig()` sobre
+  `Public.Server.TLS: &grpcServer.TLSConfig{Enabled: false}` existir só
+  pra permitir override via env var `APP_PUBLIC_SERVER_TLS_*` mesmo
+  quando o YAML omite o bloco `tls` — não é uma falha (TLS continua
+  `Enabled: false` por padrão, precisa de override explícito pra
+  ligar), só documentação de por que o struct é inicializado em vez de
+  deixado nil.
+- `internal/smoke/provider/proxy/proxy.go` — cliente gRPC de smoke test
+  (`package proxy`, doc comment "for smoke testing") que conecta em
+  `localhost:10340` via `insecure.NewCredentials()` (sem TLS). Confirmado
+  pelo próprio nome do pacote/comentário e pela porta fixa
+  `defaultSvcAddr = "localhost:10340"` (loopback, não endereço de rede
+  externo) que é ferramenta de teste de desenvolvimento, não código de
+  produção — mesmo padrão já aceito em rodadas anteriores para
+  `enclave/config.go` (`NitroEnclave.Enabled=false` como modo dev local).
+  Sem achado.
+
+`deep-read-log.json` atualizado (+6 arquivos em
+`circlefin/arc-remote-signer`, agora 40 — praticamente todo o `.go` não-
+teste/não-mock do repo coberto; os poucos arquivos restantes sem entrada
+são só `*_mock.go`/`*_test.go`, fora do critério de leitura profunda).
+Nenhum achado novo nesta rodada — resultado normal. `Block Open Source`
+seguiu não tocado (`aiResearchBanned: true`). `api.hiro.so` (StackingDAO,
+os 3 contratos `ststxbtc-*` ainda bloqueados) segue com CONNECT 403 no
+agent-proxy, testado novamente nesta rodada, sem mudança.

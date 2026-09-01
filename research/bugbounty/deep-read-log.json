@@ -375,7 +375,13 @@
     "internal/app/provider/secrets/config.go",
     "internal/app/app.go",
     "internal/enclave/enclave.go",
-    "cmd/run_enclave.go"
+    "cmd/run_enclave.go",
+    "internal/common/config/config.go",
+    "internal/common/config/environment.go",
+    "internal/common/grpc/client/config.go",
+    "internal/smoke/provider/proxy/proxy.go",
+    "internal/enclave/config.go",
+    "internal/app/config.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
