@@ -505,7 +505,10 @@
     "packages/cli/src/commands/curl/trace-session-token-provider.ts",
     "packages/cli/src/util/env/refresh-oidc-token.ts",
     "packages/cli/src/util/env/update-oidc-token-contents.ts",
-    "packages/oidc/src/token-util.ts"
+    "packages/oidc/src/token-util.ts",
+    "packages/cli/src/util/validate-cron-secret.ts",
+    "packages/oidc/src/oauth.ts",
+    "packages/functions/src/oidc/aws-credentials-provider.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

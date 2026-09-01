@@ -2412,3 +2412,47 @@ token.ts`, que já foi lido em rodada anterior e faz verificação de
 assinatura de verdade do lado que importa). Sem achado.
 `deep-read-log.json` atualizado (+1 em `vercel/vercel`, agora 34
 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 3ª rodada do dia)
+
+`list-pending` global = 0 (confirmado via `migrate-to-v2.mjs` +
+`cli.mjs list-pending`). O achado `command_injection_risk` em
+`utils/update-remix-run-dev.js` segue travado em `corroborated_static`
+pelo mesmo motivo já documentado (sem validador local pra JS/TS).
+
+Leitura profunda proativa: sparse-clone raso (`--filter=blob:none`) de
+`vercel/vercel` só para listar árvore de arquivos (sem baixar blobs
+desnecessários), filtrando por palavras-chave auth/session/token/login/
+password/admin/permission/access/oidc/oauth/crypto/secret e comparando
+contra `deep-read-log.json` — 220 caminhos batem o filtro, dos quais a
+maioria é teste/fixture/doc/changelog já sem valor de auditoria. Escolhi
+3 arquivos de lógica real ainda não lidos:
+
+- `packages/cli/src/util/validate-cron-secret.ts` — só valida que
+  `CRON_SECRET` contém caracteres válidos de header HTTP (RFC 7230) em
+  build-time; não faz comparação do secret em si (isso acontece em
+  runtime, em outro lugar não coberto por este arquivo). Sem lógica de
+  autenticação aqui, não é comparação insegura nem tem caminho de bypass
+  — é puro linting de formato. Sem achado.
+- `packages/oidc/src/oauth.ts` — descobre `token_endpoint` via
+  `${VERCEL_ISSUER}/.well-known/openid-configuration` com `VERCEL_ISSUER`
+  hardcoded (`https://vercel.com`, sem influência de input externo) e
+  usa esse endpoint pra `refreshTokenRequest`/`processTokenResponse`.
+  Sem SSRF (destino fixo, não vem de parâmetro do usuário). Validação de
+  `access_token`/`token_type`/`expires_in` no `processTokenResponse` é
+  só sanity-check de shape, não é o ponto de verificação de assinatura
+  (isso é responsabilidade do servidor OAuth remoto). Sem achado.
+- `packages/functions/src/oidc/aws-credentials-provider.ts` — wrapper
+  fino sobre `fromWebToken` do AWS SDK oficial, repassando o token OIDC
+  da Vercel (`getVercelOidcTokenSync()`) como `webIdentityToken` pro STS
+  `AssumeRoleWithWebIdentity`. Os campos de `init` (incluindo `roleArn`)
+  vêm do próprio código do usuário que integra a lib — ele só pode
+  assumir os roles que a *trust policy* AWS do lado dele permitir; não
+  há elevação de privilégio introduzida por este wrapper. Nenhuma
+  validação adicional é necessária aqui porque a fronteira de segurança
+  real é a trust policy no IAM (fora do escopo deste código) e a
+  assinatura do token OIDC (verificada pelo STS/AWS, não por este
+  arquivo). Sem achado.
+
+`deep-read-log.json` atualizado (+3 em `vercel/vercel`, agora 37
+arquivos). Sem achado novo, sem mudança de estado.
