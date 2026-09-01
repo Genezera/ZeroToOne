@@ -2456,3 +2456,183 @@ maioria é teste/fixture/doc/changelog já sem valor de auditoria. Escolhi
 
 `deep-read-log.json` atualizado (+3 em `vercel/vercel`, agora 37
 arquivos). Sem achado novo, sem mudança de estado.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 4ª rodada do dia)
+
+`list-pending` global vazia. Revisitado o achado `command_injection_risk`
+em `utils/update-remix-run-dev.js` (estado `corroborated_static`): clonei
+`vercel/vercel` (raso, main, HEAD=`e06cc643cec6a47bd9344af7f4589c736d95ed15`)
+e confirmei que o script e o workflow `.github/workflows/update-remix-run-dev.yml`
+seguem idênticos ao que já estava documentado — `newVersion` (do input
+livre `workflow_dispatch` `new-version`) interpolado em template string
+passada a `execSync` em 4 pontos (linhas 32/64/66/67), e a própria linha
+29 do YAML interpola `${{ inputs.new-version }}` dentro de uma string JS
+passada ao `actions/github-script`, um ponto de expression-injection
+anterior ao command injection interno do script. Registrei
+`record-validation --type=manual_code_review --result=not_applicable`
+(não existe validador local pra este tipo de achado, JS/GitHub-Actions,
+neste sistema) e tentei `transition ... reproduced_local` — recusado
+como esperado. Registrei `record-deployment-evidence` (confidence=medium,
+commit real confirmado, mas modelo de ameaça real — permissões do
+`GITHUB_TOKEN` default do job, se algum colaborador write realmente
+dispararia isso — não verificável só por leitura de código) e tentei
+`transition ... scope_verified` diretamente de `corroborated_static` —
+recusado pela máquina de estados (só aceita `reproduced_local->
+scope_verified`, não há atalho definido a partir de `corroborated_static`).
+Achado permanece travado em `corroborated_static`, sem mudança de
+veredito: tecnicamente real, mas exige colaborador com write access já
+autorizado pra explorar (não é vetor de atacante não-autenticado externo),
+o que limita severidade prática apesar do `maxSeverity=critical` no scope
+snapshot do programa.
+
+Leitura profunda proativa desta rodada direcionada a Circle BBP (ver
+NOTES.md respectivo) — nenhum arquivo novo óbvio de `vercel/vercel` pra
+reler que já não tenha sido coberto nas ~37 leituras anteriores com
+palavras-chave de auth/segurança.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 5ª rodada do dia)
+
+`program-policy.json` conferido antes de qualquer leitura (checklist do
+NOTES.md de Block Open Source aplicado, na ordem certa desta vez).
+`list-pending` global vazia, nenhum candidato deste programa a revisar.
+
+Leitura profunda proativa: clonei `vercel/vercel` raso e busquei por
+palavras-chave auth/session/token/login/crypto/secret ainda não cobertas
+em `deep-read-log.json` (37 arquivos até então). Achei
+`packages/cli-auth/oauth.ts` sem leitura prévia — chamou atenção porque
+os arquivos vizinhos do mesmo pacote (`sso.ts`, `credentials-store.ts`)
+já estavam lidos, mas o fluxo OAuth em si (Device Authorization Grant,
+RFC 8628) não. Lido linha a linha (353 linhas): implementa discovery
+(`.well-known/openid-configuration`) com checagem `as.issuer !==
+issuer.origin` (compara origin, não a URL completa — aceitável pro uso
+aqui já que `issuer` é passado como origem sem path pelo chamador, não é
+um bypass de confusão de issuer), device authorization request, polling
+de token, revoke, refresh e introspect — todos com `client_id` fixo (sem
+client secret, esperado pra CLI pública) e validação via `zod/mini`.
+Nenhum ponto de token sendo logado, nenhuma validação de assinatura
+faltando (esse pacote não valida JWT localmente, só troca códigos com o
+servidor — a validação de assinatura de ID token, quando existe, é feita
+em `verify-vercel-oidc-token.ts`, já lido e sem achado em rodada
+anterior). Sem achado.
+
+`deep-read-log.json` atualizado (+1 em `vercel/vercel`, agora 38
+arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 8ª rodada do dia)
+
+`list-pending` global vazia — nada deste programa pra revisar. O achado
+`command_injection_risk` em `utils/update-remix-run-dev.js` segue
+travado em `corroborated_static` pelo motivo já documentado nas 4
+rodadas anteriores (sem validador local pra JS/TS, sem atalho definido
+na máquina de estados de `corroborated_static` direto pra
+`scope_verified`). Nada de novo a fazer nele.
+
+Leitura profunda proativa desta rodada direcionada a `circlefin/
+stablecoin-evm` (ver NOTES.md de Circle BBP) — nenhuma leitura adicional
+de `vercel/vercel` nesta rodada.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 9ª rodada do dia)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Achado
+`command_injection_risk` em `utils/update-remix-run-dev.js` segue
+travado em `corroborated_static` pelo mesmo motivo documentado nas
+rodadas anteriores — sem mudança.
+
+Leitura profunda proativa direcionada a `vercel/flags` (clone raso
+novo, 11 arquivos já lidos em rodadas anteriores). Escolhidos 3 arquivos
+ainda não lidos em `packages/vercel-flags-core/src` e
+`packages/flags/src`, priorizando os que tocam contexto de
+requisição/fetch remoto/cookies:
+
+- `utils/request-context.ts` — só lê do symbol global
+  `@vercel/request-context`, que é gerenciado pelo runtime da Vercel
+  (não por este pacote); isolamento por requisição é responsabilidade
+  de quem popula o symbol, não deste getter. Sem achado.
+- `controller/fetch-datafile.ts` — monta `${host}/v1/datafile` com
+  `Authorization: Bearer <token>`. Verifiquei a origem de `host`:
+  default `'https://flags.vercel.com'` em `normalized-options.ts`,
+  configurado pelo desenvolvedor da app hospedeira, não vem de input de
+  requisição (header/query/cookie) em nenhum call site
+  (`controller/index.ts`, `controller/polling-source.ts`). Sem SSRF —
+  não é atacante-controlável. Sem achado.
+- `spec-extension/adapters/request-cookies.ts` — cópia reduzida de
+  código interno do Next.js (comentário confirma a origem), só um
+  wrapper Proxy pra tornar cookies de request somente-leitura. Sem
+  lógica nova. Sem achado.
+
+Achado zero nesta rodada. `deep-read-log.json` atualizado (+3 em
+`vercel/flags`, agora 14 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 10ª rodada do dia)
+
+`list-pending` global = 0. Achado `command_injection_risk` em
+`utils/update-remix-run-dev.js` segue travado em `corroborated_static`
+pelo mesmo motivo documentado nas rodadas anteriores (sem validador
+local pra JS/TS).
+
+Leitura profunda proativa direcionada a `vercel/next.js` (clone raso
+novo de `packages/next/src/server`), 3 arquivos novos priorizados por
+tocarem fetch remoto/allowlist de host (`is-private-ip.ts`,
+`image-optimizer.ts`, `match-remote-pattern.ts`):
+
+**Achado novo, real, código confirmado linha a linha**: em
+`image-optimizer.ts::fetchExternalImage`, o allowlist de host
+configurado pelo desenvolvedor (`images.remotePatterns`/`domains`, via
+`hasRemoteMatch`) só é checado UMA VEZ, no ponto de entrada
+(`validateParams`). Quando o host upstream (já allowlisted) responde
+com um redirect HTTP, `fetchExternalImage` chama a si mesma
+recursivamente pra seguir o `Location` — mas NUNCA revalida o novo host
+contra `hasRemoteMatch`, só contra o filtro de IP privado
+(`isPrivateIp`, que por sua vez tem uma janela TOCTOU/DNS-rebinding
+própria: `dns/promises.lookup()` uma vez antes, `fetch()` global resolve
+de novo depois, sem pinning). Confirmei que nenhum teste existente
+(`fetch-external-image.test.ts`, `maximum-redirects-1.test.ts`) cobre
+redirect pra um host DIFERENTE do validado — os testes de redirect só
+usam path relativo no MESMO host. Confirmei ainda que o mesmo código
+está presente na última versão estável publicada no npm
+(`next@16.3.4`, verificado via `registry.npmjs.org` + tag real
+`v16.3.4` no GitHub, não só no branch canary não lançado).
+
+Criado finding novo (`upsert-finding`, tipo `ai_deep_read_finding`),
+avançado pra `corroborated_static` (transição aceita — cadeia de
+código real confirmada). Tentativa de `scope_verified` recusada pela
+máquina de estados como esperado (não-Solidity sem validador não pode
+pular `reproduced_local` — mesma limitação já documentada pro achado de
+`update-remix-run-dev.js`). `check-scope` confirmou `vercel/next.js`
+em escopo, tier 1, elegível pra recompensa. Deployment evidence
+registrada com confidence `medium` (código confirmado na release
+estável real, mas sem confirmação de deploy de terceiro específico
+explorável). Finding fica parado em `corroborated_static` até o
+sistema ganhar um validador pra JS/TS ou um humano revisar diretamente.
+
+`deep-read-log.json` atualizado (+6 em `vercel/next.js`, incluindo os 3
+arquivos de teste lidos como parte da verificação, agora 12 arquivos no
+total pra este repo).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 12ª rodada do dia)
+
+`program-policy.json` checado ANTES de qualquer leitura (lição do incidente
+da rodada 11, ver `block-open-source/NOTES.md`). `list-pending` vazio — sem
+candidates novos na fila.
+
+Achado `ssrf_redirect_allowlist_bypass_risk` (image-optimizer.ts) já em
+`corroborated_static` desde a rodada 10: faltava registrar formalmente a
+tentativa de validação. `record-validation --result=not_applicable`
+registrado (mesma limitação já documentada: sem validador local pra JS/TS)
+e `transition -> reproduced_local` tentada — recusada como esperado pela
+máquina de estados. Finding permanece em `corroborated_static`, sem mudança
+de veredito. Achado `command_injection_risk` (update-remix-run-dev.js) já
+tinha essa etapa registrada em rodada anterior — nada a fazer.
+
+Leitura profunda proativa: 3 arquivos novos em `vercel/workflow`
+(`workbench/vitest/workflows/hook-token-reuse.ts`,
+`packages/cli/src/lib/inspect/auth.ts`,
+`packages/core/src/serialization/encryption.ts`). Nenhum achado novo:
+o primeiro é teste de regressão (comportamento correto sendo validado, não
+bug); o segundo é refresh de OAuth padrão de CLI local, sem anomalia; o
+terceiro é a camada de encriptação por capability (`SealTarget` vs
+`RunPayloadKeys`) — design com branding de tipo deliberado pra tornar
+confusão de chave simétrica/assimétrica um erro de compilação, não um bug
+de runtime; nenhuma falha encontrada na lógica de encrypt/decrypt.
+`deep-read-log.json` atualizado (+3 em `vercel/workflow`, agora 10
+arquivos).

@@ -27,7 +27,10 @@
     "packages/vercel-flags-core/src/controller/stream-connection.ts",
     "packages/vercel-flags-core/src/controller/stream-source.ts",
     "packages/flags/src/lib/serialization.ts",
-    "packages/vercel-flags-core/src/utils/ingest.ts"
+    "packages/vercel-flags-core/src/utils/ingest.ts",
+    "packages/vercel-flags-core/src/utils/request-context.ts",
+    "packages/vercel-flags-core/src/controller/fetch-datafile.ts",
+    "packages/flags/src/spec-extension/adapters/request-cookies.ts"
   ],
   "cashapp/misk": [
     "misk/src/main/kotlin/misk/security/authz/AccessInterceptor.kt",
@@ -198,7 +201,13 @@
     "Sources/Afterpay/Checkout/CheckoutHost.swift",
     "Sources/Afterpay/Checkout/CheckoutV3ViewController.swift",
     "Sources/Afterpay/ApiV3.swift",
-    "Sources/Afterpay/CashApp/CashAppSigningResult.swift"
+    "Sources/Afterpay/CashApp/CashAppSigningResult.swift",
+    "Sources/Afterpay/Helpers/WKWebView+Cache.swift",
+    "Sources/Afterpay/CashApp/ConfirmationV3+CashAppPay.swift",
+    "Sources/Afterpay/Checkout/CheckoutV3.swift",
+    "Sources/Afterpay/Widget/WidgetView.swift",
+    "Sources/Afterpay/Checkout/CheckoutV2ViewController.swift",
+    "Sources/Afterpay/Checkout/CheckoutV2.swift"
   ],
   "circlefin/evm-cctp-contracts": [
     "src/MessageTransmitter.sol",
@@ -272,7 +281,10 @@
     "src/msca/6900/v0.7/libs/ExecutionHookLib.sol",
     "src/libs/CastLib.sol",
     "src/libs/AddressBytesLib.sol",
-    "src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol"
+    "src/msca/6900/v0.7/libs/RepeatableFunctionReferenceDLLLib.sol",
+    "src/msca/6900/shared/libs/AddressDLLLib.sol",
+    "src/msca/6900/shared/libs/Bytes32DLLLib.sol",
+    "src/msca/6900/shared/libs/Bytes4DLLLib.sol"
   ],
   "circlefin/evm-gateway-contracts": [
     "src/lib/AddressLib.sol",
@@ -322,7 +334,10 @@
     "src/lib/AddressLib.sol",
     "src/modules/x-reserve/Domain.sol",
     "src/modules/x-reserve/Immutables.sol",
-    "src/examples/USDCx.sol"
+    "src/examples/USDCx.sol",
+    "src/lib/DepositIntent.sol",
+    "src/lib/DepositParams.sol",
+    "src/lib/WithdrawHookData.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",
@@ -343,7 +358,13 @@
     "contracts/v1/FiatTokenV1.sol",
     "contracts/v2/FiatTokenV2.sol",
     "contracts/v2/FiatTokenV2_1.sol",
-    "contracts/v2/FiatTokenV2_2.sol"
+    "contracts/v2/FiatTokenV2_2.sol",
+    "contracts/v2/NativeFiatTokenV2_2.sol",
+    "contracts/interface/NativeFiatToken/INativeCoinAuthority.sol",
+    "contracts/interface/NativeFiatToken/INativeCoinControl.sol",
+    "contracts/minting/MasterMinter.sol",
+    "contracts/v2/celo/FiatTokenCeloV2_2.sol",
+    "contracts/v2/celo/FiatTokenFeeAdapterV1.sol"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
@@ -352,7 +373,10 @@
     "packages/world-vercel/src/encryption.ts",
     "packages/world-vercel/src/http-core.ts (completo)",
     "packages/world-vercel/src/utils.ts",
-    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)"
+    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)",
+    "workbench/vitest/workflows/hook-token-reuse.ts",
+    "packages/cli/src/lib/inspect/auth.ts",
+    "packages/core/src/serialization/encryption.ts"
   ],
   "circlefin/arc-remote-signer": [
     "internal/app/public/public.go",
@@ -394,7 +418,9 @@
     "internal/common/grpc/client/config.go",
     "internal/smoke/provider/proxy/proxy.go",
     "internal/enclave/config.go",
-    "internal/app/config.go"
+    "internal/app/config.go",
+    "internal/enclave/common/crypto/bls/bls_nocgo.go",
+    "internal/enclave/common/crypto/bls/const.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -508,7 +534,8 @@
     "packages/oidc/src/token-util.ts",
     "packages/cli/src/util/validate-cron-secret.ts",
     "packages/oidc/src/oauth.ts",
-    "packages/functions/src/oidc/aws-credentials-provider.ts"
+    "packages/functions/src/oidc/aws-credentials-provider.ts",
+    "packages/cli-auth/oauth.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
@@ -537,7 +564,13 @@
     "packages/next/src/server/app-render/encryption-utils-server.ts",
     "packages/next/src/server/next-server.ts",
     "packages/next/src/server/lib/router-utils/resolve-routes.ts",
-    "packages/next/src/server/web/spec-extension/adapters/next-request.ts"
+    "packages/next/src/server/web/spec-extension/adapters/next-request.ts",
+    "packages/next/src/server/image-optimizer.ts",
+    "packages/next/src/server/is-private-ip.ts",
+    "packages/next/src/shared/lib/match-remote-pattern.ts",
+    "test/unit/image-optimizer/fetch-external-image.test.ts",
+    "test/e2e/image-optimizer/maximum-redirects-1.test.ts",
+    "test/e2e/image-optimizer/util.ts"
   ],
   "vercel/turborepo": [
     "crates/turborepo-auth/src/device_flow.rs",
