@@ -234,7 +234,11 @@
     "src/messages/v2/MessageV2.sol",
     "src/messages/Message.sol",
     "src/messages/BurnMessage.sol",
-    "src/examples/CCTPHookWrapper.sol"
+    "src/examples/CCTPHookWrapper.sol",
+    "src/roles/Pausable.sol",
+    "src/v2/Create2Factory.sol",
+    "src/v2/FinalityThresholds.sol",
+    "src/messages/v2/AddressUtilsExternal.sol"
   ],
   "circlefin/buidl-wallet-contracts": [
     "src/msca/6900/v0.7/plugins/v1_0_0/acl/SingleOwnerPlugin.sol",

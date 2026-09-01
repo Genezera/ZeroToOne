@@ -5682,3 +5682,47 @@ do Vercel Open Source):
 Nenhum achado novo, nenhuma transição de estado tentada.
 `deep-read-log.json` atualizado (+1 em `circlefin/arc-remote-signer`,
 agora 43 arquivos).
+
+## Rodada 2026-09-01 (push automático via GitHub webhook, sessão cloud)
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos pendentes (mesma
+distribuição de sempre: 125 falso_positivo, 3 corroborated_static,
+3 known_duplicate, 2 duplicate, 2 inconclusive, 1 human_ready).
+`list-deep-read-candidates.mjs` falhou de novo com o mesmo erro de proxy
+(`SyntaxError` em `fetchDatasets`) — seleção manual, mesmo processo das
+rodadas anteriores.
+
+Confirmado `program-policy.json` ANTES de escolher arquivo:
+`Block Open Source` (`cashapp/*`, `afterpay/*`, `square/wire`) segue
+`aiResearchBanned: true`, excluído inteiramente desta rodada (nenhum clone,
+nenhuma leitura, nenhuma ação nesse programa).
+
+Diff de `git ls-files` contra `deep-read-log.json` em
+`circlefin/evm-gateway-contracts` (clone raso @ `ee628dc35ee67bc8ad30ba0606cc70888688a3f1`)
+mostrou que esse repo já está com toda a lógica real (`src/modules/**`,
+`src/lib/**`) coberta — só sobravam interfaces triviais
+(`src/interfaces/*.sol`), sem valor. Segui então para
+`circlefin/evm-cctp-contracts` (clone raso separado), onde restavam
+4 arquivos não-interface:
+
+- `src/roles/Pausable.sol` — fork clássico do `centre-tokens/Pausable.sol`
+  (mesmo padrão já visto em outros contratos Circle), `onlyPauser`/
+  `onlyOwner` bem separados, `_updatePauser` valida `!= address(0)`. Sem
+  achado.
+- `src/v2/Create2Factory.sol` — `deploy`/`deployAndMultiCall` fazem deploy
+  determinístico via `Create2` + `Address.functionCall` arbitrário no
+  contrato recém-implantado, mas tudo atrás de `onlyOwner` (herda de
+  `Ownable`, não `Ownable2Step` — nota de design, não bug: é o único no
+  repo que usa o `Ownable` de 1 passo em vez do de 2 passos, mas o owner
+  já é um papel privilegiado de qualquer forma). Sem achado.
+- `src/v2/FinalityThresholds.sol` — 3 constantes (`FINALITY_THRESHOLD_*`),
+  zero lógica. Sem achado.
+- `src/messages/v2/AddressUtilsExternal.sol` — mesma função
+  `bytes32ToAddress`/`addressToBytes32` já documentada como nota de design
+  (não bug) em `AddressUtils.sol` interno em rodada anterior, aqui só como
+  biblioteca `external` reaproveitável fora do pacote. Sem achado novo.
+
+Nenhum achado novo, nenhuma transição de estado tentada.
+`deep-read-log.json` atualizado (+4 em `circlefin/evm-cctp-contracts`,
+agora 27 arquivos — cobre toda a lógica não-trivial do repo; o que resta
+são só `src/interfaces/*.sol`).
