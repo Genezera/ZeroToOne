@@ -4745,3 +4745,75 @@ tiveram capacidade de rodada dedicada nesta execução (orçamento de
 leitura desta sessão concentrado em Circle BBP); ambos seguem com
 cobertura já registrada em rodadas anteriores no mesmo dia, sem
 pendência conhecida.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 4) — fila vazia, leitura profunda em `noble-cctp` (Go/Cosmos), sem achado
+
+`list-pending` global = 0. `program-policy.json` conferido primeiro
+(passo 0): só `Block Open Source` segue banido para pesquisa com IA.
+`check-scope` não rodado de novo nesta rodada (não houve candidato a
+avançar de estado) — `noble-cctp` já confirmado `eligibleForBounty:true`
+no snapshot vigente (`circle-bbp.json`, expira 2026-09-03).
+
+`circlefin/noble-cctp` tinha 16 arquivos já lidos (todos
+`msg_server_*.go` + `roles.go`), mas nunca o arquivo de verificação de
+assinatura em si. `git clone --depth 1` e escolhidos os 3 arquivos de
+maior valor esperado ainda não lidos em `x/cctp/keeper/`:
+
+- **`attestation.go`** (`VerifyAttestationSignatures`) — o núcleo de
+  segurança de todo o CCTP: verifica que uma mensagem cross-chain tem
+  `signatureThreshold` assinaturas ECDSA válidas de atestadores
+  registrados, em ordem estritamente crescente de endereço (previne
+  duplicata/reordenação), via `crypto.Ecrecover` sobre
+  `Keccak256(message)`. Auditado linha a linha com ceticismo:
+  - Comprimento da atestação checado exatamente contra
+    `SignatureLength * threshold` antes de qualquer loop (sem
+    over-read).
+  - `threshold == 0` rejeitado explicitamente (evita "verificação"
+    vazia sempre passando).
+  - Ordem estrita via `bytes.Compare(prevAddr, recoveredAddr) > -1`
+    bloqueia both reordenação E duplicata de assinante na mesma
+    atestação — matemática conferida manualmente (Compare retorna
+    0 quando igual, o que já é rejeitado).
+  - Normalização do byte `v` (27/28 → 0/1) **muta o slice
+    `attestation` recebido por parâmetro no local** (aponta pro mesmo
+    array de `msg.Attestation`/`msg.OriginalAttestation`). Investiguei
+    se isso é explorável: rastreei os 2 únicos call sites
+    (`msg_server_receive_message.go` e `msg_server_replace_message.go`,
+    ambos já lidos em rodada anterior, relidos agora especificamente
+    pra este ponto) — nenhum dos dois reutiliza `msg.Attestation`/
+    `msg.OriginalAttestation` depois da chamada a
+    `VerifyAttestationSignatures` (nem em evento emitido, nem em
+    chave de dedup de nonce, que usa `SourceDomain+Nonce` da mensagem,
+    não da atestação). Mutação é observável só dentro do escopo da
+    própria chamada — sem efeito colateral externo. Não é achado.
+  - Malleabilidade de assinatura ECDSA (s → n-s, v flip, recupera a
+    MESMA chave pública) foi considerada: como o "conteúdo aprovado" é
+    sempre a mensagem original assinada por um atestador real
+    registrado, uma variante maleável de uma assinatura válida ainda
+    aprova exatamente a mesma mensagem do mesmo atestador — não permite
+    forjar aprovação de conteúdo novo nem personificar atestador sem a
+    chave privada. Não é achado (mesma classe de não-issue documentada
+    em bridges EVM que usam o mesmo padrão ecrecover-based).
+  - Comparação de atestador válido usa igualdade de bytes crus entre a
+    chave pública recuperada (65 bytes, prefixo `0x04`) e o campo
+    `Attester` decodificado de hex — sem normalização de case/formato
+    que pudesse causar falso-negativo silencioso viciando o teste a
+    favor do atacante (só causaria falso-negativo = rejeição
+    excessiva, nunca aceitação indevida). Sem achado.
+- `attesters.go` — só CRUD de store (`Get`/`Set`/`Delete`/`GetAll`
+  Attester), sem lógica de portão de autorização própria (isso vive em
+  `roles.go` + `msg_server_enable_attester.go`/`disable_attester.go`,
+  não lidos ainda). Sem achado.
+- `keeper.go` — só construtor do `Keeper` struct e logger, zero lógica.
+  Sem achado.
+
+Padrão geral: `VerifyAttestationSignatures` replica fielmente o desenho
+já público e auditado do `MessageTransmitter` EVM da Circle
+(mesmo esquema ecrecover + ordem crescente + threshold) — nenhuma
+divergência de comportamento encontrada na porta para Go/Cosmos.
+`deep-read-log.json` atualizado (3 arquivos novos em
+`circlefin/noble-cctp`, agora 19 no total). Clone temporário apagado do
+scratchpad ao fim da rodada. Esta rodada não tocou `Block Open Source`.
+Próxima rodada em `noble-cctp`: `msg_server_enable_attester.go`/
+`msg_server_disable_attester.go` (ainda não lidos, portão de quem pode
+alterar o conjunto de atestadores — mudança de custódia de confiança).
