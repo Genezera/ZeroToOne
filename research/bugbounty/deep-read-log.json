@@ -480,7 +480,9 @@
     "packages/cli-config/src/cred-storage.ts",
     "packages/connect/src/eve/provision-oauth-connector.ts",
     "packages/oidc/src/exchange-vercel-oidc-token.ts",
-    "packages/connect/src/authorization-details.ts"
+    "packages/connect/src/authorization-details.ts",
+    "utils/update-remix-run-dev.js",
+    ".github/workflows/update-remix-run-dev.yml"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

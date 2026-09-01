@@ -2163,3 +2163,75 @@ tinha sido lida ponta a ponta:
 Clone sparse temporário apagado do scratchpad ao fim da rodada. Circle
 BBP e Block Open Source (banido para pesquisa por IA) não tocados nesta
 rodada. Nenhum achado novo — resultado normal.
+
+## Rodada 2026-09-01 (sessão local) — command injection real em `utils/update-remix-run-dev.js`, achado novo (`corroborated_static`)
+
+Usuário pediu pra priorizar achado com alta confiança de ser inédito ou
+em programa novo. Triei 160+ achados `candidate` da rodada de
+descoberta anterior (Slither/OSV-Scanner/Semgrep) primeiro — a maioria
+se confirmou falso positivo real (não só "não investigado"): `eval_usage`
+em `vercel-labs/skills/src/frontmatter.ts:5` era a palavra "eval()"
+dentro de um COMENTÁRIO explicando que o código foi escrito pra EVITAR
+essa classe de bug (nenhum eval() real no arquivo); `redos_risk` em 3
+arquivos de `vercel-labs/agent-skills` tinha regex genuinamente sem
+ambiguidade de backtracking num caso e, nos outros dois, só processa
+conteúdo do próprio repositório em build-time; ~20 achados de
+`semgrep_detect_child_process` em `vercel/vercel` usam `spawn(cmd,
+args[])` com array (padrão seguro, sem shell) ou processam nome de
+pacote fixo/hardcoded (nunca input externo) — todos marcados
+`false_positive` no banco com o motivo específico de cada um.
+
+**Achado real, fora da lista do Semgrep** (achado por leitura manual
+seguindo a pista de `execSync` com template string, não por ferramenta):
+`utils/update-remix-run-dev.js` (86 linhas, lido por completo) +
+`.github/workflows/update-remix-run-dev.yml` (30 linhas, lido por
+completo). O workflow dispara via `workflow_dispatch` com um input de
+STRING LIVRE (`new-version`, sem `pattern` nem validação nenhuma no
+schema) que vai direto pro script sem sanitização. Dentro do script,
+`newVersion` só passa por `.trim()`, vira `branch =
+\`vercel-remix-run-dev-${newVersion.replaceAll('.', '-')}\`` (só troca
+"." por "-", preserva qualquer outro caractere), e `branch` entra
+INTERPOLADO numa template string passada pra `execSync` (roda via shell
+real, `/bin/sh -c`) em 3 lugares (linhas 32, 64, 66) — diferente do
+padrão seguro (`spawn` com array de argumentos) usado em ~20 outros
+lugares do mesmo repositório. Quem tiver permissão "write" pra disparar
+o workflow consegue injetar comando arbitrário no runner do GitHub
+Actions.
+
+Verificação de duplicata: 116 issues/PRs mencionando o nome do arquivo,
+todos PRs automáticos de rotina, nenhum sobre segurança. Histórico real
+via API do GitHub (não o clone raso): script criado em 01/03/2023,
+única mudança de lógica desde então foi remover uma dependência
+(17/12/2024) — o padrão de injeção nunca foi tocado por revisão de
+segurança em 3+ anos, apesar do .yml ter passado por 2 trocas de token
+recentes (2026-03-11, 2026-04-20) que mexeram em credencial mas não no
+script. Zero security advisory do repositório cobre isto. Escopo
+confirmado via `cli.mjs check-scope`: allowed=true, eligibleForBounty=true,
+maxSeverity=critical, tier 1.
+
+**Decisão consciente de não tentar PoC ao vivo**: diferente de todo
+outro achado desta missão com reprodução real (Foundry local, LiteSVM
+local, servidor gRPC efêmero local), testar isto de verdade exigiria
+disparar o workflow_dispatch REAL no repositório de produção do
+Vercel — não uma cópia local/sandbox. Isso seria uma ação ativa contra
+infraestrutura de CI de terceiro sem autorização prévia especificamente
+pra este tipo de teste. Fica em `corroborated_static` (transição pra
+`reproduced_local` tentada e corretamente recusada pelo state machine:
+"nenhum validador local existe ainda para este tipo de achado" —
+mesma categoria de teto estrutural já documentada pro achado Solana
+antes do LiteSVM existir).
+
+**Limitação honesta**: exige que o atacante já tenha "write" no
+repositório — não é RCE não-autenticado. O valor é a escalação:
+"write" não deveria equivaler a controle sobre segredo/ambiente de CI
+que um colaborador comum não tem acesso direto (o secret referenciado
+no workflow, `VERCEL_CLI_RELEASE_BOT_TOKEN`, tem um comentário "TODO:
+this secret is deleted" — mas isso não neutraliza o achado, já que o
+runner ainda tem o GITHUB_TOKEN padrão do job e a injeção via execSync
+roda antes de qualquer uso do token deletado). Fica a critério do
+triage do programa se esse modelo de ameaça é aceito como dentro do
+escopo de recompensa.
+
+Achado gravado no banco:
+`Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::module.exports::command_injection_risk`,
+estado `corroborated_static`, confidence "média".
