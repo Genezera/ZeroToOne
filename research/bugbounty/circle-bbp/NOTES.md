@@ -5320,3 +5320,24 @@ assina com `LocalSigningProvider`, verifica com `RemoteSigningProvider`
 e vice-versa; usa `PrivateKey::generate` de teste, não achado). Sem
 achado novo. `deep-read-log.json` atualizado (+2 em `circlefin/arc-node`,
 agora 22 arquivos).
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 4ª rodada do dia)
+
+`program-policy.json` conferido antes de qualquer leitura — `Circle BBP`
+não está banido, prosseguiu normalmente. `list-pending` global vazia,
+nenhum candidato deste programa a revisar.
+
+Leitura profunda proativa: `circlefin/evm-xreserve-contracts`, 3 arquivos
+novos lidos — `src/lib/DepositIntent.sol`, `src/lib/DepositParams.sol`,
+`src/lib/WithdrawHookData.sol`. Os três são puramente definições de
+`struct`/constantes de offset (documentação de layout de bytes), sem
+nenhuma função de encode/decode ou validação própria — a lógica real de
+serialização/parsing desses formatos já foi lida em rodada anterior
+(`DepositIntentLib.sol`/`WithdrawHookDataLib.sol`, já em
+`deep-read-log.json`). Sem achado. `deep-read-log.json` atualizado (+3
+em `circlefin/evm-xreserve-contracts`, agora 21 arquivos).
+
+Nesta mesma rodada, revisitado o achado `command_injection_risk` de
+Vercel Open Source (`corroborated_static`, travado por falta de
+validador local pra JS) — ver NOTES.md de Vercel Open Source. Não afeta
+Circle BBP, registrado aqui só por completude do log da rodada.

@@ -322,7 +322,10 @@
     "src/lib/AddressLib.sol",
     "src/modules/x-reserve/Domain.sol",
     "src/modules/x-reserve/Immutables.sol",
-    "src/examples/USDCx.sol"
+    "src/examples/USDCx.sol",
+    "src/lib/DepositIntent.sol",
+    "src/lib/DepositParams.sol",
+    "src/lib/WithdrawHookData.sol"
   ],
   "circlefin/evm-cpn-contracts": [
     "src/PaymentSettlementV2.sol",

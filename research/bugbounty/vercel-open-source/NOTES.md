@@ -2456,3 +2456,36 @@ maioria é teste/fixture/doc/changelog já sem valor de auditoria. Escolhi
 
 `deep-read-log.json` atualizado (+3 em `vercel/vercel`, agora 37
 arquivos). Sem achado novo, sem mudança de estado.
+
+## Rodada 2026-09-01 (push automático, sessão cloud, 4ª rodada do dia)
+
+`list-pending` global vazia. Revisitado o achado `command_injection_risk`
+em `utils/update-remix-run-dev.js` (estado `corroborated_static`): clonei
+`vercel/vercel` (raso, main, HEAD=`e06cc643cec6a47bd9344af7f4589c736d95ed15`)
+e confirmei que o script e o workflow `.github/workflows/update-remix-run-dev.yml`
+seguem idênticos ao que já estava documentado — `newVersion` (do input
+livre `workflow_dispatch` `new-version`) interpolado em template string
+passada a `execSync` em 4 pontos (linhas 32/64/66/67), e a própria linha
+29 do YAML interpola `${{ inputs.new-version }}` dentro de uma string JS
+passada ao `actions/github-script`, um ponto de expression-injection
+anterior ao command injection interno do script. Registrei
+`record-validation --type=manual_code_review --result=not_applicable`
+(não existe validador local pra este tipo de achado, JS/GitHub-Actions,
+neste sistema) e tentei `transition ... reproduced_local` — recusado
+como esperado. Registrei `record-deployment-evidence` (confidence=medium,
+commit real confirmado, mas modelo de ameaça real — permissões do
+`GITHUB_TOKEN` default do job, se algum colaborador write realmente
+dispararia isso — não verificável só por leitura de código) e tentei
+`transition ... scope_verified` diretamente de `corroborated_static` —
+recusado pela máquina de estados (só aceita `reproduced_local->
+scope_verified`, não há atalho definido a partir de `corroborated_static`).
+Achado permanece travado em `corroborated_static`, sem mudança de
+veredito: tecnicamente real, mas exige colaborador com write access já
+autorizado pra explorar (não é vetor de atacante não-autenticado externo),
+o que limita severidade prática apesar do `maxSeverity=critical` no scope
+snapshot do programa.
+
+Leitura profunda proativa desta rodada direcionada a Circle BBP (ver
+NOTES.md respectivo) — nenhum arquivo novo óbvio de `vercel/vercel` pra
+reler que já não tenha sido coberto nas ~37 leituras anteriores com
+palavras-chave de auth/segurança.
