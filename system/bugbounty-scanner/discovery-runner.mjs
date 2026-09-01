@@ -21,6 +21,7 @@ import { sendTelegramMessage } from './telegram.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runSlitherAgainstTarget, toQueueFindings as slitherToQueueFindings } from './slither-runner.mjs';
 import { runOsvScannerAgainstTarget, toQueueFindings as osvToQueueFindings } from './osv-scanner-runner.mjs';
+import { runSemgrepAgainstTarget, toQueueFindings as semgrepToQueueFindings } from './semgrep-runner.mjs';
 import { openDb, upsertFinding, closeDb } from './db.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
@@ -261,11 +262,55 @@ export async function runDiscovery() {
   }
   log(`OSV-Scanner: ${osvReposOk} repositório(s) analisado(s) com sucesso, ${osvReposFailed} com falha, ${osvNewFindings} achado(s) novo(s) (severidade 7.0+) na fila.`);
 
+  // Semgrep (r2c, gratuito, venv própria em E:) contra os mesmos alvos
+  // JS/Go/JVM do OSV-Scanner -- ~100 regras reais de segurança
+  // (`p/security-audit`) contra AST de verdade, não regex em texto.
+  // Mesmo cuidado de escopo/cache/upsert dos dois runners acima. Ver
+  // semgrep-runner.mjs.
+  let semgrepNewFindings = 0;
+  let semgrepReposOk = 0;
+  let semgrepReposFailed = 0;
+  {
+    const db = openDb(DB_PATH);
+    try {
+      for (const target of [...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS]) {
+        try {
+          const semResult = runSemgrepAgainstTarget(target, { log });
+          if (!semResult.ok) {
+            semgrepReposFailed++;
+            log(`AVISO: Semgrep não rodou em ${target.owner}/${target.repo}: ${semResult.reason}`);
+            continue;
+          }
+          semgrepReposOk++;
+          const findings = semgrepToQueueFindings(target, semResult.findings);
+          let newHere = 0;
+          for (const f of findings) {
+            // Mesma proteção dos blocos acima: upsertFinding sempre
+            // sobrescreve state, então só insere id genuinamente novo.
+            const existing = db.prepare('SELECT id FROM findings WHERE id = ?').get(f.id);
+            if (existing) continue;
+            newHere++;
+            semgrepNewFindings++;
+            upsertFinding(db, f);
+          }
+          log(`Semgrep: ${target.owner}/${target.repo} -- ${semResult.rawResultCount} achado(s) bruto(s), ${findings.length} em Warning+ severidade, ${newHere} realmente novo(s) desta vez.`);
+        } catch (err) {
+          semgrepReposFailed++;
+          log(`AVISO: Semgrep falhou de forma inesperada em ${target.owner}/${target.repo}: ${err.message.split('\n')[0]}`);
+        }
+      }
+    } finally {
+      closeDb(db);
+    }
+  }
+  log(`Semgrep: ${semgrepReposOk} repositório(s) analisado(s) com sucesso, ${semgrepReposFailed} com falha, ${semgrepNewFindings} achado(s) novo(s) (Warning+ severidade) na fila.`);
+
   {
     const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
     const slitherNote = slitherNewFindings > 0 ? `, ${slitherNewFindings} achado(s) novo(s) do Slither` : '';
     const osvNote = osvNewFindings > 0 ? `, ${osvNewFindings} achado(s) novo(s) do OSV-Scanner` : '';
-    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}`, log);
+    const semgrepNote = semgrepNewFindings > 0 ? `, ${semgrepNewFindings} achado(s) novo(s) do Semgrep` : '';
+    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}${semgrepNote}`, log);
     if (syncResult.ok) {
       if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
     } else {
@@ -289,6 +334,7 @@ export async function runDiscovery() {
         promotionResult.skipped.tooLarge.length > 0 ? `${promotionResult.skipped.tooLarge.length} repo(s) grande(s) demais pra promoção automática — revisão manual sugerida.` : null,
         `🔬 Slither: ${slitherReposOk}/${SOLIDITY_TARGETS.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
         `📦 OSV-Scanner: ${osvReposOk}/${JS_TARGETS.length + GO_TARGETS.length + JVM_TARGETS.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
+        `🕵️ Semgrep: ${semgrepReposOk}/${JS_TARGETS.length + GO_TARGETS.length + JVM_TARGETS.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.`,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {
