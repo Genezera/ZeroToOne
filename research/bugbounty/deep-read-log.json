@@ -488,7 +488,10 @@
     "packages/oidc/src/exchange-vercel-oidc-token.ts",
     "packages/connect/src/authorization-details.ts",
     "utils/update-remix-run-dev.js",
-    ".github/workflows/update-remix-run-dev.yml"
+    ".github/workflows/update-remix-run-dev.yml",
+    "packages/connect/src/authjs/connect-provider.ts",
+    "packages/connect/src/betterauth/connect-provider.ts",
+    "packages/oidc/src/token-io.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

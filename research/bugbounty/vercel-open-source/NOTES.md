@@ -2235,3 +2235,52 @@ escopo de recompensa.
 Achado gravado no banco:
 `Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::module.exports::command_injection_risk`,
 estado `corroborated_static`, confidence "média".
+
+## Rodada 2026-09-01 (cloud agent, disparada por push) — sync pós-migração v2 + leitura profunda sem achado novo
+
+`migrate-to-v2.mjs` rodou limpo (133 findings migrados). `list-pending`
+vazio (fila `candidate` zerada). Achado `command_injection_risk` de
+`utils/update-remix-run-dev.js` recorroborado nesta rodada: reli o
+arquivo e o workflow direto do branch `main` atual (via
+`raw.githubusercontent.com` + `git ls-remote`, HEAD=`e06cc643`) —
+padrão perigoso ainda presente, nada mudou. Registrei
+`record-deployment-evidence` (confidence="medium", commit real citado)
+e tentei `scope_verified` — recusado pela state machine porque o
+caminho exige passar por `reproduced_local` primeiro, mesmo pra
+achados sem validador local (a leitura do prompt operacional sugeria
+um atalho direto `corroborated_static → scope_verified` pra esse caso,
+mas o código real da state machine não tem essa transição definida;
+segui o CLI, não o que eu esperava que ele fizesse). Registrei validação
+`not_applicable` formalmente (antes só estava documentado em prosa) e
+tentei `reproduced_local` — recusado como esperado ("nenhum validador
+local existe ainda"), mesmo teto estrutural já conhecido. Achado
+permanece em `corroborated_static`, sem mudança de estado real, mas
+agora com o rastro de validação/deployment evidence persistido no
+banco (antes só existia como texto em `reasoning`).
+
+**Leitura profunda proativa** (3 arquivos novos, `vercel/vercel`,
+clone sparso temporário — `packages/oidc`, `packages/connect`,
+`packages/cli-auth` etc. — apagado ao fim):
+- `packages/connect/src/authjs/connect-provider.ts` (141 linhas,
+  completo) — adapter Auth.js pro OAuth non-standard da Vercel Connect
+  (client secret = token OIDC per-request, injetado via `customFetch`).
+  Ponto investigado com ceticismo: `checks: ['pkce']` sem `'state'`
+  explícito — Auth.js por padrão usa `['pkce','state']` pra type
+  `oauth`, então isso é uma remoção deliberada. Refutado: o cookie de
+  `code_verifier` do PKCE (assinado, `SameSite=Lax`) já fornece o mesmo
+  vínculo requisição-iniciadora↔callback que o cookie de `state`
+  forneceria — é um padrão documentado do próprio Auth.js (PKCE
+  cookie-based substitui state pra CSRF/login-CSRF), não uma lacuna.
+  Sem achado.
+- `packages/connect/src/betterauth/connect-provider.ts` (162 linhas,
+  completo) — mesmo padrão via Better Auth (`pkce: true`,
+  `getToken`/`getUserInfo` customizados pro mesmo client-secret
+  non-standard). Confirma que o design é consistente entre os dois
+  adapters, reforça a refutação acima. Sem achado.
+- `packages/oidc/src/token-io.ts` (41 linhas, completo) — nome sugeria
+  I/O de token, mas só resolve diretórios (`findRootDir` procura `.vercel/`
+  subindo a árvore; `getUserDataDir` retorna path padrão do SO). Não
+  lê/escreve conteúdo de token nenhum. Sem achado.
+
+`deep-read-log.json` atualizado (+3 em `vercel/vercel`). Nenhum achado
+novo nesta rodada — resultado normal.
