@@ -5044,3 +5044,45 @@ descartando e regenerando localmente via `migrate-to-v2.mjs` +
 Nenhum achado novo nesta rodada. `Block Open Source` não tocado por
 nenhuma das sessões conhecidas (`aiResearchBanned` em
 `program-policy.json`, conferido antes de qualquer clone).
+
+## Rodada 2026-09-01 (push automático, sessão cloud) — fila global vazia, leitura profunda proativa em `circlefin/arc-remote-signer`
+
+`list-pending` global = 0 (`migrate-to-v2.mjs` confirmou 132 findings,
+nenhum em `candidate`). Confirmei `program-policy.json` inteiro antes de
+clonar qualquer coisa (só `Block Open Source` está banido pra IA — não
+tocado). `circlefin/arc-remote-signer` já tinha 31 arquivos lidos em
+rodadas anteriores. Enumerei os `.go` não-teste/não-mock ainda não lidos
+e escolhi os 3 mais próximos do critério de prioridade (fronteira de
+confiança host↔enclave, wiring de auth/config):
+
+- `internal/app/app.go` (188 linhas, completo) — `Run()` da app "host"
+  (fora do enclave): inicializa tracer, profiler opcional, provider do
+  enclave (`enclaveProvider.New`), busca o attestation document só
+  quando `NitroEnclave.Enabled` (senão retorna `nil, nil` sem erro — é o
+  modo dev/local esperado, coerente com o resto do sistema), AWS config,
+  provider de secrets e AWS KMS, serviço de signer, métricas e o
+  servidor público. Wiring puro, nenhuma lógica de autorização própria
+  aqui (isso vive em `public.New`/interceptors, já lidos em rodadas
+  anteriores). Sem achado.
+- `internal/enclave/enclave.go` (76 linhas, completo) — `Run()` do lado
+  "enclave": inicializa o provider Nitro (só se `NitroEnclave.Enabled`),
+  o serviço de enclave com o keystore, e o servidor público interno via
+  vsock ou TCP (comentário do pacote confirma as duas opções). A escolha
+  vsock-vs-TCP em si não está neste arquivo — é lida do `Config` e
+  tratada em `transport_vsock.go`/`public.New`, ambos já auditados em
+  rodadas anteriores (padrão sentinel de isolamento por CID do vsock,
+  sem problema encontrado). Sem achado.
+- `cmd/run_enclave.go` (37 linhas, completo) — comando Cobra `run-enclave`,
+  só carrega config e chama `enclave.Run`. Boilerplate puro. Sem achado.
+- Também abri (sem ler linha a linha, só pra checar se havia alguma
+  auth nova) `internal/app/provider/enclave/config.go`: confirma que o
+  default é `NitroEnclave.Enabled=false` com URL de dev
+  `localhost:10350` — mesmo padrão de modo-dev-sem-enclave-real já
+  registrado como aceitável em rodadas anteriores (não é decisão de
+  produção, é fallback local). Não contabilizado como arquivo novo no
+  `deep-read-log.json` por não ter sido lido linha a linha por completo,
+  só a definição da struct.
+
+`deep-read-log.json` atualizado (+3 arquivos em
+`circlefin/arc-remote-signer`, agora 34). Nenhum achado novo nesta
+rodada — resultado normal. `Block Open Source` seguiu não tocado.
