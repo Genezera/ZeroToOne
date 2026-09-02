@@ -6077,3 +6077,61 @@ na Stellar, repo pouco coberto no log — só 5 arquivos lidos antes):
 
 Sem achado novo. `deep-read-log.json` atualizado (+4 arquivos em
 `circlefin/stellar-cctp`). Nenhuma transição de estado neste programa.
+
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud — leitura profunda em solana-cctp-contracts)
+
+`list-pending` global = 0 (todos os 4 programas). Os 5 achados em
+`corroborated_static` (nenhum novo deste programa) e o `human_ready`
+(Block Open Source) seguem intocados, mesmo ponto documentado nas
+rodadas anteriores.
+
+Leitura profunda proativa priorizou `circlefin/solana-cctp-contracts`
+(só 6/~136 arquivos reais cobertos antes desta rodada, cobertura
+relativa muito mais baixa que os outros repos Circle já bem varridos).
+Lidos 6 arquivos novos, todos em superfície de autorização/controle de
+acesso (nome do arquivo com `owner`/`attester`/`denylist`): `update_
+attester_manager.rs` e `accept_ownership.rs` — padrão Anchor `has_one =
+<signer> @ Error::InvalidAuthority` consistente e correto em ambos,
+sem achado.
+
+**Achado investigado e refutado** (registrado formalmente no sistema,
+`false_positive`): `denylist_account.rs`/`undenylist_account.rs` (v2)
+só são checados em `deposit_for_burn.rs` (fluxo OUTBOUND de queima) —
+confirmado por grep que `handle_receive_finalized_message.rs` (fluxo
+INBOUND de mint/liberação, lido por completo) nunca referencia
+`denylist_account`. À primeira vista pareceria permitir que um
+terceiro em outra chain defina `mint_recipient` = endereço denylistado
+e ainda assim receba fundos. Rastreei a cadeia real: o handler não
+minta diretamente — chama `token_minter.transfer` (`token_minter_v2/
+state.rs`), uma CPI padrão `anchor_spl::token::transfer` de uma conta
+de custódia pro `recipient_token_account` arbitrário passado pelo
+chamador. Uma CPI de transfer da SPL Token falha com `AccountFrozen`
+se a conta destino estiver congelada pela `freeze_authority` do mint
+USDC — ou seja, a aplicação do denylist para o lado INBOUND é
+delegada à camada do TOKEN (freeze da mint, controlada pela Circle),
+não a este programa-ponte. É exatamente o mesmo padrão já investigado
+e refutado no CCTP irmão em Move
+(`circlefin/aptos-cctp::prepare_mint_complete_mint`, rodada
+2026-08-30, ver histórico acima) — mas com uma ressalva honesta: no
+caso Aptos consegui confirmar byte-a-byte lendo o módulo
+`blocklistable` real no repo irmão `circlefin/stablecoin-aptos`; para
+Solana **não existe** um repo `stablecoin-solana` (ou equivalente) no
+escopo do programa (conferido em `scope-snapshots/circle-bbp.json` —
+só `solana-cctp-contracts` e `solana-gateway-contracts` são assets
+Solana), então a conclusão de "aplicação fica na camada do token" é
+inferência de design (mesmo padrão do produto já confirmado noutra
+chain + `AccountFrozen` é erro real e documentado do SPL Token
+program), não confirmação direta do código do mint. Mesmo com essa
+ressalva, não haveria bug de código auditável *neste* repositório —
+na pior hipótese seria falha de configuração/operação de uma conta
+fora do escopo de código-fonte deste programa, fora do modelo de
+ameaça de um bug bounty de código. Reasoning completo e os 6 arquivos
+lidos ficam registrados no finding
+(`handle_receive_finalized_message.rs::handle_receive_message::
+ai_deep_read_finding`).
+
+`deep-read-log.json` atualizado (+6 em `circlefin/solana-cctp-contracts`,
+agora 12 arquivos). Um achado novo criado e fechado nesta mesma rodada
+(`false_positive`, com ressalva documentada para reabertura futura se
+algum dia existir acesso ao código do mint USDC Solana real).
