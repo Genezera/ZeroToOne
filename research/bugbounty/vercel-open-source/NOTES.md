@@ -3589,3 +3589,48 @@ achado novo.
 `deep-read-log.json` atualizado (+3 em `vercel/next.js`, agora 18
 arquivos). Nenhuma transição de estado tentada neste programa nesta
 rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0 (todos os 3 programas ativos; `Block Open
+Source` continua fora de qualquer análise deste agente por
+`aiResearchBanned: true` em `program-policy.json`, confirmado antes de
+escolher alvo). Os achados em `corroborated_static` deste programa
+continuam travados no mesmo ponto já documentado (sem validador local
+pra JS/TS); não repeti a tentativa de transição.
+
+Leitura profunda proativa em `vercel/eve`, subdiretório
+`public/channels/` (webhooks inbound por canal). Uma sessão irmã
+concorrente já tinha coberto `telegram/authorization-callback.ts` e
+`authorization.ts` neste mesmo push — conferido `deep-read-log.json`
+antes de escolher arquivo pra evitar duplicar trabalho. 3 arquivos
+genuinamente novos lidos:
+
+- `public/channels/discord/verify.ts` + `verifyInbound.ts` (24 linhas
+  triviais, lido como contexto direto de chamada) — verificação de
+  assinatura Ed25519 de chave pública sobre `X-Signature-Ed25519`/
+  `X-Signature-Timestamp`: checa `publicKeyBytes.length !== 32` e
+  `signatureBytes.length !== 64` antes de montar a SPKI DER (evita
+  prefixo/DER malformado sendo aceito), janela de clock-skew
+  (`maxSkewSeconds`, default 300s), tudo em `try/catch` retornando
+  `false` em input malformado (fail-closed). Como é verificação de
+  chave pública (não HMAC/segredo compartilhado), não há problema de
+  comparação non-constant-time. Sem achado.
+- `public/channels/telegram/verify.ts` — segredo do header
+  `X-Telegram-Bot-Api-Secret-Token` comparado via
+  `constantTimeCompare`: checagem de tamanho primeiro (leak aceitável
+  de tamanho, padrão da indústria) seguida de `crypto.timingSafeEqual`
+  dentro de `try/catch`. Sem segredo configurado → lança erro
+  (fail-closed). Sem achado.
+
+Também conferido rapidamente `packages/eve/src/tools/auth.ts` —
+só declarações de tipo TypeScript, zero código de runtime, nada a
+auditar.
+
+Sem achado novo. `deep-read-log.json` atualizado (+4 em `vercel/eve`).
+Sugestão pra próxima rodada: `public/channels/github/verify.ts`,
+`public/channels/slack/verify.ts`, `public/channels/linear/verify.ts`,
+`public/models/openai/chatgpt/token-broker.ts` e
+`services/dev-client/credential-gate.ts` (mesmo subdiretório
+`public/channels/`, ainda não cobertos). Nenhuma transição de estado
+tentada neste programa nesta rodada.
