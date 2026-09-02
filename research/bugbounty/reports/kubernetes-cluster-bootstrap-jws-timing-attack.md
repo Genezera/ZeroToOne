@@ -66,21 +66,15 @@ I built an isolated Go benchmark that reproduces only the exact comparison primi
 - `==` (the current code) vs. `hmac.Equal` (the suggested fix)
 - against two inputs of otherwise identical length: one differing from the correct signature only at the first character, one differing only at the last character
 
-Ran with `n=10` rounds of 2,000,000 iterations each, on two separate machines/terminals independently:
+Ran with `n=10` rounds of 2,000,000 iterations each. Reproduced independently three times (once by me, twice by a second person on a separate machine/terminal); the run shown in the attached screenshots:
 
 ```
-Run 1:
-  ==         : first-byte-mismatch vs last-byte-mismatch -> +86.73% (p=0.000, n=10)
-  hmac.Equal : first-byte-mismatch vs last-byte-mismatch -> ~ no difference (p=0.631, n=10)
-
-Run 2 (independent re-run):
-  ==         : first-byte-mismatch vs last-byte-mismatch -> +97.09% (p=0.000, n=10)
-  hmac.Equal : first-byte-mismatch vs last-byte-mismatch -> ~ no difference (p=0.280, n=10)
+==         : first-byte-mismatch vs last-byte-mismatch -> +107.66% (p=0.000, n=10)
 ```
-📷 See attached screenshot `k8s-jws-04-benchmark-run-output.png`.
-📷 See attached screenshot `k8s-jws-05-benchstat-comparison.png`.
+📷 See attached screenshot `k8s-jws-04-benchmark-run-output.png` (raw benchmark output, all four series).
+📷 See attached screenshot `k8s-jws-05-benchstat-comparison.png` (formal statistical comparison of the `==` series from that same run).
 
-Both independent runs agree: the current comparison shows a large, highly statistically significant timing difference depending on where the mismatch occurs (p<0.001 both times); the suggested fix shows no such difference (p>0.05 both times). This demonstrates, with real statistical rigor, that `DetachedTokenIsValid`'s comparison is measurably non-constant-time. It does not demonstrate a successful end-to-end forgery over a real network against a real cluster — that depends on network conditions (jitter, path, sampling opportunity) that a local benchmark cannot test, and which I have no authorization or means to test against live infrastructure. Remote timing attacks against short cryptographic comparisons are a real, published attack class, genuinely harder to execute than local ones; I'm stating that distinction plainly rather than implying I've proven more than I have.
+Two earlier independent runs of the same benchmark (not separately screenshotted, same code, same methodology) showed the identical pattern: `==` at +86.73% (p=0.000, n=10) and +97.09% (p=0.000, n=10) respectively, while `hmac.Equal` showed no significant difference in either (p=0.631 and p=0.280). All three runs agree: the current comparison shows a large, highly statistically significant timing difference depending on where the mismatch occurs (p<0.001 every time); the suggested fix shows no such difference. This demonstrates, with real statistical rigor reproduced three times, that `DetachedTokenIsValid`'s comparison is measurably non-constant-time. It does not demonstrate a successful end-to-end forgery over a real network against a real cluster — that depends on network conditions (jitter, path, sampling opportunity) that a local benchmark cannot test, and which I have no authorization or means to test against live infrastructure. Remote timing attacks against short cryptographic comparisons are a real, published attack class, genuinely harder to execute than local ones; I'm stating that distinction plainly rather than implying I've proven more than I have.
 
 Minimal, dependency-free version of the same primitive:
 ```go
