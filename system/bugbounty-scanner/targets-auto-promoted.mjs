@@ -389,5 +389,99 @@ export const AUTO_PROMOTED_TARGETS = [
       "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
     ],
     "promotedAt": "2026-09-02T18:17:27.402Z"
+  },
+  {
+    "program": "Kubernetes",
+    "platform": "HackerOne",
+    "owner": "kubernetes",
+    "repo": "utils",
+    "branch": "master",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 20,
+    "reasons": [
+      "380 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-02T18:41:14.782Z"
+  },
+  {
+    "program": "Kiwi.com",
+    "platform": "HackerOne",
+    "owner": "kiwicom",
+    "repo": "navigation-compose-typed",
+    "branch": "main",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "jvm",
+    "score": 20,
+    "reasons": [
+      "235 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-02T18:41:14.782Z"
+  },
+  {
+    "program": "Plaid",
+    "platform": "HackerOne",
+    "owner": "plaid",
+    "repo": "plaid-link-android",
+    "branch": "master",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "jvm",
+    "score": 20,
+    "reasons": [
+      "130 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-02T18:41:14.782Z"
+  },
+  {
+    "program": "Plaid",
+    "platform": "HackerOne",
+    "owner": "plaid",
+    "repo": "react-plaid-link",
+    "branch": "master",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 20,
+    "reasons": [
+      "288 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-02T18:41:14.782Z"
+  },
+  {
+    "program": "Kiwi.com",
+    "platform": "HackerOne",
+    "owner": "kiwicom",
+    "repo": "js-iam-middleware",
+    "branch": "master",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 10,
+    "reasons": [
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-02T18:41:14.782Z"
+  },
+  {
+    "program": "Kiwi.com",
+    "platform": "HackerOne",
+    "owner": "kiwicom",
+    "repo": "k8s-vault-operator",
+    "branch": "main",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 10,
+    "reasons": [
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-02T18:41:14.782Z"
   }
 ];

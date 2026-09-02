@@ -1,173 +1,92 @@
 {
-  "generatedAt": "2026-09-02T18:17:27.404Z",
-  "totalActiveAutoPromoted": 24,
+  "generatedAt": "2026-09-02T18:41:14.783Z",
+  "totalActiveAutoPromoted": 30,
   "promotedThisRound": [
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "kube-controller-manager",
+      "repo": "utils",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "107 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "380 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
+      "promotedAt": "2026-09-02T18:41:14.782Z"
     },
     {
-      "program": "Kubernetes",
+      "program": "Kiwi.com",
       "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "kube-openapi",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "357 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "kube-proxy",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "213 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "kube-scheduler",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "208 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "kubeadm",
+      "owner": "kiwicom",
+      "repo": "navigation-compose-typed",
       "branch": "main",
       "maxBountyUsd": null,
       "pathPrefixes": [],
-      "language": "go",
+      "language": "jvm",
       "score": 20,
       "reasons": [
-        "3999 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "235 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
+      "promotedAt": "2026-09-02T18:41:14.782Z"
     },
     {
-      "program": "Kubernetes",
+      "program": "Plaid",
       "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "kubelet",
+      "owner": "plaid",
+      "repo": "plaid-link-android",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
-      "language": "go",
+      "language": "jvm",
       "score": 20,
       "reasons": [
-        "410 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "130 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
+      "promotedAt": "2026-09-02T18:41:14.782Z"
     },
     {
-      "program": "Kubernetes",
+      "program": "Plaid",
       "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "metrics",
+      "owner": "plaid",
+      "repo": "react-plaid-link",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
-      "language": "go",
+      "language": "js",
       "score": 20,
       "reasons": [
-        "537 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "288 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
+      "promotedAt": "2026-09-02T18:41:14.782Z"
     },
     {
-      "program": "Kubernetes",
+      "program": "Kiwi.com",
       "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "org",
+      "owner": "kiwicom",
+      "repo": "js-iam-middleware",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "js",
+      "score": 10,
+      "reasons": [
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-02T18:41:14.782Z"
+    },
+    {
+      "program": "Kiwi.com",
+      "platform": "HackerOne",
+      "owner": "kiwicom",
+      "repo": "k8s-vault-operator",
       "branch": "main",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "297 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "sample-cli-plugin",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "308 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "sample-controller",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "3506 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "publishing-bot",
-      "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
@@ -175,7 +94,7 @@
       "reasons": [
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-02T18:17:27.402Z"
+      "promotedAt": "2026-09-02T18:41:14.782Z"
     }
   ],
   "skippedThisRound": {
@@ -183,95 +102,129 @@
     "unsupportedLanguage": [
       {
         "owner": "kubernetes",
-        "repo": "kubernetes-template-project",
-        "githubLanguage": null
+        "repo": "website",
+        "githubLanguage": "HTML"
       },
       {
-        "owner": "kubernetes",
-        "repo": "repo-infra",
-        "githubLanguage": "Starlark"
+        "owner": "matomo-org",
+        "repo": "developer-documentation",
+        "githubLanguage": "PHP"
       },
       {
-        "owner": "kubernetes",
-        "repo": "security",
+        "owner": "matomo-org",
+        "repo": "docker",
         "githubLanguage": "Shell"
       },
       {
-        "owner": "kubernetes",
-        "repo": "sig-release",
-        "githubLanguage": "Shell"
+        "owner": "matomo-org",
+        "repo": "matomo",
+        "githubLanguage": "PHP"
       },
       {
-        "owner": "kubernetes",
-        "repo": "steering",
-        "githubLanguage": null
+        "owner": "matomo-org",
+        "repo": "tracker-proxy",
+        "githubLanguage": "PHP"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "kiwi-cache",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "kiwi-json",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "kiwi-structlog-config",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "konfetti",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "pg2avro",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "request-session",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "discourse",
+        "repo": "discourse",
+        "githubLanguage": "Ruby"
+      },
+      {
+        "owner": "plaid",
+        "repo": "plaid-ruby",
+        "githubLanguage": "Ruby"
+      },
+      {
+        "owner": "roundcube",
+        "repo": "roundcubemail",
+        "githubLanguage": "PHP"
       }
     ],
     "tooLarge": [
       {
-        "owner": "kubernetes",
-        "repo": "kube-aggregator",
-        "sizeKb": 24837
+        "owner": "smartcontractkit",
+        "repo": "chainlink",
+        "sizeKb": 1065609
       },
       {
-        "owner": "kubernetes",
-        "repo": "kube-state-metrics",
-        "sizeKb": 26116
+        "owner": "smartcontractkit",
+        "repo": "external-adapters-js",
+        "sizeKb": 2383535
       },
       {
-        "owner": "kubernetes",
-        "repo": "kubectl",
-        "sizeKb": 43674
+        "owner": "nodejs",
+        "repo": "node",
+        "sizeKb": 1545154
       },
       {
-        "owner": "kubernetes",
-        "repo": "kubernetes",
-        "sizeKb": 1514649
+        "owner": "backstage",
+        "repo": "backstage",
+        "sizeKb": 6751180
       },
       {
-        "owner": "kubernetes",
-        "repo": "minikube",
-        "sizeKb": 303619
+        "owner": "kiwicom",
+        "repo": "orbit",
+        "sizeKb": 1568203
       },
       {
-        "owner": "kubernetes",
-        "repo": "node-problem-detector",
-        "sizeKb": 37437
+        "owner": "plaid",
+        "repo": "plaid-link-ios",
+        "sizeKb": 1446370
       },
       {
-        "owner": "kubernetes",
-        "repo": "perf-tests",
-        "sizeKb": 116531
+        "owner": "plaid",
+        "repo": "react-native-plaid-link-sdk",
+        "sizeKb": 21416
       },
       {
-        "owner": "kubernetes",
-        "repo": "release",
-        "sizeKb": 23317
+        "owner": "nextcloud",
+        "repo": "collectives",
+        "sizeKb": 34482
       },
       {
-        "owner": "kubernetes",
-        "repo": "sample-apiserver",
-        "sizeKb": 23908
+        "owner": "nextcloud",
+        "repo": "files_confidential",
+        "sizeKb": 34395
       },
       {
-        "owner": "kubernetes",
-        "repo": "test-infra",
-        "sizeKb": 262292
+        "owner": "nextcloud",
+        "repo": "tables",
+        "sizeKb": 26946
       }
     ],
     "metadataFetchFailed": [],
-    "insufficientSignal": [
-      {
-        "owner": "kubernetes",
-        "repo": "legacy-cloud-providers",
-        "score": 0
-      },
-      {
-        "owner": "kubernetes",
-        "repo": "node-api",
-        "score": 0
-      }
-    ],
+    "insufficientSignal": [],
     "alreadyPromoted": 0,
     "deferredToNextRun": [],
     "atCap": false
