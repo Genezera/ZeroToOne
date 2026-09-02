@@ -6037,3 +6037,193 @@ Nenhum achado, nenhuma transição de estado neste programa.
 direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source, sem
 achado) — sem arquivo novo candidato em Circle BBP nesta rodada.
 Nenhum achado, nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/eve`, subdiretório `public/channels/` (ver
+NOTES.md de Vercel Open Source, sem achado) — sem arquivo novo
+candidato em Circle BBP nesta rodada. Nenhum achado, nenhuma
+transição de estado neste programa.
+
+## Rodada 2026-09-02 (cloud, push trigger, mais uma do mesmo push)
+
+`list-pending` global = 0 (confirmado após `migrate-to-v2.mjs` +
+`cli.mjs status`: nenhum finding em `candidate`, apenas
+`false_positive`/`corroborated_static`/`duplicate`/`known_duplicate`/
+`inconclusive`/`human_ready` de rodadas anteriores). Deep-read
+proativo em `circlefin/stellar-cctp` (contrato Soroban/Rust do CCTP
+na Stellar, repo pouco coberto no log — só 5 arquivos lidos antes):
+
+- `contracts/message-transmitter-v2/src/contract.rs` — entrypoints
+  `send_message`/`receive_message`; `caller.require_auth()` presente
+  em ambos; `receive_message` segue check-effects-interactions
+  correto (`set_nonce_used` roda logo após `validate_received_message`
+  e antes do cross-contract call pro handler do recipient).
+- `contracts/message-transmitter-v2/src/storage.rs` —
+  `validate_received_message`: ordem de checagem é
+  assinatura → formato → domínio destino → destination_caller →
+  versão → nonce-já-usado. Nenhum bypass encontrado.
+- `packages/cctp-roles/src/attestable/mod.rs` e `.../storage.rs` —
+  `verify_attestation_signatures`: exige comprimento exato
+  (`SIGNATURE_LENGTH * threshold`), recupera secp256k1 por assinatura,
+  converte pra endereço Ethereum-style (keccak256 dos últimos 20 bytes
+  da pubkey) e **exige ordem estritamente crescente** dos endereços
+  recuperados (`<=` já rejeita, então também bloqueia duplicata) antes
+  de checar se cada signer é attester habilitado. Mesmo padrão já
+  auditado na versão EVM do MessageTransmitterV2 — comentário no
+  código cita explicitamente que o SDK Soroban já rejeita assinaturas
+  malleable na recuperação secp256k1. Nenhum desvio encontrado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+4 arquivos em
+`circlefin/stellar-cctp`). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud — leitura profunda em solana-cctp-contracts)
+
+`list-pending` global = 0 (todos os 4 programas). Os 5 achados em
+`corroborated_static` (nenhum novo deste programa) e o `human_ready`
+(Block Open Source) seguem intocados, mesmo ponto documentado nas
+rodadas anteriores.
+
+Leitura profunda proativa priorizou `circlefin/solana-cctp-contracts`
+(só 6/~136 arquivos reais cobertos antes desta rodada, cobertura
+relativa muito mais baixa que os outros repos Circle já bem varridos).
+Lidos 6 arquivos novos, todos em superfície de autorização/controle de
+acesso (nome do arquivo com `owner`/`attester`/`denylist`): `update_
+attester_manager.rs` e `accept_ownership.rs` — padrão Anchor `has_one =
+<signer> @ Error::InvalidAuthority` consistente e correto em ambos,
+sem achado.
+
+**Achado investigado e refutado** (registrado formalmente no sistema,
+`false_positive`): `denylist_account.rs`/`undenylist_account.rs` (v2)
+só são checados em `deposit_for_burn.rs` (fluxo OUTBOUND de queima) —
+confirmado por grep que `handle_receive_finalized_message.rs` (fluxo
+INBOUND de mint/liberação, lido por completo) nunca referencia
+`denylist_account`. À primeira vista pareceria permitir que um
+terceiro em outra chain defina `mint_recipient` = endereço denylistado
+e ainda assim receba fundos. Rastreei a cadeia real: o handler não
+minta diretamente — chama `token_minter.transfer` (`token_minter_v2/
+state.rs`), uma CPI padrão `anchor_spl::token::transfer` de uma conta
+de custódia pro `recipient_token_account` arbitrário passado pelo
+chamador. Uma CPI de transfer da SPL Token falha com `AccountFrozen`
+se a conta destino estiver congelada pela `freeze_authority` do mint
+USDC — ou seja, a aplicação do denylist para o lado INBOUND é
+delegada à camada do TOKEN (freeze da mint, controlada pela Circle),
+não a este programa-ponte. É exatamente o mesmo padrão já investigado
+e refutado no CCTP irmão em Move
+(`circlefin/aptos-cctp::prepare_mint_complete_mint`, rodada
+2026-08-30, ver histórico acima) — mas com uma ressalva honesta: no
+caso Aptos consegui confirmar byte-a-byte lendo o módulo
+`blocklistable` real no repo irmão `circlefin/stablecoin-aptos`; para
+Solana **não existe** um repo `stablecoin-solana` (ou equivalente) no
+escopo do programa (conferido em `scope-snapshots/circle-bbp.json` —
+só `solana-cctp-contracts` e `solana-gateway-contracts` são assets
+Solana), então a conclusão de "aplicação fica na camada do token" é
+inferência de design (mesmo padrão do produto já confirmado noutra
+chain + `AccountFrozen` é erro real e documentado do SPL Token
+program), não confirmação direta do código do mint. Mesmo com essa
+ressalva, não haveria bug de código auditável *neste* repositório —
+na pior hipótese seria falha de configuração/operação de uma conta
+fora do escopo de código-fonte deste programa, fora do modelo de
+ameaça de um bug bounty de código. Reasoning completo e os 6 arquivos
+lidos ficam registrados no finding
+(`handle_receive_finalized_message.rs::handle_receive_message::
+ai_deep_read_finding`).
+
+`deep-read-log.json` atualizado (+6 em `circlefin/solana-cctp-contracts`,
+agora 12 arquivos). Um achado novo criado e fechado nesta mesma rodada
+(`false_positive`, com ressalva documentada para reabertura futura se
+algum dia existir acesso ao código do mint USDC Solana real).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/eve` (chatgpt/token-broker.ts,
+services/dev-client/credential-gate.ts e request-headers.ts -- ver
+NOTES.md de Vercel Open Source, sem achado) — sem arquivo novo
+candidato em Circle BBP nesta rodada. Nenhum achado, nenhuma
+transição de estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Revisão dos 5 findings pré-existentes em
+`corroborated_static` (nenhum deste programa) confirmou que já estão
+documentados como permanentemente travados por falta de
+validador/RoE — nenhuma ação nova necessária neles.
+
+Leitura profunda proativa priorizou `circlefin/stablecoin-starknet`
+(5/~40 arquivos `.cairo` reais cobertos antes desta rodada — cobertura
+relativamente baixa comparada aos outros repos EVM/Move já bem
+varridos). Lidos os 3 arquivos de implementação de componente ainda
+não cobertos (ignorando `interface.cairo`/`errors.cairo`/
+`events.cairo`, que são só declarações):
+
+- `upgradeable/upgradeable.cairo` — `upgrade()` exige
+  `assert_only_admin()` do `ManageableComponent` antes de
+  `replace_class_syscall`, e rejeita `new_class_hash` zero. Sem achado.
+- `pausable/pausable.cairo` — `pause`/`unpause` exigem
+  `assert_only_pauser()`; `update_pauser` exige `assert_only_owner()`
+  e rejeita endereço zero; `initializer` tem guarda de
+  dupla-inicialização (`ALREADY_INITIALIZED`). Sem achado.
+- `minter_management/minter_management.cairo` — mesmo desenho clássico
+  USDC (master_minter → controller → minter, 1:1 via
+  `minter_controllers` map): `configure_controller`/`remove_controller`
+  exigem `assert_only_master_minter()`; `configure_minter`/
+  `remove_minter`/`increment_minter_allowance` exigem
+  `assert_only_controller()` e operam só sobre o minter mapeado pro
+  `get_caller_address()` do controller (sem forma de um controller
+  afetar o minter de outro controller); `update_master_minter` exige
+  `assert_only_owner()`. Todos os asserts de endereço-zero presentes
+  nos pontos certos. Padrão idêntico ao já revisado em outras
+  implementações Circle (EVM/Aptos) do mesmo componente — sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em
+`circlefin/stablecoin-starknet`, total 8 arquivos cobertos ali).
+Nenhuma transição de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada foi
+inteiramente em `vercel/eve` (ver NOTES.md de Vercel Open Source, sem
+achado) — sem arquivo novo candidato em Circle BBP nesta rodada.
+Nenhum achado, nenhuma transição de estado neste programa.
+
+
+## Rodada 2026-09-02 (sessão cloud — leitura profunda em circlefin/arc-node)
+
+`program-policy.json` checado antes de tocar qualquer repo (Circle BBP
+sem `aiResearchBanned`). `list-pending` global = 0. Leitura profunda
+proativa desta rodada: `circlefin/arc-node` (Rust), seguindo a cadeia
+de chamada de `is_denylisted()` a partir de
+`crates/execution-validation/src/denylist.rs` (candidato inicial por
+nome — checador de address-denylist lendo storage ERC-7201).
+Rastreamento completo (grep exaustivo de `is_denylisted`/`denylist` em
+`crates/` e `contracts/`) mostrou que o denylist de endereços
+(sender/to/EIP-7702 authority) só é aplicado em
+`ArcTransactionValidator` (mempool/txpool,
+`crates/execution-txpool/src/validator.rs`) — nem `ArcConsensus`
+(`crates/execution-validation/src/consensus.rs`) nem o executor
+(`crates/evm/src/executor.rs`, 0 matches para "denylist") o
+verificam. Em contraste, o blocklist separado (`NativeCoinControl`)
+tem enforcement explícito em `executor.rs` durante execução/state
+transition (checa o beneficiary do bloco). `contracts/src/Denylist.sol`
+é só um registry passivo (mapping + add/remove), sem precompile que o
+consulte durante execução. `evm-node/src/node.rs` confirma que
+`addresses_denylist_config` só é passado para `.pool(...)`, nunca para
+`.executor(...)`/`.consensus(...)`.
+
+Conclusão: o denylist de endereços do Arc parece ser só uma barreira
+client-side/mempool, não uma invariante de consensus verificada
+independentemente por todo validador — um proposer que não rode o
+`ArcTransactionValidator` inalterado poderia incluir tx envolvendo
+endereço denylisted num bloco que os demais nós aceitariam
+normalmente. Achado registrado como
+`crates/execution-txpool/src/validator.rs::addresses_denylist
+enforcement scope::ai_deep_read_finding`, avançado para
+`corroborated_static` (teto para achado não-Solidity, sem
+validador Foundry aplicável — é gap arquitetural, não
+reentrancy/unchecked-call/tx.origin/delegatecall). Nenhuma tentativa de
+`scope_verified`/`human_ready` sem evidência de deployment real.
+
+`deep-read-log.json` atualizado (+5 em `circlefin/arc-node`, agora 30
+arquivos).

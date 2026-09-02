@@ -3492,3 +3492,371 @@ entre requisições concorrentes). Sem achado novo.
 `deep-read-log.json` atualizado (+3 em `vercel/eve`, subdiretório
 `channel/auth/` e `channel/` agora 100% cobertos). Nenhuma transição
 de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud — mais uma do mesmo push trigger)
+
+O mesmo push disparou várias sessões cloud concorrentes hoje; `git
+push` rejeitado duas vezes por fast-forward (`fetch first`) antes deste
+commit — sinal de que pelo menos 4-5 rodadas irmãs rodaram em paralelo.
+`list-pending` global seguiu vazio em todas.
+
+**Outcome real persistido**: o achado `ssrf_redirect_allowlist_bypass_risk`
+(`image-optimizer.ts`) já tinha outcome real conhecido há várias
+rodadas (Duplicate de #3943945, HackerOne #3988959, sem bounty — ver
+rodada "21ª do dia" acima), mas `record-platform-outcome` falhava antes
+com "finding não encontrado". Rodei de novo nesta sessão (pós-migração
+v2) e o comando funcionou — mas ao inspecionar
+`exportFindingsToQueueLines` (`system/bugbounty-scanner/db.mjs:365-385`)
+confirmei que o outcome gravado **não sobrevive ao `export-queue`**: só
+a tabela `findings` é lida pra montar `queue.jsonl`; as tabelas
+`platform_outcomes`/`deployment_evidence`/`validations`/`reports` nunca
+são consultadas, e só `recordTransition` (campo `state`) anexa evento
+no ledger commitado. Ou seja, o outcome gravado por
+`record-platform-outcome` só existe no `zerotoone.db` efêmero desta
+sessão — some quando o container reciclar. Documentado em detalhe, com
+correção recomendada, em `docs/zerotoone-v2/IMPLEMENTATION_STATE.md`
+("Bug real encontrado — export-queue descarta
+platform_outcomes/..."). Não tentei consertar a máquina de
+estados/persistência nesta rodada autônoma (mudança estrutural, merece
+revisão supervisionada). Mitigação real: o outcome fica registrado
+aqui em prosa, que É commitada — nenhum dado se perde de fato, só o
+registro estruturado no banco.
+
+Leitura profunda proativa: mais 2 arquivos em `vercel/eve`
+(`packages/eve/src/public/channels/telegram/authorization-callback.ts`
++ `authorization.ts`, fluxo de "Authorize" via botão inline do
+Telegram em chat de grupo). Verificado com ceticismo se qualquer membro
+do grupo que clicar no botão (visível pro grupo inteiro, não só pro
+solicitante) poderia sequestrar a autorização de outro usuário —
+refutado: `renderTelegramAuthorizationStatus` embute o
+`requesterUserId` original no `callback_data` (`eve_auth:<id>`), e
+`dispatchTelegramAuthorizationCallback` compara esse valor contra
+`query.from.id` (ambos tipados `string` no parser de update do
+Telegram, sem coerção que pudesse quebrar a comparação) antes de
+prosseguir; qualquer clicador que não seja o solicitante recebe "Only
+the requester can authorize this connection." e a função retorna sem
+tocar a sessão. Design correto, sem achado.
+
+`deep-read-log.json` atualizado (+2 em `vercel/eve`, total 32 arquivos
+cobertos ali entre as sessões de hoje). Nenhuma transição de estado
+nova tentada neste programa nesta rodada (os 3 achados JS/TS em
+`corroborated_static` seguem no mesmo ponto já documentado — sem
+validador local ainda).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, 4ª rodada pós-migração v2)
+
+`migrate-to-v2` rodado sem erro (138 findings, contagens batendo:
+5 `corroborated_static`, 1 `human_ready`, resto `false_positive`/
+`duplicate`/`inconclusive`). `list-pending` global = 0 em todos os 4
+programas. Os achados em `corroborated_static` deste programa não
+foram retocados nesta rodada — mesma limitação documentada (sem
+validador local pra JS/TS/Kotlin/Swift), repetir a tentativa não muda
+o resultado.
+
+Leitura profunda proativa: como `vercel/eve` (`channel/auth/` e
+`channel/`) já estava marcado como 100% coberto nas últimas rodadas,
+mudei de alvo. Cheguei a considerar `circlefin/arc-remote-signer` e
+`circlefin/buidl-wallet-contracts` (Circle BBP) mas confirmei antes de
+ler que os arquivos não lidos ali são só telemetria/métricas/lifecycle
+(arc-remote-signer, sem relação com auth/crypto) ou interfaces/structs/
+scripts de deploy sem lógica própria (buidl-wallet-contracts) -- não
+vale gastar o orçamento de leitura nisso, julgamento próprio.
+
+Fui então pra `vercel/next.js` (`packages/next/src/server/`, clone
+sparse `--filter=blob:none` pra não baixar o monorepo inteiro), 3
+arquivos novos relacionados a cookies (nome bate com padrão
+auth/session): `api-utils/get-cookie-parser.ts` (parsing delega 100%
+pro pacote `cookie` compilado, `require('next/dist/compiled/cookie')`
+-- sem lógica própria, sem risco de injection custom),
+`server/request/cookies.ts` (a função pública `cookies()` -- toda a
+complexidade aqui é sobre em qual fase de renderização/cache
+(`prerender`, `action`, `request`, `private-cache` etc.) o objeto pode
+ou não ser acessado/mutado, não sobre autenticação; `CachedCookies` é
+um `WeakMap` chaveado por instância de `workUnitStore`/
+`prerenderStore`, então não há risco óbvio de vazamento entre
+requisições concorrentes) e
+`server/web/spec-extension/adapters/request-cookies.ts`
+(`RequestCookiesAdapter.seal`/`MutableRequestCookiesAdapter.wrap` --
+usa `Proxy` pra bloquear `set`/`delete`/`clear` fora da fase `action`,
+`areCookiesMutableInCurrentPhase` checa `requestStore.phase ===
+'action'` de forma consistente antes de qualquer mutação; nenhuma
+instância de cookie é compartilhada entre requests, cada uma nasce de
+um `RequestStore` novo). `server/web/spec-extension/cookies.ts` só
+reexporta do pacote vendored `@edge-runtime/cookies`, sem lógica
+própria -- não conta como código de primeira parte pra achado. Sem
+achado novo.
+
+`deep-read-log.json` atualizado (+3 em `vercel/next.js`, agora 18
+arquivos). Nenhuma transição de estado tentada neste programa nesta
+rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0 (todos os 3 programas ativos; `Block Open
+Source` continua fora de qualquer análise deste agente por
+`aiResearchBanned: true` em `program-policy.json`, confirmado antes de
+escolher alvo). Os achados em `corroborated_static` deste programa
+continuam travados no mesmo ponto já documentado (sem validador local
+pra JS/TS); não repeti a tentativa de transição.
+
+Leitura profunda proativa em `vercel/eve`, subdiretório
+`public/channels/` (webhooks inbound por canal). Uma sessão irmã
+concorrente já tinha coberto `telegram/authorization-callback.ts` e
+`authorization.ts` neste mesmo push — conferido `deep-read-log.json`
+antes de escolher arquivo pra evitar duplicar trabalho. 3 arquivos
+genuinamente novos lidos:
+
+- `public/channels/discord/verify.ts` + `verifyInbound.ts` (24 linhas
+  triviais, lido como contexto direto de chamada) — verificação de
+  assinatura Ed25519 de chave pública sobre `X-Signature-Ed25519`/
+  `X-Signature-Timestamp`: checa `publicKeyBytes.length !== 32` e
+  `signatureBytes.length !== 64` antes de montar a SPKI DER (evita
+  prefixo/DER malformado sendo aceito), janela de clock-skew
+  (`maxSkewSeconds`, default 300s), tudo em `try/catch` retornando
+  `false` em input malformado (fail-closed). Como é verificação de
+  chave pública (não HMAC/segredo compartilhado), não há problema de
+  comparação non-constant-time. Sem achado.
+- `public/channels/telegram/verify.ts` — segredo do header
+  `X-Telegram-Bot-Api-Secret-Token` comparado via
+  `constantTimeCompare`: checagem de tamanho primeiro (leak aceitável
+  de tamanho, padrão da indústria) seguida de `crypto.timingSafeEqual`
+  dentro de `try/catch`. Sem segredo configurado → lança erro
+  (fail-closed). Sem achado.
+
+Também conferido rapidamente `packages/eve/src/tools/auth.ts` —
+só declarações de tipo TypeScript, zero código de runtime, nada a
+auditar.
+
+Sem achado novo. `deep-read-log.json` atualizado (+4 em `vercel/eve`).
+Sugestão pra próxima rodada: `public/channels/github/verify.ts`,
+`public/channels/slack/verify.ts`, `public/channels/linear/verify.ts`,
+`public/models/openai/chatgpt/token-broker.ts` e
+`services/dev-client/credential-gate.ts` (mesmo subdiretório
+`public/channels/`, ainda não cobertos). Nenhuma transição de estado
+tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2 pro CLI de máquina de estados)
+
+`node system/bugbounty-scanner/migrate-to-v2.mjs` rodado (Passo 0). `cli.mjs
+list-pending` global = 0 (todos os programas ativos). Antes de qualquer
+leitura, `program-policy.json` conferido — `aiResearchBanned: true` ainda
+vigente para "Block Open Source"; nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire` tocado nesta rodada.
+
+Leitura profunda proativa: as 3 sugestões pendentes da rodada anterior em
+`vercel/eve`, subdiretório `public/channels/` (webhooks inbound por canal):
+
+- `public/channels/github/verify.ts` — HMAC-SHA256 sobre
+  `X-Hub-Signature-256` (`sha256=<hex>`), comparação via
+  `constantTimeCompare` (checagem de tamanho antes de `timingSafeEqual`,
+  mesmo padrão já visto nos outros canais — leak de tamanho aceitável,
+  não de segredo). Header ausente → rejeita antes de comparar
+  (fail-closed). Suporta `webhookVerifier` custom (ex.: Connect via OIDC)
+  como alternativa ao HMAC — contrato documentado no próprio arquivo
+  (throw/falsy → 401; string → substitui o body). Sem timestamp/replay
+  window (GitHub não assina timestamp neste esquema), consistente com o
+  design real do webhook do GitHub. Sem achado.
+- `public/channels/slack/verify.ts` — delega a verificação de verdade pro
+  pacote vendored `#compiled/@chat-adapter/slack/webhook.js` (fora do
+  escopo deste arquivo/repo); este arquivo só normaliza erros e exige
+  `signingSecret` OU `webhookVerifier` configurado, senão lança antes de
+  chamar o SDK (fail-closed). Nada de HMAC/comparação acontece aqui
+  diretamente — sem achado neste arquivo (lógica de crypto real está no
+  SDK do Chat Adapter, pacote separado, não auditado nesta rodada).
+- `public/channels/linear/verify.ts` — HMAC-SHA256 sobre
+  `Linear-Signature`, mesma `constantTimeCompare` de sempre. Importante:
+  a ordem é correta — assinatura verificada ANTES de checar o
+  `webhookTimestamp` embutido no corpo (`verifyWebhookTimestamp` só roda
+  depois do `constantTimeCompare` passar), então um atacante sem o
+  segredo não consegue forjar corpo+timestamp pra passar a checagem de
+  skew. Skew default 60s (replay dentro da janela é risco aceito,
+  documentado, mesmo padrão dos outros canais). Sem achado.
+
+Todos os 3 arquivos seguem o mesmo padrão robusto (fail-closed,
+constant-time compare, verificação de assinatura antes de qualquer
+outra checagem) já visto no resto de `packages/eve/src/public/channels/`
+e `packages/eve/src/channel/auth/`. `deep-read-log.json` atualizado (+3
+em `vercel/eve`, total 39 arquivos cobertos ali). Sugestão pra próxima
+rodada: `public/models/openai/chatgpt/token-broker.ts` e
+`services/dev-client/credential-gate.ts` (ainda não cobertos, citados há
+2 rodadas). Nenhuma transição de estado tentada neste programa nesta
+rodada — os 3 achados JS/TS em `corroborated_static` seguem no mesmo
+ponto de sempre (sem validador local pra JS/TS, limitação conhecida do
+sistema).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud — leitura profunda em solana-cctp-contracts)
+
+`list-pending` global = 0. Os 3 achados JS/TS em `corroborated_static`
+deste programa seguem travados no mesmo ponto já documentado (sem
+validador local); não repeti a tentativa. Leitura profunda proativa
+desta rodada direcionada a `circlefin/solana-cctp-contracts` (Circle
+BBP, achado novo criado e refutado — ver NOTES.md desse programa) — sem
+arquivo novo lido de Vercel Open Source nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push, deep-read chatgpt/dev-client)
+
+`list-pending` global = 0. Leitura profunda proativa continuando as
+sugestões pendentes: `public/models/openai/chatgpt/token-broker.ts` e
+`services/dev-client/credential-gate.ts` (ambos citados há 2 rodadas),
+mais `services/dev-client/request-headers.ts` (dependência direta do
+credential-gate, mesma área).
+
+- `token-broker.ts` — cache em memória do token ChatGPT/Codex local,
+  delega toda a autenticação real pro `CodexAppServerClient` (processo
+  local do Codex CLI). Decodifica claims do próprio JWT só pra extrair
+  `accountId`/`accountLabel`/`expiresAt` (exibição/cache), nunca pra
+  decisão de autorização — quem decide se o token é válido é o app
+  server local. Janela de refresh de 5min antes de expirar. Sem
+  bypass encontrado; superfície é local (localhost dev tool), não
+  network-reachable por terceiros.
+- `credential-gate.ts` — `authorize()` rejeita o grant se
+  `grant.target.origin !== serverOrigin` (checagem de origem exata
+  antes de instalar qualquer credencial), e `resolveBypassHeaders()`
+  só emite `x-vercel-protection-bypass` quando `state.kind !==
+  "anonymous"` (ou seja, só depois da origem verificada). Rollback
+  (`authorize` retorna função que restaura estado anterior) usa
+  comparação de identidade de objeto (`state === next`), então uma
+  autorização mais nova nunca é desfeita por um rollback antigo em
+  race. Sem achado.
+- `request-headers.ts` — `decodeOidcPayload` faz parse do JWT sem
+  verificar assinatura, mas isso é deliberado e documentado no
+  comentário: "does not authorize a destination; callers must verify
+  the exact origin first" -- decisão de autorização real acontece no
+  backend Vercel quando o token é de fato usado como bearer; aqui é
+  só sanity-check de claims (`owner_id`/`project_id`) casando com o
+  alvo local antes de instalar via `credential-gate`. Nenhuma
+  verificação de segurança real depende deste decode não-assinado.
+  Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
+total 42 arquivos cobertos ali). Nenhuma transição de estado tentada
+neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2 pro CLI, findings/state-machine.mjs)
+
+`migrate-to-v2.mjs` rodado (Passo 0). `cli.mjs list-pending` global = 0
+(todos os 4 programas ativos). `program-policy.json` conferido antes de
+qualquer leitura — `aiResearchBanned: true` ainda vigente para "Block
+Open Source"; nenhum repo `cashapp/*`/`afterpay/*`/`square/wire` clonado
+ou lido nesta rodada. StackingDAO: os 15 contratos do escopo real
+(`scope-snapshots/stackingdao.json`) já batem 1:1 com os 15 já cobertos
+em `deep-read-log.json` — nada novo a ler lá nesta rodada.
+
+Leitura profunda proativa continuando em `vercel/eve` (clone raso via
+`add_repo`, hash `78fa9046`), 3 arquivos novos:
+
+- `packages/eve/src/channel/session.ts` — handle de sessão exposto em
+  `ctx.session`. `auth` é só leitura de `AuthKey`/`InitiatorAuthKey` do
+  contexto (hidratado alhures); nada de decisão de autorização acontece
+  aqui, é puro plumbing (`send`/`respond`/`cancel`/`compact`/`clear`/
+  `reset` delegando pro `runtime.dispatchSession`). Sem achado.
+- `packages/eve/src/public/channels/github/auth.ts` — mint de JWT RS256
+  de GitHub App (`createSign("RSA-SHA256")`, `exp`/`iat` corretos com
+  clock-skew de 60s) e troca por installation token via API oficial,
+  cache em `Map` process-local chaveado por
+  `apiBaseUrl:appId:installationId` com skew de refresh de 60s. Chave de
+  cache inclui os 3 componentes certos (sem colisão entre instalações
+  diferentes). Sem achado.
+- `packages/eve/src/public/channels/slack/auth.ts` — `buildSlackAuthContext`
+  monta o `principalId` do responder Slack (`slack:<teamId>:<userId>`
+  normalmente); quando `teamId` é `null`/`undefined` cai pra
+  `slack:<userId>` sem namespace de time — confirmado em
+  `interactions.ts` que isso acontece de verdade (`team_id` não é
+  garantido em todo `view_submission` payload, comentário no próprio
+  código). Investigado até `slackChannel.ts` (`approvalResponderUsers`,
+  `approval.candidate`) pra ver se esse `principalId` sem team-scoping
+  vira gate de autorização real (ex.: só o autor original pode
+  aprovar) — não vira: é usado só como metadado de exibição (mapeia
+  responder → Slack user id pra UI mostrar "aprovado por @fulano"), e
+  a decisão real de quem pode responder a um `tool-approval` é
+  delegada ao hook `onInputResponse` do app autor (a lib não impõe
+  restrição própria — modelo é "qualquer um no canal/thread pode
+  clicar", esperado pra bots Slack). Sem gate de segurança dependendo
+  deste campo → sem achado, mas caso de referência anotado (nome
+  parecido com `js_injection_unescaped_token_risk` de outro programa:
+  se um dia aparecer um app-level `onInputResponse` que compara
+  `principalId` direto sem levar em conta a ausência de `teamId`, essa
+  colisão vira relevante — vale relembrar se aparecer candidate futuro
+  tocando esse arquivo).
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
+total 45 arquivos cobertos ali). Nenhuma transição de estado tentada
+neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Revisão dos 5 findings pré-existentes em
+`corroborated_static` deste programa (`timing_attack_risk` em
+`vercel/ai`, `path_traversal_arbitrary_file_read_risk` em
+`vercel-labs/agent-skills`, `command_injection_risk` em
+`vercel/vercel`, `ssrf_redirect_allowlist_bypass_risk` em
+`vercel/next.js`) — todos já documentados em rodadas anteriores como
+travados permanentemente em `corroborated_static` por falta de
+validador local (JS/TS não tem PoC neste sistema) e/ou por exigirem
+condição externa não confirmável por leitura de código. Nenhuma ação
+nova necessária, nenhuma mudança de veredito.
+
+Leitura profunda proativa desta rodada direcionada a
+`circlefin/stablecoin-starknet` (Circle BBP, ver NOTES.md desse
+programa) — sem arquivo novo candidato em `vercel/eve` ou outro repo
+deste programa nesta rodada. Nenhum achado, nenhuma transição de
+estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Leitura profunda proativa continuando em
+`vercel/eve` (clone raso), 3 arquivos novos, todos pequenos e sem
+achado:
+
+- `packages/eve/src/public/channels/linear/auth.ts` — apenas resolução
+  de credenciais (access token / webhook secret) a partir de
+  `credentials.*` ou variáveis de ambiente (`LINEAR_AGENT_ACCESS_TOKEN`
+  etc.), lançando erro se ausente. Nenhuma decisão de autorização, puro
+  plumbing de configuração. Sem achado.
+- `packages/eve/src/public/models/openai/chatgpt/auth.ts` — usa
+  `decodeJwt` (sem verificar assinatura) para extrair `exp`,
+  `chatgpt_account_id` e email/label de um token ChatGPT/Codex. Decode
+  sem verify soaria a alarme se o token viesse de terceiro, então
+  rastreado o único chamador: `token-broker.ts:140` (`tokenFrom`),
+  chamado a partir de `resolveToken`/`accept`, cujo `rawToken` vem
+  exclusivamente de `appServer.getAuthStatus()` — o próprio token OAuth
+  que este processo obteve de si mesmo via `codex login` (fluxo local,
+  não input de rede de terceiro). Os campos extraídos
+  (`accountId`/`accountLabel`/`expiresAt`) são usados só como metadado
+  de exibição/cache local (`readyState`, cache do broker), nunca como
+  base de uma decisão de autorização sobre uma requisição de outra
+  parte. Sem achado.
+- `packages/eve/src/public/channels/chat-sdk/authorization.ts` — só
+  posta/edita mensagens de status ("Authorization required for X" /
+  "X connected") no thread do Chat SDK quando eventos
+  `authorization.required`/`authorization.completed` disparam; nenhuma
+  lógica de decisão de autorização aqui, é só UI de status. Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
+total 48 arquivos cobertos ali). Nenhuma transição de estado tentada
+neste programa nesta rodada. Os 5 achados pré-existentes em
+`corroborated_static` seguem intocados (mesma limitação de sempre —
+JS/TS sem validador local de PoC neste sistema).
+
+
+## Rodada 2026-09-02 (sessão cloud — leitura profunda em vercel/eve, parte da mesma rodada de arc-node/misk)
+
+Continuando a cobertura de `packages/eve/src/public/channels/`: li
+`teams/verify.ts` (verificação de JWT Bot Connector via `jose`
+`jwtVerify` com issuer/audience/JWKS dinâmico — analisado com ceticismo
+quanto a confusão de algoritmo RS256↔HS256 via `protectedHeader.alg`
+atacante-controlado passado a `importJWK`; `jose` roteia a importação
+pelo `kty` do JWK antes de olhar `alg`, então um JWK `kty:RSA` não pode
+virar chave HMAC mesmo com `alg` forjado — sem bug encontrado, mesmo
+padrão seguro já visto em slack/discord/github/linear/telegram),
+`twilio/verify.ts` (delega a verificação real para
+`@chat-adapter/twilio/webhook.js`, cujo código-fonte já foi lido sob
+`vercel/chat` — wrapper fino, sem lógica nova), `chat-sdk/authorization.ts`
+(só texto de UI para prompts de autorização, sem decisão de acesso),
+`execution/reconcile-session-continuation-token.ts` (13 linhas,
+re-stamping trivial de sessão) e
+`public/models/openai/chatgpt/token-broker.ts` (cache/refresh de token
+OAuth local do Codex CLI, sem validação de assinatura — superfície de
+cliente local, não servidor). Nenhum achado novo; nenhuma transição
+tentada. `deep-read-log.json` atualizado (+5 em `vercel/eve`, agora 44
+arquivos).
