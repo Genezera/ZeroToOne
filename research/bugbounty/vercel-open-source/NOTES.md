@@ -3587,3 +3587,52 @@ Sugestão pra próxima rodada: `public/channels/github/verify.ts`,
 `services/dev-client/credential-gate.ts` (mesmo subdiretório
 `public/channels/`, ainda não cobertos). Nenhuma transição de estado
 tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2 pro CLI de máquina de estados)
+
+`node system/bugbounty-scanner/migrate-to-v2.mjs` rodado (Passo 0). `cli.mjs
+list-pending` global = 0 (todos os programas ativos). Antes de qualquer
+leitura, `program-policy.json` conferido — `aiResearchBanned: true` ainda
+vigente para "Block Open Source"; nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire` tocado nesta rodada.
+
+Leitura profunda proativa: as 3 sugestões pendentes da rodada anterior em
+`vercel/eve`, subdiretório `public/channels/` (webhooks inbound por canal):
+
+- `public/channels/github/verify.ts` — HMAC-SHA256 sobre
+  `X-Hub-Signature-256` (`sha256=<hex>`), comparação via
+  `constantTimeCompare` (checagem de tamanho antes de `timingSafeEqual`,
+  mesmo padrão já visto nos outros canais — leak de tamanho aceitável,
+  não de segredo). Header ausente → rejeita antes de comparar
+  (fail-closed). Suporta `webhookVerifier` custom (ex.: Connect via OIDC)
+  como alternativa ao HMAC — contrato documentado no próprio arquivo
+  (throw/falsy → 401; string → substitui o body). Sem timestamp/replay
+  window (GitHub não assina timestamp neste esquema), consistente com o
+  design real do webhook do GitHub. Sem achado.
+- `public/channels/slack/verify.ts` — delega a verificação de verdade pro
+  pacote vendored `#compiled/@chat-adapter/slack/webhook.js` (fora do
+  escopo deste arquivo/repo); este arquivo só normaliza erros e exige
+  `signingSecret` OU `webhookVerifier` configurado, senão lança antes de
+  chamar o SDK (fail-closed). Nada de HMAC/comparação acontece aqui
+  diretamente — sem achado neste arquivo (lógica de crypto real está no
+  SDK do Chat Adapter, pacote separado, não auditado nesta rodada).
+- `public/channels/linear/verify.ts` — HMAC-SHA256 sobre
+  `Linear-Signature`, mesma `constantTimeCompare` de sempre. Importante:
+  a ordem é correta — assinatura verificada ANTES de checar o
+  `webhookTimestamp` embutido no corpo (`verifyWebhookTimestamp` só roda
+  depois do `constantTimeCompare` passar), então um atacante sem o
+  segredo não consegue forjar corpo+timestamp pra passar a checagem de
+  skew. Skew default 60s (replay dentro da janela é risco aceito,
+  documentado, mesmo padrão dos outros canais). Sem achado.
+
+Todos os 3 arquivos seguem o mesmo padrão robusto (fail-closed,
+constant-time compare, verificação de assinatura antes de qualquer
+outra checagem) já visto no resto de `packages/eve/src/public/channels/`
+e `packages/eve/src/channel/auth/`. `deep-read-log.json` atualizado (+3
+em `vercel/eve`, total 39 arquivos cobertos ali). Sugestão pra próxima
+rodada: `public/models/openai/chatgpt/token-broker.ts` e
+`services/dev-client/credential-gate.ts` (ainda não cobertos, citados há
+2 rodadas). Nenhuma transição de estado tentada neste programa nesta
+rodada — os 3 achados JS/TS em `corroborated_static` seguem no mesmo
+ponto de sempre (sem validador local pra JS/TS, limitação conhecida do
+sistema).
