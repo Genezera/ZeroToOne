@@ -5,8 +5,8 @@
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle vercel-open-source",
   "contentHash": "33053c33566caf8035aa93295b3dcddf7ffd3eae5198440f4cfcaa2e120584e9",
-  "capturedAt": "2026-09-02T15:59:54.738Z",
-  "expiresAt": "2026-09-16T15:59:54.738Z",
+  "capturedAt": "2026-09-02T20:02:54.406Z",
+  "expiresAt": "2026-09-16T20:02:54.406Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
