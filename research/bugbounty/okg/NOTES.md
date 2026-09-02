@@ -152,3 +152,43 @@ pelo código do próprio SDK. Vale considerar guardar esse campo no
 achado (`indirect: true/false`) numa v2 do dep-scanner — não mudei o
 scanner nesta rodada (fora do escopo: só reviso achados existentes),
 só documento a observação.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud) — 40 achados novos, todos falso_positivo
+
+Nova leva de 40 candidatos (não-dependência) apareceu na fila: 35
+`semgrep_use_of_unsafe_block`, 2 `semgrep_math_random_used`, 2
+`semgrep_use_of_sha1`, 1 `weak_crypto_risk`. Clonado `okx/go-wallet-sdk`
+raso e revisados todos com leitura de código real:
+
+- **35 `use_of_unsafe_block`** em 6 arquivos distintos: idiomas
+  padrão de Go para conversão zero-copy string/[]byte (`amino/uitl.go`),
+  helper `noescape` copiado literalmente do runtime do Go
+  (`amino.go`), ponte cgo padrão com tamanho sempre explícito
+  (`zkscrypto.go`), e código **vendored do go-ethereum**
+  (`crypto/go-ethereum/common/bitutil/bitutil.go`,
+  `crypto/secp256k1/{scalar_mult_cgo,secp256}.go` — bindings cgo para
+  libsecp256k1 da Bitcoin Core, extensivamente auditado). Nenhum
+  cálculo de tamanho incorreto ou overread identificado.
+- **2 `math_random_used`** (`zksync/core/types.go`,
+  `go-ethereum/common/types.go`) — `Hash.Generate(rand *rand.Rand, ...)`
+  implementa a interface `testing/quick.Generator` da stdlib, usado só
+  por testes baseados em propriedades, nunca geração de chave/nonce de
+  produção.
+- **2 `use_of_sha1`** em `crypto/btcd/{v2/,}txscript/opcode.go` —
+  `opcodeSha1` implementa o opcode `OP_SHA1` do próprio Bitcoin Script
+  (vendored btcd), semântica de protocolo, não escolha de segurança do
+  OKX.
+- **1 `weak_crypto_risk`** (RC4) em `coins/bitcoin/src20inscribe.go`
+  — analisado com cuidado por não ser óbvio: RC4 ofusca o payload de
+  inscrição do protocolo SRC-20/"Bitcoin Stamps", com a chave derivada
+  do TXID de um output anterior — um valor **100% público** on-chain.
+  Como a "chave" é derivável por qualquer observador da transação,
+  não há segredo real sendo protegido (o dado ofuscado é destinado a
+  ficar publicamente inscrito na blockchain de qualquer forma); RC4
+  aqui é conformidade com a codificação do protocolo, não uma escolha
+  de confidencialidade fraca e explorável.
+
+`queue.jsonl` sincronizado via `export-queue` (reconciliado com uma
+sessão cloud paralela que triou Circle BBP no mesmo intervalo — ver
+commit de merge; nenhuma sobreposição de id com o trabalho deste
+programa). Fila OKG volta a ficar em 0 `candidate`.

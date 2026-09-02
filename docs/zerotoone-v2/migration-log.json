@@ -1,8 +1,19 @@
 {
-  "migratedAt": "2026-09-02T15:51:35.458Z",
-  "total": 401,
+  "migratedAt": "2026-09-02T16:09:23.620Z",
+  "total": 402,
   "driftCorrected": 0,
   "logs": [
+    {
+      "id": "Kubernetes::kubernetes/cluster-bootstrap/token/jws/jws.go::DetachedTokenIsValid::non_constant_time_hmac_comparison",
+      "steps": [
+        {
+          "to": "corroborated_static",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "corroborated_static"
+    },
     {
       "id": "Circle BBP::circlefin/stablecoin-xlm/soroban/packages/stablecoin-roles/src/minter_asset_controllable/storage.rs::configure_minter::ai_deep_read_finding",
       "steps": [
@@ -50,9 +61,6 @@
     {
       "id": "Vercel Open Source::vercel/next.js/packages/next/src/server/image-optimizer.ts::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -1319,15 +1327,6 @@
       "id": "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding",
       "steps": [
         {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "report restaurado da fila (research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md)"
-        },
-        {
           "to": "duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -1911,849 +1910,837 @@
       "id": "Kubernetes::kubernetes/cloud-provider-openstack/pkg/autohealing/healthcheck/plugin_endpoint.go::line:144::insecure_tls",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Kubernetes::kubernetes/cri-api/pkg/apis/runtime/v1/api.pb.go::line:13468::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cri-api/pkg/apis/runtime/v1/api.pb.go::line:12898::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/code-generator/cmd/validation-gen/testscheme/testscheme.go::line:27::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-openstack/pkg/kms/server/server.go::line:76::semgrep_grpc_server_insecure_connection",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-openstack/pkg/csi/csi.go::line:21::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-openstack/pkg/csi/cinder/openstack/openstack.go::line:163::semgrep_use_tls",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-aws/pkg/providers/v1/aws_loadbalancer.go::line:690::semgrep_use_of_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-aws/pkg/controllers/tagging/tagging_controller.go::line:454::semgrep_use_of_md5",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-aws/docs/overrides/partials/copyright.html::line:28::semgrep_var_in_href",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-aws/cmd/aws-cloud-controller-manager/main.go::line:29::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider/volume/helpers/zones.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider/options/options.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider/config/v1alpha1/zz_generated.conversion.go::line:204::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider/config/v1alpha1/zz_generated.conversion.go::line:194::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider/app/testing/testserver.go::line:250::semgrep_avoid_bind_to_all_interfaces",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider/app/controllermanager.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/util/wait/wait.go::line:21::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/util/rand/rand.go::line:21::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/util/managedfields/internal/skipnonapplied.go::line:21::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/runtime/serializer/cbor/collections.go::line:24::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:267::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:257::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:242::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:241::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:240::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:220::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:219::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:218::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:165::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:155::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:145::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:135::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1beta1/conversion.go::line:44::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1beta1/conversion.go::line:37::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:524::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:462::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:338::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:286::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/time_fuzz.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/micro_time_fuzz.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:137::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:134::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:118::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:115::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/fuzzer/fuzzer.go::line:21::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/api/apitesting/roundtrip/unstructured.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/api/apitesting/roundtrip/roundtrip.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/api/apitesting/fuzzer/fuzzer.go::line:22::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel-labs/skills/src/use.ts::line:387::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:67::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        },
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:66::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        },
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:64::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        },
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:32::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        },
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/utils/get-affected-packages.js::line:174::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/test-cursor-detection.js::line:5::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/wsproto/utilities.py::line:92::semgrep_insecure_hash_algorithm_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/routing/rules.py::line:737::semgrep_exec_detected",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/middleware/http_proxy.py::line:151::semgrep_httpsconnection_detected",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/http.py::line:981::semgrep_insecure_hash_algorithm_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/debug/console.py::line:177::semgrep_exec_detected",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/debug/__init__.py::line:196::semgrep_insecure_hash_algorithm_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/debug/__init__.py::line:45::semgrep_insecure_hash_algorithm_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/click/_termui_impl.py::line:595::semgrep_subprocess_shell_true",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/click/_termui_impl.py::line:451::semgrep_subprocess_shell_true",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/rust/src/lib/start-dev-server.ts::line:145::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/ruby/src/start-dev-server.ts::line:148::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:1115::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:459::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:322::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/node/src/bun-helpers.ts::line:12::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/fs-detectors/src/detect-framework.ts::line:317::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/container/src/util.ts::line:139::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/container/src/dev.ts::line:120::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/util/agent/auto-install-agentic.ts::line:295::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/skills/index.ts::line:480::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:471::semgrep_detect_child_process",
@@ -2792,67 +2779,67 @@
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:349::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:347::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:345::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:29::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/scripts/build-binary-node.mjs::line:202::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/evals/run.ts::line:111::semgrep_detect_child_process",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel-labs/skills/pnpm-lock.yaml::tar@7.5.20::known_vulnerable_dependency",
@@ -3705,738 +3692,738 @@
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol::isValidSignatureNow::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::invMod::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::mulDiv::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_pullViaPermit2::slither_reentrancy_balance",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlement.sol::_pullViaPermit2::slither_reentrancy_balance",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::mulDiv::slither_incorrect_exp",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_requireValidRefundSig::slither_encode_packed_collision",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/utils/Rescuable.sol::rescueNative::slither_arbitrary_send_eth",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::_mint::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol::isValidSignatureNow::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeBeaconToAndCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeToAndCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol::actualFeeCharged::slither_uninitialized_local",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol::token::slither_uninitialized_local",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint::reentrancy_risk",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::invMod::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::mulDiv::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::_checkNonPayable::slither_msg_value_in_nonpayable",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::mulDiv::slither_incorrect_exp",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Deposits.sol::_depositWithPermit::slither_arbitrary_send_erc20",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:162::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:159::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:146::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:143::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:132::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:131::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:130::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:118::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:116::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:115::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:93::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:83::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:77::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:41::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:40::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/types.go::line:27::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:164::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:126::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:125::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:124::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:82::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:81::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:80::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:38::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:37::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:36::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:15::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/btcd/v2/txscript/opcode.go::line:1898::semgrep_use_of_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/btcd/txscript/opcode.go::line:1972::semgrep_use_of_sha1",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:159::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:135::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:106::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:91::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:56::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/core/types.go::line:30::semgrep_math_random_used",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:61::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:49::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:47::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/amino.go::line:467::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/bitcoin/src20inscribe.go::line:99::weak_crypto_risk",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "já migrado anteriormente (banco já tem este id além de \"candidate\") — não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/lib/openzeppelin-contracts/contracts/proxy/UpgradeableProxy.sol::constructor::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/v2/Create2Factory.sol::deployAndMultiCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeToAndCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::changeAdmin::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeTo::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeToAndCall::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::ifAdmin::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     }
   ]
 }

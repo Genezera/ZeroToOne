@@ -3860,3 +3860,69 @@ OAuth local do Codex CLI, sem validação de assinatura — superfície de
 cliente local, não servidor). Nenhum achado novo; nenhuma transição
 tentada. `deep-read-log.json` atualizado (+5 em `vercel/eve`, agora 44
 arquivos).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud) — 113 achados novos na fila, 33 não-dependência triados
+
+Nova leva grande apareceu (scanner Semgrep/dep-scanner rodou em
+`vercel/vercel`, `vercel-labs/skills` e outros repos do programa): 77
+`known_vulnerable_dependency` (não revisados nesta rodada — ver nota
+sobre OSV abaixo) + 36 achados semgrep. Clonado `vercel/vercel` raso
+(sparse, ~250MB) e `vercel-labs/skills`; todos os 33 achados
+não-`known_vulnerable_dependency` revisados com leitura de código real
+(3 dos 36 eram entradas duplicadas de import-only, tratadas junto):
+
+- **27 `semgrep_detect_child_process` em código próprio da Vercel**:
+  quase todos usam a forma array de `spawn(cmd, args, opts)` sem
+  `{shell:true}` — padrão seguro recomendado pela própria documentação
+  do Node.js (sem interpretação de shell, sem expansão de
+  metacaracteres). **Exceção real encontrada**: em
+  `packages/cli/src/commands/mcp/mcp.ts`, o fluxo "Cursor" de
+  `vercel mcp --project` monta uma URL de deep-link concatenando
+  `serverName` (derivado de `project.name`, obtido da API da Vercel
+  via projeto vinculado localmente) **sem nenhum encoding** dentro da
+  query string, e passa o resultado para `execSync` com interpolação
+  de template string (macOS/Linux com aspas simples que um `'` no nome
+  quebraria; Windows **sem nenhuma aspa**). Não consegui confirmar se
+  a validação de nome de projeto no backend da Vercel (fora deste
+  repo) permite caracteres de shell — **3 achados (linhas 345/347/349)
+  ficaram em `corroborated_static`** para revisão humana em vez de
+  falso_positivo ou confirmado.
+- **9 achados em código vendored** (`python/vercel-runtime/.../
+  _vendor/{click,werkzeug,wsproto}/`, confirmado via `vendor.txt` +
+  `LICENSE.txt` por lib): bibliotecas Python de terceiros extremamente
+  populares, comportamento intencional das próprias libs.
+  **falso_positivo**.
+- **4 `semgrep_detect_child_process` em scripts CI/utilitários**
+  (`test-cursor-detection.js`, `get-affected-packages.js`) — strings
+  literais fixas ou `baseSha`/`GITHUB_BASE_REF` provenientes de
+  contexto de Action computado pelo GitHub (não texto arbitrário de
+  contribuidor externo). **falso_positivo**.
+- **4 achados em `utils/update-remix-run-dev.js`**: cadeia real de dois
+  problemas empilhados — (1) `.github/workflows/update-remix-run-dev.yml`
+  interpola `${{ inputs.new-version }}` DIRETO no texto do script antes
+  de virar JS (padrão clássico de "GitHub Actions script injection"); (2)
+  mesmo corrigindo isso, o valor resultante é interpolado sem escaping em
+  4 chamadas `execSync` de template string (git ls-remote/checkout -b/
+  commit -m/push). Só que o trigger é `workflow_dispatch` (exige
+  permissão de disparar Actions já próxima de maintainer, não PR
+  externo) e o comentário no YAML diz que o secret do bot já foi
+  deletado — impacto prático baixo hoje, mas padrão genuinamente
+  perigoso. **4 achados em `corroborated_static`** para triagem humana
+  de elegibilidade real no programa.
+
+Total: 27 falso_positivo + 6 corroborated_static nesta leva.
+
+### `known_vulnerable_dependency` — 77 achados NÃO revisados nesta rodada
+Mesma limitação de rede já documentada no OKG/Kubernetes: `api.osv.dev`
+continua bloqueada pela política desta sessão cloud (confirmado via
+`curl` → 403 no CONNECT). Cada achado já carrega o texto da
+vulnerabilidade (GHSA/severidade) salvo numa rodada anterior; falta
+confirmar alcançabilidade real por leitura de código (import + call
+site), 77 é volume grande demais para esta rodada — fica para as
+próximas. Ficam em `candidate`.
+
+`queue.jsonl` sincronizado via `export-queue` (reconciliado com uma
+sessão cloud paralela que triou Circle BBP e um achado real de
+Kubernetes/cluster-bootstrap no mesmo intervalo — sem sobreposição de
+id com o trabalho deste programa, confirmado por diff campo a campo
+antes do commit).
