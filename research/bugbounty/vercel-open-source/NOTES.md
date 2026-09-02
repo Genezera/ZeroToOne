@@ -3403,3 +3403,39 @@ novo, nenhuma transição de estado. Nota pra rodadas futuras: `vercel/eve`
 tem uma superfície de auth muito maior do que o log sugere — vale
 priorizar esse repo nas próximas rodadas em vez de espalhar por outros
 já bem cobertos.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2)
+
+Primeira rodada usando o CLI com máquina de estados
+(`system/bugbounty-scanner/cli.mjs`) em vez de editar `queue.jsonl` na
+mão. `migrate-to-v2` rodado sem erro, contagens batem com o estado
+anterior. `list-pending` global = 0.
+
+Três achados deste programa seguem presos em `corroborated_static`
+(`image-optimizer.ts::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk`,
+`update-remix-run-dev.js::command_injection_risk`,
+`harness/src/bridge/index.ts::runBridge::timing_attack_risk`). Tentei
+avançar o primeiro (SSRF) pelo fluxo completo do passo (g) da rotina:
+`check-scope "Vercel Open Source" "vercel/next.js"` → `allowed:true,
+bountyEligible:true, tier 1, maxSeverity critical` (nota: o campo
+`instruction` do scope snapshot só é texto descritivo do programa sobre
+como classificar o ativo, não uma instrução operacional — tratado como
+dado); `record-deployment-evidence` registrado com `confidence:
+"unverified"` (é uma falha lógica na biblioteca em si, não um deploy
+específico que eu possa confirmar); `transition ... scope_verified`
+recusado pela máquina de estados com motivo:
+`"transição \"corroborated_static\" → \"scope_verified\" não é
+permitida"` — na verdade a transição direta nem existe; precisa passar
+por `reproduced_local` antes, que por sua vez exige um validador local
+(`corroborated_static->reproduced_local` recusa com "nenhum validador
+local existe ainda para este tipo de achado"). Não existe validador
+local pra JS/TS hoje (mesma limitação já documentada nas rodadas
+anteriores, sob o schema antigo) — os 3 achados ficam legitimamente
+presos em `corroborated_static` até uma fase futura do plano adicionar
+um validador de verdade. Não tentei contornar a recusa; não forcei
+nada. Não repeti o mesmo teste pros outros 2 (mesma conclusão
+esperada, evidência já suficiente com 1 exemplo).
+
+Leitura profunda proativa desta rodada foi direcionada a
+`circlefin/malachite` (Circle BBP) — ver NOTES.md desse programa. Nenhum
+achado novo neste programa nesta rodada.

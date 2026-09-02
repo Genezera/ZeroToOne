@@ -495,7 +495,11 @@
     "code/crates/signing-ed25519/src/lib.rs",
     "code/crates/core-votekeeper/src/keeper.rs",
     "code/crates/core-votekeeper/src/evidence.rs",
-    "code/crates/core-consensus/src/handle/vote.rs"
+    "code/crates/core-consensus/src/handle/vote.rs",
+    "code/crates/signing-ed25519/src/serializers/mod.rs",
+    "code/crates/signing-ed25519/src/serializers/base64string.rs",
+    "code/crates/signing-ed25519/src/serializers/signing_key.rs",
+    "code/crates/signing-ed25519/src/serializers/verification_key.rs"
   ],
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_accept_owner.go",
