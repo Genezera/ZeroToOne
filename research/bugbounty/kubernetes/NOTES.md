@@ -70,14 +70,44 @@ Circle BBP/Vercel — página oficial HackerOne continua sendo SPA que
 exige sessão autenticada), 2 testes novos, snapshot real capturado e
 `check-scope` confirmado ao vivo: `allowed: true, bountyEligible: true`.
 
-**Estado real, sem exagero**: registrado como `corroborated_static`,
-não além disso. Falta PoC real (medição estatística de timing, não só
-leitura de código) antes de qualquer relatório. Pré-requisito real:
-atacante precisa estar posicionado pra interceptar/responder tráfego
-de descoberta insegura, dentro da janela de validade do token (padrão
-24h) — ataque de timing remoto é uma classe real e documentada, mas
-genuinamente mais difícil que local; isso deve ser calibrado
-honestamente no relatório final, não escondido nem inflado.
+**Atualização mesma rodada — PoC de timing executado de verdade,
+2x independentemente**: construído um benchmark Go isolado (réplica só
+do primitivo de comparação, não chama go-jose nem a função real —
+`E:/dev-toolchains/poc-repos/jws-timing-poc/timing_test.go`),
+comparando `==` (vulnerável) vs `hmac.Equal` (fix sugerido), erro no
+primeiro byte vs erro no último byte, `n=10` rodadas de 2.000.000
+iterações via `testing.B` + `benchstat` (ferramenta oficial do time do
+Go, não script caseiro). Rodado por mim e, de forma independente, pelo
+usuário no próprio terminal PowerShell (depois de uma sessão real de
+debugging: `-flag=.` quebra especificamente no PowerShell quando o
+valor é só um ponto — `-bench Benchmark` funciona, `-bench=.` não;
+nada a ver com o achado em si, documentado à parte na memória de
+metodologia). Resultado, nas duas execuções, concordando
+qualitativamente: `==` mostra diferença de tempo real e
+estatisticamente conclusiva entre erro-cedo e erro-tarde (+86,73%
+p=0,000 na minha execução; +97,09% p=0,000 na do usuário — ambos
+p<0,001). `hmac.Equal` não mostra esse sinal nas duas execuções
+(p=0,631 e p=0,280 — ambos não-significativos). Validação gravada
+(`timing_benchmark`, `result: pass`) e achado avançado formalmente pra
+`reproduced_local` (transição `corroborated_static -> reproduced_local`
+confirmada via `cli.mjs transition`).
+
+**O que isso prova e o que não prova, sem exagero**: prova, com rigor
+estatístico real e reproduzido de forma independente, que a
+comparação NÃO se comporta como tempo-constante — essa é a alegação
+central do achado, e agora está genuinamente comprovada, não só lida
+no código. NÃO prova exploração remota bem-sucedida contra um cluster
+real — isso depende de condições de rede que uma PoC local não testa e
+que eu não tenho autorização nem meio de testar contra infraestrutura
+real. Pré-requisito de ataque continua real: atacante precisa estar
+posicionado pra interceptar/responder tráfego de descoberta insegura,
+dentro da janela de validade do token (padrão 24h) — isso vai aparecer
+calibrado honestamente no relatório final.
+
+**Falta antes de `scope_verified`**: `deploymentEvidence` ligando o
+commit lido (HEAD atual, confirmado ao vivo) a uma release
+efetivamente publicada do Kubernetes/kubeadm (hoje só confirmei contra
+`master`, não contra uma tag de release numerada).
 
 `deep-read-log.json`: novo repo `kubernetes/cluster-bootstrap`, 5
 arquivos (`token/jws/jws.go`, `util/tokens/tokens.go`,
