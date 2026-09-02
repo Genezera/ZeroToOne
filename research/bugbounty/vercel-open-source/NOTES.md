@@ -3861,75 +3861,134 @@ cliente local, não servidor). Nenhum achado novo; nenhuma transição
 tentada. `deep-read-log.json` atualizado (+5 em `vercel/eve`, agora 44
 arquivos).
 
-## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud) — 9 achados vendorizados (falso-positivo) + 27 `semgrep_detect_child_process` (23 falso-positivo, 4 real/corroborated_static) + 1 achado NOVO real via leitura profunda
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud) — 113 achados novos na fila, 33 não-dependência triados
 
-### Bloco 1: 9 achados semgrep em `python/vercel-runtime/.../_vendor/{werkzeug,wsproto,click}` — todos falso-positivo
+Nova leva grande apareceu (scanner Semgrep/dep-scanner rodou em
+`vercel/vercel`, `vercel-labs/skills` e outros repos do programa): 77
+`known_vulnerable_dependency` (não revisados nesta rodada — ver nota
+sobre OSV abaixo) + 36 achados semgrep. Clonado `vercel/vercel` raso
+(sparse, ~250MB) e `vercel-labs/skills`; todos os 33 achados
+não-`known_vulnerable_dependency` revisados com leitura de código real
+(3 dos 36 eram entradas duplicadas de import-only, tratadas junto):
 
-Clone sparse de `vercel/vercel` (`python/vercel-runtime`). Confirmado
-por grep que `werkzeug.debug`/`werkzeug.routing`/`werkzeug.middleware.http_proxy`/
-`click` nunca são importados fora de `_vendor/` neste pacote — código
-morto. O único ponto real de entrada é `dev.py` chamando
-`run_simple(host, port, wsgi_app, use_reloader=True, threaded=True)`
-— `use_debugger` nunca passado, usa o default `False` de
-`werkzeug/serving.py`, então o console de debug interativo (e seu
-`exec`/PIN SHA1) nunca é ativado. `wsproto` SHA1 é o hash exigido
-pela RFC 6455 (Sec-WebSocket-Accept), não escolha de segurança.
-`werkzeug/http.py` SHA1 é `generate_etag` (documentado pelo próprio
-projeto como uso intencional, ETag não precisa resistência a
-colisão).
+- **27 `semgrep_detect_child_process` em código próprio da Vercel**:
+  quase todos usam a forma array de `spawn(cmd, args, opts)` sem
+  `{shell:true}` — padrão seguro recomendado pela própria documentação
+  do Node.js (sem interpretação de shell, sem expansão de
+  metacaracteres). **Exceção real encontrada**: em
+  `packages/cli/src/commands/mcp/mcp.ts`, o fluxo "Cursor" de
+  `vercel mcp --project` monta uma URL de deep-link concatenando
+  `serverName` (derivado de `project.name`, obtido da API da Vercel
+  via projeto vinculado localmente) **sem nenhum encoding** dentro da
+  query string, e passa o resultado para `execSync` com interpolação
+  de template string (macOS/Linux com aspas simples que um `'` no nome
+  quebraria; Windows **sem nenhuma aspa**). Não consegui confirmar se
+  a validação de nome de projeto no backend da Vercel (fora deste
+  repo) permite caracteres de shell — **3 achados (linhas 345/347/349)
+  ficaram em `corroborated_static`** para revisão humana em vez de
+  falso_positivo ou confirmado.
+- **9 achados em código vendored** (`python/vercel-runtime/.../
+  _vendor/{click,werkzeug,wsproto}/`, confirmado via `vendor.txt` +
+  `LICENSE.txt` por lib): bibliotecas Python de terceiros extremamente
+  populares, comportamento intencional das próprias libs.
+  **falso_positivo**.
+- **4 `semgrep_detect_child_process` em scripts CI/utilitários**
+  (`test-cursor-detection.js`, `get-affected-packages.js`) — strings
+  literais fixas ou `baseSha`/`GITHUB_BASE_REF` provenientes de
+  contexto de Action computado pelo GitHub (não texto arbitrário de
+  contribuidor externo). **falso_positivo**.
+- **4 achados em `utils/update-remix-run-dev.js`**: cadeia real de dois
+  problemas empilhados — (1) `.github/workflows/update-remix-run-dev.yml`
+  interpola `${{ inputs.new-version }}` DIRETO no texto do script antes
+  de virar JS (padrão clássico de "GitHub Actions script injection"); (2)
+  mesmo corrigindo isso, o valor resultante é interpolado sem escaping em
+  4 chamadas `execSync` de template string (git ls-remote/checkout -b/
+  commit -m/push). Só que o trigger é `workflow_dispatch` (exige
+  permissão de disparar Actions já próxima de maintainer, não PR
+  externo) e o comentário no YAML diz que o secret do bot já foi
+  deletado — impacto prático baixo hoje, mas padrão genuinamente
+  perigoso. **4 achados em `corroborated_static`** para triagem humana
+  de elegibilidade real no programa.
 
-### Bloco 2: 27 `semgrep_detect_child_process` — 23 falso-positivo (padrão `spawn(cmd, argsArray)`, seguro por padrão) + **4 real, novo achado + 3 já-flagged confirmados**
+Total: 27 falso_positivo + 6 corroborated_static nesta leva.
 
-23 dos 27 usam `child_process.spawn(cmd, args, opts)` com `args` em
-array — não passa por shell por padrão (`shell:false`), então mesmo
-dado externo em `cmd`/`args` vira argv literal, não é interpretado
-por um shell. Confirmado em `container/{dev,util}.ts`,
-`node/bun-helpers.ts`, `{python,ruby,rust}/.../start-dev-server.ts`
-(lançam o dev server da linguagem detectada), `cli/{evals/run.ts,
-scripts/build-binary-node.mjs, src/commands/skills/index.ts,
-src/util/agent/auto-install-agentic.ts}`, `vercel-labs/skills/src/use.ts`,
-`fs-detectors/detect-framework.ts` (packageName vem de lista estática
-interna, nunca do projeto sendo deployado), `test-cursor-detection.js`
-(script solto, sem CI), `utils/{get-affected-packages.js,
-update-remix-run-dev.js}` (tooling de CI/release interno, dado
-controlado só pela própria Vercel).
+### `known_vulnerable_dependency` — 77 achados NÃO revisados nesta rodada
+Mesma limitação de rede já documentada no OKG/Kubernetes: `api.osv.dev`
+continua bloqueada pela política desta sessão cloud (confirmado via
+`curl` → 403 no CONNECT). Cada achado já carrega o texto da
+vulnerabilidade (GHSA/severidade) salvo numa rodada anterior; falta
+confirmar alcançabilidade real por leitura de código (import + call
+site), 77 é volume grande demais para esta rodada — fica para as
+próximas. Ficam em `candidate`.
 
-**Achado real (`packages/cli/src/commands/mcp/mcp.ts`, comando
-`vercel mcp add`), leitura profunda proativa (arquivo nunca lido em
-nenhuma rodada anterior):**
+`queue.jsonl` sincronizado via `export-queue` (reconciliado com uma
+sessão cloud paralela que triou Circle BBP e um achado real de
+Kubernetes/cluster-bootstrap no mesmo intervalo — sem sobreposição de
+id com o trabalho deste programa, confirmado por diff campo a campo
+antes do commit).
 
-- **`line:189` (achado NOVO, criado nesta rodada,
-  `ai_deep_read_command_injection`, `corroborated_static`):** ramo
-  "Claude Code" — `safeExecSync(\`claude mcp add --transport http
-  ${mcpName} ${mcpUrl}\`)`, SEM nenhum escaping/quoting.
-  `mcpName`/`mcpUrl` derivam de `project.name`/`org.slug` do projeto
-  Vercel vinculado localmente (dado que qualquer colaborador com
-  permissão de escrita no projeto/time pode definir). Se a API da
-  Vercel permitir metacaractere de shell (`;`, `$(...)`, backtick,
-  `|`, espaço) em nome de projeto/slug de time, é RCE local completo
-  na máquina de quem roda o comando.
-- **`line:345/347/349` (achados já existentes na fila,
-  `corroborated_static`):** mesma classe, ramo Cursor —
-  `execSync(\`open '${oneClickUrl}'\`)` com `oneClickUrl` contendo
-  `serverName` não escapado DENTRO de aspas simples do shell — só
-  quebra se o dado contiver aspas simples (menos grave que a 189, que
-  não tem quoting nenhuma).
-- **`line:467/469/471` (falso-positivo):** ramo VS Code, mesmo dado
-  passa por `encodeURIComponent(JSON.stringify(config))` antes de
-  entrar na URL — sem caminho de injeção.
-- **`line:29` (falso-positivo):** só a definição do wrapper
-  `safeExecSync`, não o call site perigoso.
+## Adendo à rodada acima (sessão cloud concorrente no mesmo push, reconciliada nesta mesma rodada)
 
-**Limitação explícita, não escondida:** não consegui confirmar se a
-validação server-side da Vercel (backend fechado, fora deste repo)
-realmente proíbe caracteres de shell em nome de projeto/slug de time
-— por isso os 4 achados reais ficam em `corroborated_static` (padrão
-de código real e perigoso confirmado por leitura direta), não além
-disso. Sem validador automatizado disponível pra achados
-TypeScript/Node (mesma limitação já documentada pra Go).
+Esta sessão rodou em paralelo e chegou aos mesmos 27 `semgrep_detect_child_process`
++ 9 achados vendorizados independentemente, com o mesmo veredito em quase
+tudo (23 `spawn(array)` seguro, 9 vendor inalcançável/protocolar). Duas
+diferenças relevantes, registradas aqui pra não se perder:
 
-`deep-read-log.json` atualizado com `mcp.ts` e `util/projects/link.ts`.
+1. **Achado NOVO, não coberto pela rodada acima:**
+   `packages/cli/src/commands/mcp/mcp.ts::line:189` (ramo "Claude Code" do
+   comando `vercel mcp add`) — `safeExecSync(\`claude mcp add --transport
+   http ${mcpName} ${mcpUrl}\`)`, **sem nenhum escaping/quoting** (nem
+   aspas simples como no ramo Cursor da linha 345). Mesma cadeia de dado
+   (`project.name`/`org.slug` do projeto vinculado localmente), mas mais
+   grave: qualquer metacaractere de shell no nome quebra, não só aspas
+   simples. Registrado como achado novo
+   (`ai_deep_read_command_injection`) e avançado pra `corroborated_static`,
+   mesma limitação de verificação (validação server-side da Vercel não
+   auditável a partir deste repo).
 
-`Vercel Open Source` fila agora: **77 candidate** (só
-`known_vulnerable_dependency`, não tocados nesta rodada — mesma
-limitação de rede pra OSV documentada nos outros programas).
+2. **Erro desta sessão sobre `utils/update-remix-run-dev.js` (linhas
+   32/64/66/67, achados `semgrep_detect_child_process`) — corrigido
+   parcialmente, documentado por completo:**
+   esta sessão inicialmente classificou esses 4 achados como
+   `false_positive`, analisando só a segurança do `execSync` dentro do
+   próprio arquivo JS (achou que `newVersion` só vinha de operador Vercel
+   confiável ou de dist-tag do próprio pacote `@vercel/remix-run-dev`) —
+   **sem checar o workflow YAML que invoca o script**. A sessão concorrente
+   (seção acima) leu `.github/workflows/update-remix-run-dev.yml` e
+   encontrou o problema real: `${{ inputs.new-version }}` é interpolado
+   DIRETO no texto do script `actions/github-script` antes de virar JS —
+   GitHub Actions script injection clássico (CWE-94), independente de
+   qualquer escaping dentro do `.js`. Confirmado por leitura direta do
+   `.yml` nesta reconciliação: **a sessão concorrente está certa, o
+   veredito `false_positive` desta sessão pra esses 4 ids estava errado.**
+
+   Como consequência, o ledger (`ledger/ledger.research.jsonl`) tem uma
+   bifurcação real nesses 4 ids: `candidate->false_positive` (esta sessão,
+   incorreto) e `candidate->corroborated_static` (sessão concorrente,
+   correto). `state-machine.mjs::deriveStatesFromLedger` resolveu essa
+   bifurcação automaticamente pro ramo terminal (`false_positive`) por ser
+   o único terminal entre os dois — confirmado ao reexportar `queue.jsonl`
+   depois do merge: os 4 ids ficaram `false_positive`. **Isso é
+   tecnicamente incorreto, mas de baixo risco real** — checagem adicional
+   nesta reconciliação (`cli.mjs get`) mostrou que a vulnerabilidade em si
+   já está corretamente registrada, há mais tempo e com investigação bem
+   mais completa, num achado SEPARADO e mais antigo:
+   `Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::
+   module.exports::command_injection_risk` (`createdAt` 2026-09-01, tipo
+   `command_injection_risk`, não veio do semgrep) — `corroborated_static`,
+   confidence média, escopo já confirmado (`allowed=true,
+   eligibleForBounty=true, maxSeverity=critical, tier 1`), com reasoning
+   detalhado citando a mesma cadeia (workflow_dispatch → template YAML →
+   execSync) e já documentando por que fica permanentemente presa em
+   `corroborated_static` (sem validador local pra GitHub Actions/JS neste
+   sistema) e por que a severidade prática é menor do que o
+   `maxSeverity=critical` do scope snapshot sugere (exige colaborador com
+   write access já autorizado no repo, não é vetor de terceiro anônimo).
+   **Essa é a entrada que qualquer rodada futura ou revisão humana deve
+   usar como registro canônico deste achado** — os 4 ids
+   `semgrep_detect_child_process` são duplicatas do scanner automático da
+   mesma linha de código, e o `false_positive` incorreto neles é uma
+   inconsistência de rotulagem residual (não uma perda do achado real),
+   registrada aqui pra não confundir uma leitura futura que olhe só pra
+   esses 4 ids isoladamente sem cruzar com `module.exports::
+   command_injection_risk`.
