@@ -741,10 +741,12 @@
     "packages/eve/src/channel/session.ts",
     "packages/eve/src/public/channels/github/auth.ts",
     "packages/eve/src/public/channels/slack/auth.ts",
+    "packages/eve/src/public/channels/linear/auth.ts",
+    "packages/eve/src/public/models/openai/chatgpt/auth.ts",
+    "packages/eve/src/public/channels/chat-sdk/authorization.ts",
     "packages/eve/src/public/channels/teams/verify.ts",
     "packages/eve/src/public/channels/twilio/verify.ts",
-    "packages/eve/src/execution/reconcile-session-continuation-token.ts",
-    "packages/eve/src/public/channels/chat-sdk/authorization.ts"
+    "packages/eve/src/execution/reconcile-session-continuation-token.ts"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
