@@ -893,5 +893,12 @@
     "workbench/vitest/workflows/hook-token-reuse.ts",
     "packages/cli/src/lib/inspect/auth.ts",
     "packages/core/src/serialization/encryption.ts"
+  ],
+  "kubernetes/cluster-bootstrap": [
+    "token/jws/jws.go",
+    "util/tokens/tokens.go",
+    "util/secrets/secrets.go",
+    "token/util/helpers.go",
+    "token/api/types.go"
   ]
 }
