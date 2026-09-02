@@ -755,7 +755,10 @@
     "packages/eve/src/runtime/connections/resolve-authorization.ts",
     "packages/eve/src/harness/authorization.ts",
     "packages/eve/src/public/agents/auth.ts",
-    "packages/eve/src/execution/connection-auth-tool-result.ts"
+    "packages/eve/src/execution/connection-auth-tool-result.ts",
+    "packages/eve/src/channel/auth/oidc.ts",
+    "packages/eve/src/execution/session-command-token.ts",
+    "packages/eve/src/runtime/connections/authorization-complete-page.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",

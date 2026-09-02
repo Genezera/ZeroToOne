@@ -5964,3 +5964,10 @@ e comentado no código-fonte. Sem achado.
 `deep-read-log.json` atualizado (+4 em `circlefin/malachite`, agora
 12 arquivos; crate `signing-ed25519` 100% coberto). Nenhuma transição
 de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, pós-migração v2, 2ª rodada do dia)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source, sem
+achado) — sem arquivo novo candidato em Circle BBP nesta rodada.
+Nenhum achado, nenhuma transição de estado neste programa.

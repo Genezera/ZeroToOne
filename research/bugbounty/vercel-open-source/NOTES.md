@@ -3439,3 +3439,31 @@ esperada, evidência já suficiente com 1 exemplo).
 Leitura profunda proativa desta rodada foi direcionada a
 `circlefin/malachite` (Circle BBP) — ver NOTES.md desse programa. Nenhum
 achado novo neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, pós-migração v2)
+
+`list-pending` global = 0 (confirmado após `migrate-to-v2`). Os 3 achados
+em `corroborated_static` deste programa seguem travados no mesmo ponto
+documentado na rodada anterior (sem validador local pra JS/TS ainda);
+não repeti a tentativa de transição, mesma conclusão esperada.
+
+Leitura profunda proativa desta rodada seguiu a recomendação da rodada
+anterior de priorizar `vercel/eve` (superfície de auth maior que o log
+sugeria). Três arquivos novos lidos, nenhum ainda coberto:
+`packages/eve/src/channel/auth/oidc.ts` (verificação de JWT OIDC contra
+JWKS remoto — todos os branches (`external_sub`, `user_id` de dev,
+`sub` genérico) são fail-closed: exigem `project_id`/`environment`
+batendo com o projeto Vercel atual antes de autenticar, com comentários
+no próprio código confirmando a intenção; nenhum bypass encontrado),
+`packages/eve/src/execution/session-command-token.ts` (token
+determinístico `eve:session:<sessionId>:inbox`, mesmo padrão de
+"capability token sobre sessionId não-adivinhável" já analisado em
+rodada anterior — confirmado por grep que só é consumido internamente
+pelo motor de workflow durável, nunca exposto como token de API
+externo; não é superfície nova) e
+`packages/eve/src/runtime/connections/authorization-complete-page.ts`
+(página HTML estática pós-callback OAuth, sem interpolação de dado do
+usuário, sem XSS). Sem achado novo.
+
+`deep-read-log.json` atualizado (+3 em `vercel/eve`). Nenhuma transição
+de estado tentada neste programa nesta rodada.
