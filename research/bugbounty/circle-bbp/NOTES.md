@@ -6143,3 +6143,40 @@ services/dev-client/credential-gate.ts e request-headers.ts -- ver
 NOTES.md de Vercel Open Source, sem achado) — sem arquivo novo
 candidato em Circle BBP nesta rodada. Nenhum achado, nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Revisão dos 5 findings pré-existentes em
+`corroborated_static` (nenhum deste programa) confirmou que já estão
+documentados como permanentemente travados por falta de
+validador/RoE — nenhuma ação nova necessária neles.
+
+Leitura profunda proativa priorizou `circlefin/stablecoin-starknet`
+(5/~40 arquivos `.cairo` reais cobertos antes desta rodada — cobertura
+relativamente baixa comparada aos outros repos EVM/Move já bem
+varridos). Lidos os 3 arquivos de implementação de componente ainda
+não cobertos (ignorando `interface.cairo`/`errors.cairo`/
+`events.cairo`, que são só declarações):
+
+- `upgradeable/upgradeable.cairo` — `upgrade()` exige
+  `assert_only_admin()` do `ManageableComponent` antes de
+  `replace_class_syscall`, e rejeita `new_class_hash` zero. Sem achado.
+- `pausable/pausable.cairo` — `pause`/`unpause` exigem
+  `assert_only_pauser()`; `update_pauser` exige `assert_only_owner()`
+  e rejeita endereço zero; `initializer` tem guarda de
+  dupla-inicialização (`ALREADY_INITIALIZED`). Sem achado.
+- `minter_management/minter_management.cairo` — mesmo desenho clássico
+  USDC (master_minter → controller → minter, 1:1 via
+  `minter_controllers` map): `configure_controller`/`remove_controller`
+  exigem `assert_only_master_minter()`; `configure_minter`/
+  `remove_minter`/`increment_minter_allowance` exigem
+  `assert_only_controller()` e operam só sobre o minter mapeado pro
+  `get_caller_address()` do controller (sem forma de um controller
+  afetar o minter de outro controller); `update_master_minter` exige
+  `assert_only_owner()`. Todos os asserts de endereço-zero presentes
+  nos pontos certos. Padrão idêntico ao já revisado em outras
+  implementações Circle (EVM/Aptos) do mesmo componente — sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em
+`circlefin/stablecoin-starknet`, total 8 arquivos cobertos ali).
+Nenhuma transição de estado tentada neste programa nesta rodada.

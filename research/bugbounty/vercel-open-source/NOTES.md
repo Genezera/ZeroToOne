@@ -3782,3 +3782,22 @@ Leitura profunda proativa continuando em `vercel/eve` (clone raso via
 Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
 total 45 arquivos cobertos ali). Nenhuma transição de estado tentada
 neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Revisão dos 5 findings pré-existentes em
+`corroborated_static` deste programa (`timing_attack_risk` em
+`vercel/ai`, `path_traversal_arbitrary_file_read_risk` em
+`vercel-labs/agent-skills`, `command_injection_risk` em
+`vercel/vercel`, `ssrf_redirect_allowlist_bypass_risk` em
+`vercel/next.js`) — todos já documentados em rodadas anteriores como
+travados permanentemente em `corroborated_static` por falta de
+validador local (JS/TS não tem PoC neste sistema) e/ou por exigirem
+condição externa não confirmável por leitura de código. Nenhuma ação
+nova necessária, nenhuma mudança de veredito.
+
+Leitura profunda proativa desta rodada direcionada a
+`circlefin/stablecoin-starknet` (Circle BBP, ver NOTES.md desse
+programa) — sem arquivo novo candidato em `vercel/eve` ou outro repo
+deste programa nesta rodada. Nenhum achado, nenhuma transição de
+estado neste programa.

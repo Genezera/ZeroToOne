@@ -708,7 +708,10 @@
     "packages/components/src/denylistable/denylistable.cairo",
     "packages/components/src/manageable/manageable.cairo",
     "packages/components/src/ownable/ownable.cairo",
-    "packages/stablecoin/src/fiat_token/fiat_token.cairo"
+    "packages/stablecoin/src/fiat_token/fiat_token.cairo",
+    "packages/components/src/upgradeable/upgradeable.cairo",
+    "packages/components/src/pausable/pausable.cairo",
+    "packages/stablecoin/src/minter_management/minter_management.cairo"
   ],
   "circlefin/stablecoin-xlm": [
     "soroban/contracts/fiat-token-admin/src/blocklistable.rs",
