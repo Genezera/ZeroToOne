@@ -243,6 +243,23 @@ sinal via rede real entre eventos independentes (isso continua não
 demonstrado, dito explicitamente). Relatório atualizado em todas as
 seções relevantes, commit `07887ea`, no `origin/master`.
 
+**Atualização mesma rodada — ENVIADO**: usuário colou a página real do
+formulário do HackerOne (revelou risco real de Signal — ver seção
+abaixo — e confirmou lista de assets/weakness ao vivo), corrigi mais uma
+imprecisão real achada por verificação ao vivo (direção do espelhamento
+`cluster-bootstrap` ↔ `kubernetes/kubernetes`: o staging DENTRO de
+kubernetes/kubernetes é a fonte, cluster-bootstrap é o espelho
+publicado pelo `publishing-bot`, não o contrário como o relatório dizia
+antes — commit `ad4669b`), montei o mapeamento exato dos campos do
+formulário deles (Title/Description no template próprio deles/Impact) e
+usuário confirmou envio. **Relatório #3990816** no programa Kubernetes
+(programHandle 39386, weaknessId 116 = CWE-208, sem severidade
+auto-atribuída), estado inicial `new`, confirmado ao vivo via
+`report-status`. Pipeline formal avançado: `record-report` +
+`transition human_ready->submitted` (humanApproval real, actor
+Genezera) + `record-platform-outcome` (state=new) — tudo com
+`ledgerHash` real, `export-queue` rodado.
+
 **Atualização mesma rodada — usuário colou a página de política oficial
 do programa Kubernetes no HackerOne**: li o `severity-ratings.md` real
 (linkado da política) e achei que o análogo mais próximo do nosso
