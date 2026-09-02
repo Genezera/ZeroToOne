@@ -225,3 +225,20 @@ contra o próprio padrão que o Kubernetes já adota em código vizinho.
 Decisão de enviar ou não, ou investigar mais (outro ponto de chamada
 para `DetachedTokenIsValid`, ou um canal lateral diferente) fica com o
 usuário.
+
+**Atualização mesma rodada — mecanismo de repetição real encontrado
+(reuso de token multi-nó)**: usuário pediu especificamente o que
+poderia aumentar a chance de severidade subir de forma legítima (não
+reescrevendo texto, investigando de verdade). Verifiquei ao vivo a doc
+oficial `kubernetes/website::bootstrap-tokens.md`, que confirma que
+reusar o mesmo token em múltiplos clientes é prática real (desencorajada,
+mas real) e alerta especificamente sobre risco de MITM nesse mesmo
+mecanismo de assinatura JWS — bate com o uso comum de `kubeadm`
+(`kubeadm init` imprime UM comando de join com UM token, tipicamente
+rodado sem alteração em todos os workers). Isso muda o relatório de "não
+achei nenhum mecanismo de repetição" pra "não há repetição DENTRO de um
+join, mas existe um mecanismo real de repetição ENTRE joins que reusam o
+mesmo token" — mais forte e ainda 100% honesto, sem medir de verdade o
+sinal via rede real entre eventos independentes (isso continua não
+demonstrado, dito explicitamente). Relatório atualizado em todas as
+seções relevantes, commit `07887ea`, no `origin/master`.
