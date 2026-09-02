@@ -15,7 +15,7 @@ OS Command Injection (CWE-78). Target `vercel/vercel`, `asset_type: Source Code`
 - Commit confirmed against: `e06cc643cec6a47bd9344af7f4589c736d95ed15` (branch `main`) — confirmed as current HEAD via the GitHub API on 2026-09-01, not a stale snapshot from an old scan.
 
 ## Summary
-The `update-remix-run-dev.yml` workflow accepts a free-text input (`new-version`) via `workflow_dispatch`, with no format validation at all. That value flows, after only a `.trim()` and a trivial character substitution, into template-string `execSync()` calls inside `utils/update-remix-run-dev.js` — which run through a real shell (`/bin/sh -c`), not through `spawn()`/`execFile()` with an argument array (the safe pattern already used in ~20 other places in the same repository). An actor who can trigger this workflow can inject an arbitrary command into the GitHub Actions runner executing the workflow.
+The `update-remix-run-dev.yml` workflow accepts a free-text input (`new-version`) via `workflow_dispatch`, with no format validation at all. That value flows, after only a `.trim()` and a trivial character substitution, into template-string `execSync()` calls inside `utils/update-remix-run-dev.js` — which run through a real shell (`/bin/sh -c`) and interpret shell metacharacters in the value, unlike `spawn()`/`execFile()` with an argument array, which avoids shell interpretation entirely. An actor who can trigger this workflow can inject an arbitrary command into the GitHub Actions runner executing the workflow.
 
 ## Confirmed call chain
 1. `.github/workflows/update-remix-run-dev.yml:4-8` — declares the `new-version` input as `type: string`, with no `pattern` or any format validation in the `workflow_dispatch` schema.
@@ -28,11 +28,12 @@ The `update-remix-run-dev.yml` workflow accepts a free-text input (`new-version`
 ## Prerequisites
 Permission to trigger `workflow_dispatch` on this repository. As a GitHub platform default, dispatching a workflow manually requires at least write access to the repository — I have not verified whether `vercel/vercel` layers any additional restriction (e.g. an environment protection rule) on top of that default for this specific workflow. Either way, no admin/maintainer privilege or direct secret access is required, and no real user account beyond one's own is needed — no third-party data involved.
 
-## Steps to reproduce (real-world scenario)
-1. Go to `vercel/vercel` → **Actions** tab → **"Update @remix-run/dev"** workflow → **"Run workflow"** button.
-2. In the free-text **`new-version`** field, enter a string containing command substitution, for example: `1.0.0$(id > /tmp/poc-executed)` (deliberately harmless example — it only writes `id`'s output to a temp file on the runner itself, proving execution without exfiltrating anything or altering external state).
-3. Trigger the workflow.
-4. The runner builds and executes (script line 32): `git ls-remote --heads origin vercel-remix-run-dev-1-0-0$(id > /tmp/poc-executed)` — the `/bin/sh -c` that `execSync` invokes expands `$(id > /tmp/poc-executed)` BEFORE building the final `git ls-remote` argument, meaning `id > /tmp/poc-executed` runs as an independent command on the runner, successfully, regardless of what `git ls-remote` itself does afterward.
+## Attack scenario against the real repository (description only — do not execute this against `vercel/vercel`)
+This describes how the primitive would play out on the real repository. I did not perform these steps against `vercel/vercel` itself or its CI/CD — the program's Rules of Engagement explicitly prohibit that. See "Proof of concept" below for how I actually verified this, safely, on an isolated replica; that is the reproduction path I'd suggest following.
+1. An actor authorized to trigger the workflow opens `vercel/vercel` → **Actions** tab → **"Update @remix-run/dev"** → **"Run workflow"**.
+2. In the free-text **`new-version`** field, they enter a string containing command substitution, for example: `1.0.0$(id > /tmp/poc-executed)` (deliberately harmless example — it only writes `id`'s output to a temp file on the runner itself, proving execution without exfiltrating anything or altering external state).
+3. They trigger the workflow.
+4. The runner would build and execute (script line 32): `git ls-remote --heads origin vercel-remix-run-dev-1-0-0$(id > /tmp/poc-executed)` — the `/bin/sh -c` that `execSync` invokes expands `$(id > /tmp/poc-executed)` BEFORE building the final `git ls-remote` argument, meaning `id > /tmp/poc-executed` would run as an independent command on the runner, successfully, regardless of what `git ls-remote` itself does afterward.
 
 ## Current vs. expected result
 - **Current:** the `new-version` input value, supplied by whoever triggers the workflow, is interpolated with no shell-metacharacter sanitization inside four `execSync()` calls — command-execution control (not just data) in the hands of whoever fills the field.
@@ -101,6 +102,10 @@ Steps actually performed:
 
 The only intentional difference between the replica and the real `vercel/vercel` workflow is that missing bot-token line — every line of `utils/update-remix-run-dev.js`, including all four vulnerable `execSync` calls, is unmodified. The replica's public run log is independent, checkable evidence: a reviewer can open the run URL above directly, without trusting the screenshots alone.
 
+**To verify independently, without re-running anything:** open the run URL above directly — it's public, permanent, and needs no login.
+
+**To reproduce it yourself from scratch:** the attached `remix-injection-poc.zip` contains the exact same 3 files (workflow, script, package.json stub) plus a `README.md` with the exact commands. Push it to a new repository under your own account (or fork the replica repository linked above), open its Actions tab → "Update @remix-run/dev" → Run workflow, enter `1.0.0$(id 1>&2)` in the `new-version` field, run it, and expand the "Update @remix-run/dev" step's log — the same `uid=...` line will appear.
+
 A minimal, dependency-free version of the same primitive, useful for tracing the exact three lines responsible without setting up GitHub Actions at all:
 
 ```bash
@@ -122,7 +127,7 @@ cat poc-executed.txt
 If `poc-executed.txt` contains the output of `id`, that confirms the same primitive locally. The three operations (`.trim()` → build `branch` → `execSync` template string) are copied verbatim from `utils/update-remix-run-dev.js:20,30,32`.
 
 ## Impact
-An actor able to trigger this workflow achieves **arbitrary command execution in the security context of the GitHub Actions job** (`ubuntu-latest`) that processes it — demonstrated directly by the PoC above. This is a genuine escalation beyond what triggering a workflow is meant to grant, not unauthenticated RCE — the distinction matters and I'm not inflating the severity:
+An actor who is authorized to trigger this workflow can achieve **arbitrary command execution in the security context of the GitHub Actions job** (`ubuntu-latest`) that processes it — demonstrated directly by the PoC above. This is a genuine escalation beyond what triggering a workflow is meant to grant, not unauthenticated RCE — the distinction matters and I'm not inflating the severity:
 
 - The concrete downstream impact (which secrets, which environment, which further systems) depends on whatever permissions are actually granted to this specific job — I have not enumerated those beyond what's visible in the workflow file itself. The workflow also runs with GitHub Actions' automatically provided `GITHUB_TOKEN`, subject to the permissions granted to the job.
 - The `github-token` explicitly configured in the step (`secrets.VERCEL_CLI_RELEASE_BOT_TOKEN`) carries the comment "TODO: this secret is deleted, replace with a new bot token or GitHub App" — this **does not neutralize the finding**: the `execSync` injection runs BEFORE the script's only two `github.rest.*` calls at the end, which are the only use of that specific token.
