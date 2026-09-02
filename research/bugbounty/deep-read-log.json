@@ -437,7 +437,10 @@
     "internal/app/service/signer/config.go",
     "internal/app/provider/enclave/transport_vsock_stub.go",
     "internal/app/provider/enclave/config.go",
-    "internal/app/provider/awskms/config.go"
+    "internal/app/provider/awskms/config.go",
+    "internal/common/grpc/server/interceptor/logging.go",
+    "internal/common/grpc/server/interceptor/metric.go",
+    "cmd/run.go"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",

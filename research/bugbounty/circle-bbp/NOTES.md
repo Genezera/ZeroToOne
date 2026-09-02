@@ -5884,3 +5884,30 @@ Sem achado.
 `deep-read-log.json` atualizado (+1 em `circlefin/stablecoin-sui`, agora
 8 arquivos — repo `.move` não-teste 100% coberto). Nenhuma transição de
 estado tentada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0 (nenhum candidate em nenhum dos 4 programas).
+Leitura profunda proativa: 3 arquivos novos ainda não lidos em
+`circlefin/arc-remote-signer` (repo já bem coberto — 44 arquivos —
+priorizados os últimos que faltavam da cadeia de interceptors gRPC):
+`internal/common/grpc/server/interceptor/logging.go`,
+`internal/common/grpc/server/interceptor/metric.go`, `cmd/run.go`.
+Nenhum dos três acrescenta lógica de autenticação/autorização (logging.go
+só grava clientIP/método/status/latência; metric.go só captura latência
+pra Datadog/Prometheus; cmd/run.go só faz wiring de config→`app.Run`) —
+confirma, sem contradizer, a ausência de auth já documentada no achado
+`Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding`.
+
+Esse achado já tinha passado por investigação extensa em rodadas
+anteriores (PoC Go real rodada, `human_ready`, relatório escrito e
+revisado duas vezes) e hoje aparece com `state: duplicate` no
+`queue.jsonl` (post-migração pro schema v2) — ou seja, o usuário já
+submeteu o relatório de verdade na HackerOne e a plataforma retornou
+"duplicate" (achado real, só que alguém reportou primeiro). Estado
+correto, não mexido: `duplicate` é preenchido pelo usuário a partir do
+resultado real da plataforma, nunca pelo agente de nuvem. Não recriei
+o finding nem tentei nova transição sobre ele.
+
+Nenhum achado novo esta rodada. `deep-read-log.json` atualizado (+3 em
+`circlefin/arc-remote-signer`).
