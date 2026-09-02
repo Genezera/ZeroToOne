@@ -514,3 +514,21 @@ direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source) — sem
 arquivo novo candidato em StackingDAO, os 15 contratos Clarity seguem
 100% cobertos. Nenhum achado, nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2)
+
+Primeira rodada pós-migração pro CLI com máquina de estados
+(`migrate-to-v2` rodado sem erro). `list-pending` global = 0, nenhum
+achado deste programa em nenhum estado além de `false_positive`. Leitura
+profunda proativa desta rodada direcionada a `circlefin/malachite`
+(Circle BBP) — ver NOTES.md desse programa. Sem arquivo novo lido em
+StackingDAO, os 15 contratos Clarity seguem 100% cobertos. Nenhum
+achado, nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, pós-migração v2, 2ª rodada do dia)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source, sem
+achado) — sem arquivo novo candidato em StackingDAO, os 15 contratos
+Clarity seguem 100% cobertos. Nenhum achado, nenhuma transição de
+estado neste programa.

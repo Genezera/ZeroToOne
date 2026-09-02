@@ -5977,3 +5977,56 @@ lido ainda pra afirmar isso com confiança, então não virou achado.
 
 `deep-read-log.json` atualizado (+3 em `circlefin/starknet-cctp`, agora
 8 arquivos). Nenhuma transição de estado -- nenhum achado nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2)
+
+Primeira rodada após a migração para o CLI com máquina de estados
+(`system/bugbounty-scanner/state-machine.mjs` + `cli.mjs`). `migrate-to-v2`
+rodado (138 findings migrados, contagens conferem com o `queue.jsonl`
+anterior). `list-pending` global = 0 candidatos em todos os 4 programas.
+
+Tentei avançar os 5 achados presos em `corroborated_static` (nenhum é
+deste programa — todos Vercel Open Source/Block Open Source) via
+`check-scope`+`record-deployment-evidence`+`transition scope_verified`;
+a máquina de estados recusou corretamente (`corroborated_static ->
+scope_verified` não existe como transição direta — precisa passar por
+`reproduced_local`, que por sua vez exige um validador local, inexistente
+hoje para achados não-Solidity). Confirma o comportamento documentado:
+achado `ai_deep_read_finding`/JS/TS/Kotlin/Swift fica travado em
+`corroborated_static` até a Fase 2/4 do plano adicionar um validador de
+verdade — não é regressão nem bug meu, é limitação real do sistema atual.
+O achado Kotlin `wire-schema::DirectoryRoot.resolve::path_traversal_risk`
+(square/wire, escopo Block Open Source) já estava em `human_ready` desde
+antes da migração — confirmado que sobreviveu a migração intacto, nenhuma
+ação necessária.
+
+Leitura profunda proativa: cobri o crate `code/crates/signing-ed25519`
+inteiro de `circlefin/malachite` (escopo Circle BBP, dentro de
+`code/crates` conforme `check-scope`), que faltava — só `signing/` e
+`signing-ecdsa/` tinham sido lidos em rodadas anteriores. Arquivos novos:
+`lib.rs` (wrapper de `PrivateKey`/`PublicKey`/`Signature` sobre
+`ed25519_consensus`, que é a variante ZIP215/"consensus-safe" do Ed25519
+— escolha correta para um sistema de consenso BFT, evita a malleabilidade
+de assinatura clássica do Ed25519 puro) e os 3 serializers
+(`base64string.rs`, `signing_key.rs`, `verification_key.rs`, formato
+CometBFT-compatível `{"type":"tendermint/PrivKeyEd25519","value":"<b64>"}`).
+Verifiquei: `verify()`/`sign()` delegam 100% pra `ed25519_consensus` sem
+lógica própria de validação que pudesse introduzir bypass; decode de
+chave pública usa `VerificationKey::try_from` (rejeita ponto fora da
+curva, testado); base64 decode usa a lib `base64` padrão sem parsing
+manual. Único detalhe pré-existente: comentário no próprio código já
+reconhece que `zeroize()` não limpa a verification key/prefix
+cacheados (limitação documentada do upstream `ed25519_consensus`, não
+um gap introduzido pelo wrapper) — não é achado novo, já é conhecido
+e comentado no código-fonte. Sem achado.
+
+`deep-read-log.json` atualizado (+4 em `circlefin/malachite`, agora
+12 arquivos; crate `signing-ed25519` 100% coberto). Nenhuma transição
+de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, pós-migração v2, 2ª rodada do dia)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source, sem
+achado) — sem arquivo novo candidato em Circle BBP nesta rodada.
+Nenhum achado, nenhuma transição de estado neste programa.

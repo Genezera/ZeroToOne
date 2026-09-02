@@ -495,7 +495,11 @@
     "code/crates/signing-ed25519/src/lib.rs",
     "code/crates/core-votekeeper/src/keeper.rs",
     "code/crates/core-votekeeper/src/evidence.rs",
-    "code/crates/core-consensus/src/handle/vote.rs"
+    "code/crates/core-consensus/src/handle/vote.rs",
+    "code/crates/signing-ed25519/src/serializers/mod.rs",
+    "code/crates/signing-ed25519/src/serializers/base64string.rs",
+    "code/crates/signing-ed25519/src/serializers/signing_key.rs",
+    "code/crates/signing-ed25519/src/serializers/verification_key.rs"
   ],
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_accept_owner.go",
@@ -754,7 +758,10 @@
     "packages/eve/src/runtime/connections/resolve-authorization.ts",
     "packages/eve/src/harness/authorization.ts",
     "packages/eve/src/public/agents/auth.ts",
-    "packages/eve/src/execution/connection-auth-tool-result.ts"
+    "packages/eve/src/execution/connection-auth-tool-result.ts",
+    "packages/eve/src/channel/auth/oidc.ts",
+    "packages/eve/src/execution/session-command-token.ts",
+    "packages/eve/src/runtime/connections/authorization-complete-page.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
