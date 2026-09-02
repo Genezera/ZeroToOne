@@ -2569,3 +2569,16 @@ global = 0. Os dois achados travados (`js_injection_unescaped_token_risk`
 em `corroborated_static` e `Root.kt::DirectoryRoot.resolve::
 path_traversal_risk` em `human_ready`) seguem intocados, ainda
 aguardando decisão humana sobre o segundo.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`program-policy.json` checado ANTES de qualquer outra ação, mesma
+disciplina de todas as rodadas desde o incidente da 11ª. `aiResearchBanned:
+true` ainda vigente para "Block Open Source". Nenhum repo `cashapp/*`/
+`afterpay/*`/`square/wire` clonado, lido ou tocado nesta rodada —
+leitura profunda proativa desta rodada foi inteiramente em `vercel/eve`
+(ver NOTES.md de Vercel Open Source). `list-pending` global = 0. Os
+dois achados travados (`js_injection_unescaped_token_risk` em
+`corroborated_static` e `Root.kt::DirectoryRoot.resolve::
+path_traversal_risk` em `human_ready`) seguem intocados, ainda
+aguardando decisão humana sobre o segundo.

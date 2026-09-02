@@ -3801,3 +3801,39 @@ Leitura profunda proativa desta rodada direcionada a
 programa) — sem arquivo novo candidato em `vercel/eve` ou outro repo
 deste programa nesta rodada. Nenhum achado, nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Leitura profunda proativa continuando em
+`vercel/eve` (clone raso), 3 arquivos novos, todos pequenos e sem
+achado:
+
+- `packages/eve/src/public/channels/linear/auth.ts` — apenas resolução
+  de credenciais (access token / webhook secret) a partir de
+  `credentials.*` ou variáveis de ambiente (`LINEAR_AGENT_ACCESS_TOKEN`
+  etc.), lançando erro se ausente. Nenhuma decisão de autorização, puro
+  plumbing de configuração. Sem achado.
+- `packages/eve/src/public/models/openai/chatgpt/auth.ts` — usa
+  `decodeJwt` (sem verificar assinatura) para extrair `exp`,
+  `chatgpt_account_id` e email/label de um token ChatGPT/Codex. Decode
+  sem verify soaria a alarme se o token viesse de terceiro, então
+  rastreado o único chamador: `token-broker.ts:140` (`tokenFrom`),
+  chamado a partir de `resolveToken`/`accept`, cujo `rawToken` vem
+  exclusivamente de `appServer.getAuthStatus()` — o próprio token OAuth
+  que este processo obteve de si mesmo via `codex login` (fluxo local,
+  não input de rede de terceiro). Os campos extraídos
+  (`accountId`/`accountLabel`/`expiresAt`) são usados só como metadado
+  de exibição/cache local (`readyState`, cache do broker), nunca como
+  base de uma decisão de autorização sobre uma requisição de outra
+  parte. Sem achado.
+- `packages/eve/src/public/channels/chat-sdk/authorization.ts` — só
+  posta/edita mensagens de status ("Authorization required for X" /
+  "X connected") no thread do Chat SDK quando eventos
+  `authorization.required`/`authorization.completed` disparam; nenhuma
+  lógica de decisão de autorização aqui, é só UI de status. Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
+total 48 arquivos cobertos ali). Nenhuma transição de estado tentada
+neste programa nesta rodada. Os 5 achados pré-existentes em
+`corroborated_static` seguem intocados (mesma limitação de sempre —
+JS/TS sem validador local de PoC neste sistema).

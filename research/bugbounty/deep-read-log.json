@@ -791,7 +791,10 @@
     "packages/eve/src/services/dev-client/request-headers.ts",
     "packages/eve/src/channel/session.ts",
     "packages/eve/src/public/channels/github/auth.ts",
-    "packages/eve/src/public/channels/slack/auth.ts"
+    "packages/eve/src/public/channels/slack/auth.ts",
+    "packages/eve/src/public/channels/linear/auth.ts",
+    "packages/eve/src/public/models/openai/chatgpt/auth.ts",
+    "packages/eve/src/public/channels/chat-sdk/authorization.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
