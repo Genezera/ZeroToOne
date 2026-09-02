@@ -1,8 +1,19 @@
 {
-  "migratedAt": "2026-09-02T15:51:35.458Z",
-  "total": 401,
+  "migratedAt": "2026-09-02T16:05:29.562Z",
+  "total": 402,
   "driftCorrected": 0,
   "logs": [
+    {
+      "id": "Kubernetes::kubernetes/cluster-bootstrap/token/jws/jws.go::DetachedTokenIsValid::non_constant_time_hmac_comparison",
+      "steps": [
+        {
+          "to": "corroborated_static",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "corroborated_static"
+    },
     {
       "id": "Circle BBP::circlefin/stablecoin-xlm/soroban/packages/stablecoin-roles/src/minter_asset_controllable/storage.rs::configure_minter::ai_deep_read_finding",
       "steps": [
@@ -3705,221 +3716,221 @@
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol::isValidSignatureNow::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::invMod::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::mulDiv::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_pullViaPermit2::slither_reentrancy_balance",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlement.sol::_pullViaPermit2::slither_reentrancy_balance",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::mulDiv::slither_incorrect_exp",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_requireValidRefundSig::slither_encode_packed_collision",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/src/utils/Rescuable.sol::rescueNative::slither_arbitrary_send_eth",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::_mint::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "corroborated_static",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol::isValidSignatureNow::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeBeaconToAndCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeToAndCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol::actualFeeCharged::slither_uninitialized_local",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol::token::slither_uninitialized_local",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint::reentrancy_risk",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::invMod::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::mulDiv::slither_divide_before_multiply",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::_checkNonPayable::slither_msg_value_in_nonpayable",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::mulDiv::slither_incorrect_exp",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Deposits.sol::_depositWithPermit::slither_arbitrary_send_erc20",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:162::semgrep_use_of_unsafe_block",
@@ -4365,78 +4376,78 @@
       "id": "Circle BBP::circlefin/evm-cctp-contracts/lib/openzeppelin-contracts/contracts/proxy/UpgradeableProxy.sol::constructor::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/v2/Create2Factory.sol::deployAndMultiCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeToAndCall::unchecked_call_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::changeAdmin::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeTo::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeToAndCall::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     },
     {
       "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::ifAdmin::slither_incorrect_return",
       "steps": [
         {
-          "to": "candidate",
+          "to": "false_positive",
           "ok": true,
-          "reason": "estado inicial de todo finding migrado"
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "candidate"
+      "finalState": "false_positive"
     }
   ]
 }

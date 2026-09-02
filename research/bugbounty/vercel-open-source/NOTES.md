@@ -3860,3 +3860,76 @@ OAuth local do Codex CLI, sem validação de assinatura — superfície de
 cliente local, não servidor). Nenhum achado novo; nenhuma transição
 tentada. `deep-read-log.json` atualizado (+5 em `vercel/eve`, agora 44
 arquivos).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud) — 9 achados vendorizados (falso-positivo) + 27 `semgrep_detect_child_process` (23 falso-positivo, 4 real/corroborated_static) + 1 achado NOVO real via leitura profunda
+
+### Bloco 1: 9 achados semgrep em `python/vercel-runtime/.../_vendor/{werkzeug,wsproto,click}` — todos falso-positivo
+
+Clone sparse de `vercel/vercel` (`python/vercel-runtime`). Confirmado
+por grep que `werkzeug.debug`/`werkzeug.routing`/`werkzeug.middleware.http_proxy`/
+`click` nunca são importados fora de `_vendor/` neste pacote — código
+morto. O único ponto real de entrada é `dev.py` chamando
+`run_simple(host, port, wsgi_app, use_reloader=True, threaded=True)`
+— `use_debugger` nunca passado, usa o default `False` de
+`werkzeug/serving.py`, então o console de debug interativo (e seu
+`exec`/PIN SHA1) nunca é ativado. `wsproto` SHA1 é o hash exigido
+pela RFC 6455 (Sec-WebSocket-Accept), não escolha de segurança.
+`werkzeug/http.py` SHA1 é `generate_etag` (documentado pelo próprio
+projeto como uso intencional, ETag não precisa resistência a
+colisão).
+
+### Bloco 2: 27 `semgrep_detect_child_process` — 23 falso-positivo (padrão `spawn(cmd, argsArray)`, seguro por padrão) + **4 real, novo achado + 3 já-flagged confirmados**
+
+23 dos 27 usam `child_process.spawn(cmd, args, opts)` com `args` em
+array — não passa por shell por padrão (`shell:false`), então mesmo
+dado externo em `cmd`/`args` vira argv literal, não é interpretado
+por um shell. Confirmado em `container/{dev,util}.ts`,
+`node/bun-helpers.ts`, `{python,ruby,rust}/.../start-dev-server.ts`
+(lançam o dev server da linguagem detectada), `cli/{evals/run.ts,
+scripts/build-binary-node.mjs, src/commands/skills/index.ts,
+src/util/agent/auto-install-agentic.ts}`, `vercel-labs/skills/src/use.ts`,
+`fs-detectors/detect-framework.ts` (packageName vem de lista estática
+interna, nunca do projeto sendo deployado), `test-cursor-detection.js`
+(script solto, sem CI), `utils/{get-affected-packages.js,
+update-remix-run-dev.js}` (tooling de CI/release interno, dado
+controlado só pela própria Vercel).
+
+**Achado real (`packages/cli/src/commands/mcp/mcp.ts`, comando
+`vercel mcp add`), leitura profunda proativa (arquivo nunca lido em
+nenhuma rodada anterior):**
+
+- **`line:189` (achado NOVO, criado nesta rodada,
+  `ai_deep_read_command_injection`, `corroborated_static`):** ramo
+  "Claude Code" — `safeExecSync(\`claude mcp add --transport http
+  ${mcpName} ${mcpUrl}\`)`, SEM nenhum escaping/quoting.
+  `mcpName`/`mcpUrl` derivam de `project.name`/`org.slug` do projeto
+  Vercel vinculado localmente (dado que qualquer colaborador com
+  permissão de escrita no projeto/time pode definir). Se a API da
+  Vercel permitir metacaractere de shell (`;`, `$(...)`, backtick,
+  `|`, espaço) em nome de projeto/slug de time, é RCE local completo
+  na máquina de quem roda o comando.
+- **`line:345/347/349` (achados já existentes na fila,
+  `corroborated_static`):** mesma classe, ramo Cursor —
+  `execSync(\`open '${oneClickUrl}'\`)` com `oneClickUrl` contendo
+  `serverName` não escapado DENTRO de aspas simples do shell — só
+  quebra se o dado contiver aspas simples (menos grave que a 189, que
+  não tem quoting nenhuma).
+- **`line:467/469/471` (falso-positivo):** ramo VS Code, mesmo dado
+  passa por `encodeURIComponent(JSON.stringify(config))` antes de
+  entrar na URL — sem caminho de injeção.
+- **`line:29` (falso-positivo):** só a definição do wrapper
+  `safeExecSync`, não o call site perigoso.
+
+**Limitação explícita, não escondida:** não consegui confirmar se a
+validação server-side da Vercel (backend fechado, fora deste repo)
+realmente proíbe caracteres de shell em nome de projeto/slug de time
+— por isso os 4 achados reais ficam em `corroborated_static` (padrão
+de código real e perigoso confirmado por leitura direta), não além
+disso. Sem validador automatizado disponível pra achados
+TypeScript/Node (mesma limitação já documentada pra Go).
+
+`deep-read-log.json` atualizado com `mcp.ts` e `util/projects/link.ts`.
+
+`Vercel Open Source` fila agora: **77 candidate** (só
+`known_vulnerable_dependency`, não tocados nesta rodada — mesma
+limitação de rede pra OSV documentada nos outros programas).

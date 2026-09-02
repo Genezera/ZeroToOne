@@ -83,3 +83,59 @@ honestamente no relatório final, não escondido nem inflado.
 arquivos (`token/jws/jws.go`, `util/tokens/tokens.go`,
 `util/secrets/secrets.go`, `token/util/helpers.go`,
 `token/api/types.go`).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud) — 49 achados semgrep novos: 48 falso-positivo, 1 real (`corroborated_static`)
+
+Programa segue sem scope-snapshot dedicado documentado nesta nota
+anterior — na prática `research/bugbounty/scope-snapshots/kubernetes.json`
+já existe (capturado numa rodada concorrente/anterior no mesmo push,
+`check-scope "Kubernetes" ...` funcional). Fila tinha 49 `candidate`
+não-dependência (dependência = 31 `known_vulnerable_dependency`,
+não tocados nesta rodada). Clonados shallow `apimachinery`,
+`cloud-provider`, `cloud-provider-aws`, `cloud-provider-openstack`,
+`code-generator`, `cri-api`.
+
+**48 falso-positivo**, agrupados por padrão real confirmado por
+leitura de código:
+- `unsafe.Pointer` em `zz_generated.conversion.go`/`api.pb.go` (23×):
+  código 100% autogerado por `conversion-gen`/`protoc-gen-go`,
+  reinterpretação de tipos com layout de memória idêntico — padrão
+  oficial do ecossistema Kubernetes/protobuf-go.
+- `math/rand` (16×): em cada caso confirmado por grep do call site —
+  fuzzer/roundtrip de teste (`*_fuzz.go`, `apitesting/`), jitter de
+  retry/backoff (`wait.go`, `controllermanager.go`, `options.go`,
+  `csi.go`), amostragem probabilística de log
+  (`skipnonapplied.go`), randomização de ordem de iteração
+  (`collections.go`), fallback de escolha de zona sem segredo
+  envolvido (`zones.go`), ou seed do gerador global não-criptográfico
+  no entrypoint (`main.go`) — nenhum uso de segurança identificado.
+- `sha1`/`md5` (2×): checksum de idempotência de tags
+  (`tagging_controller.go`) e nome determinístico truncado de target
+  group AWS (`aws_loadbalancer.go`) — nenhum protege segredo.
+- `grpc_server_insecure_connection` (`kms/server/server.go`): gRPC
+  sem TLS mas sobre Unix domain socket LOCAL — arquitetura oficial e
+  documentada do plugin KMS do Kubernetes (kube-apiserver fala com o
+  provider via socket local, nunca rede).
+- `semgrep_use_tls` (`openstack.go`): endpoint `/metrics` HTTP puro,
+  padrão universal do ecossistema Prometheus/cloud-native.
+- `avoid_bind_to_all_interfaces` (`testserver.go`): mora em
+  `app/testing/`, servidor de teste efêmero (`*testing.T`), nunca
+  produção.
+- `var_in_href` (`copyright.html`): valor de config de build do
+  MkDocs Material, não input de usuário refletido.
+
+**1 real, mantido em `corroborated_static`** (sem PoC — sem
+validador automatizado disponível pra achados Go, mesma limitação
+documentada em outros programas):
+`cloud-provider-openstack/pkg/autohealing/healthcheck/plugin_endpoint.go:144`
+— `tls.Config{InsecureSkipVerify: true}` real e alcançável no cliente
+HTTPS que o autohealing controller usa pra checar o healthcheck de um
+nó (CWE-295, Improper Certificate Validation). Severidade
+provavelmente baixa/média — exige posição de rede já dentro do plano
+de dados do cluster pra MITM, não explorável pela internet pública —
+calibrado honestamente no `reasoning`, não inflado nem descartado.
+
+`Kubernetes` fila agora: **31 candidate** (só `known_vulnerable_dependency`,
+não tocados nesta rodada — API OSV segue bloqueada pela política de
+rede desta sessão, `api.osv.dev:443` recusado pelo proxy, mesmo
+sintoma já documentado em outros programas).
