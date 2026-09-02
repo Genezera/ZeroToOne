@@ -3467,3 +3467,28 @@ usuário, sem XSS). Sem achado novo.
 
 `deep-read-log.json` atualizado (+3 em `vercel/eve`). Nenhuma transição
 de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, 3ª rodada pós-migração v2)
+
+`list-pending` global = 0 (todos os 4 programas). Os 3 achados em
+`corroborated_static` deste programa continuam travados no mesmo ponto
+já documentado (sem validador local para JS/TS); não repeti a tentativa.
+
+Leitura profunda proativa: mais 3 arquivos novos de `vercel/eve` em
+`packages/eve/src/channel/auth/` e `channel/`, únicos deste
+subdiretório ainda não cobertos: `http-basic.ts` (Basic Auth — usuário
+comparado com `!==` após normalizar NFC, mas senha comparada via
+SHA-256 + `timingSafeEqual`, evitando side-channel de tempo/tamanho;
+sem bypass), `schedule-auth.ts` (constante `SCHEDULE_APP_AUTH` +
+predicado `isScheduleAppAuth` — confirmei via grep que o predicado não
+é usado em lugar nenhum como gate de autorização, só a constante é
+atribuída diretamente em `schedule.ts` como o auth context interno do
+motor de agendamento; não é um bypass, é código morto/defensivo sem
+efeito prático) e `vercel-oidc-project.ts` (binding de projeto Vercel
+atual por request via `WeakMap<Request, resolver>` com símbolo global
+— escopo correto por instância de `Request`, sem risco de vazamento
+entre requisições concorrentes). Sem achado novo.
+
+`deep-read-log.json` atualizado (+3 em `vercel/eve`, subdiretório
+`channel/auth/` e `channel/` agora 100% cobertos). Nenhuma transição
+de estado tentada neste programa nesta rodada.
