@@ -64,6 +64,7 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
   const vercel = h1Raw.find((p) => p.handle === 'vercel-open-source');
   const okg = h1Raw.find((p) => p.handle === 'okg');
   const block = bcRaw.find((p) => (p.name || '').toLowerCase().includes('block open source'));
+  const auth0 = bcRaw.find((p) => (p.name || '').toLowerCase().includes('auth0'));
   const stackingDaoRaw = h1Raw.find((p) => p.handle === 'stackingdao' || (p.name || '').toLowerCase() === 'stackingdao');
 
   const capturedAt = new Date().toISOString();
@@ -123,6 +124,28 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
       confidence: 'low',
       capturedAt,
       communitySourceNote: 'Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset (só a lista de alvo) — diferente do HackerOne. Página oficial também não fetchável sem sessão. Confiança mais baixa: sabemos QUE o repo está listado como alvo, não a elegibilidade de recompensa por severidade.',
+    }));
+  }
+  if (auth0) {
+    // Primeiro alvo JVM real desde a pausa do Block Open Source
+    // (31/08/2026) -- JVM_TARGETS estava vazio (README/IMPLEMENTATION_STATE.md,
+    // 02/09/2026). Achado por heurística de nome de repo (android/kotlin/
+    // java/spring/gradle) contra o dataset inteiro (195 candidatos), não
+    // pela rotação semanal normal (que só processa um lote capado por
+    // vez e ainda não tinha chegado nele). `auth0/auth0-java` confirmado
+    // como alvo real "Auth0 Java SDK (auth0-java)" nos 25 ativos em
+    // escopo do programa — não é candidato hipotético.
+    snapshots.push(buildScopeSnapshot({
+      program: 'Auth0 by Okta',
+      platform: 'Bugcrowd',
+      officialUrl: 'https://bugcrowd.com/engagements/auth0-okta',
+      sourceType: 'community_dataset_structured',
+      sourceDetail: 'arkadiyt/bounty-targets-data, bugcrowd_data.json, name "Auth0 by Okta"',
+      rawSourceContent: auth0,
+      assets: toAssetList(auth0.targets && auth0.targets.in_scope).map((a) => ({ ...a, eligibleForBounty: null, eligibleForSubmission: null })),
+      confidence: 'low',
+      capturedAt,
+      communitySourceNote: 'Mesma limitação do Block Open Source: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Sabemos QUE auth0/auth0-java está listado (confirmado ao vivo: "Auth0 Java SDK (auth0-java)", um dos 25 ativos em escopo), não a elegibilidade de recompensa por severidade -- precisa confirmação manual na página oficial antes de qualquer submissão real.',
     }));
   }
   if (stackingDaoRaw || true) {

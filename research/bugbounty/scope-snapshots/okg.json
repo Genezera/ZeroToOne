@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/okg",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle okg",
-  "contentHash": "b99bfbc876aeec71e3fbef52aa84a13a2b285f5ce5b7be8ea400766247571795",
-  "capturedAt": "2026-08-31T23:20:06.862Z",
-  "expiresAt": "2026-09-14T23:20:06.862Z",
+  "contentHash": "f2257e60139afc6fa2b069675c463c0e6ba5e2902feaa65cd643835d69ae1e09",
+  "capturedAt": "2026-09-02T12:37:38.924Z",
+  "expiresAt": "2026-09-16T12:37:38.924Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [

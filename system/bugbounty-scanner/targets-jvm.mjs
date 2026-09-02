@@ -64,4 +64,39 @@ export const _PAUSED_JVM_TARGETS_MANUAL = [
   },
 ];
 
-export const JVM_TARGETS = AUTO_PROMOTED_TARGETS.filter((t) => t.language === 'jvm');
+// Curadoria manual ATIVA (02/09/2026) -- primeiro alvo JVM real desde a
+// pausa do Block Open Source acima. JVM_TARGETS estava vazio (README.md/
+// IMPLEMENTATION_STATE.md, achado nesta mesma sessão): os 4 alvos pausados
+// são todos Block Open Source, e nenhum dos 13 alvos auto-promovidos até
+// agora é JVM (todos Go -- a rotação semanal de discover-targets.mjs
+// ainda não tinha chegado num candidato JVM elegível). Achado varrendo o
+// dataset inteiro (195 candidatos) por heurística de nome de repo
+// (android/kotlin/java/spring/gradle) em vez de esperar a rotação normal
+// -- 3 candidatos novos genuínos apareceram (tronprotocol/java-tron,
+// plaid/plaid-link-android, auth0/auth0-java); os outros 2 com nome
+// sugestivo já eram conhecidos (afterpay/cashapp, Block Open Source,
+// banidos). `tronprotocol/java-tron` descartado por tamanho (214MB,
+// monorepo de nó de blockchain inteiro -- precisaria de pathPrefixes
+// curados como misk/wire, não é ganho rápido). `auth0/auth0-java`
+// escolhido: 10,4MB (cabe sem pathPrefix), 320 estrelas, push HOJE
+// (manutenção ativa de verdade), programa Bugcrowd com maxPayoutUsd
+// confirmado no dataset (US$50.000 — teto do PROGRAMA, não confirmado
+// por ativo específico ainda). Confirmado ao vivo como alvo real:
+// "Auth0 Java SDK (auth0-java)" é um dos 25 ativos listados em escopo
+// (research/bugbounty/scope-snapshots/auth0-by-okta.json,
+// confidence "low" -- Bugcrowd não expõe elegibilidade de bounty por
+// ativo no dataset público, precisa confirmação manual na página oficial
+// antes de qualquer achado real chegar a human_ready).
+export const JVM_TARGETS_MANUAL = [
+  {
+    program: 'Auth0 by Okta',
+    platform: 'Bugcrowd',
+    owner: 'auth0',
+    repo: 'auth0-java',
+    branch: 'master',
+    maxBountyUsd: 50000,
+    pathPrefixes: [],
+  },
+];
+
+export const JVM_TARGETS = [...JVM_TARGETS_MANUAL, ...AUTO_PROMOTED_TARGETS.filter((t) => t.language === 'jvm')];

@@ -456,6 +456,36 @@ em vez de "100%" -- mais preciso, não menos, do que eu esperava.
 
 7 testes novos. `npm test`: 439 → **446/446**, zero quebrado.
 
+**`JVM_TARGETS` deixou de estar vazio (02/09/2026)**: os 4 alvos manuais
+pausados são todos Block Open Source, e nenhum dos 13 auto-promovidos
+até agora é JVM (todos Go — a rotação semanal de `discover-targets.mjs`
+processa um lote capado por rodada e ainda não tinha chegado num
+candidato JVM elegível). Em vez de esperar a rotação, varri o dataset
+inteiro (195 candidatos únicos) por heurística de nome de repo
+(`android|kotlin|java|spring|gradle`) — 3 candidatos novos genuínos:
+`tronprotocol/java-tron` (214MB, monorepo de nó de blockchain inteiro,
+precisaria de `pathPrefixes` curados como misk/wire — descartado por
+tamanho, não por mérito), `plaid/plaid-link-android` e
+`auth0/auth0-java`. Escolhido o segundo: 10,4MB (cabe sem pathPrefix),
+320 estrelas, push HOJE (manutenção ativa de verdade), programa
+Bugcrowd com `maxPayoutUsd` conhecido no dataset (US$50.000, teto do
+programa — não confirmado por ativo específico ainda).
+
+Scope snapshot real capturado (`capture-scope-snapshots.mjs` ganhou um
+6º branch, mesmo padrão do Block Open Source: Bugcrowd não expõe
+`eligible_for_bounty` por ativo no dataset público, `confidence: "low"`,
+precisa confirmação manual antes de qualquer achado chegar a
+`human_ready`). `check-scope "Auth0 by Okta" "auth0/auth0-java"`
+confirma ao vivo: `allowed: true`, `bountyEligible: null` (honesto —
+sabemos que o ativo está listado, não a elegibilidade de recompensa).
+
+Verificado ao vivo pela pipeline real, não só configuração: `listRepoFiles`
++ `isScannableJvmFile` encontraram 3594 arquivos `.java` escaneáveis de
+verdade (de 3856 no repo inteiro); baixei um arquivo real
+(`AuthAPI.java`, 76KB) e rodei `scanJvmSource` contra ele — zero achado
+nesta rodada, resultado honesto, nem todo arquivo tem bug. 4 testes
+novos em `capture-scope-snapshots.test.mjs`. `npm test`: 446 → **448/448**.
+
 ## Digest de segurança (mesma tarefa semanal)
 `cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
 Advisories (GHSA, API pública, sem conta) **só dos pacotes que o

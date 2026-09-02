@@ -1,0 +1,221 @@
+{
+  "program": "Auth0 by Okta",
+  "platform": "Bugcrowd",
+  "officialUrl": "https://bugcrowd.com/engagements/auth0-okta",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Auth0 by Okta\"",
+  "contentHash": "94085b6fbb8d54b47935d84e7692a64be08deb0596553b0f97a782f8a7cf5d6e",
+  "capturedAt": "2026-09-02T12:37:38.924Z",
+  "expiresAt": "2026-09-16T12:37:38.924Z",
+  "ttlDays": 14,
+  "confidence": "low",
+  "assets": [
+    {
+      "assetIdentifier": "config.cic-bug-bounty.auth0app.com",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://manage.cic-bug-bounty.auth0app.com/",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "*.cic-bug-bounty.auth0app.com",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://play.google.com/store/apps/details?id=com.auth0.guardian&hl=en_US&gl=US",
+      "assetType": "android",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://apps.apple.com/us/app/auth0-guardian/id1093447833",
+      "assetType": "ios",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://marketplace.auth0.com",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "MFA Integrations\t",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://dashboard.fga.dev/",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://api.us1.fga.dev/",
+      "assetType": "api",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://customers.us1.fga.dev/",
+      "assetType": "api",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://play.fga.dev/",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/auth0.js",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/lock",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/auth0-spa-js",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/Auth0.Net",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/nextjs-auth0",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/auth0-java",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/react-native-auth0",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/auth0/auth0-php",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "auth0.com\t",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "samltool.io\t",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "webauthn.me\t",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "openidconnect.net\t",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "jwt.io",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "auth0.net",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Mesma limitação do Block Open Source: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Sabemos QUE auth0/auth0-java está listado (confirmado ao vivo: \"Auth0 Java SDK (auth0-java)\", um dos 25 ativos em escopo), não a elegibilidade de recompensa por severidade -- precisa confirmação manual na página oficial antes de qualquer submissão real."
+}
