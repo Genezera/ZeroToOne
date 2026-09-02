@@ -63,6 +63,7 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
   const circle = h1Raw.find((p) => p.handle === 'circle-bbp');
   const vercel = h1Raw.find((p) => p.handle === 'vercel-open-source');
   const okg = h1Raw.find((p) => p.handle === 'okg');
+  const kubernetes = h1Raw.find((p) => p.handle === 'kubernetes');
   const block = bcRaw.find((p) => (p.name || '').toLowerCase().includes('block open source'));
   const auth0 = bcRaw.find((p) => (p.name || '').toLowerCase().includes('auth0'));
   const stackingDaoRaw = h1Raw.find((p) => p.handle === 'stackingdao' || (p.name || '').toLowerCase() === 'stackingdao');
@@ -110,6 +111,26 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
       confidence: 'medium',
       capturedAt,
       communitySourceNote: 'Programa auto-descoberto pelo pipeline de promoção (não um dos 4 alvos originais desta missão) — mesma limitação dos demais HackerOne: página oficial não fetchável sem sessão autenticada. Snapshot criado especificamente para desbloquear check-scope do achado cosmossdk.io/math (okx/go-wallet-sdk), que estava capado em corroborated_static por falta deste arquivo.',
+    }));
+  }
+  if (kubernetes) {
+    // 12 alvos Go já rastreados em targets-go.mjs (auto-promovidos) nunca
+    // tiveram snapshot formal capturado -- achado real, 02/09/2026,
+    // exatamente quando um achado precisou de check-scope pra avançar.
+    // Confirmado ao vivo contra o dataset bruto antes deste bloco existir:
+    // `kubernetes/cluster-bootstrap` tem eligible_for_bounty=true,
+    // eligible_for_submission=true, max_severity="critical".
+    snapshots.push(buildScopeSnapshot({
+      program: 'Kubernetes',
+      platform: 'HackerOne',
+      officialUrl: 'https://hackerone.com/kubernetes',
+      sourceType: 'community_dataset_structured',
+      sourceDetail: 'arkadiyt/bounty-targets-data, hackerone_data.json, handle kubernetes',
+      rawSourceContent: kubernetes,
+      assets: toAssetList(kubernetes.targets && kubernetes.targets.in_scope),
+      confidence: 'medium',
+      capturedAt,
+      communitySourceNote: 'Mesma limitação de Circle BBP/Vercel: página oficial HackerOne é SPA que exige sessão autenticada, WebFetch e a aba Browser (sem login) confirmaram isso de novo ao vivo nesta sessão. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.',
     }));
   }
   if (block) {

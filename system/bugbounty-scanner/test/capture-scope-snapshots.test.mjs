@@ -66,3 +66,41 @@ test('check-scope real do Auth0 by Okta encontra auth0/auth0-java no snapshot, m
   const asset = auth0.assets.find((a) => a.assetIdentifier === 'https://github.com/auth0/auth0-java');
   assert.equal(asset.eligibleForBounty, null, 'sem confirmação manual, elegibilidade de bounty por ativo não pode ser assumida como true');
 });
+
+// --- 02/09/2026: 12 alvos Go de Kubernetes (targets-go.mjs, auto-promovidos)
+// nunca tinham snapshot formal -- achado real bloqueando check-scope de um
+// achado genuíno em cluster-bootstrap/token/jws.
+
+const FAKE_KUBERNETES_H1 = {
+  handle: 'kubernetes',
+  name: 'Kubernetes',
+  offers_bounties: true,
+  url: 'https://hackerone.com/kubernetes',
+  targets: {
+    in_scope: [
+      { asset_identifier: 'https://github.com/kubernetes/cluster-bootstrap', asset_type: 'SOURCE_CODE', eligible_for_bounty: true, eligible_for_submission: true, max_severity: 'critical' },
+      { asset_identifier: 'https://github.com/kubernetes/kubernetes', asset_type: 'SOURCE_CODE', eligible_for_bounty: true, eligible_for_submission: true, max_severity: 'critical' },
+    ],
+  },
+};
+
+test('captureAllSnapshots monta o snapshot do Kubernetes a partir do dataset HackerOne, com confidence "medium" (mesmo padrão de Circle BBP/Vercel)', async () => {
+  const snapshots = await captureAllSnapshots({
+    fetchJsonFn: async (url) => (url.includes('hackerone') ? [FAKE_KUBERNETES_H1] : EMPTY_BC),
+  });
+  const k8s = snapshots.find((s) => s.program === 'Kubernetes');
+  assert.ok(k8s, 'snapshot do Kubernetes deveria existir');
+  assert.equal(k8s.platform, 'HackerOne');
+  assert.equal(k8s.confidence, 'medium');
+  assert.ok(k8s.assets.some((a) => a.assetIdentifier === 'https://github.com/kubernetes/cluster-bootstrap'));
+});
+
+test('check-scope real do Kubernetes encontra cluster-bootstrap no snapshot, elegível pra bounty', async () => {
+  const snapshots = await captureAllSnapshots({
+    fetchJsonFn: async (url) => (url.includes('hackerone') ? [FAKE_KUBERNETES_H1] : EMPTY_BC),
+  });
+  const k8s = snapshots.find((s) => s.program === 'Kubernetes');
+  const gate = scopeGate(k8s, 'https://github.com/kubernetes/cluster-bootstrap', k8s.capturedAt);
+  assert.equal(gate.allowed, true);
+  assert.equal(gate.bountyEligible, true);
+});

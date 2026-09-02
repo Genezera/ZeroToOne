@@ -1,0 +1,677 @@
+{
+  "program": "Kubernetes",
+  "platform": "HackerOne",
+  "officialUrl": "https://hackerone.com/kubernetes",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle kubernetes",
+  "contentHash": "9ef833bce702ee87ee2e7951e6370ed27e7c12f19810f33632f82caacd23ec0e",
+  "capturedAt": "2026-09-02T15:59:54.738Z",
+  "expiresAt": "2026-09-16T15:59:54.738Z",
+  "ttlDays": 14,
+  "confidence": "medium",
+  "assets": [
+    {
+      "assetIdentifier": "Community Management & Communications",
+      "assetType": "OTHER",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes community management & communication tools are currently ineligible for bounty. Please avoid disruptions.\n\nList of ineligible community assets:\n\n- k8s.io event calendar: https://calendar.google.com/calendar/r?cid=Y2dudDM2NHZkOHM4NmhyMnBoYXBmamM2dWtAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ\n- kubernetes.slack.com\n- @kubernetesio twitter handle\n- Kubernetes meetup account\n- kubeweekly news list: kube.news\n- google groups mailing lists, e.g. https://groups.google.com/forum/#!forum/kubernetes-*\n- subreddit: reddit.com/kubernetes\n- youtube.com/kubernetescommunity\n- Kubernetes zoom accounts\n- stack overflow tag: https://stackoverflow.com/questions/tagged/kubernetes"
+    },
+    {
+      "assetIdentifier": "Tier 1",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "Tier 2",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "Tier 3",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "github.com/kubernetes-csi",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes CSI drivers & infrastructure. Not all repos are eligible for bounty.\n\nEligible for bounty:\n- github.com/kubernetes-csi/external-provisioner\n- github.com/kubernetes-csi/external-snapshotter\n- github.com/kubernetes-csi/node-driver-registrar\n- github.com/kubernetes-csi/livenessprobe\n- github.com/kubernetes-csi/csi-release-tools\n- github.com/kubernetes-csi/csi-lib-utils\n- github.com/kubernetes-csi/kubernetes-csi.github.io\n- github.com/kubernetes-csi/docs\n\nIneligible:\n- github.com/kubernetes-csi/driver-registrar (deprecated)\n- github.com/kubernetes-csi/csi-test\n- github.com/kubernetes-csi/drivers (example code)\n- github.com/kubernetes-csi/cluster-driver-registrar (deprecated)\n- github.com/kubernetes-csi/external-attacher (alpha)\n- github.com/kubernetes-csi/external-resizer (alpha)\n- github.com/kubernetes-csi/csi-driver-host-path (not recommended for production)\n- github.com/kubernetes-csi/csi-driver-iscsi (not stable)\n- github.com/kubernetes-csi/csi-driver-nfs (not stable)\n- github.com/kubernetes-csi/csi-driver-image-populator (not stable)\n- github.com/kubernetes-csi/csi-driver-flex (not stable)\n- github.com/kubernetes-csi/csi-driver-fibre-channel (not stable)\n- github.com/kubernetes-csi/csi-lib-fc (not stable)\n- github.com/kubernetes-csi/csi-lib-iscsi (not stable)"
+    },
+    {
+      "assetIdentifier": "github.com/kubernetes-retired",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The retired projects are no longer maintained"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes-client",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes client libraries. The stable libraries are eligible for bounty, including:\n- https://github.com/kubernetes-client/python\n- https://github.com/kubernetes-client/java\n\nSupporting libraries are also eligible:\n\n- https://github.com/kubernetes-client/gen\n- https://github.com/kubernetes-client/python-base\n\nAll other libraries are ineligible for bounty due to the alpha status or work in progress status."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes-incubator",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The kubernetes-incubator process is deprecated."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes-security",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Unauthorized access (read or write) to any repositories under the kubernetes-security github organization is eligible."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes-sigs",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Unless explicitly listed as an eligible asset, repositories under the kubernetes-sigs github org are not eligible for bounty."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/api",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The canonical location of the Kubernetes API definition."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/apiextensions-apiserver",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "API server for API extensions like CustomResourceDefinitions"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/apimachinery",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/apiserver",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Library for writing a Kubernetes-style API server."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/autoscaler",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Autoscaling components for Kubernetes\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cli-runtime",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Set of helpers for creating kubectl commands and plugins."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/client-go",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Go client for Kubernetes."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "cloud-provider defines the shared interfaces which Kubernetes cloud providers implement. These interfaces allow various controllers to integrate with any cloud provider in a pluggable fashion. Also serves as an issue tracker for SIG Cloud Provider.\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-alibaba-cloud",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "CloudProvider for Alibaba Cloud\n\nVendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-aws",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Vendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-azure",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Cloud provider for Azure\n\nVendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-gcp",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Vendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-openstack",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Vendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-sample",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Sample of how to build a cloud provider repo. This will build a Kubernetes image which deploys on bare metal. It uses the fake cloud provider. It consumes the K8s/K8s build artifact and adds to it the Cloud Controller Manager and CSI Daemon Set.\n\nExample code."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cloud-provider-vsphere",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes Cloud Provider for vSphere (Beta)\n\nVendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cluster-bootstrap",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cluster-registry",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Cluster Registry API"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/code-generator",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Generators for kube-like API types"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/community",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes community content"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/component-base",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Shared code for kubernetes core components"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/cri-api",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Container Runtime Interface (CRI) – a plugin interface which enables kubelet to use a wide variety of container runtimes.\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/csi-api",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/csi-translation-lib",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Staging repo for CSI Migration/Translation libraries\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/dns",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes DNS service"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/enhancements",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Features tracking repo for Kubernetes releases\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/examples",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes application example tutorials"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/frakti",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The hypervisor-based container runtime for Kubernetes.\n\nVendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/funding",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Funding requests for project infrastructure, events, and consulting."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/gengo",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Gengo library for code generation."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/git-sync",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "A sidecar app which clones a git repo and keeps it in sync with the upstream."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/k8s.io",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes files for various *.k8s.io sites"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/klog",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Forked from golang/glog\nLeveled execution logs for Go (fork of https://github.com/golang/glog)"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kompose",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Go from Docker Compose to Kubernetes\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kops",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes Operations (kops) - Production Grade K8s Installation, Upgrades, and Management\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-aggregator",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Aggregator for Kubernetes-style API servers: dynamic registration, discovery summarization, secure proxy"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-controller-manager",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "kube-controller-manager component configs"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-deploy",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "A place for cluster deployment automation\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-openapi",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes OpenAPI spec generation & serving"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-proxy",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "kube-proxy component configs"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-scheduler",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "kube-scheduler component configs"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kube-state-metrics",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Add-on agent to generate and expose cluster-level metrics.\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kubeadm",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Aggregator for issues filed against kubeadm\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kubectl",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Issue tracker and mirror of kubectl code\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kubelet",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "kubelet component configs"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kubernetes",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Production-Grade Container Scheduling and Management"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kubernetes-anywhere",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "{concise,reliable,cross-platform} turnup of Kubernetes clusters\n\nDEPRECATED"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/kubernetes-template-project",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "A template for starting new projects on the github.com/kubernetes organization"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/legacy-cloud-providers",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "This repository hosts the legacy in-tree cloud providers. Out-of-tree cloud providers can consume packages in this repo to support legacy implementations of their Kubernetes cloud provider.\n\nVendor-specific plugins are not eligible for bounty. We recommend reporting vulnerabilities through the vendor's bug bounty program instead."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/metrics",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes metrics-related API types and clients"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/minikube",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Run Kubernetes locally\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/node-api",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/node-problem-detector",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "This is a place for various problem detectors running on the Kubernetes nodes.\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/org",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Meta configuration for Kubernetes Github Org\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/perf-tests",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Performance tests and benchmarks\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/publishing-bot",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Code behind the robot to publish from staging to real repositories."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/release",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Release infrastructure for Kubernetes and related components\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/repo-infra",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes repository infrastucture tools\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/sample-apiserver",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Reference implementation of an apiserver for a custom Kubernetes API.\n\nExample code."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/sample-cli-plugin",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Sample kubectl plugin"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/sample-controller",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Repository for sample controller. Complements sample-apiserver"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/security",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes Security Process and Security Committee docs"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/sig-release",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Repo for SIG release\n\n"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/steering",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": false,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The Kubernetes Steering Committee"
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/test-infra",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Test infrastructure for the Kubernetes project."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/utils",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Non-Kubernetes-specific utility libraries which are consumed by multiple projects."
+    },
+    {
+      "assetIdentifier": "https://github.com/kubernetes/website",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes website and documentation repo:"
+    },
+    {
+      "assetIdentifier": "https://storage.googleapis.com/kubernetes-release/",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes release artifacts download server.\n\nWrite access or modification of assets are eligible for bounty. Please DO NOT modify production artifacts. If you need a test target, you can use a test artifact such as `addons/test/crinit/2017-11-17/crinit`"
+    },
+    {
+      "assetIdentifier": "k8s.gcr.io",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Our official container repository (an alias to gcr.io/google-containers).\n\nThe ability to write to or modify containers in the repository are in scope. Please DO NOT modify production containers. If you need a test target, please use a test image such as fakegitserver."
+    },
+    {
+      "assetIdentifier": "k8s.io",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes nginx server."
+    },
+    {
+      "assetIdentifier": "kubernetes-csi.github.io",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes CSI documentation site."
+    },
+    {
+      "assetIdentifier": "kubernetes.io",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Main kubernetes website, hosted by netlify."
+    },
+    {
+      "assetIdentifier": "prow.k8s.io",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Kubernetes build & test infrastructure.\n\nPlease limit automated scanning to 1qps."
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Mesma limitação de Circle BBP/Vercel: página oficial HackerOne é SPA que exige sessão autenticada, WebFetch e a aba Browser (sem login) confirmaram isso de novo ao vivo nesta sessão. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa."
+}
