@@ -3313,3 +3313,50 @@ repassar pro backend; sem lógica de auth local, sem achado).
 
 `deep-read-log.json` atualizado (+2 em `vercel/vercel`, agora 51
 arquivos). Sem achado novo, nenhuma transição de estado tentada.
+
+## Rodada 2026-09-02 (sessão local) — outcome real do achado SSRF em image-optimizer.ts
+
+O achado SSRF/allowlist-bypass em `image-optimizer.ts` (`fetchExternalImage`
+segue redirect cross-host sem re-checar `remotePatterns`) foi de fato
+enviado à HackerOne como report #3988959, com PoC local real executado
+(control 400 direto em `:5002`, treatment 200 via redirect `:5001`→
+`:5002`, log `HIT: /secret` confirmado ao vivo, não só previsto por
+leitura de código) e 5 screenshots reais (código no GitHub + terminal
+do usuário rodando o PoC pessoalmente). Depois de um ciclo
+"Needs More Info" (faltava anexar arquivo .zip com o PoC — corrigido
+com um archive limpo, testado do zero com `npm install` antes de
+anexar), o report foi **fechado como Duplicate de #3943945** por
+`@h1_analyst_geralt` ~4h depois do reenvio. O analista confirmou
+explicitamente que a análise técnica bate (mesmo call chain, mesma
+técnica de exploit via redirect 302, mesma correção sugerida) — não foi
+recusado por estar errado, só não foi o primeiro a reportar. Um
+terceiro report (#3971664) também já tinha sido fechado como duplicata
+do mesmo #3943945 original, ou seja, pelo menos 3 pessoas encontraram
+esse mesmo bug de forma independente.
+
+Não havia como ter pego essa duplicata antes de enviar: o duplicate
+check documentado no próprio report ("no public advisory or issue was
+found addressing this specific path") era verdadeiro e era o máximo de
+diligência possível — reports privados de outros hackers no mesmo
+programa são propositalmente invisíveis entre si na HackerOne
+(justamente pra evitar conluio/cópia), então não existe busca pública
+que teria encontrado #3943945 antes do fechamento.
+
+**Nota de inconsistência encontrada nesta rodada**: ao tentar registrar
+esse outcome real via `record-platform-outcome` no `zerotoone.db`, o
+finding não foi encontrado — nem por `file LIKE '%image-optimizer%'`
+nem por `id LIKE '%fetchExternalImage%'`. Ou seja, apesar de rodadas
+anteriores desta mesma NOTES.md citarem esse achado como
+`corroborated_static` (ex.: rodada "21ª do dia" acima), ele
+aparentemente nunca foi de fato persistido via `upsertFinding` no
+banco real — só existe na narrativa deste arquivo. Não tentei
+reconstruir o registro no banco com campos históricos inventados
+(`confidence`, `reasoning`, `poc_run` etc.) porque isso inseriria dado
+fabricado no sistema de registro; documentando aqui em texto puro em
+vez disso. Se uma sessão futura for mexer no scanner/DB, vale
+investigar por que esse `upsertFinding` nunca aconteceu (bug real no
+pipeline, ou só uma sessão anterior que descreveu a intenção sem
+executar o CLI de fato).
+
+Estado final, para efeitos de rastreamento manual: `duplicate`
+(HackerOne #3988959, duplicata de #3943945). Sem bounty.

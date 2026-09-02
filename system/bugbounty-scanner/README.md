@@ -318,6 +318,54 @@ apareciam como "candidato novo" toda semana, gastando orçamento de
 metadado à toa (confirmado ao vivo: 194 candidatos "novos" viravam 189
 depois da correção).
 
+**Sinal de "popularidade/duplicata conhecida" na LEITURA PROFUNDA
+(02/09/2026)**: o sinal de "programa novo" acima só afeta quais
+repositórios NOVOS entram pra lista rastreada -- não ajuda quando o
+repo já está rastreado há tempo, que foi exatamente o caso do 3º achado
+seguido revelado como duplicata pública (SSRF em
+`packages/next/src/server/image-optimizer.ts`, `vercel/next.js` --
+report HackerOne #3988959, fechado como duplicata de #3943945, com um
+TERCEIRO report #3971664 também já fechado como duplicata do mesmo
+original -- ver `research/bugbounty/vercel-open-source/NOTES.md`,
+rodada 2026-09-02, pra narrativa completa). `selectDeepReadCandidates`
+(`list-deep-read-candidates.mjs`) sempre ordenou só por "quantos
+arquivos NÓS já lemos" -- zero noção de quão famoso um repositório é
+pra quem está de fora. Duas camadas de sinal novas, ambas opcionais
+(default `{}`, comportamento idêntico a antes se nenhuma for passada):
+1. **Estrelas do GitHub** (`loadRepoPopularityCache` +
+   `refreshRepoPopularity`, cache em
+   `research/bugbounty/repo-popularity-cache.json`) -- repositório com
+   `>= POPULAR_REPO_STAR_THRESHOLD` (10 mil, constante exportada) vai
+   pra uma camada "popular" depois de tudo que não é mega-famoso,
+   mesmo tendo menos arquivos lidos. Reusa `fetchRepoMetadata` de
+   `discover-targets.mjs` (agora exportada) -- mesma chamada
+   `GET /repos/{owner}/{repo}`, sem gasto extra de orçamento de API:
+   só ~46 repos rastreados no total (bem diferente das centenas de
+   candidatos novos por rodada da descoberta semanal), cache com TTL
+   de 30 dias evita rebuscar toda rodada.
+2. **Outcome real "duplicate" de plataforma** (`countKnownDuplicatesByRepo`,
+   consulta `platform_outcomes` JOIN `findings` no `zerotoone.db`) --
+   sinal empírico direto, mais forte que qualquer proxy estático; repo
+   que já voltou duplicata pelo menos uma vez vai pro fim da fila,
+   pior ofensor primeiro. Casamento por substring no `id` composto
+   (não igualdade exata contra `file`/`asset`) porque o formato desses
+   dois campos não é 100% consistente entre achados antigos.
+   **Limitação real encontrada construindo isso**: o achado do SSRF
+   acima nunca tinha sido de fato persistido via `upsertFinding` no
+   banco (só existia na narrativa da NOTES.md, apesar de rodadas
+   anteriores citarem ele como `corroborated_static`) -- então esse
+   sinal ainda não pega ESSE caso específico, só achados registrados
+   corretamente daqui pra frente. Não fabriquei um registro histórico
+   pra "consertar" isso; documentado como pendência real em vez disso.
+   Verificado ao vivo rodando `list-deep-read-candidates.mjs` de
+   verdade: `nitrojs/nitro` (11163★), `sveltejs/svelte` (88040★) e
+   `nuxt/nuxt` (60807★) -- curados recentemente em `JS_TARGETS` com
+   poucos arquivos lidos ainda -- foram corretamente empurrados pra
+   depois de dezenas de contratos Circle BBP obscuros (1-800★), em vez
+   de pularem pra frente da fila só por terem poucos arquivos lidos.
+   `npm test`: 424/424 depois da mudança (16 testes novos, zero
+   quebrado).
+
 ## Digest de segurança (mesma tarefa semanal)
 `cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
 Advisories (GHSA, API pública, sem conta) **só dos pacotes que o

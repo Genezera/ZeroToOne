@@ -166,7 +166,10 @@ export function attachProgramAge(candidates, ageByHandle = {}) {
   });
 }
 
-async function fetchRepoMetadata(owner, repo) {
+// Exportada (era privada até 02/09/2026) -- list-deep-read-candidates.mjs
+// reusa exatamente esta chamada pra buscar `stars` dos repos JÁ rastreados,
+// em vez de duplicar a mesma requisição GET /repos/{owner}/{repo}.
+export async function fetchRepoMetadata(owner, repo) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: githubHeaders() });
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando metadado de ${owner}/${repo}`);
   const json = await res.json();
