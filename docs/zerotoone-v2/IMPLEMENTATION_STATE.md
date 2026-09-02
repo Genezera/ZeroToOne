@@ -593,3 +593,58 @@ ambos continuam lacunas reais, documentadas, não escondidas.
   neste ambiente, mas envolve decisões de design que merecem confirmação
   antes de mudar comportamento de produção (o pipeline está rodando
   sozinho todo dia).
+
+## Bug real encontrado (2026-09-02): `export-queue` descarta platform_outcomes/deployment_evidence/validations/reports
+
+Achado ao tentar registrar via `record-platform-outcome` o outcome real
+já conhecido (Duplicate, HackerOne #3988959) do achado
+`ssrf_redirect_allowlist_bypass_risk` (`image-optimizer.ts`) — a mesma
+tentativa já tinha falhado em sessões anteriores por outro motivo
+("finding não encontrado", ver `research/bugbounty/vercel-open-source/NOTES.md`).
+Desta vez o comando funcionou (o finding existe no banco pós-migração),
+mas ao inspecionar `exportFindingsToQueueLines`
+(`system/bugbounty-scanner/db.mjs:365-385`) ficou confirmado que **o
+outcome gravado não aparece em `queue.jsonl` depois do `export-queue`**.
+
+Causa raiz: `record-platform-outcome`, `record-deployment-evidence`,
+`record-validation` e `record-report` gravam, respectivamente, nas
+tabelas SQLite `platform_outcomes`, `deployment_evidence`,
+`validations` e `reports` (todas em `db.mjs`) — mas:
+
+1. `exportFindingsToQueueLines` só lê a tabela `findings` (`base = {
+   ...f.raw }` + campos do objeto `f`); nunca faz `JOIN`/consulta
+   nenhuma dessas 4 tabelas. Então nada nelas chega no `queue.jsonl`
+   commitado.
+2. Só `recordTransition` (mudança de `state`) anexa evento no ledger
+   hash-chain (`db.mjs:229`, via `appendEntry('research', ...)`) — as
+   outras 4 funções de `record-*` não tocam o ledger.
+
+Ou seja: **o único dado que sobrevive entre um ambiente efêmero de
+nuvem e o próximo, pra essas 4 categorias, é o que o comando devolve na
+hora (stdout) ou o que uma sessão lembra de copiar manualmente pra
+prosa em algum `NOTES.md`** — exatamente o mesmo modo de falha que a
+migração v1→v2 foi feita pra resolver pro campo `state`, só que ainda
+presente pras 4 tabelas satélite. `zerotoone.db` é `.gitignore`d por
+design (cada ambiente tem o seu), então isso não é uma questão de
+"esquecer de commitar o `.db`" — é estrutural: mesmo commitando
+`queue.jsonl` certinho, os dados dessas 4 tabelas nunca chegam nele.
+
+Mitigação aplicada nesta rodada (não resolve a causa raiz, só evita
+perda de dado *desta* instância): outcome registrado também em prosa
+em `research/bugbounty/vercel-open-source/NOTES.md`, que é commitado.
+Não tentei consertar `exportFindingsToQueueLines`/`migrateEntry`/ledger
+neste run — é mudança estrutural na máquina de estados/persistência
+que merece revisão supervisionada, não uma correção de uma rodada
+autônoma sem acompanhamento humano.
+
+Correção real recomendada pra uma sessão futura supervisionada: (a)
+`exportFindingsToQueueLines` deveria incluir o `platformOutcome` mais
+recente (`latestPlatformOutcome`), a `deploymentEvidence` mais recente,
+a lista de `validations` e o `report` de cada finding no JSON
+exportado; (b) `migrateEntry` deveria restaurar essas 4 coisas no banco
+quando presentes na linha da fila (hoje só restaura os campos nativos
+de `findings`); (c) considerar se `record-platform-outcome` e as outras
+3 também deveriam anexar um evento no ledger (mesmo padrão de
+`recordTransition`), já que o ledger é descrito no resto deste
+documento como a fonte mais confiável contra corrida entre ambientes
+concorrentes.

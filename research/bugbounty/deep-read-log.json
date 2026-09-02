@@ -761,7 +761,9 @@
     "packages/eve/src/runtime/connections/authorization-complete-page.ts",
     "packages/eve/src/channel/auth/http-basic.ts",
     "packages/eve/src/channel/schedule-auth.ts",
-    "packages/eve/src/channel/auth/vercel-oidc-project.ts"
+    "packages/eve/src/channel/auth/vercel-oidc-project.ts",
+    "packages/eve/src/public/channels/telegram/authorization-callback.ts",
+    "packages/eve/src/public/channels/telegram/authorization.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",

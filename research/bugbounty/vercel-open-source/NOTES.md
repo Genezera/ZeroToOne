@@ -3492,3 +3492,53 @@ entre requisições concorrentes). Sem achado novo.
 `deep-read-log.json` atualizado (+3 em `vercel/eve`, subdiretório
 `channel/auth/` e `channel/` agora 100% cobertos). Nenhuma transição
 de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud — mais uma do mesmo push trigger)
+
+O mesmo push disparou várias sessões cloud concorrentes hoje; `git
+push` rejeitado duas vezes por fast-forward (`fetch first`) antes deste
+commit — sinal de que pelo menos 4-5 rodadas irmãs rodaram em paralelo.
+`list-pending` global seguiu vazio em todas.
+
+**Outcome real persistido**: o achado `ssrf_redirect_allowlist_bypass_risk`
+(`image-optimizer.ts`) já tinha outcome real conhecido há várias
+rodadas (Duplicate de #3943945, HackerOne #3988959, sem bounty — ver
+rodada "21ª do dia" acima), mas `record-platform-outcome` falhava antes
+com "finding não encontrado". Rodei de novo nesta sessão (pós-migração
+v2) e o comando funcionou — mas ao inspecionar
+`exportFindingsToQueueLines` (`system/bugbounty-scanner/db.mjs:365-385`)
+confirmei que o outcome gravado **não sobrevive ao `export-queue`**: só
+a tabela `findings` é lida pra montar `queue.jsonl`; as tabelas
+`platform_outcomes`/`deployment_evidence`/`validations`/`reports` nunca
+são consultadas, e só `recordTransition` (campo `state`) anexa evento
+no ledger commitado. Ou seja, o outcome gravado por
+`record-platform-outcome` só existe no `zerotoone.db` efêmero desta
+sessão — some quando o container reciclar. Documentado em detalhe, com
+correção recomendada, em `docs/zerotoone-v2/IMPLEMENTATION_STATE.md`
+("Bug real encontrado — export-queue descarta
+platform_outcomes/..."). Não tentei consertar a máquina de
+estados/persistência nesta rodada autônoma (mudança estrutural, merece
+revisão supervisionada). Mitigação real: o outcome fica registrado
+aqui em prosa, que É commitada — nenhum dado se perde de fato, só o
+registro estruturado no banco.
+
+Leitura profunda proativa: mais 2 arquivos em `vercel/eve`
+(`packages/eve/src/public/channels/telegram/authorization-callback.ts`
++ `authorization.ts`, fluxo de "Authorize" via botão inline do
+Telegram em chat de grupo). Verificado com ceticismo se qualquer membro
+do grupo que clicar no botão (visível pro grupo inteiro, não só pro
+solicitante) poderia sequestrar a autorização de outro usuário —
+refutado: `renderTelegramAuthorizationStatus` embute o
+`requesterUserId` original no `callback_data` (`eve_auth:<id>`), e
+`dispatchTelegramAuthorizationCallback` compara esse valor contra
+`query.from.id` (ambos tipados `string` no parser de update do
+Telegram, sem coerção que pudesse quebrar a comparação) antes de
+prosseguir; qualquer clicador que não seja o solicitante recebe "Only
+the requester can authorize this connection." e a função retorna sem
+tocar a sessão. Design correto, sem achado.
+
+`deep-read-log.json` atualizado (+2 em `vercel/eve`, total 32 arquivos
+cobertos ali entre as sessões de hoje). Nenhuma transição de estado
+nova tentada neste programa nesta rodada (os 3 achados JS/TS em
+`corroborated_static` seguem no mesmo ponto já documentado — sem
+validador local ainda).
