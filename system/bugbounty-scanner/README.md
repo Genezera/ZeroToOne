@@ -1498,3 +1498,38 @@ mesmo `externalReportId`. Tentativa de transição `candidate ->
 submitted` falhou como esperado (aresta não existe na máquina de
 estados -- só `human_ready -> submitted` é válida) e foi reportada
 honestamente (`transition: null`), não forçada.
+
+**Resultado real**: fechado pela HackerOne como duplicate de #3545083
+(report original submetido ~7 meses antes deste, já avaliado e fechado
+como *informative* -- não corrigido, não pago; o código continua
+vulnerável hoje, confirmado por leitura direta do arquivo antes do
+envio). `record-platform-outcome` atualizado nas 4 findings
+subjacentes com `state: duplicate` e o contexto completo da análise
+recebida; tentativa de transição `candidate -> duplicate` também
+falhou honestamente pelo mesmo motivo estrutural de sempre (mesma
+aresta ausente já documentada pro SSRF e pro registro inicial deste
+achado) -- `queue.jsonl` confirma as 4 findings com `externalReportId
+3990360` e referência a `3545083` persistidas.
+
+**Lição real de metodologia pro duplicate-check** (a mais valiosa
+desta rodada inteira): o analista notou que o report original
+descrevia a MESMA instância de código como **"expression injection"**
+(a classe de injeção via `${{ }}` de GitHub Actions, documentada pelo
+próprio blog de segurança do GitHub), enquanto o nosso descrevia como
+**"OS command injection via metacaractere de shell"** -- terminologias
+diferentes pro mesmo root cause/mesmo par de arquivos. O
+duplicate-check que fizemos antes do envio (issues/PRs do GitHub,
+GitHub Security Advisories, busca pública) só usou termos da NOSSA
+própria framing ("command injection", "execSync", "workflow_dispatch")
+-- nunca teria encontrado um relatório privado descrito como
+"expression injection" mesmo se essa busca alcançasse relatórios
+privados (que não alcança, é o limite já documentado). Fica registrado
+aqui, não só na memória de sessão, porque é generalizável: qualquer
+achado futuro em CI/CD do GitHub Actions precisa considerar as DUAS
+framings comuns da mesma classe de bug (expression/template injection
+E command injection via shell) ao redigir e ao tentar duplicate-check,
+não só a que pareceu mais natural escrever primeiro.
+
+**Placar real até aqui**: 4 relatórios enviados, 4 fechados como
+duplicate (nenhum bounty pago). Ver README.md raiz do projeto para o
+placar completo e a leitura honesta desse padrão.

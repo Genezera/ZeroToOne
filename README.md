@@ -39,7 +39,7 @@ ou otimista, incluindo quando o resultado não é bom:
 | [`SignerService.Sign` sem autenticação](research/bugbounty/reports/circle-bbp-arc-remote-signer-missing-auth.md) | CWE-306 | Circle BBP | Duplicate |
 | [Denylist bypass no Solana Gateway](research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md) | CWE-862 | Circle BBP | Duplicate |
 | [SSRF no Image Optimizer (Next.js)](research/bugbounty/reports/vercel-nextjs-image-optimizer-ssrf-redirect-bypass.md) | CWE-918 | Vercel Open Source | Duplicate |
-| [Command Injection em `update-remix-run-dev.js`](research/bugbounty/reports/vercel-remix-updater-workflow-command-injection.md) | CWE-78 | Vercel Open Source | Duplicate |
+| [Command Injection em `update-remix-run-dev.js`](research/bugbounty/reports/vercel-remix-updater-workflow-command-injection.md) | CWE-78 | Vercel Open Source | Duplicate (de #3545083, ~7 meses mais antigo, fechado como *informative* — nunca corrigido) |
 
 4 de 4 até aqui viraram duplicata — nenhum bounty pago ainda. Isso é
 lido honestamente como sinal de que os alvos escolhidos até agora
