@@ -556,7 +556,14 @@
     "soroban/packages/common-roles/src/ownable/mod.rs",
     "soroban/packages/common-roles/src/ownable/storage.rs",
     "soroban/packages/common-roles/src/manageable/mod.rs",
-    "soroban/contracts/fiat-token-admin/src/contract.rs"
+    "soroban/contracts/fiat-token-admin/src/contract.rs",
+    "soroban/contracts/fiat-token-admin/src/storage.rs",
+    "soroban/contracts/fiat-token-admin/src/lib.rs",
+    "soroban/packages/simple-role-macros/src/lib.rs",
+    "soroban/packages/simple-role-macros/src/helpers.rs",
+    "soroban/packages/simple-role/src/lib.rs",
+    "soroban/packages/stablecoin-roles/src/minter_asset_controllable/mod.rs",
+    "soroban/packages/stablecoin-roles/src/minter_asset_controllable/storage.rs"
   ],
   "circlefin/starknet-cctp": [
     "packages/components/src/attestable.cairo",

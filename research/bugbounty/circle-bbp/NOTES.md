@@ -6227,3 +6227,49 @@ reentrancy/unchecked-call/tx.origin/delegatecall). Nenhuma tentativa de
 
 `deep-read-log.json` atualizado (+5 em `circlefin/arc-node`, agora 30
 arquivos).
+
+## Leitura profunda manual em circlefin/stablecoin-xlm (Stellar/Soroban, Rust) -- 02/09/2026
+
+Priorizado pelo próprio `list-deep-read-candidates.mjs` como candidato #1
+(não-popular, 2 estrelas, sem histórico de duplicata) logo depois de um
+scan heurístico completo do dia não achar nada novo em nenhum alvo
+(`auth0/auth0-java`, `vercel/vercel`, `okx/go-wallet-sdk`,
+`kubernetes/code-generator`). Rust/Soroban não tem heurístico
+automatizado neste projeto (só JS/Go/JVM/Swift/Solidity) -- por isso só
+5 de 115 arquivos rastreáveis tinham sido lidos antes, todos por leitura
+manual anterior, nunca por scanner.
+
+Focado no contrato `fiat-token-admin` (admin/compliance -- mesma
+categoria de função onde os achados reais confirmados desta família de
+produto CCTP/stablecoin já apareceram em outras chains) e na biblioteca
+compartilhada de roles (`simple-role`, `simple-role-macros`,
+`stablecoin-roles`).
+
+**Descartado, mesmo padrão já refutado em Solana/Aptos**:
+`blocklistable::is_blocklisted` delega inteiramente pro flag
+`authorized()` da própria Stellar Asset Contract (SAC) do mint asset --
+`swap_mint` não confere `to` explicitamente contra o blocklist, mas
+isso é redundante com o próprio `mint()` da SAC, que já recusa mint pra
+endereço não autorizado (mesma arquitetura -- enforcement na camada do
+token, não no contrato-ponte -- já confirmada e refutada como bug pros
+irmãos Solana/Aptos deste mesmo produto).
+
+**Achado real mas não submetível**: `minter_asset_controllable::configure_minter`
+(a função COMPARTILHADA entre produtos stablecoin da Circle) não valida
+`allow_asset != mint_asset`, apesar da documentação do trait prometer
+esse erro (`InvalidAllowAsset`) como se fosse garantido pela própria
+biblioteca -- e o próprio doc-comment do módulo mostra chamar a função
+compartilhada diretamente como o jeito recomendado de implementar o
+trait. A checagem só existe hoje porque o único consumidor real
+(`FiatTokenAdminContract::configure_minter`) a repete manualmente antes
+de chamar a função compartilhada. Gap real e confirmado por leitura de
+código, mas não explora nada no contrato IMPLANTADO hoje -- registrado
+como
+`circlefin/stablecoin-xlm/.../minter_asset_controllable/storage.rs::configure_minter::ai_deep_read_finding`,
+avançado para `corroborated_static` (mesmo teto e mesmo motivo do
+achado de escopo do denylist no arc-node: real, sem PoC pontual contra
+algo ao vivo), não candidato a submissão.
+
+`deep-read-log.json` atualizado (+7 em `circlefin/stablecoin-xlm`,
+agora 12/115 arquivos). Próximo candidato na lista priorizada:
+`circlefin/sui-cctp` (16★, 6 arquivos já lidos).
