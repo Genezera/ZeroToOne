@@ -226,6 +226,35 @@ Decisão de enviar ou não, ou investigar mais (outro ponto de chamada
 para `DetachedTokenIsValid`, ou um canal lateral diferente) fica com o
 usuário.
 
+**Atualização mesma rodada — RESULTADO FINAL: duplicata de #3612349
+(que já tinha fechado Informative)**. Confirmado ao vivo via
+`report-status` antes de gravar qualquer coisa. Mensagem real do
+triager: "#3612349... describe the identical timing side-channel
+vulnerability in the DetachedTokenIsValid function... Both reports
+provide benchmark evidence... The original report was evaluated and
+closed as Informative... no significant security impact due to the
+lack of demonstrated remote exploitation capability and no statistical
+significance over network conditions. Your report, while more
+extensive in its statistical analysis, explicitly acknowledges the
+same fundamental limitations." Pipeline atualizado: `record-platform-
+outcome` (state=duplicate) + transição automática `submitted->duplicate`
+confirmada.
+
+**Por que isso valida a rodada de honestidade em vez de invalidar o
+esforço**: o triager leu o relatório de verdade e reconheceu que é MAIS
+rigoroso estatisticamente que o original, mas confirma exatamente os
+mesmos limites que nós mesmos já tínhamos declarado explicitamente
+(sem canal observável pela rede, sem interação repetível dentro de um
+único join, sem recuperação de HMAC/forjamento demonstrado) — e o
+motivo de fechamento do achado ORIGINAL ("Informative... falta de
+exploração remota demonstrada") bate EXATAMENTE com a calibração de
+severidade que fizemos a partir das duas revisões externas, antes mesmo
+de saber que um relatório anterior existia. Isso é confirmação externa
+real de que a calibração estava certa, não uma coincidência favorável.
+Zero indício de que reescrever com mais confiança teria mudado o
+resultado — o "gap" apontado é estrutural (falta oráculo remoto), não
+um problema de como foi escrito.
+
 **Atualização mesma rodada — mecanismo de repetição real encontrado
 (reuso de token multi-nó)**: usuário pediu especificamente o que
 poderia aumentar a chance de severidade subir de forma legítima (não
