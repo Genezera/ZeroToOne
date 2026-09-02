@@ -1394,3 +1394,60 @@ de qualquer sessão individual editar. A trava mecânica de verdade
 (impedir o achado de avançar até `human_ready`) já existia e continua
 valendo; isto aqui ataca a causa (a leitura em si) tornando o caminho
 seguro também o mais conveniente, não substitui o gate existente.
+
+## Bug real: dado de teste vazando pro ledger de produção compartilhado (02/09/2026)
+
+Achado pelo usuário lendo `git diff ledger/ledger.research.jsonl` e
+notando 3 linhas com `findingId` óbvio de fixture
+(`"Programa X::owner/repo-a/file1.ts::fn1::ssrf_risk"`) misturadas com
+achados reais no ledger versionado em git — não um ledger temporário de
+teste, o de produção que `ledger/ledger.mjs::verifyChain` protege.
+
+**Causa raiz**: `db.mjs::recordPlatformOutcome` (e os outros `record*`
+adicionados em 01-02/09/2026, ver seção "Bug real e sério" mais acima)
+chama `appendEntry('research', {...})` diretamente — sem nenhum jeito
+de o chamador injetar um ledger diferente. O único ponto de
+redirecionamento é a variável de ambiente `ZERO2ONE_LEDGER_DIR`, lida
+por `ledger.mjs::getLedgerDir()`. Os testes que exercitam essas funções
+(`test/db.test.mjs`, `test/cli.test.mjs`, `test/migrate-to-v2.test.mjs`,
+`test/generate-report.test.mjs`) já setam e restauram essa variável
+dentro do próprio `withTempEnv` de cada arquivo — mas
+`test/list-deep-read-candidates.test.mjs` tinha uma cópia mais antiga
+desse mesmo helper (de antes de `recordPlatformOutcome` tocar o
+ledger), sem essas duas linhas. Confirmado por inspeção cruzada dos 5
+`withTempEnv` do projeto — são cópias locais por arquivo (não um
+helper compartilhado importado), e só essa ficou desatualizada.
+
+**Escala real do vazamento** (maior do que o usuário via no diff local
+não commitado): varrendo o ledger inteiro por `findingId` começando
+com `"Programa X::"`, apareceram **27 entradas poluídas**, em 9 rodadas
+diferentes de `npm test` ao longo do dia (09:11 a 12:49), intercaladas
+com achados reais genuínos (inclusive duas gravações reais do outcome
+"duplicate" do achado SSRF, HackerOne #3988959). Duas dessas 27 já
+tinham sido commitadas (`53292be`, `36f8138`) antes de qualquer sessão
+notar.
+
+**Correção**: (1) adicionadas as duas linhas faltantes de
+`ZERO2ONE_LEDGER_DIR` ao `withTempEnv` de
+`list-deep-read-candidates.test.mjs`, idêntico aos outros 4 arquivos —
+`npm test` completo rodado de novo depois (448/448) confirmou zero
+novas entradas `"Programa X::"` no ledger real. (2) Como o ledger é
+encadeado por hash (`prevHash`/`hash` de cada entrada depende da
+entrada anterior), simplesmente apagar as 27 linhas do meio do arquivo
+quebraria a cadeia para as entradas genuínas que vieram depois delas.
+Corrigido com um script único que: filtra as entradas
+`"Programa X::"`, e recomputa a cadeia INTEIRA do zero usando o mesmo
+algoritmo de `appendEntry` (mesma ordem de campos, mesmo
+`sha256(JSON.stringify(...))`) — com autocheck embutido (aborta sem
+escrever nada se qualquer hash recomputado de uma entrada anterior ao
+primeiro ponto de remoção não bater com o hash já gravado, o que
+confirmaria um erro na reconstrução). Rodou limpo: 434 → 407 entradas,
+autocheck passou, e `verifyChain('research')` (a função real do
+projeto, não uma reimplementação) confirmou `{valid: true, entries:
+407}` no resultado final.
+
+**Nunca reescrito**: os 2 commits que já continham parte da poluição
+(`53292be`, `36f8138`) não foram alterados — reescrever histórico já
+publicado exigiria force-push, uma operação destrutiva que este projeto
+evita por padrão. A correção entra como um commit novo, de avanço, não
+uma reescrita do passado.

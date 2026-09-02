@@ -12,9 +12,20 @@ import { openDb, closeDb, upsertFinding, recordPlatformOutcome } from '../db.mjs
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-deep-read-test-'));
+  // Mesmo padrão de test/db.test.mjs, test/cli.test.mjs, test/migrate-to-v2.test.mjs
+  // e test/generate-report.test.mjs -- faltava aqui (achado real, 02/09/2026):
+  // sem isso, recordPlatformOutcome (via appendEntry em ../system/ledger/ledger.mjs)
+  // cai no default de getLedgerDir() e grava no ledger REAL compartilhado
+  // (versionado no git) em vez de um ledger isolado por teste. Foi exatamente
+  // o que aconteceu com o teste "countKnownDuplicatesByRepo" abaixo, que
+  // poluiu ledger/ledger.research.jsonl com 3 entradas de fixture
+  // ("Programa X::owner/repo-a/...") -- ver ledger/ledger.mjs::getLedgerDir.
+  const prevLedgerDir = process.env.ZERO2ONE_LEDGER_DIR;
+  process.env.ZERO2ONE_LEDGER_DIR = path.join(dir, 'ledger');
   try {
     return fn(dir);
   } finally {
+    process.env.ZERO2ONE_LEDGER_DIR = prevLedgerDir;
     try {
       rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     } catch { /* limpeza best-effort, mesmo padrão de test/db.test.mjs */ }
