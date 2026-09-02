@@ -3492,3 +3492,50 @@ entre requisições concorrentes). Sem achado novo.
 `deep-read-log.json` atualizado (+3 em `vercel/eve`, subdiretório
 `channel/auth/` e `channel/` agora 100% cobertos). Nenhuma transição
 de estado tentada neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, 4ª rodada pós-migração v2)
+
+`migrate-to-v2` rodado sem erro (138 findings, contagens batendo:
+5 `corroborated_static`, 1 `human_ready`, resto `false_positive`/
+`duplicate`/`inconclusive`). `list-pending` global = 0 em todos os 4
+programas. Os achados em `corroborated_static` deste programa não
+foram retocados nesta rodada — mesma limitação documentada (sem
+validador local pra JS/TS/Kotlin/Swift), repetir a tentativa não muda
+o resultado.
+
+Leitura profunda proativa: como `vercel/eve` (`channel/auth/` e
+`channel/`) já estava marcado como 100% coberto nas últimas rodadas,
+mudei de alvo. Cheguei a considerar `circlefin/arc-remote-signer` e
+`circlefin/buidl-wallet-contracts` (Circle BBP) mas confirmei antes de
+ler que os arquivos não lidos ali são só telemetria/métricas/lifecycle
+(arc-remote-signer, sem relação com auth/crypto) ou interfaces/structs/
+scripts de deploy sem lógica própria (buidl-wallet-contracts) -- não
+vale gastar o orçamento de leitura nisso, julgamento próprio.
+
+Fui então pra `vercel/next.js` (`packages/next/src/server/`, clone
+sparse `--filter=blob:none` pra não baixar o monorepo inteiro), 3
+arquivos novos relacionados a cookies (nome bate com padrão
+auth/session): `api-utils/get-cookie-parser.ts` (parsing delega 100%
+pro pacote `cookie` compilado, `require('next/dist/compiled/cookie')`
+-- sem lógica própria, sem risco de injection custom),
+`server/request/cookies.ts` (a função pública `cookies()` -- toda a
+complexidade aqui é sobre em qual fase de renderização/cache
+(`prerender`, `action`, `request`, `private-cache` etc.) o objeto pode
+ou não ser acessado/mutado, não sobre autenticação; `CachedCookies` é
+um `WeakMap` chaveado por instância de `workUnitStore`/
+`prerenderStore`, então não há risco óbvio de vazamento entre
+requisições concorrentes) e
+`server/web/spec-extension/adapters/request-cookies.ts`
+(`RequestCookiesAdapter.seal`/`MutableRequestCookiesAdapter.wrap` --
+usa `Proxy` pra bloquear `set`/`delete`/`clear` fora da fase `action`,
+`areCookiesMutableInCurrentPhase` checa `requestStore.phase ===
+'action'` de forma consistente antes de qualquer mutação; nenhuma
+instância de cookie é compartilhada entre requests, cada uma nasce de
+um `RequestStore` novo). `server/web/spec-extension/cookies.ts` só
+reexporta do pacote vendored `@edge-runtime/cookies`, sem lógica
+própria -- não conta como código de primeira parte pra achado. Sem
+achado novo.
+
+`deep-read-log.json` atualizado (+3 em `vercel/next.js`, agora 18
+arquivos). Nenhuma transição de estado tentada neste programa nesta
+rodada.
