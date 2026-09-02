@@ -62,6 +62,47 @@ export function isDependencyManifest(path) {
   return true;
 }
 
+/** Devolve o Set de paths tocados por commit nos últimos `sinceDays` dias
+ * (default 90) em `branch`, ou `null` se não der pra determinar (repo sem
+ * nenhum commit antes do corte -- comum em repo recém-criado -- ou erro de
+ * rede, sempre melhor esforço). Fama do REPOSITÓRIO inteiro não diz nada
+ * sobre um ARQUIVO específico: um PR mesclado mês passado teve muito menos
+ * tempo de escrutínio externo que uma rotina estável de anos, mesmo dentro
+ * do repo mais famoso que existe -- ver
+ * research/bugbounty/vercel-open-source/NOTES.md, rodada 2026-09-02.
+ *
+ * Só 2 chamadas de API, custo constante independente do tamanho do repo
+ * (a alternativa óbvia -- 1 chamada de "último commit" por arquivo --
+ * escalaria com o número de arquivos, inviável pra repo grande sob o
+ * limite anônimo de 60 req/hora):
+ * 1. `GET .../commits?until=<corte>&per_page=1` acha o commit mais recente
+ *    ANTES do corte -- essa é a "linha de base" pra comparar contra.
+ * 2. `GET .../compare/{linhaDeBase}...{branch}` devolve `files[]` com todo
+ *    path tocado entre os dois, num response só.
+ *
+ * Limitação real, confirmada ao vivo em 02/09/2026 contra vercel/next.js
+ * (1297 commits em 90 dias): o array `files` da API de compare trunca em
+ * 300 entradas sem paginação disponível pra esse endpoint especificamente
+ * -- pra repo MUITO ativo, isso é só uma AMOSTRA do que mudou, não a lista
+ * completa. Isso não inverte o sinal (um arquivo fora da amostra não vira
+ * "comprovadamente antigo", só "sem dado" -- tratado como não-recente por
+ * quem chama, o mesmo que já acontecia antes desta função existir), só
+ * limita quantos arquivos recentes um repo hiperativo consegue sinalizar
+ * de uma vez. */
+export async function listRecentlyChangedFiles(owner, repo, branch, sinceDays = 90) {
+  const sinceIso = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000).toISOString();
+  const boundaryRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&until=${sinceIso}&per_page=1`, { headers: githubHeaders() });
+  if (!boundaryRes.ok) throw new Error(`HTTP ${boundaryRes.status} buscando commit-limite de ${owner}/${repo}`);
+  const boundaryJson = await boundaryRes.json();
+  if (!Array.isArray(boundaryJson) || boundaryJson.length === 0) return null;
+  const boundarySha = boundaryJson[0].sha;
+
+  const cmpRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/compare/${boundarySha}...${branch}`, { headers: githubHeaders() });
+  if (!cmpRes.ok) throw new Error(`HTTP ${cmpRes.status} comparando ${boundarySha}...${branch} em ${owner}/${repo}`);
+  const cmpJson = await cmpRes.json();
+  return new Set((cmpJson.files || []).map((f) => f.filename));
+}
+
 export async function listRepoFiles(owner, repo, branch, pathPrefixes) {
   const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
   const res = await fetch(url, { headers: githubHeaders() });
@@ -86,14 +127,30 @@ export async function listRepoFiles(owner, repo, branch, pathPrefixes) {
  * (Stellar, Tezos, TON inteiros, nunca vistos). `seenPaths` é um Set de
  * paths já vistos ANTES desta rodada (de repoShas[repoKey], que já
  * existe por outro motivo -- cache de SHA pra não rebuscar o que não
- * mudou). Pura -- não sabe de onde `seenPaths` veio. */
-export function prioritizeFilesForScan(files, seenPaths = new Set()) {
+ * mudou).
+ *
+ * `recentlyChanged` (opcional, default `null` -- comportamento idêntico a
+ * antes desta mudança quando omitido) é o Set devolvido por
+ * `listRecentlyChangedFiles`: dentro do grupo "nunca visto", arquivo
+ * tocado recentemente vem primeiro. Ver o comentário de
+ * `listRecentlyChangedFiles` acima pro raciocínio completo -- resumo:
+ * fama do repo inteiro não diz nada sobre um arquivo específico.
+ *
+ * Pura -- não sabe de onde `seenPaths`/`recentlyChanged` vieram. */
+export function prioritizeFilesForScan(files, seenPaths = new Set(), recentlyChanged = null) {
   const neverSeen = [];
   const alreadySeen = [];
   for (const f of files) {
     (seenPaths.has(f.path) ? alreadySeen : neverSeen).push(f);
   }
-  return [...neverSeen, ...alreadySeen];
+  if (!recentlyChanged) return [...neverSeen, ...alreadySeen];
+
+  const recent = [];
+  const stable = [];
+  for (const f of neverSeen) {
+    (recentlyChanged.has(f.path) ? recent : stable).push(f);
+  }
+  return [...recent, ...stable, ...alreadySeen];
 }
 
 export async function fetchRawFile(owner, repo, branch, filePath) {

@@ -63,3 +63,32 @@ test('prioritizeFilesForScan: reprodução do bug real (okx/go-wallet-sdk) -- de
   }
   assert.equal(seen.size, 1001, 'todo arquivo deveria ter sido visto em até 3 rodadas (450*3 > 1001)');
 });
+
+// --- 02/09/2026: sinal de arquivo tocado recentemente (recentlyChanged) ---
+
+test('prioritizeFilesForScan sem recentlyChanged (default null) mantém comportamento idêntico a antes', () => {
+  const files = [f('z.go'), f('a.go'), f('m.go')];
+  const result = prioritizeFilesForScan(files, new Set(['a.go']));
+  assert.deepEqual(result.map((x) => x.path), ['z.go', 'm.go', 'a.go']);
+});
+
+test('prioritizeFilesForScan põe arquivo recentemente tocado antes de arquivo nunca-visto mas estável', () => {
+  const files = [f('estavel-a.go'), f('recente.go'), f('estavel-b.go')];
+  const recentlyChanged = new Set(['recente.go']);
+  const result = prioritizeFilesForScan(files, new Set(), recentlyChanged);
+  assert.deepEqual(result.map((x) => x.path), ['recente.go', 'estavel-a.go', 'estavel-b.go']);
+});
+
+test('prioritizeFilesForScan: recente-e-nunca-visto vem antes de estável-e-nunca-visto, que vem antes de já-visto', () => {
+  const files = [f('ja-visto.go'), f('estavel.go'), f('recente.go')];
+  const seenPaths = new Set(['ja-visto.go']);
+  const recentlyChanged = new Set(['recente.go']);
+  const result = prioritizeFilesForScan(files, seenPaths, recentlyChanged);
+  assert.deepEqual(result.map((x) => x.path), ['recente.go', 'estavel.go', 'ja-visto.go']);
+});
+
+test('prioritizeFilesForScan com recentlyChanged vazio (Set sem elementos) trata tudo como estável, mesma ordem de antes', () => {
+  const files = [f('a.go'), f('b.go')];
+  const result = prioritizeFilesForScan(files, new Set(), new Set());
+  assert.deepEqual(result.map((x) => x.path), ['a.go', 'b.go']);
+});

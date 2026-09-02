@@ -366,6 +366,50 @@ pra quem está de fora. Duas camadas de sinal novas, ambas opcionais
    `npm test`: 424/424 depois da mudança (16 testes novos, zero
    quebrado).
 
+**Sinal de "arquivo tocado recentemente", dentro do ESCANEAMENTO em si
+(02/09/2026)**: os dois sinais acima decidem qual REPOSITÓRIO ler --
+mas fama do repo inteiro não protege um ARQUIVO específico de já ter
+sido lido por muita gente de fora. Um PR mesclado mês passado no
+`vercel/next.js` teve muito menos escrutínio que uma rotina estável de
+anos, mesmo dentro do repo mais famoso que existe. `listRecentlyChangedFiles`
+(`fetch-repo.mjs`) resolve isso com só 2 chamadas de API (custo
+constante, não escala com o tamanho do repo -- a alternativa óbvia,
+"último commit" por arquivo, inviabilizaria repo grande sob o limite
+anônimo de 60 req/hora):
+1. `GET .../commits?until=<agora-90d>&per_page=1` acha o commit mais
+   recente ANTES do corte -- linha de base pra comparar.
+2. `GET .../compare/{linhaDeBase}...{branch}` devolve todo path tocado
+   entre os dois num response só.
+
+`prioritizeFilesForScan` ganhou um 3º parâmetro opcional
+(`recentlyChanged`, default `null` -- comportamento idêntico a antes
+quando omitido): dentro do grupo "nunca visto", arquivo recente vem
+primeiro. `scan-runner.mjs` busca o sinal só quando o repo excede
+`MAX_FILES_PER_TARGET` (é exatamente aí que a ordem de corte importa;
+repo pequeno escaneia tudo de qualquer jeito) -- melhor esforço, erro
+de rede não trava a rodada.
+
+**Limitação real, confirmada ao vivo**: o array `files` da API de
+compare do GitHub trunca em 300 entradas, sem paginação disponível
+nesse endpoint. Testado contra `vercel/flags` (repo ativo): bateu
+exatamente no teto de 300. Contra `circlefin/stablecoin-xlm` (repo
+parado): devolveu `Set` vazio corretamente (não `null` -- achou linha
+de base, só não tem mudança desde então). Pra repo hiperativo, os 300
+são uma AMOSTRA do que mudou, não a lista completa -- não inverte o
+sinal (arquivo fora da amostra vira "sem dado", tratado como não-recente,
+o mesmo que já acontecia antes desta função existir), só limita quantos
+arquivos recentes um repo assim consegue sinalizar de uma vez. `npm
+test`: 428/428 depois desta mudança (4 testes novos, zero quebrado).
+
+**Gap real encontrado de passagem, ainda não resolvido**: `JVM_TARGETS`
+(`targets-jvm.mjs`) está VAZIO hoje -- os 4 alvos curados à mão são
+todos Block Open Source (`_PAUSED_JVM_TARGETS_MANUAL`, corretamente
+pausados desde 31/08/2026) e nenhum dos 13 alvos auto-promovidos
+(`targets-auto-promoted.mjs`) é JVM (todos Go, confirmado ao vivo).
+Categoria JVM inteira sem cobertura ativa até algum programa novo
+elegível ser encontrado e curado -- não é bug de código, é lista vazia
+mesmo.
+
 ## Digest de segurança (mesma tarefa semanal)
 `cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
 Advisories (GHSA, API pública, sem conta) **só dos pacotes que o

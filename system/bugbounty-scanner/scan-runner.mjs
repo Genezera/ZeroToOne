@@ -17,7 +17,7 @@ import { GO_TARGETS } from './targets-go.mjs';
 import { JVM_TARGETS } from './targets-jvm.mjs';
 import { SWIFT_TARGETS } from './targets-swift.mjs';
 import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
-import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile, prioritizeFilesForScan } from './fetch-repo.mjs';
+import { listRepoFiles, fetchRawFile, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile, prioritizeFilesForScan, listRecentlyChangedFiles } from './fetch-repo.mjs';
 import { scanJsSource } from './heuristics-js.mjs';
 import { scanGoSource } from './heuristics-go.mjs';
 import { scanJvmSource } from './heuristics-jvm.mjs';
@@ -109,7 +109,22 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       // ver prioritizeFilesForScan em fetch-repo.mjs). A ordem da git
       // tree é o desempate dentro de cada grupo (nunca-visto primeiro,
       // já-visto depois), não descartada, só deixa de decidir sozinha.
-      files = prioritizeFilesForScan(files, new Set(Object.keys(repoShas[repoKey])));
+      //
+      // 02/09/2026: dentro do grupo "nunca visto", arquivo tocado nos
+      // últimos 90 dias vem primeiro (ver listRecentlyChangedFiles em
+      // fetch-repo.mjs) -- fama do repo inteiro não protege um arquivo
+      // específico de já ter sido lido por muita gente de fora; código
+      // novo teve muito menos tempo de escrutínio, mesmo em repo famoso.
+      // Melhor esforço sempre: erro de rede aqui (repo raramente
+      // atualizado, API fora do ar) não trava a rodada, só some com o
+      // sinal extra pra este alvo desta vez.
+      let recentlyChanged = null;
+      try {
+        recentlyChanged = await listRecentlyChangedFiles(target.owner, target.repo, target.branch);
+      } catch (err) {
+        log(`AVISO: não consegui buscar arquivos recentes de ${repoKey} (${err.message}) -- priorizando só por nunca-visto desta vez.`);
+      }
+      files = prioritizeFilesForScan(files, new Set(Object.keys(repoShas[repoKey])), recentlyChanged);
       log(`AVISO: ${target.owner}/${target.repo} tem ${files.length} arquivos rastreáveis, cortando para os primeiros ${MAX_FILES_PER_TARGET} priorizando quem nunca foi escaneado (não silencioso — registrado aqui).`);
       files = files.slice(0, MAX_FILES_PER_TARGET);
     }
