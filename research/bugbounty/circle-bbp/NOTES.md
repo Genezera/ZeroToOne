@@ -6180,3 +6180,43 @@ não cobertos (ignorando `interface.cairo`/`errors.cairo`/
 Sem achado novo. `deep-read-log.json` atualizado (+3 em
 `circlefin/stablecoin-starknet`, total 8 arquivos cobertos ali).
 Nenhuma transição de estado tentada neste programa nesta rodada.
+
+
+## Rodada 2026-09-02 (sessão cloud — leitura profunda em circlefin/arc-node)
+
+`program-policy.json` checado antes de tocar qualquer repo (Circle BBP
+sem `aiResearchBanned`). `list-pending` global = 0. Leitura profunda
+proativa desta rodada: `circlefin/arc-node` (Rust), seguindo a cadeia
+de chamada de `is_denylisted()` a partir de
+`crates/execution-validation/src/denylist.rs` (candidato inicial por
+nome — checador de address-denylist lendo storage ERC-7201).
+Rastreamento completo (grep exaustivo de `is_denylisted`/`denylist` em
+`crates/` e `contracts/`) mostrou que o denylist de endereços
+(sender/to/EIP-7702 authority) só é aplicado em
+`ArcTransactionValidator` (mempool/txpool,
+`crates/execution-txpool/src/validator.rs`) — nem `ArcConsensus`
+(`crates/execution-validation/src/consensus.rs`) nem o executor
+(`crates/evm/src/executor.rs`, 0 matches para "denylist") o
+verificam. Em contraste, o blocklist separado (`NativeCoinControl`)
+tem enforcement explícito em `executor.rs` durante execução/state
+transition (checa o beneficiary do bloco). `contracts/src/Denylist.sol`
+é só um registry passivo (mapping + add/remove), sem precompile que o
+consulte durante execução. `evm-node/src/node.rs` confirma que
+`addresses_denylist_config` só é passado para `.pool(...)`, nunca para
+`.executor(...)`/`.consensus(...)`.
+
+Conclusão: o denylist de endereços do Arc parece ser só uma barreira
+client-side/mempool, não uma invariante de consensus verificada
+independentemente por todo validador — um proposer que não rode o
+`ArcTransactionValidator` inalterado poderia incluir tx envolvendo
+endereço denylisted num bloco que os demais nós aceitariam
+normalmente. Achado registrado como
+`crates/execution-txpool/src/validator.rs::addresses_denylist
+enforcement scope::ai_deep_read_finding`, avançado para
+`corroborated_static` (teto para achado não-Solidity, sem
+validador Foundry aplicável — é gap arquitetural, não
+reentrancy/unchecked-call/tx.origin/delegatecall). Nenhuma tentativa de
+`scope_verified`/`human_ready` sem evidência de deployment real.
+
+`deep-read-log.json` atualizado (+5 em `circlefin/arc-node`, agora 30
+arquivos).

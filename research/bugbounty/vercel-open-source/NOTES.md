@@ -3801,3 +3801,26 @@ Leitura profunda proativa desta rodada direcionada a
 programa) — sem arquivo novo candidato em `vercel/eve` ou outro repo
 deste programa nesta rodada. Nenhum achado, nenhuma transição de
 estado neste programa.
+
+
+## Rodada 2026-09-02 (sessão cloud — leitura profunda em vercel/eve, parte da mesma rodada de arc-node/misk)
+
+Continuando a cobertura de `packages/eve/src/public/channels/`: li
+`teams/verify.ts` (verificação de JWT Bot Connector via `jose`
+`jwtVerify` com issuer/audience/JWKS dinâmico — analisado com ceticismo
+quanto a confusão de algoritmo RS256↔HS256 via `protectedHeader.alg`
+atacante-controlado passado a `importJWK`; `jose` roteia a importação
+pelo `kty` do JWK antes de olhar `alg`, então um JWK `kty:RSA` não pode
+virar chave HMAC mesmo com `alg` forjado — sem bug encontrado, mesmo
+padrão seguro já visto em slack/discord/github/linear/telegram),
+`twilio/verify.ts` (delega a verificação real para
+`@chat-adapter/twilio/webhook.js`, cujo código-fonte já foi lido sob
+`vercel/chat` — wrapper fino, sem lógica nova), `chat-sdk/authorization.ts`
+(só texto de UI para prompts de autorização, sem decisão de acesso),
+`execution/reconcile-session-continuation-token.ts` (13 linhas,
+re-stamping trivial de sessão) e
+`public/models/openai/chatgpt/token-broker.ts` (cache/refresh de token
+OAuth local do Codex CLI, sem validação de assinatura — superfície de
+cliente local, não servidor). Nenhum achado novo; nenhuma transição
+tentada. `deep-read-log.json` atualizado (+5 em `vercel/eve`, agora 44
+arquivos).
