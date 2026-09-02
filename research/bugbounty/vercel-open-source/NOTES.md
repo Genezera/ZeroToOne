@@ -3360,3 +3360,46 @@ executar o CLI de fato).
 
 Estado final, para efeitos de rastreamento manual: `duplicate`
 (HackerOne #3988959, duplicata de #3943945). Sem bounty.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0 (nenhum candidate em nenhum dos 4 programas).
+Leitura profunda proativa: `vercel/eve` cresceu bastante desde a última
+cobertura do log (só 20 arquivos registrados vs. 300+ arquivos hoje com
+`auth`/`session`/`token` no caminho — clonado de novo pra confirmar, não
+é falso positivo do find). Escolhidos 3 arquivos de lógica real (não
+teste/eval-fixture), priorizando o core de autorização interativa:
+`packages/eve/src/harness/authorization.ts` (API pública de
+request/get/consume de authorization challenges, callback hook URL
+determinístico `${sessionId}:auth`, e `samePrincipal()` que compara
+principals). Investiguei com ceticismo se `samePrincipal` tratando todo
+principal `type:"app"` como igual a qualquer outro (sem comparar id)
+seria confusão de autorização cross-app — refutado: o próprio tipo
+`ConnectionPrincipal` (`connection-types.ts`) não carrega `id` nenhum
+pra `type:"app"` (é "shared agent identity; one token per connection
+across all sessions"), e o comentário em `AuthorizationDefinition`
+confirma que OAuth interativo (o único fluxo que usa
+`setPendingAuthorization`/`samePrincipal`) é "Restricted to
+principalType: 'user' in v1" — então o branch `app` do comparador nunca
+é exercitado por esse fluxo. Não é bug, é comparação completa pro tipo
+que não tem mais nada pra comparar.
+
+Também verifiquei se o hook token determinístico (`sessionId:auth`, sem
+nonce aleatório por-attempt) seria forjável — mas ele funciona como
+capability token sobre um sessionId já tratado como não-adivinhável em
+todo o resto do sistema (mesmo padrão de outras rotas já revisadas em
+rodadas anteriores), não uma superfície nova.
+
+Os outros dois arquivos — `packages/eve/src/public/agents/auth.ts`
+(helpers `vercelOidc`/`bearer`/`basic` pra montar headers de outbound
+auth em dispatch de remote agent) e
+`packages/eve/src/execution/connection-auth-tool-result.ts` (13 linhas,
+só normaliza resultado de tool pra JSON-safe via
+`JSON.parse(JSON.stringify(...))`) — sem lógica de autorização própria
+pra auditar, sem achado.
+
+`deep-read-log.json` atualizado (+3 em `vercel/eve`). Nenhum achado
+novo, nenhuma transição de estado. Nota pra rodadas futuras: `vercel/eve`
+tem uma superfície de auth muito maior do que o log sugere — vale
+priorizar esse repo nas próximas rodadas em vez de espalhar por outros
+já bem cobertos.
