@@ -1533,3 +1533,51 @@ não só a que pareceu mais natural escrever primeiro.
 **Placar real até aqui**: 4 relatórios enviados, 4 fechados como
 duplicate (nenhum bounty pago). Ver README.md raiz do projeto para o
 placar completo e a leitura honesta desse padrão.
+
+## Terceiro report, `program-policy.mjs` generalizado, empacotamento pra envio, e um bug real de latência na promoção (02/09/2026)
+
+Terceiro relatório enviado (Kubernetes, `cluster-bootstrap`, comparação
+HMAC não-constante em `DetachedTokenIsValid` — ver
+`research/bugbounty/kubernetes/NOTES.md` pro achado completo, revisado
+em várias rodadas de honestidade a partir de review externa). Fechado
+como duplicate de um report já existente (#3612349, ele mesmo fechado
+Informative) — o motivo de fechamento do original bateu quase palavra
+por palavra com a calibração de severidade que a gente chegou sozinho
+a partir de revisão externa, antes de saber que existia relatório
+anterior. Placar agora: **5 relatórios enviados, 5 fechados sem
+pagamento** (4 duplicate, 1 duplicate-de-informative).
+
+Três mudanças estruturais nesta mesma rodada, pedidas diretamente pelo
+usuário:
+
+- **`program-policy.mjs` generalizado**: até aqui só existia
+  `aiResearchBanned` (RoE de programa proibindo pesquisa por IA). Usuário
+  pediu explicitamente, duas vezes, pra parar de investir em Circle BBP
+  — não é RoE, é decisão dele. Adicionado campo `blocked` genérico
+  (independente de `aiResearchBanned`) pra cobrir exatamente esse caso,
+  com o mesmo enforcement em duas camadas que Block Open Source já tinha
+  (gate em `state-machine.mjs` + filtro em `promote-targets.mjs`) — Circle
+  BBP agora está estruturalmente fora do pipeline, não só "lembrado" por
+  uma sessão de cada vez.
+- **`package-for-submission.mjs`** (novo): usuário pediu pra deixar tudo
+  pronto numa pasta pra só enviar. Junta relatório + screenshots de um
+  achado `human_ready` em `research/bugbounty/ready-to-submit/<slug>/`
+  (gitignored, pura conveniência local). Deliberadamente NÃO tenta gerar
+  o mapeamento pros campos do formulário (título/descrição/severidade)
+  — isso precisou de julgamento real e específico de programa toda vez
+  que foi feito nesta sessão (Kubernetes usa CVSS 3.0 e tem campos que
+  nenhum outro programa tem; Vercel usa CVSS 4.0) — um template genérico
+  seria vago demais ou errado com confiança.
+- **Bug real de latência na promoção automática, achado ao vivo**: rodei
+  `discovery-runner.mjs` numa amplitude bem maior (20/rodada em vez de
+  poucos, pedido do usuário: "quero uma rotação maior") e reparei que os
+  11 alvos recém-promovidos (kubelet, kubeadm, kube-proxy, etc.) não
+  seriam escaneados NESTA rodada — `JS_TARGETS`/`GO_TARGETS`/etc. são
+  bindings de import ES resolvidos uma vez só no início do processo, e a
+  promoção reescreve `targets-auto-promoted.mjs` em disco depois disso.
+  Um alvo recém-promovido ficava uma semana inteira esperando a próxima
+  execução agendada só pra ser escaneado pela primeira vez. Corrigido
+  reconstruindo as listas de varredura a partir de `mergedAutoPromoted`
+  (já calculado em memória pós-promoção) em vez dos imports estáticos —
+  ver o comentário grande no topo de `discovery-runner.mjs`. 466/466
+  testes passando.
