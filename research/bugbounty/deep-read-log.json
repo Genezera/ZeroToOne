@@ -665,7 +665,13 @@
     "programs/message-transmitter/src/instructions/initialize.rs",
     "programs/message-transmitter/src/instructions/pause.rs",
     "programs/message-transmitter/src/instructions/send_message.rs",
-    "programs/token-messenger-minter/src/token_messenger/instructions/handle_receive_message.rs"
+    "programs/token-messenger-minter/src/token_messenger/instructions/handle_receive_message.rs",
+    "programs/message-transmitter/src/instructions/update_attester_manager.rs",
+    "programs/token-messenger-minter/src/token_messenger/instructions/accept_ownership.rs",
+    "programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/denylist_account.rs",
+    "programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/deposit_for_burn.rs",
+    "programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/handle_receive_finalized_message.rs",
+    "programs/v2/token-messenger-minter-v2/src/token_minter_v2/state.rs"
   ],
   "circlefin/aptos-cctp": [
     "packages/token_messenger_minter_v2/sources/token_messenger_minter.move",

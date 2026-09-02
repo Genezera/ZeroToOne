@@ -3684,6 +3684,15 @@ rodada — os 3 achados JS/TS em `corroborated_static` seguem no mesmo
 ponto de sempre (sem validador local pra JS/TS, limitação conhecida do
 sistema).
 
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud — leitura profunda em solana-cctp-contracts)
+
+`list-pending` global = 0. Os 3 achados JS/TS em `corroborated_static`
+deste programa seguem travados no mesmo ponto já documentado (sem
+validador local); não repeti a tentativa. Leitura profunda proativa
+desta rodada direcionada a `circlefin/solana-cctp-contracts` (Circle
+BBP, achado novo criado e refutado — ver NOTES.md desse programa) — sem
+arquivo novo lido de Vercel Open Source nesta rodada.
+
 ## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push, deep-read chatgpt/dev-client)
 
 `list-pending` global = 0. Leitura profunda proativa continuando as
