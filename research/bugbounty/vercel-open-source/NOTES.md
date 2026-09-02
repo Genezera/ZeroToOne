@@ -3731,3 +3731,54 @@ credential-gate, mesma área).
 Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
 total 42 arquivos cobertos ali). Nenhuma transição de estado tentada
 neste programa nesta rodada.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, migração v2 pro CLI, findings/state-machine.mjs)
+
+`migrate-to-v2.mjs` rodado (Passo 0). `cli.mjs list-pending` global = 0
+(todos os 4 programas ativos). `program-policy.json` conferido antes de
+qualquer leitura — `aiResearchBanned: true` ainda vigente para "Block
+Open Source"; nenhum repo `cashapp/*`/`afterpay/*`/`square/wire` clonado
+ou lido nesta rodada. StackingDAO: os 15 contratos do escopo real
+(`scope-snapshots/stackingdao.json`) já batem 1:1 com os 15 já cobertos
+em `deep-read-log.json` — nada novo a ler lá nesta rodada.
+
+Leitura profunda proativa continuando em `vercel/eve` (clone raso via
+`add_repo`, hash `78fa9046`), 3 arquivos novos:
+
+- `packages/eve/src/channel/session.ts` — handle de sessão exposto em
+  `ctx.session`. `auth` é só leitura de `AuthKey`/`InitiatorAuthKey` do
+  contexto (hidratado alhures); nada de decisão de autorização acontece
+  aqui, é puro plumbing (`send`/`respond`/`cancel`/`compact`/`clear`/
+  `reset` delegando pro `runtime.dispatchSession`). Sem achado.
+- `packages/eve/src/public/channels/github/auth.ts` — mint de JWT RS256
+  de GitHub App (`createSign("RSA-SHA256")`, `exp`/`iat` corretos com
+  clock-skew de 60s) e troca por installation token via API oficial,
+  cache em `Map` process-local chaveado por
+  `apiBaseUrl:appId:installationId` com skew de refresh de 60s. Chave de
+  cache inclui os 3 componentes certos (sem colisão entre instalações
+  diferentes). Sem achado.
+- `packages/eve/src/public/channels/slack/auth.ts` — `buildSlackAuthContext`
+  monta o `principalId` do responder Slack (`slack:<teamId>:<userId>`
+  normalmente); quando `teamId` é `null`/`undefined` cai pra
+  `slack:<userId>` sem namespace de time — confirmado em
+  `interactions.ts` que isso acontece de verdade (`team_id` não é
+  garantido em todo `view_submission` payload, comentário no próprio
+  código). Investigado até `slackChannel.ts` (`approvalResponderUsers`,
+  `approval.candidate`) pra ver se esse `principalId` sem team-scoping
+  vira gate de autorização real (ex.: só o autor original pode
+  aprovar) — não vira: é usado só como metadado de exibição (mapeia
+  responder → Slack user id pra UI mostrar "aprovado por @fulano"), e
+  a decisão real de quem pode responder a um `tool-approval` é
+  delegada ao hook `onInputResponse` do app autor (a lib não impõe
+  restrição própria — modelo é "qualquer um no canal/thread pode
+  clicar", esperado pra bots Slack). Sem gate de segurança dependendo
+  deste campo → sem achado, mas caso de referência anotado (nome
+  parecido com `js_injection_unescaped_token_risk` de outro programa:
+  se um dia aparecer um app-level `onInputResponse` que compara
+  `principalId` direto sem levar em conta a ausência de `teamId`, essa
+  colisão vira relevante — vale relembrar se aparecer candidate futuro
+  tocando esse arquivo).
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
+total 45 arquivos cobertos ali). Nenhuma transição de estado tentada
+neste programa nesta rodada.

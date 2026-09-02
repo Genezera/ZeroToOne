@@ -785,7 +785,10 @@
     "packages/eve/src/public/channels/linear/verify.ts",
     "packages/eve/src/public/models/openai/chatgpt/token-broker.ts",
     "packages/eve/src/services/dev-client/credential-gate.ts",
-    "packages/eve/src/services/dev-client/request-headers.ts"
+    "packages/eve/src/services/dev-client/request-headers.ts",
+    "packages/eve/src/channel/session.ts",
+    "packages/eve/src/public/channels/github/auth.ts",
+    "packages/eve/src/public/channels/slack/auth.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
