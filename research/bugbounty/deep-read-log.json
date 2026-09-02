@@ -421,7 +421,12 @@
     "code/crates/signing-ed25519/src/serializers/mod.rs",
     "code/crates/signing-ed25519/src/serializers/base64string.rs",
     "code/crates/signing-ed25519/src/serializers/signing_key.rs",
-    "code/crates/signing-ed25519/src/serializers/verification_key.rs"
+    "code/crates/signing-ed25519/src/serializers/verification_key.rs",
+    "code/crates/core-state-machine/src/state_machine.rs",
+    "code/crates/core-state-machine/src/transition.rs",
+    "code/crates/core-state-machine/src/state.rs",
+    "code/crates/core-driver/src/driver.rs",
+    "code/crates/core-consensus/src/handle/driver.rs"
   ],
   "circlefin/noble-cctp": [
     "x/cctp/keeper/msg_server_accept_owner.go",

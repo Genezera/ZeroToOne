@@ -6320,3 +6320,40 @@ Sem achado novo. `deep-read-log.json` atualizado (+4 arquivos). Mudando
 de direção: próximo alvo é `circlefin/malachite` (motor de consenso
 BFT em Rust -- arquitetura de bug completamente diferente de
 bridge/compliance).
+
+## Leitura profunda em circlefin/malachite -- core-state-machine, sem achado -- 02/09/2026
+
+Pivô deliberado pra fora da família CCTP (veia esgotada, ver rodada
+anterior). `core-consensus`/`core-votekeeper` já tinham sido lidos sem
+achado; foquei em `core-state-machine` (nunca tocado), o driver
+Tendermint-style propriamente dito -- implementação linha a linha do
+paper de referência (comentários `L##` remetem a números de linha do
+próprio paper), o que facilita auditar por correspondência direta.
+
+Ponto investigado com cuidado: `commit()` (`state_machine.rs`) recebe
+`round: Round` (capturado como `state.round`, o round ATUAL do nó) e
+`proposal: Ctx::Proposal` (cujo `proposal.round()` é o round de onde
+veio a evidência de +2/3 precommit). A decisão em si
+(`set_decision(proposal.round(), ...)`) usa corretamente
+`proposal.round()` -- mas o evento de saída
+(`Output::decision(round, ...)`) usa o round ERRADO (`state.round`,
+não `proposal.round()`). Rastreei o consumo completo antes de
+considerar isso um achado: `core-driver/src/driver.rs` repassa direto
+(`RoundOutput::Decision(round, proposal) => Output::Decide(round,
+proposal)`), e `core-consensus/src/handle/driver.rs` usa esse
+`consensus_round` **só numa linha de log** (`info!(round =
+%consensus_round, ...)`) -- a função `decide()` que processa a decisão
+de verdade não recebe esse parâmetro. Confirmado: zero impacto
+funcional, é só qual round aparece no log de debug. Não é achado.
+
+Guard ausente em `(_, Input::ProposalAndPrecommitValue(proposal)) =>`
+(L49) também investigado -- diferente dos outros handlers (que exigem
+`if this_round`), este não tem guard de round. Confirmado como
+CORRETO/intencional, não bug: é assim que o Tendermint deixa um nó
+"pular" direto pro commit ao ver evidência de quorum de uma rodada
+diferente da que ele mesmo está, propriedade real do algoritmo, não
+lacuna de implementação.
+
+Sem achado novo. `deep-read-log.json` atualizado (+5 arquivos em
+`circlefin/malachite`, incluindo `core-driver` e o handler de
+`core-consensus` inteiro, não só `core-state-machine`).
