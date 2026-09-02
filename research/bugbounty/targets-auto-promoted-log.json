@@ -1,140 +1,172 @@
 {
-  "generatedAt": "2026-09-01T03:33:31.925Z",
-  "totalActiveAutoPromoted": 13,
+  "generatedAt": "2026-09-02T18:17:27.404Z",
+  "totalActiveAutoPromoted": 24,
   "promotedThisRound": [
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "cli-runtime",
+      "repo": "kube-controller-manager",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "306 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "107 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
+      "promotedAt": "2026-09-02T18:17:27.402Z"
     },
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "cloud-provider",
+      "repo": "kube-openapi",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "284 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "357 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
+      "promotedAt": "2026-09-02T18:17:27.402Z"
     },
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "cloud-provider-aws",
+      "repo": "kube-proxy",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "463 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "213 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
+      "promotedAt": "2026-09-02T18:17:27.402Z"
     },
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "cloud-provider-openstack",
+      "repo": "kube-scheduler",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "721 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "208 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
+      "promotedAt": "2026-09-02T18:17:27.402Z"
     },
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "code-generator",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "1834 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "component-base",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "121 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "cri-api",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 20,
-      "reasons": [
-        "475 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "klog",
+      "repo": "kubeadm",
       "branch": "main",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "561 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "3999 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
+      "promotedAt": "2026-09-02T18:17:27.402Z"
     },
     {
       "program": "Kubernetes",
       "platform": "HackerOne",
       "owner": "kubernetes",
-      "repo": "cluster-bootstrap",
+      "repo": "kubelet",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "410 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-02T18:17:27.402Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "metrics",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "537 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-02T18:17:27.402Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "org",
+      "branch": "main",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "297 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-02T18:17:27.402Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "sample-cli-plugin",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "308 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-02T18:17:27.402Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "sample-controller",
+      "branch": "master",
+      "maxBountyUsd": null,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 20,
+      "reasons": [
+        "3506 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-02T18:17:27.402Z"
+    },
+    {
+      "program": "Kubernetes",
+      "platform": "HackerOne",
+      "owner": "kubernetes",
+      "repo": "publishing-bot",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
@@ -143,37 +175,7 @@
       "reasons": [
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "csi-translation-lib",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 10,
-      "reasons": [
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
-    },
-    {
-      "program": "Kubernetes",
-      "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "gengo",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 10,
-      "reasons": [
-        "581 estrelas no GitHub — indício de uso real, não projeto de brinquedo"
-      ],
-      "promotedAt": "2026-09-01T03:33:31.924Z"
+      "promotedAt": "2026-09-02T18:17:27.402Z"
     }
   ],
   "skippedThisRound": {
@@ -181,79 +183,95 @@
     "unsupportedLanguage": [
       {
         "owner": "kubernetes",
-        "repo": "community",
-        "githubLanguage": "Jupyter Notebook"
+        "repo": "kubernetes-template-project",
+        "githubLanguage": null
       },
       {
         "owner": "kubernetes",
-        "repo": "examples",
+        "repo": "repo-infra",
+        "githubLanguage": "Starlark"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "security",
         "githubLanguage": "Shell"
       },
       {
         "owner": "kubernetes",
-        "repo": "git-sync",
+        "repo": "sig-release",
         "githubLanguage": "Shell"
       },
       {
         "owner": "kubernetes",
-        "repo": "k8s.io",
-        "githubLanguage": "HCL"
+        "repo": "steering",
+        "githubLanguage": null
       }
     ],
     "tooLarge": [
       {
         "owner": "kubernetes",
-        "repo": "autoscaler",
-        "sizeKb": 268084
+        "repo": "kube-aggregator",
+        "sizeKb": 24837
       },
       {
         "owner": "kubernetes",
-        "repo": "client-go",
-        "sizeKb": 32119
+        "repo": "kube-state-metrics",
+        "sizeKb": 26116
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-alibaba-cloud",
-        "sizeKb": 103761
+        "repo": "kubectl",
+        "sizeKb": 43674
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-azure",
-        "sizeKb": 148836
+        "repo": "kubernetes",
+        "sizeKb": 1514649
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-gcp",
-        "sizeKb": 190079
+        "repo": "minikube",
+        "sizeKb": 303619
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-vsphere",
-        "sizeKb": 78787
+        "repo": "node-problem-detector",
+        "sizeKb": 37437
       },
       {
         "owner": "kubernetes",
-        "repo": "dns",
-        "sizeKb": 51712
+        "repo": "perf-tests",
+        "sizeKb": 116531
       },
       {
         "owner": "kubernetes",
-        "repo": "enhancements",
-        "sizeKb": 59123
+        "repo": "release",
+        "sizeKb": 23317
       },
       {
         "owner": "kubernetes",
-        "repo": "kompose",
-        "sizeKb": 45218
+        "repo": "sample-apiserver",
+        "sizeKb": 23908
       },
       {
         "owner": "kubernetes",
-        "repo": "kops",
-        "sizeKb": 499430
+        "repo": "test-infra",
+        "sizeKb": 262292
       }
     ],
     "metadataFetchFailed": [],
-    "insufficientSignal": [],
+    "insufficientSignal": [
+      {
+        "owner": "kubernetes",
+        "repo": "legacy-cloud-providers",
+        "score": 0
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "node-api",
+        "score": 0
+      }
+    ],
     "alreadyPromoted": 0,
     "deferredToNextRun": [],
     "atCap": false
