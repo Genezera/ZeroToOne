@@ -6045,3 +6045,35 @@ direcionada a `vercel/eve`, subdiretório `public/channels/` (ver
 NOTES.md de Vercel Open Source, sem achado) — sem arquivo novo
 candidato em Circle BBP nesta rodada. Nenhum achado, nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-02 (cloud, push trigger, mais uma do mesmo push)
+
+`list-pending` global = 0 (confirmado após `migrate-to-v2.mjs` +
+`cli.mjs status`: nenhum finding em `candidate`, apenas
+`false_positive`/`corroborated_static`/`duplicate`/`known_duplicate`/
+`inconclusive`/`human_ready` de rodadas anteriores). Deep-read
+proativo em `circlefin/stellar-cctp` (contrato Soroban/Rust do CCTP
+na Stellar, repo pouco coberto no log — só 5 arquivos lidos antes):
+
+- `contracts/message-transmitter-v2/src/contract.rs` — entrypoints
+  `send_message`/`receive_message`; `caller.require_auth()` presente
+  em ambos; `receive_message` segue check-effects-interactions
+  correto (`set_nonce_used` roda logo após `validate_received_message`
+  e antes do cross-contract call pro handler do recipient).
+- `contracts/message-transmitter-v2/src/storage.rs` —
+  `validate_received_message`: ordem de checagem é
+  assinatura → formato → domínio destino → destination_caller →
+  versão → nonce-já-usado. Nenhum bypass encontrado.
+- `packages/cctp-roles/src/attestable/mod.rs` e `.../storage.rs` —
+  `verify_attestation_signatures`: exige comprimento exato
+  (`SIGNATURE_LENGTH * threshold`), recupera secp256k1 por assinatura,
+  converte pra endereço Ethereum-style (keccak256 dos últimos 20 bytes
+  da pubkey) e **exige ordem estritamente crescente** dos endereços
+  recuperados (`<=` já rejeita, então também bloqueia duplicata) antes
+  de checar se cada signer é attester habilitado. Mesmo padrão já
+  auditado na versão EVM do MessageTransmitterV2 — comentário no
+  código cita explicitamente que o SDK Soroban já rejeita assinaturas
+  malleable na recuperação secp256k1. Nenhum desvio encontrado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+4 arquivos em
+`circlefin/stellar-cctp`). Nenhuma transição de estado neste programa.

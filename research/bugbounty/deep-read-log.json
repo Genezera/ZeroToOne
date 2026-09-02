@@ -836,6 +836,10 @@
     "contracts/token-messenger-minter-v2/src/deposit.rs",
     "contracts/token-messenger-minter-v2/src/contract.rs",
     "packages/cctp-roles/src/token_controller/mod.rs",
-    "packages/cctp-roles/src/token_controller/storage.rs"
+    "packages/cctp-roles/src/token_controller/storage.rs",
+    "contracts/message-transmitter-v2/src/storage.rs",
+    "packages/cctp-roles/src/attestable/mod.rs",
+    "packages/cctp-roles/src/attestable/storage.rs",
+    "contracts/message-transmitter-v2/src/contract.rs"
   ]
 }
