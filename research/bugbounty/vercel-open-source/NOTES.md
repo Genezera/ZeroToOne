@@ -3992,3 +3992,34 @@ diferenças relevantes, registradas aqui pra não se perder:
    registrada aqui pra não confundir uma leitura futura que olhe só pra
    esses 4 ids isoladamente sem cruzar com `module.exports::
    command_injection_risk`.
+
+## Refinamento dos 3 achados restantes semgrep_detect_child_process (branch VS Code de mcp.ts) -- 02/09/2026 (sessão cloud separada)
+
+Reconciliação: sessão concorrente anterior já tinha triado 27
+`semgrep_detect_child_process` + 9 vendored + 4 CI + 4
+`update-remix-run-dev.js` desta mesma leva, deixando 3 pendentes
+(linhas 467/469/471 de `packages/cli/src/commands/mcp/mcp.ts`, branch
+"VS Code with Copilot" -- par gêmeo estrutural do branch "Cursor" já
+marcado `corroborated_static` nas linhas 345/347/349).
+
+Ao investigar, a conclusão diverge da do branch Cursor: aqui o objeto
+`config` inteiro (incluindo `serverName`, mesma origem -- nome de
+projeto Vercel vinculado localmente) passa por
+`encodeURIComponent(JSON.stringify(config))` antes de virar query
+string, ao contrário do Cursor que concatena `serverName` cru sem
+nenhum encoding. `encodeURIComponent` percent-encoda todo
+metacaractere de shell relevante; a única exceção no conjunto
+"não-escapado" do ECMA-262 é o apóstrofo (`'`). Escrevi uma PoC local
+(sem rede, sem tocar sistema real -- `node -e` replicando a lógica
+exata de `mcp.ts` + `bash` de verdade) com um `serverName` malicioso
+contendo `'; touch ...; echo '`: confirmei que o apóstrofo de fato
+quebra o quoting do shell, mas como tudo depois dele já foi
+percent-encoded, o texto fora das aspas é inerte (`%3B%20touch%20...`
+literal) -- o `touch` **não executa** (arquivo-alvo não foi criado).
+**Falso positivo para command injection**, mas com nota de robustez
+sobre o apóstrofo não-escapado.
+
+Fila Vercel Open Source: 0 `candidate` fora dos 77
+`known_vulnerable_dependency` (ainda bloqueados por `api.osv.dev`
+inacessível nesta sessão -- confirmado 403 de novo, mesma política
+de egress).
