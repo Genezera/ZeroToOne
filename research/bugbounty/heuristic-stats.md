@@ -6,14 +6,15 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 
 | Tipo | Linguagem | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
+| ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | go | 2 | 1 | 1 | 0 | 50% |
 | ai_deep_read_finding | kotlin | 4 | 1 | 2 | 1 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
-| ai_deep_read_finding | rust | 1 | 1 | 0 | 0 | 0% |
-| ai_deep_read_finding | solidity | 3 | 0 | 3 | 0 | 100% |
-| ai_deep_read_finding | swift | 1 | 0 | 1 | 0 | 100% |
-| ai_deep_read_finding | typescript | 1 | 0 | 0 | 1 | 0% |
+| ai_deep_read_finding | rust | 2 | 1 | 1 | 0 | 50% |
+| ai_deep_read_finding | solidity | 4 | 0 | 4 | 0 | 100% |
+| ai_deep_read_finding | swift | 2 | 1 | 1 | 0 | 50% |
+| ai_deep_read_finding | typescript | 3 | 2 | 0 | 1 | 0% |
 | auth_arg_inconsistency | clarity | 1 | 0 | 1 | 0 | 100% |
 | command_injection_risk | js | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | solidity | 1 | 0 | 1 | 0 | 100% |
@@ -21,6 +22,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | insecure_tls | go | 1 | 0 | 1 | 0 | 100% |
 | known_vulnerable_dependency | go | 74 | 0 | 74 | 0 | 100% |
 | known_vulnerable_dependency | jvm | 4 | 0 | 4 | 0 | 100% |
+| path_traversal_arbitrary_file_read_risk | javascript | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | js | 2 | 0 | 2 | 0 | 100% |
 | prototype_pollution_risk | js | 2 | 0 | 2 | 0 | 100% |
 | redos_risk | js | 3 | 0 | 3 | 0 | 100% |
@@ -33,10 +35,10 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 
 | Tipo | Programa | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
-| ai_deep_read_finding | Block Open Source | 5 | 1 | 3 | 1 | 60% |
-| ai_deep_read_finding | Circle BBP | 7 | 2 | 5 | 0 | 71% |
+| ai_deep_read_finding | Block Open Source | 6 | 2 | 3 | 1 | 50% |
+| ai_deep_read_finding | Circle BBP | 10 | 3 | 7 | 0 | 70% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | Vercel Open Source | 1 | 0 | 0 | 1 | 0% |
+| ai_deep_read_finding | Vercel Open Source | 3 | 2 | 0 | 1 | 0% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
 | command_injection_risk | Vercel Open Source | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | Circle BBP | 1 | 0 | 1 | 0 | 100% |
@@ -44,6 +46,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | insecure_tls | Kubernetes | 1 | 0 | 1 | 0 | 100% |
 | known_vulnerable_dependency | Block Open Source | 6 | 0 | 6 | 0 | 100% |
 | known_vulnerable_dependency | OKG | 72 | 0 | 72 | 0 | 100% |
+| path_traversal_arbitrary_file_read_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |
 | prototype_pollution_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |
 | redos_risk | Vercel Open Source | 3 | 0 | 3 | 0 | 100% |

@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-01T12:08:42.467Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-02T12:03:03.898Z.
 
 ## Alvos ativos
 
@@ -32,15 +32,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **32**
-- Já revisados: 133
+- Pendentes (aguardando o agente de nuvem): **0**
+- Já revisados: 140
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
 | command_injection_risk | Vercel Open Source | falso_positivo | — |
-| command_injection_risk | Vercel Open Source | falso_positivo | — |
-| command_injection_risk | Vercel Open Source | falso_positivo | — |
-| command_injection_risk | Vercel Open Source | falso_positivo | — |
+| ai_deep_read_finding | Circle BBP | falso_positivo | — |
+| ai_deep_read_finding | Vercel Open Source | confirmado | — |
 | eval_usage | Vercel Open Source | falso_positivo | — |
+| path_traversal_arbitrary_file_read_risk | Vercel Open Source | confirmado | — |

@@ -132,5 +132,12 @@
   "OKG::okx/go-wallet-sdk/coins/zil/go.mod::google.golang.org/protobuf@v1.31.0::known_vulnerable_dependency": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/elrond/go.mod::golang.org/x/sys@v0.0.0-20200814200057-3d37ad5750ed::known_vulnerable_dependency": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/helium/go.mod::google.golang.org/protobuf@v1.31.0::known_vulnerable_dependency": "falso_positivo",
-  "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::module.exports::command_injection_risk": "confirmado"
+  "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::module.exports::command_injection_risk": "confirmado",
+  "Circle BBP::circlefin/stablecoin-evm/contracts/v2/NativeFiatTokenV2_2.sol::transfer_transferFrom_mint_authorization::ai_deep_read_finding": "falso_positivo",
+  "Vercel Open Source::vercel/ai/packages/harness/src/bridge/index.ts::runBridge::timing_attack_risk": "confirmado",
+  "Vercel Open Source::vercel-labs/agent-skills/skills/vercel-optimize/lib/verify-claim.mjs::repoPaths::path_traversal_arbitrary_file_read_risk": "confirmado",
+  "Block Open Source::afterpay/sdk-ios/Sources/Afterpay/Widget/WidgetView.swift::WidgetView.didFinish::js_injection_unescaped_token_risk": "confirmado",
+  "Vercel Open Source::vercel/next.js/packages/next/src/server/image-optimizer.ts::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk": "confirmado",
+  "Circle BBP::circlefin/solana-cctp-contracts/programs/v2/token-messenger-minter-v2/src/token_messenger_v2/instructions/handle_receive_finalized_message.rs::handle_receive_message::ai_deep_read_finding": "falso_positivo",
+  "Circle BBP::circlefin/arc-node/crates/execution-txpool/src/validator.rs::addresses_denylist enforcement scope::ai_deep_read_finding": "confirmado"
 }

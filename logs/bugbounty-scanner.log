@@ -213,3 +213,8 @@ warning: in the working copy of 'research/bugbounty/reports/vercel-remix-updater
 [2026-09-01T12:08:46.507Z] AVISO: git push falhou (provável divergência com origin) -- tentando pull + push uma vez: Command failed: git push
 [2026-09-01T12:08:49.298Z] AVISO: pull de recuperação falhou (provável conflito de verdade) -- abortando merge parcial e desistindo desta rodada: Command failed: git pull --no-rebase --no-edit
 [2026-09-01T12:08:49.369Z] AVISO: falha ao sincronizar com o GitHub: pull de recuperação falhou: Command failed: git pull --no-rebase --no-edit
+[02/09/2026  9:00:01,89] Iniciando scanner de bug bounty 
+[2026-09-02T12:00:05.384Z] AVISO: git pull antes da rodada falhou (Command failed: git pull --no-rebase --no-edit) -- seguindo com o estado local atual
+[2026-09-02T12:01:06.073Z] AVISO: vercel/vercel tem 1272 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
+[2026-09-02T12:01:12.941Z] AVISO: okx/go-wallet-sdk tem 1001 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
+[2026-09-02T12:01:16.571Z] AVISO: kubernetes/code-generator tem 795 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
