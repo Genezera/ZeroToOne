@@ -3683,3 +3683,42 @@ rodada: `public/models/openai/chatgpt/token-broker.ts` e
 rodada — os 3 achados JS/TS em `corroborated_static` seguem no mesmo
 ponto de sempre (sem validador local pra JS/TS, limitação conhecida do
 sistema).
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push, deep-read chatgpt/dev-client)
+
+`list-pending` global = 0. Leitura profunda proativa continuando as
+sugestões pendentes: `public/models/openai/chatgpt/token-broker.ts` e
+`services/dev-client/credential-gate.ts` (ambos citados há 2 rodadas),
+mais `services/dev-client/request-headers.ts` (dependência direta do
+credential-gate, mesma área).
+
+- `token-broker.ts` — cache em memória do token ChatGPT/Codex local,
+  delega toda a autenticação real pro `CodexAppServerClient` (processo
+  local do Codex CLI). Decodifica claims do próprio JWT só pra extrair
+  `accountId`/`accountLabel`/`expiresAt` (exibição/cache), nunca pra
+  decisão de autorização — quem decide se o token é válido é o app
+  server local. Janela de refresh de 5min antes de expirar. Sem
+  bypass encontrado; superfície é local (localhost dev tool), não
+  network-reachable por terceiros.
+- `credential-gate.ts` — `authorize()` rejeita o grant se
+  `grant.target.origin !== serverOrigin` (checagem de origem exata
+  antes de instalar qualquer credencial), e `resolveBypassHeaders()`
+  só emite `x-vercel-protection-bypass` quando `state.kind !==
+  "anonymous"` (ou seja, só depois da origem verificada). Rollback
+  (`authorize` retorna função que restaura estado anterior) usa
+  comparação de identidade de objeto (`state === next`), então uma
+  autorização mais nova nunca é desfeita por um rollback antigo em
+  race. Sem achado.
+- `request-headers.ts` — `decodeOidcPayload` faz parse do JWT sem
+  verificar assinatura, mas isso é deliberado e documentado no
+  comentário: "does not authorize a destination; callers must verify
+  the exact origin first" -- decisão de autorização real acontece no
+  backend Vercel quando o token é de fato usado como bearer; aqui é
+  só sanity-check de claims (`owner_id`/`project_id`) casando com o
+  alvo local antes de instalar via `credential-gate`. Nenhuma
+  verificação de segurança real depende deste decode não-assinado.
+  Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 em `vercel/eve`,
+total 42 arquivos cobertos ali). Nenhuma transição de estado tentada
+neste programa nesta rodada.

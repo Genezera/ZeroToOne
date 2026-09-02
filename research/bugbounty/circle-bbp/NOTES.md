@@ -6077,3 +6077,12 @@ na Stellar, repo pouco coberto no log — só 5 arquivos lidos antes):
 
 Sem achado novo. `deep-read-log.json` atualizado (+4 arquivos em
 `circlefin/stellar-cctp`). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-02 (push automático via GitHub webhook, sessão cloud, mais uma rodada do mesmo push)
+
+`list-pending` global = 0. Leitura profunda proativa desta rodada
+direcionada a `vercel/eve` (chatgpt/token-broker.ts,
+services/dev-client/credential-gate.ts e request-headers.ts -- ver
+NOTES.md de Vercel Open Source, sem achado) — sem arquivo novo
+candidato em Circle BBP nesta rodada. Nenhum achado, nenhuma
+transição de estado neste programa.
