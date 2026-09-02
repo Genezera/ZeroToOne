@@ -12,7 +12,12 @@
 
 import { AUTO_PROMOTED_TARGETS } from './targets-auto-promoted.mjs';
 
-const JS_TARGETS_MANUAL = [
+// Exportado (era privado até 02/09/2026) -- discovery-runner.mjs precisa
+// recombinar isto com uma leitura FRESCA de AUTO_PROMOTED_TARGETS depois
+// da promoção da própria rodada (ver comentário grande em
+// discovery-runner.mjs sobre por que os imports estáticos JS_TARGETS/
+// GO_TARGETS/JVM_TARGETS ficam desatualizados dentro da mesma execução).
+export const JS_TARGETS_MANUAL = [
   {
     program: 'Vercel Open Source',
     platform: 'HackerOne',

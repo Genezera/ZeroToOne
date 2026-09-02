@@ -9,11 +9,11 @@ import path from 'node:path';
 import { runTargetDiscovery } from './discover-targets.mjs';
 import { promoteTargets, renderAutoPromotedModule, DEFAULT_MAX_PROMOTIONS_PER_RUN, DEFAULT_MAX_TOTAL_PROMOTED } from './promote-targets.mjs';
 import { loadProgramPolicy } from './program-policy.mjs';
-import { JS_TARGETS } from './targets-js.mjs';
+import { JS_TARGETS, JS_TARGETS_MANUAL } from './targets-js.mjs';
 import { GO_TARGETS, _PAUSED_GO_TARGETS_MANUAL } from './targets-go.mjs';
-import { JVM_TARGETS, _PAUSED_JVM_TARGETS_MANUAL } from './targets-jvm.mjs';
+import { JVM_TARGETS, JVM_TARGETS_MANUAL, _PAUSED_JVM_TARGETS_MANUAL } from './targets-jvm.mjs';
 import { SWIFT_TARGETS, _PAUSED_SWIFT_TARGETS_MANUAL } from './targets-swift.mjs';
-import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
+import { SOLIDITY_TARGETS, SOLIDITY_TARGETS_MANUAL } from './targets-solidity.mjs';
 import { AUTO_PROMOTED_TARGETS } from './targets-auto-promoted.mjs';
 import { getProgram } from './h1-api.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
@@ -35,6 +35,20 @@ import { openDb, upsertFinding, closeDb } from './db.mjs';
 // _PAUSED_*_MANUAL (Block Open Source, pausado) entram só na checagem de
 // "já conhecido" -- mesmo motivo do SOLIDITY_TARGETS acima, não porque
 // vão ser escaneados (não vão).
+//
+// JS_TARGETS/GO_TARGETS/JVM_TARGETS/SOLIDITY_TARGETS importados acima
+// são um SNAPSHOT capturado quando este módulo carregou -- import ES é
+// resolvido uma vez só, no início do processo. Achado real (02/09/2026,
+// sessão ao vivo): a promoção automática logo abaixo REESCREVE
+// targets-auto-promoted.mjs em disco, mas o processo atual continua
+// com o binding antigo em memória -- os alvos recém-promovidos nesta
+// MESMA rodada nunca chegam a ser escaneados por Slither/OSV/Semgrep
+// mais abaixo, só na próxima execução (semana que vem, já que esta
+// tarefa é semanal). Corrigido reconstruindo listas frescas a partir de
+// `mergedAutoPromoted` (já calculado em memória, pós-promoção) logo
+// depois do bloco de promoção -- ver freshJsTargets/freshGoTargets/
+// freshJvmTargets/freshSolidityTargets abaixo, usadas em vez dos
+// imports estáticos em todo o resto do arquivo.
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -115,6 +129,15 @@ export async function runDiscovery() {
   if (promotionResult.promoted.length > 0) {
     writeFileSync(AUTO_PROMOTED_MODULE_PATH, renderAutoPromotedModule(mergedAutoPromoted), 'utf8');
   }
+
+  // Ver comentário grande no topo do arquivo -- estas são as listas de
+  // verdade usadas dali em diante (Slither/OSV/Semgrep + resumo), nunca
+  // os imports estáticos JS_TARGETS/GO_TARGETS/JVM_TARGETS/SOLIDITY_TARGETS,
+  // que ficam presos ao estado de ANTES da promoção desta mesma rodada.
+  const freshGoTargets = mergedAutoPromoted.filter((t) => t.language === 'go');
+  const freshJsTargets = [...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')];
+  const freshJvmTargets = [...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')];
+  const freshSolidityTargets = [...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')];
   writeFileSync(
     PROMOTION_LOG_PATH,
     JSON.stringify(
@@ -174,7 +197,7 @@ export async function runDiscovery() {
   {
     const db = openDb(DB_PATH);
     try {
-      for (const target of SOLIDITY_TARGETS) {
+      for (const target of freshSolidityTargets) {
         try {
           const result = runSlitherAgainstTarget(target, { log });
           if (!result.ok) {
@@ -226,7 +249,7 @@ export async function runDiscovery() {
   {
     const db = openDb(DB_PATH);
     try {
-      for (const target of [...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS]) {
+      for (const target of [...freshJsTargets, ...freshGoTargets, ...freshJvmTargets]) {
         try {
           const result = runOsvScannerAgainstTarget(target, { log });
           if (!result.ok) {
@@ -273,7 +296,7 @@ export async function runDiscovery() {
   {
     const db = openDb(DB_PATH);
     try {
-      for (const target of [...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS]) {
+      for (const target of [...freshJsTargets, ...freshGoTargets, ...freshJvmTargets]) {
         try {
           const semResult = runSemgrepAgainstTarget(target, { log });
           if (!semResult.ok) {
@@ -332,9 +355,9 @@ export async function runDiscovery() {
           ? `🚀 <b>${promotionResult.promoted.length} alvo(s) novo(s) promovido(s)</b> pra varredura ativa: ${promotionResult.promoted.map((p) => `${p.owner}/${p.repo} (${p.program})`).join(', ')}. Total agora: ${mergedAutoPromoted.length}.`
           : `Nenhum alvo novo promovido nesta rodada (${mergedAutoPromoted.length} ativo(s) no total).`,
         promotionResult.skipped.tooLarge.length > 0 ? `${promotionResult.skipped.tooLarge.length} repo(s) grande(s) demais pra promoção automática — revisão manual sugerida.` : null,
-        `🔬 Slither: ${slitherReposOk}/${SOLIDITY_TARGETS.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
-        `📦 OSV-Scanner: ${osvReposOk}/${JS_TARGETS.length + GO_TARGETS.length + JVM_TARGETS.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
-        `🕵️ Semgrep: ${semgrepReposOk}/${JS_TARGETS.length + GO_TARGETS.length + JVM_TARGETS.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.`,
+        `🔬 Slither: ${slitherReposOk}/${freshSolidityTargets.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
+        `📦 OSV-Scanner: ${osvReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
+        `🕵️ Semgrep: ${semgrepReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.`,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {

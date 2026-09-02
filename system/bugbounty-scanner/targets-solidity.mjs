@@ -14,7 +14,10 @@
 
 import { AUTO_PROMOTED_TARGETS } from './targets-auto-promoted.mjs';
 
-const SOLIDITY_TARGETS_MANUAL = [
+// Exportado (era privado até 02/09/2026) -- ver o mesmo comentário em
+// targets-js.mjs sobre discovery-runner.mjs precisar recombinar isto
+// com uma leitura fresca de AUTO_PROMOTED_TARGETS pós-promoção.
+export const SOLIDITY_TARGETS_MANUAL = [
   {
     program: 'Circle BBP',
     platform: 'HackerOne',
