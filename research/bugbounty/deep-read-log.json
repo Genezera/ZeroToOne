@@ -773,7 +773,10 @@
     "packages/eve/src/public/channels/discord/verify.ts",
     "packages/eve/src/public/channels/discord/verifyInbound.ts",
     "packages/eve/src/public/channels/telegram/verify.ts",
-    "packages/eve/src/tools/auth.ts (apenas tipos, sem lógica de runtime)"
+    "packages/eve/src/tools/auth.ts (apenas tipos, sem lógica de runtime)",
+    "packages/eve/src/public/channels/github/verify.ts",
+    "packages/eve/src/public/channels/slack/verify.ts",
+    "packages/eve/src/public/channels/linear/verify.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
