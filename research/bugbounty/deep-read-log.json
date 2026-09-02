@@ -758,7 +758,10 @@
     "packages/eve/src/execution/connection-auth-tool-result.ts",
     "packages/eve/src/channel/auth/oidc.ts",
     "packages/eve/src/execution/session-command-token.ts",
-    "packages/eve/src/runtime/connections/authorization-complete-page.ts"
+    "packages/eve/src/runtime/connections/authorization-complete-page.ts",
+    "packages/eve/src/channel/auth/http-basic.ts",
+    "packages/eve/src/channel/schedule-auth.ts",
+    "packages/eve/src/channel/auth/vercel-oidc-project.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
