@@ -477,11 +477,16 @@ repositório — não contra o que "deveria" ter sido feito.
 - **6.6 Checkpoints assinados/ancorados externamente** pro ledger — a
   cadeia hash existe e é verificada, mas continua *tamper-evident*
   reescrevendo o arquivo inteiro, não *tamper-proof*. Não implementado.
-- **6.7/6.8 Ensemble de múltiplos analisadores (Slither, OSV-Scanner,
-  CodeQL) + fluxo interprocedural/call-graph real** além do que
-  `heuristics-js-ast.mjs` já faz (AST intraprocedural em JS/TS) — só a
-  quarentena (6.11) foi feita da Fase 2 inteira. Nenhum adapter SARIF
-  existe.
+- **6.7/6.8 Ensemble de múltiplos analisadores** — Slither (Solidity,
+  31/08/2026), OSV-Scanner (JS/Go/JVM, 01/09/2026) e Semgrep já
+  construídos e integrados a `discovery-runner.mjs` (cadência semanal);
+  ver seções datadas abaixo pra narrativa completa de cada um. CodeQL
+  continua de fora — ver avaliação de proporcionalidade logo adiante
+  (baixo valor pra este projeto / alto custo de licença pra repositório
+  de terceiro). Fluxo interprocedural/call-graph real além do que
+  `heuristics-js-ast.mjs` já faz (AST intraprocedural em JS/TS) continua
+  não construído — os três adapters novos consomem a saída JSON própria
+  de cada ferramenta, não um formato SARIF unificado.
 - **6.10 Benchmark de detector com corpus rotulado** (positivo/negativo
   por regra, CVEs com commit de correção, mutação) — não construído. A
   quarentena hoje reage a taxa de falso-positivo observada na produção
@@ -506,12 +511,15 @@ UMA pessoa, capital de missão de US$200, sem financiamento pra
 infraestrutura paga. Alguns itens ainda pendentes valem muito mais que
 outros nesse contexto real:
 
-- **Alto valor, custo baixo, ainda não feito**: OSV-Scanner via CLI
-  (binário único, sem servidor, substituiria parte do `dep-scanner.mjs`
-  caseiro por uma ferramenta mantida por terceiros) e Slither pra
-  Solidity (mesma lógica — já existe toolchain Solidity no projeto,
-  Slither é `pip install` local, sem custo de licença). Candidatos
-  naturais pro próximo lote pequeno.
+- ~~Alto valor, custo baixo, ainda não feito: OSV-Scanner via CLI e
+  Slither pra Solidity~~ — **feito** (Slither 31/08/2026, OSV-Scanner
+  01/09/2026, Semgrep 01/09/2026 como bônus fora do escopo original;
+  ver seções datadas abaixo pra narrativa completa, incluindo o bug
+  real de 98% de ruído de `examples/`/`test/fixtures` encontrado
+  rodando o OSV-Scanner contra alvo real). Reconfirmado funcional ao
+  vivo nesta sessão (02/09/2026): `osv-scanner.exe` responde
+  `version: 2.5.1` e `py -m slither --version` responde `0.11.6` neste
+  mesmo ambiente Windows.
 - **Alto valor, custo alto**: sandbox de execução isolado de verdade
   (6.4) — genuinamente importante se o volume de repositórios
   analisados crescer, mas hoje o "sandbox" real é: Windows local só
