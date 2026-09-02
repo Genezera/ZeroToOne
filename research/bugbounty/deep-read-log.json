@@ -173,7 +173,11 @@
     "packages/stablecoin_handler/scripts/receive_message.move",
     "packages/stablecoin_handler/scripts/deposit_for_burn.move",
     "packages/token_messenger_minter_v2/Move.toml",
-    "packages/stablecoin_handler/Move.toml"
+    "packages/stablecoin_handler/Move.toml",
+    "packages/token_messenger_minter_v2/sources/fee_controller.move",
+    "packages/token_messenger_minter_v2/sources/handler_registry.move",
+    "packages/token_messenger_minter/sources/token_minter/token_controller.move",
+    "packages/token_messenger_minter/sources/token_minter/token_minter.move"
   ],
   "circlefin/arc-node": [
     "crates/remote-signer/src/client.rs",
@@ -592,7 +596,10 @@
     "packages/message_transmitter/sources/admin/roles.move",
     "packages/token_messenger_minter/sources/handle_receive_message.move",
     "packages/message_transmitter/sources/receive_message.move",
-    "packages/message_transmitter/sources/admin/role_management.move"
+    "packages/message_transmitter/sources/admin/role_management.move",
+    "packages/token_messenger_minter/sources/deposit_for_burn.move",
+    "packages/token_messenger_minter/sources/admin/token_controller.move",
+    "packages/token_messenger_minter/sources/burn_message.move"
   ],
   "nitrojs/nitro": [
     "src/runtime/internal/static.ts",

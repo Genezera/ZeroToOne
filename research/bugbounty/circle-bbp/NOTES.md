@@ -6273,3 +6273,50 @@ algo ao vivo), não candidato a submissão.
 `deep-read-log.json` atualizado (+7 em `circlefin/stablecoin-xlm`,
 agora 12/115 arquivos). Próximo candidato na lista priorizada:
 `circlefin/sui-cctp` (16★, 6 arquivos já lidos).
+
+## Continuação da leitura profunda em circlefin/sui-cctp -- 02/09/2026
+
+Núcleo auth/roles/receive_message já tinha sido coberto em rodadas
+anteriores, sempre sem achado. Cobri o restante do caminho de saída
+(`deposit_for_burn.move` inteiro, incluindo os 4 entry points e as
+funções `_shared`) e `admin/token_controller.move`. Mesma arquitetura
+consistente do resto da família CCTP: burn passa `deny_list` (o objeto
+nativo de deny list do próprio Sui) pra `treasury::burn`, enforcement
+de compliance delegado ao padrão de moeda regulada do Sui, não
+reimplementado aqui. `token_controller` guarda toda função admin
+(`link_token_pair`, `add_stablecoin_mint_cap`, etc.) atrás de
+`verify_token_controller` (`ctx.sender() == state.roles().token_controller()`),
+consistente e sem gap. `remove_stablecoin_mint_cap` exige desautorização
+prévia antes de remover -- ordem correta.
+
+Sem achado novo. `deep-read-log.json` atualizado (+3 arquivos em
+`circlefin/sui-cctp`). Repo já teve cobertura suficiente em múltiplas
+rodadas -- próximo candidato: `circlefin/stablecoin-near`.
+
+## Leitura profunda em circlefin/aptos-cctp -- 02/09/2026
+
+Candidato de menor cobertura percentual (6%, 8/140) entre os
+priorizados, mas o núcleo já tinha sido lido. Cobri o resto: V2
+(`fee_controller.move`, `handler_registry.move` -- ambos limpos,
+toda função mutativa atrás de `ownable::assert_is_owner` ou do
+controller específico certo) e o V1 legado nunca antes tocado
+(`token_minter/token_controller.move`, `token_minter/token_minter.move`).
+
+`token_minter::mint` (V1) não checa denylist nenhum em `mint_recipient`
+antes de depositar -- mas essa exata pergunta já tinha sido respondida
+numa rodada anterior (ver entrada acima sobre `stablecoin-aptos`):
+`stablecoin::stablecoin::override_deposit` (hook de dispatch
+customizado do FA real, registrado via
+`dispatchable_fungible_asset::register_dispatch_functions`, roda em
+TODO depósito, CCTP ou não) chama
+`blocklistable::assert_not_blocklisted` antes de qualquer depósito.
+Confirma, pela 4a vez (Solana/Sui/Stellar/Aptos), que a Circle
+delibera e consistentemente delega compliance pra camada do
+token/asset-standard em TODA a família CCTP -- essa veia está
+genuinamente esgotada, não vale mais tempo nos repos-irmãos restantes
+(`stablecoin-starknet`, `starknet-cctp`, `stellar-cctp`).
+
+Sem achado novo. `deep-read-log.json` atualizado (+4 arquivos). Mudando
+de direção: próximo alvo é `circlefin/malachite` (motor de consenso
+BFT em Rust -- arquitetura de bug completamente diferente de
+bridge/compliance).
