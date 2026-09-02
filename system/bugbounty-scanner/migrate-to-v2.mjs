@@ -1,7 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openDb, upsertFinding, getFinding, recordTransition, recordDeploymentEvidence, closeDb } from './db.mjs';
+import {
+  openDb, upsertFinding, getFinding, recordTransition, recordDeploymentEvidence, closeDb,
+  recordPlatformOutcome, latestPlatformOutcome, latestDeploymentEvidence, recordValidation, listValidations, recordReport, latestReport,
+} from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { readLedger } from '../ledger/ledger.mjs';
 import { deriveStatesFromLedger } from './state-machine.mjs';
@@ -23,6 +26,72 @@ function assetRefFor(entry) {
   // uma URL raw — scope-registry.assetInScope faz match por substring de
   // owner/repo, então basta o valor bruto.
   return entry.file || entry.id;
+}
+
+/**
+ * Restaura, de forma idempotente, as 4 tabelas satélite (platformOutcome,
+ * deploymentEvidence, validationsHistory, report) quando presentes na
+ * linha da fila — contraparte de `exportFindingsToQueueLines` em
+ * db.mjs. Corrige o bug real de 02/09/2026: essas 4 tabelas nunca eram
+ * exportadas, então esse dado sumia entre ambientes efêmeros exatamente
+ * do mesmo jeito que `state` sumia antes da migração v1→v2 existir.
+ *
+ * Idempotente por comparação explícita contra o que já existe no banco
+ * (não `INSERT` cego): rodar isto de novo pra uma linha sem mudança
+ * nenhuma não duplica linha na tabela satélite nem gera evento novo no
+ * ledger (as 4 funções record* abaixo anexam ledger a cada chamada
+ * real — ver db.mjs). `platformOutcome`/`deploymentEvidence`/`report`
+ * comparam contra o "latest" atual; `validationsHistory` (lista, não
+ * singular) compara por `type+ts`, restaurando só as entradas que ainda
+ * não existem.
+ */
+function restoreSatelliteData(db, findingId, entry) {
+  const notes = [];
+
+  if (entry.platformOutcome) {
+    const current = latestPlatformOutcome(db, findingId);
+    const same = current
+      && current.state === entry.platformOutcome.state
+      && current.platform === (entry.platformOutcome.platform || null)
+      && current.external_report_id === (entry.platformOutcome.externalReportId || null);
+    if (!same) {
+      recordPlatformOutcome(db, findingId, entry.platformOutcome);
+      notes.push(`platformOutcome restaurado da fila (state="${entry.platformOutcome.state}")`);
+    }
+  }
+
+  if (entry.deploymentEvidence) {
+    const current = latestDeploymentEvidence(db, findingId);
+    const same = current
+      && current.confidence === entry.deploymentEvidence.confidence
+      && current.deployed_address === (entry.deploymentEvidence.deployedAddress || null)
+      && current.commit_sha === (entry.deploymentEvidence.commit || null);
+    if (!same) {
+      recordDeploymentEvidence(db, findingId, entry.deploymentEvidence);
+      notes.push('deploymentEvidence restaurado da fila');
+    }
+  }
+
+  if (Array.isArray(entry.validationsHistory) && entry.validationsHistory.length > 0) {
+    const existingKeys = new Set(listValidations(db, findingId).map((v) => `${v.type}|${v.ts}`));
+    for (const v of entry.validationsHistory) {
+      const key = `${v.type}|${v.ts}`;
+      if (!existingKeys.has(key)) {
+        recordValidation(db, findingId, v);
+        notes.push(`validation "${v.type}" (${v.ts}) restaurada da fila`);
+      }
+    }
+  }
+
+  if (entry.report) {
+    const current = latestReport(db, findingId);
+    if (!current || current.path !== entry.report.path) {
+      recordReport(db, findingId, entry.report.path);
+      notes.push(`report restaurado da fila (${entry.report.path})`);
+    }
+  }
+
+  return notes;
 }
 
 /**
@@ -73,6 +142,8 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
       reasoning: entry.reasoning, filesRead: entry.filesRead || [], pocRun: !!entry.pocRun, pocResult: entry.pocResult || null,
       createdAt: entry.createdAt || entry.foundAt,
     });
+    const satelliteNotes = restoreSatelliteData(db, entry.id, entry);
+    for (const note of satelliteNotes) log.steps.push({ note });
     log.finalState = finalState;
     if (driftDetected) {
       log.steps.push({
@@ -86,6 +157,8 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   }
   const existing = getFinding(db, entry.id);
   if (existing && existing.state && existing.state !== 'candidate') {
+    const satelliteNotes = restoreSatelliteData(db, entry.id, entry);
+    for (const note of satelliteNotes) log.steps.push({ note });
     log.finalState = existing.state;
     log.steps.push({ to: existing.state, ok: true, reason: 'já migrado anteriormente (banco já tem este id além de "candidate") — não reprocessado' });
     return log;
@@ -112,6 +185,8 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   };
   upsertFinding(db, finding);
   log.steps.push({ to: 'candidate', ok: true, reason: 'estado inicial de todo finding migrado' });
+  const satelliteNotes = restoreSatelliteData(db, entry.id, entry);
+  for (const note of satelliteNotes) log.steps.push({ note });
 
   const verdict = entry.verdict;
   if (!verdict || entry.status === 'pending') {

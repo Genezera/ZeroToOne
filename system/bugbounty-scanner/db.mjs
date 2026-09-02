@@ -259,7 +259,15 @@ export function recordValidation(db, findingId, { type, command, result, rawOutp
   const ts = new Date().toISOString();
   db.prepare('INSERT INTO validations (finding_id, type, command, result, raw_output, ts) VALUES (?, ?, ?, ?, ?, ?)')
     .run(findingId, type, command || null, result, rawOutput || null, ts);
-  return { findingId, type, result, ts };
+  // Ledger backing (02/09/2026): recordTransition sempre anexou evento
+  // real; as outras 4 funções record* nunca tocaram o ledger, então essa
+  // evidência só sobrevivia no stdout do momento ou em prosa que uma
+  // sessão lembrasse de copiar pra NOTES.md -- achado real investigando
+  // o outcome do SSRF (image-optimizer.ts, HackerOne #3988959) sumindo
+  // entre ambientes. Ver docs/zerotoone-v2/IMPLEMENTATION_STATE.md, seção
+  // "Bug real encontrado (2026-09-02)", item (c).
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_validation', findingId, validationType: type, result, ts });
+  return { findingId, type, result, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function listValidations(db, findingId) {
@@ -274,7 +282,9 @@ export function recordDeploymentEvidence(db, findingId, evidence) {
   `).run(findingId, evidence.repo || null, evidence.commit || null, evidence.branchOrTag || null, evidence.packageOrContract || null,
     evidence.deployedAddress || null, evidence.chainId || null, evidence.blockNumber || null, evidence.bytecodeHash || null,
     evidence.confidence, evidence.notes || null, ts);
-  return { findingId, ...evidence, ts };
+  // Ledger backing -- ver comentário em recordValidation.
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_deployment_evidence', findingId, confidence: evidence.confidence, deployedAddress: evidence.deployedAddress || null, ts });
+  return { findingId, ...evidence, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestDeploymentEvidence(db, findingId) {
@@ -313,7 +323,9 @@ export function latestDuplicateCheck(db, findingId) {
 export function recordReport(db, findingId, reportPath) {
   const ts = new Date().toISOString();
   db.prepare('INSERT INTO reports (finding_id, path, created_at) VALUES (?, ?, ?)').run(findingId, reportPath, ts);
-  return { findingId, path: reportPath, createdAt: ts };
+  // Ledger backing -- ver comentário em recordValidation.
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_report', findingId, path: reportPath, ts });
+  return { findingId, path: reportPath, createdAt: ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestReport(db, findingId) {
@@ -327,7 +339,12 @@ export function recordPlatformOutcome(db, findingId, outcome) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(findingId, outcome.platform || null, outcome.externalReportId || null, outcome.submittedAt || null,
     outcome.state, outcome.severityFinal || null, outcome.bountyAmount || null, outcome.comments || null, ts);
-  return { findingId, ...outcome, ts };
+  // Ledger backing -- ver comentário em recordValidation. Este é o caso
+  // que motivou o achado: outcome real "duplicate" da HackerOne
+  // (#3988959) tinha sumido entre ambientes porque nada aqui tocava o
+  // ledger nem o export -- agora sobrevive nos dois.
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_platform_outcome', findingId, platform: outcome.platform || null, externalReportId: outcome.externalReportId || null, state: outcome.state, ts });
+  return { findingId, ...outcome, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestPlatformOutcome(db, findingId) {
@@ -355,12 +372,69 @@ function legacyVerdictFor(state) {
   return 'confirmado';
 }
 
+// Converte a linha crua das 4 tabelas satélite (snake_case, formato de
+// armazenamento) pro MESMO formato camelCase que as funções record*
+// abaixo aceitam como entrada -- exportar e restaurar (migrateEntry)
+// usam exatamente o mesmo shape, sem tradução duplicada em dois lugares.
+function platformOutcomeToExport(row) {
+  if (!row) return null;
+  return {
+    platform: row.platform,
+    externalReportId: row.external_report_id,
+    submittedAt: row.submitted_at,
+    state: row.state,
+    severityFinal: row.severity_final,
+    bountyAmount: row.bounty_amount,
+    comments: row.comments,
+    updatedAt: row.updated_at,
+  };
+}
+
+function deploymentEvidenceToExport(row) {
+  if (!row) return null;
+  return {
+    repo: row.repo,
+    commit: row.commit_sha,
+    branchOrTag: row.branch_or_tag,
+    packageOrContract: row.package_or_contract,
+    deployedAddress: row.deployed_address,
+    chainId: row.chain_id,
+    blockNumber: row.block_number,
+    bytecodeHash: row.bytecode_hash,
+    confidence: row.confidence,
+    notes: row.notes,
+    ts: row.ts,
+  };
+}
+
+function validationToExport(row) {
+  return { type: row.type, command: row.command, result: row.result, rawOutput: row.raw_output, ts: row.ts };
+}
+
+function reportToExport(row) {
+  if (!row) return null;
+  return { path: row.path, createdAt: row.created_at };
+}
+
 /**
  * Regenera queue.jsonl (schema v1 compatível: status/verdict, mais o
  * campo novo `state`) a partir do banco v2 — nunca o contrário. Usado
  * pelo agente de nuvem no fim da rodada (o .db não é commitado, ver
  * .gitignore) e disponível localmente pra reconciliar depois de rodar o
  * CLI. Determinístico: mesma linha de entrada -> mesma saída, testável.
+ *
+ * Bug real corrigido em 02/09/2026: até então, só as colunas nativas da
+ * tabela `findings` eram exportadas -- `platform_outcomes`,
+ * `deployment_evidence`, `validations` e `reports` nunca eram lidas
+ * aqui, então qualquer outcome/evidência/validação/relatório gravado
+ * via record-platform-outcome/record-deployment-evidence/
+ * record-validation/record-report sobrevivia só no banco LOCAL efêmero
+ * de quem gravou -- perdido assim que outro ambiente reconstruía seu
+ * próprio banco a partir de queue.jsonl (achado investigando o outcome
+ * real "duplicate" da HackerOne #3988959 sumindo entre sessões; ver
+ * docs/zerotoone-v2/IMPLEMENTATION_STATE.md pra narrativa completa).
+ * Cada campo só aparece quando existe (`...(x ? {x} : {})`) pra não
+ * poluir a maioria das linhas, que não têm nenhuma das 4 coisas ainda.
  */
 export function exportFindingsToQueueLines(db) {
   const findings = listFindings(db);
@@ -368,7 +442,22 @@ export function exportFindingsToQueueLines(db) {
     const base = { ...f.raw };
     delete base.status;
     delete base.verdict;
+    // Nunca deveriam vir de f.raw (upsertFinding nunca as grava lá), mas
+    // remove de qualquer jeito -- defesa contra uma linha antiga/externa
+    // que já traga essas chaves poluídas, pra garantir que o que sai
+    // abaixo é sempre a leitura fresca das tabelas satélite, nunca uma
+    // cópia velha reexportada sem querer.
+    delete base.platformOutcome;
+    delete base.deploymentEvidence;
+    delete base.validationsHistory;
+    delete base.report;
     const verdict = legacyVerdictFor(f.state);
+
+    const platformOutcome = platformOutcomeToExport(latestPlatformOutcome(db, f.id));
+    const deploymentEvidence = deploymentEvidenceToExport(latestDeploymentEvidence(db, f.id));
+    const validationsHistory = listValidations(db, f.id).map(validationToExport);
+    const report = reportToExport(latestReport(db, f.id));
+
     return JSON.stringify({
       ...base,
       id: f.id,
@@ -380,6 +469,10 @@ export function exportFindingsToQueueLines(db) {
       filesRead: f.filesRead,
       pocRun: f.pocRun,
       pocResult: f.pocResult,
+      ...(platformOutcome ? { platformOutcome } : {}),
+      ...(deploymentEvidence ? { deploymentEvidence } : {}),
+      ...(validationsHistory.length ? { validationsHistory } : {}),
+      ...(report ? { report } : {}),
     });
   });
 }

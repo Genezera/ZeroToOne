@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { openDb, getFinding, exportFindingsToQueueLines, closeDb } from '../db.mjs';
+import {
+  openDb, getFinding, exportFindingsToQueueLines, closeDb,
+  recordPlatformOutcome, latestPlatformOutcome, recordDeploymentEvidence, latestDeploymentEvidence,
+  recordValidation, listValidations, recordReport, latestReport,
+} from '../db.mjs';
 import { migrateEntry } from '../migrate-to-v2.mjs';
 import { buildScopeSnapshot } from '../scope-registry.mjs';
 import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
@@ -189,6 +193,112 @@ test('migrateEntry: item pending v1 fica candidate v2', () => {
       file: 'vercel/flags/y.ts', status: 'pending',
     }, { scopeSnapshots: {} });
     assert.equal(log.finalState, 'candidate');
+    closeDb(db);
+  });
+});
+
+// --- 02/09/2026: reprodução direta do bug real (outcome "duplicate" da
+// HackerOne #3988959 sumindo entre ambientes) e prova de que o
+// round-trip completo agora sobrevive: gravar -> exportar -> banco
+// NOVO (ambiente efêmero simulado) -> migrar -> outcome presente de
+// volta. Ver docs/zerotoone-v2/IMPLEMENTATION_STATE.md.
+
+test('round-trip completo: platformOutcome gravado num ambiente sobrevive export -> banco novo -> migrateEntry (reprodução exata do bug do SSRF #3988959)', () => {
+  withTempEnv((dbPath1) => {
+    // "Ambiente 1": onde o outcome real é gravado pela primeira vez.
+    const db1 = openDb(dbPath1);
+    migrateEntry(db1, {
+      id: 'x::ssrf-repro', program: 'Vercel Open Source', platform: 'HackerOne', type: 'ssrf_redirect_allowlist_bypass_risk', language: 'typescript',
+      file: 'vercel/next.js/packages/next/src/server/image-optimizer.ts', verdict: 'confirmado', status: 'reviewed',
+      reasoning: 'SSRF via redirect bypass',
+    }, { scopeSnapshots: {} });
+    recordPlatformOutcome(db1, 'x::ssrf-repro', { platform: 'HackerOne', externalReportId: '3988959', state: 'duplicate', comments: 'Duplicate de #3943945' });
+    const exportedLines = exportFindingsToQueueLines(db1);
+    closeDb(db1);
+
+    const exported = JSON.parse(exportedLines.find((l) => JSON.parse(l).id === 'x::ssrf-repro'));
+    assert.equal(exported.platformOutcome.state, 'duplicate', 'a linha exportada precisa carregar o outcome -- essa é a correção');
+
+    // "Ambiente 2": banco novo/vazio, como o agente de nuvem reconstrói
+    // a cada rodada -- só tem o que queue.jsonl (aqui, `exported`) traz.
+    withTempEnv((dbPath2) => {
+      const db2 = openDb(dbPath2);
+      migrateEntry(db2, exported, { scopeSnapshots: {} });
+      const outcome = latestPlatformOutcome(db2, 'x::ssrf-repro');
+      assert.ok(outcome, 'outcome deveria ter sido restaurado no ambiente novo');
+      assert.equal(outcome.state, 'duplicate');
+      assert.equal(outcome.external_report_id, '3988959');
+      closeDb(db2);
+    });
+  });
+});
+
+test('round-trip completo: deploymentEvidence, validationsHistory (múltiplas) e report também sobrevivem export -> banco novo -> migrateEntry', () => {
+  withTempEnv((dbPath1) => {
+    const db1 = openDb(dbPath1);
+    migrateEntry(db1, {
+      id: 'x::full-satellite', program: 'Circle BBP', platform: 'HackerOne', type: 'reentrancy_risk', language: 'solidity',
+      file: 'circlefin/evm-gateway-contracts/x.sol', verdict: 'confirmado', status: 'reviewed', reasoning: 'teste',
+    }, { scopeSnapshots: {} });
+    recordDeploymentEvidence(db1, 'x::full-satellite', { repo: 'circlefin/evm-gateway-contracts', commit: 'deadbeef', deployedAddress: '0xabc', confidence: 'high' });
+    recordValidation(db1, 'x::full-satellite', { type: 'foundry_poc', result: 'fail', rawOutput: 'FAIL: revert' });
+    recordValidation(db1, 'x::full-satellite', { type: 'foundry_poc', result: 'pass', rawOutput: 'PASS' });
+    recordReport(db1, 'x::full-satellite', 'research/bugbounty/reports/x.md');
+    const exported = JSON.parse(exportFindingsToQueueLines(db1).find((l) => JSON.parse(l).id === 'x::full-satellite'));
+    closeDb(db1);
+
+    assert.equal(exported.validationsHistory.length, 2, 'as DUAS validações deveriam estar na linha exportada, não só a mais recente');
+
+    withTempEnv((dbPath2) => {
+      const db2 = openDb(dbPath2);
+      migrateEntry(db2, exported, { scopeSnapshots: {} });
+      assert.equal(latestDeploymentEvidence(db2, 'x::full-satellite').deployed_address, '0xabc');
+      assert.equal(listValidations(db2, 'x::full-satellite').length, 2);
+      assert.equal(latestReport(db2, 'x::full-satellite').path, 'research/bugbounty/reports/x.md');
+      closeDb(db2);
+    });
+  });
+});
+
+test('migrateEntry restaurando satélite é idempotente: rodar a mesma linha exportada duas vezes não duplica linha nem ledger', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    migrateEntry(db, {
+      id: 'x::satellite-idempotent', program: 'Vercel Open Source', platform: 'HackerOne', type: 'ssrf_risk', language: 'js',
+      file: 'vercel/flags/x.ts', verdict: 'confirmado', status: 'reviewed', reasoning: 'teste',
+    }, { scopeSnapshots: {} });
+    recordPlatformOutcome(db, 'x::satellite-idempotent', { platform: 'HackerOne', state: 'triaged' });
+    const exported = JSON.parse(exportFindingsToQueueLines(db).find((l) => JSON.parse(l).id === 'x::satellite-idempotent'));
+    const entriesBeforeReplay = verifyChain('research').entries;
+
+    // Reprocessa a MESMA linha (já com platformOutcome) contra o MESMO
+    // banco que já tem exatamente esse outcome -- cenário real de rodar
+    // migrate-to-v2 de novo sem nada ter mudado.
+    migrateEntry(db, exported, { scopeSnapshots: {} });
+    assert.equal(verifyChain('research').entries, entriesBeforeReplay, 'reprocessar outcome idêntico não deveria gerar novo evento no ledger nem duplicar a linha');
+
+    closeDb(db);
+  });
+});
+
+test('migrateEntry restaura platformOutcome ATUALIZADO (não idêntico) e isso SIM gera novo evento no ledger', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    migrateEntry(db, {
+      id: 'x::satellite-updated', program: 'Vercel Open Source', platform: 'HackerOne', type: 'ssrf_risk', language: 'js',
+      file: 'vercel/flags/x.ts', verdict: 'confirmado', status: 'reviewed', reasoning: 'teste',
+    }, { scopeSnapshots: {} });
+    recordPlatformOutcome(db, 'x::satellite-updated', { platform: 'HackerOne', state: 'triaged' });
+    const entriesAfterFirst = verifyChain('research').entries;
+
+    // Linha da fila chega com um outcome MAIS NOVO (triaged -> duplicate,
+    // como aconteceria de verdade quando a plataforma decide).
+    const staleExport = JSON.parse(exportFindingsToQueueLines(db).find((l) => JSON.parse(l).id === 'x::satellite-updated'));
+    const updatedLine = { ...staleExport, platformOutcome: { ...staleExport.platformOutcome, state: 'duplicate' } };
+    migrateEntry(db, updatedLine, { scopeSnapshots: {} });
+
+    assert.equal(latestPlatformOutcome(db, 'x::satellite-updated').state, 'duplicate');
+    assert.equal(verifyChain('research').entries, entriesAfterFirst + 1, 'um outcome genuinamente diferente deveria gerar um novo evento');
     closeDb(db);
   });
 });

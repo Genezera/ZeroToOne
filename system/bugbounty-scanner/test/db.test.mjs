@@ -193,3 +193,70 @@ test('stateCounts agrega corretamente por estado', () => {
     closeDb(db);
   });
 });
+
+// --- 02/09/2026: bug real corrigido -- as 4 funções record* satélite
+// (platformOutcome/deploymentEvidence/validation/report) nunca tocavam
+// o ledger nem eram lidas de volta por exportFindingsToQueueLines,
+// então esse dado sumia entre ambientes efêmeros (achado investigando
+// o outcome real "duplicate" da HackerOne #3988959 desaparecendo). Ver
+// docs/zerotoone-v2/IMPLEMENTATION_STATE.md pra narrativa completa.
+
+test('recordPlatformOutcome/recordDeploymentEvidence/recordValidation/recordReport agora anexam evento real no ledger', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    const before = verifyChain('research').entries;
+
+    const r1 = recordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', state: 'duplicate', comments: 'dup de #123' });
+    assert.ok(r1.ledgerHash, 'recordPlatformOutcome deveria devolver ledgerHash');
+    assert.equal(verifyChain('research').entries, before + 1);
+
+    const r2 = recordDeploymentEvidence(db, SAMPLE.id, { confidence: 'unverified' });
+    assert.ok(r2.ledgerHash);
+    assert.equal(verifyChain('research').entries, before + 2);
+
+    const r3 = recordValidation(db, SAMPLE.id, { type: 'foundry_poc', result: 'pass' });
+    assert.ok(r3.ledgerHash);
+    assert.equal(verifyChain('research').entries, before + 3);
+
+    const r4 = recordReport(db, SAMPLE.id, 'reports/x.md');
+    assert.ok(r4.ledgerHash);
+    assert.equal(verifyChain('research').entries, before + 4);
+
+    closeDb(db);
+  });
+});
+
+test('exportFindingsToQueueLines inclui platformOutcome/deploymentEvidence/validationsHistory/report reais quando existem', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    recordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', externalReportId: '3988959', state: 'duplicate', comments: 'dup de #3943945' });
+    recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/x', commit: 'abc123', confidence: 'unverified' });
+    recordValidation(db, SAMPLE.id, { type: 'foundry_poc', result: 'pass', rawOutput: 'PASS' });
+    recordReport(db, SAMPLE.id, 'research/bugbounty/reports/x.md');
+
+    const [line] = exportFindingsToQueueLines(db).map((l) => JSON.parse(l));
+    assert.equal(line.platformOutcome.state, 'duplicate');
+    assert.equal(line.platformOutcome.externalReportId, '3988959');
+    assert.equal(line.deploymentEvidence.commit, 'abc123');
+    assert.equal(line.deploymentEvidence.confidence, 'unverified');
+    assert.equal(line.validationsHistory.length, 1);
+    assert.equal(line.validationsHistory[0].result, 'pass');
+    assert.equal(line.report.path, 'research/bugbounty/reports/x.md');
+    closeDb(db);
+  });
+});
+
+test('exportFindingsToQueueLines NÃO inclui as 4 chaves satélite quando um finding não tem nenhuma (compatibilidade retroativa)', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    const [line] = exportFindingsToQueueLines(db).map((l) => JSON.parse(l));
+    assert.equal(line.platformOutcome, undefined);
+    assert.equal(line.deploymentEvidence, undefined);
+    assert.equal(line.validationsHistory, undefined);
+    assert.equal(line.report, undefined);
+    closeDb(db);
+  });
+});

@@ -4,8 +4,8 @@ import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplicateCheck } from '../db.mjs';
-import { cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation, cmdGenerateReport, cmdPipelineStatus } from '../cli.mjs';
+import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplicateCheck, latestPlatformOutcome, getFinding } from '../db.mjs';
+import { cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation, cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome } from '../cli.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-cli-test-'));
@@ -101,6 +101,60 @@ test('cmdPipelineStatus lista bloqueio de cada achado não-terminal', () => {
     assert.ok(!ids.includes('p3::f::fn::type'));
     const candidateRow = status.find((s) => s.id === SAMPLE.id);
     assert.match(candidateRow.blocker, /leitura profunda/);
+    closeDb(db);
+  });
+});
+
+// --- 02/09/2026: cmdRecordPlatformOutcome também tenta a transição de
+// state correspondente (mesmo padrão de sync-report-status) -- bug real
+// achado usando esta função pra registrar de verdade o outcome
+// "duplicate" (HackerOne #3988959) e notando que o finding continuava
+// "corroborated_static" pra sempre, contradição interna que nada mais
+// detectaria sozinho.
+
+test('cmdRecordPlatformOutcome com outcome terminal (duplicate) TRANSICIONA o finding quando ele está em "submitted"', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { ...SAMPLE, state: 'submitted' });
+    const result = cmdRecordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', externalReportId: '123', state: 'duplicate' });
+    assert.equal(result.outcome.state, 'duplicate');
+    assert.equal(result.transition.ok, true);
+    assert.equal(getFinding(db, SAMPLE.id).state, 'duplicate');
+    closeDb(db);
+  });
+});
+
+test('cmdRecordPlatformOutcome com outcome terminal, mas finding NÃO está em "submitted": outcome grava mesmo assim, transição falha honestamente (não escondida, não forçada)', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    // Reprodução exata do caso real: achado enviado com base em revisão
+    // humana direta, nunca passou pelo fluxo interno completo do pipeline.
+    upsertFinding(db, { ...SAMPLE, state: 'corroborated_static' });
+    const result = cmdRecordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', externalReportId: '3988959', state: 'duplicate' });
+    assert.equal(result.outcome.state, 'duplicate', 'outcome real deveria ser gravado independente da transição conseguir ou não');
+    assert.equal(latestPlatformOutcome(db, SAMPLE.id).state, 'duplicate');
+    assert.equal(result.transition.ok, false, 'transição deveria falhar honestamente, não ser forçada nem escondida');
+    assert.equal(getFinding(db, SAMPLE.id).state, 'corroborated_static', '`state` não deveria mudar quando a transição falha');
+    closeDb(db);
+  });
+});
+
+test('cmdRecordPlatformOutcome com outcome NÃO-terminal (ex.: "submitted") não tenta transição nenhuma', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { ...SAMPLE, state: 'human_ready' });
+    const result = cmdRecordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', state: 'submitted' });
+    assert.equal(result.transition, null);
+    assert.equal(getFinding(db, SAMPLE.id).state, 'human_ready');
+    closeDb(db);
+  });
+});
+
+test('cmdRecordPlatformOutcome exige "state" no patch', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    assert.throws(() => cmdRecordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne' }), /precisa de "state"/);
     closeDb(db);
   });
 });

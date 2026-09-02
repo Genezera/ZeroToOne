@@ -725,3 +725,53 @@ de `findings`); (c) considerar se `record-platform-outcome` e as outras
 `recordTransition`), já que o ledger é descrito no resto deste
 documento como a fonte mais confiável contra corrida entre ambientes
 concorrentes.
+
+### Correção aplicada (02/09/2026, sessão supervisionada, esta mesma sessão)
+
+Os 3 itens acima, implementados e verificados ao vivo contra a produção
+real, não só em teste:
+
+- **(a) export**: `exportFindingsToQueueLines` agora lê
+  `latestPlatformOutcome`/`latestDeploymentEvidence`/`listValidations`/
+  `latestReport` por finding e inclui cada um (só quando existe, pra
+  não poluir a maioria das linhas) na linha exportada, convertidos pro
+  MESMO shape camelCase que as funções `record*` aceitam como entrada
+  (`platformOutcomeToExport` etc. em `db.mjs`) — export e restore usam
+  literalmente a mesma forma de dado, sem tradução duplicada.
+- **(b) restore**: `migrateEntry` ganhou `restoreSatelliteData`,
+  chamada nos 3 pontos onde o finding já existe no banco. Idempotente
+  por comparação explícita contra o "latest" atual (não `INSERT` cego)
+  — reprocessar a mesma linha não duplica satélite nem ledger;
+  `validationsHistory` (lista) compara por `type+ts`, restaurando só o
+  que ainda não existe.
+- **(c) ledger**: as 4 funções `record*` satélite agora anexam evento
+  real (`bugbounty_platform_outcome`/`bugbounty_deployment_evidence`/
+  `bugbounty_validation`/`bugbounty_report`), devolvendo `ledgerHash`
+  como `recordTransition` sempre devolveu.
+- **Bug real #2 achado usando a correção pra valer**: `cmdRecordPlatformOutcome`
+  (`cli.mjs`) tinha o comentário dizendo "mesmo padrão que
+  sync-report-status já usa internamente" mas nunca de fato chamava
+  `recordTransition` — só `sync-report-status` (a versão automática,
+  via API real) fazia as duas coisas. Corrigido pra chamar
+  `recordTransition` também quando o outcome é um dos 4 terminais
+  (`duplicate`/`informative`/`rejected`/`triaged`), reportando
+  honestamente em `transition.ok` quando a transição falha (nunca
+  fabricando precondição pra forçar passar).
+- **Uso real, não só teste**: outcome real do SSRF (`duplicate`,
+  HackerOne #3988959) gravado via `cli.mjs record-platform-outcome` —
+  primeira vez que esse comando roda contra a produção depois da
+  correção. `transition.ok` veio `false` honestamente (`"corroborated_static"
+  → "duplicate" não é permitida"`) porque este achado específico nunca
+  passou pelo fluxo interno completo (foi enviado com base em revisão
+  humana direta) — outcome ficou gravado do mesmo jeito, `state` não
+  mudou, nada foi forçado. `export-queue` rodado depois confirmou ao
+  vivo que `platformOutcome` agora aparece de verdade em
+  `queue.jsonl` — a prova final de que o bug está corrigido, não só
+  documentado.
+- 11 testes novos (3 em `db.test.mjs`: ledger backing + export inclui/
+  omite as 4 chaves; 4 em `migrate-to-v2.test.mjs`: round-trip completo
+  reproduzindo o cenário exato do bug do SSRF, idempotência, outcome
+  atualizado gera novo evento; 4 em `cli.test.mjs`: transição sucede
+  quando `submitted`, falha honestamente quando não, outcome
+  não-terminal não tenta transição, validação de `state` obrigatório).
+  `npm test`: 428 → **439/439**, zero quebrado.

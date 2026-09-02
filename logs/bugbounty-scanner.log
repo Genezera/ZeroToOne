@@ -218,3 +218,18 @@ warning: in the working copy of 'research/bugbounty/reports/vercel-remix-updater
 [2026-09-02T12:01:06.073Z] AVISO: vercel/vercel tem 1272 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
 [2026-09-02T12:01:12.941Z] AVISO: okx/go-wallet-sdk tem 1001 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
 [2026-09-02T12:01:16.571Z] AVISO: kubernetes/code-generator tem 795 arquivos rastreáveis, cortando para os primeiros 450 priorizando quem nunca foi escaneado (não silencioso — registrado aqui).
+[2026-09-02T12:03:04.333Z] Varredura completa: 13 contratos Clarity + 348 arquivos (JS/TS+Go+JVM+Swift) + 2 manifesto(s) de dependência checados, 0 erros de busca, 0 achados NOVOS na fila (8 de dependência conhecida), 7 veredito(s) novo(s)/mudado(s), 4 suprimido(s) por regra em quarentena (ver quarantine-status.md).
+[2026-09-02T12:03:08.237Z] Digest do Telegram: 1 transição(ões) notável(is), 1 mensagem(ns) enviada(s).
+warning: in the working copy of 'ledger/ledger.research.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'logs/bugbounty-scanner.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/STATUS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/dashboard/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/heuristic-stats.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/quarantine-status.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/repo-popularity-cache.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-repo-shas.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen-verdicts.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/scanner-seen.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/bugbounty/telegram-digest-checkpoint.json', LF will be replaced by CRLF the next time Git touches it
+[2026-09-02T12:03:11.412Z] Sincronizado com o GitHub — agente de nuvem vai ver na próxima checagem.

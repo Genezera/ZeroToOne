@@ -143,10 +143,34 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
  * transition->submitted deste CLI) -- registra o resultado real depois
  * do fato, mesmo padrão que `sync-report-status` já usa internamente,
  * só que chamável manualmente pra um finding que ainda não tinha
- * platformOutcome nenhum gravado. */
+ * platformOutcome nenhum gravado.
+ *
+ * Bug real corrigido em 02/09/2026: até então só gravava o outcome
+ * (recordPlatformOutcome), nunca tentava a transição de `state`
+ * correspondente -- inconsistente com o próprio comentário acima
+ * ("mesmo padrão que sync-report-status já usa internamente"), que
+ * SEMPRE tenta `recordTransition` pros 4 outcomes terminais. Achado
+ * usando esta função de verdade pela primeira vez pra registrar o
+ * outcome real do achado SSRF (image-optimizer.ts, HackerOne #3988959):
+ * o outcome gravava certo, mas o finding continuava "corroborated_static"
+ * pra sempre, uma contradição interna nenhum outro comando detectaria
+ * sozinho. A transição pode legitimamente FALHAR aqui (ex.: este
+ * finding específico nunca passou por reproduced_local/scope_verified/
+ * human_ready/submitted dentro do pipeline -- foi enviado com base em
+ * revisão humana direta, fora do fluxo formal) -- isso é reportado
+ * honestamente em `transition.ok`, nunca escondido nem forçado com
+ * precondição fabricada. */
 export function cmdRecordPlatformOutcome(db, id, patch) {
   if (!patch.state) throw new Error('platform outcome precisa de "state" (ex.: submitted, duplicate, triaged, paid, resolved, informative, rejected)');
-  return recordPlatformOutcome(db, id, patch);
+  const outcome = recordPlatformOutcome(db, id, patch);
+  let transition = null;
+  if (['duplicate', 'informative', 'rejected', 'triaged'].includes(patch.state)) {
+    transition = recordTransition(db, id, patch.state, {
+      actor: 'record-platform-outcome (CLI manual)',
+      context: { platformOutcome: { state: patch.state } },
+    });
+  }
+  return { outcome, transition };
 }
 
 /** Grau de evidência (E0-E5, ver evidence-grade.mjs) -- deriva do que já
