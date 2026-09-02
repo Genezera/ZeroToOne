@@ -1,5 +1,14 @@
-// Registro de programas cujas próprias regras de engajamento proíbem algo
-// que este projeto faz por definição (hoje: pesquisa assistida por IA).
+// Registro de programas fora de alcance para este pipeline, por dois
+// motivos distintos e nomeados separadamente (nunca misturados sob o
+// mesmo campo, pra quem ler o JSON no futuro saber exatamente qual é):
+// `aiResearchBanned` -- as próprias regras de engajamento do programa
+// proíbem algo que este projeto faz por definição (pesquisa assistida
+// por IA); `blocked` -- motivo genérico, tipicamente instrução direta
+// do usuário pra não investir mais tempo ali (ex.: Circle BBP, 02/09/2026
+// -- "não quero nada da circle", depois de já ter esgotado o ângulo
+// investigativo principal e pedido explicitamente rotação pra outros
+// programas). Nenhum dos dois exige o outro: um programa pode estar
+// `blocked` sem ter RoE nenhuma contra IA.
 // Existe porque pausar por ARQUIVO (targets-jvm/go/swift.mjs, 31/08/2026)
 // não bastou sozinho -- uma rodada de leitura profunda do agente de nuvem
 // rodou em Block Open Source HORAS depois da pausa ser publicada, provando
@@ -38,11 +47,19 @@ export function loadProgramPolicy(policyPath = DEFAULT_POLICY_PATH) {
 }
 
 /** null se o programa não está bloqueado; string com o motivo se está.
- * Pura -- recebe a policy já carregada, não faz I/O. */
+ * Checa os dois campos independentemente -- `aiResearchBanned` primeiro
+ * só porque é o mais específico/informativo quando os dois por acaso
+ * estivessem presentes, não por prioridade real (um programa nunca
+ * precisou dos dois ao mesmo tempo até agora). Pura -- recebe a policy
+ * já carregada, não faz I/O. */
 export function getBlockReason(program, policy = {}) {
   const entry = policy[program];
-  if (entry && entry.aiResearchBanned) {
+  if (!entry) return null;
+  if (entry.aiResearchBanned) {
     return entry.reason || 'pesquisa assistida por IA proibida pelas regras deste programa';
+  }
+  if (entry.blocked) {
+    return entry.reason || 'programa bloqueado para este pipeline';
   }
   return null;
 }

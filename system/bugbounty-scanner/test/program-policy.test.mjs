@@ -49,6 +49,26 @@ test('program-policy.json real do projeto marca Block Open Source como bloqueado
   assert.equal(getBlockReason('Block Open Source', policy) !== null, true, 'program-policy.json deveria bloquear Block Open Source (regras do Bugcrowd proíbem pesquisa assistida por IA)');
 });
 
+test('getBlockReason devolve o reason quando blocked=true (motivo genérico, não RoE)', () => {
+  const policy = { 'Programa X': { blocked: true, reason: 'motivo Y' } };
+  assert.equal(getBlockReason('Programa X', policy), 'motivo Y');
+});
+
+test('getBlockReason devolve uma frase genérica quando blocked=true mas reason está ausente', () => {
+  const policy = { 'Programa X': { blocked: true } };
+  assert.match(getBlockReason('Programa X', policy), /bloqueado/);
+});
+
+test('getBlockReason devolve null pra programa presente mas sem blocked=true nem aiResearchBanned=true', () => {
+  const policy = { 'Programa X': { blocked: false, aiResearchBanned: false } };
+  assert.equal(getBlockReason('Programa X', policy), null);
+});
+
+test('program-policy.json real do projeto marca Circle BBP como bloqueado (instrução direta do usuário, não RoE)', () => {
+  const policy = loadProgramPolicy();
+  assert.equal(getBlockReason('Circle BBP', policy) !== null, true, 'program-policy.json deveria bloquear Circle BBP (usuário pediu explicitamente pra parar, 02/09/2026)');
+});
+
 test('isProgramBanned devolve true só quando aiResearchBanned=true', () => {
   const policy = { 'Programa X': { aiResearchBanned: true, reason: 'motivo' } };
   assert.equal(isProgramBanned('Programa X', policy), true);

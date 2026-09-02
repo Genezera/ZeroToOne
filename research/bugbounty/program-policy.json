@@ -3,5 +3,10 @@
     "aiResearchBanned": true,
     "reason": "Bugcrowd RoE: \"Do not use ChatGPT, Claude, DeepSeek, Google Gemini or any AI tools during your research\" -- risco explícito de \"point reduction or program expulsion\".",
     "flaggedAt": "2026-08-31"
+  },
+  "Circle BBP": {
+    "blocked": true,
+    "reason": "Instrução direta e repetida do usuário (02/09/2026): \"saia da circle bbp\" durante o pivô pra busca multi-programa, depois \"não quero nada da circle\" -- sem exceção nem para housekeeping de achados já concluídos. Não é restrição de RoE do programa; é escolha do usuário depois de esgotar o ângulo investigativo principal (compliance/denylist no CCTP, 4 chains). Reverter só mediante pedido explícito do usuário.",
+    "flaggedAt": "2026-09-02"
   }
 }
