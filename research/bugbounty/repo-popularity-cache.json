@@ -1,182 +1,227 @@
 {
-  "vercel/flags": {
-    "stars": 621,
-    "fetchedAt": "2026-09-02T10:30:17.703Z"
-  },
-  "cashapp/misk": {
-    "stars": 471,
-    "fetchedAt": "2026-09-02T10:30:18.103Z"
-  },
-  "cashapp/cash-app-pay-android-sdk": {
-    "stars": 62,
-    "fetchedAt": "2026-09-02T10:30:18.519Z"
-  },
-  "cashapp/hermit": {
-    "stars": 918,
-    "fetchedAt": "2026-09-02T10:30:18.923Z"
-  },
-  "cashapp/cash-app-pay-ios-sdk": {
-    "stars": 72,
-    "fetchedAt": "2026-09-02T10:30:19.326Z"
-  },
-  "square/wire": {
-    "stars": 4428,
-    "fetchedAt": "2026-09-02T10:30:19.731Z"
-  },
   "afterpay/sdk-android": {
     "stars": 9,
-    "fetchedAt": "2026-09-02T10:30:20.155Z"
-  },
-  "vercel/chat": {
-    "stars": 2336,
-    "fetchedAt": "2026-09-02T10:30:20.573Z"
+    "totalScannableFiles": 78,
+    "fetchedAt": "2026-09-02T12:30:19.809Z"
   },
   "afterpay/sdk-ios": {
     "stars": 23,
-    "fetchedAt": "2026-09-02T10:30:20.960Z"
+    "totalScannableFiles": 112,
+    "fetchedAt": "2026-09-02T12:30:20.569Z"
   },
-  "circlefin/evm-cctp-contracts": {
-    "stars": 228,
-    "fetchedAt": "2026-09-02T10:30:21.373Z"
+  "cashapp/cash-app-pay-android-sdk": {
+    "stars": 62,
+    "totalScannableFiles": 82,
+    "fetchedAt": "2026-09-02T12:30:21.340Z"
   },
-  "circlefin/buidl-wallet-contracts": {
-    "stars": 19,
-    "fetchedAt": "2026-09-02T10:30:21.807Z"
+  "cashapp/cash-app-pay-ios-sdk": {
+    "stars": 72,
+    "totalScannableFiles": 37,
+    "fetchedAt": "2026-09-02T12:30:22.119Z"
   },
-  "circlefin/evm-gateway-contracts": {
-    "stars": 10,
-    "fetchedAt": "2026-09-02T10:30:22.192Z"
+  "cashapp/hermit": {
+    "stars": 918,
+    "totalScannableFiles": 107,
+    "fetchedAt": "2026-09-02T12:30:23.020Z"
   },
-  "circlefin/evm-xreserve-contracts": {
-    "stars": 2,
-    "fetchedAt": "2026-09-02T10:30:22.586Z"
-  },
-  "circlefin/evm-cpn-contracts": {
-    "stars": 3,
-    "fetchedAt": "2026-09-02T10:30:23.028Z"
-  },
-  "circlefin/stablecoin-evm": {
-    "stars": 796,
-    "fetchedAt": "2026-09-02T10:30:23.447Z"
-  },
-  "vercel/workflow": {
-    "stars": 2370,
-    "fetchedAt": "2026-09-02T10:30:23.824Z"
-  },
-  "circlefin/arc-remote-signer": {
-    "stars": 9,
-    "fetchedAt": "2026-09-02T10:30:24.223Z"
-  },
-  "circlefin/arc-node": {
-    "stars": 166,
-    "fetchedAt": "2026-09-02T10:30:24.622Z"
-  },
-  "circlefin/noble-fiattokenfactory": {
-    "stars": 9,
-    "fetchedAt": "2026-09-02T10:30:25.167Z"
-  },
-  "circlefin/malachite": {
-    "stars": 446,
-    "fetchedAt": "2026-09-02T10:30:25.554Z"
-  },
-  "circlefin/noble-cctp": {
-    "stars": 23,
-    "fetchedAt": "2026-09-02T10:30:25.968Z"
-  },
-  "vercel/vercel": {
-    "stars": 16184,
-    "fetchedAt": "2026-09-02T10:30:26.375Z"
-  },
-  "vercel-labs/agent-skills": {
-    "stars": 30736,
-    "fetchedAt": "2026-09-02T10:30:26.845Z"
-  },
-  "vercel-labs/skills": {
-    "stars": 30223,
-    "fetchedAt": "2026-09-02T10:30:27.266Z"
-  },
-  "vercel/next.js": {
-    "stars": 142072,
-    "fetchedAt": "2026-09-02T10:30:27.722Z"
-  },
-  "vercel/turborepo": {
-    "stars": 31042,
-    "fetchedAt": "2026-09-02T10:30:28.111Z"
-  },
-  "circlefin/solana-gateway-contracts": {
-    "stars": 3,
-    "fetchedAt": "2026-09-02T10:30:28.511Z"
-  },
-  "circlefin/solana-cctp-contracts": {
-    "stars": 51,
-    "fetchedAt": "2026-09-02T10:30:28.917Z"
+  "cashapp/misk": {
+    "stars": 471,
+    "totalScannableFiles": 1296,
+    "fetchedAt": "2026-09-02T12:30:24.044Z"
   },
   "circlefin/aptos-cctp": {
     "stars": 9,
-    "fetchedAt": "2026-09-02T10:30:29.326Z"
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:24.450Z"
+  },
+  "circlefin/arc-node": {
+    "stars": 166,
+    "totalScannableFiles": 39,
+    "fetchedAt": "2026-09-02T12:30:25.321Z"
+  },
+  "circlefin/arc-remote-signer": {
+    "stars": 9,
+    "totalScannableFiles": 73,
+    "fetchedAt": "2026-09-02T12:30:26.146Z"
+  },
+  "circlefin/buidl-wallet-contracts": {
+    "stars": 19,
+    "totalScannableFiles": 98,
+    "fetchedAt": "2026-09-02T12:30:26.891Z"
+  },
+  "circlefin/evm-cctp-contracts": {
+    "stars": 228,
+    "totalScannableFiles": 47,
+    "fetchedAt": "2026-09-02T12:30:27.673Z"
+  },
+  "circlefin/evm-cpn-contracts": {
+    "stars": 3,
+    "totalScannableFiles": 7,
+    "fetchedAt": "2026-09-02T12:30:28.429Z"
+  },
+  "circlefin/evm-gateway-contracts": {
+    "stars": 10,
+    "totalScannableFiles": 42,
+    "fetchedAt": "2026-09-02T12:30:29.206Z"
+  },
+  "circlefin/evm-xreserve-contracts": {
+    "stars": 2,
+    "totalScannableFiles": 35,
+    "fetchedAt": "2026-09-02T12:30:29.937Z"
+  },
+  "circlefin/malachite": {
+    "stars": 446,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:30.337Z"
+  },
+  "circlefin/noble-cctp": {
+    "stars": 23,
+    "totalScannableFiles": 148,
+    "fetchedAt": "2026-09-02T12:30:31.140Z"
+  },
+  "circlefin/noble-fiattokenfactory": {
+    "stars": 9,
+    "totalScannableFiles": 128,
+    "fetchedAt": "2026-09-02T12:30:31.840Z"
+  },
+  "circlefin/solana-cctp-contracts": {
+    "stars": 51,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:32.239Z"
+  },
+  "circlefin/solana-gateway-contracts": {
+    "stars": 3,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:32.657Z"
   },
   "circlefin/stablecoin-aptos": {
     "stars": 6,
-    "fetchedAt": "2026-09-02T10:30:29.746Z"
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:33.105Z"
   },
-  "circlefin/starknet-cctp": {
-    "stars": 1,
-    "fetchedAt": "2026-09-02T10:30:30.158Z"
-  },
-  "circlefin/stablecoin-starknet": {
-    "stars": 3,
-    "fetchedAt": "2026-09-02T10:30:30.595Z"
-  },
-  "circlefin/stablecoin-xlm": {
-    "stars": 2,
-    "fetchedAt": "2026-09-02T10:30:31.032Z"
-  },
-  "circlefin/sui-cctp": {
-    "stars": 16,
-    "fetchedAt": "2026-09-02T10:30:31.435Z"
-  },
-  "vercel/ai": {
-    "stars": 26540,
-    "fetchedAt": "2026-09-02T10:30:31.823Z"
-  },
-  "vercel/eve": {
-    "stars": 4919,
-    "fetchedAt": "2026-09-02T10:30:32.226Z"
-  },
-  "nuxt/nuxt": {
-    "stars": 60807,
-    "fetchedAt": "2026-09-02T10:30:32.568Z"
-  },
-  "vercel/swr": {
-    "stars": 32476,
-    "fetchedAt": "2026-09-02T10:30:32.978Z"
-  },
-  "vercel/ms": {
-    "stars": 5545,
-    "fetchedAt": "2026-09-02T10:30:33.361Z"
-  },
-  "vercel/async-sema": {
-    "stars": 660,
-    "fetchedAt": "2026-09-02T10:30:33.783Z"
-  },
-  "circlefin/stablecoin-sui": {
-    "stars": 11,
-    "fetchedAt": "2026-09-02T10:30:34.227Z"
-  },
-  "nitrojs/nitro": {
-    "stars": 11163,
-    "fetchedAt": "2026-09-02T10:30:34.606Z"
+  "circlefin/stablecoin-evm": {
+    "stars": 796,
+    "totalScannableFiles": 52,
+    "fetchedAt": "2026-09-02T12:30:33.803Z"
   },
   "circlefin/stablecoin-near": {
     "stars": 5,
-    "fetchedAt": "2026-09-02T10:30:35.018Z"
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:34.194Z"
   },
-  "sveltejs/svelte": {
-    "stars": 88040,
-    "fetchedAt": "2026-09-02T10:30:35.362Z"
+  "circlefin/stablecoin-starknet": {
+    "stars": 3,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:34.583Z"
+  },
+  "circlefin/stablecoin-sui": {
+    "stars": 11,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:35.003Z"
+  },
+  "circlefin/stablecoin-xlm": {
+    "stars": 2,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:35.382Z"
+  },
+  "circlefin/starknet-cctp": {
+    "stars": 1,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:35.794Z"
   },
   "circlefin/stellar-cctp": {
     "stars": 6,
-    "fetchedAt": "2026-09-02T10:30:35.767Z"
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:36.167Z"
+  },
+  "circlefin/sui-cctp": {
+    "stars": 16,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:36.599Z"
+  },
+  "nitrojs/nitro": {
+    "stars": 11163,
+    "totalScannableFiles": 386,
+    "fetchedAt": "2026-09-02T12:30:37.273Z"
+  },
+  "nuxt/nuxt": {
+    "stars": 60807,
+    "totalScannableFiles": 473,
+    "fetchedAt": "2026-09-02T12:30:38.097Z"
+  },
+  "square/wire": {
+    "stars": 4428,
+    "totalScannableFiles": 402,
+    "fetchedAt": "2026-09-02T12:30:38.882Z"
+  },
+  "sveltejs/svelte": {
+    "stars": 88042,
+    "totalScannableFiles": 450,
+    "fetchedAt": "2026-09-02T12:30:39.720Z"
+  },
+  "vercel-labs/agent-skills": {
+    "stars": 30741,
+    "totalScannableFiles": 98,
+    "fetchedAt": "2026-09-02T12:30:40.483Z"
+  },
+  "vercel-labs/skills": {
+    "stars": 30223,
+    "totalScannableFiles": 40,
+    "fetchedAt": "2026-09-02T12:30:41.243Z"
+  },
+  "vercel/ai": {
+    "stars": 26541,
+    "totalScannableFiles": 5497,
+    "fetchedAt": "2026-09-02T12:30:42.326Z"
+  },
+  "vercel/async-sema": {
+    "stars": 660,
+    "totalScannableFiles": 5,
+    "fetchedAt": "2026-09-02T12:30:43.065Z"
+  },
+  "vercel/chat": {
+    "stars": 2337,
+    "totalScannableFiles": 413,
+    "fetchedAt": "2026-09-02T12:30:43.818Z"
+  },
+  "vercel/eve": {
+    "stars": 4921,
+    "totalScannableFiles": 2109,
+    "fetchedAt": "2026-09-02T12:30:45.089Z"
+  },
+  "vercel/flags": {
+    "stars": 621,
+    "totalScannableFiles": 313,
+    "fetchedAt": "2026-09-02T12:30:45.894Z"
+  },
+  "vercel/ms": {
+    "stars": 5545,
+    "totalScannableFiles": 4,
+    "fetchedAt": "2026-09-02T12:30:46.868Z"
+  },
+  "vercel/next.js": {
+    "stars": 142074,
+    "totalScannableFiles": 5712,
+    "fetchedAt": "2026-09-02T12:30:48.684Z"
+  },
+  "vercel/swr": {
+    "stars": 32476,
+    "totalScannableFiles": 133,
+    "fetchedAt": "2026-09-02T12:30:49.367Z"
+  },
+  "vercel/turborepo": {
+    "stars": 31043,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-02T12:30:49.817Z"
+  },
+  "vercel/vercel": {
+    "stars": 16185,
+    "totalScannableFiles": 2103,
+    "fetchedAt": "2026-09-02T12:30:51.149Z"
+  },
+  "vercel/workflow": {
+    "stars": 2370,
+    "totalScannableFiles": 1089,
+    "fetchedAt": "2026-09-02T12:30:51.919Z"
   }
 }

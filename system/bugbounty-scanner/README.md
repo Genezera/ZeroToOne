@@ -410,6 +410,52 @@ Categoria JVM inteira sem cobertura ativa até algum programa novo
 elegível ser encontrado e curado -- não é bug de código, é lista vazia
 mesmo.
 
+**`filesRead` virou `coverageRatio` na priorização de leitura profunda
+(02/09/2026)**: os dois sinais acima (`refreshRepoPopularity`,
+`countKnownDuplicatesByRepo`) decidem qual repo é mais promissor, mas
+`selectDeepReadCandidates` ainda ordenava por `filesRead` cru dentro de
+cada camada -- um repo de 1 arquivo TOTAL com 1 já lido (100% coberto,
+nada sobrando) parecia idêntico a um repo de 1000 arquivos com 1 lido
+(0,1% coberto, quase tudo por ler). Achado real usando a própria lista
+corrigida pra escolher o que ler: `vercel/ms` e `vercel/async-sema`
+continuavam no TOPO mesmo depois do conserto de popularidade, porque
+`filesRead=1` é baixo em termos absolutos independente do repo ser
+minúsculo.
+
+`refreshRepoPopularity` ganhou `totalScannableFiles` (mesma chamada de
+metadado que já buscava `stars`, mais uma listagem de árvore usando o
+`defaultBranch` que a resposta já trazia -- token do GitHub configurado
+neste projeto dá 5000 req/hora, confirmado ao vivo, então o custo extra
+não é problema real). A linguagem certa pra aplicar o predicado
+`isScannable*File` de `fetch-repo.mjs` é inferida da EXTENSÃO do que já
+foi lido (`inferScannablePredicate`) -- mais direto que confiar na
+"linguagem primária" que o GitHub reporta, que pode não bater com qual
+heurística deste projeto se aplica.
+
+`selectDeepReadCandidates` ganhou uma 4ª categoria, `fullyCovered`
+(separada de `safe`, mesmo padrão de `blocked`/`unresolved`): repo cujo
+`coverageRatio` (filesRead/totalScannableFiles) já chegou em 1 sai da
+lista de leitura por completo -- não faz sentido nenhum sugerir revisitar
+algo sem nada sobrando. Dentro de `safe`, cada camada agora ordena por
+`coverageRatio` (menos coberto primeiro) quando os DOIS lados comparados
+têm o dado; sem isso, cai pro critério antigo (`filesRead` puro) -- nunca
+deixa "ainda não foi medido" desvantajar um repo.
+
+Verificado ao vivo, não só em teste: `circlefin/evm-cpn-contracts` (7/7
+arquivos) apareceu corretamente em `fullyCovered`. `vercel/ms` e
+`vercel/async-sema` NÃO caíram pra 100% como eu esperava de início --
+investigando o porquê revelou que `isScannableFile` (a mesma função que
+o scanner de verdade já usa pra TODO repo JS/TS, não só este recurso
+novo) conta `examples/*.js` e arquivos de config `.ts`
+(`jest.config.ts`, `tsdown.config.ts`, `lint-staged.config.ts`) como
+"escaneável" -- não é bug desta mudança, é a definição de "escaneável"
+que já existia no projeto inteiro, agora só ficou visível porque
+antes ninguém media cobertura percentual de repo nenhum. Resultado:
+`vercel/async-sema` mostrou 20% coberto (1/5) e `vercel/ms` 25% (1/4)
+em vez de "100%" -- mais preciso, não menos, do que eu esperava.
+
+7 testes novos. `npm test`: 439 → **446/446**, zero quebrado.
+
 ## Digest de segurança (mesma tarefa semanal)
 `cve-digest.mjs` + `digest-runner.mjs`: cruza contra os GitHub Security
 Advisories (GHSA, API pública, sem conta) **só dos pacotes que o

@@ -60,6 +60,7 @@ import { extractGithubCandidates, fetchRepoMetadata } from './discover-targets.m
 import { githubHeaders } from './github-auth.mjs';
 import { loadProgramPolicy, isProgramBanned } from './program-policy.mjs';
 import { openDb, closeDb } from './db.mjs';
+import { listRepoFiles, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile } from './fetch-repo.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DEEP_READ_LOG_PATH = path.resolve(__dirname, '..', '..', 'research', 'bugbounty', 'deep-read-log.json');
@@ -101,19 +102,50 @@ export function loadRepoPopularityCache(cachePath = DEFAULT_POPULARITY_CACHE_PAT
   }
 }
 
-/** Busca `stars` só de quem está ausente do cache OU mais velho que
- * `staleDays` -- pra uma dúzia de repos rastreados isso nunca chega perto
- * do limite de 60 req/hora da API anônima do GitHub, bem diferente do
+// Infere qual predicado de "arquivo escaneável" (fetch-repo.mjs) usar
+// pra um repo, a partir da extensão dos arquivos que JÁ foram lidos nele
+// -- evita precisar de uma chamada extra só pra descobrir a linguagem
+// (fetchRepoMetadata já devolve `language`, mas é a linguagem PRIMÁRIA
+// do GitHub, que pode não bater com qual heurística deste projeto se
+// aplica; a extensão do que já foi lido é mais direta). `null` quando
+// nenhum arquivo lido bate com nenhuma extensão conhecida -- repo em
+// linguagem sem heurística ainda (Rust/Python/Move/Cairo/C++), cobertura
+// fica desconhecida em vez de errada.
+function inferScannablePredicate(filesReadSample) {
+  for (const f of filesReadSample || []) {
+    if (/\.sol$/.test(f)) return isScannableSolidityFile;
+    if (/\.go$/.test(f)) return isScannableGoFile;
+    if (/\.(kt|kts|java)$/.test(f)) return isScannableJvmFile;
+    if (/\.(swift|m|h)$/.test(f)) return isScannableSwiftFile;
+    if (/\.(js|jsx|ts|tsx|mjs|cjs)$/.test(f)) return isScannableFile;
+  }
+  return null;
+}
+
+/** Busca `stars` e (02/09/2026) `totalScannableFiles` só de quem está
+ * ausente do cache OU mais velho que `staleDays`. Token do GitHub
+ * configurado neste projeto dá 5000 req/hora (confirmado ao vivo) --
+ * bem folgado pra uma dúzia de repos rastreados, bem diferente do
  * problema da descoberta semanal (centenas de candidatos novos por
- * rodada, teto de 30 buscas). `fetchMeta` é injeção de dependência (default
- * = fetchRepoMetadata real, reexportada de discover-targets.mjs), mesmo
- * padrão de `getProgramInfo` em discover-targets.mjs, pra testar sem rede.
- * Pura quanto a I/O: recebe o cache já carregado, devolve o cache
- * atualizado -- quem chama decide se/quando persistir em disco (mesmo
- * contrato de runTargetDiscovery com checkedKeys). Melhor esforço sempre:
- * erro de rede num repo mantém o valor velho do cache (se houver) em vez
- * de apagar um dado bom por causa de uma falha transitória. */
-export async function refreshRepoPopularity(repoKeys, existingCache = {}, { fetchMeta = fetchRepoMetadata, staleDays = 30 } = {}) {
+ * rodada, teto de 30 buscas). `fetchMeta`/`fetchFiles` são injeção de
+ * dependência (default = funções reais), mesmo padrão de
+ * `getProgramInfo` em discover-targets.mjs, pra testar sem rede. Pura
+ * quanto a I/O: recebe o cache já carregado, devolve o cache atualizado
+ * -- quem chama decide se/quando persistir em disco. Melhor esforço
+ * sempre: erro de rede num repo mantém o valor velho do cache (se
+ * houver) em vez de apagar um dado bom por causa de uma falha
+ * transitória.
+ *
+ * `totalScannableFiles` é `null` (não erro) quando: a linguagem não bate
+ * com nenhuma heurística conhecida (`inferScannablePredicate` devolveu
+ * `null`), o repo não tem `defaultBranch` na resposta, ou a listagem da
+ * árvore falhou -- em qualquer um desses casos, `selectDeepReadCandidates`
+ * trata como "cobertura desconhecida" (cai pro critério antigo de
+ * `filesRead` puro), nunca como "0% coberto" nem "100% coberto" por
+ * engano. `deepReadLog` (opcional) é usado só pra inferir a linguagem;
+ * sem ele, `totalScannableFiles` fica sempre `null` (comportamento
+ * anterior a esta função saber calcular cobertura). */
+export async function refreshRepoPopularity(repoKeys, existingCache = {}, { fetchMeta = fetchRepoMetadata, fetchFiles = listRepoFiles, staleDays = 30, deepReadLog = {} } = {}) {
   const cache = { ...existingCache };
   const staleMs = staleDays * 24 * 60 * 60 * 1000;
   const now = Date.now();
@@ -125,9 +157,19 @@ export async function refreshRepoPopularity(repoKeys, existingCache = {}, { fetc
     if (!owner || !repo) continue;
     try {
       const meta = await fetchMeta(owner, repo);
-      cache[repoKey] = { stars: meta.stars ?? null, fetchedAt: new Date().toISOString() };
+      let totalScannableFiles = null;
+      const predicate = inferScannablePredicate(deepReadLog[repoKey]);
+      if (predicate && meta.defaultBranch) {
+        try {
+          const files = await fetchFiles(owner, repo, meta.defaultBranch);
+          totalScannableFiles = files.filter((f) => predicate(f.path)).length;
+        } catch {
+          totalScannableFiles = null; // melhor esforço -- estrelas ainda valem mesmo se isto falhar
+        }
+      }
+      cache[repoKey] = { stars: meta.stars ?? null, totalScannableFiles, fetchedAt: new Date().toISOString() };
     } catch (err) {
-      if (!cached) cache[repoKey] = { stars: null, fetchedAt: new Date().toISOString(), error: err.message };
+      if (!cached) cache[repoKey] = { stars: null, totalScannableFiles: null, fetchedAt: new Date().toISOString(), error: err.message };
     }
   }
   return cache;
@@ -190,8 +232,19 @@ export function buildRepoProgramIndex(hackerOneData, bugcrowdData) {
  *    motivos mais prováveis; qualquer um dos dois merece checagem manual
  *    antes de ler, não a suposição de "não achei = seguro pra ler".
  *
- * Dentro de `safe`, três camadas (02/09/2026), do que vale mais a pena
- * ler primeiro pro que vale menos:
+ * `fullyCovered` (02/09/2026): repo cujo `coverageRatio` (filesRead /
+ * totalScannableFiles, de `popularity[repo].totalScannableFiles`) já
+ * chegou em 1 -- nada sobrando pra ler, não faz sentido nenhum aparecer
+ * em `safe` por mais baixo que `filesRead` pareça. Achado real: `vercel/ms`
+ * e `vercel/async-sema` (1 arquivo TOTAL cada, já lido) apareciam no
+ * TOPO da lista antiga só por terem `filesRead` baixo, quando na
+ * verdade não sobrava nada -- ver NOTES.md do Vercel Open Source,
+ * rodada 2026-09-02. Só exclui quando `totalScannableFiles` é
+ * conhecido (não warning é `null` -- cobertura desconhecida NUNCA vira
+ * "100% coberto" por omissão).
+ *
+ * Dentro de `safe`, três camadas, do que vale mais a pena ler primeiro
+ * pro que vale menos:
  * 1. `clean` -- sem duplicata conhecida E não é mega-popular (ou
  *    estrelas desconhecidas). É aqui que a chance de achar algo
  *    genuinamente inédito é maior.
@@ -201,15 +254,20 @@ export function buildRepoProgramIndex(hackerOneData, bugcrowdData) {
  * 3. `flagged` -- já voltou "duplicate" de verdade pelo menos uma vez.
  *    Sinal mais forte que existe (não é proxy, é resultado real); vai
  *    pro fim da fila, pior ofensor primeiro dentro do próprio grupo.
- * Dentro de cada camada, ordena do menos lido pro mais lido -- mesmo
- * critério de sempre, só que agora camada por camada em vez da lista
- * inteira de uma vez. Sem dado de popularidade/duplicata (os dois
- * defaults `{}`), as três camadas colapsam numa só e o comportamento é
- * idêntico ao de antes desta mudança. */
+ * Dentro de cada camada, ordena por `coverageRatio` quando os DOIS lados
+ * comparados o conhecem (menos coberto primeiro -- mede "quanto ainda
+ * falta", não só "quantos arquivos já lemos", que trata repo de 5
+ * arquivos e repo de 5000 como equivalentes). Quando falta o dado de um
+ * dos lados (ou dos dois), cai pro critério antigo (`filesRead` puro) --
+ * nunca deixa "ter mais metadado" desvantajar um repo só por ainda não
+ * ter sido medido. Sem dado nenhum de popularidade/cobertura/duplicata
+ * (todos os defaults `{}`), o comportamento é idêntico ao de antes de
+ * qualquer uma destas mudanças existir. */
 export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy = {}, popularity = {}, knownDuplicates = {}) {
   const safe = [];
   const blocked = [];
   const unresolved = [];
+  const fullyCovered = [];
 
   for (const [repoKey, filesRead] of Object.entries(deepReadLog || {})) {
     const count = Array.isArray(filesRead) ? filesRead.length : 0;
@@ -228,8 +286,21 @@ export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy =
 
     const stars = popularity[repoKey]?.stars ?? null;
     const duplicates = knownDuplicates[repoKey] ?? 0;
-    safe.push({ repo: repoKey, filesRead: count, programs, stars, knownDuplicates: duplicates });
+    const totalScannableFiles = popularity[repoKey]?.totalScannableFiles ?? null;
+    const coverageRatio = totalScannableFiles !== null && totalScannableFiles > 0 ? Math.min(count / totalScannableFiles, 1) : null;
+
+    if (coverageRatio !== null && coverageRatio >= 1) {
+      fullyCovered.push({ repo: repoKey, filesRead: count, totalScannableFiles, programs });
+      continue;
+    }
+
+    safe.push({ repo: repoKey, filesRead: count, programs, stars, knownDuplicates: duplicates, totalScannableFiles, coverageRatio });
   }
+
+  const byCoverageThenFilesRead = (a, b) => {
+    if (a.coverageRatio !== null && b.coverageRatio !== null) return a.coverageRatio - b.coverageRatio || a.filesRead - b.filesRead;
+    return a.filesRead - b.filesRead;
+  };
 
   const clean = [];
   const popular = [];
@@ -239,11 +310,11 @@ export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy =
     else if (s.stars !== null && s.stars >= POPULAR_REPO_STAR_THRESHOLD) popular.push(s);
     else clean.push(s);
   }
-  clean.sort((a, b) => a.filesRead - b.filesRead);
-  popular.sort((a, b) => a.filesRead - b.filesRead);
-  flagged.sort((a, b) => b.knownDuplicates - a.knownDuplicates || a.filesRead - b.filesRead);
+  clean.sort(byCoverageThenFilesRead);
+  popular.sort(byCoverageThenFilesRead);
+  flagged.sort((a, b) => b.knownDuplicates - a.knownDuplicates || byCoverageThenFilesRead(a, b));
 
-  return { safe: [...clean, ...popular, ...flagged], blocked, unresolved };
+  return { safe: [...clean, ...popular, ...flagged], blocked, unresolved, fullyCovered };
 }
 
 /** Único ponto de rede deste módulo pros datasets HackerOne/Bugcrowd --
@@ -269,7 +340,7 @@ async function main() {
   // que já estava cacheado antes.
   let popularityCache = loadRepoPopularityCache();
   try {
-    popularityCache = await refreshRepoPopularity(repoKeys, popularityCache);
+    popularityCache = await refreshRepoPopularity(repoKeys, popularityCache, { deepReadLog: log });
     writeFileSync(DEFAULT_POPULARITY_CACHE_PATH, JSON.stringify(popularityCache, null, 2) + '\n', 'utf8');
   } catch (err) {
     console.warn(`Aviso: não consegui atualizar o cache de popularidade (${err.message}) -- seguindo só com o que já estava cacheado.`);
@@ -290,13 +361,14 @@ async function main() {
     console.warn(`Aviso: não consegui consultar duplicatas conhecidas no banco (${err.message}) -- seguindo sem esse sinal.`);
   }
 
-  const { safe, blocked, unresolved } = selectDeepReadCandidates(log, index, policy, popularityCache, duplicateCounts);
+  const { safe, blocked, unresolved, fullyCovered } = selectDeepReadCandidates(log, index, policy, popularityCache, duplicateCounts);
 
   console.log(`=== ${safe.length} candidato(s) seguro(s) pra leitura profunda -- não-popular/sem duplicata primeiro, mega-popular depois, já-visto-como-duplicata por último ===`);
   for (const s of safe.slice(0, 30)) {
     const starsLabel = s.stars !== null ? `${s.stars}★` : '?★';
     const dupLabel = s.knownDuplicates > 0 ? ` [${s.knownDuplicates}x já voltou duplicate]` : '';
-    console.log(`${String(s.filesRead).padStart(3, ' ')} arquivo(s) já lido(s), ${starsLabel} -- ${s.repo} (${s.programs.join(', ')})${dupLabel}`);
+    const coverageLabel = s.coverageRatio !== null ? `, ${Math.round(s.coverageRatio * 100)}% coberto` : '';
+    console.log(`${String(s.filesRead).padStart(3, ' ')} arquivo(s) já lido(s), ${starsLabel}${coverageLabel} -- ${s.repo} (${s.programs.join(', ')})${dupLabel}`);
   }
   if (safe.length > 30) console.log(`... e mais ${safe.length - 30} candidato(s)`);
 
@@ -308,6 +380,11 @@ async function main() {
   if (unresolved.length > 0) {
     console.log(`\n=== ${unresolved.length} repositório(s) sem programa reconhecido no dataset público atual -- revise à mão antes de ler ===`);
     for (const u of unresolved) console.log(u.repo);
+  }
+
+  if (fullyCovered.length > 0) {
+    console.log(`\n=== ${fullyCovered.length} repositório(s) 100% COBERTOS -- nada sobrando pra ler, não perca tempo revisitando ===`);
+    for (const f of fullyCovered) console.log(`${f.repo} -- ${f.filesRead}/${f.totalScannableFiles} arquivo(s)`);
   }
 }
 

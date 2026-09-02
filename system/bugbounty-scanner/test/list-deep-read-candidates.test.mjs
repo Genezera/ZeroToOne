@@ -118,8 +118,8 @@ test('selectDeepReadCandidates ordena safe do menos lido pro mais lido', () => {
 });
 
 test('selectDeepReadCandidates trata log vazio/ausente como zero candidatos, nunca lança', () => {
-  assert.deepEqual(selectDeepReadCandidates({}, new Map(), {}), { safe: [], blocked: [], unresolved: [] });
-  assert.deepEqual(selectDeepReadCandidates(null, new Map(), {}), { safe: [], blocked: [], unresolved: [] });
+  assert.deepEqual(selectDeepReadCandidates({}, new Map(), {}), { safe: [], blocked: [], unresolved: [], fullyCovered: [] });
+  assert.deepEqual(selectDeepReadCandidates(null, new Map(), {}), { safe: [], blocked: [], unresolved: [], fullyCovered: [] });
 });
 
 test('selectDeepReadCandidates com policy real do projeto bloqueia Block Open Source de verdade', () => {
@@ -259,6 +259,96 @@ test('refreshRepoPopularity registra stars:null com erro se fetchMeta falhar pra
   const cache = await refreshRepoPopularity(['a/b'], {}, { fetchMeta });
   assert.equal(cache['a/b'].stars, null);
   assert.match(cache['a/b'].error, /rede fora do ar/);
+});
+
+// --- 02/09/2026: coverageRatio (filesRead / totalScannableFiles) em vez
+// de filesRead cru -- achado real fazendo a lista corrigida funcionar de
+// verdade: vercel/ms e vercel/async-sema (1 arquivo TOTAL cada, já 100%
+// lido) apareciam no TOPO só por terem `filesRead` baixo, quando não
+// sobrava nada pra ler. Ver NOTES.md do Vercel Open Source, rodada
+// 2026-09-02.
+
+test('selectDeepReadCandidates manda repo 100% coberto pra fullyCovered, nunca pra safe, mesmo com filesRead baixo', () => {
+  const log = { 'pequeno/tudo-lido': ['a.ts'], 'grande/pouco-lido': ['a.ts', 'b.ts'] };
+  const index = new Map([
+    ['pequeno/tudo-lido', ['Programa X']],
+    ['grande/pouco-lido', ['Programa X']],
+  ]);
+  const popularity = {
+    'pequeno/tudo-lido': { totalScannableFiles: 1 }, // 1/1 = 100%
+    'grande/pouco-lido': { totalScannableFiles: 500 }, // 2/500 = 0,4%
+  };
+  const { safe, fullyCovered } = selectDeepReadCandidates(log, index, {}, popularity);
+  assert.equal(fullyCovered.length, 1);
+  assert.equal(fullyCovered[0].repo, 'pequeno/tudo-lido');
+  assert.equal(safe.length, 1);
+  assert.equal(safe[0].repo, 'grande/pouco-lido');
+});
+
+test('selectDeepReadCandidates ordena por coverageRatio (menos coberto primeiro), não por filesRead cru, quando os dois lados têm o dado', () => {
+  const log = { 'a/muitos-arquivos-lidos-mas-repo-enorme': new Array(20).fill('f.ts'), 'b/poucos-arquivos-lidos-repo-pequeno': ['f.ts', 'g.ts'] };
+  const index = new Map([
+    ['a/muitos-arquivos-lidos-mas-repo-enorme', ['Programa X']],
+    ['b/poucos-arquivos-lidos-repo-pequeno', ['Programa X']],
+  ]);
+  const popularity = {
+    'a/muitos-arquivos-lidos-mas-repo-enorme': { totalScannableFiles: 10000 }, // 20/10000 = 0,2%
+    'b/poucos-arquivos-lidos-repo-pequeno': { totalScannableFiles: 10 }, // 2/10 = 20%
+  };
+  const { safe } = selectDeepReadCandidates(log, index, {}, popularity);
+  // Pelo filesRead cru, "b" (2) viria antes de "a" (20) -- mas "a" tem
+  // MUITO mais cobertura restante (99,8% vs 80%), então deveria vir
+  // primeiro com o critério novo.
+  assert.deepEqual(safe.map((s) => s.repo), ['a/muitos-arquivos-lidos-mas-repo-enorme', 'b/poucos-arquivos-lidos-repo-pequeno']);
+});
+
+test('selectDeepReadCandidates cai pro critério antigo (filesRead) quando falta coverageRatio de UM dos lados -- nunca desvantajar quem não tem o dado ainda', () => {
+  const log = { 'com/dado': ['f.ts', 'g.ts', 'h.ts'], 'sem/dado': ['f.ts'] };
+  const index = new Map([
+    ['com/dado', ['Programa X']],
+    ['sem/dado', ['Programa X']],
+  ]);
+  const popularity = { 'com/dado': { totalScannableFiles: 100 } }; // 'sem/dado' não tem entrada nenhuma
+  const { safe } = selectDeepReadCandidates(log, index, {}, popularity);
+  // Sem coverageRatio dos dois lados pra comparar, cai pro filesRead cru
+  // -- 'sem/dado' (1) vem antes de 'com/dado' (3), como sempre foi.
+  assert.deepEqual(safe.map((s) => s.repo), ['sem/dado', 'com/dado']);
+});
+
+test('selectDeepReadCandidates: totalScannableFiles ausente (null) nunca vira "0% coberto" nem "100% coberto" por engano', () => {
+  const log = { 'sem/total-conhecido': ['a.ts'] };
+  const index = new Map([['sem/total-conhecido', ['Programa X']]]);
+  const { safe, fullyCovered } = selectDeepReadCandidates(log, index, {}, { 'sem/total-conhecido': { stars: 5 } });
+  assert.equal(fullyCovered.length, 0);
+  assert.equal(safe.length, 1);
+  assert.equal(safe[0].coverageRatio, null);
+});
+
+test('refreshRepoPopularity calcula totalScannableFiles a partir da linguagem inferida do que já foi lido + fetchFiles injetado', async () => {
+  const fetchMeta = async () => ({ stars: 10, defaultBranch: 'main' });
+  const fetchFiles = async () => [{ path: 'a.sol' }, { path: 'b.sol' }, { path: 'README.md' }, { path: 'test/c.t.sol' }];
+  const deepReadLog = { 'a/b': ['a.sol'] }; // extensão .sol -> infere Solidity
+  const cache = await refreshRepoPopularity(['a/b'], {}, { fetchMeta, fetchFiles, deepReadLog });
+  // README.md não é .sol (ignorado); test/c.t.sol é convenção Foundry de
+  // teste (ignorado por isScannableSolidityFile) -- só a.sol e b.sol contam.
+  assert.equal(cache['a/b'].totalScannableFiles, 2);
+});
+
+test('refreshRepoPopularity deixa totalScannableFiles null quando a linguagem não é reconhecida (sem heurística pra essa extensão)', async () => {
+  const fetchMeta = async () => ({ stars: 10, defaultBranch: 'main' });
+  const fetchFiles = async () => { throw new Error('não deveria ser chamado'); };
+  const deepReadLog = { 'a/b': ['a.rs'] }; // Rust -- sem heurística/predicado neste projeto ainda
+  const cache = await refreshRepoPopularity(['a/b'], {}, { fetchMeta, fetchFiles, deepReadLog });
+  assert.equal(cache['a/b'].totalScannableFiles, null);
+});
+
+test('refreshRepoPopularity deixa totalScannableFiles null quando fetchFiles falha, mas mantém stars (melhor esforço parcial)', async () => {
+  const fetchMeta = async () => ({ stars: 10, defaultBranch: 'main' });
+  const fetchFiles = async () => { throw new Error('rede fora do ar'); };
+  const deepReadLog = { 'a/b': ['a.sol'] };
+  const cache = await refreshRepoPopularity(['a/b'], {}, { fetchMeta, fetchFiles, deepReadLog });
+  assert.equal(cache['a/b'].stars, 10);
+  assert.equal(cache['a/b'].totalScannableFiles, null);
 });
 
 test('countKnownDuplicatesByRepo conta achados com outcome "duplicate" de verdade, ignora outros estados', () => {
