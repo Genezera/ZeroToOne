@@ -11,7 +11,7 @@ Observable Timing Discrepancy (CWE-208) — specifically, a secret-derived crypt
 - File: `token/jws/jws.go`
 - Function: `DetachedTokenIsValid`
 - Line: 81 (`return detachedToken == newToken`)
-- Also present, byte-for-byte identical, in the vendored copy inside `kubernetes/kubernetes` at `staging/src/k8s.io/cluster-bootstrap/token/jws/jws.go`, and used at `cmd/kubeadm/app/discovery/token/token.go:183`.
+- `kubernetes/cluster-bootstrap` is a read-only, auto-published mirror of `kubernetes/kubernetes`'s staging directory (`staging/src/k8s.io/cluster-bootstrap`, synced by `publishing-bot`) — the same code exists at that path in `kubernetes/kubernetes` too, and is used from there at `cmd/kubeadm/app/discovery/token/token.go:183`.
 - Confirmed against the current stable release `v1.37.0` (published 2026-08-26, not a release candidate) for both repositories, and against current `main`/`master` HEAD — identical in both.
 
 ## Summary
