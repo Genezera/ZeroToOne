@@ -242,3 +242,19 @@ mesmo token" — mais forte e ainda 100% honesto, sem medir de verdade o
 sinal via rede real entre eventos independentes (isso continua não
 demonstrado, dito explicitamente). Relatório atualizado em todas as
 seções relevantes, commit `07887ea`, no `origin/master`.
+
+**Atualização mesma rodada — usuário colou a página de política oficial
+do programa Kubernetes no HackerOne**: li o `severity-ratings.md` real
+(linkado da política) e achei que o análogo mais próximo do nosso
+padrão de ataque completo (serviço se passando pela API server pra
+fazer MITM) já é classificado por eles mesmos como **High, não
+Critical**, e o glossário deles rebaixa Critical→High por padrão
+justamente pra "Adjacent Network Access" (nosso caso). Adicionada uma
+frase de contexto em "Category/Severity" citando isso — reforça a
+calibração já feita, não muda nada. Commit `58e768b`. Também identifiquei
+um risco real de elegibilidade que **não** entra no relatório (é decisão
+da plataforma, não autodenúncia técnica): a política marca "ataques que
+dependem de configuração insegura" como escopo válido mas **não elegível
+pra bounty**, e nosso achado só importa de verdade sem CA pinning —
+usuário avisado diretamente na conversa. Relatório considerado pronto
+pra envio (commits `1d1d819` → `58e768b`).
