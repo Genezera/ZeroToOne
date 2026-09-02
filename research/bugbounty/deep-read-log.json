@@ -685,7 +685,10 @@
     "packages/message_transmitter/src/message_transmitter_v2.cairo",
     "packages/token_messenger_minter/src/token_messenger_minter_v2.cairo",
     "packages/components/src/rescuable.cairo",
-    "packages/components/src/token_controller.cairo"
+    "packages/components/src/token_controller.cairo",
+    "packages/message/src/burn_message_v2.cairo",
+    "packages/utils/src/utils.cairo",
+    "packages/utils/src/address_conversion.cairo"
   ],
   "circlefin/stablecoin-starknet": [
     "packages/components/src/blocklistable/blocklistable.cairo",

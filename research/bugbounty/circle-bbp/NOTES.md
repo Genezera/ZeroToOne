@@ -5918,3 +5918,62 @@ Nenhum achado novo esta rodada. `deep-read-log.json` atualizado (+3 em
 direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source) — sem
 arquivo novo candidato em Circle BBP nesta rodada. Nenhum achado, nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-02 (sessão local, usando a lista priorizada nova)
+
+Primeira leitura usando a lista já corrigida por popularidade/duplicata
+(`list-deep-read-candidates.mjs`, ver README do scanner e NOTES.md de
+Vercel Open Source pro contexto completo da correção). Topo da lista
+corrigida trouxe `vercel/ms` e `vercel/async-sema` primeiro (1 arquivo
+"lido" cada) -- ao investigar, os dois já estavam com COBERTURA
+COMPLETA: `src/index.ts` é o único arquivo de código real de cada um
+(o resto é config/lockfile/doc), e esse arquivo já constava lido em
+`deep-read-log.json` de rodada anterior. Achado de processo (não de
+segurança): `filesRead` é contagem absoluta, não percentual de
+cobertura -- um repo com 1 arquivo TOTAL e 1 lido parece idêntico a um
+repo com 1000 arquivos e 1 lido na ordenação atual, quando na verdade
+o primeiro está 100% coberto e o segundo 0,1%. Não fiz achado forçado
+nos dois só porque "precisava ler algo" -- reli o `src/index.ts` de
+cada (rápido, arquivo pequeno) só pra confirmar mesmo: `vercel/ms`
+teve CVE real de ReDoS numa versão antiga (CVE-2015-8315); esta versão
+reescrita tem guarda explícita de tamanho (`str.length > 100` antes do
+regex rodar) -- mitigação real, não vulnerável. `vercel/async-sema`
+(Deque circular + semáforo) não tem superfície de parsing de input
+externo; único "e se" (loop de inicialização não limitado ao `nr`
+bruto passado ao construtor) exigiria quem chama passar valor de
+usuário não confiável direto como contagem de token, uso indevido de
+API por quem integra, não vulnerabilidade da biblioteca em si -- não
+reportado, mesmo raciocínio já aplicado a outros achados descartados
+deste projeto.
+
+Pulei pra próximo da fila com cobertura real incompleta:
+`circlefin/starknet-cctp` (5/20 arquivos `.cairo` não-teste já lidos).
+Li 3 arquivos novos, focados de propósito em parsing/conversão
+(historicamente a área mais fértil pra bug sério em ponte cross-chain):
+`packages/message/src/burn_message_v2.cairo` (formato/parsing do burn
+message -- campos de tamanho fixo com índice documentado + hookData
+dinâmico no final), `packages/utils/src/utils.cairo`
+(`extract_u32_be`/`extract_u256_be`, as primitivas de leitura que TODO
+getter do burn message usa por baixo) e
+`packages/utils/src/address_conversion.cairo` (conversão u256 ->
+ContractAddress pra endereço vindo de outra chain).
+
+Sem achado, mas por motivo verificado, não por falta de tentativa:
+`extract_u32_be`/`extract_u256_be` têm `assert(index + N < len, ...)`
+antes de ler, matemática de índice conferida à mão (sem off-by-one) --
+`validate_burn_message_format` no burn message só cobre os campos
+fixos, mas os getters têm sua PRÓPRIA checagem de limite embutida
+(defesa em profundidade, não um único ponto de falha). Conversão de
+endereço usa `try_into().expect(...)` em vez de truncar/dar wraparound
+silencioso -- valor de 256 bits que não cabe no corpo primo do
+felt252/ContractAddress reverte a transação inteira em vez de mintar
+pra um endereço corrompido; comportamento seguro por padrão (fail-closed).
+Considerei um ângulo de DoS/griefing (mensagem cross-chain com
+mint_recipient fora de faixa trava o mint pra sempre) mas não confirmei
+se `mint_recipient` é sempre escolhido pelo próprio depositante (nesse
+caso é erro autoinfligido, não vulnerabilidade) ou se existe fluxo
+onde terceiro define o destinatário -- não tenho contexto suficiente
+lido ainda pra afirmar isso com confiança, então não virou achado.
+
+`deep-read-log.json` atualizado (+3 em `circlefin/starknet-cctp`, agora
+8 arquivos). Nenhuma transição de estado -- nenhum achado nesta rodada.
