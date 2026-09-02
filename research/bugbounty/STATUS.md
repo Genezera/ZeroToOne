@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-02T12:03:03.898Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-02T15:19:27.137Z.
 
 ## Alvos ativos
 
@@ -24,6 +24,7 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | go | Kubernetes | HackerOne | kubernetes/cluster-bootstrap |
 | go | Kubernetes | HackerOne | kubernetes/csi-translation-lib |
 | go | Kubernetes | HackerOne | kubernetes/gengo |
+| jvm | Auth0 by Okta | Bugcrowd | auth0/auth0-java |
 | solidity | Circle BBP | HackerOne | circlefin/evm-cctp-contracts |
 | solidity | Circle BBP | HackerOne | circlefin/evm-gateway-contracts |
 | solidity | Circle BBP | HackerOne | circlefin/buidl-wallet-contracts |
@@ -32,15 +33,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **0**
+- Pendentes (aguardando o agente de nuvem): **260**
 - Já revisados: 140
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
-| command_injection_risk | Vercel Open Source | falso_positivo | — |
+| ai_deep_read_finding | Circle BBP | confirmado | — |
+| insecure_tls | Kubernetes | falso_positivo | — |
 | ai_deep_read_finding | Circle BBP | falso_positivo | — |
 | ai_deep_read_finding | Vercel Open Source | confirmado | — |
-| eval_usage | Vercel Open Source | falso_positivo | — |
-| path_traversal_arbitrary_file_read_risk | Vercel Open Source | confirmado | — |
+| known_vulnerable_dependency | OKG | falso_positivo | — |
