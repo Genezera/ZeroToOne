@@ -178,3 +178,50 @@ seção sobrepõe o achado de `cluster-bootstrap` da outra sessão) — sem
 conflito lógico real, só reconciliação de `queue.jsonl` via
 re-importação (`migrate-to-v2.mjs`) depois de `git fetch origin master`
 + checkout do estado remoto mais recente antes do `export-queue` final.
+
+## Rodada 2026-09-02 — revisão do relatório após review externa detalhada (honestidade sobre exploração remota)
+
+Usuário colou uma revisão técnica externa detalhada do relatório
+`kubernetes-cluster-bootstrap-jws-timing-attack.md`, concordando que o
+bug é real no nível do primitivo mas apontando que o relatório
+misturava "provado localmente" (comparação não é constant-time, com
+rigor estatístico real) com "provado remotamente explorável" (nunca
+demonstrado) — conclusão da review: "eu enviaria, mas não enviaria
+ainda exatamente essa versão... falta tornar o attack path
+remoto/repetitivo muito mais concreto."
+
+Verifiquei o ponto central da review lendo o código real de
+`cmd/kubeadm/app/discovery/token/token.go` (`retrieveValidatedConfigInfo`,
+`getClusterInfo`) e confirmei que o problema é mais fundamental do que a
+review presumiu: o loop de retry de `getClusterInfo`
+(`wait.PollUntilContextTimeout`) só checa se a chave da assinatura JWS
+está *presente* na ConfigMap buscada — nunca re-invoca
+`DetachedTokenIsValid`. A verificação roda exatamente uma vez por
+tentativa de `kubeadm join`, sem nenhum oráculo de retry embutido (não
+é só "ruído de rede torna mais difícil", é ausência total de mecanismo
+de repetição no ponto certo).
+
+Relatório revisado com honestidade em todas as seções (título,
+categoria/severidade, resumo, cadeia de chamada confirmada — novo
+ponto 4 documentando o achado do retry loop —, passos de reprodução,
+impacto reescrito como "o que é provado" vs. três itens explícitos "o
+que isso não estabelece", e um aviso no início da seção de PoC). Nenhum
+código-fonte mudou — é o mesmo achado, a mesma evidência, sem a
+alegação que eu não conseguia sustentar. Commit `1d1d819`, enviado pro
+`origin/master`. Nova lição de metodologia salva na memória
+(`feedback_hackerone_report_methodology.md`): para qualquer achado de
+timing, nomear um mecanismo concreto de observação repetível ou admitir
+explicitamente que não achei um, e verificar se a comparação vulnerável
+em si (não só uma operação de rede ao redor dela) está dentro de algum
+loop de retry.
+
+**Avaliação honesta e calibrada**: a alegação central (comparação
+não-constante) continua sólida e comprovada 3x independentemente. A
+exploração remota/prática permanece não demonstrada e, pela leitura do
+código, sem oráculo de retry óbvio — isso pesa pra uma severidade real
+provavelmente Informational/Low do ponto de vista do triager, não
+High/Critical, mesmo que a causa raiz seja uma inconsistência real
+contra o próprio padrão que o Kubernetes já adota em código vizinho.
+Decisão de enviar ou não, ou investigar mais (outro ponto de chamada
+para `DetachedTokenIsValid`, ou um canal lateral diferente) fica com o
+usuário.
