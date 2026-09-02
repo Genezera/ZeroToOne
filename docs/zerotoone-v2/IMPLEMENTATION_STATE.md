@@ -586,6 +586,83 @@ fora só por isso, ver `targets-auto-promoted-log.json`) nem substitui
 `getStructuredScope` ao vivo como fonte de elegibilidade por ativo —
 ambos continuam lacunas reais, documentadas, não escondidas.
 
+## Sessão local 2026-09-02 — reconciliação e itens novos da auditoria
+
+**Contexto**: usuário reentregou o mesmo documento de auditoria pela
+3ª vez, perguntando o que falta. Reconciliando de novo contra o estado
+real, não contra a última atualização deste arquivo (01/09).
+
+### Terceiro outcome real de plataforma (dado novo pra 6.9/6.21)
+Report SSRF (`image-optimizer.ts` cross-host redirect bypass,
+`vercel/next.js`) submetido de verdade à HackerOne (#3988959),
+com PoC local real executada (control/treatment via `next@canary`
+fresco, não simulada) e 5 screenshots reais anexados. Fechado como
+`duplicate` de #3943945 pelo triager humano ~4h depois, que confirmou
+a análise técnica batendo (mesma call chain, mesma técnica, mesma
+correção sugerida) — não foi recusado por estar errado, só não foi o
+primeiro a reportar.
+
+**Gap real confirmado ao vivo nesta sessão**: esse outcome NÃO está
+gravado em `zerotoone.db` — `cli.mjs status` mostra `duplicate: 2`
+(Solana denylist + arc-remote-signer, os 2 já conhecidos), não 3.
+Investigação direta (`countKnownDuplicatesByRepo`, ver seção do
+scanner abaixo) confirmou que o finding do SSRF nunca foi de fato
+persistido via `upsertFinding` — só existe como texto em
+`research/bugbounty/vercel-open-source/NOTES.md`. Rodadas anteriores
+desta mesma NOTES.md já citavam esse achado como `corroborated_static`,
+o que significa que o `upsertFinding` correspondente nunca aconteceu
+de verdade em NENHUMA rodada, cloud ou local. Não reconstruído aqui
+com campos históricos inventados (seria fabricar dado); documentado
+como pendência real de investigação — provavelmente um achado descrito
+em prosa (NOTES.md/relatório) sem nunca passar pelo CLI de verdade em
+nenhuma etapa do processo.
+
+### Novos itens da auditoria endereçados nesta sessão (não estavam na Fase 1/3)
+- **6.17 "Monitoramento de mudanças de alto valor"** — parcialmente
+  feito. `listRecentlyChangedFiles` (`fetch-repo.mjs`) prioriza arquivo
+  tocado nos últimos 90 dias dentro de repositório já rastreado, 2
+  chamadas de API (custo constante), verificado ao vivo contra
+  `vercel/flags` (ativo, bateu no teto de 300 da API de compare do
+  GitHub) e `circlefin/stablecoin-xlm` (parado, `Set` vazio
+  corretamente). Não cobre "novas rotas/funções públicas" nem "troca de
+  dependência" especificamente — só "arquivo tocado recentemente" de
+  forma genérica.
+- **6.18 "Ranking de alvo por valor esperado"** — reforçado além do que
+  `promote-targets.mjs` já fazia (Fase 1). `list-deep-read-candidates.mjs`
+  ganhou duas camadas novas: estrelas do GitHub (repo
+  >=10 mil vai pro fim, cache com TTL de 30 dias) e outcome real de
+  duplicata por repo (repo que já voltou `duplicate` vai pro fim,
+  pior ofensor primeiro). Motivador real: 3º achado seguido (SSRF acima)
+  fechado como duplicata pública, quando o gap era estrutural — a
+  priorização de leitura profunda nunca soube distinguir repo famoso de
+  repo obscuro.
+- **Gap novo encontrado, não estava documentado antes**: `JVM_TARGETS`
+  está vazio hoje — os 4 alvos manuais são todos Block Open Source
+  (pausados desde 31/08) e nenhum dos 13 alvos auto-promovidos é JVM
+  (todos Go). Categoria inteira sem cobertura ativa.
+- **Gap de processo novo, não estava documentado antes**: `filesRead`
+  (contador usado por `selectDeepReadCandidates`) é absoluto, não
+  percentual de cobertura — descoberto tentando usar a lista já
+  corrigida: `vercel/ms`/`vercel/async-sema` apareceram no topo com "1
+  arquivo lido" quando na verdade já estavam 100% cobertos (1 arquivo
+  É o repo inteiro). Não corrigido ainda nesta sessão.
+
+### Verificação
+- `npm test`: **428/428** (era 225 na última atualização deste arquivo,
+  01/09 — crescimento inclui trabalho do agente de nuvem em paralelo,
+  não só desta sessão).
+- `cli.mjs status` ao vivo: `candidate: 286` (crescimento grande vem de
+  `known_vulnerable_dependency` do Kubernetes, programa novo desde a
+  última atualização deste arquivo — não investigado ainda),
+  `corroborated_static: 1`, `duplicate: 2`, `false_positive: 49`,
+  `human_ready: 1`, `inconclusive: 2`, `known_duplicate: 2`.
+- 2 conflitos de merge reais resolvidos nesta sessão contra rodadas
+  concorrentes do agente de nuvem (mesma técnica de sempre: preservar
+  os dois lados, nunca escolher um) — `circle-bbp/NOTES.md` (duas
+  rodadas de leitura profunda paralelas) e nenhum em `deep-read-log.json`
+  apesar de ambos os lados terem escrito nele (merge de linha automático
+  funcionou, confirmado contando entradas antes/depois).
+
 ## Bloqueios externos conhecidos
 
 - Nenhum ainda identificado que exija credencial ou acesso que o usuário
