@@ -766,7 +766,11 @@
     "packages/eve/src/channel/schedule-auth.ts",
     "packages/eve/src/channel/auth/vercel-oidc-project.ts",
     "packages/eve/src/public/channels/telegram/authorization-callback.ts",
-    "packages/eve/src/public/channels/telegram/authorization.ts"
+    "packages/eve/src/public/channels/telegram/authorization.ts",
+    "packages/eve/src/public/channels/discord/verify.ts",
+    "packages/eve/src/public/channels/discord/verifyInbound.ts",
+    "packages/eve/src/public/channels/telegram/verify.ts",
+    "packages/eve/src/tools/auth.ts (apenas tipos, sem lógica de runtime)"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
