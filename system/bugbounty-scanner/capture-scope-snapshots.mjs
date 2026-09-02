@@ -64,6 +64,7 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
   const vercel = h1Raw.find((p) => p.handle === 'vercel-open-source');
   const okg = h1Raw.find((p) => p.handle === 'okg');
   const kubernetes = h1Raw.find((p) => p.handle === 'kubernetes');
+  const kiwicom = h1Raw.find((p) => p.handle === 'kiwicom');
   const block = bcRaw.find((p) => (p.name || '').toLowerCase().includes('block open source'));
   const auth0 = bcRaw.find((p) => (p.name || '').toLowerCase().includes('auth0'));
   const stackingDaoRaw = h1Raw.find((p) => p.handle === 'stackingdao' || (p.name || '').toLowerCase() === 'stackingdao');
@@ -131,6 +132,26 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
       confidence: 'medium',
       capturedAt,
       communitySourceNote: 'Mesma limitação de Circle BBP/Vercel: página oficial HackerOne é SPA que exige sessão autenticada, WebFetch e a aba Browser (sem login) confirmaram isso de novo ao vivo nesta sessão. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.',
+    }));
+  }
+  if (kiwicom) {
+    // Kiwi.com promovido automaticamente pelo pipeline de descoberta
+    // (02/09/2026, rodada de rotação maior pedida pelo usuário) -- mesma
+    // situação de Kubernetes/OKG antes deste arquivo cobri-los: alvos já
+    // ativos na varredura sem nenhum snapshot formal, bloqueando check-scope
+    // exatamente quando um achado real (js-iam-middleware, argumento
+    // posicional trocado em isUserAuthorized -> getUser) precisou avançar.
+    snapshots.push(buildScopeSnapshot({
+      program: 'Kiwi.com',
+      platform: 'HackerOne',
+      officialUrl: 'https://hackerone.com/kiwicom',
+      sourceType: 'community_dataset_structured',
+      sourceDetail: 'arkadiyt/bounty-targets-data, hackerone_data.json, handle kiwicom',
+      rawSourceContent: kiwicom,
+      assets: toAssetList(kiwicom.targets && kiwicom.targets.in_scope),
+      confidence: 'medium',
+      capturedAt,
+      communitySourceNote: 'Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.',
     }));
   }
   if (block) {

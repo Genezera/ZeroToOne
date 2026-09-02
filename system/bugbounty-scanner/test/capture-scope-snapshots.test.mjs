@@ -104,3 +104,36 @@ test('check-scope real do Kubernetes encontra cluster-bootstrap no snapshot, ele
   assert.equal(gate.allowed, true);
   assert.equal(gate.bountyEligible, true);
 });
+
+const FAKE_KIWICOM_H1 = {
+  handle: 'kiwicom',
+  name: 'Kiwi.com',
+  offers_bounties: true,
+  url: 'https://hackerone.com/kiwicom',
+  targets: {
+    in_scope: [
+      { asset_identifier: 'https://github.com/kiwicom/js-iam-middleware', asset_type: 'SOURCE_CODE', eligible_for_bounty: true, eligible_for_submission: true, max_severity: 'high' },
+    ],
+  },
+};
+
+test('captureAllSnapshots monta o snapshot do Kiwi.com a partir do dataset HackerOne, com confidence "medium" (mesmo padrão de Kubernetes/OKG)', async () => {
+  const snapshots = await captureAllSnapshots({
+    fetchJsonFn: async (url) => (url.includes('hackerone') ? [FAKE_KIWICOM_H1] : EMPTY_BC),
+  });
+  const kiwi = snapshots.find((s) => s.program === 'Kiwi.com');
+  assert.ok(kiwi, 'snapshot do Kiwi.com deveria existir');
+  assert.equal(kiwi.platform, 'HackerOne');
+  assert.equal(kiwi.confidence, 'medium');
+  assert.ok(kiwi.assets.some((a) => a.assetIdentifier === 'https://github.com/kiwicom/js-iam-middleware'));
+});
+
+test('check-scope real do Kiwi.com encontra js-iam-middleware no snapshot, elegível pra bounty', async () => {
+  const snapshots = await captureAllSnapshots({
+    fetchJsonFn: async (url) => (url.includes('hackerone') ? [FAKE_KIWICOM_H1] : EMPTY_BC),
+  });
+  const kiwi = snapshots.find((s) => s.program === 'Kiwi.com');
+  const gate = scopeGate(kiwi, 'https://github.com/kiwicom/js-iam-middleware', kiwi.capturedAt);
+  assert.equal(gate.allowed, true);
+  assert.equal(gate.bountyEligible, true);
+});

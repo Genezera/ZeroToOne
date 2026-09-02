@@ -1,0 +1,173 @@
+{
+  "program": "Kiwi.com",
+  "platform": "HackerOne",
+  "officialUrl": "https://hackerone.com/kiwicom",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle kiwicom",
+  "contentHash": "c882850c1ff4c9ecf151f7cd653a29a9a4498b3fc4ecb96936b378dc4099f988",
+  "capturedAt": "2026-09-02T20:02:54.406Z",
+  "expiresAt": "2026-09-16T20:02:54.406Z",
+  "ttlDays": 14,
+  "confidence": "medium",
+  "assets": [
+    {
+      "assetIdentifier": "*.kiwi.com",
+      "assetType": "WILDCARD",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Mostly branded versions of our main www.kiwi.com site, please report vulnerabilities only for www.kiwi.com and don't duplicate it here."
+    },
+    {
+      "assetIdentifier": "*.skypicker.com",
+      "assetType": "WILDCARD",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "APIs & internal tools."
+    },
+    {
+      "assetIdentifier": "auth.skypicker.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Authentication API used on www.kiwi.com."
+    },
+    {
+      "assetIdentifier": "com.skypicker.Skypicker",
+      "assetType": "APPLE_STORE_APP_ID",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "**Primary target** - Available in [App Store](https://itunes.apple.com/bs/app/kiwi-com-cheap-flight-tickets/id657843853)"
+    },
+    {
+      "assetIdentifier": "com.skypicker.main",
+      "assetType": "GOOGLE_PLAY_APP_ID",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "**Primary target** - Available in the [Play Store](https://play.google.com/store/apps/details?id=com.skypicker.main)"
+    },
+    {
+      "assetIdentifier": "http://www.kiwi.com/stories",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": "Online travel magazine Kiwi.com Stories, with very limited impact on our sites & infrastructure."
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/js-iam-middleware",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/k8s-vault-operator",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/kiwi-cache",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/kiwi-json",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/kiwi-structlog-config",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/konfetti",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/navigation-compose-typed",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/orbit",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/pg2avro",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/kiwicom/request-session",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "high",
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "jobs.kiwi.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "medium",
+      "instruction": "Hiring page, no sensitive information, likely no impact on our company."
+    },
+    {
+      "assetIdentifier": "tequila.kiwi.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "B2B platform. Backend API requests are proxied via **tequila-api.kiwi.com** & **api.tequila.kiwi.com**"
+    },
+    {
+      "assetIdentifier": "www.kiwi.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Our main website"
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa."
+}
