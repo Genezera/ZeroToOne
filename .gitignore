@@ -16,3 +16,9 @@ AppData/
 research/bugbounty/*.db
 research/bugbounty/*.db-wal
 research/bugbounty/*.db-shm
+
+# Pasta de saída de package-for-submission.mjs -- pura conveniência local
+# pra pegar-e-enviar (cópia do relatório + screenshots já commitados em
+# seus próprios caminhos). Commitar isso duplicaria conteúdo já versionado
+# em outro lugar sem nenhum ganho real, só peso no repo.
+research/bugbounty/ready-to-submit/

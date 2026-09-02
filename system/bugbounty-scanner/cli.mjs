@@ -6,6 +6,7 @@ import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
 import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-budget.mjs';
 import { isTerminal } from './state-machine.mjs';
 import { generateReport } from './generate-report.mjs';
+import { packageFinding } from './package-for-submission.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -87,6 +88,16 @@ export function cmdRecordReport(db, id, reportPath) {
 
 export function cmdGenerateReport(db, id, opts = {}) {
   return generateReport(db, id, opts);
+}
+
+/** Junta relatório + screenshots de UM achado já em human_ready (ou
+ * além) numa pasta em research/bugbounty/ready-to-submit/ — ver
+ * package-for-submission.mjs pro porquê de não tentar automatizar o
+ * preenchimento do formulário em si. */
+export function cmdPackageForSubmission(db, id) {
+  const finding = getFinding(db, id);
+  const report = finding ? latestReport(db, id) : null;
+  return packageFinding(finding, report);
 }
 
 /**
@@ -365,8 +376,11 @@ async function main() {
       case 'sync-report-status':
         printJson(await cmdSyncReportStatus(db));
         break;
+      case 'package-for-submission':
+        printJson(cmdPackageForSubmission(db, positional[0]));
+        break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, generate-report <id>, pipeline-status, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, generate-report <id>, pipeline-status, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status, package-for-submission <id>`);
         process.exitCode = 1;
     }
   } finally {
