@@ -1451,3 +1451,50 @@ projeto, não uma reimplementação) confirmou `{valid: true, entries:
 publicado exigiria force-push, uma operação destrutiva que este projeto
 evita por padrão. A correção entra como um commit novo, de avanço, não
 uma reescrita do passado.
+
+## Segundo report real enviado — Command Injection em `update-remix-run-dev.js` (02/09/2026)
+
+`vercel/vercel::utils/update-remix-run-dev.js` — `execSync()` com
+template string recebendo, sem sanitização, o input livre
+`workflow_dispatch::new-version`, em 4 pontos (linhas 32/64/66/67).
+Passou por duas rodadas de revisão técnica externa (não deste
+pipeline) antes do envio, que pegaram e corrigiram problemas reais:
+afirmação de privilégio não verificada ("concretely, write
+permission..." virou hedge explícito sobre não ter confirmado
+restrição adicional do repositório), impacto amplo demais ("access to
+whatever secrets/environment" virou "downstream impact depends on
+permissions actually granted, not enumerated"), citação solta da
+frase "production-equivalent deployment" da própria política deles
+(troca por descrição factual, evita abrir flanco de definição), e um
+risco real de reprodução: a seção "Steps to reproduce" estava escrita
+como instrução imperativa pra rodar contra o `vercel/vercel` de
+verdade — exatamente o que o Rules of Engagement do programa proíbe.
+Corrigida pra descrição hipotética com aviso explícito, apontando pra
+uma réplica isolada (https://github.com/Genezera/remix-injection-poc)
+como o caminho seguro de verificação — réplica testada AO VIVO num
+runner real do GitHub Actions antes do envio (não só planejada):
+payload `1.0.0$(id 1>&2)` disparado de verdade, saída do `id`
+capturada no log público quatro vezes (uma por ponto de injeção),
+execução pública e permanente em
+https://github.com/Genezera/remix-injection-poc/actions/runs/33637084151.
+
+**Severidade**: preenchida com CVSS 4.0 puro (calculadora da própria
+HackerOne, sem escolher rótulo manualmente) — `AV:N/AC:L/AT:N/PR:H/
+UI:N/VC:H/VI:H/VA:H/SC:L/SI:L/SA:L`. `PR:H` (não `L`) refletindo que
+"write access a um repositório específico" é privilégio concedido e
+específico, não capacidade básica de qualquer conta — mesma
+calibração de "não é unauthenticated RCE" que já estava no texto do
+relatório. `SC/SI/SA:L` (não `N`) porque afirmar "None" seria alegar
+certeza de zero impacto além do runner, que o relatório explicitamente
+não prova nem descarta.
+
+**Enviado**: HackerOne #3990360, confirmado ao vivo via `my-reports`
+(estado inicial `"new"`). Registrado no sistema de tracking deste
+projeto contra as 4 findings subjacentes (uma por linha vulnerável,
+todas ainda em `state: candidate` -- nunca passaram pelas fases
+formais do pipeline, mesma situação já documentada pro achado SSRF
+#3988959): `record-platform-outcome` gravado nas 4, apontando pro
+mesmo `externalReportId`. Tentativa de transição `candidate ->
+submitted` falhou como esperado (aresta não existe na máquina de
+estados -- só `human_ready -> submitted` é válida) e foi reportada
+honestamente (`transition: null`), não forçada.
