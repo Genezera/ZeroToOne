@@ -308,7 +308,7 @@ export function listFindings(db, { state, program } = {}) {
  * grava o histórico em state_transitions, E anexa um evento no ledger
  * hash-chain (ambiente 'research') — nunca muda estado silenciosamente.
  */
-export function recordTransition(db, findingId, toState, { actor, context = {} } = {}) {
+export function recordTransition(db, findingId, toState, { actor, context = {}, notify = true } = {}) {
   const finding = getFinding(db, findingId);
   if (!finding) return { ok: false, reason: `finding "${findingId}" não existe no banco` };
   // programPolicy é injetado aqui, não deixado a cargo de quem chama --
@@ -353,7 +353,15 @@ export function recordTransition(db, findingId, toState, { actor, context = {} }
   // chamam isso por processos que rodam até o fim naturalmente, sem
   // process.exit() no caminho de sucesso, então a promessa solta tem
   // tempo de completar antes do Node encerrar).
-  if (shouldNotifyForTransition(toState)) {
+  //
+  // `notify=false` existe pra operação em lote (achado real, 03/09/2026):
+  // cmdAutoTriageKnownCve fechou 181 achados numa só chamada -- sem isto,
+  // dispara 181 mensagens reais em sequência quase imediata, estourando o
+  // rate limit do próprio Telegram ("Too Many Requests") e inundando o
+  // usuário. Notificação individual continua sendo o padrão (default
+  // notify=true) pro caso comum de UM achado avançando sozinho, que é
+  // exatamente o que vale a pena interromper o celular do usuário.
+  if (notify && shouldNotifyForTransition(toState)) {
     sendTelegramMessage(formatTransitionMessage(finding, toState, result.reason)).catch(() => {});
   }
 

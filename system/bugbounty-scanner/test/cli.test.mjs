@@ -9,6 +9,7 @@ import {
   cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
   cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
   cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight, cmdGetFinding, cmdRankFinding,
+  cmdAutoTriageKnownCve,
 } from '../cli.mjs';
 
 function withTempEnv(fn) {
@@ -172,6 +173,29 @@ test('cmdRankFinding junta impactAssessment+duplicateCheck reais com bounty/cust
     assert.equal(rank.probabilityImpactAccepted, 0); // reportable=false
     assert.equal(rank.netExpectedValueUsd, -50);
     assert.throws(() => cmdRankFinding(db, 'não-existe'), /não existe no banco/);
+    closeDb(db);
+  });
+});
+
+test('cmdAutoTriageKnownCve fecha known_vulnerable_dependency com GHSA como known_duplicate, ignora o resto, roda de novo sem reprocessar', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { id: 'a', program: 'P', type: 'known_vulnerable_dependency', state: 'candidate', reasoning: 'OSV-Scanner: ... GHSA-aaaa-bbbb-cccc severidade 7.5' });
+    upsertFinding(db, { id: 'b', program: 'P', type: 'known_vulnerable_dependency', state: 'candidate', reasoning: '' }); // achado real: 21/202 sem GHSA extraível
+    upsertFinding(db, { id: 'c', program: 'P', type: 'ai_deep_read_finding', state: 'candidate', reasoning: 'nada a ver, GHSA-zzzz-yyyy-xxxx' }); // type errado, nunca mexe
+
+    const first = cmdAutoTriageKnownCve(db);
+    assert.equal(first.totalCandidates, 2); // só os 2 known_vulnerable_dependency, 'c' nem entra na conta
+    assert.equal(first.triaged, 1);
+    assert.equal(first.skipped, 1);
+    assert.equal(getFinding(db, 'a').state, 'known_duplicate');
+    assert.equal(getFinding(db, 'b').state, 'candidate'); // sem GHSA, fica como estava
+    assert.equal(getFinding(db, 'c').state, 'candidate'); // type errado, nunca tocado
+
+    // Rodar de novo: 'a' já não está mais em candidate, não é reprocessado.
+    const second = cmdAutoTriageKnownCve(db);
+    assert.equal(second.totalCandidates, 1); // só 'b' ainda está em candidate
+    assert.equal(second.triaged, 0);
     closeDb(db);
   });
 });

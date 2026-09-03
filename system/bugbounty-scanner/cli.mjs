@@ -11,6 +11,8 @@ import { assessNoveltyRisk, duplicateCheckGate } from './novelty-risk.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, duplicateHistoryForFinding } from './outcome-intelligence.mjs';
 import { codeAgeSignal } from './code-age.mjs';
+import { knownIssueSourceForVulnerableDependency } from './advisory-triage.mjs';
+import { sendTelegramMessage } from './telegram.mjs';
 import { computeFindingDimensions } from './finding-dimensions.mjs';
 import { computeExpectedValue } from './ev-ranking.mjs';
 import path from 'node:path';
@@ -249,6 +251,35 @@ export function cmdRankFinding(db, id, opts = {}) {
     researchCostUsd: opts.researchCostUsd,
   });
   return { findingId: id, state: finding.state, ...ev };
+}
+
+/** Roda de verdade contra o banco: todo `candidate` known_vulnerable_dependency
+ * com GHSA extraível vira known_duplicate, citando o advisory real como
+ * fonte. Nunca lança por causa de UM achado ruim -- mesmo padrão de
+ * promoteTargets/slither-runner: cada um vira uma entrada em `triaged` OU
+ * `skipped`, nenhum desaparece em silêncio. Seguro rodar de novo (achado
+ * que já não está mais em `candidate` é ignorado, não re-processado). */
+export function cmdAutoTriageKnownCve(db, { actor = 'auto-triage-known-cve' } = {}) {
+  const candidates = listFindings(db, { state: 'candidate' }).filter((f) => f.type === 'known_vulnerable_dependency');
+  const triaged = [];
+  const skipped = [];
+  for (const finding of candidates) {
+    const knownIssueSource = knownIssueSourceForVulnerableDependency(finding);
+    if (!knownIssueSource) {
+      skipped.push({ id: finding.id, reason: 'sem GHSA extraível no reasoning' });
+      continue;
+    }
+    // notify:false -- ver comentário em db.mjs::recordTransition (achado
+    // real: 181 notificações reais em sequência estouraram o rate limit
+    // do Telegram numa rodada anterior desta mesma operação).
+    const result = recordTransition(db, finding.id, 'known_duplicate', { actor, context: { knownIssueSource }, notify: false });
+    if (result.ok) triaged.push({ id: finding.id, url: knownIssueSource.url });
+    else skipped.push({ id: finding.id, reason: result.reason });
+  }
+  if (triaged.length > 0) {
+    sendTelegramMessage(`📋 <b>ZeroToOne</b> — auto-triagem\n${triaged.length} achado(s) fechado(s) como <b>known_duplicate</b> (CVE de dependência já publicado, sem checar alcançabilidade)\n${skipped.length} sem GHSA extraível, ficaram como estavam`).catch(() => {});
+  }
+  return { totalCandidates: candidates.length, triaged: triaged.length, skipped: skipped.length, triagedIds: triaged, skippedIds: skipped };
 }
 
 export function cmdSubmissionStats(db) {
@@ -543,6 +574,9 @@ async function main() {
       case 'submission-stats':
         printJson(cmdSubmissionStats(db));
         break;
+      case 'auto-triage-known-cve':
+        printJson(cmdAutoTriageKnownCve(db));
+        break;
       case 'rank-finding':
         printJson(cmdRankFinding(db, positional[0], parseJsonFlag(flags, 'opts')));
         break;
@@ -571,7 +605,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, code-age <owner/repo> <path> [ref], record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, code-age <owner/repo> <path> [ref], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {
