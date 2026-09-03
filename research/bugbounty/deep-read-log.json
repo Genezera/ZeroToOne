@@ -800,9 +800,11 @@
     "packages/eve/src/public/channels/teams/verify.ts",
     "packages/eve/src/public/channels/twilio/verify.ts",
     "packages/eve/src/execution/reconcile-session-continuation-token.ts",
-    "packages/eve/src/harness/inline-tool-authorization.ts",
+    "packages/eve/src/harness/inline-tool-authorization.ts (resolve/projeta interrupcoes de autorizacao inline, sem decisao de auth propria -- so roteia sinais ja emitidos por harness/authorization.ts, sem achado)",
     "packages/eve/src/execution/sandbox/bindings/vercel-credentials.ts",
-    "packages/eve/src/runtime/skills/sandbox-access.ts"
+    "packages/eve/src/runtime/skills/sandbox-access.ts",
+    "packages/eve/src/cli/dev/tui/remote-auth.ts (fluxo de login CLI p/ deployment remoto -- resolveVercelDeployment falha fechado em forbidden/not-found/project-mismatch, token OIDC so retornado apos verificacao, sem achado)",
+    "packages/eve/src/execution/session-callback-request.ts (postSessionCallbackRequest -- redirect:\"error\" documentado contra SSRF-bounce pos-validacao, token OIDC ambiente so anexado com match exato de hostname contra VERCEL_URL/VERCEL_BRANCH_URL/VERCEL_PROJECT_PRODUCTION_URL e protocolo https, sem achado)"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",

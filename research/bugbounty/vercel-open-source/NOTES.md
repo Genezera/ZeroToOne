@@ -5367,6 +5367,31 @@ pending` global = 0, nenhuma transição de estado nesta rodada. Os
 dois achados travados de Block Open Source seguem intocados por
 política.
 
+## Reconciliação — mesma rodada, sessão concorrente em `vercel/eve`
+
+Uma sessão concorrente rodou a leitura profunda em `vercel/eve` ao
+mesmo tempo (mesmo alvo escolhido de forma independente pelas duas
+sessões, dado quão pouco coberto o repo ainda estava fora dos módulos
+`auth/*`). Overlap em 1 arquivo (`inline-tool-authorization.ts`, já
+narrado acima); 2 arquivos adicionais, não cobertos pela outra sessão,
+lidos por completo nesta:
+
+- `packages/eve/src/cli/dev/tui/remote-auth.ts` — fluxo de login CLI
+  para deployment remoto; `resolveVercelDeployment` falha fechado nos
+  casos `forbidden`/`not-found`/`project-mismatch`, token OIDC só
+  retornado depois da verificação do projeto. Sem achado.
+- `packages/eve/src/execution/session-callback-request.ts` —
+  `postSessionCallbackRequest` usa `redirect: "error"` (comentário no
+  próprio código explica: evita bounce 3xx pós-validação pra endereço
+  interno/metadata) e só anexa o header de token OIDC ambiente quando
+  o hostname da URL bate exatamente com `VERCEL_URL`/
+  `VERCEL_BRANCH_URL`/`VERCEL_PROJECT_PRODUCTION_URL` e o protocolo é
+  https. Allowlist correta, sem achado.
+
+`deep-read-log.json` mesclado (`vercel/eve` agora com as duas
+contribuições, sem entrada duplicada do arquivo em comum). Nenhum
+achado novo.
+
 ## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
 
 `list-pending` global = 0. `program-policy.json` só foi checado

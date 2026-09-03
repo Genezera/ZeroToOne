@@ -852,8 +852,9 @@ escopo por política local (`program-policy.json`).
 56/connection reset no `curl` de teste via agent-proxy) — os 3
 contratos `ststxbtc-*` seguem impossíveis de baixar. Sem arquivo novo
 candidato em StackingDAO, os 15 contratos Clarity seguem 100%
-cobertos. Leitura profunda proativa desta rodada também em
-`nitrojs/nitro` (ver NOTES.md de Vercel Open Source: `cron-handler.ts`,
+cobertos. Múltiplas sessões concorrentes rodaram esta mesma rodada em
+paralelo; leitura profunda proativa combinada ficou em `vercel/eve`
+(ver NOTES.md de Vercel Open Source) e `nitrojs/nitro` (`cron-handler.ts`,
 `internal/app.ts`, `aws-lambda/runtime/_utils.ts`), nenhum achado
 novo, nenhuma transição de estado neste programa. Múltiplas sessões
 concorrentes empurraram pro `origin/master` durante esta rodada;
