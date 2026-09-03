@@ -10,18 +10,24 @@
     "flaggedAt": "2026-09-02"
   },
   "Slack": {
-    "roeReviewNeeded": true,
-    "reason": "ADVERTÊNCIA, não bloqueio: campo informativo, não lido por getBlockReason() -- não impede nada no pipeline sozinho. Programa promovido automaticamente pro scanner ativo pelo pipeline de descoberta (targets-auto-promoted-log.json, ver commit 83dce7a) SEM nunca passar por revisão de RoE quanto a proibição de pesquisa assistida por IA, ao contrário de Block Open Source (que só foi corretamente flagado como aiResearchBanned depois de alguém ler a RoE da Bugcrowd de verdade). Nesta rodada (2026-09-03) 86 achados semgrep_use_of_unsafe_block de slackhq/nebula foram lidos e triados (todos refutados como falso positivo, leitura de código genuína -- ver reasoning de cada finding) ANTES de checar se o programa Slack no HackerOne permite ferramentas de IA na pesquisa. Nenhum relatório foi escrito nem enviado (check-scope já bloqueia scope_verified por falta de scope snapshot), mas a pesquisa em si (clone + leitura de 14 arquivos) já aconteceu -- mesma lacuna documentada no comentário de topo de program-policy.mjs (\"isso não IMPEDE a pesquisa em si... só impede o achado de avançar no pipeline\"). Ação recomendada pro usuário: checar a RoE real do programa Slack no HackerOne antes de qualquer nova rodada de pesquisa aqui; se proibir IA, promover este campo pra aiResearchBanned:true.",
-    "flaggedAt": "2026-09-03"
+    "roeReviewed": true,
+    "aiResearchBanned": false,
+    "reason": "Lacuna do registro anterior (roeReviewNeeded) RESOLVIDA (03/09/2026): li a página real do programa Slack no HackerOne inteira (Eligibility, Conduct Guidelines, Disclosure Guidelines, Vulnerability Severity Definitions) via navegador real -- nenhuma menção a IA/ChatGPT/ferramentas de IA em lugar nenhum, ao contrário do texto explícito do Block Open Source. 'Non-automated testing' nas regras é sobre não rodar scanner automatizado CONTRA a infraestrutura de produção do Slack (SSRF/DoS-shaped), não sobre proibir leitura assistida por IA de código público no GitHub -- não se aplica a este pipeline (que só lê repositório público, nunca toca infraestrutura viva da Slack). Programa liberado pra pesquisa.",
+    "flaggedAt": "2026-09-03",
+    "reviewedAt": "2026-09-03"
   },
   "Mattermost Public Bug Bounty Engagement ": {
-    "roeReviewNeeded": true,
-    "reason": "Mesma lacuna do registro 'Slack' acima: promovido automaticamente pelo pipeline de descoberta (targets-auto-promoted-log.json) sem revisão de RoE da Bugcrowd quanto a pesquisa assistida por IA. Nesta rodada (2026-09-03), 5 achados (3x MD5 fraco, 2x var-in-script-tag) de mattermost/mattermost-plugin-jira foram lidos e triados como falso positivo antes de checar a RoE. Campo informativo, não bloqueia nada sozinho. Ação recomendada: checar a RoE real do engagement 'mattermost-mbb-public' no Bugcrowd; se proibir IA, promover pra aiResearchBanned:true.",
-    "flaggedAt": "2026-09-03"
+    "roeReviewed": true,
+    "aiResearchBanned": false,
+    "reason": "Lacuna do registro anterior (roeReviewNeeded) RESOLVIDA (03/09/2026): li a página real do engagement 'mattermost-mbb-public' no Bugcrowd inteira (Overview, Targets, Exclusions, Known Issues, Safe Harbor) via navegador real -- nenhuma menção a IA/ChatGPT/ferramentas de IA em lugar nenhum. Ao contrário, a própria descrição do programa cita 'AI assistance' como recurso do produto e lista o Mattermost Copilot Plugin (IA) como alvo em escopo -- tom claramente não-hostil a IA. Programa liberado pra pesquisa.",
+    "flaggedAt": "2026-09-03",
+    "reviewedAt": "2026-09-03"
   },
   "Plaid": {
-    "roeReviewNeeded": true,
-    "reason": "Mesma lacuna dos registros 'Slack'/'Mattermost' acima: promovido automaticamente pelo pipeline de descoberta (discovery-metadata-seen.json, 02/09/2026) sem revisão de RoE da HackerOne quanto a pesquisa assistida por IA. Nesta rodada (2026-09-03) e na anterior, 48 achados known_vulnerable_dependency de plaid/react-plaid-link foram triados e leitura profunda proativa foi feita em plaid/plaid-ruby (lib/plaid/api_client.rb, lib/plaid/configuration.rb) e plaid/plaid-link-android, tudo antes de checar se o programa Plaid no HackerOne permite ferramentas de IA na pesquisa. Campo informativo, não bloqueia nada sozinho. Ação recomendada: checar a RoE real do programa Plaid no HackerOne antes de qualquer nova rodada de pesquisa aqui; se proibir IA, promover pra aiResearchBanned:true.",
-    "flaggedAt": "2026-09-03"
+    "roeReviewed": true,
+    "aiResearchBanned": false,
+    "reason": "Lacuna do registro anterior (roeReviewNeeded) RESOLVIDA (03/09/2026): li a página real do programa Plaid no HackerOne inteira (Overview, Program Rules, Out of scope vulnerabilities) via navegador real -- nenhuma menção a IA/ChatGPT/ferramentas de IA em lugar nenhum. 'Automated scanning... against Plaid properties' nas regras é sobre não rodar scanner automatizado (Burp/Zap) CONTRA a infraestrutura viva do Plaid, não sobre proibir leitura assistida por IA de código público -- não se aplica a este pipeline. Nota à parte, também confirmada na mesma leitura: 'Previously known vulnerable libraries without a working Proof of Concept' e 'Dependency scan issues' estão EXPLICITAMENTE fora de escopo no programa Plaid -- reforça (por um motivo de escopo, não só de novidade) que achados known_vulnerable_dependency sem alcançabilidade comprovada não são reportáveis aqui, consistente com advisory-triage.mjs. Programa liberado pra pesquisa.",
+    "flaggedAt": "2026-09-03",
+    "reviewedAt": "2026-09-03"
   }
 }
