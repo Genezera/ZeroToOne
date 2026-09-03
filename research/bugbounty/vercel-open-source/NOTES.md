@@ -4497,3 +4497,44 @@ StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy, reconfirmado com `curl` direto) — os 3
 contratos `ststxbtc-*` seguem impossíveis de baixar, sem mudança em
 relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0 (23 `corroborated_static`, 2 `human_ready`,
+16 `inconclusive`, resto `false_positive`/`duplicate` — nenhum novo
+`candidate`). Os achados travados (11 `known_vulnerable_dependency` de
+lockfile, 3 `semgrep_detect_child_process` em `mcp.ts`, e os
+`ai_deep_read_finding` em `harness/bridge`, `verify-claim.mjs`,
+`update-remix-run-dev.js`, `image-optimizer.ts`) seguem intocados —
+nenhuma ação nova definida pra eles neste passo do fluxo.
+
+Leitura profunda proativa: `vercel/vercel` clonado raso via `git clone
+--depth 1 --filter=blob:none` em scratchpad efêmero (nunca
+versionado). Diff contra `deep-read-log.json` encontrou 75 arquivos
+ainda não lidos batendo nas keywords de prioridade, mas a esmagadora
+maioria é teste/eval/fixture (`*.test.ts`, `evals/`,
+`hydrogen/test/fixtures/*`, `remix/test/fixtures*/*`) ou schema de
+telemetria (`util/telemetry/commands/*/index.ts`) — baixa prioridade,
+já documentado em rodadas anteriores. 3 arquivos de produção com
+lógica real revisados: `packages/cli-auth/user-agent.ts` (16 linhas,
+monta string de user-agent a partir de `os.hostname/platform/arch` +
+`process.version` — sem dado sensível, sem achado),
+`packages/cli/src/commands/tokens/command.ts` (82 linhas, apenas
+metadados/definição de subcomandos `list/add/remove` do comando
+`tokens`, roteamento real já lido em rodadas anteriores — sem achado),
+`packages/cli/src/util/telemetry/session.ts` (154 linhas, persiste
+session/device ID de telemetria anônima em disco via `randomUUID()`
++ `load-json-file`/`write-json-file`; sem segredo nenhum no payload,
+apenas `id`/`createdAt`/`lastSeenAt`, escrita `best-effort` com
+try/catch silencioso proposital — sem achado). `deep-read-log.json`
+atualizado (`vercel/vercel` agora com 90 arquivos lidos nesta missão).
+Restam ~72 arquivos não lidos nas keywords de prioridade, virtualmente
+todos teste/eval/fixture/schema-de-telemetria de baixa prioridade —
+cobertura de produção do `vercel/vercel` nas keywords auth/session/
+crypto/token/login/password/admin/permission/access está
+essencialmente esgotada nesta linha de investigação.
+
+StackingDAO: sem mudança, `api.hiro.so` segue bloqueado (403). Block
+Open Source e Circle BBP seguem fora de escopo por política local
+(`program-policy.json`: `aiResearchBanned`/`blocked`), nenhum repo
+`cashapp/*`/`afterpay/*`/`square/wire`/`circlefin/*` tocado.

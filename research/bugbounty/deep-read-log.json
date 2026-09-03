@@ -537,7 +537,7 @@
   "circlefin/stablecoin-near": [
     "src/requires.rs",
     "src/role.rs",
-    "src/fiat_token.rs (completo — inclui multisig request flow: create/approve/execute/remove_multisig_request, configure_multisig_role, controller-check logic; invariante verificada: toda role multisig-gated so pode ser concedida via _grant_multisig_role, que sempre concede Role::Multisig junto, entao require_only(role_required()) sem checar Multisig explicitamente nao é bypass)",
+    "src/fiat_token.rs (completo \u2014 inclui multisig request flow: create/approve/execute/remove_multisig_request, configure_multisig_role, controller-check logic; invariante verificada: toda role multisig-gated so pode ser concedida via _grant_multisig_role, que sempre concede Role::Multisig junto, entao require_only(role_required()) sem checar Multisig explicitamente nao \u00e9 bypass)",
     "src/fiat_token_action.rs",
     "src/lib.rs (so declaracoes de modulo, sem logica)",
     "src/events.rs (structs de evento, sem logica)",
@@ -753,7 +753,7 @@
     "packages/eve/src/public/channels/discord/verify.ts",
     "packages/eve/src/public/channels/discord/verifyInbound.ts",
     "packages/eve/src/public/channels/telegram/verify.ts",
-    "packages/eve/src/tools/auth.ts (apenas tipos, sem lógica de runtime)",
+    "packages/eve/src/tools/auth.ts (apenas tipos, sem l\u00f3gica de runtime)",
     "packages/eve/src/public/channels/github/verify.ts",
     "packages/eve/src/public/channels/slack/verify.ts",
     "packages/eve/src/public/channels/linear/verify.ts",
@@ -919,7 +919,10 @@
     "packages/cli/src/commands/vcr/permissions/command.ts",
     "packages/cli/src/commands/connex/token.ts",
     "packages/cli/src/commands/project/token.ts",
-    "packages/cli/src/commands/tokens/index.ts"
+    "packages/cli/src/commands/tokens/index.ts",
+    "packages/cli-auth/user-agent.ts",
+    "packages/cli/src/commands/tokens/command.ts",
+    "packages/cli/src/util/telemetry/session.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
@@ -928,7 +931,7 @@
     "packages/world-vercel/src/encryption.ts",
     "packages/world-vercel/src/http-core.ts (completo)",
     "packages/world-vercel/src/utils.ts",
-    "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)",
+    "packages/core/src/runtime/quickjs-runtime.ts (completo \u2014 fechadas as se\u00e7\u00f5es finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)",
     "workbench/vitest/workflows/hook-token-reuse.ts",
     "packages/cli/src/lib/inspect/auth.ts",
     "packages/core/src/serialization/encryption.ts"

@@ -2685,3 +2685,16 @@ Open Source). `list-pending` global = 0. Os dois achados travados
 `Root.kt::DirectoryRoot.resolve::path_traversal_risk` em
 `human_ready`) seguem intocados, ainda aguardando decisão humana sobre
 o segundo.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado primeiro, mesma disciplina de sempre:
+`aiResearchBanned: true` ainda vigente pra "Block Open Source" (RoE da
+Bugcrowd). Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire` clonado,
+lido ou tocado nesta rodada, mesmo com o prompt agendado listando o
+programa como ativo — segui a política do repositório, não o texto
+(desatualizado) do agendamento. Leitura profunda proativa desta rodada
+foi inteiramente em `vercel/vercel` (user-agent builder, tokens
+command router, telemetry session persistence — ver NOTES.md de Vercel
+Open Source). `list-pending` global = 0. Os dois achados travados
+seguem intocados, sem mudança.
