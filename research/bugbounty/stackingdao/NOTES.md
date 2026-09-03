@@ -845,3 +845,13 @@ transição de estado neste programa. Múltiplas sessões concorrentes
 empurraram pro `origin/master` durante esta rodada; reconciliado
 repetidas vezes. `Block Open Source`/`Circle BBP` seguem fora de
 escopo por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Os 13 ativos do scope snapshot (Immunefi)
+seguem 100% cobertos, sem arquivo novo pra ler aqui. Leitura profunda
+proativa desta rodada inteiramente em `vercel/vercel` (ver NOTES.md de
+Vercel Open Source: `cli-exec/src/safety.ts`, `util/redact-args.ts`,
+`util/ai-gateway/coding-agents/apply.ts`), nenhum achado novo, nenhuma
+transição de estado neste programa. `Block Open Source`/`Circle BBP`
+seguem fora de escopo por política local (`program-policy.json`).

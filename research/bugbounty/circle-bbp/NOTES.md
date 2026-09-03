@@ -6646,3 +6646,15 @@ justamente por isso que o gate tem que ser a primeira ação de código
 de cada rodada, nunca inferido do texto do prompt. O achado travado
 em `corroborated_static` (`Mints.sol::_mint::unchecked_call_return`)
 segue intocado, sem nenhuma ação.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero, ANTES de tocar ou
+instruir leitura de qualquer arquivo (disciplina mantida, sem
+repetição dos dois incidentes de ordem registrados acima). `Circle
+BBP` continua `blocked: true` (instrução direta e repetida do
+usuário, sem exceção). Nenhum repo `circlefin/*` foi clonado, lido ou
+tocado nesta rodada. Leitura profunda proativa foi inteiramente em
+`vercel/vercel` (ver NOTES.md de Vercel Open Source). O achado travado
+em `corroborated_static` (`Mints.sol::_mint::unchecked_call_return`)
+segue intocado, sem nenhuma ação.
