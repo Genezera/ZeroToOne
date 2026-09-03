@@ -870,3 +870,19 @@ Vercel Open Source: `cli-exec/src/safety.ts`, `util/redact-args.ts`,
 `util/ai-gateway/coding-agents/apply.ts`), nenhum achado novo, nenhuma
 transição de estado neste programa. `Block Open Source`/`Circle BBP`
 seguem fora de escopo por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` = 0 dentro do escopo desta rotina de 4 programas (globalmente
+há 91 candidatos pendentes, mas são todos `Mattermost Public Bug Bounty
+Engagement`/`Slack`, descobertos por varredura automatizada mais ampla fora
+dos 4 programas cobertos aqui -- não tocados por esta rotina). `Block Open
+Source`/`Circle BBP` seguem fora de
+escopo desta sessão por política local (`program-policy.json`: Circle BBP
+`blocked: true` por instrução direta do usuário; Block Open Source
+`aiResearchBanned: true` por RoE da Bugcrowd). Sem arquivo novo candidato em
+StackingDAO, os 15 contratos Clarity seguem 100% cobertos (`api.hiro.so`
+não foi retestado nesta rodada, sem novidade a checar). Leitura profunda
+proativa desta rodada direcionada a `vercel/vercel` (ver NOTES.md de Vercel
+Open Source: 3 arquivos de telemetria em `util/telemetry/commands/`),
+nenhum achado novo, nenhuma transição de estado neste programa.

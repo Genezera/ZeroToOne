@@ -978,7 +978,10 @@
     "packages/cli/src/util/login/types.ts",
     "packages/cli-exec/src/safety.ts",
     "packages/cli/src/util/redact-args.ts",
-    "packages/cli/src/util/ai-gateway/coding-agents/apply.ts"
+    "packages/cli/src/util/ai-gateway/coding-agents/apply.ts",
+    "packages/cli/src/util/telemetry/commands/blob/signed-token.ts",
+    "packages/cli/src/util/telemetry/commands/global-config/tokens.ts",
+    "packages/cli/src/util/telemetry/commands/login/index.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

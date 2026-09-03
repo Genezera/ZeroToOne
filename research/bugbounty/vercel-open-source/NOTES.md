@@ -5479,3 +5479,38 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/vercel` +3 arquivos, agora 96 no total). Os achados travados
 em `corroborated_static`/`human_ready` de Vercel Open Source seguem
 intocados, sem mudanca de estado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero. `Circle BBP` (`blocked: true`,
+instrução direta do usuário) e `Block Open Source` (`aiResearchBanned: true`,
+RoE da Bugcrowd) seguem excluídos, nenhum repo `circlefin/*`/`cashapp/*`/
+`afterpay/*`/`square/wire` tocado nesta rodada. `list-pending` global = 0
+dentro do escopo desta rotina de 4 programas (globalmente há 91 candidatos
+pendentes, mas são todos `Mattermost Public Bug Bounty Engagement`/`Slack`
+-- descobertos por uma varredura automatizada mais ampla que roda em
+paralelo, fora dos 4 programas que esta rotina cobre, então não tocados
+aqui); `pipeline-status` confere: nenhum achado mudou de estado nesta
+rodada, os `corroborated_static` travados aguardando PoC seguem intocados.
+
+Leitura profunda proativa: StackingDAO segue 100% coberto (ver NOTES.md de
+lá). Clone raso local de `vercel/vercel`, comparado contra
+`deep-read-log.json` (96 arquivos já lidos) restrito a caminhos com
+auth/session/crypto/token/login/password/admin/permission/access no nome —
+8 arquivos novos encontrados, 3 escolhidos (os demais eram evals/exemplos de
+baixo valor):
+
+- `packages/cli/src/util/telemetry/commands/blob/signed-token.ts` -- tracker
+  de telemetria do subcomando `blob signed-token`; todo valor sensível
+  (pathname, add/remove) passa por `this.redactedValue` (`'[REDACTED]'`
+  literal, confirmado em `telemetry/index.ts:46`) antes de sair. Sem achado.
+- `packages/cli/src/util/telemetry/commands/global-config/tokens.ts` --
+  mesmo padrão; `trackCliArgumentIdOrSlug` envia o id/slug do token em claro
+  pra telemetria própria da Vercel (não o valor do token), impacto nulo.
+  Sem achado.
+- `packages/cli/src/util/telemetry/commands/login/index.ts` -- só
+  encaminha estado (`started`/`canceled`/`error`/`success`) do fluxo de
+  login pra `trackLoginState`, sem nenhum dado sensível. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/vercel` +3 arquivos, agora 99 no total).
