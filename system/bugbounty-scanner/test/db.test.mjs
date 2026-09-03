@@ -18,11 +18,26 @@ function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-db-test-'));
   const prevLedgerDir = process.env.ZERO2ONE_LEDGER_DIR;
   process.env.ZERO2ONE_LEDGER_DIR = path.join(dir, 'ledger');
+  // Achado real (03/09/2026): usuário recebeu ~17 notificações reais no
+  // Telegram dele com dado de fixture ("Circle BBP"/"p::f::fn::type") --
+  // recordTransition pra `duplicate` dispara sendTelegramMessage de
+  // verdade se TELEGRAM_BOT_TOKEN/CHAT_ID estiverem configurados na
+  // máquina, e nada aqui neutralizava isso (mesma classe de bug que já
+  // atingiu ZERO2ONE_LEDGER_DIR, ver comentário em
+  // list-deep-read-candidates.test.mjs). telegram.mjs também trava
+  // sozinho quando `npm test` roda (defesa em profundidade), mas isto
+  // cobre também `node --test <arquivo>` direto, sem passar por npm.
+  const prevTelegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const prevTelegramChatId = process.env.TELEGRAM_CHAT_ID;
+  delete process.env.TELEGRAM_BOT_TOKEN;
+  delete process.env.TELEGRAM_CHAT_ID;
   const dbPath = path.join(dir, 'test.db');
   try {
     return fn(dbPath);
   } finally {
     process.env.ZERO2ONE_LEDGER_DIR = prevLedgerDir;
+    if (prevTelegramToken === undefined) delete process.env.TELEGRAM_BOT_TOKEN; else process.env.TELEGRAM_BOT_TOKEN = prevTelegramToken;
+    if (prevTelegramChatId === undefined) delete process.env.TELEGRAM_CHAT_ID; else process.env.TELEGRAM_CHAT_ID = prevTelegramChatId;
     // Best-effort: nunca deixar uma falha de limpeza (lock passageiro do
     // Windows) mascarar uma falha de asserção real do bloco try acima —
     // exceção no finally substitui silenciosamente a exceção original.

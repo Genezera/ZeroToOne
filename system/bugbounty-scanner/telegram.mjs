@@ -11,6 +11,18 @@
 const API_BASE = 'https://api.telegram.org';
 
 function getCredentials() {
+  // Achado real (03/09/2026): usuário recebeu ~17 notificações reais no
+  // Telegram real dele com dado de fixture de teste ("Circle BBP" /
+  // "p::f::fn::type") -- cada `npm test` que passa por uma transição pra
+  // `duplicate`/etc. disparava sendTelegramMessage de verdade, porque
+  // nada aqui nunca soube que estava rodando dentro de teste. `npm test`
+  // seta `npm_lifecycle_event=test` automaticamente (comportamento do
+  // próprio npm, sem dependência nova) -- travar nisso aqui é a defesa
+  // que vale pra QUALQUER teste, mesmo um escrito no futuro que esqueça
+  // de neutralizar as credenciais no próprio setup (que também foi
+  // corrigido, ver withTempEnv nos arquivos de teste -- duas camadas,
+  // mesmo princípio de defesa-em-profundidade de program-policy.mjs).
+  if (process.env.npm_lifecycle_event === 'test') return null;
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return null;

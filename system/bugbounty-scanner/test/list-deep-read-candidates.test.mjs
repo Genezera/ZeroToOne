@@ -22,10 +22,22 @@ function withTempEnv(fn) {
   // ("Programa X::owner/repo-a/...") -- ver ledger/ledger.mjs::getLedgerDir.
   const prevLedgerDir = process.env.ZERO2ONE_LEDGER_DIR;
   process.env.ZERO2ONE_LEDGER_DIR = path.join(dir, 'ledger');
+  // Mesma classe de bug documentada acima, achado real 03/09/2026:
+  // recordPlatformOutcome pra `duplicate` dispara sendTelegramMessage de
+  // verdade se TELEGRAM_BOT_TOKEN/CHAT_ID estiverem configurados na
+  // máquina -- usuário recebeu ~17 notificações reais com dado de
+  // fixture ("Circle BBP"/"p::f::fn::type") disparadas exatamente por
+  // testes como este. Ver comentário completo em test/db.test.mjs.
+  const prevTelegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const prevTelegramChatId = process.env.TELEGRAM_CHAT_ID;
+  delete process.env.TELEGRAM_BOT_TOKEN;
+  delete process.env.TELEGRAM_CHAT_ID;
   try {
     return fn(dir);
   } finally {
     process.env.ZERO2ONE_LEDGER_DIR = prevLedgerDir;
+    if (prevTelegramToken === undefined) delete process.env.TELEGRAM_BOT_TOKEN; else process.env.TELEGRAM_BOT_TOKEN = prevTelegramToken;
+    if (prevTelegramChatId === undefined) delete process.env.TELEGRAM_CHAT_ID; else process.env.TELEGRAM_CHAT_ID = prevTelegramChatId;
     try {
       rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     } catch { /* limpeza best-effort, mesmo padrão de test/db.test.mjs */ }

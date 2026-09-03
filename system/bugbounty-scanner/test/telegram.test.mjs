@@ -1,6 +1,30 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { shouldNotifyForTransition, formatTransitionMessage, NOTABLE_STATES } from '../telegram.mjs';
+import { shouldNotifyForTransition, formatTransitionMessage, NOTABLE_STATES, sendTelegramMessage } from '../telegram.mjs';
+
+// Achado real (03/09/2026): usuário recebeu ~17 notificações reais no
+// Telegram dele com dado de fixture de teste ("Circle BBP"/"p::f::fn::type")
+// -- cada `npm test` que passava por uma transição pra `duplicate` disparava
+// sendTelegramMessage de verdade, porque TELEGRAM_BOT_TOKEN/CHAT_ID reais
+// estavam configurados nesta máquina e nada aqui sabia que estava rodando
+// dentro de teste. Este teste roda sob `npm test` de propósito -- exercita
+// exatamente a mesma condição real (npm_lifecycle_event="test") que
+// protege qualquer chamador, não só simula em isolamento.
+test('sendTelegramMessage nunca envia de verdade quando npm_lifecycle_event="test" (como em `npm test`), mesmo com credenciais reais configuradas na máquina', async () => {
+  // Força a condição real de proteção, independente de como este arquivo
+  // foi invocado (`npm test` seta isto sozinho; `node --test <arquivo>`
+  // direto não -- o teste precisa valer nos dois casos, não só quando
+  // alguém lembra de rodar do jeito certo).
+  const prev = process.env.npm_lifecycle_event;
+  process.env.npm_lifecycle_event = 'test';
+  try {
+    const result = await sendTelegramMessage('mensagem de teste -- NUNCA deveria sair de verdade');
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'credenciais não configuradas');
+  } finally {
+    if (prev === undefined) delete process.env.npm_lifecycle_event; else process.env.npm_lifecycle_event = prev;
+  }
+});
 
 test('shouldNotifyForTransition é true só pros estados que valem aviso em tempo real', () => {
   assert.equal(shouldNotifyForTransition('human_ready'), true);

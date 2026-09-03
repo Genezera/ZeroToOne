@@ -13,12 +13,21 @@ function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-report-test-'));
   const prevLedgerDir = process.env.ZERO2ONE_LEDGER_DIR;
   process.env.ZERO2ONE_LEDGER_DIR = path.join(dir, 'ledger');
+  // Notificação real do Telegram nunca pode disparar de dentro de teste --
+  // ver comentário completo em test/db.test.mjs::withTempEnv (achado real
+  // 03/09/2026, usuário recebeu ~17 notificações de fixture).
+  const prevTelegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const prevTelegramChatId = process.env.TELEGRAM_CHAT_ID;
+  delete process.env.TELEGRAM_BOT_TOKEN;
+  delete process.env.TELEGRAM_CHAT_ID;
   const dbPath = path.join(dir, 'test.db');
   const reportsDir = path.join(dir, 'reports');
   try {
     return fn(dbPath, reportsDir);
   } finally {
     process.env.ZERO2ONE_LEDGER_DIR = prevLedgerDir;
+    if (prevTelegramToken === undefined) delete process.env.TELEGRAM_BOT_TOKEN; else process.env.TELEGRAM_BOT_TOKEN = prevTelegramToken;
+    if (prevTelegramChatId === undefined) delete process.env.TELEGRAM_CHAT_ID; else process.env.TELEGRAM_CHAT_ID = prevTelegramChatId;
     try {
       rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     } catch { /* limpeza best-effort */ }
