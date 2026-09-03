@@ -5410,3 +5410,47 @@ baixa frente a outros repos do programa): `src/use.ts` (completo),
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel-labs/skills` +3 arquivos, agora 17 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero, antes de tocar em qualquer
+repo: `Circle BBP` (blocked, instrução direta do usuário) e `Block Open
+Source` (aiResearchBanned, RoE da Bugcrowd) seguem excluídos, nenhum repo
+`circlefin/*`/`cashapp/*`/`afterpay/*`/`square/wire` tocado nesta rodada.
+`list-pending` global = 0 (nenhum finding em `candidate`).
+
+Leitura profunda proativa: StackingDAO já tem os 13 ativos do scope
+snapshot (Immunefi) integralmente lidos em rodadas anteriores -- nada novo
+pra ler la. Redirecionei os 3 arquivos desta rodada pra `vercel/vercel`
+(clone raso local, nao ainda lido segundo `deep-read-log.json`):
+
+- `packages/cli-exec/src/safety.ts` -- checks de ownership/permissao
+  (world-writable, group-writable, uid diferente) pra node_modules/.bin
+  local antes de confiar num binario la, espelha o mesmo padrao de
+  seguranca do proprio npm/corepack pra esse cenario. Chamado a partir de
+  `lookup.ts` (getLocalBinSearch/getDeclaredLocalVercelPackageBin) com
+  varias camadas de isSubpath+realpath antes de aceitar um bin local.
+  Sem achado.
+- `packages/cli/src/util/redact-args.ts` -- `stripSensitiveAuthArgs`
+  remove `--token`/`-t` (e seu valor) de listas de argv antes de
+  reconstruir comandos sugeridos ("next steps", saida --output=json pra
+  agentes). Escopo da funcao e propositalmente estreito (so as duas flags
+  de auth), verificado nos 6 call sites (arg-common.ts, agent-output.ts,
+  comments/list.ts, tokens/add.ts, coding-agents-setup.ts) -- nenhum
+  deles reconstroi comando a partir de argv sem passar por essa funcao
+  primeiro. Sem achado.
+- `packages/cli/src/util/ai-gateway/coding-agents/apply.ts` --
+  `applyPlan`/`buildSetupPlan` escrevem configs de coding agents e
+  shell rc files com export de API key. `writeConfigFile` segue symlink
+  (documentado no comentario de `isSymlink` em `config-files.ts`), o
+  que pareceu de inicio uma escrita-through-symlink sem aviso -- mas
+  `render.ts::printPlan` (linha ~89) mostra
+  "warning: this path is a symlink -- the write will follow it to its
+  target" pro usuario antes da confirmacao, exatamente como o comentario
+  do codigo promete. Comportamento intencional e ja avisado, nao
+  vulnerabilidade. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/vercel` +3 arquivos, agora 96 no total). Os achados travados
+em `corroborated_static`/`human_ready` de Vercel Open Source seguem
+intocados, sem mudanca de estado.

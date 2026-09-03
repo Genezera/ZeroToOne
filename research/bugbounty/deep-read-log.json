@@ -973,7 +973,10 @@
     "packages/cli/src/util/telemetry/session.ts",
     "packages/oidc/src/auth-errors.ts",
     "packages/oidc/src/token-error.ts",
-    "packages/cli/src/util/login/types.ts"
+    "packages/cli/src/util/login/types.ts",
+    "packages/cli-exec/src/safety.ts",
+    "packages/cli/src/util/redact-args.ts",
+    "packages/cli/src/util/ai-gateway/coding-agents/apply.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
