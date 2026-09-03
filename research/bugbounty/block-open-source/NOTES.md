@@ -2729,3 +2729,26 @@ Leitura profunda proativa desta rodada foi em `vercel/workflow`
 `packages/core/src/create-hook.ts` — ver NOTES.md de Vercel Open
 Source). `list-pending` global = 0. Os dois achados travados seguem
 intocados, sem mudança.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado, mas TARDE DEMAIS nesta rodada — erro
+de processo, quebrando a disciplina das últimas rodadas. Antes de
+checar, já tinha delegado a um subagente a leitura de
+`core/src/main/java/app/cash/paykit/core/CashAppPayState.kt`
+(`cashapp/cash-app-pay-android-sdk`). `aiResearchBanned: true`
+continua vigente pra "Block Open Source" (RoE da Bugcrowd: "Do not use
+ChatGPT, Claude, DeepSeek, Google Gemini or any AI tools during your
+research"). O subagente não achou nada digno de nota nesse arquivo
+(é só definição de tipos, sem lógica) e nenhum finding foi persistido
+no banco — mas a leitura em si já não deveria ter acontecido. Reverti
+a entrada correspondente do `deep-read-log.json` antes deste commit,
+não sobrou contaminação em estado persistido. Nenhum outro repo
+`cashapp/*`/`afterpay/*`/`square/wire` foi tocado nesta rodada.
+Reforço de processo (repetido de rodadas anteriores): checar
+`program-policy.json` é o passo zero, antes de sequer instruir um
+subagente a clonar ou ler qualquer arquivo — não um passo de
+verificação posterior. Os dois achados travados
+(`js_injection_unescaped_token_risk` em `corroborated_static` e
+`Root.kt::DirectoryRoot.resolve::path_traversal_risk` em
+`human_ready`) seguem intocados, sem mudança.

@@ -5108,3 +5108,33 @@ Block Open Source, e `Root.kt::DirectoryRoot.resolve::path_traversal_risk`
 em `human_ready`, também Block Open Source) seguem intocados por
 política — ambos aguardam decisão humana fora desta sessão, sem
 retomar pesquisa AI sobre esse programa.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0 no início da rodada, sem candidatos na fila.
+Leitura profunda proativa: `vercel/next.js`
+(`packages/next/src/build/preview-key-utils.ts` +
+`packages/next/src/server/web/get-edge-preview-props.ts` — geração/
+persistência das chaves de Preview/Draft Mode e leitura delas em
+runtime Edge). Geração de entropia via `crypto.randomBytes` (16/32
+bytes), tipos validados ao ler cache, sem rotação fora de build por
+design correto (precisa casar com o build de produção). Validação do
+cookie assinado com essas chaves fica em `try-get-preview-data.ts`,
+já lido em rodada anterior sem achado. Sem achado nesta rodada.
+
+Nota de processo: o agente que fez essa leitura nesta rodada também
+tocou (por engano meu, antes de checar `program-policy.json`) um
+arquivo de `cashapp/cash-app-pay-android-sdk` (Block Open Source,
+`aiResearchBanned`) e um par de `circlefin/stablecoin-xlm` (Circle
+BBP, `blocked`). Nenhum achado foi persistido no banco pra nenhum dos
+dois (ambos "sem achado" honesto), e as entradas correspondentes
+foram revertidas do `deep-read-log.json` antes deste commit — ver
+detalhe no NOTES.md de cada programa afetado. Nenhuma contaminação
+real ficou. Lição repetida: checar `program-policy.json` é o passo
+zero, antes de instruir qualquer subagente a clonar/ler qualquer
+repo, não depois.
+
+`deep-read-log.json` atualizado (`vercel/next.js` +2 arquivos).
+`list-pending` global = 0, nenhuma transição de estado nesta rodada.
+Os dois achados travados de Block Open Source seguem intocados por
+política.

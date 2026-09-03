@@ -811,6 +811,8 @@
     "src/index.ts"
   ],
   "vercel/next.js": [
+    "packages/next/src/build/preview-key-utils.ts",
+    "packages/next/src/server/web/get-edge-preview-props.ts",
     "packages/next/src/server/app-render/encryption.ts",
     "packages/next/src/server/app-render/encryption-utils.ts",
     "packages/next/src/server/app-render/encryption-utils-server.ts",
