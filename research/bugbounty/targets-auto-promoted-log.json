@@ -1,230 +1,250 @@
 {
-  "generatedAt": "2026-09-02T18:41:14.783Z",
-  "totalActiveAutoPromoted": 30,
+  "generatedAt": "2026-09-03T20:44:23.090Z",
+  "totalActiveAutoPromoted": 37,
   "promotedThisRound": [
     {
-      "program": "Kubernetes",
+      "program": "Auth0 by Okta",
+      "platform": "Bugcrowd",
+      "owner": "auth0",
+      "repo": "auth0-spa-js",
+      "branch": "main",
+      "maxBountyUsd": 50000,
+      "pathPrefixes": [],
+      "language": "js",
+      "score": 70,
+      "reasons": [
+        "teto de recompensa conhecido: US$50,000",
+        "1009 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-03T20:44:23.067Z"
+    },
+    {
+      "program": "Auth0 by Okta",
+      "platform": "Bugcrowd",
+      "owner": "auth0",
+      "repo": "react-native-auth0",
+      "branch": "master",
+      "maxBountyUsd": 50000,
+      "pathPrefixes": [],
+      "language": "js",
+      "score": 70,
+      "reasons": [
+        "teto de recompensa conhecido: US$50,000",
+        "552 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-03T20:44:23.067Z"
+    },
+    {
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "platform": "Bugcrowd",
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-jira",
+      "branch": "master",
+      "maxBountyUsd": 2000,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 22,
+      "reasons": [
+        "teto de recompensa conhecido: US$2,000",
+        "110 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-03T20:44:23.067Z"
+    },
+    {
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "platform": "Bugcrowd",
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-zoom",
+      "branch": "master",
+      "maxBountyUsd": 2000,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 22,
+      "reasons": [
+        "teto de recompensa conhecido: US$2,000",
+        "111 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-03T20:44:23.067Z"
+    },
+    {
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "platform": "Bugcrowd",
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-github",
+      "branch": "master",
+      "maxBountyUsd": 2000,
+      "pathPrefixes": [],
+      "language": "go",
+      "score": 22,
+      "reasons": [
+        "teto de recompensa conhecido: US$2,000",
+        "179 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-03T20:44:23.067Z"
+    },
+    {
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "platform": "Bugcrowd",
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-gitlab",
+      "branch": "master",
+      "maxBountyUsd": 2000,
+      "pathPrefixes": [],
+      "language": "js",
+      "score": 22,
+      "reasons": [
+        "teto de recompensa conhecido: US$2,000",
+        "153 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+      ],
+      "promotedAt": "2026-09-03T20:44:23.067Z"
+    },
+    {
+      "program": "Slack",
       "platform": "HackerOne",
-      "owner": "kubernetes",
-      "repo": "utils",
+      "owner": "slackhq",
+      "repo": "nebula",
       "branch": "master",
       "maxBountyUsd": null,
       "pathPrefixes": [],
       "language": "go",
       "score": 20,
       "reasons": [
-        "380 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+        "18265 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
         "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
       ],
-      "promotedAt": "2026-09-02T18:41:14.782Z"
-    },
-    {
-      "program": "Kiwi.com",
-      "platform": "HackerOne",
-      "owner": "kiwicom",
-      "repo": "navigation-compose-typed",
-      "branch": "main",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "jvm",
-      "score": 20,
-      "reasons": [
-        "235 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:41:14.782Z"
-    },
-    {
-      "program": "Plaid",
-      "platform": "HackerOne",
-      "owner": "plaid",
-      "repo": "plaid-link-android",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "jvm",
-      "score": 20,
-      "reasons": [
-        "130 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:41:14.782Z"
-    },
-    {
-      "program": "Plaid",
-      "platform": "HackerOne",
-      "owner": "plaid",
-      "repo": "react-plaid-link",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "js",
-      "score": 20,
-      "reasons": [
-        "288 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:41:14.782Z"
-    },
-    {
-      "program": "Kiwi.com",
-      "platform": "HackerOne",
-      "owner": "kiwicom",
-      "repo": "js-iam-middleware",
-      "branch": "master",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "js",
-      "score": 10,
-      "reasons": [
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:41:14.782Z"
-    },
-    {
-      "program": "Kiwi.com",
-      "platform": "HackerOne",
-      "owner": "kiwicom",
-      "repo": "k8s-vault-operator",
-      "branch": "main",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 10,
-      "reasons": [
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-02T18:41:14.782Z"
+      "promotedAt": "2026-09-03T20:44:23.067Z"
     }
   ],
   "skippedThisRound": {
     "blockedProgram": [],
     "unsupportedLanguage": [
       {
-        "owner": "kubernetes",
-        "repo": "website",
-        "githubLanguage": "HTML"
-      },
-      {
-        "owner": "matomo-org",
-        "repo": "developer-documentation",
-        "githubLanguage": "PHP"
-      },
-      {
-        "owner": "matomo-org",
-        "repo": "docker",
-        "githubLanguage": "Shell"
-      },
-      {
-        "owner": "matomo-org",
-        "repo": "matomo",
-        "githubLanguage": "PHP"
-      },
-      {
-        "owner": "matomo-org",
-        "repo": "tracker-proxy",
-        "githubLanguage": "PHP"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "kiwi-cache",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "kiwi-json",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "kiwi-structlog-config",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "konfetti",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "pg2avro",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "request-session",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "discourse",
-        "repo": "discourse",
+        "owner": "ruby",
+        "repo": "ruby",
         "githubLanguage": "Ruby"
       },
       {
-        "owner": "plaid",
-        "repo": "plaid-ruby",
+        "owner": "basecamp",
+        "repo": "once-campfire",
         "githubLanguage": "Ruby"
       },
       {
-        "owner": "roundcube",
-        "repo": "roundcubemail",
+        "owner": "basecamp",
+        "repo": "writebook",
+        "githubLanguage": "Ruby"
+      },
+      {
+        "owner": "cloudflare",
+        "repo": "workerd",
+        "githubLanguage": "C++"
+      },
+      {
+        "owner": "coinbase",
+        "repo": "cb-mpc",
+        "githubLanguage": "C++"
+      },
+      {
+        "owner": "auth0",
+        "repo": "Auth0.Net",
+        "githubLanguage": "C#"
+      },
+      {
+        "owner": "auth0",
+        "repo": "auth0-php",
         "githubLanguage": "PHP"
+      },
+      {
+        "owner": "trustwallet",
+        "repo": "wallet-core",
+        "githubLanguage": "C++"
+      },
+      {
+        "owner": "ClickHouse",
+        "repo": "ClickHouse",
+        "githubLanguage": "C++"
+      },
+      {
+        "owner": "fireblocks",
+        "repo": "mpc-lib",
+        "githubLanguage": "C++"
+      },
+      {
+        "owner": "freedomofpress",
+        "repo": "securedrop",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "freedomofpress",
+        "repo": "securedrop-workstation",
+        "githubLanguage": "Python"
+      },
+      {
+        "owner": "electroneum",
+        "repo": "electroneum",
+        "githubLanguage": "C++"
       }
     ],
     "tooLarge": [
       {
-        "owner": "smartcontractkit",
-        "repo": "chainlink",
-        "sizeKb": 1065609
+        "owner": "cloudflare",
+        "repo": "vinext",
+        "sizeKb": 48996
       },
       {
-        "owner": "smartcontractkit",
-        "repo": "external-adapters-js",
-        "sizeKb": 2383535
+        "owner": "Hacker0x01",
+        "repo": "react-datepicker",
+        "sizeKb": 172342
       },
       {
-        "owner": "nodejs",
-        "repo": "node",
-        "sizeKb": 1545154
+        "owner": "auth0",
+        "repo": "auth0.js",
+        "sizeKb": 27643
       },
       {
-        "owner": "backstage",
-        "repo": "backstage",
-        "sizeKb": 6751180
+        "owner": "auth0",
+        "repo": "lock",
+        "sizeKb": 166452
       },
       {
-        "owner": "kiwicom",
-        "repo": "orbit",
-        "sizeKb": 1568203
+        "owner": "auth0",
+        "repo": "nextjs-auth0",
+        "sizeKb": 23440
       },
       {
-        "owner": "plaid",
-        "repo": "plaid-link-ios",
-        "sizeKb": 1446370
+        "owner": "freedomofpress",
+        "repo": "securedrop-client",
+        "sizeKb": 21323
       },
       {
-        "owner": "plaid",
-        "repo": "react-native-plaid-link-sdk",
-        "sizeKb": 21416
+        "owner": "mattermost",
+        "repo": "mattermost-plugin-calls",
+        "sizeKb": 80200
       },
       {
-        "owner": "nextcloud",
-        "repo": "collectives",
-        "sizeKb": 34482
+        "owner": "mattermost",
+        "repo": "mattermost-plugin-playbooks",
+        "sizeKb": 72303
       },
       {
-        "owner": "nextcloud",
-        "repo": "files_confidential",
-        "sizeKb": 34395
-      },
-      {
-        "owner": "nextcloud",
-        "repo": "tables",
-        "sizeKb": 26946
+        "owner": "mattermost",
+        "repo": "mattermost-plugin-boards",
+        "sizeKb": 49739
       }
     ],
     "metadataFetchFailed": [],
-    "insufficientSignal": [],
+    "insufficientSignal": [
+      {
+        "owner": "coinbase",
+        "repo": "cb-mpc-go",
+        "score": 0
+      }
+    ],
     "alreadyPromoted": 0,
     "deferredToNextRun": [],
     "atCap": false

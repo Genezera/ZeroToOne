@@ -483,5 +483,123 @@ export const AUTO_PROMOTED_TARGETS = [
       "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
     ],
     "promotedAt": "2026-09-02T18:41:14.782Z"
+  },
+  {
+    "program": "Auth0 by Okta",
+    "platform": "Bugcrowd",
+    "owner": "auth0",
+    "repo": "auth0-spa-js",
+    "branch": "main",
+    "maxBountyUsd": 50000,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 70,
+    "reasons": [
+      "teto de recompensa conhecido: US$50,000",
+      "1009 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Auth0 by Okta",
+    "platform": "Bugcrowd",
+    "owner": "auth0",
+    "repo": "react-native-auth0",
+    "branch": "master",
+    "maxBountyUsd": 50000,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 70,
+    "reasons": [
+      "teto de recompensa conhecido: US$50,000",
+      "552 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-jira",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 22,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "110 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-zoom",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 22,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "111 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-github",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 22,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "179 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-gitlab",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 22,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "153 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Slack",
+    "platform": "HackerOne",
+    "owner": "slackhq",
+    "repo": "nebula",
+    "branch": "master",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 20,
+    "reasons": [
+      "18265 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-03T20:44:23.067Z"
   }
 ];
