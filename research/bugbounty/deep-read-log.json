@@ -907,5 +907,11 @@
     "util/secrets/secrets.go",
     "token/util/helpers.go",
     "token/api/types.go"
+  ],
+  "kiwicom/js-iam-middleware": [
+    "src/validateIAPToken.ts",
+    "src/authenticationMiddleware.ts",
+    "src/getUser.ts",
+    "src/userCache.ts"
   ]
 }

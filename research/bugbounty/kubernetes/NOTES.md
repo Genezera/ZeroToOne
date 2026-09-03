@@ -304,3 +304,73 @@ dependem de configuração insegura" como escopo válido mas **não elegível
 pra bounty**, e nosso achado só importa de verdade sem CA pinning —
 usuário avisado diretamente na conversa. Relatório considerado pronto
 pra envio (commits `1d1d819` → `58e768b`).
+
+## Rodada 2026-09-03 (agente de nuvem) — 66 candidatos refutados (39 semgrep + 27 `known_vulnerable_dependency`), todos falso-positivo com leitura real de código/go.mod
+
+Fila `candidate` trouxe 66 achados de Kubernetes espalhados por 13
+repos de staging clonados (utils, metrics, publishing-bot, kubeadm,
+kube-openapi, org, cloud-provider, cloud-provider-aws, cli-runtime,
+code-generator, gengo, csi-translation-lib, klog, kubelet). Nenhum
+sobreviveu à checagem de alcançabilidade. Padrões que valem registrar
+pra não repetir a investigação do zero:
+
+**32 de 34 `semgrep_use_of_unsafe_block` eram `zz_generated.conversion.go`**
+(metrics, todas as 5 API versions): padrão canônico
+`*out = *(*Tipo)(unsafe.Pointer(in))` gerado por `conversion-gen` entre
+structs versionada/interna layout-compatíveis — usado em toda a base
+apimachinery há mais de uma década, não processa dado de atacante. Os
+outros 2 eram `kubernetes/utils/inotify/inotify_linux.go`: reinterpreta
+buffer de `read()` sobre um fd inotify LOCAL (dado do kernel, não de
+rede). `math/rand` (4 achados: `trace.go`, `kinder/waiter.go`,
+`kube-openapi/fuzz.go`, + 1 Kiwi.com) sempre usado só pra jitter/ID de
+log/dado de teste, nunca segredo/token — `vaultsecret_controller.go`
+(Kiwi.com) já carrega `//nolint:gosec` reconhecendo isso.
+`publishing-bot/server.go` (`semgrep_use_tls`) serve só `/healthz` e um
+`/run` sem parâmetros num binário de automação interna com
+`server-port` desabilitado por padrão, fora da lista de alvos ativos
+deste programa (ver tabela no topo do STATUS.md). `kinder/util.go`
+(`semgrep_avoid_bind_to_all_interfaces`) é o idiom padrão de "pegar
+porta livre" — listener fechado antes de servir qualquer coisa.
+
+**Lição nova pra reachability de Go, vale generalizar pra próximas
+rodadas**: quase todo `known_vulnerable_dependency` aqui (25/27) caiu
+numa de duas categorias objetivamente checáveis sem precisar de
+`govulncheck`:
+1. **Marcado `// indirect` no go.mod + repo é biblioteca sem `main.go`
+   próprio** (cloud-provider, cloud-provider-aws, cli-runtime,
+   csi-translation-lib parcial, gengo, klog/examples, code-generator):
+   a versão real que roda em produção é decidida pelo `go.mod`/`go.sum`
+   do BINÁRIO final (ex.: `aws-cloud-controller-manager`), não deste
+   repo isolado. Confirmado ainda mais forte pelo histórico: 74/74
+   revisões anteriores de `known_vulnerable_dependency`/go neste
+   sistema já eram falso-positivo (ver `quarantine-status.md`).
+2. **Pseudo-versão `k8s.io/*` recente (`v0.0.0-2026...`) comparada
+   contra CVE antiga**: `apimachinery`/`client-go`/`apiserver` em
+   `cloud-provider`, `cli-runtime`, `csi-translation-lib`,
+   `code-generator` foram flagados pra CVEs de 2020
+   (GHSA-33c5-9fx5-fvjm/CVE-2020-8559, privilege escalation, corrigida
+   em 0.16.13/0.17.9/0.18.7 — confirmado via advisory oficial) mesmo a
+   pseudo-versão sendo um snapshot de ago/set-2026. OSV-Scanner não
+   ordena pseudo-versão de branch principal corretamente contra ranges
+   semver publicados — bug de comparação do scanner, não achado real.
+   Vale registrar como classe conhecida de ruído pra próximas rodadas
+   com `k8s.io/*`.
+
+Duas exceções que mereceram leitura funda em vez de aplicar padrão:
+- **`kubernetes/kubelet` + `google.golang.org/grpc@v1.82.1`
+  (GHSA-vp52-pcj8-j9qc/CVE-2026-84304, DoS real e atual — corrigido só
+  em 1.83.1)**: esse repo é só as definições de tipo/API geradas
+  (`pkg/apis/{podresources,deviceplugin,dra,pluginregistration}`,
+  arquivos `*_grpc.pb.go`) — confirmado por grep que NENHUM
+  `grpc.NewServer()` roda aqui. O kubelet de verdade (que instancia os
+  servidores gRPC de podresources/device-plugin) vive em
+  `kubernetes/kubernetes` (`cmd/kubelet`), repo que não está na lista
+  de alvos ativos rastreados por este scanner — sem acesso pra
+  confirmar a versão de grpc real do binário publicado.
+- `kubernetes/org` (`go-git@v5.6.1` com ~28 CVEs de path
+  traversal/RCE, `sirupsen/logrus@v1.9.0` DoS via `Entry.writerScanner`):
+  ambos usados só em `cmd/korg`/`cmd/restrictions`, ferramentas CLI de
+  administração do org GitHub rodadas localmente por mantenedores
+  contra arquivos/repos confiáveis — `go-git` nunca processa repo
+  arbitrário de atacante; `logrus` nunca chama `.Writer()` (o método
+  vulnerável), só `Fatalf`/`Infof`/`Error`.

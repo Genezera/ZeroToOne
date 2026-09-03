@@ -165,3 +165,59 @@ Security Advisories no repositório. `getUser.test.ts` existe (testa só
 específico nunca foi coberto por teste automatizado, reforçando a
 lição de que "grep some pattern" nunca acharia isso, precisa ler os
 dois arquivos juntos e rastrear posição de argumento manualmente.
+
+## Rodada 2026-09-03 (agente de nuvem) — 46 candidatos de `known_vulnerable_dependency`/`semgrep_*` refutados, releitura independente de `authorizationDirective.ts` confirma achado anterior
+
+Fila `candidate` desta rodada não continha nenhum achado dos 4
+programas mencionados no prompt agendado (StackingDAO/Vercel/Block/
+Circle) — só Kiwi.com, Kubernetes e Plaid (programa novo, descoberto
+02/09). `program-policy.json` já bloqueia Block Open Source
+(`aiResearchBanned`, RoE explícita do Bugcrowd) e Circle BBP (pedido
+direto do usuário) — nenhum dos dois foi tocado, achados/pesquisa
+antigos deles intactos.
+
+Todos os 46 candidatos de Kiwi.com nesta rodada (1
+`known_vulnerable_dependency` em `k8s-vault-operator/go.mod`
+[go-jose, `// indirect`, sem call site] + 45 em
+`js-iam-middleware/yarn.lock`) foram refutados como falso-positivo,
+com leitura real de código pra cada categoria (não só "presença no
+manifesto"):
+
+- `jsonwebtoken@8.5.1`/`jws@3.2.2`: `validateIAPToken.ts` chama
+  `jwt.verify(iapToken, pubKey, {algorithms: ["ES256"]})` — algoritmo
+  travado explicitamente, exatamente a mitigação que as duas CVEs
+  publicadas (GHSA-hjrf-2m68-5959/CVE-2022-23541,
+  GHSA-8cf7-32gw-wr33/CVE-2022-23539) exigem verificar via advisory
+  oficial. Nenhuma das duas precondições (mistura simétrico/assimétrico
+  na mesma função de retrieval; combinação chave-algoritmo inválida)
+  existe no código real.
+- `node-fetch@2.6.1`: usado só contra URL fixa do Google IAP
+  (gstatic.com), sem headers sensíveis nem redirect cross-origin — a
+  CVE (vazamento de header em redirect) não se aplica.
+- `body-parser`/`path-to-regexp` (transitivos do `express`): `express`
+  é importado só pelos tipos TS (`Request`/`Response`/`NextFunction`),
+  nunca instanciado como app — não alcançável pelo código próprio do
+  pacote.
+- Demais 40 pacotes: confirmados via `package.json` real como
+  devDependency-only (ferramental de build/release: eslint, ava, ts-
+  node, semantic-release e seus transitivos) — nunca publicados no
+  npm (`files` só inclui `dist`), nunca instalados por consumidor do
+  pacote.
+
+Enquanto investigava `jsonwebtoken`, li `authenticationMiddleware.ts`
+e (pra 3º arquivo de leitura profunda proativa da rodada)
+`getUser.ts`/`userCache.ts`, que levaram de volta a
+`authorizationDirective.ts` — e reproduzi, só de leitura (sem rodar
+nada), o EXATO mesmo achado de troca de posição de argumento já
+documentado acima (`isUserAuthorized` chamada de dentro de
+`visitFieldDefinition` com os 5 argumentos finais fora de ordem).
+Confirma independentemente a análise anterior, incluindo a conclusão
+de que falha fechada (nega acesso, não é bypass) — não é achado novo,
+o finding `Kiwi.com::kiwicom/js-iam-middleware/src/
+authorizationDirective.ts::visitFieldDefinition::positional_argument_mismatch`
+já está em `human_ready` aguardando decisão humana, não recriado nem
+tocado nesta rodada. `userCache.ts` tem o mesmo padrão de lookup por
+chave dinâmica (`this.cache[identifier]` com `identifier` derivado de
+email do usuário) que `getPubKey`/`cachedKeys`, mas o formato da chave
+(`${email}:${service}`, sempre com sufixo) impede a colisão com
+`"__proto__"` que existe em `cachedKeys` — não é um problema.
