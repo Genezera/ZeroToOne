@@ -735,7 +735,10 @@
     "packages/harness-opencode/src/bridge/opencode-server-auth.ts (gera senha local de 32 bytes via node:crypto randomBytes por sessão pra Basic Auth do servidor opencode local, mesmo padrão de bridge-token.ts/tool-relay-auth.ts -- só gera e injeta em env, comparação fica no lado receptor fora deste arquivo. Sem achado)",
     "packages/harness/src/utils/sandbox-credential-brokering.ts",
     "packages/harness/src/utils/credential-forwarding.ts",
-    "packages/harness/src/v1/harness-v1-credential-forwarding.ts"
+    "packages/harness/src/v1/harness-v1-credential-forwarding.ts",
+    "packages/harness/src/utils/ai-gateway-auth.ts",
+    "packages/harness/src/utils/authentication-environment.ts",
+    "packages/harness-claude-code/src/claude-code-auth.ts"
   ],
   "vercel/async-sema": [
     "src/index.ts"

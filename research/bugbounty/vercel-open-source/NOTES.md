@@ -5935,3 +5935,45 @@ completo, exceto `Cargo.toml`/testes):
 
 Nenhum achado novo. `Block Open Source`/`Circle BBP` seguem fora de
 escopo por política local, nenhum repo desses tocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, mais uma sessão concorrente)
+
+`program-policy.json` checado antes de qualquer leitura (`Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado).
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia nos 4
+programas).
+
+Deep-read proativo em `vercel/ai` convergiu de forma independente pra
+mesma área já coberta na rodada acima (`sandbox-credential-brokering.ts`/
+`credential-forwarding.ts` -- mesma conclusão, sem achado, não duplicado
+aqui). Ao sincronizar via `git fetch`/rebase antes do push, mantive só
+os 3 arquivos genuinamente novos que esta sessão leu e a rodada acima
+não tinha tocado:
+
+- `packages/harness/src/utils/ai-gateway-auth.ts` (completo, 15
+  linhas): só lê `AI_GATEWAY_API_KEY`/`VERCEL_OIDC_TOKEN`/
+  `AI_GATEWAY_BASE_URL` do env, sem lógica de validação. Sem achado.
+- `packages/harness/src/utils/authentication-environment.ts`
+  (completo): type guard puro (`isHarnessAuthenticationEnvironment`),
+  sem lógica de segurança. Sem achado.
+- `packages/harness-claude-code/src/claude-code-auth.ts` (completo,
+  216 linhas) — resolve como o harness autentica com a Anthropic
+  (`ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` direto vs via AI
+  Gateway), incluindo `readApiKeyHelper()` que roda
+  `execFileSync('sh', ['-c', command])` com o comando configurado em
+  `~/.claude/settings.json:apiKeyHelper` -- mesmo comportamento
+  documentado do próprio CLI `claude`, fonte é config local do próprio
+  usuário, não input de terceiro. Este arquivo chama
+  `createCredentialRequestTransformation`, cuja definição está em
+  `sandbox-credential-brokering.ts` (já revisado sem achado na rodada
+  acima) -- avaliação cética aplicada ao vetor óbvio ("código dentro
+  do sandbox desvia o header trocado pra um host que controla"): o
+  matching é por `host` exato, não wildcard, então não há esse desvio
+  neste arquivo isoladamente. Sem acesso ao proxy de rede real que
+  aplica a transformação fora deste pacote, não dá pra confirmar 100%
+  o comportamento dele com redirect cross-host -- limite de cobertura
+  registrado, não achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/ai` +3 arquivos, agora 27 no total, sem duplicar as entradas
+já gravadas pela rodada concorrente acima).
