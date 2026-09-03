@@ -5673,3 +5673,37 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`sveltejs/svelte` +2 arquivos, agora 11 no total). `Block Open
 Source`/`Circle BBP` seguem fora de escopo por política local
 (`program-policy.json`), nenhum repo desses tocado.
+
+## Rodada 2026-09-03 (push webhook, sem findings pendentes na fila)
+
+`list-pending` vazio (0 candidatos em qualquer programa). Leitura
+profunda proativa: `check-program` confirmou `Vercel Open Source` e
+`StackingDAO` liberados antes de qualquer clone (`Block Open
+Source`/`Circle BBP` continuam bloqueados, nenhum repo desses tocado
+nem sequer listado). StackingDAO: os 13 contratos do scope snapshot
+já estavam 100% cobertos em rodadas anteriores (15 arquivos no log,
+2 a mais que o scope atual) — nada novo pra ler lá.
+
+`vercel/eve` (clone raso, `find` por auth/session/crypto/token/login/
+password/admin/permission/access/secret/credential comparado contra
+`deep-read-log.json`): 3 arquivos novos priorizados —
+
+- `execution/wire/session-inbox-wire.v6.ts` — nova versão de wire que
+  adiciona a flag `tasks:boolean` ao comando `cancel` (cancelamento de
+  tasks "owned" pela sessão). Rastreei o consumo até
+  `turn-control-receiver.ts` L107-113 (`cancelAllIndexedSessionTasksStep`
+  chamado com `this.stateCursor.sessionState`, sempre a sessão atual do
+  receiver) e `cancel-indexed-session-tasks-step.ts` (itera só
+  `getSessionTaskIndex` da própria sessão durável, sem aceitar id de
+  sessão alheia como input). Sem escalonamento cross-session. Sem achado.
+- `setup/flows/chatgpt-auth.ts` — `spawn("codex",["login"])` via argv
+  array (sem shell, sem interpolação de input de usuário). Sem achado.
+- `public/channels/slack/session-operations.ts` — `bindSlackSessionOperations`
+  só aceita override de `auth` vindo do próprio chamador interno
+  (parâmetro tipado), nenhum campo de input externo não confiável chega
+  nessa função. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/eve` +3 arquivos). `Block Open Source`/`Circle BBP` seguem
+fora de escopo por política local (`program-policy.json`), nenhum repo
+desses tocado.
