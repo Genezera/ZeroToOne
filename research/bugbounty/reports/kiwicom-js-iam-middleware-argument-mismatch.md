@@ -88,7 +88,7 @@ the real required permission:  "read:billing-secrets"        (whatever the prote
 iamURL:                        "https://iam.internal.example.com"
 iamToken:                      "Bearer sk_live_REAL_SECRET_SERVICE_TOKEN_XYZ"  (the service's real credential)
 ```
-Ran twice: once with a logging mock in place of `fetcher` (to capture the exact URL and headers without making any network call), and once against the real `node-fetch@2.6.x` dependency this package actually pins in its own `package.json` (installed and executed for real, not assumed to behave a certain way).
+Ran twice, each as its own small script (both attached): `mock-poc.mjs` replaces `fetcher` with a logging function, to capture the exact URL and headers without making any network call; `real-poc.mjs` uses the real `node-fetch@2.6.x` dependency this package actually pins in its own `package.json`, installed and executed for real rather than assumed to behave a certain way.
 
 With the logging mock, the request that would actually be sent:
 ```
