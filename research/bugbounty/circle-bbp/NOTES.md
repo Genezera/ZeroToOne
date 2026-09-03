@@ -6707,3 +6707,18 @@ tocado nesta rodada. Leitura profunda proativa foi inteiramente em
 `vercel/vercel` (ver NOTES.md de Vercel Open Source). O achado travado
 em `corroborated_static` (`Mints.sol::_mint::unchecked_call_return`)
 segue intocado, sem nenhuma ação.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado (`blocked: true` continua vigente,
+instrução direta do usuário, sem exceção). Nenhum repo `circlefin/*`
+foi clonado ou lido nesta rodada -- as únicas consultas feitas contra
+Circle BBP foram leitura do `queue.jsonl` já existente no repositório
+(contagem de estados dos findings já registrados em rodadas passadas,
+sem nenhuma pesquisa nova), o que não conta como "pesquisa" sob o
+bloqueio. Leitura profunda proativa desta rodada ficou inteiramente em
+`vercel/chat` (ver NOTES.md de Vercel Open Source: achado novo real,
+comparação não timing-safe de bot token em `adapter-discord`). O
+achado travado em `corroborated_static`
+(`Mints.sol::_mint::unchecked_call_return`) segue intocado, sem
+nenhuma ação.

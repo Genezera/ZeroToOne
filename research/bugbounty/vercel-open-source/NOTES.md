@@ -5514,3 +5514,68 @@ baixo valor):
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/vercel` +3 arquivos, agora 99 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte, sessão concorrente) — achado novo em vercel/chat
+
+`list-pending` global = 0 (91 candidatos na fila, todos em Mattermost/
+Slack — fora do escopo desta rotina). 0 candidatos pendentes em Vercel
+Open Source especificamente (os 37 que ainda apareciam com `state:
+candidate` direto no `queue.jsonl` já tinham sido resolvidos como
+`false_positive`/`known_duplicate` pelo dedup automático do
+`migrate-to-v2.mjs` contra fingerprints semânticos já revisados antes
+desta rodada começar).
+
+Leitura profunda proativa: cloneado `vercel/chat` (`git clone --depth 1`,
+público, sem conta/token) -- repo com cobertura parcial (17 arquivos já
+lidos, listados em `deep-read-log.json`). 3 arquivos novos lidos:
+- `examples/nextjs-chat/src/lib/authorization.ts` --
+  `authorizePreviewBranchRequest` faz length-check antes de
+  `timingSafeEqual`; mesmo padrão defensivo já visto em vários outros
+  adapters deste repo (comprimento do segredo não é por si sensível
+  aqui). Sem achado.
+- `packages/adapter-slack/src/crypto.ts` -- só re-exporta os
+  primitivos de `adapter-shared/src/crypto.ts`, sem lógica própria.
+- `packages/adapter-shared/src/crypto.ts` -- `encryptToken`/
+  `decryptToken`: AES-256-GCM, IV aleatório de 12 bytes por chamada via
+  `crypto.randomBytes`, `authTag` de 16 bytes verificado no decrypt,
+  `decodeKey` exige chave de exatamente 32 bytes. Implementação
+  correta, sem reuso de IV. Sem achado.
+
+**Achado novo real, corrigindo um gap de processo de rodada anterior**:
+uma nota já existente em `deep-read-log.json` (entrada de
+`packages/adapter-discord/src/index.ts` em `vercel/chat`, de uma
+rodada passada) registrava "achado: gatewayToken comparado com `!==`
+em vez de `timingSafeEqual`" mas esse achado nunca tinha sido de fato
+registrado como finding via `upsert-finding` -- ficou só como anotação
+solta, sem entrada em `queue.jsonl`. Reli o arquivo pra confirmar antes
+de agir: em `handleWebhook` (linha ~369), quando o header
+`x-discord-gateway-token` está presente (caminho de forwarded Gateway
+event), o token do header é comparado contra o bot token real
+(`process.env.DISCORD_BOT_TOKEN`, via `resolveBotToken()`) com
+`gatewayToken !== botToken` -- comparação de string simples, não
+timing-safe, num endpoint HTTP público sem outra autenticação antes
+desse `if`. O mesmo arquivo usa `timingSafeEqual` corretamente pra
+outro segredo (verificação de assinatura Ed25519) mais abaixo na mesma
+função, e outros adapters do mesmo monorepo (`adapter-instagram`,
+`adapter-notion/utils.ts`, `adapter-telegram`) usam `timingSafeEqual`
+de forma consistente pro mesmo tipo de comparação -- forte indício de
+lapso real, não escolha deliberada (CWE-208, Observable Timing
+Discrepancy).
+
+Criado via `upsert-finding`
+(`Vercel Open Source::vercel/chat/packages/adapter-discord/src/index.ts::handleWebhook::ai_deep_read_finding`)
+e avançado pra `corroborated_static` (transição aceita: "source/sink ou
+condição perigosa confirmada em código real, com arquivo(s) citado(s)").
+`check-scope "Vercel Open Source" "vercel/chat"` confirmou `allowed:
+true`/`bountyEligible: true` (tier 2 OSS). `record-deployment-evidence`
+registrado com `confidence: "unverified"` -- honesto: `vercel/chat` é um
+SDK/biblioteca open source de adapters de chat, não um serviço com
+endpoint fixo conhecido operado publicamente pela Vercel; não confirmei
+nenhuma instância ao vivo real expondo essa rota específica, isso
+depende de quem integra o SDK. Tentativa de transição pra
+`scope_verified` recusada pela máquina de estados como esperado (gate
+de confidence funcionando corretamente) -- achado fica travado em
+`corroborated_static`, sem rascunho de relatório.
+
+`deep-read-log.json` atualizado (`vercel/chat` +3 arquivos, agora 20 no
+total).

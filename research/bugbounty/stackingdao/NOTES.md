@@ -873,16 +873,35 @@ seguem fora de escopo por política local (`program-policy.json`).
 
 ## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
 
-`list-pending` = 0 dentro do escopo desta rotina de 4 programas (globalmente
-há 91 candidatos pendentes, mas são todos `Mattermost Public Bug Bounty
-Engagement`/`Slack`, descobertos por varredura automatizada mais ampla fora
-dos 4 programas cobertos aqui -- não tocados por esta rotina). `Block Open
-Source`/`Circle BBP` seguem fora de
-escopo desta sessão por política local (`program-policy.json`: Circle BBP
-`blocked: true` por instrução direta do usuário; Block Open Source
-`aiResearchBanned: true` por RoE da Bugcrowd). Sem arquivo novo candidato em
-StackingDAO, os 15 contratos Clarity seguem 100% cobertos (`api.hiro.so`
-não foi retestado nesta rodada, sem novidade a checar). Leitura profunda
-proativa desta rodada direcionada a `vercel/vercel` (ver NOTES.md de Vercel
-Open Source: 3 arquivos de telemetria em `util/telemetry/commands/`),
-nenhum achado novo, nenhuma transição de estado neste programa.
+Duas sessões cloud concorrentes rodaram esta mesma rodada em paralelo
+(reconciliado no merge; ambas registradas abaixo em vez de descartar
+uma).
+
+**Sessão A**: `list-pending` = 0 dentro do escopo desta rotina de 4
+programas (globalmente há 91 candidatos pendentes, mas são todos
+`Mattermost Public Bug Bounty Engagement`/`Slack`, descobertos por
+varredura automatizada mais ampla fora dos 4 programas cobertos aqui —
+não tocados por esta rotina). `Block Open Source`/`Circle BBP` seguem
+fora de escopo desta sessão por política local (`program-policy.json`:
+Circle BBP `blocked: true` por instrução direta do usuário; Block Open
+Source `aiResearchBanned: true` por RoE da Bugcrowd). Sem arquivo novo
+candidato em StackingDAO, os 15 contratos Clarity seguem 100% cobertos
+(`api.hiro.so` não foi retestado nesta rodada, sem novidade a checar).
+Leitura profunda proativa desta rodada direcionada a `vercel/vercel`
+(ver NOTES.md de Vercel Open Source: 3 arquivos de telemetria em
+`util/telemetry/commands/`), nenhum achado novo, nenhuma transição de
+estado neste programa.
+
+**Sessão B**: `list-pending` global = 0 nos 4 programas do prompt
+agendado (91 candidatos totais na fila, todos em Mattermost/Slack —
+fora do escopo desta rotina). Nenhum achado novo em StackingDAO nesta
+rodada; os 15 contratos Clarity seguem 100% cobertos, sem arquivo novo
+candidato. `program-policy.json` checado tarde demais desta vez, e só
+depois de já ter tocado `Block Open Source` por engano (ver incidente
+registrado em NOTES.md de Block Open Source) — nenhum trabalho de
+StackingDAO foi afetado por esse incidente. Leitura profunda proativa
+desta rodada ficou inteiramente em `vercel/chat` (ver NOTES.md de
+Vercel Open Source): achado novo real encontrado lá
+(`adapter-discord/src/index.ts`, comparação não timing-safe de bot
+token), sem relação com este programa. `Circle BBP` segue fora de
+escopo por instrução direta do usuário (`blocked: true`).

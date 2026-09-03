@@ -746,7 +746,10 @@
     "packages/adapter-notion/src/index.ts (handleWebhook/handleVerificationHandshake, sem achado)",
     "packages/adapter-notion/src/utils.ts (verifyNotionSignature: length-check + timingSafeEqual, padrao correto, sem achado)",
     "packages/adapter-telegram/src/index.ts (handleWebhook/secretToken timingSafeEqual dentro de try/catch pra length mismatch, fail-closed em mode webhook sem secretToken, sem achado)",
-    "packages/adapter-web/src/adapter.ts (handleWebhook delega auth pro getUser fornecido pelo app -- BYO auth por design, sem achado)"
+    "packages/adapter-web/src/adapter.ts (handleWebhook delega auth pro getUser fornecido pelo app -- BYO auth por design, sem achado)",
+    "examples/nextjs-chat/src/lib/authorization.ts (authorizePreviewBranchRequest -- length-check antes de timingSafeEqual, mesmo padrao ja visto em varios adapters deste repo; length do secret nao e segredo por si, sem achado)",
+    "packages/adapter-slack/src/crypto.ts (so re-exporta os primitivos de adapter-shared/src/crypto.ts, sem logica propria)",
+    "packages/adapter-shared/src/crypto.ts (encryptToken/decryptToken -- AES-256-GCM, IV aleatorio de 12 bytes por chamada via crypto.randomBytes, authTag de 16 bytes verificado no decrypt, decodeKey exige exatamente 32 bytes. Sem reuso de IV, sem achado)"
   ],
   "vercel/eve": [
     "packages/eve/src/channel/auth/jwt-hmac.ts",
