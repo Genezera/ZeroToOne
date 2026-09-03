@@ -5794,3 +5794,47 @@ não tinha chegado a ler:
 
 Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/ai` +2,
 agora 21 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/`Circle
+BBP` confirmados bloqueados, nenhum repo desses tocado). `list-pending`
+global = 0 nos 4 programas desta rotina. Revisitei o achado travado em
+`corroborated_static` (`vercel/chat/packages/adapter-discord/src/index.ts::handleWebhook`,
+CWE-208 timing attack no `gatewayToken !== botToken`): `check-scope("Vercel
+Open Source","vercel/chat")` retorna `allowed=true`, mas a tentativa de
+`transition ... scope_verified` foi corretamente recusada pela máquina de
+estados (deployment evidence já registrada como `confidence=unverified`
+em rodada anterior — sem instância ao vivo confirmada expondo esse
+adapter). Sistema funcionando como esperado, nenhuma mudança de estado.
+
+Leitura profunda proativa desta rodada em `vercel/ai` (clone raso novo,
+`git clone --depth 1`): com `packages/harness`/`sandbox-vercel` já bem
+cobertos em rodadas anteriores, busquei arquivos ainda não lidos com
+palavras-chave de prioridade (auth/token/credential/session) e escolhi 3
+ainda não presentes no `deep-read-log.json`:
+
+- `packages/harness/src/utils/sandbox-credential-brokering.ts` —
+  `generateSandboxCredentialPlaceholder` usa `randomBytes(32)` (CSPRNG
+  real, não `Math.random`), placeholder com prefixo fixo `aisdkhc_` +
+  43 chars base64url (bate com 32 bytes). `isSandboxCredentialPlaceholder`
+  valida o formato via regex ancorada. `maskSandboxCredentials` substitui
+  valor de credencial pelo próprio nome da env var (não vaza o valor real
+  em logs). Sem achado.
+- `packages/harness/src/utils/credential-forwarding.ts` —
+  `applyCredentialForwarding`/`createSandboxCredentialEnvironment` iteram
+  só sobre `credentialEnvironmentVariables` explicitamente passadas pelo
+  chamador (não há input externo não confiável decidindo quais env vars
+  contam como credencial). Quando `credentialForwarding` (callback do
+  usuário do SDK) está ausente, cai para o placeholder gerado (mais
+  seguro), não para o valor real. Sem achado.
+- `packages/harness/src/v1/harness-v1-credential-forwarding.ts` — só
+  declaração de tipo (`HarnessV1CredentialForwarding`), com comentário
+  já documentando a limitação de design (o callback só controla o valor
+  exposto ao sandbox, não restringe o que o adapter host pode acessar) —
+  risco conhecido e documentado pelos próprios mantenedores, não uma
+  falha silenciosa. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/ai` +3 arquivos). `Block Open Source`/`Circle BBP` seguem fora
+de escopo por política local (`program-policy.json`).

@@ -939,3 +939,13 @@ memória, execução de bash é o próprio produto, não um desvio de
 sandbox). Nenhum achado novo, nenhuma transição de estado neste
 programa. O achado de `vercel/chat` (CWE-208, `corroborated_static`)
 segue intocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Sem arquivo novo candidato em StackingDAO, os
+15 contratos Clarity seguem 100% cobertos (`api.hiro.so` não retestado
+nesta rodada). Leitura profunda proativa desta rodada direcionada a
+`vercel/ai` (utils de credential brokering/forwarding do harness — ver
+NOTES.md de Vercel Open Source), sem achado novo, nenhuma transição de
+estado neste programa. `Block Open Source`/`Circle BBP` seguem fora de
+escopo desta sessão por política local (`program-policy.json`).
