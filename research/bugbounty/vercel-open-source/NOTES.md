@@ -4736,3 +4736,69 @@ Nenhum achado novo nesta rodada. `Block Open Source`/`Circle BBP`
 seguem fora de escopo por política local (`program-policy.json`).
 `deep-read-log.json` atualizado (`vercel/chat` +4 arquivos: 2x
 adapter-notion, adapter-telegram, adapter-web).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` reconfirmado antes de tocar em qualquer repo:
+`Block Open Source` segue `aiResearchBanned: true` (RoE da Bugcrowd) e
+`Circle BBP` segue `blocked: true` (instrução direta e repetida do
+usuário) — nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` clonado, lido ou tocado nesta rodada, apesar do prompt
+agendado listar os 4 programas como ativos; segui a política local, não
+o texto (desatualizado) do agendamento, como nas rodadas anteriores.
+`list-pending` global = 0. Com `vercel/vercel`, `nitrojs/nitro` e os 6
+adapters de `vercel/chat` já esgotados nas rodadas anteriores, esta
+rodada mirou `nuxt/nuxt` (Tier 1 no escopo, só 7 arquivos lidos até
+agora, todos na feature de server islands). Clonado raso via `git
+clone --depth 1 --filter=blob:none` em scratchpad efêmero (nunca
+versionado). Busca por padrão de nome de arquivo com
+auth/session/crypto/token/login/password/admin/permission/access/
+csrf/cors/jwt/hash/signature/verify/encrypt/nonce/origin/referrer no
+monorepo inteiro (excluindo testes/fixtures) devolveu poucos
+candidatos novos; li os 3 mais relevantes:
+
+- `packages/nuxt/src/app/composables/cookie.ts` (`useCookie`): API
+  reativa de cookie client/server. Rastreei o ciclo completo de
+  encode/decode, dedup de `set-cookie` por nome+domain+path
+  (`setResponseCookie`/`cookieKey`) e sincronização cross-tab via
+  `BroadcastChannel`/`CookieStore`. Não implementa nenhuma política de
+  segurança própria (secure/httpOnly/sameSite são só repassados pra
+  `cookie-es`, controlados pelo dev via `opts`) — é gerenciamento de
+  estado genérico, não um primitivo de auth/sessão. Sem achado.
+- `packages/nitro-server/src/runtime/utils/renderer/csp-nonce.ts`
+  (`extractCspNonce`) + uso em
+  `packages/nitro-server/src/runtime/handlers/renderer.ts:611-634`:
+  extrai o nonce de CSP do primeiro `<script nonce="...">` já presente
+  no head renderizado (stampado por um security module externo, ex.
+  `nuxt-security`), pra reutilizar no bootstrap/IIFE de streaming que
+  não passa pelo `unhead`. Regex restringe o valor a
+  `[\w+/\-=]*` (charset de base64), o que já bloqueia o caso adversarial
+  óbvio de injeção via valor do nonce (`nonce="a><img
+  src=x onerror=alert(1)"` não casa — testado em
+  `packages/nitro-server/test/csp-nonce.test.ts:29`, comentário no
+  próprio arquivo de teste documenta o raciocínio). Código e testes já
+  cobrem os casos adversariais relevantes (atributo `data-nonce` falso
+  vs `nonce` real, tag `<scriptish>` não deve casar). Sem achado novo.
+- `packages/webpack/src/utils/same-origin.ts` (`isSameOriginRequest`) +
+  uso em `packages/webpack/src/webpack.ts:237,312` (gate do dev-server
+  rsbuild/webpack, mesma classe de proteção contra DNS
+  rebinding/CSRF-contra-dev-server já vista em `nitrojs/nitro`
+  `isLocalDevRequest`, rodada anterior): checa `Sec-Fetch-Site` primeiro
+  (`same-origin`/`none` únicos aceitos, `same-site` corretamente
+  rejeitado), cai pra comparar host de `Origin`/`Referer` contra o
+  header `Host` quando `Sec-Fetch-Site` ausente, e só confia em
+  ausência total dos três headers quando o bind é loopback
+  (`localhost`/`127.0.0.1`/`::1`) — o próprio comentário no código
+  documenta a classe de ataque que motivou essa regra (`nuxt dev
+  --host` com attacker page em origem não confiável que suprime todos
+  os três headers). Aplicado consistentemente aos dois handlers
+  (`rsbuildToH3Handler` e `wdmToH3Handler`) que expõem o middleware do
+  dev server. Suite de testes (`same-origin.test.ts`) cobre IP privado
+  vs loopback, origin/referer cross-host, e host malformado. Sem achado
+  novo — mesmo padrão de hardening documentado já visto em outros dev
+  servers do monorepo.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`nuxt/nuxt` +3 arquivos, agora 10 no total). `api.hiro.so`
+reconfirmado bloqueado (`connect_rejected` no CONNECT do agent-proxy) —
+ver NOTES.md de StackingDAO.

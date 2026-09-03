@@ -630,7 +630,10 @@
     "packages/nuxt/src/app/island-hash.ts",
     "packages/nitro-server/src/runtime/utils/island-props.ts",
     "packages/nuxt/src/app/components/nuxt-island.ts",
-    "packages/nitro-server/src/runtime/utils/renderer/islands.ts"
+    "packages/nitro-server/src/runtime/utils/renderer/islands.ts",
+    "packages/nuxt/src/app/composables/cookie.ts",
+    "packages/nitro-server/src/runtime/utils/renderer/csp-nonce.ts",
+    "packages/webpack/src/utils/same-origin.ts"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
