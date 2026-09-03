@@ -5627,3 +5627,49 @@ access no nome, a maioria exemplos Hydrogen/eval fixtures de baixo valor.
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/vercel` +3 arquivos, agora 101 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero, antes de tocar qualquer
+repo (`Block Open Source`/`Circle BBP` continuam `blocked`/
+`aiResearchBanned`, confirmados via `check-program`). `list-pending`
+global = 0. O achado de `vercel/chat` (CWE-208, comparação não
+timing-safe de bot token em `adapter-discord/src/index.ts`) segue
+intocado em `corroborated_static` (deployment evidence unverified,
+sem SDK com endpoint fixo confirmado — transição pra `scope_verified`
+continua corretamente recusada).
+
+`vercel/ms` e `vercel/async-sema` re-checados por completo (clone raso
+de cada, todos os arquivos de código-fonte comparados contra
+`deep-read-log.json`): ambos são utilitários triviais (parsing de
+tempo; semáforo assíncrono) sem qualquer superfície auth/crypto/token
+real — só 1 arquivo de source cada, já cobertos há rodadas anteriores,
+esgotados.
+
+`vercel/swr`: candidato novo `examples/focus-revalidate/libs/auth.js`
+lido por completo — mock de login/logout de exemplo que só seta um
+cookie de teste (`swr-test-token=swr`) sem qualquer lógica real de
+autenticação. Sem achado.
+
+`sveltejs/svelte`: árvore completa comparada via `git ls-tree`
+(clone `--filter=blob:none`) contra as palavras-chave do prompt; a
+maioria dos matches de "access"/"token" era ruído de fixtures de teste
+(accessors de props, member access, aria-token). Único candidato real
+novo: `packages/svelte/src/internal/server/crypto.js` (+
+`crypto.test.ts`) — função `sha256()` usando `crypto.subtle.digest`
+corretamente (Web Crypto API padrão, com fallback `node:crypto` só em
+ambiente não-browser), usada internamente pra hashing (nonce de CSP em
+SSR), sem comparação de segredo em lugar nenhum do arquivo e sem
+nenhum outro caller no repo (`git grep` não achou import de `crypto.js`
+fora do próprio par arquivo/teste). Sem achado.
+
+`nuxt/nuxt`: árvore completa comparada do mesmo jeito; únicos matches
+de palavra-chave foram dois arquivos de documentação Markdown
+(`docs/3.guide/5.recipes/4.sessions-and-authentication.md`,
+`docs/7.migration/20.module-authors.md`) — não são código, fora do
+critério de leitura profunda proativa (que é sobre código-fonte).
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`sveltejs/svelte` +2 arquivos, agora 11 no total). `Block Open
+Source`/`Circle BBP` seguem fora de escopo por política local
+(`program-policy.json`), nenhum repo desses tocado.

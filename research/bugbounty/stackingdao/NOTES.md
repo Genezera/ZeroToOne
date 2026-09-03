@@ -905,3 +905,18 @@ Vercel Open Source): achado novo real encontrado lá
 (`adapter-discord/src/index.ts`, comparação não timing-safe de bot
 token), sem relação com este programa. `Circle BBP` segue fora de
 escopo por instrução direta do usuário (`blocked: true`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`check-program` pra
+cada um dos 4 nomes do prompt): `Block Open Source` e `Circle BBP`
+confirmados bloqueados, nenhum repo desses tocado. `list-pending`
+global = 0. Sem arquivo novo candidato em StackingDAO, os 15 contratos
+Clarity seguem 100% cobertos (`api.hiro.so` não retestado nesta
+rodada). Leitura profunda proativa desta rodada em Vercel Open Source
+(ver NOTES.md de lá): `vercel/ms`/`vercel/async-sema` re-checados e
+esgotados, `vercel/swr` (+1 arquivo de exemplo trivial),
+`sveltejs/svelte` (+2, `crypto.js`/`crypto.test.ts`, sha256 padrão sem
+achado), `nuxt/nuxt` (só docs, fora de critério). Nenhum achado novo,
+nenhuma transição de estado neste programa. O achado travado em
+`vercel/chat` (CWE-208, `corroborated_static`) segue intocado.

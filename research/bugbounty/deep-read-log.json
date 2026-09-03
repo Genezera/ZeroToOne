@@ -670,7 +670,9 @@
     "packages/svelte/src/compiler/utils/sanitize_template_string.js",
     "packages/svelte/src/internal/client/dom/elements/attributes.js",
     "packages/svelte/src/compiler/phases/3-transform/client/visitors/HtmlTag.js",
-    "packages/svelte/src/compiler/phases/3-transform/server/visitors/HtmlTag.js"
+    "packages/svelte/src/compiler/phases/3-transform/server/visitors/HtmlTag.js",
+    "packages/svelte/src/internal/server/crypto.js",
+    "packages/svelte/src/internal/server/crypto.test.ts"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
