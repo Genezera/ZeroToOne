@@ -4538,3 +4538,41 @@ StackingDAO: sem mudança, `api.hiro.so` segue bloqueado (403). Block
 Open Source e Circle BBP seguem fora de escopo por política local
 (`program-policy.json`: `aiResearchBanned`/`blocked`), nenhum repo
 `cashapp/*`/`afterpay/*`/`square/wire`/`circlefin/*` tocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Nenhum `candidate` novo; achados travados
+(`corroborated_static`/`inconclusive`) seguem intocados. Disciplina de
+política mantida: `Block Open Source` (`aiResearchBanned`) e `Circle BBP`
+(`blocked`) fora de escopo — nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire`/`circlefin/*` tocado, mesmo com o prompt agendado listando
+os 4 programas. StackingDAO: sem clonagem nesta rodada.
+
+Leitura profunda proativa: `vercel/next.js` clonado raso em scratchpad
+efêmero (commit `4e2abec3`, 2026-09-03). Foco na proteção CSRF/cross-site
+(keywords auth/csrf/access):
+- `packages/next/src/server/app-render/csrf-protection.ts`
+  (`isCsrfOriginAllowed` + `matchWildcardDomain`): rastreada a cadeia até
+  o único caller de PRODUÇÃO — `action-handler.ts:696` (Server Actions,
+  compara `origin` vs `host`/`x-forwarded-host` quando divergem). Tentei
+  refutar o wildcard matcher com origens forjadas (`example.com.evil.com`
+  vs `*.example.com`, `*.com` isolado bloqueado por guard explícito,
+  recursivo `**` só como último segmento). Todos os caminhos de bypass
+  que testei retornam `false` corretamente; normalização ASCII-only de
+  case previne truque unicode. Cobertura de teste robusta em
+  `allowed-dev-origins.test.ts`. Sem achado.
+- `block-cross-site-dev.ts` (`blockCrossSiteDEV`, dev-only): usa o mesmo
+  `isCsrfOriginAllowed`; allowlist inclui `**.localhost`/`localhost` +
+  `allowedDevOrigins`. Testes cobrem WebSocket/script/middleware
+  cross-site, origem opaca `null`, e subdomínios multi-nível de localhost.
+- Observação (não-achado, dev-only): `isInternalEndpoint` filtra por
+  `/_next` e `/__nextjs`; `/__next` (duplo underscore) NÃO casa `/_next`
+  (`'/__next'.includes('/_next') === false`), então `addCorsSupport`
+  (`hot-reloader-webpack.ts:156`) reflete `Origin` cru em
+  `Access-Control-Allow-Origin` para `/__next*` sem passar pelo bloqueio
+  cross-site. Modelo de ameaça fraco: só `next dev` local, exige atrair
+  o dev a página maliciosa; não é fronteira de produção. Registrado como
+  nota, não como candidato — barra de severidade/escopo não justifica
+  relatório.
+
+`deep-read-log.json` atualizado (`vercel/next.js` agora 21 arquivos).
