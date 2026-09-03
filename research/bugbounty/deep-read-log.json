@@ -1022,5 +1022,11 @@
     "src/authenticationMiddleware.ts",
     "src/getUser.ts",
     "src/userCache.ts"
+  ],
+  "slackhq/nebula": [
+    "cert/ca_pool.go",
+    "cert/crypto.go",
+    "cert/cert_v1.go (CheckSignature)",
+    "cert/cert_v2.go (CheckSignature)"
   ]
 }

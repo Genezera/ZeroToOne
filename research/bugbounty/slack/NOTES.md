@@ -59,3 +59,33 @@ um).
 
 **Pendência pro usuário**: confirmar a RoE do programa Slack no HackerOne
 antes de qualquer rodada futura de pesquisa aqui (ver `program-policy.json`).
+
+## Adendo — sessão concorrente (mesmo push, mesma janela de tempo)
+
+Outra sessão desta mesma rotina (disparada pelo mesmo push) investigou os
+86 achados em paralelo e chegou ao mesmo veredito de forma independente —
+sem coordenação entre as duas, a leitura de código convergiu igual.
+`git reset --hard` pra essa versão canônica em vez de empurrar um commit
+duplicado com reasoning redundante.
+
+Contribuição incremental desta sessão, além do que já está documentado
+acima: leitura profunda proativa da fronteira de confiança PKI própria do
+Nebula (autenticação mútua entre peers, não coberta pela outra sessão, que
+focou em `vercel/vercel`):
+
+- `cert/ca_pool.go` (`VerifyCertificate`/`verify`/`checkCAConstraints`):
+  cadeia CA->cert -- expiração, correspondência de curva, blocklist de
+  fingerprint (incluindo fingerprint alternativo pra assinatura P256
+  high-s/low-s), e constraints de grupos/redes/redes-inseguras do signer
+  respeitadas no subordinado. Todos os ramos de erro são fail-closed.
+- `cert/crypto.go` (`aes256Encrypt`/`aes256Decrypt`/`deriveKey`): AES-256-GCM
+  com nonce aleatório de `crypto/rand` por chamada (sem reuso), KDF
+  Argon2id com parâmetros validados antes de uso.
+- `cert/cert_v1.go` e `cert/cert_v2.go` (`CheckSignature`): `ed25519.Verify`
+  / `ecdsa.VerifyASN1`, curva vinculada ao tipo do certificado no parse
+  (não escolhível pelo atacante independente da chave), `default` retorna
+  `false` -- sem confusão de algoritmo nem bypass óbvio.
+
+Sem achado nesta leitura -- resultado válido, não forçado. Mesma
+pendência de RoE acima também se aplica a esta leitura (aconteceu na
+mesma janela, antes de qualquer confirmação de RoE).
