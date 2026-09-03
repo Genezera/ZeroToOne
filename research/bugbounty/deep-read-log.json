@@ -893,7 +893,10 @@
     "packages/cli/src/commands/connex/revoke-tokens.ts",
     "packages/cli/src/commands/tokens/add.ts",
     "packages/cli/src/commands/vcr/permissions/rm.ts",
-    "packages/cli/src/commands/vcr/permissions/clear.ts"
+    "packages/cli/src/commands/vcr/permissions/clear.ts",
+    "packages/cli/src/commands/project/access-groups.ts",
+    "packages/cli/src/commands/project/access-summary.ts",
+    "packages/oidc/src/get-vercel-oidc-token-sync.ts (+ get-context.ts, helper usado por ela)"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

@@ -4222,3 +4222,46 @@ nada auditável do lado cliente. `deep-read-log.json` atualizado
 StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
 de baixar, sem mudança em relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado primeiro: `Block Open Source` continua
+`aiResearchBanned:true` (RoE da Bugcrowd) e `Circle BBP` continua
+`blocked:true` (instrução direta do usuário) — nenhum repo desses dois
+programas tocado, mesmo com o prompt agendado ainda listando os 4
+programas como "ativos" (texto desatualizado; segui a política real do
+repositório). `list-pending` global = 0 (`migrate-to-v2` + `cli.mjs
+list-pending`, migração idempotente sem drift).
+
+Leitura profunda proativa (3 arquivos novos, `vercel/vercel` clonado raso
+via `git clone --depth 1` em scratchpad efêmero, nunca versionado;
+seleção sistemática desta vez — gerei a lista de todo arquivo `.ts`/`.js`
+de produção do repo com auth/session/crypto/token/login/password/admin/
+permission/access/credential/secret/oauth/oidc/jwt no caminho e
+diffei contra `deep-read-log.json` pra achar o que faltava, em vez de
+escolher a olho): `packages/cli/src/commands/project/access-groups.ts`
+e `packages/cli/src/commands/project/access-summary.ts` (ambos apenas
+formatam `client.fetch` autenticado contra `/v1/access-groups` e
+`/v1/projects/:id/members/summary`; `project.id` sempre passa por
+`encodeURIComponent`/`URLSearchParams`, sem injeção de query/path;
+autorização real de quem pode ver o quê fica inteiramente no servidor —
+mesmo padrão já visto em todos os outros comandos `vcr`/`project`
+lidos nas rodadas anteriores, sem achado), `packages/oidc/src/
+get-vercel-oidc-token-sync.ts` + seu helper `get-context.ts` (lê o
+token OIDC do header `x-vercel-oidc-token` do request context da
+runtime da Vercel, com fallback pra `VERCEL_OIDC_TOKEN` de ambiente;
+mesmo que um atacante externo conseguisse forjar esse header numa
+requisição, o token só é útil se for um JWT válido assinado pelo
+issuer OIDC real da Vercel — quem verifica a assinatura é o STS da AWS
+(via `fromWebToken`, já lido e confirmado legítimo em rodada anterior),
+não este código; sem achado). `deep-read-log.json` atualizado
+(`vercel/vercel` agora com 64 arquivos lidos nesta missão).
+
+Restam ainda ~39 arquivos auth/token/permission não lidos (a maioria
+`packages/cli/evals/**` — fixtures de teste — e re-exports triviais tipo
+`index.ts`/`build.mjs`); a lista completa filtrada por diff contra o log
+está descartável/reprodutível, não precisou ser versionada.
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
+de baixar, sem mudança em relação às rodadas anteriores.
