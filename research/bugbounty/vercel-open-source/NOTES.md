@@ -5769,3 +5769,28 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 desses dois repos). `Block Open Source`/`Circle BBP` seguem fora de
 escopo por política local (`program-policy.json`), nenhum repo desses
 tocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud concorrente)
+
+`program-policy.json` checado antes de qualquer leitura (`Block Open
+Source`/`Circle BBP` seguem bloqueados). `list-pending` global = 0.
+Deep-read desta sessão em `vercel/ai` convergiu de forma independente
+pro mesmo arquivo `packages/mcp/src/tool/oauth.ts` já revisado pela
+rodada acima (mesma conclusão: cliente OAuth 2.1 do MCP SDK bem
+endurecido, sem achado -- ver detalhe já registrado acima, não
+duplicado aqui). Dois arquivos adicionais cobertos que a outra rodada
+não tinha chegado a ler:
+
+- `packages/mcp/src/util/oauth-util.ts` (completo): só helpers puros
+  de URL (`resourceUrlFromServerUrl`/`resourceUrlStripSlash`/
+  `checkResourceAllowed`), sem I/O nem comparação de segredo. Sem
+  achado.
+- `packages/harness-opencode/src/bridge/opencode-server-auth.ts`
+  (completo): gera senha local de 32 bytes via `node:crypto
+  randomBytes` por sessão pra Basic Auth do servidor opencode local
+  (mesmo padrão de `bridge-token.ts`/`tool-relay-auth.ts` já revisados)
+  -- só gera e injeta em env; a comparação fica no lado que recebe a
+  request, fora do escopo deste arquivo. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/ai` +2,
+agora 21 no total).

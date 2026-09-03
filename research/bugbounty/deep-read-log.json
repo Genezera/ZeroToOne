@@ -730,7 +730,9 @@
     "packages/harness-opencode/src/bridge/tool-relay-auth.ts",
     "packages/harness/src/v1/harness-authentication.ts (só tipos, sem lógica de runtime, sem achado)",
     "packages/mcp/src/tool/oauth.ts (fluxo OAuth 2.1 completo do cliente MCP -- PKCE S256, validação de state contra CSRF, pin de authorization-server issuer/token_endpoint contra os metadados armazenados, assertSafeOAuthEndpoint bloqueia endpoint não-loopback fora do guard de download validado, redirect:'error' em todo POST de credencial. Praticamente idêntico ao auth.ts oficial do @modelcontextprotocol/sdk, já revisado publicamente. Sem achado)",
-    "packages/sandbox-just-bash/src/just-bash-sandbox-session.ts (wrapper de sessão sobre filesystem virtual em memória do just-bash -- bash -c é o próprio produto (execução de comando é o objetivo, não um desvio de sandbox), sem fronteira de host real cruzada. Sem achado)"
+    "packages/sandbox-just-bash/src/just-bash-sandbox-session.ts (wrapper de sessão sobre filesystem virtual em memória do just-bash -- bash -c é o próprio produto (execução de comando é o objetivo, não um desvio de sandbox), sem fronteira de host real cruzada. Sem achado)",
+    "packages/mcp/src/util/oauth-util.ts (3 helpers puros de URL -- resourceUrlFromServerUrl/resourceUrlStripSlash/checkResourceAllowed, sem I/O nem comparação de segredo. Sem achado)",
+    "packages/harness-opencode/src/bridge/opencode-server-auth.ts (gera senha local de 32 bytes via node:crypto randomBytes por sessão pra Basic Auth do servidor opencode local, mesmo padrão de bridge-token.ts/tool-relay-auth.ts -- só gera e injeta em env, comparação fica no lado receptor fora deste arquivo. Sem achado)"
   ],
   "vercel/async-sema": [
     "src/index.ts"
