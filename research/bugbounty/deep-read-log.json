@@ -1028,5 +1028,9 @@
     "cert/crypto.go",
     "cert/cert_v1.go (CheckSignature)",
     "cert/cert_v2.go (CheckSignature)"
+  ],
+  "plaid/plaid-ruby": [
+    "lib/plaid/api_client.rb",
+    "lib/plaid/configuration.rb"
   ]
 }

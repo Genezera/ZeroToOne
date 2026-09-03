@@ -34,3 +34,52 @@ Nenhuma leitura profunda proativa (fora da fila) foi feita neste
 programa ainda — os outros repos Plaid descobertos (`plaid-link-
 android`, `plaid-link-ios`, `plaid-ruby`, `react-native-plaid-link-
 sdk`) não geraram candidato nesta rodada e não foram lidos.
+
+## Rodada 2026-09-03 (agente de nuvem, sessão 2) — fila vazia neste programa; leitura profunda proativa em `plaid-ruby`, sem achado novo
+
+Nenhum `candidate` novo apareceu para Plaid nesta rodada (a fila geral
+só tinha Slack/Mattermost, ver `research/bugbounty/slack/NOTES.md` e
+`research/bugbounty/mattermost/NOTES.md`, já triados por uma sessão
+paralela). Escolhido `plaid/plaid-ruby` para leitura profunda proativa
+por ser o único repo Plaid com lógica de cliente real e hand-written
+(os repos de mobile são só o wrapper fino do SDK fechado, ver abaixo).
+
+Lido `lib/plaid/api_client.rb` (cliente HTTP Faraday) e
+`lib/plaid/configuration.rb` inteiros — nenhum achado. Pontos
+verificados especificamente e descartados:
+- Credenciais (`PLAID-CLIENT-ID`/`PLAID-SECRET`/`Authorization:
+  Bearer`) sempre injetadas via header (`update_params_for_auth!`),
+  nunca em query string.
+- `ssl_verify` default `true`, sem downgrade de TLS em nenhum caminho
+  do código.
+- Log de debug (`@config.logger.debug` do corpo de request/response)
+  só executa quando `@config.debugging` é explicitamente `true` —
+  opt-in documentado, não comportamento padrão; padrão comum e aceito
+  em SDKs de API (mesmo padrão do stripe-ruby/aws-sdk).
+- `prepare_file`/`sanitize_filename`: nome de arquivo de download vem
+  do header `Content-Disposition` da própria resposta da API Plaid
+  (`production.plaid.com`/`sandbox.plaid.com`, first-party, não
+  terceiro não confiável) e já passa por `gsub(/.*[\/\\]/, '')` antes
+  de virar prefixo de `Tempfile.open` — sem vetor de path traversal
+  com essa origem de dado.
+
+`plaid/plaid-link-android` também clonado e inspecionado: o
+repositório contém **só o app de exemplo** (`app/src/...`) — o SDK em
+si (`com.plaid.link`) é distribuído como artefato Maven fechado, não
+existe módulo de biblioteca com código-fonte real neste repo. Não há
+lógica de negócio pra auditar aqui além do app de demonstração;
+registrado para não repetir a tentativa numa rodada futura.
+
+`deep-read-log.json` atualizado com `plaid/plaid-ruby`. `plaid-link-android`
+não adicionado ao log (nada de substância foi de fato lido além do
+app de exemplo, que não é o alvo relevante).
+
+**Mesma lacuna de RoE documentada em `slack/NOTES.md`/`mattermost/NOTES.md`
+por uma sessão paralela nesta mesma rodada**: Plaid também foi
+promovido pro scanner ativo via descoberta automática
+(`discovery-metadata-seen.json`) sem revisão de RoE da HackerOne
+quanto a pesquisa assistida por IA — percebido só depois de já ter
+lido/triado achados deste programa em duas rodadas. Registrado em
+`program-policy.json` (`"roeReviewNeeded": true`) como advertência pro
+usuário revisar a RoE real do programa Plaid antes de qualquer
+pesquisa futura aqui.

@@ -18,5 +18,10 @@
     "roeReviewNeeded": true,
     "reason": "Mesma lacuna do registro 'Slack' acima: promovido automaticamente pelo pipeline de descoberta (targets-auto-promoted-log.json) sem revisão de RoE da Bugcrowd quanto a pesquisa assistida por IA. Nesta rodada (2026-09-03), 5 achados (3x MD5 fraco, 2x var-in-script-tag) de mattermost/mattermost-plugin-jira foram lidos e triados como falso positivo antes de checar a RoE. Campo informativo, não bloqueia nada sozinho. Ação recomendada: checar a RoE real do engagement 'mattermost-mbb-public' no Bugcrowd; se proibir IA, promover pra aiResearchBanned:true.",
     "flaggedAt": "2026-09-03"
+  },
+  "Plaid": {
+    "roeReviewNeeded": true,
+    "reason": "Mesma lacuna dos registros 'Slack'/'Mattermost' acima: promovido automaticamente pelo pipeline de descoberta (discovery-metadata-seen.json, 02/09/2026) sem revisão de RoE da HackerOne quanto a pesquisa assistida por IA. Nesta rodada (2026-09-03) e na anterior, 48 achados known_vulnerable_dependency de plaid/react-plaid-link foram triados e leitura profunda proativa foi feita em plaid/plaid-ruby (lib/plaid/api_client.rb, lib/plaid/configuration.rb) e plaid/plaid-link-android, tudo antes de checar se o programa Plaid no HackerOne permite ferramentas de IA na pesquisa. Campo informativo, não bloqueia nada sozinho. Ação recomendada: checar a RoE real do programa Plaid no HackerOne antes de qualquer nova rodada de pesquisa aqui; se proibir IA, promover pra aiResearchBanned:true.",
+    "flaggedAt": "2026-09-03"
   }
 }
