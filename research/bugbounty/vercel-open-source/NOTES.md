@@ -5267,3 +5267,53 @@ excluindo testes/evals. 3 lidos por completo:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/vercel` +3 arquivos, agora 93 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado antes de tocar em qualquer repo:
+`Block Open Source` (`aiResearchBanned: true`) e `Circle BBP`
+(`blocked: true`, por pedido direto e repetido do usuário) seguem fora
+de escopo desta sessão, mesmo com o prompt agendado listando os 4
+programas como ativos — nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire`/`circlefin/*` tocado. `list-pending` global = 0 no
+início da rodada. Reconciliado três vezes com sessões concorrentes que
+empurraram pro `origin/master` (svelte, nitro, vercel/vercel +
+merge do Kiwi.com) enquanto esta rodada estava em andamento
+(`git reset --hard origin/master` + reaplicação só do conteúdo
+genuinamente novo desta rodada, sem duplicar achados já registrados
+por essas outras sessões).
+
+Leitura profunda proativa em `vercel/eve` (maior superfície de auth do
+escopo, 51 arquivos já lidos): sparse-clone (`packages/eve/src`) pra
+listar arquivos ainda não lidos com auth/session/crypto/token/login/
+password/admin/permission/access/secret/credential no nome, excluindo
+`.test.ts`. 3 arquivos novos lidos por completo:
+
+- `packages/eve/src/harness/inline-tool-authorization.ts` — não é
+  ponto de decisão de autorização; só filtra a história de mensagens
+  pra manter apenas chamadas de ferramenta "irmãs" que completaram
+  quando uma chamada interrompida por um desafio de autorização é
+  removida. A decisão real de quais desafios seguem ativos vem de
+  `resolveActiveAuthorizationChallenges` (`harness/authorization.ts`,
+  já lido em rodada anterior). Sem achado.
+- `packages/eve/src/execution/sandbox/bindings/vercel-credentials.ts`
+  — resolve credenciais (`teamId`/`projectId`/`token`) do Vercel
+  Sandbox a partir de env vars ou, na ausência delas, de um token OIDC
+  obtido via `getVercelOidcToken` (chamada própria, não input externo)
+  e decodificado (sem verificação de assinatura) só pra extrair
+  `ownerId`/`projectId` como metadados de roteamento — o token em si,
+  não os claims decodificados, é o que autentica de fato contra a API
+  do Sandbox. Não há caminho onde um atacante forneça o JWT decodificado
+  aqui. Sem achado.
+- `packages/eve/src/runtime/skills/sandbox-access.ts` — guarda de
+  path traversal para leitura de arquivos de skill dentro do sandbox
+  (`assertSafeSkillId`/`assertSafeSkillRelativePath`): bloqueia `/`,
+  `\`, segmentos `.`/`..`, prefixo `.` e letra de drive Windows.
+  Cobertura correta contra os vetores clássicos de traversal para este
+  padrão de uso (id e relativePath vêm de definição de skill/model,
+  não de path bruto do usuário). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/eve` +3 arquivos, agora 54 no total). `list-pending` global
+= 0, nenhuma transição de estado nesta rodada. Os dois achados
+travados de Block Open Source seguem intocados por política.

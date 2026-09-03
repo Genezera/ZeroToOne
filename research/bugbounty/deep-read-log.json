@@ -793,7 +793,10 @@
     "packages/eve/src/public/channels/chat-sdk/authorization.ts",
     "packages/eve/src/public/channels/teams/verify.ts",
     "packages/eve/src/public/channels/twilio/verify.ts",
-    "packages/eve/src/execution/reconcile-session-continuation-token.ts"
+    "packages/eve/src/execution/reconcile-session-continuation-token.ts",
+    "packages/eve/src/harness/inline-tool-authorization.ts",
+    "packages/eve/src/execution/sandbox/bindings/vercel-credentials.ts",
+    "packages/eve/src/runtime/skills/sandbox-access.ts"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
