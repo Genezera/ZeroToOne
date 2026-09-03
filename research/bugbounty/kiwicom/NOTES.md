@@ -141,6 +141,40 @@ isso divulgação direta pra um atacante externo via resposta GraphQL)
 mensagem de erro NÃO inclui a URL. Não afirmo essa versão mais forte
 do achado porque testei e não se sustentou.
 
+### Rodada de revisão externa (03/09/2026) — separando causa comprovada de consequência não comprovada
+
+Revisão externa colada pelo usuário apontou, com precisão técnica
+real, que o relatório usava "Leaks... into a Request URL" no título e
+enquadrava o achado como CWE-598 (Insertion of Sensitive Information
+Into Sent Data) — mas o próprio PoC mostra que o `node-fetch@2.6.x`
+real lança `TypeError: Only HTTP(S) protocols are supported` **antes
+de qualquer I/O de rede**. Ou seja: nunca provei o segredo saindo do
+processo, só a montagem da string dentro dele. "Leak" implica
+travessia de fronteira que não está demonstrada.
+
+Retitulado e reestruturado em torno de **CWE-628 (Function Call with
+Incorrectly Specified Arguments)** como causa raiz comprovada com
+confiança total, com o problema do segredo-na-URL rebaixado
+explicitamente a "defeito real, mas travessia de fronteira não
+confirmada" — nunca mais chamado de "leak"/divulgação confirmada.
+
+Também investiguei e respondi de verdade a pergunta mais interessante
+da revisão: **o valor `permission` (que acaba no lugar de `iamURL`)
+poderia ser controlado por um atacante, de forma a virar uma URL
+`https://` válida e a requisição sair de verdade?** Confirmado que
+NÃO: `AuthorizationDirective.graphql` declara
+`directive @requires(permission: String!) on FIELD_DEFINITION` — é um
+argumento de diretiva GraphQL, definido por quem escreve o schema, um
+cliente GraphQL nunca influencia esse valor. O próprio README documenta
+exemplos reais (`payment-card.read`, `payment-card.write` num campo
+`paymentCard`) que reforçam: strings de permissão reais nesse pacote
+nunca parecem uma URL — a falha observada é estrutural, não um
+acidente do meu valor de exemplo escolhido.
+
+Nenhum código mudou, nenhuma evidência nova de PoC — só a
+correspondência entre o que é afirmado e o que está de fato provado.
+Commit `d31666b`/`5a29d28`.
+
 ### Escopo confirmado
 
 `kiwicom/js-iam-middleware` nunca tinha snapshot de escopo formal
