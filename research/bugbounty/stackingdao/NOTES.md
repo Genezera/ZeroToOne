@@ -920,3 +920,22 @@ esgotados, `vercel/swr` (+1 arquivo de exemplo trivial),
 achado), `nuxt/nuxt` (só docs, fora de critério). Nenhum achado novo,
 nenhuma transição de estado neste programa. O achado travado em
 `vercel/chat` (CWE-208, `corroborated_static`) segue intocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`check-program` pra
+`Block Open Source` e `Circle BBP`, ambos confirmados bloqueados,
+nenhum repo desses tocado). `list-pending` global = 0. `api.hiro.so`
+reconfirmado bloqueado (403 no CONNECT do agent-proxy) — não deu pra
+checar se o deployer `SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG`
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida. Leitura profunda proativa desta rodada em Vercel
+Open Source (ver NOTES.md de lá): `nitrojs/nitro` (+1, exemplo trivial
+de middleware) e `vercel/ai` (+2 arquivos reais: `packages/mcp/src/
+tool/oauth.ts` — fluxo OAuth 2.1 do cliente MCP, bem endurecido, quase
+idêntico ao SDK oficial do MCP; `packages/sandbox-just-bash/src/
+just-bash-sandbox-session.ts` — wrapper sobre filesystem virtual em
+memória, execução de bash é o próprio produto, não um desvio de
+sandbox). Nenhum achado novo, nenhuma transição de estado neste
+programa. O achado de `vercel/chat` (CWE-208, `corroborated_static`)
+segue intocado.
