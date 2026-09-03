@@ -910,7 +910,10 @@
     "packages/oidc/src/get-context.ts",
     "packages/oidc/src/get-vercel-oidc-token-sync.ts",
     "packages/cli/src/commands/vcr/permissions/ls.ts",
-    "packages/cli/src/commands/vcr/utils/paths.ts"
+    "packages/cli/src/commands/vcr/utils/paths.ts",
+    "packages/cli/src/commands/vcr/permissions/index.ts",
+    "packages/cli/src/commands/tokens/ls.ts",
+    "packages/oidc/src/index-edge-light.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

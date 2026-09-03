@@ -4398,3 +4398,37 @@ lógica de produção da própria Vercel).
 StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
 de baixar, sem mudança em relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado primeiro, disciplina mantida: `Block Open
+Source` continua `aiResearchBanned: true` e `Circle BBP` continua
+`blocked: true` — nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` clonado, lido ou tocado nesta rodada, mesmo com o prompt
+agendado listando os 4 programas como ativos (texto desatualizado em
+relação à política real do repositório). `list-pending` global = 0.
+
+Leitura profunda proativa: `vercel/vercel` clonado raso via `git clone
+--depth 1` em scratchpad efêmero (nunca versionado). Diff sistemático
+contra `deep-read-log.json` encontrou 26 arquivos ainda não lidos
+(majoritariamente telemetry, evals de teste e wrappers finos); 3
+revisados nesta rodada: `packages/cli/src/commands/vcr/permissions/
+index.ts` (roteador puro de subcomando `vcr permissions <repo> <ls|add|
+rm|clear>`, dynamic import restrito a um enum fixo de ações — `argv`
+adulterado só resultaria em "ação desconhecida", sem injeção; sem
+achado), `packages/cli/src/commands/tokens/ls.ts` (lista tokens via
+`client.fetch('/v6/user/tokens...')`, autenticação delegada ao client
+padrão, `--limit` validado 1-100, query montada com `URLSearchParams`
+— sem injeção, sem achado), `packages/oidc/src/index-edge-light.ts`
+(apenas combina/re-exporta `getVercelOidcTokenSync` +
+`exchangeVercelOidcToken` + `verifyVercelOidcToken`, todos já lidos e
+sem achado em rodadas anteriores; `getVercelToken()` aqui só lança erro
+"not supported in Edge Runtime" — sem achado). `deep-read-log.json`
+atualizado (`vercel/vercel` agora com 81 arquivos lidos nesta missão).
+Restam ~23 arquivos não lidos, quase todos telemetry/evals/tipos triviais
+— baixa prioridade.
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy, reconfirmado com `curl` direto) — os 3 contratos
+`ststxbtc-*` seguem impossíveis de baixar, sem mudança em relação às
+rodadas anteriores.

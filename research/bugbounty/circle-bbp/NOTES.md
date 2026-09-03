@@ -6515,3 +6515,15 @@ política do repositório, não o texto (desatualizado) do agendamento.
 Leitura profunda proativa desta rodada foi inteiramente em
 `vercel/vercel` (ver NOTES.md de Vercel Open Source). O achado travado
 em `corroborated_static` segue intocado, sem nenhuma ação.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado primeiro: `Circle BBP` continua
+`blocked: true` (instrução direta e repetida do usuário, sem exceção).
+Nenhum repo `circlefin/*` foi clonado, lido ou tocado nesta rodada,
+mesmo com o prompt agendado listando o programa como ativo — segui a
+política do repositório, não o texto (desatualizado) do agendamento.
+Leitura profunda proativa desta rodada foi inteiramente em
+`vercel/vercel` (ver NOTES.md de Vercel Open Source). O achado travado
+em `corroborated_static` (`Mints.sol::_mint::unchecked_call_return`)
+segue intocado, sem nenhuma ação.
