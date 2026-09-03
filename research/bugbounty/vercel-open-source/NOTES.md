@@ -5193,3 +5193,48 @@ Nenhum achado novo. `deep-read-log.json` atualizado (`sveltejs/svelte`
 +3 arquivos, agora 9 no total). `list-pending` global = 0, nenhuma
 transição de estado nesta rodada. Os dois achados travados de Block
 Open Source seguem intocados por política.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` checado como passo
+zero, antes de tocar em qualquer repo: `Block Open Source`
+(`aiResearchBanned: true`) e `Circle BBP` (`blocked: true`) seguem
+fora de escopo desta sessão, mesmo com o prompt agendado listando os 4
+programas como ativos — a política do repositório é a fonte de
+verdade e tem precedência sobre o texto desatualizado do agendamento.
+Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/`circlefin/*`
+clonado, lido ou tocado.
+
+Reconciliado com múltiplas sessões concorrentes que empurraram rodadas
+pro `origin/master` enquanto esta estava em andamento (`vercel/
+turborepo`, `vercel/next.js`, `sveltejs/svelte`, ver rodadas acima):
+`git reset --hard origin/master` + `migrate-to-v2` re-rodado várias
+vezes, só o conteúdo genuinamente novo desta rodada reaplicado por
+cima a cada vez.
+
+Leitura profunda proativa direcionada a `nitrojs/nitro` (só 12
+arquivos lidos até então sobre ~285 arquivos `.ts`/`.js` em `src/`,
+cobertura bem abaixo da maioria dos outros repos grandes do
+programa). Nenhum nome de arquivo bateu com os termos auth/session/
+crypto/token/login/password/admin/permission/access — julgamento
+próprio priorizou superfícies de execução/roteamento em vez de nome
+de arquivo:
+
+- `src/runtime/internal/task.ts` (`runTask`/`startScheduleRunner`/
+  `runCronTasks`): o nome da task é procurado num registry `tasks`
+  compilado estaticamente no build (`#nitro/virtual/tasks`), nunca uma
+  string arbitrária vinda de request — a única rota HTTP que expõe
+  execução de task (`internal/routes/dev-tasks.ts`) já foi coberta em
+  rodada anterior e está gated por `isLocalDevRequest`. Sem achado.
+- `src/presets/node/runtime/node-middleware.ts`: só glue code do preset
+  Node (`toNodeHandler(nitroApp.fetch)` + adapter de websocket
+  `crossws`), nenhuma lógica de auth/validação própria. Sem achado.
+- `src/routing.ts` (`initNitroRouting`/classe `Router`): monta a tabela
+  de rotas em build-time a partir de `nitro.options`/handlers
+  escaneados no filesystem do projeto — `matchesEnv` decide dev vs.
+  prod vs. preset a partir de config estática, não de header/input de
+  request. Nenhuma superfície runtime controlável por atacante. Sem
+  achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`nitrojs/nitro` +3 arquivos, agora 15 no total).

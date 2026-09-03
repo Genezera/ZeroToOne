@@ -818,3 +818,17 @@ profunda proativa desta rodada direcionada a `sveltejs/svelte`
 Open Source), nenhum achado novo, nenhuma transição de estado neste
 programa. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
 sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Sem arquivo novo candidato em StackingDAO,
+os 15 contratos Clarity seguem 100% cobertos (`api.hiro.so` não foi
+testado nesta rodada — leitura profunda foi direcionada a
+`nitrojs/nitro` desta vez, ver NOTES.md de Vercel Open Source).
+Reconciliado com múltiplas sessões concorrentes que empurraram rodadas
+pro `origin/master` (`vercel/turborepo`, `vercel/next.js`,
+`sveltejs/svelte`) enquanto esta estava em andamento, via
+`git reset --hard origin/master` + `migrate-to-v2` re-rodado várias
+vezes. Nenhum achado, nenhuma transição de estado neste programa.
+`Block Open Source`/`Circle BBP` seguem fora de escopo desta sessão
+por política local (`program-policy.json`).

@@ -621,7 +621,10 @@
     "src/runtime/internal/routes/openapi.ts",
     "src/runtime/internal/route-rule-handlers.ts",
     "src/runtime/internal/routes/dev-tasks.ts",
-    "src/config/resolvers/open-api.ts"
+    "src/config/resolvers/open-api.ts",
+    "src/runtime/internal/task.ts",
+    "src/presets/node/runtime/node-middleware.ts",
+    "src/routing.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
