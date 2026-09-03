@@ -29,7 +29,7 @@ I built and ran a real proof of concept (against the actual `node-fetch@2.6.x` d
 7. The `permission` value (misbound into `iamURL`'s slot in this chain) comes from the GraphQL schema itself, not from a request-time client. I confirmed this against the package's own `AuthorizationDirective.graphql`, which declares `directive @requires(permission: String!) on FIELD_DEFINITION`, and against the README's own documented usage example, `@requires(permission: "payment-card.read")` on a `paymentCard` field. Whoever authors the GraphQL schema chooses this value; a GraphQL client cannot influence it. This also means the specific failure I observed (an invalid-URL-scheme error) is not an artifact of the example value I happened to pick for the proof of concept — real permission strings in this package's own documented convention (`payment-card.read`, `payment-card.write`) never resemble a URL, so the same failure would occur with real, currently-deployed permission strings too.
 
 ## Current vs. expected result
-- **Current:** the service's real IAM authentication token is placed into the outbound request's URL (as the `service=` query-string value), and the real IAM URL is placed into the `Authorization` header instead of the real token.
+- **Current:** the service's real IAM authentication token is interpolated into the URL string passed to `fetcher` as the `service=` query-string value, while the real IAM URL is passed as the `Authorization` header value.
 - **Expected:** `visitFieldDefinition` should call `isUserAuthorized` with arguments in the order its own signature declares (`serviceUA, email, permission, iamURL, iamToken, servicePermissionsIdentifier`), so that `getUser` in turn receives the real token in the `Authorization` header and the real permissions-identifier in the URL, matching `getUser`'s own contract and its own passing test.
 
 ## Evidence
@@ -91,7 +91,7 @@ iamToken:                      "Bearer sk_live_REAL_SECRET_SERVICE_TOKEN_XYZ"  (
 ```
 Ran twice, each as its own small script (both attached): `mock-poc.mjs` replaces `fetcher` with a logging function, to capture the exact URL and headers without making any network call; `real-poc.mjs` uses the real `node-fetch@2.6.x` dependency this package actually pins in its own `package.json`, installed and executed for real rather than assumed to behave a certain way.
 
-With the logging mock, the request that would actually be sent:
+With the logging mock, the values passed to the fetcher are:
 ```
 URL requested:        read:billing-secrets/v1/user?service=bearer sk_live_real_secret_service_token_xyz&email=my-backend-service
 Authorization header: https://iam.internal.example.com
@@ -111,7 +111,7 @@ What is demonstrated, directly, by running the real code above: on every real in
 
 Separately, and more concretely provable: I have not shown that this causes an authorization bypass. The most direct, repeatable consequence I observed is that the request fails (`TypeError: Only HTTP(S) protocols are supported`), which propagates as a thrown error out of the GraphQL resolver — the protected field errors out rather than incorrectly granting access. This is a fail-closed defect: real users of a protected field would see it break, not see it under-protected. If any consumer of this library ever wraps `authorizationDirective`'s resolver in code that swallows this specific error and defaults to allowing the request through, that would be a bypass — but that would be a defect in the consuming application, not something this library does or that I have observed.
 
-Taken together: what I can prove with full confidence is a real, unambiguous root-cause defect (CWE-628) that breaks a security control's intended function in production, on the code path this package's own README presents as its primary GraphQL usage pattern, unfixed for 6+ years. What I have not proven is a concrete information-disclosure or authorization-bypass outcome from it. I'd rather state both halves plainly and let triage weigh them than have the gap found after the fact.
+Taken together: what I can prove with full confidence is a real, unambiguous root-cause defect (CWE-628) that breaks a security control's intended function for any consumer exercising this documented code path — the primary GraphQL usage pattern this package's own README presents — unfixed for 6+ years. What I have not proven is a concrete information-disclosure or authorization-bypass outcome from it. I'd rather state both halves plainly and let triage weigh them than have the gap found after the fact.
 
 ## Suggested fix
 Reorder `visitFieldDefinition`'s call to `isUserAuthorized` to match its declared signature:
