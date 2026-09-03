@@ -232,6 +232,19 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
   });
 });
 
+test('submission-preflight com relatório legado, mas sem impacto/duplicateCheck, bloqueia sem lançar', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const finding = { ...SAMPLE, id: 'p::legacy::f::x', program: 'P', state: 'scope_verified' };
+    upsertFinding(db, finding);
+    recordReport(db, finding.id, 'reports/legacy.md');
+    const result = cmdSubmissionPreflight(db, finding.id);
+    assert.equal(result.ready, false);
+    assert.match(result.reason, /impactAssessment incompleto/);
+    closeDb(db);
+  });
+});
+
 // --- 02/09/2026: cmdRecordPlatformOutcome também tenta a transição de
 // state correspondente (mesmo padrão de sync-report-status) -- bug real
 // achado usando esta função pra registrar de verdade o outcome

@@ -63,6 +63,7 @@ export function assessNoveltyRisk(signals = {}) {
 }
 
 export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS } = {}) {
+  if (!check || typeof check !== 'object' || Array.isArray(check)) check = {};
   if (!Array.isArray(check.methods) || check.methods.length === 0) {
     return { ok: false, reason: 'duplicateCheck sem métodos rastreáveis' };
   }

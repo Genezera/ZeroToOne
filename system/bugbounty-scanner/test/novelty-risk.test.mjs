@@ -40,3 +40,9 @@ test('gate exige cobertura pública plural, duas consultas e frescor', () => {
   assert.equal(duplicateCheckGate({ ...CLEAN, ts: '2026-08-01T00:00:00Z' }, { now: NOW }).ok, false);
   assert.equal(duplicateCheckGate({ ...CLEAN, riskScore: 60 }, { now: NOW }).ok, false);
 });
+
+test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar', () => {
+  const result = duplicateCheckGate(null, { now: NOW });
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /sem métodos/);
+});

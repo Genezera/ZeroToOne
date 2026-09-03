@@ -8,6 +8,7 @@ function nonEmpty(value) {
  * security boundary violation. Non-reportable assessments are valid records;
  * this function reports malformed/missing evidence separately. */
 export function validateImpactAssessment(assessment = {}) {
+  if (!assessment || typeof assessment !== 'object' || Array.isArray(assessment)) assessment = {};
   const errors = [];
   if (!['confirmed', 'refuted', 'inconclusive'].includes(assessment.technicalValidity)) {
     errors.push('technicalValidity precisa ser confirmed|refuted|inconclusive');
@@ -29,6 +30,7 @@ export function validateImpactAssessment(assessment = {}) {
 }
 
 export function reportabilityGate(assessment = {}) {
+  if (!assessment || typeof assessment !== 'object' || Array.isArray(assessment)) assessment = {};
   const shape = validateImpactAssessment(assessment);
   if (!shape.ok) return { ok: false, reason: `impactAssessment incompleto: ${shape.errors.join('; ')}` };
   if (assessment.technicalValidity !== 'confirmed') {
@@ -43,4 +45,3 @@ export function reportabilityGate(assessment = {}) {
   }
   return { ok: true, reason: `impacto reportável confirmado (${assessment.impactScope})` };
 }
-

@@ -33,3 +33,8 @@ test('campo obrigatório ausente falha fechado', () => {
   assert.match(result.reason, /attackerControlledInput/);
 });
 
+test('assessment null de dado legado bloqueia com motivo em vez de lançar', () => {
+  const result = reportabilityGate(null);
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /impactAssessment incompleto/);
+});
