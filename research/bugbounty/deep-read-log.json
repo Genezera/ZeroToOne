@@ -610,6 +610,7 @@
     "packages/token_messenger_minter/sources/burn_message.move"
   ],
   "nitrojs/nitro": [
+    "examples/middleware/server/middleware/auth.ts (exemplo trivial -- só seta um objeto mock em event.context.auth com nome aleatório, sem lógica de autenticação real. Sem achado)",
     "src/runtime/internal/static.ts",
     "src/build/virtual/public-assets.ts",
     "src/runtime/internal/storage.ts",
@@ -726,7 +727,10 @@
     "packages/harness-codex/src/bridge/index.ts",
     "packages/harness/src/agent/internal/permission-mode.ts",
     "packages/harness-codex/src/bridge/tool-relay-auth.ts",
-    "packages/harness-opencode/src/bridge/tool-relay-auth.ts"
+    "packages/harness-opencode/src/bridge/tool-relay-auth.ts",
+    "packages/harness/src/v1/harness-authentication.ts (só tipos, sem lógica de runtime, sem achado)",
+    "packages/mcp/src/tool/oauth.ts (fluxo OAuth 2.1 completo do cliente MCP -- PKCE S256, validação de state contra CSRF, pin de authorization-server issuer/token_endpoint contra os metadados armazenados, assertSafeOAuthEndpoint bloqueia endpoint não-loopback fora do guard de download validado, redirect:'error' em todo POST de credencial. Praticamente idêntico ao auth.ts oficial do @modelcontextprotocol/sdk, já revisado publicamente. Sem achado)",
+    "packages/sandbox-just-bash/src/just-bash-sandbox-session.ts (wrapper de sessão sobre filesystem virtual em memória do just-bash -- bash -c é o próprio produto (execução de comando é o objetivo, não um desvio de sandbox), sem fronteira de host real cruzada. Sem achado)"
   ],
   "vercel/async-sema": [
     "src/index.ts"

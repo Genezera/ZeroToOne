@@ -5673,3 +5673,65 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`sveltejs/svelte` +2 arquivos, agora 11 no total). `Block Open
 Source`/`Circle BBP` seguem fora de escopo por política local
 (`program-policy.json`), nenhum repo desses tocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`check-program` pra
+`Block Open Source` e `Circle BBP`, ambos confirmados bloqueados,
+nenhum repo desses tocado). `list-pending` global = 0. O achado de
+`vercel/chat` (CWE-208, comparação não timing-safe de bot token em
+`adapter-discord/src/index.ts`) segue intocado em `corroborated_static`
+(deployment evidence unverified, sem endpoint fixo confirmado — a
+transição pra `scope_verified` continua corretamente recusada).
+
+Leitura profunda proativa desta rodada: com a cobertura de
+`vercel/vercel` essencialmente esgotada nas palavras-chave de
+prioridade, cloneei raso (`--filter=blob:none --no-checkout`) 3 repos
+adicionais do scope snapshot e comparei a árvore inteira (`git
+ls-tree -r`) contra `deep-read-log.json`:
+
+- `nitrojs/nitro`: único candidato novo,
+  `examples/middleware/server/middleware/auth.ts` — exemplo trivial
+  (`event.context.auth = { name: "User " + Math.round(...) }`), mock
+  sem lógica real de autenticação. Sem achado.
+- `vercel/flags`: os 4 candidatos com keyword de auth já estavam
+  cobertos (`crypto.ts`, `verify-access.ts`, `controller/auth.ts`), só
+  `crypto.test.ts` era novo — não lido (arquivo de teste, baixo valor,
+  fora do orçamento de 3 arquivos desta rodada).
+- `vercel/ai`: repo bem maior que o esperado pelo log anterior (só 15
+  arquivos registrados) — dezenas de candidatos novos com keyword de
+  auth/token/session, a maioria em `examples/`/`codemod`/fixtures de
+  teste (baixo valor, descartados por triagem visual). 3 escolhidos
+  por relevância real:
+  - `packages/harness/src/v1/harness-authentication.ts` — só tipos
+    TypeScript (`HarnessV1Authentication`), sem lógica de runtime. Sem
+    achado.
+  - `packages/mcp/src/tool/oauth.ts` (1494 linhas, completo) — fluxo
+    OAuth 2.1 do cliente MCP: PKCE S256 obrigatório, validação de
+    `state` contra CSRF no callback, pin do authorization-server
+    (issuer/token_endpoint) comparado contra o que foi usado pra obter
+    as credenciais armazenadas (`assertAuthorizationServerInformationMatches`,
+    chamado tanto no exchange quanto no refresh), `assertSafeOAuthEndpoint`
+    bloqueia qualquer endpoint de token/registro fora de loopback que
+    não passe no guard de download validado do próprio SDK, todo POST
+    de credencial usa `redirect: 'error'` (evita vazar code/verifier/
+    secret num hop de redirect). Estrutura e nomes de função batem
+    quase 1:1 com o `auth.ts` oficial do `@modelcontextprotocol/sdk`
+    (upstream já publicamente revisado) — não achei desvio de
+    hardening em relação a essa base. Sem achado.
+  - `packages/sandbox-just-bash/src/just-bash-sandbox-session.ts`
+    (completo) — `Experimental_SandboxSession` sobre o filesystem
+    virtual em memória do pacote `just-bash`: `run`/`spawn` chamam
+    `bash -c <command>` dentro desse ambiente emulado. Não é um desvio
+    de fronteira sandbox→host — rodar o comando arbitrário É o produto
+    (ferramenta de execução de bash pra agente de IA), sem filesystem
+    ou processo real do host envolvido. `env` é passado como argumentos
+    posicionais de `export`, não interpolado na string do comando
+    (comentário no código já documenta essa escolha deliberada contra
+    injeção). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`nitrojs/nitro` +1, `vercel/ai` +3, agora 19 no total em cada um
+desses dois repos). `Block Open Source`/`Circle BBP` seguem fora de
+escopo por política local (`program-policy.json`), nenhum repo desses
+tocado.
