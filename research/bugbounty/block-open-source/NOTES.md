@@ -2613,3 +2613,19 @@ rodada futura deve tocar `cashapp/*`, `square/*` ou `afterpay/*`
 enquanto `aiResearchBanned` continuar `true` para este programa —
 checagem de `program-policy.json` deve voltar a ser o PRIMEIRO passo,
 sem exceção, antes de qualquer `git clone` ou escolha de arquivo.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado ANTES de qualquer outra ação, mesma
+disciplina de todas as rodadas desde o incidente da 11ª. `aiResearchBanned:
+true` ainda vigente para "Block Open Source" (RoE da Bugcrowd proíbe uso
+de IA na pesquisa). Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`
+clonado, lido ou tocado nesta rodada — mesmo com o texto do prompt
+agendado listando "Block Open Source" como um dos 4 programas ativos,
+essa instrução do agendamento está desatualizada em relação à política
+real do repositório; segui a política do repositório. Leitura profunda
+proativa desta rodada foi inteiramente em `vercel/vercel` (ver NOTES.md
+de Vercel Open Source). `list-pending` global = 0. Os dois achados
+travados (`js_injection_unescaped_token_risk` em `corroborated_static` e
+`Root.kt::DirectoryRoot.resolve::path_traversal_risk` em `human_ready`)
+seguem intocados, ainda aguardando decisão humana sobre o segundo.

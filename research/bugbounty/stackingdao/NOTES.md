@@ -593,3 +593,13 @@ achado histórico neste programa pra sofrer o drift). Leitura profunda
 proativa desta rodada direcionada a `vercel/vercel` (auth/token/
 credential, ver NOTES.md de Vercel Open Source). Nenhum achado,
 nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Reconfirmado: `api.hiro.so` continua bloqueado
+nesta sessão (403 no CONNECT do agent-proxy) — os 3 contratos
+`ststxbtc-*` seguem impossíveis de baixar. Leitura profunda proativa
+desta rodada direcionada a `vercel/vercel` (blob token/access, vcr
+permissions — ver NOTES.md de Vercel Open Source) — sem arquivo novo
+candidato em StackingDAO, os 15 contratos Clarity seguem 100% cobertos.
+Nenhum achado, nenhuma transição de estado neste programa.

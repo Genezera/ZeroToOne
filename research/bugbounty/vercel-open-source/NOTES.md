@@ -4159,3 +4159,35 @@ auditável no lado cliente). `deep-read-log.json` atualizado.
 Fila Vercel Open Source: **0 `candidate`** ao final desta rodada (era
 117 no início, contando os 36 restaurados incorretamente pra
 `candidate` pelo bug de migração).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado primeiro: `Block Open Source` continua
+`aiResearchBanned:true` e `Circle BBP` continua `blocked:true` (instrução
+direta do usuário, sem exceção) — nenhum repo desses dois programas foi
+tocado nesta rodada, apesar do prompt agendado ainda listar ambos como
+"programas ativos" (o texto do agendamento está desatualizado em relação
+à política real do repositório; segui a política do repositório, não o
+texto do agendamento). `list-pending` global = 0 (confirmado via
+`migrate-to-v2` + `cli.mjs list-pending`).
+
+Leitura profunda proativa (3 arquivos novos, prioridade auth/token/
+permission, `vercel/vercel` clonado raso em scratchpad efêmero, nunca
+versionado): `packages/cli/src/util/blob/token.ts` (resolução de
+credencial Blob RW-token vs. OIDC a partir de flags/env/`.env.local`,
+com fallback e mensagens de erro claras para configuração parcial —
+nenhum caminho mistura/vaza uma fonte de credencial na outra, sem
+achado), `packages/cli/src/util/blob/access.ts` (validação trivial do
+enum `public`/`private`, sem achado), `packages/cli/src/commands/vcr/
+permissions/add.ts` (concede permissão de repositório a times via
+`POST /v1/vcr/repository/.../permissions`; `repository`/`idOrName` passa
+por `repositoryPermissionsPath` → `encodeURIComponent` antes de entrar
+na URL, sem injeção de path; autorização real de quem pode conceder
+acesso acontece no servidor, fora deste repositório — nada auditável no
+lado cliente). Nenhum achado novo. `deep-read-log.json` atualizado
+(`vercel/vercel` agora com 58 arquivos lidos nesta missão).
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (mesmo teste
+de sempre, 403 no CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*`
+seguem impossíveis de baixar, sem mudança em relação às rodadas
+anteriores.

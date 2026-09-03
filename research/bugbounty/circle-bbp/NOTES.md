@@ -6478,3 +6478,18 @@ próprios; OKG: semgrep_use_of_unsafe_block) — volume grande demais pra uma
 triagem completa dos 27 do Circle BBP (o programa com achados de maior
 severidade potencial, por ser Solidity com Slither). Próxima rodada deve
 continuar por esses.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado primeiro, disciplina mantida: `Circle BBP`
+continua `blocked:true` (instrução direta e repetida do usuário,
+02/09/2026, "saia da circle bbp" / "não quero nada da circle", sem
+exceção nem para housekeeping). Nenhum repo `circlefin/*` foi clonado,
+lido ou tocado nesta rodada — mesmo com o texto do prompt agendado
+listando "Circle BBP" como um dos 4 programas ativos, essa instrução do
+agendamento está desatualizada em relação à política real e mais
+recente do repositório; segui a política do repositório. O achado
+travado em `corroborated_static` (`Mints.sol::_mint::
+unchecked_call_return`, bloqueado por falta de PoC executável —
+`forge` não instalável nesta linha de sessões por bloqueio de rede pra
+`foundry.paradigm.xyz`) segue intocado, sem nenhuma ação.
