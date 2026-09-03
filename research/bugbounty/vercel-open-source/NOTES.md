@@ -4697,3 +4697,42 @@ ficam pra próxima rodada):
   documentável — CWE-208).
 
 `deep-read-log.json` atualizado (`vercel/chat` +3 arquivos).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `api.hiro.so` reconfirmado bloqueado
+(`connect_rejected` no CONNECT do agent-proxy) — StackingDAO segue sem
+arquivo novo. Continuando o rastreio dos adapters de `vercel/chat`
+ainda não lidos (ver rodada anterior: `adapter-notion` e
+`adapter-telegram` ficaram pra esta rodada), mais `adapter-web` como
+terceiro arquivo:
+
+- `packages/adapter-telegram/src/index.ts` (`handleWebhook`): compara
+  `x-telegram-bot-api-secret-token` contra `secretToken` configurado
+  via `timingSafeEqual`, dentro de try/catch (length mismatch tratado
+  como inválido, não deixa vazar via exceção não capturada). Modo
+  `webhook` falha fechado no construtor/`initialize` se nem
+  `secretToken` nem `allowUnverifiedWebhooks` estiverem setados. Padrão
+  correto — contraste exatamente oposto ao bug do `adapter-discord`
+  achado na rodada anterior. Sem achado.
+- `packages/adapter-notion/src/utils.ts` (`verifyNotionSignature`) +
+  `packages/adapter-notion/src/index.ts` (`handleWebhook`,
+  `handleVerificationHandshake`): HMAC-SHA256 sobre `x-notion-signature`
+  com checagem de comprimento antes de `timingSafeEqual` (evita a
+  exceção de length-mismatch em vez de só capturá-la, mas efeito
+  equivalente). O handshake de verificação one-time (POST não assinado
+  com `verification_token`) é o protocolo documentado da Notion (mesmo
+  padrão do `url_verification` do Slack) — só loga o token pro operador
+  colar na config, não muda estado nem concede acesso; webhook assinado
+  segue rejeitado (401) se `NOTION_VERIFICATION_TOKEN` não estiver
+  configurado. Sem achado.
+- `packages/adapter-web/src/adapter.ts` (`handleWebhook`): não faz
+  verificação de webhook — delega autenticação inteiramente pro
+  `getUser(request)` fornecido pela aplicação (BYO auth, adapter de
+  browser/widget, não de webhook de terceiro). Comportamento por design
+  da lib, não um gap de auth do adapter. Sem achado.
+
+Nenhum achado novo nesta rodada. `Block Open Source`/`Circle BBP`
+seguem fora de escopo por política local (`program-policy.json`).
+`deep-read-log.json` atualizado (`vercel/chat` +4 arquivos: 2x
+adapter-notion, adapter-telegram, adapter-web).

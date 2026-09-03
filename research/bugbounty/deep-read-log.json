@@ -724,7 +724,11 @@
     "packages/adapter-x/src/index.ts (handleWebhook/verifySignature/handleCrcChallenge)",
     "packages/adapter-instagram/src/index.ts (handleWebhook/verifySignature, HMAC+timingSafeEqual, sem achado)",
     "packages/adapter-discord/src/index.ts (handleWebhook completo -- achado: gatewayToken comparado com !== em vez de timingSafeEqual)",
-    "packages/adapter-gchat/src/index.ts (verifyBearerToken/verifyProjectNumberToken/constructor fail-closed check, ja bem endurecido, sem achado)"
+    "packages/adapter-gchat/src/index.ts (verifyBearerToken/verifyProjectNumberToken/constructor fail-closed check, ja bem endurecido, sem achado)",
+    "packages/adapter-notion/src/index.ts (handleWebhook/handleVerificationHandshake, sem achado)",
+    "packages/adapter-notion/src/utils.ts (verifyNotionSignature: length-check + timingSafeEqual, padrao correto, sem achado)",
+    "packages/adapter-telegram/src/index.ts (handleWebhook/secretToken timingSafeEqual dentro de try/catch pra length mismatch, fail-closed em mode webhook sem secretToken, sem achado)",
+    "packages/adapter-web/src/adapter.ts (handleWebhook delega auth pro getUser fornecido pelo app -- BYO auth por design, sem achado)"
   ],
   "vercel/eve": [
     "packages/eve/src/channel/auth/jwt-hmac.ts",
