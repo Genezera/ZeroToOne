@@ -5317,3 +5317,52 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/eve` +3 arquivos, agora 54 no total). `list-pending` global
 = 0, nenhuma transição de estado nesta rodada. Os dois achados
 travados de Block Open Source seguem intocados por política.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open Source`
+(`aiResearchBanned: true`) e `Circle BBP` (`blocked: true`) seguem fora
+de escopo, apesar do prompt agendado listar os 4 programas — política
+do repositório tem precedência sobre o texto desatualizado do
+agendamento. Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` clonado, lido ou tocado. `list-pending` global = 0.
+
+Reconciliado com duas sessões concorrentes que empurraram pro
+`origin/master` durante esta rodada — uma leu 3 outros arquivos de
+`nitrojs/nitro` (sem sobreposição), outra leu `vercel/eve`. `git reset
+--hard origin/master` + `migrate-to-v2` re-rodado, meu conteúdo
+reaplicado por cima.
+
+Leitura profunda proativa em `nitrojs/nitro`, 3 arquivos:
+
+- `src/presets/vercel/runtime/cron-handler.ts` — handler do endpoint
+  de Vercel Cron. Valida `CRON_SECRET` com `timingSafeEqual` (checagem
+  de tamanho igual *antes* da comparação constant-time, evitando a
+  exceção do Node em buffers de tamanho diferente sem abrir short-
+  circuit em conteúdo), exige também o header
+  `x-vercel-cron-schedule`. Sem bypass encontrado.
+- `src/runtime/internal/app.ts` — infraestrutura de composição de
+  middleware (route rules, middleware roteado), só orquestração e
+  cache de chains compostas, nenhuma lógica própria de auth/crypto.
+  Sem achado.
+- `src/presets/aws-lambda/runtime/_utils.ts` — conversão de evento
+  Lambda (API Gateway v1/v2) pra `Request` web e de volta. Notei uma
+  inconsistência funcional (não abri finding, fora do tipo de achado
+  rastreado por este scanner): `awsRequest()` (linhas 7-24) monta
+  `req.runtime.aws = { event, context }` pra expor o evento/contexto
+  Lambda bruto a código de usuário (ex.: claims de um Lambda
+  authorizer em `event.requestContext.authorizer`), mas a função
+  retorna um `new Request(...)` *diferente* na linha 23, não o `req`
+  que acabou de receber esse campo — `runtime.aws` é descartado antes
+  de sair da função. Confirmei por grep (`runtime\.aws`) que nada
+  dentro do próprio `nitrojs/nitro` depende desse campo, então não é
+  bypass de autorização interna do framework: o efeito é que código de
+  usuário/plugin que dependesse desse campo sempre veria `undefined`,
+  o que tende a falhar fechado (comparação com claim esperado dá
+  `false`), não abrir uma bypass. Registrado só pra constar.
+
+Nenhum achado novo persistido no banco. `deep-read-log.json`
+atualizado (`nitrojs/nitro` +3 arquivos, agora 18 no total). `list-
+pending` global = 0, nenhuma transição de estado nesta rodada. Os
+dois achados travados de Block Open Source seguem intocados por
+política.

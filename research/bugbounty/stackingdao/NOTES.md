@@ -845,3 +845,17 @@ transição de estado neste programa. Múltiplas sessões concorrentes
 empurraram pro `origin/master` durante esta rodada; reconciliado
 repetidas vezes. `Block Open Source`/`Circle BBP` seguem fora de
 escopo por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `api.hiro.so` reconfirmado bloqueado (exit
+56/connection reset no `curl` de teste via agent-proxy) — os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar. Sem arquivo novo
+candidato em StackingDAO, os 15 contratos Clarity seguem 100%
+cobertos. Leitura profunda proativa desta rodada também em
+`nitrojs/nitro` (ver NOTES.md de Vercel Open Source: `cron-handler.ts`,
+`internal/app.ts`, `aws-lambda/runtime/_utils.ts`), nenhum achado
+novo, nenhuma transição de estado neste programa. Múltiplas sessões
+concorrentes empurraram pro `origin/master` durante esta rodada;
+reconciliado. `Block Open Source`/`Circle BBP` seguem fora de escopo
+por política local (`program-policy.json`).

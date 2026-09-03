@@ -2752,3 +2752,15 @@ verificação posterior. Os dois achados travados
 (`js_injection_unescaped_token_risk` em `corroborated_static` e
 `Root.kt::DirectoryRoot.resolve::path_traversal_risk` em
 `human_ready`) seguem intocados, sem mudança.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `aiResearchBanned: true`
+ainda vigente pra "Block Open Source" (RoE da Bugcrowd). Nenhum repo
+`cashapp/*`/`afterpay/*`/`square/wire` clonado, lido ou tocado nesta
+rodada, mesmo com o prompt agendado listando o programa como ativo.
+Leitura profunda proativa desta rodada foi em `nitrojs/nitro` (ver
+NOTES.md de Vercel Open Source). `list-pending` global = 0. Os dois
+achados travados (`js_injection_unescaped_token_risk` em
+`corroborated_static` e `Root.kt::DirectoryRoot.resolve::
+path_traversal_risk` em `human_ready`) seguem intocados, sem mudança.
