@@ -4802,3 +4802,39 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`nuxt/nuxt` +3 arquivos, agora 10 no total). `api.hiro.so`
 reconfirmado bloqueado (`connect_rejected` no CONNECT do agent-proxy) —
 ver NOTES.md de StackingDAO.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` reconfirmado antes de tocar em qualquer repo:
+`Block Open Source` (`aiResearchBanned: true`) e `Circle BBP`
+(`blocked: true`) seguem fora de escopo — nenhum repo `cashapp/*`/
+`afterpay/*`/`square/wire`/`circlefin/*` tocado, apesar do prompt
+agendado listar os 4 programas como ativos. `list-pending` global = 0.
+`api.hiro.so` reconfirmado bloqueado (`connect_rejected` no CONNECT do
+agent-proxy, ver NOTES.md de StackingDAO). Leitura profunda proativa
+mirou `nuxt/nuxt` de novo (10 arquivos já lidos, monorepo grande): 3
+arquivos novos —
+
+- `packages/nuxt/src/core/utils/proxy.ts` (`installProxyDispatcher`):
+  só instala o `EnvHttpProxyAgent` do undici como dispatcher global
+  quando `HTTP(S)_PROXY` já está setado no ambiente, pra builds
+  atrás de proxy corporativo honrarem a env var em `fetch` no build
+  time. Sem entrada de usuário, sem lógica de auth/rede exposta.
+  Sem achado.
+- `packages/nitro-server/src/runtime/middleware/base-url.ts`: reescreve
+  o path removendo o `baseURL` configurado (valor de config do dev, não
+  de request) e refaz um fetch interno marcado `~internal` pra evitar
+  reprocessamento; 404 se o path não começa com o baseURL. Sem trecho
+  de path vindo de header/input do atacante controlando a decisão. Sem
+  achado.
+- `packages/nuxt/src/app/plugins/cross-origin-prefetch.client.ts`:
+  registra URLs de prefetch cross-origin coletadas do hook
+  `link:prefetch` num `speculationrules` script, exigindo
+  `anonymous-client-ip-when-cross-origin` (mitigação nativa do spec
+  contra vazamento de IP/credenciais em prefetch cross-origin); valida
+  protocolo (só `http:`/`https:`) antes de adicionar a URL à lista.
+  Comportamento é o padrão de hardening da própria Speculation Rules
+  API, não introduz superfície nova. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`nuxt/nuxt` +3 arquivos, agora 13 no total).
