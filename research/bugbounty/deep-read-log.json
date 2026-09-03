@@ -897,7 +897,10 @@
     "crates/turborepo-lib/src/run/task_access.rs (heurística de cache local, não é fronteira de confiança remota)",
     "crates/turborepo-microfrontends-proxy/src/headers.rs (validate_host_header restrito a localhost/127.0.0.1, checagem de Host duplicado/malformado, URI-authority vs Host, smuggling Content-Length+Transfer-Encoding -- sem achado)",
     "crates/turborepo-microfrontends-proxy/src/http.rs + ports.rs (forward_request reescreve Host/X-Forwarded-*, validate_port com allowlist 3000-9999 + blocklist de portas de serviço mesmo dentro do range; normalize_fallback_url via url::Url::join com checagem explícita de host inalterado -- sem achado)",
-    "apps/docs/lib/og/sign.ts + apps/docs/app/api/og/route.tsx (HMAC-SHA256 sobre params normalizados, regex+length-check antes de timingSafeEqual, 401 fail-closed em assinatura ausente/inválida -- sem achado, padrão correto)"
+    "apps/docs/lib/og/sign.ts + apps/docs/app/api/og/route.tsx (HMAC-SHA256 sobre params normalizados, regex+length-check antes de timingSafeEqual, 401 fail-closed em assinatura ausente/inválida -- sem achado, padrão correto)",
+    "crates/turborepo-auth/src/error.rs (variantes de erro do fluxo de login/SSO/OAuth/device-flow -- nenhuma interpola token/segredo bruto na mensagem, só status/código/URL; UntrustedVercelApiUrl/UntrustedNonVercelLoginUrlSource/UntrustedNonVercelApiUrlSource/UntrustedNonVercelLoginUrlScheme/LoginUrlIncludesCredentials mostram hardening deliberado contra login não-Vercel malicioso. Sem achado)",
+    "crates/turborepo-auth/src/ui/mod.rs (3 linhas, só re-exporta messages::print_cli_authorized, sem lógica própria)",
+    "crates/turborepo-boundaries/bindings/Permissions.ts (gerado por ts-rs, só tipo TS allow/deny de tags, sem lógica de runtime)"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",

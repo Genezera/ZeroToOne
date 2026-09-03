@@ -952,3 +952,14 @@ microfrontends `headers.rs`/`http.rs`/`ports.rs`, assinatura HMAC de OG
 image `sign.ts`), sem achado. Nenhuma transição de estado neste
 programa. Reconciliado várias vezes com sessões concorrentes disputando
 o mesmo push (`vercel/eve`, Plaid, `nitrojs/nitro`, `vercel/ai`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud concorrente)
+
+`program-policy.json` checado como passo zero, `Block Open Source` e
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`list-pending` global = 0. `api.hiro.so` continua bloqueado no CONNECT
+do agent-proxy — os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida. Rodou em paralelo com a rodada acima (mesmo dia);
+ambas escolheram `vercel/turborepo` pra leitura profunda proativa, mas
+arquivos diferentes (ver NOTES.md de Vercel Open Source) — mesclado
+sem perda ao sincronizar. Nenhuma transição de estado neste programa.
