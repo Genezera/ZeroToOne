@@ -4576,3 +4576,56 @@ efêmero (commit `4e2abec3`, 2026-09-03). Foco na proteção CSRF/cross-site
   relatório.
 
 `deep-read-log.json` atualizado (`vercel/next.js` agora 21 arquivos).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Nenhum `candidate` novo; os achados travados
+(23 `corroborated_static`, 2 `human_ready`, 16 `inconclusive`) seguem
+intocados. Disciplina de política mantida: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`) fora de escopo — nenhum
+repo `cashapp/*`/`afterpay/*`/`square/wire`/`circlefin/*` tocado, mesmo
+com o prompt agendado listando os 4 programas.
+
+Leitura profunda proativa: `nitrojs/nitro` clonado raso via `git clone
+--depth 1 --filter=blob:none` em scratchpad efêmero (nunca versionado).
+`vercel/vercel` segue com cobertura de produção essencialmente esgotada
+(ver rodadas anteriores), então esta rodada mirou um dos outros repos
+Tier no escopo do programa. 3 linhas de investigação novas em
+`nitrojs/nitro`:
+- `src/runtime/internal/database.ts` (`useDatabase`): factory pura,
+  config vem só de `#nitro/virtual/database` (módulo virtual resolvido
+  em build-time a partir de `nitro.config`), zero entrada de usuário.
+  Sem achado.
+- `src/runtime/internal/routes/openapi.ts` (rota `/_openapi.json`) +
+  `src/config/resolvers/open-api.ts`: rastreei se a rota de introspecção
+  de API vaza em produção. Confirmado: o resolver só registra
+  `/_openapi.json`/`/_scalar`/`/_swagger` quando `options.dev` é
+  verdadeiro OU `options.openAPI?.production` foi explicitamente
+  habilitado pelo usuário (`open-api.ts:12`) — gate correto, opt-in
+  explícito exigido pra produção. Sem achado.
+- `src/runtime/internal/route-rule-handlers.ts` +
+  `src/runtime/internal/routes/dev-tasks.ts` (`/_nitro/tasks/:name`,
+  executa tarefas do servidor com payload arbitrário do caller): essa é
+  a classe de endpoint mais perigosa que vi nesta rodada — rastreei até
+  o registro em `src/presets/_nitro/nitro-dev.ts` (só no preset de
+  dev) e a guarda em `src/dev/app.ts:76-77`
+  (`app.use("/_nitro/tasks(/**)?", assertLocalTaskRequest)`). O próprio
+  comentário no código documenta o raciocínio de ameaça correto ("sem
+  esse gate, alcançável por qualquer host que chegue ao dev server, que
+  escuta em todas as interfaces por padrão"). Testei o gate
+  (`isLocalDevRequest` em `src/dev/_request.ts`, já lido em rodada
+  anterior mas revisitado aqui) contra bypass via `X-Forwarded-For`
+  forjado: `getRequestIP(event, { xForwardedFor: isUnixSocket })` só
+  confia no header quando a conexão é um unix socket sem endereço de
+  rede real — numa conexão TCP normal o XFF é ignorado e o IP vem do
+  socket real, então spoofing de XFF não abre bypass. Mesmo padrão já
+  usado por `/_vfs/**` (`src/dev/vfs.ts`, também já coberto). Sem
+  achado — superfície corretamente protegida, appears já endurecida
+  contra exatamente esse vetor.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`nitrojs/nitro`
+agora 12 arquivos; cobertura ainda parcial — `src/presets/*` e
+`src/build/*` majoritariamente não lidos, mas são tooling de build,
+não superfície de runtime exposta). StackingDAO: sem clonagem nesta
+rodada, `api.hiro.so` seguiu bloqueado numa checagem rápida (403 no
+CONNECT do agent-proxy) — ver NOTES.md de StackingDAO.

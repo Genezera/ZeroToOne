@@ -695,3 +695,20 @@ arquivo novo candidato em StackingDAO, os 15 contratos Clarity seguem
 100% cobertos. Nenhum achado, nenhuma transição de estado neste
 programa. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
 sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Reconfirmado mais uma vez: `api.hiro.so`
+continua bloqueado nesta sessão (403 no CONNECT do agent-proxy) — os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar. Com a cobertura de
+produção de `vercel/vercel` já esgotada (ver rodadas anteriores), a
+leitura profunda proativa desta rodada foi direcionada a
+`nitrojs/nitro` em vez disso (ver NOTES.md de Vercel Open Source: rota
+`/_openapi.json` — corretamente opt-in em produção; endpoint
+`/_nitro/tasks/:name`, executor de tasks dev-only, gate
+`isLocalDevRequest` testado contra bypass de `X-Forwarded-For` e
+confirmado seguro). Sem arquivo novo candidato em StackingDAO, os 15
+contratos Clarity seguem 100% cobertos. Nenhum achado, nenhuma
+transição de estado neste programa. `Block Open Source`/`Circle BBP`
+seguem fora de escopo desta sessão por política local
+(`program-policy.json`).

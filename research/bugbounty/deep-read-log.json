@@ -615,7 +615,13 @@
     "src/runtime/internal/storage.ts",
     "src/dev/_request.ts",
     "src/dev/vfs.ts",
-    "src/dev/app.ts"
+    "src/dev/app.ts",
+    "src/runtime/database.ts",
+    "src/runtime/internal/database.ts",
+    "src/runtime/internal/routes/openapi.ts",
+    "src/runtime/internal/route-rule-handlers.ts",
+    "src/runtime/internal/routes/dev-tasks.ts",
+    "src/config/resolvers/open-api.ts"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",
