@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { findingTypeForCheck, parseSlitherJson, runSlitherOnRepo, toQueueFindings } from '../slither-runner.mjs';
+
+const HAS_FORGE = spawnSync('forge', ['--version'], { stdio: 'ignore' }).status === 0;
 
 function withTempDir(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-slither-test-'));
@@ -114,7 +117,9 @@ test('toQueueFindings é determinístico -- mesmo achado gera o mesmo id em roda
 // dependência externa nenhuma (sem submódulo, sem npm) pra ficar rápido
 // o bastante pra suíte principal (~2s). Prova que a invocação real
 // funciona de ponta a ponta, não só que o parser está correto.
-test('runSlitherOnRepo roda o Slither de verdade contra um contrato tx.origin sintético', () => {
+test('runSlitherOnRepo roda o Slither de verdade contra um contrato tx.origin sintético', {
+  skip: HAS_FORGE ? false : 'integração opcional: Slither está instalado, mas forge não está disponível no PATH',
+}, () => {
   withTempDir((dir) => {
     writeFileSync(path.join(dir, 'foundry.toml'), '[profile.default]\nsrc = "src"\nout = "out"\nlibs = []\n', 'utf8');
     mkdirSync(path.join(dir, 'src'), { recursive: true });

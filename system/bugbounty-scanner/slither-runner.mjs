@@ -156,7 +156,14 @@ export function runSlitherOnRepo(repoDir, { minImpact = DEFAULT_MIN_IMPACT, outp
     execFileSync('py', ['-m', 'slither', '.', '--json', outputPath], { cwd: repoDir, stdio: 'pipe' });
   } catch (err) {
     if (!existsSync(outputPath)) {
-      return { ok: false, reason: `slither não gerou saída (provável falha de compilação): ${err.message.split('\n').slice(0, 3).join(' | ')}` };
+      const diagnostic = [err.message, err.stderr, err.stdout]
+        .filter(Boolean)
+        .join('\n')
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .slice(0, 60)
+        .join(' | ');
+      return { ok: false, reason: `slither não gerou saída (provável falha de compilação): ${diagnostic}` };
     }
   }
   let json;
