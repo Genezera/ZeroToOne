@@ -703,7 +703,10 @@
     "src/archive.ts (completo)",
     "src/git.ts (completo)",
     "src/source-parser.ts (completo)",
-    "src/plugin-manifest.ts (completo)"
+    "src/plugin-manifest.ts (completo)",
+    "src/use.ts (completo)",
+    "src/sync.ts (completo)",
+    "src/providers/registry.ts"
   ],
   "vercel/ai": [
     "packages/gateway/src/gateway-realtime-auth.ts",

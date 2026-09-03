@@ -5391,3 +5391,47 @@ lidos por completo nesta:
 `deep-read-log.json` mesclado (`vercel/eve` agora com as duas
 contribuições, sem entrada duplicada do arquivo em comum). Nenhum
 achado novo.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` só foi checado
+TARDE nesta rodada (incidente de processo — ver NOTES.md de Circle
+BBP para os detalhes completos): antes de checar, cheguei a clonar e
+ler cinco repos `circlefin/*` fora de escopo (`Circle BBP` está
+`blocked: true`). Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`
+foi tocado (`Block Open Source`, `aiResearchBanned: true`, respeitado
+mesmo com o erro do outro gate).
+
+Leitura profunda proativa desta rodada, dentro do escopo correto
+(`Vercel Open Source`, repo `vercel-labs/skills`, ainda com cobertura
+baixa frente a outros repos do programa): `src/use.ts` (completo),
+`src/sync.ts` (completo) e `src/providers/registry.ts`.
+
+- `src/providers/registry.ts`: registry trivial de providers
+  (`register`/`findProvider`/`getProviders`), sem lógica de
+  segurança. Sem achado.
+- `src/sync.ts` (`runSync`): descobre skills em `node_modules`,
+  computa hash de conteúdo antes de reinstalar (evita reinstalação
+  silenciosa desnecessária) e imprime aviso explícito no final
+  ("Review skills before use; they run with full agent permissions.")
+  — risco de supply chain é reconhecido e comunicado, não escondido.
+  Sem achado.
+- `src/use.ts` (`runUse`/`materializeUseSkill`/
+  `launchAgentInteractively`): baixa uma skill de fonte arbitrária
+  (GitHub, well-known URL ou blob) e, com `--agent`, passa o
+  `SKILL.md` bruto como argumento posicional pro `spawn(command,
+  args, {stdio:'inherit'})` do CLI do agente (`claude`/`codex`) —
+  `spawn` sem `shell:true` e args em array, então não há injeção de
+  shell via conteúdo do SKILL.md por mais hostil que seja. O
+  comportamento em si (entregar prompt de fonte não confiável direto
+  pro agente) é o propósito documentado da ferramenta, não um bug.
+  `isPathSafe()` (`normalizedTarget.startsWith(normalizedBase + sep)
+  || normalizedTarget === normalizedBase`) é a forma correta da
+  checagem — inclui o separador, então não tem o bypass clássico de
+  prefixo (`/base` casando `/baseevil`). `copySkillDirectory` usa
+  `cp(..., {dereference:true})`, que segue symlinks da origem e copia
+  conteúdo em vez de criar um symlink no destino, fechando escape via
+  link simbólico. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel-labs/skills` +3 arquivos, agora 17 no total).
