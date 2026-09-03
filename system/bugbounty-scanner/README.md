@@ -1581,3 +1581,59 @@ usuário:
   (já calculado em memória pós-promoção) em vez dos imports estáticos —
   ver o comentário grande no topo de `discovery-runner.mjs`. 466/466
   testes passando.
+
+## Bug real (não corrigido nesta rodada): `migrate-to-v2.mjs` duplica evento de satélite no ledger a cada sessão nova de nuvem (03/09/2026)
+
+Achado comparando `git diff ledger/ledger.research.jsonl` desta rodada
+contra a anterior: as duas têm exatamente `+18` linhas, e são as
+*mesmas* 4 categorias de evento satélite (`bugbounty_platform_outcome`,
+`bugbounty_deployment_evidence`, `bugbounty_report`,
+`bugbounty_validation`) pros *mesmos* `findingId` que já apareciam bem
+mais acima no arquivo — mesmo conteúdo semântico, `ts`/`hash`/`prevHash`
+novos a cada vez. Nenhum comando desta sessão gravou isso de propósito
+(não chamei `record-validation`/`record-report`/`record-deployment-evidence`
+nem `transition` — só `migrate-to-v2.mjs`, `list-pending`, `status` e
+`export-queue`).
+
+**Causa raiz**: `migrate-to-v2.mjs::restoreSatelliteData` (comentário
+já promete idempotência — "rodar isto de novo pra uma linha sem mudança
+nenhuma não duplica... nem gera evento novo no ledger") checa
+idempotência comparando contra `latest*(db, findingId)` — ou seja,
+contra o banco SQLite local **desta mesma sessão**, que é reconstruído
+do zero (`research/bugbounty/zerotoone.db`, gitignored, "cada ambiente
+tem sua própria cópia efêmera", conforme o próprio prompt agendado
+descreve) toda vez que um container de nuvem novo é provisionado. Numa
+sessão de container único e contínua, a checagem funciona (chamar
+`migrate-to-v2.mjs` duas vezes na mesma sessão não duplica nada, porque
+`current` na segunda chamada já reflete o que a primeira gravou). Mas
+entre sessões — exatamente o padrão real de uso deste pipeline, uma
+sessão de nuvem efêmera nova a cada disparo agendado — `current` começa
+sempre `null`/`undefined` pra todo `findingId`, então `same` é sempre
+`false`, e cada finding com `platformOutcome`/`deploymentEvidence`/
+`report`/`validationsHistory` em `queue.jsonl` tem seu evento satélite
+re-gravado (e re-anexado ao ledger real) desde o zero, toda vez. Mesma
+classe de "o dado sumia entre ambientes efêmeros" que a big comment no
+topo de `restoreSatelliteData` já cita como motivação original da
+função — só que a correção resolveu a perda de dado e introduziu
+duplicação de ledger no processo.
+
+**Escala**: pelo menos 2 rodadas consecutivas confirmadas (`84b5567` e
+esta), 18 linhas cada — mas função existe desde 02/09/2026, então o
+número real de rodadas afetadas é provavelmente maior; não investiguei
+quantas por não ser o escopo desta sessão (revisão de achados, não
+manutenção do pipeline). Ao contrário do bug de "dado de teste vazando
+pro ledger" documentado acima, aqui o conteúdo duplicado é real
+(nenhum dado de fixture/teste, nenhum `"Programa X::"`) — o problema é
+puramente volume redundante num arquivo append-only encadeado por hash,
+não corrupção de conteúdo.
+
+**Não corrigido nesta rodada** — o ledger é auditável e encadeado por
+hash (`prevHash`/`hash`), e mexer na lógica de gravação dele sem rodar
+a suíte de teste completa e confirmar `verifyChain` de perto é risco
+maior do que o benefício de um fix apressado numa rodada cujo escopo é
+revisão de achados, não engenharia do scanner. Caminho de correção mais
+provável, pra quem pegar isto depois: trocar a checagem de idempotência
+de `restoreSatelliteData` pra usar `ledgerStates`/histórico real do
+ledger (já lido no início de `migrateAll` via `readLedger` +
+`deriveStatesFromLedger`, mesmo padrão já usado pra `driftDetected`
+alguns parágrafos acima) em vez do banco SQLite efêmero da sessão atual.

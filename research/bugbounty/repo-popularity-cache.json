@@ -223,5 +223,15 @@
     "stars": 2370,
     "totalScannableFiles": 1089,
     "fetchedAt": "2026-09-02T12:30:51.919Z"
+  },
+  "kubernetes/cluster-bootstrap": {
+    "stars": 34,
+    "totalScannableFiles": 7,
+    "fetchedAt": "2026-09-03T16:23:11.147Z"
+  },
+  "kiwicom/js-iam-middleware": {
+    "stars": 1,
+    "totalScannableFiles": 12,
+    "fetchedAt": "2026-09-03T16:23:11.523Z"
   }
 }

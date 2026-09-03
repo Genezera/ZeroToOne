@@ -959,7 +959,10 @@
     "packages/core/src/runtime/quickjs-runtime.ts (completo — fechadas as seções finais L1350-1600, replay/seed init, e L2450-2816, dump de pending ops/checkWorkflowState/helpers)",
     "workbench/vitest/workflows/hook-token-reuse.ts",
     "packages/cli/src/lib/inspect/auth.ts",
-    "packages/core/src/serialization/encryption.ts"
+    "packages/core/src/serialization/encryption.ts",
+    "packages/core/src/serialization/hardened.ts",
+    "packages/world-vercel/src/run-id/codec.ts",
+    "packages/world-vercel/src/hooks.ts"
   ],
   "kubernetes/cluster-bootstrap": [
     "token/jws/jws.go",
