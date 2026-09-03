@@ -254,6 +254,39 @@ deliberada, não descuido.
 
 Commit `1575137`.
 
+### Quinta rodada (03/09/2026) — precisão contra a especificação real do GraphQL + limpeza final de wording
+
+Revisão apontou que minha afirmação sobre `Non-Null` estava ampla
+demais: só zera a resposta INTEIRA se TODO campo da raiz até o erro
+for Non-Null, não qualquer campo Non-Null em qualquer lugar. Verifiquei
+contra a especificação real (`spec.graphql.org`, seção 6 Execution) —
+confirmado, texto literal: "If all fields from the root of the request
+to the source of the field error return Non-Null types, then the
+'data' entry in the response should be null." Reescrito com precisão.
+
+Mais uma leva de correções de wording, todas aplicadas: "throws
+synchronously" → "returns a rejected promise before http.request, DNS
+resolution, or socket creation" (mais preciso, são funções async, não
+throw síncrono); "the real IAM token" → "lowercased token value" nos
+pontos que descrevem o valor final na URL; removido "the version real
+consumers install"/"not an unused code path" (não provados); "well-
+tested in isolation" → "has a passing isolated cache test"; removida
+inteiramente a especulação sobre custom fetcher/APM do Impact (não
+prova disclosure, só convida contestação).
+
+**Achado real de processo**: o zip da PoC só existia em
+`E:\dev-toolchains\poc-repos\`, nunca dentro da pasta `ready-to-submit`
+— reconstruído com o novo script `verify-nonnull-propagation.mjs` (usa
+o pacote `graphql` real, output real já capturado) e colocado
+diretamente dentro da pasta de entrega, testado via extração limpa do
+zero (round-trip completo: `npm install` + os 3 scripts, tudo bate).
+
+Título mudou mais uma vez: "...Reject Every Protected Field
+Resolution" (absoluto demais) → "...Breaks the Documented GraphQL
+@requires Authorization Flow" (o que está realmente provado).
+
+Commit `f93b6f8`.
+
 ### Escopo confirmado
 
 `kiwicom/js-iam-middleware` nunca tinha snapshot de escopo formal
