@@ -4432,3 +4432,31 @@ StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy, reconfirmado com `curl` direto) — os 3 contratos
 `ststxbtc-*` seguem impossíveis de baixar, sem mudança em relação às
 rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Leitura profunda proativa: `vercel/vercel`
+clonado raso via `git clone --depth 1` em scratchpad efêmero (nunca
+versionado). Diff contra `deep-read-log.json` encontrou 32 arquivos
+ainda não lidos batendo nas keywords de prioridade (auth/token/login/
+permission/access) — a maioria em `examples/hydrogen-2` (baixa
+prioridade, não é lógica de produção da própria Vercel) ou testes
+(`*.test.ts`, `evals/`). 3 arquivos de produção revisados nesta rodada:
+`packages/cli/src/commands/login/command.ts` (apenas metadados/definição
+de flags do comando `login`, sem lógica — sem achado),
+`packages/cli/src/commands/global-config/tokens.ts` (CRUD de tokens de
+Global Config via `client.fetch`; ids sempre `encodeURIComponent`,
+corpo de request é objeto estruturado nunca concatenação de string,
+saída `--json` usa allowlist explícito de campos pra nunca vazar
+`token` em texto plano exceto no momento de criação — bem escrito, sem
+achado), `packages/cli/src/commands/vcr/permissions/command.ts`
+(apenas metadados/definição de subcomandos `ls/add/rm/clear`, roteamento
+real fica em `permissions/index.ts` já lido em rodada anterior — sem
+achado). `deep-read-log.json` atualizado (`vercel/vercel` agora com 84
+arquivos lidos nesta missão). Restam ~29 arquivos não lidos nas
+keywords de prioridade, quase todos testes/evals/examples de baixa
+prioridade.
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem
+impossíveis de baixar, sem mudança em relação às rodadas anteriores.
