@@ -4313,3 +4313,52 @@ pra próxima rodada.
 StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
 de baixar, sem mudança em relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado primeiro, mesma disciplina de sempre:
+`Block Open Source` continua `aiResearchBanned:true` (RoE da Bugcrowd)
+e `Circle BBP` continua `blocked:true` (instrução direta e repetida do
+usuário) — nenhum repo desses dois programas foi tocado nesta rodada,
+apesar do prompt agendado ainda listar os 4 programas como "ativos"
+(texto desatualizado em relação à política real do repositório; segui
+a política do repositório). `migrate-to-v2` rodado sem erro (604
+findings, mesma distribuição de estados de sempre), `list-pending`
+global = 0.
+
+Leitura profunda proativa (`vercel/vercel` clonado raso via `git clone
+--depth 1` em scratchpad efêmero, nunca versionado; mesma seleção
+sistemática — lista de todo arquivo `.ts`/`.js` de produção com
+auth/session/crypto/token/login/password/admin/permission/access/
+credential/secret/oauth/oidc/jwt no caminho, diffada contra
+`deep-read-log.json`): `packages/cli/src/commands/tokens/rm.ts`
+(remoção de PAT via `DELETE /v3/user/tokens/:id`, id sempre passa por
+`encodeURIComponent`, sem injeção de path; autorização de qual token
+pode ser removido é decidida inteiramente pelo servidor, sem achado),
+`packages/container/src/oidc.ts` (mint de token OIDC de projeto pra
+registry de container — `parseOidcToken` decodifica o JWT existente
+sem verificar assinatura, mas usa isso só como *hint* de roteamento
+(`projectId`/`teamId`) pra decidir qual projeto pedir um token novo; a
+autorização real acontece no servidor em `POST /v1/projects/:id/token`,
+que exige `VERCEL_TOKEN` — um payload adulterado no JWT não-verificado
+só resultaria em pedir token pro projeto errado, rejeitado pelo
+servidor; sem escalação de privilégio, sem achado), `packages/
+oidc-aws-credentials-provider/src/aws-credentials-provider.ts` +
+`index.ts` (wrapper fino que busca token OIDC da Vercel e chama
+`fromWebToken` do AWS SDK — a verificação de assinatura de verdade é
+feita pelo STS da AWS contra a role trust policy, não neste código;
+`roleArn` é fornecido pelo próprio chamador, sem confused deputy; sem
+achado), `packages/functions/src/oidc/index.ts` (apenas re-export
+deprecated do pacote acima, sem achado), `packages/cli/src/commands/
+vcr/login.ts` + `packages/cli/src/commands/vcr/utils/engine.ts` (login
+em registry de container via `docker/podman/buildah login
+--password-stdin`, token nunca passa por linha de comando nem é
+logado — `execa` usado com array de argumentos, nunca com shell, então
+sem injeção de comando mesmo com `registry` vindo de env var do
+próprio usuário; engine restrito ao enum `VCR_ENGINES`, sem achado).
+`deep-read-log.json` atualizado (`vercel/vercel` agora com 73 arquivos
+lidos nesta missão).
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
+de baixar, sem mudança em relação às rodadas anteriores.
