@@ -831,7 +831,10 @@
     "packages/next/src/server/web/spec-extension/adapters/request-cookies.ts",
     "packages/next/src/server/app-render/csrf-protection.ts",
     "packages/next/src/server/lib/router-utils/block-cross-site-dev.ts",
-    "packages/next/src/server/dev/hot-reloader-webpack.ts"
+    "packages/next/src/server/dev/hot-reloader-webpack.ts",
+    "packages/next/src/server/node-environment-extensions/web-crypto.tsx",
+    "packages/next/src/server/node-environment-extensions/node-crypto.tsx",
+    "packages/next/src/server/node-polyfill-crypto.ts"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",

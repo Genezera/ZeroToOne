@@ -5018,3 +5018,51 @@ achado, não virou finding.
 `deep-read-log.json` atualizado (`vercel/workflow` +2 arquivos, agora
 18 no total). `list-pending` global = 0, nenhuma transição de estado
 nesta rodada.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` reconfirmado antes de
+tocar em qualquer repo: `Block Open Source` (`aiResearchBanned: true`,
+RoE da Bugcrowd) e `Circle BBP` (`blocked: true`, instrução direta do
+usuário) seguem fora de escopo desta sessão, mesmo com o prompt
+agendado listando os 4 programas como ativos — a política do
+repositório é a fonte de verdade e tem precedência sobre o texto
+desatualizado do agendamento. Nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire`/`circlefin/*` clonado, lido ou tocado.
+
+Reconciliado com uma sessão concorrente que empurrou uma rodada pro
+`origin/master` (hook tokens em `vercel/workflow`) enquanto esta rodada
+estava em andamento: `git reset --hard origin/master` + `migrate-to-v2`
+re-rodado a partir do `queue.jsonl` já atualizado por eles, e só o
+conteúdo genuinamente novo desta rodada foi reaplicado por cima.
+
+Leitura profunda proativa em `vercel/next.js` (21 arquivos já lidos
+antes desta rodada): sparse-clone (`git clone --depth 1 --filter=
+blob:none --sparse`, só `packages/next/src`, não persistido no repo)
+para listar arquivos ainda não lidos com auth/session/crypto/token/
+login/password/admin/permission/access/secret/csrf no nome. 3 arquivos
+novos lidos por completo:
+
+- `packages/next/src/server/node-environment-extensions/web-crypto.tsx`
+  e `.../node-crypto.tsx` — patches de `crypto.getRandomValues`/
+  `randomUUID`/`randomBytes`/`randomFillSync`/`randomInt`/
+  `generatePrimeSync`/`generateKeyPairSync`/`generateKeySync` que só
+  chamam a implementação original (`_fn.apply(...)`) depois de registrar
+  uma marca de I/O (`io(...)`) usada pelo mecanismo de detecção de
+  dinamismo do `cacheComponents` (garantir que prerenders não observem
+  bytes aleatórios não cacheados). Nunca alteram o valor retornado, nunca
+  interceptam nem enfraquecem a fonte de entropia real — os comentários
+  do próprio código são explícitos sobre isso ("never error nor alter
+  the underlying return values"). Sem achado.
+- `packages/next/src/server/node-polyfill-crypto.ts` — só expõe
+  `node:crypto`'s `webcrypto` como `global.crypto` via
+  `Object.defineProperty` quando `global.crypto` ainda não existe
+  (ambientes Node antigos). Getter/setter simples, sem lógica de
+  segurança para auditar. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/next.js` +3 arquivos, agora 24 no total). Os dois achados
+travados (`js_injection_unescaped_token_risk` em `corroborated_static`
+e `Root.kt::DirectoryRoot.resolve::path_traversal_risk` em
+`human_ready`) seguem intocados, ainda aguardando decisão humana sobre
+o segundo.
