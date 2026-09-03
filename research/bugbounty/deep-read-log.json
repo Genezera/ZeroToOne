@@ -843,6 +843,9 @@
     "src/_internal/utils/subscribe-key.ts"
   ],
   "vercel/turborepo": [
+    "crates/turborepo-cache/src/signature_authentication.rs",
+    "crates/turborepo-types/src/secret.rs",
+    "crates/turborepo-cache/src/http.rs (fetch(): consumo do signer_verifier, fail-closed em erro/tag invalida)",
     "crates/turborepo-auth/src/device_flow.rs",
     "crates/turborepo-auth/src/auth/mod.rs",
     "crates/turborepo-auth/src/auth/login.rs",
