@@ -721,7 +721,10 @@
     "packages/adapter-teams/src/webhook/parse.ts",
     "packages/adapter-teams/src/index.ts",
     "packages/adapter-linear/src/index.ts (handleWebhook/handleVerifiedWebhook)",
-    "packages/adapter-x/src/index.ts (handleWebhook/verifySignature/handleCrcChallenge)"
+    "packages/adapter-x/src/index.ts (handleWebhook/verifySignature/handleCrcChallenge)",
+    "packages/adapter-instagram/src/index.ts (handleWebhook/verifySignature, HMAC+timingSafeEqual, sem achado)",
+    "packages/adapter-discord/src/index.ts (handleWebhook completo -- achado: gatewayToken comparado com !== em vez de timingSafeEqual)",
+    "packages/adapter-gchat/src/index.ts (verifyBearerToken/verifyProjectNumberToken/constructor fail-closed check, ja bem endurecido, sem achado)"
   ],
   "vercel/eve": [
     "packages/eve/src/channel/auth/jwt-hmac.ts",

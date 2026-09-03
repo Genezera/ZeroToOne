@@ -4629,3 +4629,71 @@ agora 12 arquivos; cobertura ainda parcial — `src/presets/*` e
 não superfície de runtime exposta). StackingDAO: sem clonagem nesta
 rodada, `api.hiro.so` seguiu bloqueado numa checagem rápida (403 no
 CONNECT do agent-proxy) — ver NOTES.md de StackingDAO.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` reconfirmado antes de tocar em qualquer repo:
+"Block Open Source" segue `aiResearchBanned: true` (RoE da Bugcrowd) e
+"Circle BBP" segue `blocked: true` (instrução direta e repetida do
+usuário) — nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` clonado, lido ou tocado nesta rodada, apesar do prompt
+agendado listar os 4 programas como ativos; segui a política local, não
+o texto (desatualizado) do agendamento, como nas rodadas anteriores.
+`list-pending` global = 0. Como `vercel/vercel` e `nitrojs/nitro`
+tinham cobertura de produção já essencialmente esgotada, a leitura
+profunda proativa desta rodada foi pra `vercel/chat` — cloná-lo de novo
+(shallow, público) e diffar `packages/adapter-*` contra
+`deep-read-log.json` revelou 5 adapters nunca lidos:
+`adapter-discord`, `adapter-gchat`, `adapter-instagram`,
+`adapter-notion`, `adapter-telegram`. Li os 3 mais relevantes pra
+auth/verificação de webhook (os outros dois, `notion` e `telegram`,
+ficam pra próxima rodada):
+
+- `packages/adapter-instagram/src/index.ts` (`verifySignature`,
+  `handleVerification`): HMAC-SHA256 sobre `x-hub-signature-256`
+  comparado com `crypto.timingSafeEqual`, dentro de try/catch (cobre o
+  caso de `Buffer.from(hash,'hex')` ter tamanho diferente do computed,
+  que faria `timingSafeEqual` lançar em vez de vazar timing). Padrão
+  correto, igual aos outros adapters Meta já cobertos
+  (`whatsapp`/`messenger`). Sem achado.
+- `packages/adapter-gchat/src/index.ts` (~2880 linhas, esquema de auth
+  mais complexo do repo: JWT do Google Chat por audience de projeto ou
+  de endpoint-URL, mais Pub/Sub push JWT, dois transportes no mesmo
+  endpoint): li o construtor (fail-closed exigindo pelo menos um
+  verificador configurado ou opt-out explícito — comentário no próprio
+  código diz que uma versão anterior aceitava qualquer webhook nesse
+  estado, já corrigido) e as três funções de verificação
+  (`verifyBearerToken`/`verifyProjectNumberToken`/
+  `verifyDirectWebhookToken`) mais as validações de claim
+  (`validateEndpointUrlTokenPayload`/`validatePubsubTokenPayload`).
+  Código já bem documentado com o raciocínio de ameaça certo (por que
+  `aud` sozinho não basta, por que checar `email` do service account,
+  por que padrão de e-mail de Workspace Add-on não pode ser confiado
+  "por formato" sem identidade configurada, por que `inferredEndpointUrl`
+  só é setado pós-verificação pra não virar vetor de poison via Host
+  header). Parece código já endurecido por uma rodada de revisão
+  anterior (real ou de outro pesquisador) — sem achado novo.
+- `packages/adapter-discord/src/index.ts`: **achado novo**. No branch
+  de "forwarded Gateway event" (`handleWebhook`, ativado só pela
+  presença do header `x-discord-gateway-token`, que roda ANTES de
+  qualquer outra verificação), a comparação do token contra o bot token
+  real é `gatewayToken !== botToken` — string compare nativo do JS, não
+  constant-time. Contraste direto com `adapter-instagram` no mesmo
+  monorepo, que usa `timingSafeEqual` pro equivalente. Registrado:
+  `Vercel Open Source::vercel/chat/packages/adapter-discord/src/index.ts::gatewayToken non-constant-time comparison::ai_deep_read_finding`,
+  avançado pra `corroborated_static` (cadeia de alcançabilidade
+  confirmada: endpoint público, branch condicionado só à presença do
+  header, sem middleware anterior). `check-scope "Vercel Open Source"
+  "vercel/chat"` = allowed/bountyEligible. `record-deployment-evidence`
+  registrado com `confidence: unverified` (é SDK/lib, não há um
+  deployment de produção único conhecido pra vincular) — tentativa de
+  `scope_verified` recusada pela máquina de estados (`corroborated_static
+  → scope_verified` não é uma transição permitida sem passar por
+  `reproduced_local`, que não existe pra achados não-Solidity — mesma
+  limitação estrutural já documentada em rodadas anteriores). Fica
+  parado em `corroborated_static`, aguardando revisão humana; severidade
+  provável baixa/informativa (timing side-channel sobre rede é difícil
+  de explorar de forma confiável, mas é uma discrepância real e
+  documentável — CWE-208).
+
+`deep-read-log.json` atualizado (`vercel/chat` +3 arquivos).
