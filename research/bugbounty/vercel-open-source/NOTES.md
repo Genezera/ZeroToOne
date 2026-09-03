@@ -4191,3 +4191,34 @@ StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (mesmo teste
 de sempre, 403 no CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*`
 seguem impossíveis de baixar, sem mudança em relação às rodadas
 anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado primeiro, mesma disciplina de sempre:
+`Block Open Source` continua `aiResearchBanned:true` (RoE da Bugcrowd) e
+`Circle BBP` continua `blocked:true` (instrução direta do usuário) —
+nenhum repo desses dois programas foi tocado, apesar do prompt agendado
+listar os 4 programas como "ativos" (texto do agendamento desatualizado
+em relação à política real do repositório; segui a política do
+repositório). `list-pending` global = 0.
+
+Leitura profunda proativa (3 arquivos novos, `vercel/vercel` clonado raso
+em scratchpad efêmero, nunca versionado, prioridade token/permission):
+`packages/cli/src/commands/tokens/add.ts` (cria personal access token via
+`POST /v3/user/tokens`; trata erros 403 de token OAuth/escopo insuficiente
+com mensagens claras; usa `stripSensitiveAuthArgs` pra nunca ecoar
+`--token`/`-t` no comando de rerun sugerido — conferido: cobre tanto
+`--token=valor` quanto `--token valor`/`-t valor` corretamente), `packages/
+cli/src/commands/vcr/permissions/rm.ts` e `.../clear.ts` (remoção
+individual/em massa de permissão de time sobre repositório Docker; `path`
+sempre construído com `encodeURIComponent(idOrName)` via `repositoryPermissionsPath`/
+`repositoryPermissionsClearPath`, `clear.ts` exige confirmação interativa
+ou `--yes` antes de uma operação destrutiva; autorização real de quem
+pode remover fica inteiramente no servidor). Nenhum achado — mesmo padrão
+já visto nos outros comandos `vcr`: cliente só formata a requisição,
+nada auditável do lado cliente. `deep-read-log.json` atualizado
+(`vercel/vercel` agora com 61 arquivos lidos nesta missão).
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
+de baixar, sem mudança em relação às rodadas anteriores.

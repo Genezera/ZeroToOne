@@ -890,7 +890,10 @@
     "packages/cli/src/util/projects/link.ts",
     "packages/oidc-aws-credentials-provider/src/aws-credentials-provider.ts",
     "packages/cli/src/util/input/vercel-auth.ts",
-    "packages/cli/src/commands/connex/revoke-tokens.ts"
+    "packages/cli/src/commands/connex/revoke-tokens.ts",
+    "packages/cli/src/commands/tokens/add.ts",
+    "packages/cli/src/commands/vcr/permissions/rm.ts",
+    "packages/cli/src/commands/vcr/permissions/clear.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
