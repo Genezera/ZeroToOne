@@ -55,7 +55,12 @@ nenhuma plataforma.** Antes de copiar/colar e enviar, confira:
 - [ ] Evidência conferida — os trechos de código e a saída da prova de
       conceito (quando houver) realmente existem/rodaram como descrito
       (não foi paráfrase/alucinação)
-- [ ] Não é duplicata — checado contra relatórios já enviados por você
+- [ ] Anterioridade pública checada e registrada — issues/PRs, advisories e
+      Hacktivity/busca web, com pelo menos duas formulações e timestamp
+- [ ] Risco de duplicata aceito conscientemente — busca pública limpa significa
+      `private_unknown`, nunca prova que não existe report privado anterior
+- [ ] Impacto estruturado confirmado — atacante, vítima, fronteira de
+      segurança, resultado observável e C/I/A sustentados pela PoC
       a este programa
 
 ---

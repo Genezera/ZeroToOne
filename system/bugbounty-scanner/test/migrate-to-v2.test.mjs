@@ -7,6 +7,8 @@ import {
   openDb, getFinding, exportFindingsToQueueLines, closeDb,
   recordPlatformOutcome, latestPlatformOutcome, recordDeploymentEvidence, latestDeploymentEvidence,
   recordValidation, listValidations, recordReport, latestReport, recordTransition,
+  recordDuplicateCheck, latestDuplicateCheck, recordImpactAssessment, latestImpactAssessment,
+  listSubmissions,
 } from '../db.mjs';
 import { migrateEntry } from '../migrate-to-v2.mjs';
 import { buildScopeSnapshot } from '../scope-registry.mjs';
@@ -290,6 +292,48 @@ test('round-trip completo: deploymentEvidence, validationsHistory (múltiplas) e
       assert.equal(latestDeploymentEvidence(db2, 'x::full-satellite').deployed_address, '0xabc');
       assert.equal(listValidations(db2, 'x::full-satellite').length, 2);
       assert.equal(latestReport(db2, 'x::full-satellite').path, 'research/bugbounty/reports/x.md');
+      closeDb(db2);
+    });
+  });
+});
+
+test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sobrevivem em outro ambiente', () => {
+  withTempEnv((dbPath1) => {
+    const db1 = openDb(dbPath1);
+    migrateEntry(db1, {
+      id: 'x::professional-roundtrip', program: 'P', platform: 'HackerOne', type: 'idor', language: 'typescript',
+      file: 'acme/api/src/account.ts', state: 'scope_verified', reasoning: 'acesso entre duas contas próprias',
+      source: 'req.params.accountId', sink: 'db.account.findById', missingControl: 'owner check',
+    }, { scopeSnapshots: {} });
+    recordDuplicateCheck(db1, 'x::professional-roundtrip', {
+      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      queries: ['account findById IDOR', 'missing owner check'], results: [],
+      foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
+      ts: '2026-09-03T17:00:00Z',
+    });
+    recordImpactAssessment(db1, 'x::professional-roundtrip', {
+      technicalValidity: 'confirmed', attackerControlledInput: true,
+      attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'isolamento entre contas',
+      observableOutcome: 'leitura de conta alheia', rationale: 'duas contas próprias',
+      confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user', reportable: true,
+      ts: '2026-09-03T17:05:00Z',
+    });
+    recordPlatformOutcome(db1, 'x::professional-roundtrip', {
+      platform: 'HackerOne', externalReportId: '900', state: 'duplicate', originalReportId: '100',
+      updatedAt: '2026-09-03T18:00:00Z',
+    });
+    const exported = JSON.parse(exportFindingsToQueueLines(db1).find((line) => JSON.parse(line).id === 'x::professional-roundtrip'));
+    closeDb(db1);
+
+    assert.match(exported.semanticFingerprint, /^sf:v1:/);
+    withTempEnv((dbPath2) => {
+      const db2 = openDb(dbPath2);
+      migrateEntry(db2, exported, { scopeSnapshots: {} });
+      assert.equal(getFinding(db2, exported.id).semanticFingerprint, exported.semanticFingerprint);
+      assert.equal(latestDuplicateCheck(db2, exported.id).riskScore, 25);
+      assert.equal(latestImpactAssessment(db2, exported.id).impactScope, 'other_user');
+      assert.equal(listSubmissions(db2).length, 1);
+      assert.equal(listSubmissions(db2)[0].originalReportId, '100');
       closeDb(db2);
     });
   });

@@ -191,7 +191,11 @@ export async function refreshRepoPopularity(repoKeys, existingCache = {}, { fetc
 export function countKnownDuplicatesByRepo(db, repoKeys) {
   const counts = {};
   const stmt = db.prepare(`
-    SELECT COUNT(DISTINCT f.id) AS cnt
+    SELECT COUNT(DISTINCT CASE
+      WHEN po.external_report_id IS NOT NULL
+        THEN COALESCE(po.platform, 'unknown') || ':' || po.external_report_id
+      ELSE f.id
+    END) AS cnt
     FROM findings f
     JOIN platform_outcomes po ON po.finding_id = f.id
     WHERE po.state = 'duplicate' AND f.id LIKE ?

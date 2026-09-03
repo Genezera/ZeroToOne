@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -8,6 +8,8 @@ import {
   recordValidation, listValidations, recordDeploymentEvidence, latestDeploymentEvidence,
   recordDuplicateCheck, latestDuplicateCheck,
   recordReport, latestReport, recordPlatformOutcome, latestPlatformOutcome, stateCounts,
+  recordImpactAssessment, latestImpactAssessment, listSubmissions,
+  exportSubmissionsToJsonl, importSubmissionsFromJsonl,
   exportFindingsToQueueLines, closeDb,
 } from '../db.mjs';
 import { verifyChain } from '../../ledger/ledger.mjs';
@@ -49,6 +51,7 @@ test('upsertFinding grava e getFinding lê de volta com os mesmos campos', () =>
     assert.equal(back.program, 'Circle BBP');
     assert.equal(back.state, 'candidate');
     assert.equal(back.type, 'reentrancy_risk');
+    assert.match(back.semanticFingerprint, /^sf:v1:[a-f0-9]{64}$/);
     closeDb(db);
   });
 });
@@ -248,6 +251,41 @@ test('exportFindingsToQueueLines inclui platformOutcome/deploymentEvidence/valid
   });
 });
 
+test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta uma vez por externalReportId', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    recordDuplicateCheck(db, SAMPLE.id, {
+      methods: ['github_issues', 'github_advisories', 'web_search'],
+      queries: ['file function', 'source sink'], results: [], foundExisting: false,
+      noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
+    });
+    recordImpactAssessment(db, SAMPLE.id, {
+      technicalValidity: 'confirmed', attackerControlledInput: true,
+      attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'contas distintas',
+      observableOutcome: 'dado de outra conta retornado', confidentiality: 'low', integrity: 'none', availability: 'none',
+      impactScope: 'other_user', reportable: true, rationale: 'duas contas de teste reproduziram o acesso',
+    });
+    recordPlatformOutcome(db, SAMPLE.id, {
+      platform: 'HackerOne', externalReportId: '3994302', state: 'duplicate', originalReportId: '3439366',
+    });
+    // Atualizar o mesmo report não cria uma segunda submissão.
+    recordPlatformOutcome(db, SAMPLE.id, {
+      platform: 'HackerOne', externalReportId: '3994302', state: 'duplicate', originalReportId: '3439366',
+    });
+
+    const [line] = exportFindingsToQueueLines(db).map(JSON.parse);
+    assert.equal(line.duplicateCheck.noveltyStatus, 'private_unknown');
+    assert.equal(line.duplicateCheck.riskScore, 25);
+    assert.equal(line.impactAssessment.impactScope, 'other_user');
+    assert.equal(line.submission.externalReportId, '3994302');
+    assert.equal(line.submission.originalReportId, '3439366');
+    assert.equal(listSubmissions(db).length, 1);
+    assert.deepEqual(listSubmissions(db)[0].findingIds, [SAMPLE.id]);
+    closeDb(db);
+  });
+});
+
 test('exportFindingsToQueueLines NÃO inclui as 4 chaves satélite quando um finding não tem nenhuma (compatibilidade retroativa)', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
@@ -257,6 +295,32 @@ test('exportFindingsToQueueLines NÃO inclui as 4 chaves satélite quando um fin
     assert.equal(line.deploymentEvidence, undefined);
     assert.equal(line.validationsHistory, undefined);
     assert.equal(line.report, undefined);
+    assert.equal(line.duplicateCheck, undefined);
+    assert.equal(line.impactAssessment, undefined);
+    assert.equal(line.submission, undefined);
     closeDb(db);
+  });
+});
+
+test('submissions.jsonl torna todo o histórico de reports portátil, inclusive entre bancos distintos', () => {
+  withTempEnv((dbPath) => {
+    const db1 = openDb(dbPath);
+    upsertFinding(db1, SAMPLE);
+    recordPlatformOutcome(db1, SAMPLE.id, {
+      platform: 'HackerOne', externalReportId: '777', state: 'duplicate', originalReportId: '111',
+    });
+    const portablePath = path.join(path.dirname(dbPath), 'submissions.jsonl');
+    assert.equal(existsSync(portablePath), true);
+    assert.equal(exportSubmissionsToJsonl(db1, portablePath), 1);
+    closeDb(db1);
+
+    const db2Path = path.join(path.dirname(dbPath), 'second', 'test.db');
+    const db2 = openDb(db2Path);
+    upsertFinding(db2, SAMPLE);
+    assert.equal(importSubmissionsFromJsonl(db2, portablePath), 1);
+    assert.equal(listSubmissions(db2).length, 1);
+    assert.equal(listSubmissions(db2)[0].externalReportId, '777');
+    assert.deepEqual(listSubmissions(db2)[0].findingIds, [SAMPLE.id]);
+    closeDb(db2);
   });
 });

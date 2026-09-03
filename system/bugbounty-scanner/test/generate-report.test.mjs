@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   openDb, upsertFinding, recordValidation, recordDeploymentEvidence,
-  recordDuplicateCheck, latestReport, closeDb,
+  recordDuplicateCheck, recordImpactAssessment, latestReport, closeDb,
 } from '../db.mjs';
 import { assembleReportContext, renderReportDraft, generateReport, reportSlugFor } from '../generate-report.mjs';
 
@@ -121,7 +121,17 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
     upsertFinding(db, { ...SAMPLE, state: 'scope_verified' });
     recordValidation(db, SAMPLE.id, { type: 'foundry_poc', result: 'pass', rawOutput: 'PASS' });
     recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/vault', confidence: 'high' });
-    recordDuplicateCheck(db, SAMPLE.id, { methods: ['github_issues'], query: 'x', foundExisting: false });
+    recordDuplicateCheck(db, SAMPLE.id, {
+      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      queries: ['withdraw reentrancy', 'external call before state update'],
+      foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 30, riskLevel: 'low',
+    });
+    recordImpactAssessment(db, SAMPLE.id, {
+      technicalValidity: 'confirmed', attackerControlledInput: true,
+      attacker: 'usuário remoto', victim: 'outros depositantes', securityBoundary: 'saldo por conta',
+      observableOutcome: 'saque repetido no teste', rationale: 'PoC local com duas contas',
+      confidentiality: 'none', integrity: 'high', availability: 'none', impactScope: 'other_user', reportable: true,
+    });
 
     const result = generateReport(db, SAMPLE.id, { reportsDir });
     assert.equal(result.ok, true);
@@ -130,6 +140,9 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
 
     const onDisk = readFileSync(result.path, 'utf8');
     assert.match(onDisk, /RASCUNHO GERADO AUTOMATICAMENTE/);
+    assert.match(onDisk, /private_unknown/);
+    assert.match(onDisk, /busca pública limpa não comprova/);
+    assert.match(onDisk, /saque repetido no teste/);
 
     const recorded = latestReport(db, SAMPLE.id);
     assert.equal(recorded.path, result.path);

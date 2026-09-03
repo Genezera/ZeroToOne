@@ -4,6 +4,62 @@ Dois estágios, custo bem diferente, ligados por um repositório GitHub
 compartilhado (`https://github.com/Genezera/ZeroToOne`, privado). O
 Estágio 1 cobre três programas e cinco linguagens com o mesmo desenho.
 
+## Regra operacional de novidade e submissão
+
+Não existe consulta pública capaz de garantir que um finding não é
+duplicata: reports privados da plataforma são invisíveis ao pesquisador.
+O sistema agora distingue explicitamente quatro perguntas que antes eram
+misturadas:
+
+1. **Identidade local exata:** evita inserir novamente o mesmo alerta do
+   scanner.
+2. **Identidade semântica:** `semantic-fingerprint.mjs` correlaciona
+   repositório + arquivo + função + fraqueza + source/transformação/sink/
+   controle ausente/correção esperada, sem depender de linha, programa ou
+   redação do relatório.
+3. **Busca pública de anterioridade:** `duplicate_checks` registra fontes,
+   consultas, resultados, data e match encontrado. Resultado limpo recebe
+   `private_unknown`, nunca “unique”.
+4. **Outcome da plataforma:** `submissions` registra um report externo uma
+   única vez e o liga a um ou mais findings. `duplicate` passa a ser dado de
+   aprendizado por report, não uma contagem inflada por detector.
+
+Antes de `human_ready` e novamente antes de `submitted`, a máquina de
+estados falha fechado se não houver:
+
+- avaliação de impacto estruturada com atacante, vítima, fronteira de
+  segurança, resultado observável e C/I/A;
+- checagem de anterioridade com issues/PRs, advisories e Hacktivity ou busca
+  web, pelo menos duas formulações, `foundExisting=false`, menos de 72 horas
+  e risco abaixo de 60/100;
+- relatório registrado e programa permitido pela política local.
+
+O score de risco é uma heurística transparente de priorização, não uma
+probabilidade científica. Código antigo, programa maduro, repositório muito
+popular, root cause óbvio e duplicates anteriores aumentam o risco; mudança
+recente, programa novo, ativo recém-adicionado e regressão verificada
+reduzem. Match público sempre bloqueia.
+
+### Fluxo pelo CLI
+
+Os exemplos abaixo usam JSON ilustrativo; evidência deve vir da investigação
+real:
+
+```powershell
+node system/bugbounty-scanner/cli.mjs record-impact-assessment "FINDING_ID" --patch='{"technicalValidity":"confirmed","attackerControlledInput":true,"attacker":"usuário remoto","victim":"outro usuário","securityBoundary":"isolamento entre contas","observableOutcome":"leitura de dado alheio","confidentiality":"low","integrity":"none","availability":"none","impactScope":"other_user","reportable":true,"rationale":"reproduzido com duas contas próprias"}'
+
+node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patch='{"methods":["github_issues","github_advisories","hacktivity"],"queries":["função + efeito","source + sink + controle ausente"],"results":[],"foundExisting":false,"signals":{"codeAgeDays":30,"programAgeDays":120,"repoStars":400,"obviousness":"medium"}}'
+
+node system/bugbounty-scanner/cli.mjs submission-preflight "FINDING_ID"
+node system/bugbounty-scanner/cli.mjs submission-stats
+```
+
+`submission-preflight` é somente leitura e devolve `ready`, a razão, toda a
+evidência usada, o fingerprint e o histórico local de duplicates relevantes.
+`sync-my-reports` importa os reports do próprio pesquisador via Hacker API
+quando as credenciais estiverem configuradas; nunca promete acesso a reports
+privados de terceiros.
+
 ## Estágio 1 — Scanner local (grátis, roda sozinho, sem IA)
 `scan-runner.mjs` roda uma varredura por linguagem/plataforma:
 
@@ -65,8 +121,9 @@ contexto) vai para a fila; um cache de SHA de blob por arquivo
 evita rebuscar/rescanear arquivo que não mudou.
 
 Todas as varreduras só gravam na fila compartilhada
-(`research/bugbounty/queue.jsonl`) o que for **genuinamente novo**
-(controle de duplicidade via `scanner-seen.json`). Se achar algo novo,
+(`research/bugbounty/queue.jsonl`) o que for **novo para a fila local**
+(deduplicação exata via `scanner-seen.json`; isso não prova novidade na
+plataforma). Se achar algo novo localmente,
 faz commit + push automaticamente.
 
 **Retroalimentação de veredito** (`verdict-stats.mjs`): a cada rodada,

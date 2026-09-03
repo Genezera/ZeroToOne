@@ -4,8 +4,12 @@ import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplicateCheck, latestPlatformOutcome, getFinding } from '../db.mjs';
-import { cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation, cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome } from '../cli.mjs';
+import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplicateCheck, latestPlatformOutcome, getFinding, recordReport, recordImpactAssessment } from '../db.mjs';
+import {
+  cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
+  cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
+  cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight,
+} from '../cli.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-cli-test-'));
@@ -101,6 +105,60 @@ test('cmdPipelineStatus lista bloqueio de cada achado não-terminal', () => {
     assert.ok(!ids.includes('p3::f::fn::type'));
     const candidateRow = status.find((s) => s.id === SAMPLE.id);
     assert.match(candidateRow.blocker, /leitura profunda/);
+    closeDb(db);
+  });
+});
+
+test('duplicate outcome anterior alimenta automaticamente risco e estatística por submissão', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const oldFinding = { ...SAMPLE, id: 'p::acme/api/old.ts::f::ssrf', program: 'P', file: 'acme/api/old.ts' };
+    const newFinding = { ...SAMPLE, id: 'p::acme/api/new.ts::f::ssrf', program: 'P', file: 'acme/api/new.ts' };
+    upsertFinding(db, oldFinding);
+    upsertFinding(db, newFinding);
+    cmdRecordPlatformOutcome(db, oldFinding.id, {
+      platform: 'HackerOne', externalReportId: '100', state: 'duplicate', originalReportId: '50',
+    });
+
+    const check = cmdRecordDuplicateCheck(db, newFinding.id, {
+      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      queries: ['function root cause', 'source sink'], foundExisting: false,
+      signals: { codeAgeDays: 30 }, ts: '2026-09-03T17:00:00Z',
+    });
+    assert.equal(check.riskScore, 15, '20 base + 10 histórico - 15 código novo');
+    assert.deepEqual(check.results[0].matchingSubmissionIds, ['HackerOne:100']);
+
+    const stats = cmdSubmissionStats(db);
+    assert.equal(stats.totalSubmissions, 1);
+    assert.equal(stats.duplicateSubmissions, 1);
+    assert.equal(stats.byRepository['acme/api'].submissions, 1);
+    closeDb(db);
+  });
+});
+
+test('submission-preflight é fail-closed e explica a limitação de reports privados', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const finding = { ...SAMPLE, id: 'p::acme/api/auth.ts::f::idor', program: 'P', file: 'acme/api/auth.ts', state: 'scope_verified' };
+    upsertFinding(db, finding);
+    const blocked = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime() });
+    assert.equal(blocked.ready, false);
+    assert.match(blocked.limitation, /não provam unicidade/);
+
+    recordReport(db, finding.id, 'reports/idor.md');
+    recordImpactAssessment(db, finding.id, {
+      technicalValidity: 'confirmed', attackerControlledInput: true,
+      attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'isolamento entre contas',
+      observableOutcome: 'leitura de dado da vítima', rationale: 'duas contas próprias',
+      confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user', reportable: true,
+    });
+    cmdRecordDuplicateCheck(db, finding.id, {
+      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      queries: ['auth function IDOR', 'missing ownership check'], foundExisting: false,
+      ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 },
+    });
+    const ready = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime() });
+    assert.equal(ready.ready, true, ready.reason);
     closeDb(db);
   });
 });

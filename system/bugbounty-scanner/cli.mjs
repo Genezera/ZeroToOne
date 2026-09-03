@@ -1,12 +1,15 @@
-import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb } from './db.mjs';
+import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, recordSubmission } from './db.mjs';
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
 import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
 import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-budget.mjs';
-import { isTerminal } from './state-machine.mjs';
+import { isTerminal, submissionReadinessGate } from './state-machine.mjs';
 import { generateReport } from './generate-report.mjs';
 import { packageFinding } from './package-for-submission.mjs';
+import { assessNoveltyRisk, duplicateCheckGate } from './novelty-risk.mjs';
+import { reportabilityGate } from './impact-assessment.mjs';
+import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, duplicateHistoryForFinding } from './outcome-intelligence.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -126,14 +129,32 @@ export function cmdPipelineStatus(db) {
         break;
       case 'scope_verified': {
         const missing = [];
-        if (!latestReport(db, f.id)) missing.push('relatório (rodar `generate-report`)');
-        if (!latestDuplicateCheck(db, f.id)) missing.push('checagem de duplicata (rodar `record-duplicate-check`)');
-        blocker = missing.length > 0 ? `falta: ${missing.join('; ')}` : 'evidência completa -- pronto pra virar human_ready';
+        const report = latestReport(db, f.id);
+        const duplicateCheck = latestDuplicateCheck(db, f.id);
+        const impactAssessment = latestImpactAssessment(db, f.id);
+        if (!report) missing.push('relatório (rodar `generate-report`)');
+        if (!duplicateCheck) missing.push('checagem de duplicata (rodar `record-duplicate-check`)');
+        if (!impactAssessment) missing.push('avaliação de impacto (rodar `record-impact-assessment`)');
+        if (missing.length > 0) blocker = `falta: ${missing.join('; ')}`;
+        else {
+          const readiness = submissionReadinessGate(f, {
+            report, duplicateCheck, impactAssessment,
+            programPolicy: loadProgramPolicy(),
+          });
+          blocker = readiness.ok ? 'evidência completa -- pronto pra virar human_ready' : `NÃO enviar: ${readiness.reason}`;
+        }
         break;
       }
       case 'human_ready': {
         const blockReason = getBlockReason(f.program, loadProgramPolicy());
-        blocker = blockReason ? `bloqueado por política: ${blockReason}` : 'aguardando decisão humana de enviar';
+        if (blockReason) blocker = `bloqueado por política: ${blockReason}`;
+        else {
+          const impact = reportabilityGate(latestImpactAssessment(db, f.id));
+          const duplicate = duplicateCheckGate(latestDuplicateCheck(db, f.id));
+          blocker = impact.ok && duplicate.ok
+            ? 'aguardando decisão humana de enviar; impacto e novidade revalidados'
+            : `NÃO enviar até revalidar: ${!impact.ok ? impact.reason : duplicate.reason}`;
+        }
         break;
       }
       case 'inconclusive':
@@ -147,7 +168,68 @@ export function cmdPipelineStatus(db) {
 }
 
 export function cmdRecordDuplicateCheck(db, id, patch) {
-  return recordDuplicateCheck(db, id, patch);
+  const finding = getFinding(db, id);
+  if (!finding) throw new Error(`finding "${id}" não existe no banco`);
+  const submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db));
+  const learned = duplicateHistoryForFinding(finding, submissions);
+  const portfolio = computeStatsFromSubmissions(submissions);
+  const signals = {
+    priorDuplicateSubmissions: learned.priorDuplicateSubmissions,
+    portfolioSubmissionCount: portfolio.totalSubmissions,
+    portfolioDuplicateRate: portfolio.duplicateRate,
+    ...(patch.signals || {}),
+    foundPublicMatch: patch.foundExisting === true,
+  };
+  // O score gravado é sempre derivado dos sinais auditáveis. Aceitar um
+  // número pronto aqui permitiria reduzir manualmente o risco para contornar
+  // o gate sem mudar nenhuma evidência.
+  const risk = assessNoveltyRisk(signals);
+  return recordDuplicateCheck(db, id, {
+    ...patch,
+    ...risk,
+    results: [
+      ...(patch.results || []),
+      ...(learned.matchingSubmissionIds.length ? [{ source: 'local_submission_history', matchingSubmissionIds: learned.matchingSubmissionIds }] : []),
+      { source: 'local_portfolio', submissions: portfolio.totalSubmissions, duplicateRate: portfolio.duplicateRate },
+    ],
+  });
+}
+
+export function cmdRecordImpactAssessment(db, id, patch) {
+  return recordImpactAssessment(db, id, patch);
+}
+
+export function cmdAssessNovelty(patch) {
+  return assessNoveltyRisk(patch);
+}
+
+export function cmdSubmissionStats(db) {
+  const submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db));
+  return computeStatsFromSubmissions(submissions);
+}
+
+export function cmdSubmissionPreflight(db, id, { now = Date.now() } = {}) {
+  const finding = getFinding(db, id);
+  if (!finding) throw new Error(`finding "${id}" não existe no banco`);
+  const report = latestReport(db, id);
+  const impactAssessment = latestImpactAssessment(db, id);
+  const duplicateCheck = latestDuplicateCheck(db, id);
+  const submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db));
+  const history = duplicateHistoryForFinding(finding, submissions);
+  const readiness = submissionReadinessGate(finding, {
+    report, impactAssessment, duplicateCheck,
+    programPolicy: loadProgramPolicy(), now,
+  });
+  return {
+    findingId: id,
+    state: finding.state,
+    semanticFingerprint: finding.semanticFingerprint,
+    ready: readiness.ok,
+    reason: readiness.reason,
+    evidence: { report, impactAssessment, duplicateCheck },
+    localHistory: history,
+    limitation: 'Buscas públicas sem correspondência não provam unicidade: reports privados permanecem invisíveis até a plataforma revelar uma relação de duplicate.',
+  };
 }
 
 /** Pra quando um humano submete direto na plataforma (fora do fluxo de
@@ -250,6 +332,44 @@ export async function cmdReportStatus(reportId) {
 /** Lista todos os reports do usuário autenticado, direto da Hacker API. */
 export async function cmdMyReports() {
   return getMyReports();
+}
+
+/** Importa cada report do próprio hacker como uma entidade de submissão
+ * distinta. O GET detalhado permite aproveitar activities/severity e a
+ * referência do original quando a plataforma a disponibiliza. Reports sem
+ * finding local continuam úteis para estatística de portfólio. */
+export async function cmdSyncMyReports(db) {
+  const summaries = await getMyReports();
+  const findings = listFindings(db);
+  const findingIdsByReport = new Map();
+  for (const finding of findings) {
+    const outcome = latestPlatformOutcome(db, finding.id);
+    if (!outcome?.external_report_id) continue;
+    const key = String(outcome.external_report_id);
+    const ids = findingIdsByReport.get(key) || [];
+    ids.push(finding.id);
+    findingIdsByReport.set(key, ids);
+  }
+  const imported = [];
+  for (const summary of summaries) {
+    const live = await getReport(summary.id);
+    const findingIds = findingIdsByReport.get(String(live.id)) || [];
+    const localProgram = findingIds.length ? getFinding(db, findingIds[0])?.program : null;
+    const submission = recordSubmission(db, {
+      platform: 'HackerOne',
+      externalReportId: live.id,
+      program: localProgram || live.programHandle || null,
+      repository: live.assetIdentifier || null,
+      title: live.title || null,
+      submittedAt: live.createdAt || null,
+      state: live.state || null,
+      originalReportId: live.originalReportId || null,
+      severityFinal: live.severityRating || null,
+      comments: live.originalReportId ? `Duplicate relacionado ao report #${live.originalReportId}` : null,
+    }, findingIds);
+    imported.push(submission);
+  }
+  return { imported: imported.length, submissions: imported };
 }
 
 /**
@@ -361,6 +481,18 @@ async function main() {
       case 'record-duplicate-check':
         printJson(cmdRecordDuplicateCheck(db, positional[0], parseJsonFlag(flags, 'patch')));
         break;
+      case 'record-impact-assessment':
+        printJson(cmdRecordImpactAssessment(db, positional[0], parseJsonFlag(flags, 'patch')));
+        break;
+      case 'assess-novelty':
+        printJson(cmdAssessNovelty(parseJsonFlag(flags, 'patch')));
+        break;
+      case 'submission-stats':
+        printJson(cmdSubmissionStats(db));
+        break;
+      case 'submission-preflight':
+        printJson(cmdSubmissionPreflight(db, positional[0]));
+        break;
       case 'record-platform-outcome':
         printJson(cmdRecordPlatformOutcome(db, positional[0], parseJsonFlag(flags, 'patch')));
         break;
@@ -376,11 +508,14 @@ async function main() {
       case 'sync-report-status':
         printJson(await cmdSyncReportStatus(db));
         break;
+      case 'sync-my-reports':
+        printJson(await cmdSyncMyReports(db));
+        break;
       case 'package-for-submission':
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding --patch='{...}', update-finding <id> --patch='{...}', transition <id> <toState> --actor=X --context='{...}', record-validation <id> --type=X --result=pass|fail|not_applicable --output="...", record-deployment-evidence <id> --patch='{...}', record-report <id> <path>, generate-report <id>, pipeline-status, record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"..."}', record-platform-outcome <id> --patch='{"platform":"HackerOne","externalReportId":"...","state":"duplicate","comments":"..."}', evidence-grade <id>, check-program "<nome do programa>", export-queue [path], check-scope <program> <assetRef>, refresh-scope-live <program> <programHandle>, report-status <externalReportId>, my-reports, sync-report-status, package-for-submission <id>`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, record-platform-outcome, submission-stats, submission-preflight, evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

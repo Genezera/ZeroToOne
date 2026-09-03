@@ -6,6 +6,31 @@ function finding(state, overrides = {}) {
   return { id: 'x', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
 }
 
+const NOW = '2026-09-03T18:00:00Z';
+const GOOD_IMPACT = {
+  technicalValidity: 'confirmed', attackerControlledInput: true,
+  attacker: 'usuário remoto autenticado', victim: 'outro usuário',
+  securityBoundary: 'autorização entre contas', observableOutcome: 'leitura de dado de outra conta',
+  confidentiality: 'low', integrity: 'none', availability: 'none',
+  impactScope: 'other_user', reportable: true, rationale: 'IDOR reproduzido contra duas contas de teste',
+};
+const GOOD_DUPLICATE_CHECK = {
+  methods: ['github_issues', 'github_advisories', 'hacktivity'],
+  queries: ['função endpoint IDOR', 'missing ownership check'],
+  foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 30,
+  ts: '2026-09-03T17:00:00Z',
+};
+
+function readyContext(overrides = {}) {
+  return {
+    now: NOW,
+    report: { path: 'reports/x.md' },
+    impactAssessment: GOOD_IMPACT,
+    duplicateCheck: GOOD_DUPLICATE_CHECK,
+    ...overrides,
+  };
+}
+
 test('todos os 14 estados do prompt mestre existem, mais known_duplicate (extensão desta sessão)', () => {
   assert.deepEqual([...STATES].sort(), [
     'candidate', 'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready',
@@ -86,15 +111,13 @@ test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E de
 test('scope_verified -> human_ready exige rascunho de relatório existente', () => {
   const f = finding('scope_verified');
   assert.equal(transition(f, 'human_ready', {}).ok, false);
-  const dup = { duplicateCheck: { methods: ['github_issues'], ts: '2026-08-31T00:00:00Z' } };
-  assert.equal(transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup }).ok, true);
+  assert.equal(transition(f, 'human_ready', readyContext()).ok, true);
 });
 
 test('scope_verified -> human_ready bloqueia programa em ctx.programPolicy com aiResearchBanned, mesmo com relatório+duplicateCheck completos', () => {
   const f = finding('scope_verified', { program: 'Block Open Source' });
-  const dup = { duplicateCheck: { methods: ['github_issues'], ts: '2026-08-31T00:00:00Z' } };
   const policy = { 'Block Open Source': { aiResearchBanned: true, reason: 'regras do programa proíbem pesquisa assistida por IA' } };
-  const r = transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup, programPolicy: policy });
+  const r = transition(f, 'human_ready', readyContext({ programPolicy: policy }));
   assert.equal(r.ok, false);
   assert.match(r.reason, /bloqueado/);
   assert.match(r.reason, /proíbem pesquisa assistida por IA/);
@@ -102,15 +125,14 @@ test('scope_verified -> human_ready bloqueia programa em ctx.programPolicy com a
 
 test('scope_verified -> human_ready não é afetado por programPolicy quando o programa do achado não está nela', () => {
   const f = finding('scope_verified', { program: 'Circle BBP' });
-  const dup = { duplicateCheck: { methods: ['github_issues'], ts: '2026-08-31T00:00:00Z' } };
   const policy = { 'Block Open Source': { aiResearchBanned: true, reason: 'x' } };
-  const r = transition(f, 'human_ready', { report: { path: 'reports/x.md' }, ...dup, programPolicy: policy });
+  const r = transition(f, 'human_ready', readyContext({ programPolicy: policy }));
   assert.equal(r.ok, true);
 });
 
 test('scope_verified -> human_ready exige duplicateCheck com methods incluindo "github_issues" e timestamp', () => {
   const f = finding('scope_verified');
-  const report = { report: { path: 'reports/x.md' } };
+  const report = readyContext({ duplicateCheck: undefined });
   assert.equal(transition(f, 'human_ready', { ...report }).ok, false, 'sem duplicateCheck nenhum');
   assert.equal(
     transition(f, 'human_ready', { ...report, duplicateCheck: { methods: [] } }).ok,
@@ -118,20 +140,31 @@ test('scope_verified -> human_ready exige duplicateCheck com methods incluindo "
     'methods vazio'
   );
   assert.equal(
-    transition(f, 'human_ready', { ...report, duplicateCheck: { methods: ['web_search'], ts: '2026-08-31T00:00:00Z' } }).ok,
+    transition(f, 'human_ready', { ...report, duplicateCheck: { ...GOOD_DUPLICATE_CHECK, methods: ['web_search'] } }).ok,
     false,
     'github_issues precisa estar entre os métodos, não só web_search'
   );
   assert.equal(
-    transition(f, 'human_ready', { ...report, duplicateCheck: { methods: ['github_issues'] } }).ok,
+    transition(f, 'human_ready', { ...report, duplicateCheck: { ...GOOD_DUPLICATE_CHECK, ts: undefined } }).ok,
     false,
     'falta timestamp'
   );
-  const good = transition(f, 'human_ready', {
-    ...report,
-    duplicateCheck: { methods: ['github_issues', 'hacktivity'], ts: '2026-08-31T00:00:00Z', query: 'ColdStorageAddressBookModule' },
-  });
+  const good = transition(f, 'human_ready', readyContext());
   assert.equal(good.ok, true);
+});
+
+test('scope_verified -> human_ready bloqueia match público, risco alto e checagem expirada', () => {
+  const f = finding('scope_verified');
+  assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, foundExisting: true } })).ok, false);
+  assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, riskScore: 80 } })).ok, false);
+  assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, ts: '2026-08-01T00:00:00Z' } })).ok, false);
+});
+
+test('scope_verified -> human_ready exige impacto reportável além da própria requisição', () => {
+  const f = finding('scope_verified');
+  assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: undefined })).ok, false);
+  assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: { ...GOOD_IMPACT, reportable: false } })).ok, false);
+  assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: { ...GOOD_IMPACT, impactScope: 'self_request_only' } })).ok, false);
 });
 
 test('human_ready -> submitted exige humanApproval com actor humano (nunca agente/IA)', () => {
@@ -139,7 +172,7 @@ test('human_ready -> submitted exige humanApproval com actor humano (nunca agent
   assert.equal(transition(f, 'submitted', {}).ok, false);
   assert.equal(transition(f, 'submitted', { humanApproval: { actor: 'agent' } }).ok, false);
   assert.equal(transition(f, 'submitted', { humanApproval: { actor: 'ai' } }).ok, false);
-  assert.equal(transition(f, 'submitted', { humanApproval: { actor: 'renan', ts: '2026-08-30' } }).ok, true);
+  assert.equal(transition(f, 'submitted', readyContext({ humanApproval: { actor: 'renan', ts: NOW } })).ok, true);
 });
 
 test('submitted -> triaged/duplicate/informative/rejected exigem platformOutcome real batendo com o estado pedido', () => {

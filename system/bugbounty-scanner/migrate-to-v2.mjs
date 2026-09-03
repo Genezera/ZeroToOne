@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url';
 import {
   openDb, upsertFinding, getFinding, recordTransition, recordDeploymentEvidence, closeDb,
   recordPlatformOutcome, latestPlatformOutcome, latestDeploymentEvidence, recordValidation, listValidations, recordReport, latestReport,
+  recordDuplicateCheck, latestDuplicateCheck, recordImpactAssessment, latestImpactAssessment,
+  recordSubmission, latestSubmissionForFinding,
+  importSubmissionsFromJsonl,
 } from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { readLedger } from '../ledger/ledger.mjs';
@@ -14,6 +17,7 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
+const SUBMISSIONS_PATH = path.join(BUGBOUNTY_DIR, 'submissions.jsonl');
 const MIGRATION_LOG_PATH = path.join(REPO_ROOT, 'docs', 'zerotoone-v2', 'migration-log.json');
 
 function readQueue(queuePath = QUEUE_PATH) {
@@ -29,8 +33,9 @@ function assetRefFor(entry) {
 }
 
 /**
- * Restaura, de forma idempotente, as 4 tabelas satélite (platformOutcome,
- * deploymentEvidence, validationsHistory, report) quando presentes na
+ * Restaura, de forma idempotente, as tabelas satélite (outcome,
+ * evidência de deploy, validações, relatório, duplicate check, impacto e
+ * submissão) quando presentes na
  * linha da fila — contraparte de `exportFindingsToQueueLines` em
  * db.mjs. Corrige o bug real de 02/09/2026: essas 4 tabelas nunca eram
  * exportadas, então esse dado sumia entre ambientes efêmeros exatamente
@@ -39,7 +44,7 @@ function assetRefFor(entry) {
  * Idempotente por comparação explícita contra o que já existe no banco
  * (não `INSERT` cego): rodar isto de novo pra uma linha sem mudança
  * nenhuma não duplica linha na tabela satélite nem gera evento novo no
- * ledger (as 4 funções record* abaixo anexam ledger a cada chamada
+ * ledger (as funções record* abaixo anexam ledger a cada chamada
  * real — ver db.mjs). `platformOutcome`/`deploymentEvidence`/`report`
  * comparam contra o "latest" atual; `validationsHistory` (lista, não
  * singular) compara por `type+ts`, restaurando só as entradas que ainda
@@ -86,8 +91,41 @@ function restoreSatelliteData(db, findingId, entry) {
   if (entry.report) {
     const current = latestReport(db, findingId);
     if (!current || current.path !== entry.report.path) {
-      recordReport(db, findingId, entry.report.path);
+      recordReport(db, findingId, entry.report.path, { createdAt: entry.report.createdAt });
       notes.push(`report restaurado da fila (${entry.report.path})`);
+    }
+  }
+
+  if (entry.duplicateCheck) {
+    const current = latestDuplicateCheck(db, findingId);
+    const same = current
+      && current.ts === entry.duplicateCheck.ts
+      && current.foundExisting === entry.duplicateCheck.foundExisting
+      && current.noveltyStatus === (entry.duplicateCheck.noveltyStatus || null)
+      && current.riskScore === (entry.duplicateCheck.riskScore ?? null);
+    if (!same) {
+      recordDuplicateCheck(db, findingId, entry.duplicateCheck);
+      notes.push(`duplicateCheck restaurado da fila (${entry.duplicateCheck.ts || 'sem timestamp original'})`);
+    }
+  }
+
+  if (entry.impactAssessment) {
+    const current = latestImpactAssessment(db, findingId);
+    const same = current
+      && current.ts === entry.impactAssessment.ts
+      && current.reportable === entry.impactAssessment.reportable
+      && current.impactScope === entry.impactAssessment.impactScope;
+    if (!same) {
+      recordImpactAssessment(db, findingId, entry.impactAssessment);
+      notes.push(`impactAssessment restaurado da fila (${entry.impactAssessment.ts || 'sem timestamp original'})`);
+    }
+  }
+
+  if (entry.submission?.externalReportId) {
+    const current = latestSubmissionForFinding(db, findingId);
+    if (!current || current.id !== entry.submission.id || current.state !== entry.submission.state) {
+      recordSubmission(db, entry.submission, [findingId]);
+      notes.push(`submission restaurada da fila (${entry.submission.platform}:${entry.submission.externalReportId})`);
     }
   }
 
@@ -145,6 +183,7 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
     const finalState = driftDetected ? ledgerTruth.state : entry.state;
 
     upsertFinding(db, {
+      ...entry,
       id: entry.id, exactFingerprint: entry.id, program: entry.program, platform: entry.platform,
       asset: assetRefFor(entry), type: entry.type, language: entry.language, file: entry.file, function: entry.function,
       state: finalState, confidence: entry.confidence, historicalConfidence: entry.historicalConfidence,
@@ -174,6 +213,7 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   }
 
   const finding = {
+    ...entry,
     id: entry.id,
     exactFingerprint: entry.id,
     program: entry.program,
@@ -277,6 +317,9 @@ export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog 
     // reconciliação, mesmo comportamento de antes desta função existir.
   }
   const logs = entries.map((e) => migrateEntry(db, e, { scopeSnapshots, ledgerStates }));
+  // openDb importa o portfólio antes dos findings existirem num banco
+  // novo; repete depois da migração para religar os ids agora presentes.
+  importSubmissionsFromJsonl(db, path.join(path.dirname(dbPath), path.basename(SUBMISSIONS_PATH)));
   closeDb(db);
 
   const driftCount = logs.filter((l) => l.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO'))).length;

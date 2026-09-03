@@ -18,7 +18,9 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { getFinding, listValidations, latestDeploymentEvidence, latestDuplicateCheck, recordReport } from './db.mjs';
+import { getFinding, listValidations, latestDeploymentEvidence, latestDuplicateCheck, latestImpactAssessment, recordReport } from './db.mjs';
+import { duplicateCheckGate } from './novelty-risk.mjs';
+import { reportabilityGate } from './impact-assessment.mjs';
 import { loadSnapshot } from './scope-registry.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +59,7 @@ export function assembleReportContext(db, findingId) {
     : null;
   const deploymentEvidence = latestDeploymentEvidence(db, findingId);
   const duplicateCheck = latestDuplicateCheck(db, findingId);
+  const impactAssessment = latestImpactAssessment(db, findingId);
   const snapshot = loadSnapshot(finding.program);
   return {
     ok: true,
@@ -64,12 +67,13 @@ export function assembleReportContext(db, findingId) {
     passingValidation,
     deploymentEvidence,
     duplicateCheck,
+    impactAssessment,
     officialUrl: snapshot ? snapshot.officialUrl : null,
   };
 }
 
 export function renderReportDraft(ctx) {
-  const { finding, passingValidation, deploymentEvidence, duplicateCheck, officialUrl } = ctx;
+  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, officialUrl } = ctx;
   const now = new Date().toISOString();
 
   const pocSection = passingValidation
@@ -85,9 +89,38 @@ export function renderReportDraft(ctx) {
       ].filter(Boolean).join('\n')
     : '{{deploymentEvidence não registrado -- não deveria ser possível chegar aqui sem isso, ver state-machine.mjs}}';
 
+  const duplicateGate = duplicateCheck ? duplicateCheckGate(duplicateCheck) : null;
   const dupLine = duplicateCheck
-    ? `Checagem de duplicata feita em ${duplicateCheck.ts} via ${duplicateCheck.methods.join(', ')}${duplicateCheck.query ? ` (consulta: "${duplicateCheck.query}")` : ''}. **Revisar se ainda está atualizada antes de enviar.**`
+    ? [
+        `- Data: ${duplicateCheck.ts}`,
+        `- Fontes: ${duplicateCheck.methods.join(', ')}`,
+        `- Consultas: ${(duplicateCheck.queries || [duplicateCheck.query]).filter(Boolean).map((q) => `\`${q}\``).join('; ') || '{{não registradas}}'}`,
+        `- Correspondência pública encontrada: **${duplicateCheck.foundExisting ? 'sim' : 'não'}**${duplicateCheck.foundExistingRef ? ` — ${duplicateCheck.foundExistingRef}` : ''}`,
+        `- Classificação de novidade: **${duplicateCheck.noveltyStatus || 'não calculada'}**; risco estimado: **${duplicateCheck.riskScore ?? 'não calculado'}/100**`,
+        `- Gate atual: **${duplicateGate.ok ? 'PASS' : 'BLOCK'}** — ${duplicateGate.reason}`,
+        '',
+        '> Limitação: uma busca pública limpa não comprova que o achado é único. Reports privados continuam invisíveis; o estado correto é `private_unknown`, nunca “sem duplicata”.',
+      ].join('\n')
     : '⚠️ **Nenhuma checagem de duplicata registrada ainda** -- obrigatória antes de scope_verified->human_ready (ver state-machine.mjs). Rode `record-duplicate-check` antes de avançar este achado.';
+
+  const impactGate = impactAssessment ? reportabilityGate(impactAssessment) : null;
+  const impactSection = impactAssessment
+    ? [
+        `- Validade técnica: **${impactAssessment.technicalValidity}**`,
+        `- Entrada controlada pelo atacante: **${impactAssessment.attackerControlledInput ? 'sim' : 'não'}**`,
+        `- Atacante: ${impactAssessment.attacker}`,
+        `- Vítima: ${impactAssessment.victim}`,
+        `- Fronteira de segurança: ${impactAssessment.securityBoundary}`,
+        `- Resultado observado: ${impactAssessment.observableOutcome}`,
+        `- C/I/A: **${impactAssessment.confidentiality}/${impactAssessment.integrity}/${impactAssessment.availability}**`,
+        `- Escopo do impacto: **${impactAssessment.impactScope}**`,
+        `- Gate atual: **${impactGate.ok ? 'PASS' : 'BLOCK'}** — ${impactGate.reason}`,
+        '',
+        `Racional registrado: ${impactAssessment.rationale}`,
+        '',
+        '{{Reescrever estes fatos em narrativa curta, sem ampliar além do resultado observado.}}',
+      ].join('\n')
+    : '{{Nenhuma avaliação estruturada de impacto registrada. Rode `record-impact-assessment`; defeito funcional sem vítima/fronteira de segurança não deve ser promovido como vulnerabilidade.}}';
 
   return `# ⚠️ RASCUNHO GERADO AUTOMATICAMENTE — REVISÃO EDITORIAL + HUMANA OBRIGATÓRIA ANTES DE ENVIAR
 
@@ -138,7 +171,7 @@ ${passingValidation && passingValidation.command ? `1. \`${passingValidation.com
 
 ${pocSection}
 ## Impacto
-{{RASCUNHO -- concreto, baseado no que a PoC realmente demonstrou, não especulação}}
+${impactSection}
 
 ## Correção sugerida
 {{RASCUNHO -- mudança concreta e mínima}}
@@ -167,5 +200,8 @@ export function generateReport(db, findingId, { reportsDir = DEFAULT_REPORTS_DIR
   const warnings = [];
   if (!ctx.passingValidation) warnings.push('sem validação PoC com result="pass" registrada');
   if (!ctx.duplicateCheck) warnings.push('sem checagem de duplicata registrada ainda (obrigatória antes de human_ready)');
+  else if (!duplicateCheckGate(ctx.duplicateCheck).ok) warnings.push(`checagem de duplicata não passa o gate: ${duplicateCheckGate(ctx.duplicateCheck).reason}`);
+  if (!ctx.impactAssessment) warnings.push('sem avaliação estruturada de impacto registrada');
+  else if (!reportabilityGate(ctx.impactAssessment).ok) warnings.push(`impacto não passa o gate: ${reportabilityGate(ctx.impactAssessment).reason}`);
   return { ok: true, path: reportPath, warnings };
 }

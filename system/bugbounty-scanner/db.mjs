@@ -1,10 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { transition as smTransition } from './state-machine.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage, shouldNotifyForTransition, formatTransitionMessage } from './telegram.mjs';
 import { loadProgramPolicy } from './program-policy.mjs';
+import { deriveSemanticFingerprint } from './semantic-fingerprint.mjs';
+import { validateImpactAssessment } from './impact-assessment.mjs';
 
 // Estado operacional local (SQLite/WAL) — substitui queue.jsonl como
 // fonte de verdade para leitura/escrita concorrente (seção 6.5 da
@@ -93,6 +95,9 @@ CREATE TABLE IF NOT EXISTS platform_outcomes (
   state TEXT NOT NULL,
   severity_final TEXT,
   bounty_amount TEXT,
+  original_report_id TEXT,
+  original_submitted_at TEXT,
+  original_state TEXT,
   comments TEXT,
   updated_at TEXT NOT NULL
 );
@@ -107,43 +112,121 @@ CREATE TABLE IF NOT EXISTS duplicate_checks (
   finding_id TEXT NOT NULL REFERENCES findings(id),
   methods_json TEXT NOT NULL,
   query TEXT,
+  queries_json TEXT,
+  results_json TEXT,
   found_existing INTEGER NOT NULL DEFAULT 0,
   found_existing_ref TEXT,
+  novelty_status TEXT,
+  risk_score REAL,
+  risk_level TEXT,
   notes TEXT,
   ts TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS impact_assessments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  finding_id TEXT NOT NULL REFERENCES findings(id),
+  assessment_json TEXT NOT NULL,
+  reportable INTEGER NOT NULL,
+  ts TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS submissions (
+  id TEXT PRIMARY KEY,
+  platform TEXT NOT NULL,
+  external_report_id TEXT NOT NULL,
+  program TEXT,
+  repository TEXT,
+  title TEXT,
+  submitted_at TEXT,
+  state TEXT,
+  original_report_id TEXT,
+  original_submitted_at TEXT,
+  original_state TEXT,
+  severity_final TEXT,
+  bounty_amount TEXT,
+  comments TEXT,
+  updated_at TEXT NOT NULL,
+  UNIQUE(platform, external_report_id)
+);
+
+CREATE TABLE IF NOT EXISTS submission_findings (
+  submission_id TEXT NOT NULL REFERENCES submissions(id),
+  finding_id TEXT NOT NULL REFERENCES findings(id),
+  PRIMARY KEY (submission_id, finding_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_findings_state ON findings(state);
 CREATE INDEX IF NOT EXISTS idx_findings_program ON findings(program);
 CREATE INDEX IF NOT EXISTS idx_transitions_finding ON state_transitions(finding_id);
 CREATE INDEX IF NOT EXISTS idx_duplicate_checks_finding ON duplicate_checks(finding_id);
+CREATE INDEX IF NOT EXISTS idx_impact_assessments_finding ON impact_assessments(finding_id);
+CREATE INDEX IF NOT EXISTS idx_submission_findings_finding ON submission_findings(finding_id);
 `;
+
+const DB_PATHS = new WeakMap();
+const IMPORTING_SUBMISSIONS = new WeakSet();
+
+function ensureColumn(db, table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((row) => row.name);
+  if (!columns.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
 
 export function openDb(dbPath) {
   const dir = path.dirname(dbPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   const db = new DatabaseSync(dbPath);
+  DB_PATHS.set(db, path.resolve(dbPath));
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  // CREATE TABLE IF NOT EXISTS não acrescenta colunas a bancos locais já
+  // existentes. Estas migrações aditivas mantêm ambientes persistentes e
+  // bancos novos com o mesmo contrato.
+  for (const [table, column, definition] of [
+    ['platform_outcomes', 'original_report_id', 'TEXT'],
+    ['platform_outcomes', 'original_submitted_at', 'TEXT'],
+    ['platform_outcomes', 'original_state', 'TEXT'],
+    ['duplicate_checks', 'queries_json', 'TEXT'],
+    ['duplicate_checks', 'results_json', 'TEXT'],
+    ['duplicate_checks', 'novelty_status', 'TEXT'],
+    ['duplicate_checks', 'risk_score', 'REAL'],
+    ['duplicate_checks', 'risk_level', 'TEXT'],
+    ['submissions', 'repository', 'TEXT'],
+  ]) ensureColumn(db, table, column, definition);
+  importSubmissionsFromJsonl(db, path.join(dir, 'submissions.jsonl'));
+  backfillSemanticFingerprints(db);
   return db;
+}
+
+export function backfillSemanticFingerprints(db) {
+  const rows = db.prepare('SELECT * FROM findings WHERE semantic_fingerprint IS NULL OR semantic_fingerprint = ?').all('');
+  const update = db.prepare('UPDATE findings SET semantic_fingerprint = ? WHERE id = ?');
+  for (const row of rows) {
+    const finding = rowToFinding(row);
+    const fingerprint = deriveSemanticFingerprint({ ...finding.raw, ...finding });
+    update.run(fingerprint, finding.id);
+  }
+  return rows.length;
 }
 
 export function upsertFinding(db, finding) {
   const now = finding.updatedAt || new Date().toISOString();
   const existing = getFinding(db, finding.id);
   const createdAt = existing ? existing.createdAt : (finding.createdAt || now);
+  const semanticFingerprint = finding.semanticFingerprint || deriveSemanticFingerprint(finding);
   db.prepare(`
     INSERT INTO findings (id, exact_fingerprint, semantic_fingerprint, program, platform, asset, type, language, file, fn, line, state, confidence, historical_confidence, reasoning, files_read_json, poc_run, poc_result, created_at, updated_at, raw_json)
     VALUES (@id, @exact_fingerprint, @semantic_fingerprint, @program, @platform, @asset, @type, @language, @file, @fn, @line, @state, @confidence, @historical_confidence, @reasoning, @files_read_json, @poc_run, @poc_result, @created_at, @updated_at, @raw_json)
     ON CONFLICT(id) DO UPDATE SET
+      semantic_fingerprint=excluded.semantic_fingerprint,
       state=excluded.state, confidence=excluded.confidence, historical_confidence=excluded.historical_confidence,
       reasoning=excluded.reasoning, files_read_json=excluded.files_read_json, poc_run=excluded.poc_run,
       poc_result=excluded.poc_result, updated_at=excluded.updated_at, raw_json=excluded.raw_json
   `).run({
     id: finding.id,
     exact_fingerprint: finding.exactFingerprint || finding.id,
-    semantic_fingerprint: finding.semanticFingerprint || null,
+    semantic_fingerprint: semanticFingerprint,
     program: finding.program,
     platform: finding.platform || null,
     asset: finding.asset || finding.file || null,
@@ -221,7 +304,16 @@ export function recordTransition(db, findingId, toState, { actor, context = {} }
   // CLI do agente de nuvem) sem depender de cada um lembrar de checar.
   // Fica fora do context_json persistido abaixo (é dado de sistema, não
   // evidência que o chamador forneceu) -- usa `context`, não `fullContext`.
-  const fullContext = { ...context, programPolicy: loadProgramPolicy() };
+  // Evidências de prontidão são carregadas do banco por padrão. Assim um
+  // chamador não consegue contornar o gate omitindo/forjando contexto, e um
+  // finding human_ready antigo é rechecado no momento de submeter.
+  const fullContext = {
+    ...context,
+    report: latestReport(db, findingId),
+    duplicateCheck: latestDuplicateCheck(db, findingId),
+    impactAssessment: latestImpactAssessment(db, findingId),
+    programPolicy: loadProgramPolicy(),
+  };
   const result = smTransition(finding, toState, fullContext);
   if (!result.ok) return result;
 
@@ -255,8 +347,8 @@ export function recordTransition(db, findingId, toState, { actor, context = {} }
   return { ...result, ts, ledgerHash: ledgerEntry.hash };
 }
 
-export function recordValidation(db, findingId, { type, command, result, rawOutput }) {
-  const ts = new Date().toISOString();
+export function recordValidation(db, findingId, { type, command, result, rawOutput, ts: suppliedTs }) {
+  const ts = suppliedTs || new Date().toISOString();
   db.prepare('INSERT INTO validations (finding_id, type, command, result, raw_output, ts) VALUES (?, ?, ?, ?, ?, ?)')
     .run(findingId, type, command || null, result, rawOutput || null, ts);
   // Ledger backing (02/09/2026): recordTransition sempre anexou evento
@@ -275,7 +367,7 @@ export function listValidations(db, findingId) {
 }
 
 export function recordDeploymentEvidence(db, findingId, evidence) {
-  const ts = new Date().toISOString();
+  const ts = evidence.ts || new Date().toISOString();
   db.prepare(`
     INSERT INTO deployment_evidence (finding_id, repo, commit_sha, branch_or_tag, package_or_contract, deployed_address, chain_id, block_number, bytecode_hash, confidence, notes, ts)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -294,16 +386,42 @@ export function latestDeploymentEvidence(db, findingId) {
   return db.prepare('SELECT * FROM deployment_evidence WHERE finding_id = ? ORDER BY ts DESC, id DESC LIMIT 1').get(findingId) || null;
 }
 
-export function recordDuplicateCheck(db, findingId, { methods, query, foundExisting, foundExistingRef, notes }) {
+export function recordDuplicateCheck(db, findingId, {
+  methods, query, queries, results, foundExisting, foundExistingRef,
+  noveltyStatus, riskScore, riskLevel, notes, ts: suppliedTs,
+}) {
   if (!Array.isArray(methods) || methods.length === 0) {
     throw new Error('recordDuplicateCheck precisa de "methods" (array não-vazio, ex.: ["github_issues"])');
   }
-  const ts = new Date().toISOString();
+  if (typeof foundExisting !== 'boolean') throw new Error('recordDuplicateCheck precisa de foundExisting boolean explícito');
+  const normalizedQueries = Array.isArray(queries) ? queries : (query ? [query] : []);
+  const ts = suppliedTs || new Date().toISOString();
   db.prepare(`
-    INSERT INTO duplicate_checks (finding_id, methods_json, query, found_existing, found_existing_ref, notes, ts)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(findingId, JSON.stringify(methods), query || null, foundExisting ? 1 : 0, foundExistingRef || null, notes || null, ts);
-  return { findingId, methods, query, foundExisting: !!foundExisting, foundExistingRef, ts };
+    INSERT INTO duplicate_checks (
+      finding_id, methods_json, query, queries_json, results_json,
+      found_existing, found_existing_ref, novelty_status, risk_score,
+      risk_level, notes, ts
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    findingId, JSON.stringify(methods), query || normalizedQueries[0] || null,
+    JSON.stringify(normalizedQueries), JSON.stringify(results || []),
+    foundExisting ? 1 : 0, foundExistingRef || null, noveltyStatus || null,
+    Number.isFinite(riskScore) ? riskScore : null, riskLevel || null,
+    notes || null, ts,
+  );
+  const ledgerEntry = appendEntry('research', {
+    type: 'bugbounty_duplicate_check', findingId, methods,
+    foundExisting: !!foundExisting, noveltyStatus: noveltyStatus || null,
+    riskScore: Number.isFinite(riskScore) ? riskScore : null, ts,
+  });
+  return {
+    findingId, methods, query: query || normalizedQueries[0] || null,
+    queries: normalizedQueries, results: results || [], foundExisting: !!foundExisting,
+    foundExistingRef: foundExistingRef || null, noveltyStatus: noveltyStatus || null,
+    riskScore: Number.isFinite(riskScore) ? riskScore : null,
+    riskLevel: riskLevel || null, notes: notes || null, ts,
+    ledgerHash: ledgerEntry.hash,
+  };
 }
 
 export function latestDuplicateCheck(db, findingId) {
@@ -313,15 +431,48 @@ export function latestDuplicateCheck(db, findingId) {
     findingId: row.finding_id,
     methods: JSON.parse(row.methods_json),
     query: row.query,
+    queries: row.queries_json ? JSON.parse(row.queries_json) : (row.query ? [row.query] : []),
+    results: row.results_json ? JSON.parse(row.results_json) : [],
     foundExisting: !!row.found_existing,
     foundExistingRef: row.found_existing_ref,
+    noveltyStatus: row.novelty_status,
+    riskScore: row.risk_score,
+    riskLevel: row.risk_level,
     notes: row.notes,
     ts: row.ts,
   };
 }
 
-export function recordReport(db, findingId, reportPath) {
-  const ts = new Date().toISOString();
+export function recordImpactAssessment(db, findingId, assessment) {
+  const { ts: suppliedTs, ledgerHash: _ignoredLedgerHash, ...payload } = assessment;
+  const validation = validateImpactAssessment(payload);
+  if (!validation.ok) throw new Error(`impact assessment inválido: ${validation.errors.join('; ')}`);
+  const ts = suppliedTs || new Date().toISOString();
+  db.prepare(`
+    INSERT INTO impact_assessments (finding_id, assessment_json, reportable, ts)
+    VALUES (?, ?, ?, ?)
+  `).run(findingId, JSON.stringify(payload), payload.reportable ? 1 : 0, ts);
+  const ledgerEntry = appendEntry('research', {
+    type: 'bugbounty_impact_assessment', findingId,
+    technicalValidity: payload.technicalValidity,
+    reportable: payload.reportable,
+    impactScope: payload.impactScope,
+    confidentiality: payload.confidentiality,
+    integrity: payload.integrity,
+    availability: payload.availability,
+    ts,
+  });
+  return { findingId, ...payload, ts, ledgerHash: ledgerEntry.hash };
+}
+
+export function latestImpactAssessment(db, findingId) {
+  const row = db.prepare('SELECT * FROM impact_assessments WHERE finding_id = ? ORDER BY ts DESC, id DESC LIMIT 1').get(findingId);
+  if (!row) return null;
+  return { findingId: row.finding_id, ...JSON.parse(row.assessment_json), ts: row.ts };
+}
+
+export function recordReport(db, findingId, reportPath, { createdAt } = {}) {
+  const ts = createdAt || new Date().toISOString();
   db.prepare('INSERT INTO reports (finding_id, path, created_at) VALUES (?, ?, ?)').run(findingId, reportPath, ts);
   // Ledger backing -- ver comentário em recordValidation.
   const ledgerEntry = appendEntry('research', { type: 'bugbounty_report', findingId, path: reportPath, ts });
@@ -332,18 +483,161 @@ export function latestReport(db, findingId) {
   return db.prepare('SELECT * FROM reports WHERE finding_id = ? ORDER BY created_at DESC, id DESC LIMIT 1').get(findingId) || null;
 }
 
-export function recordPlatformOutcome(db, findingId, outcome) {
-  const ts = new Date().toISOString();
+function submissionId(platform, externalReportId) {
+  return `${platform || 'unknown'}:${externalReportId}`;
+}
+
+function rowToSubmission(row, findingIds = []) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    platform: row.platform,
+    externalReportId: row.external_report_id,
+    program: row.program,
+    repository: row.repository,
+    title: row.title,
+    submittedAt: row.submitted_at,
+    state: row.state,
+    originalReportId: row.original_report_id,
+    originalSubmittedAt: row.original_submitted_at,
+    originalState: row.original_state,
+    severityFinal: row.severity_final,
+    bountyAmount: row.bounty_amount,
+    comments: row.comments,
+    updatedAt: row.updated_at,
+    findingIds,
+  };
+}
+
+/** One external report is one learning sample, even when several detector
+ * findings supported it. */
+export function recordSubmission(db, submission, findingIds = []) {
+  if (!submission.externalReportId) throw new Error('submission precisa de externalReportId');
+  const platform = submission.platform || 'unknown';
+  // A identidade pertence à plataforma, não ao finding nem a um id
+  // fornecido por importadores. Isto impede a mesma submissão externa de
+  // virar duas amostras estatísticas com ids locais diferentes.
+  const id = submissionId(platform, submission.externalReportId);
+  const ts = submission.updatedAt || new Date().toISOString();
   db.prepare(`
-    INSERT INTO platform_outcomes (finding_id, platform, external_report_id, submitted_at, state, severity_final, bounty_amount, comments, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO submissions (
+      id, platform, external_report_id, program, title, submitted_at, state,
+      repository,
+      original_report_id, original_submitted_at, original_state,
+      severity_final, bounty_amount, comments, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      program=COALESCE(excluded.program, submissions.program),
+      repository=COALESCE(excluded.repository, submissions.repository),
+      title=COALESCE(excluded.title, submissions.title),
+      submitted_at=COALESCE(excluded.submitted_at, submissions.submitted_at),
+      state=COALESCE(excluded.state, submissions.state),
+      original_report_id=COALESCE(excluded.original_report_id, submissions.original_report_id),
+      original_submitted_at=COALESCE(excluded.original_submitted_at, submissions.original_submitted_at),
+      original_state=COALESCE(excluded.original_state, submissions.original_state),
+      severity_final=COALESCE(excluded.severity_final, submissions.severity_final),
+      bounty_amount=COALESCE(excluded.bounty_amount, submissions.bounty_amount),
+      comments=COALESCE(excluded.comments, submissions.comments),
+      updated_at=excluded.updated_at
+  `).run(
+    id, platform, String(submission.externalReportId), submission.program || null,
+    submission.title || null, submission.submittedAt || null, submission.state || null,
+    submission.repository || null,
+    submission.originalReportId || null, submission.originalSubmittedAt || null,
+    submission.originalState || null, submission.severityFinal || null,
+    submission.bountyAmount || null, submission.comments || null, ts,
+  );
+  for (const findingId of findingIds) {
+    db.prepare('INSERT OR IGNORE INTO submission_findings (submission_id, finding_id) VALUES (?, ?)').run(id, findingId);
+  }
+  const recorded = getSubmission(db, id);
+  if (!IMPORTING_SUBMISSIONS.has(db)) persistSubmissionsForDb(db);
+  return recorded;
+}
+
+export function getSubmission(db, id) {
+  const row = db.prepare('SELECT * FROM submissions WHERE id = ?').get(id);
+  const findingIds = row
+    ? db.prepare('SELECT finding_id FROM submission_findings WHERE submission_id = ? ORDER BY finding_id').all(id).map((x) => x.finding_id)
+    : [];
+  return rowToSubmission(row, findingIds);
+}
+
+export function latestSubmissionForFinding(db, findingId) {
+  const row = db.prepare(`
+    SELECT s.* FROM submissions s
+    JOIN submission_findings sf ON sf.submission_id = s.id
+    WHERE sf.finding_id = ? ORDER BY s.updated_at DESC LIMIT 1
+  `).get(findingId);
+  return row ? getSubmission(db, row.id) : null;
+}
+
+export function listSubmissions(db) {
+  return db.prepare('SELECT id FROM submissions ORDER BY updated_at DESC').all().map((row) => getSubmission(db, row.id));
+}
+
+export function exportSubmissionsToJsonl(db, outputPath) {
+  const submissions = listSubmissions(db).sort((a, b) => a.id.localeCompare(b.id));
+  const lines = submissions.map((submission) => JSON.stringify(submission));
+  writeFileSync(outputPath, lines.length ? `${lines.join('\n')}\n` : '', 'utf8');
+  return submissions.length;
+}
+
+export function importSubmissionsFromJsonl(db, inputPath) {
+  if (!existsSync(inputPath)) return 0;
+  const lines = readFileSync(inputPath, 'utf8').split(/\r?\n/).filter(Boolean);
+  IMPORTING_SUBMISSIONS.add(db);
+  try {
+    for (let index = 0; index < lines.length; index++) {
+      let submission;
+      try { submission = JSON.parse(lines[index]); }
+      catch (error) { throw new Error(`submissions.jsonl inválido na linha ${index + 1}: ${error.message}`); }
+      const existingFindingIds = (submission.findingIds || []).filter((findingId) => !!getFinding(db, findingId));
+      recordSubmission(db, submission, existingFindingIds);
+    }
+  } finally {
+    IMPORTING_SUBMISSIONS.delete(db);
+  }
+  return lines.length;
+}
+
+function persistSubmissionsForDb(db) {
+  const dbPath = DB_PATHS.get(db);
+  if (!dbPath) return;
+  exportSubmissionsToJsonl(db, path.join(path.dirname(dbPath), 'submissions.jsonl'));
+}
+
+export function recordPlatformOutcome(db, findingId, outcome) {
+  const ts = outcome.updatedAt || new Date().toISOString();
+  db.prepare(`
+    INSERT INTO platform_outcomes (
+      finding_id, platform, external_report_id, submitted_at, state,
+      severity_final, bounty_amount, original_report_id,
+      original_submitted_at, original_state, comments, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(findingId, outcome.platform || null, outcome.externalReportId || null, outcome.submittedAt || null,
-    outcome.state, outcome.severityFinal || null, outcome.bountyAmount || null, outcome.comments || null, ts);
+    outcome.state, outcome.severityFinal || null, outcome.bountyAmount || null,
+    outcome.originalReportId || null, outcome.originalSubmittedAt || null,
+    outcome.originalState || null, outcome.comments || null, ts);
+  const finding = getFinding(db, findingId);
+  if (outcome.externalReportId) {
+    recordSubmission(db, {
+      ...outcome,
+      program: outcome.program || finding?.program || null,
+      updatedAt: ts,
+    }, [findingId]);
+  }
   // Ledger backing -- ver comentário em recordValidation. Este é o caso
   // que motivou o achado: outcome real "duplicate" da HackerOne
   // (#3988959) tinha sumido entre ambientes porque nada aqui tocava o
   // ledger nem o export -- agora sobrevive nos dois.
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_platform_outcome', findingId, platform: outcome.platform || null, externalReportId: outcome.externalReportId || null, state: outcome.state, ts });
+  const ledgerEntry = appendEntry('research', {
+    type: 'bugbounty_platform_outcome', findingId,
+    platform: outcome.platform || null,
+    externalReportId: outcome.externalReportId || null,
+    originalReportId: outcome.originalReportId || null,
+    state: outcome.state, ts,
+  });
   return { findingId, ...outcome, ts, ledgerHash: ledgerEntry.hash };
 }
 
@@ -385,6 +679,9 @@ function platformOutcomeToExport(row) {
     state: row.state,
     severityFinal: row.severity_final,
     bountyAmount: row.bounty_amount,
+    originalReportId: row.original_report_id,
+    originalSubmittedAt: row.original_submitted_at,
+    originalState: row.original_state,
     comments: row.comments,
     updatedAt: row.updated_at,
   };
@@ -414,6 +711,12 @@ function validationToExport(row) {
 function reportToExport(row) {
   if (!row) return null;
   return { path: row.path, createdAt: row.created_at };
+}
+
+function impactAssessmentToExport(assessment) {
+  if (!assessment) return null;
+  const { ledgerHash, findingId, ...portable } = assessment;
+  return portable;
 }
 
 /**
@@ -451,12 +754,32 @@ export function exportFindingsToQueueLines(db) {
     delete base.deploymentEvidence;
     delete base.validationsHistory;
     delete base.report;
+    delete base.duplicateCheck;
+    delete base.impactAssessment;
+    delete base.submission;
+    delete base.semanticFingerprint;
     const verdict = legacyVerdictFor(f.state);
 
     const platformOutcome = platformOutcomeToExport(latestPlatformOutcome(db, f.id));
     const deploymentEvidence = deploymentEvidenceToExport(latestDeploymentEvidence(db, f.id));
     const validationsHistory = listValidations(db, f.id).map(validationToExport);
     const report = reportToExport(latestReport(db, f.id));
+    // Achado real (03/09/2026, mesma investigação que achou o
+    // foundExisting nunca lido em state-machine.mjs): duplicateCheck
+    // nunca esteve nesta lista -- em 605 findings reais, 0 linhas em
+    // queue.jsonl carregavam a checagem de duplicata que, ela mesma, é
+    // pré-condição obrigatória pra chegar em human_ready (ver gate
+    // scope_verified->human_ready acima). Um ambiente que reconstrói o
+    // banco a partir só de queue.jsonl perdia essa evidência por
+    // completo, exatamente o mesmo bug de fundo que motivou adicionar
+    // platformOutcome/deploymentEvidence/validationsHistory/report aqui.
+    // semanticFingerprint tem o mesmo problema por um motivo diferente:
+    // é coluna própria da tabela (rowToFinding já expõe f.semanticFingerprint
+    // direto), não veio nunca de f.raw, e nunca foi listada abaixo --
+    // então nunca aparecia nem como null.
+    const duplicateCheck = latestDuplicateCheck(db, f.id);
+    const impactAssessment = impactAssessmentToExport(latestImpactAssessment(db, f.id));
+    const submission = latestSubmissionForFinding(db, f.id);
 
     return JSON.stringify({
       ...base,
@@ -469,10 +792,14 @@ export function exportFindingsToQueueLines(db) {
       filesRead: f.filesRead,
       pocRun: f.pocRun,
       pocResult: f.pocResult,
+      semanticFingerprint: f.semanticFingerprint,
       ...(platformOutcome ? { platformOutcome } : {}),
       ...(deploymentEvidence ? { deploymentEvidence } : {}),
       ...(validationsHistory.length ? { validationsHistory } : {}),
       ...(report ? { report } : {}),
+      ...(duplicateCheck ? { duplicateCheck } : {}),
+      ...(impactAssessment ? { impactAssessment } : {}),
+      ...(submission ? { submission } : {}),
     });
   });
 }

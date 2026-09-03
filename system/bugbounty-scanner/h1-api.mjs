@@ -53,17 +53,56 @@ async function h1GetAllPages(firstPathAndQuery) {
 /** GET /hackers/me/reports — lista os reports do próprio usuário autenticado. */
 export async function getMyReports() {
   const items = await h1GetAllPages('/hackers/me/reports');
-  return items.map(toReportSummary);
+  // Não passar `toReportSummary` diretamente ao map: o segundo argumento
+  // de um callback de Array.map é o índice, mas o segundo argumento desta
+  // função é a coleção `included`.
+  return items.map((item) => toReportSummary(item));
 }
 
 /** GET /hackers/reports/{id} — um report específico, com mais detalhe. */
 export async function getReport(id) {
   const body = await h1Get(`/hackers/reports/${id}`);
-  return toReportSummary(body.data);
+  return toReportSummary(body.data, body.included || []);
 }
 
-function toReportSummary(item) {
+function includedResource(included, relationship) {
+  const link = relationship?.data;
+  if (!link || Array.isArray(link)) return null;
+  // A Hacker API real atualmente embute o recurso completo em
+  // relationships.data. Fixtures/JSON:API padrão também podem usar
+  // `included`; aceitamos os dois sem presumir que included é array.
+  if (link.attributes) return link;
+  const resources = Array.isArray(included) ? included : [];
+  return resources.find((entry) => entry.type === link.type && entry.id === link.id) || null;
+}
+
+function relatedResources(included, relationship) {
+  const links = Array.isArray(relationship?.data) ? relationship.data : [];
+  const embedded = links.filter((link) => link?.attributes);
+  if (embedded.length === links.length) return embedded;
+  const resources = Array.isArray(included) ? included : [];
+  const wanted = new Set(links.map((link) => `${link.type}:${link.id}`));
+  return resources.filter((entry) => wanted.has(`${entry.type}:${entry.id}`));
+}
+
+function originalReportIdFromActivities(activities) {
+  for (const activity of activities) {
+    const raw = JSON.stringify(activity.attributes || {});
+    if (!/duplicate/i.test(raw)) continue;
+    const structured = raw.match(/original_report_id[^0-9]*(\d+)/i);
+    if (structured) return structured[1];
+    const textual = raw.match(/duplicate[^#0-9]{0,80}#?(\d{4,})/i);
+    if (textual) return textual[1];
+  }
+  return null;
+}
+
+export function toReportSummary(item, included = []) {
   if (!item) return null;
+  const activities = relatedResources(included, item.relationships?.activities);
+  const severity = includedResource(included, item.relationships?.severity);
+  const scope = includedResource(included, item.relationships?.structured_scope);
+  const program = includedResource(included, item.relationships?.program);
   return {
     id: item.id,
     title: item.attributes?.title,
@@ -72,9 +111,17 @@ function toReportSummary(item) {
     createdAt: item.attributes?.created_at,
     lastActivityAt: item.attributes?.last_activity_at,
     weaknessId: item.relationships?.weakness?.data?.id,
-    programHandle: item.relationships?.program?.data?.id,
+    programHandle: program?.attributes?.handle || item.relationships?.program?.data?.id,
     bountyAwardedAt: item.attributes?.bounty_awarded_at,
     disclosedAt: item.attributes?.disclosed_at,
+    vulnerabilityInformation: item.attributes?.vulnerability_information || null,
+    impact: item.attributes?.impact || null,
+    severityRating: item.attributes?.severity_rating || severity?.attributes?.rating || null,
+    severityScore: severity?.attributes?.score ?? null,
+    structuredScopeId: item.relationships?.structured_scope?.data?.id || null,
+    assetIdentifier: scope?.attributes?.asset_identifier || null,
+    originalReportId: originalReportIdFromActivities(activities),
+    activities: activities.map((activity) => ({ id: activity.id, type: activity.type, attributes: activity.attributes || {} })),
   };
 }
 

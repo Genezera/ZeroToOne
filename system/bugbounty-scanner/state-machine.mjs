@@ -12,6 +12,8 @@
 // QUALQUER caminho de chamada (CLI local, CLI do agente de nuvem).
 
 import { getBlockReason } from './program-policy.mjs';
+import { reportabilityGate } from './impact-assessment.mjs';
+import { duplicateCheckGate } from './novelty-risk.mjs';
 
 export const STATES = [
   'candidate',
@@ -40,6 +42,21 @@ function fail(reason) {
   return { ok: false, reason };
 }
 
+export function submissionReadinessGate(finding, ctx = {}) {
+  const blockReason = getBlockReason(finding.program, ctx.programPolicy || {});
+  if (blockReason) return fail(`programa "${finding.program}" está bloqueado para envio: ${blockReason}`);
+  if (!ctx.report || !ctx.report.path) return fail('nenhum rascunho de relatório foi gerado ainda');
+
+  const impact = reportabilityGate(ctx.impactAssessment);
+  if (!impact.ok) return fail(impact.reason);
+
+  const duplicate = duplicateCheckGate(ctx.duplicateCheck, {
+    now: ctx.now ? new Date(ctx.now).getTime() : Date.now(),
+  });
+  if (!duplicate.ok) return fail(duplicate.reason);
+  return ok(`${impact.reason}; ${duplicate.reason}`);
+}
+
 // Refutação (false_positive/inconclusive) pode acontecer a partir de
 // qualquer estado não-terminal — ceticismo pode vencer a qualquer altura
 // da investigação, isso é comportamento correto, não exceção.
@@ -55,8 +72,8 @@ const REFUTABLE_FROM = STATES.filter((s) => !TERMINAL_STATES.has(s) && s !== 'in
  * - report: { path } | null
  * - humanApproval: { actor, ts, rationale } | null
  * - platformOutcome: { state, severity, bounty } | null
- * - duplicateCheck: { methods: string[], ts, query } | null — ver nota
- *   abaixo em scope_verified->human_ready
+ * - duplicateCheck: checagem estruturada e recente de fontes públicas
+ * - impactAssessment: fatos estruturados sobre atacante/vítima/C-I-A
  */
 const PRECONDITIONS = {
   'candidate->corroborated_static': (f, ctx = {}) => {
@@ -98,20 +115,9 @@ const PRECONDITIONS = {
   // antes de recomendar envio. Isso não pode mais depender de alguém
   // lembrar de perguntar "verifique tudo" no fim.
   'scope_verified->human_ready': (f, ctx = {}) => {
-    const blockReason = getBlockReason(f.program, ctx.programPolicy || {});
-    if (blockReason) {
-      return fail(`programa "${f.program}" está bloqueado para envio: ${blockReason} — achado fica em scope_verified como registro técnico, nunca avança pra human_ready`);
-    }
-    if (!ctx.report || !ctx.report.path) return fail('nenhum rascunho de relatório foi gerado ainda');
-    const dup = ctx.duplicateCheck;
-    if (!dup || !Array.isArray(dup.methods) || dup.methods.length === 0) {
-      return fail('falta duplicateCheck com pelo menos um método usado (ex.: methods=["github_issues"]) — não pode chegar em human_ready sem uma checagem de duplicata rastreável, nunca "provavelmente é inédito"');
-    }
-    if (!dup.methods.includes('github_issues')) {
-      return fail('duplicateCheck.methods precisa incluir "github_issues" no mínimo (issues+PRs do repositório afetado) — outras fontes (hacktivity, web_search) são complementares, não substitutas');
-    }
-    if (!dup.ts) return fail('duplicateCheck precisa de timestamp (ts) — sem isso não dá pra saber se a checagem está desatualizada');
-    return ok(`rascunho de relatório pronto em ${ctx.report.path} + checagem de duplicata feita (${dup.methods.join(', ')}, ${dup.ts}), aguardando revisão humana`);
+    const readiness = submissionReadinessGate(f, ctx);
+    if (!readiness.ok) return readiness;
+    return ok(`rascunho pronto em ${ctx.report.path}; ${readiness.reason}; aguardando revisão humana`);
   },
   'human_ready->submitted': (f, ctx = {}) => {
     if (!ctx.humanApproval || !ctx.humanApproval.actor) {
@@ -120,7 +126,12 @@ const PRECONDITIONS = {
     if (ctx.humanApproval.actor === 'agent' || ctx.humanApproval.actor === 'ai') {
       return fail('humanApproval.actor não pode ser um agente/IA — a submissão é sempre ação humana');
     }
-    return ok(`aprovado por ${ctx.humanApproval.actor} em ${ctx.humanApproval.ts || 'sem timestamp'}`);
+    // Revalida impacto e novidade no instante do envio. Isso protege
+    // findings human_ready antigos/importados que chegaram ao estado antes
+    // destes gates existirem e impede uma checagem expirada.
+    const readiness = submissionReadinessGate(f, ctx);
+    if (!readiness.ok) return readiness;
+    return ok(`aprovado por ${ctx.humanApproval.actor} em ${ctx.humanApproval.ts || 'sem timestamp'}; ${readiness.reason}`);
   },
   'submitted->triaged': (f, ctx = {}) => outcomeGate(ctx, 'triaged'),
   'submitted->duplicate': (f, ctx = {}) => outcomeGate(ctx, 'duplicate'),
