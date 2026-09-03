@@ -23,6 +23,7 @@
 // gate em state-machine.mjs, que vale mesmo se algo escapar daqui.
 
 import { getBlockReason } from './program-policy.mjs';
+import { programKey } from './outcome-intelligence.mjs';
 
 export const MAX_REPO_SIZE_KB = 20000; // ~20MB — acima disso, scan-runner.mjs já teria que truncar (ver MAX_FILES_PER_TARGET) sem pathPrefix curado escolhendo o que fica de fora; melhor sinalizar pra revisão manual que promover às cegas
 // Bug real pego na primeira rodada ao vivo (31/08/2026): ranquear por score
@@ -82,11 +83,32 @@ export function pickBestProgram(programs) {
   return best;
 }
 
+/** Achado real (03/09/2026): 6 relatórios enviados nesta pipeline, 6
+ * duplicate -- e o scanner continuava dando o mesmo score de sempre pra
+ * repos dos MESMOS programas que já queimaram 6 tentativas seguidas.
+ * `duplicateHistoryByProgram` vem de outcome-intelligence.mjs::
+ * computeStatsFromSubmissions (dado real do banco, não estimativa) --
+ * penaliza promover MAIS repo de um programa com histórico ruim, sem
+ * bloquear de vez (um programa com duplicates conhecidos ainda pode ter
+ * bug novo em outro repo/área; isso reduz prioridade, não elimina).
+ * Pura -- recebe as stats já computadas, não consulta o banco sozinha. */
+export function programRiskPenalty(programName, duplicateHistoryByProgram = {}) {
+  const stats = duplicateHistoryByProgram[programKey(programName)];
+  if (!stats || !stats.submissions || stats.duplicateRate == null) return { penalty: 0, reason: null };
+  if (stats.submissions < 2) return { penalty: 0, reason: null }; // 1 amostra não é histórico, é ruído
+  const penalty = Math.round(Math.min(40, stats.duplicateRate * stats.submissions * 8));
+  if (penalty === 0) return { penalty: 0, reason: null };
+  return {
+    penalty,
+    reason: `histórico real neste programa: ${stats.duplicate}/${stats.submissions} envio(s) voltou(aram) duplicate (${Math.round(stats.duplicateRate * 100)}%) -- prioridade reduzida, não eliminada`,
+  };
+}
+
 /** Pontuação transparente e explicável -- cada componente vira uma frase em
  * `reasons`, pra nunca ser "score misterioso" (mesmo princípio de
  * evidence-grade.mjs/quarantine.mjs: nunca inventar confiança sem dizer de
  * onde ela vem). Pura -- recebe o candidato já enriquecido, não busca nada. */
-export function scoreCandidate(candidate, now = Date.now()) {
+export function scoreCandidate(candidate, now = Date.now(), duplicateHistoryByProgram = {}) {
   const reasons = [];
   let score = 0;
   const bestProgram = pickBestProgram(candidate.programs);
@@ -127,6 +149,12 @@ export function scoreCandidate(candidate, now = Date.now()) {
     }
   }
 
+  const { penalty, reason: penaltyReason } = programRiskPenalty(bestProgram?.program, duplicateHistoryByProgram);
+  if (penalty > 0) {
+    score -= penalty;
+    reasons.push(penaltyReason);
+  }
+
   return { score: Math.round(score * 10) / 10, reasons, bestProgram };
 }
 
@@ -136,7 +164,7 @@ export function scoreCandidate(candidate, now = Date.now()) {
  * um dos dois. Pura -- `programPolicy` já carregado é passado por quem
  * chama (io fica fora, mesmo padrão de state-machine.mjs).
  */
-export function classifyCandidate(candidate, { programPolicy = {}, maxRepoSizeKb = MAX_REPO_SIZE_KB, minScoreToPromote = MIN_SCORE_TO_PROMOTE, now = Date.now() } = {}) {
+export function classifyCandidate(candidate, { programPolicy = {}, maxRepoSizeKb = MAX_REPO_SIZE_KB, minScoreToPromote = MIN_SCORE_TO_PROMOTE, now = Date.now(), duplicateHistoryByProgram = {} } = {}) {
   if (candidate.metadataError) {
     return { verdict: 'metadata_fetch_failed', candidate, reason: candidate.metadataError };
   }
@@ -153,7 +181,7 @@ export function classifyCandidate(candidate, { programPolicy = {}, maxRepoSizeKb
   if (typeof candidate.sizeKb === 'number' && candidate.sizeKb > maxRepoSizeKb) {
     return { verdict: 'too_large', candidate, sizeKb: candidate.sizeKb, reason: `${candidate.sizeKb}KB > ${maxRepoSizeKb}KB — monorepo grande demais pra escanear sem pathPrefixes curados à mão; revisão manual recomendada, não descartado` };
   }
-  const { score, reasons } = scoreCandidate(candidate, now);
+  const { score, reasons } = scoreCandidate(candidate, now, duplicateHistoryByProgram);
   if (score <= minScoreToPromote) {
     return { verdict: 'insufficient_signal', candidate, score };
   }
@@ -179,6 +207,7 @@ export function promoteTargets(discoveredCandidates, {
   maxRepoSizeKb = MAX_REPO_SIZE_KB,
   minScoreToPromote = MIN_SCORE_TO_PROMOTE,
   now = Date.now(),
+  duplicateHistoryByProgram = {},
 } = {}) {
   const skipped = { blockedProgram: [], unsupportedLanguage: [], tooLarge: [], metadataFetchFailed: [], insufficientSignal: [], alreadyPromoted: 0 };
   const eligible = [];
@@ -189,7 +218,7 @@ export function promoteTargets(discoveredCandidates, {
       skipped.alreadyPromoted++;
       continue;
     }
-    const result = classifyCandidate(candidate, { programPolicy, maxRepoSizeKb, minScoreToPromote, now });
+    const result = classifyCandidate(candidate, { programPolicy, maxRepoSizeKb, minScoreToPromote, now, duplicateHistoryByProgram });
     switch (result.verdict) {
       case 'blocked_program':
         skipped.blockedProgram.push({ owner: candidate.owner, repo: candidate.repo, program: result.program, reason: result.reason });

@@ -4,7 +4,7 @@ export function repositoryFromFinding(finding = {}) {
   return parts.length >= 2 ? `${parts[0]}/${parts[1]}`.toLowerCase() : value.toLowerCase();
 }
 
-function programKey(value) {
+export function programKey(value) {
   return String(value || 'unknown').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
@@ -119,6 +119,12 @@ export function computeStatsFromSubmissions(submissions = []) {
     byProgram: tally(submissions, (s) => programKey(s.program)),
     byRepository: tally(submissions, (s) => s.repository),
     bySemanticFingerprint: multiTally(submissions, (s) => s.semanticFingerprints),
+    // "por weakness" e "por detector" pedidos na revisão de 03/09/2026 são
+    // o MESMO campo neste esquema: `finding.type` já carrega os dois
+    // juntos (ex.: "semgrep_detect_child_process" nomeia a origem --
+    // Semgrep -- e a fraqueza -- child_process -- na mesma string; não
+    // existe um campo "detector" separado hoje pra desduplicar disso).
+    byWeakness: multiTally(submissions, (s) => s.weaknesses),
     submissions,
   };
 }

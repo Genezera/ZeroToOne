@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mapGithubLanguage, pickBestProgram, scoreCandidate, classifyCandidate, promoteTargets, renderAutoPromotedModule, MAX_REPO_SIZE_KB } from '../promote-targets.mjs';
+import { mapGithubLanguage, pickBestProgram, scoreCandidate, classifyCandidate, promoteTargets, renderAutoPromotedModule, programRiskPenalty, MAX_REPO_SIZE_KB } from '../promote-targets.mjs';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -87,6 +87,36 @@ test('scoreCandidate: estrelas só contam a partir de 100, atividade recente só
   const freshPush = scoreCandidate(candidate({ pushedAt: '2026-08-25T00:00:00Z' }), NOW);
   assert.equal(stalePush.score, 0);
   assert.ok(freshPush.score > 0);
+});
+
+test('programRiskPenalty: sem histórico ou com só 1 amostra, sem penalidade (1 amostra é ruído, não histórico)', () => {
+  assert.deepEqual(programRiskPenalty('X', {}), { penalty: 0, reason: null });
+  assert.deepEqual(programRiskPenalty('X', { x: { submissions: 1, duplicate: 1, duplicateRate: 1 } }), { penalty: 0, reason: null });
+});
+
+test('programRiskPenalty: histórico real de duplicate penaliza, capado em 40, e cita os números reais no motivo', () => {
+  // Achado real 03/09/2026: 6 submissões, 6 duplicate (100%) neste
+  // portfólio -- exatamente o cenário que motivou este sinal.
+  const history = { 'kiwi-com': { submissions: 6, duplicate: 6, duplicateRate: 1 } };
+  const r = programRiskPenalty('Kiwi.com', history);
+  assert.equal(r.penalty, 40); // min(40, 1*6*8=48) = 40
+  assert.match(r.reason, /6\/6 envio\(s\)/);
+  assert.match(r.reason, /100%/);
+});
+
+test('programRiskPenalty: usa a mesma normalização de nome de programa que outcome-intelligence.mjs (case/hífen)', () => {
+  const history = { 'vercel-open-source': { submissions: 2, duplicate: 2, duplicateRate: 1 } };
+  const r = programRiskPenalty('Vercel Open Source', history);
+  assert.ok(r.penalty > 0, 'devia achar o histórico apesar de "Vercel Open Source" vs. chave "vercel-open-source"');
+});
+
+test('scoreCandidate: histórico de duplicate no programa reduz o score, mas não zera sozinho um candidato com sinal forte', () => {
+  const history = { x: { submissions: 4, duplicate: 4, duplicateRate: 1 } };
+  const clean = scoreCandidate(candidate({ programs: [{ program: 'X', maxPayoutUsd: 50000 }] }), NOW, {});
+  const withHistory = scoreCandidate(candidate({ programs: [{ program: 'X', maxPayoutUsd: 50000 }] }), NOW, history);
+  assert.ok(withHistory.score < clean.score);
+  assert.ok(withHistory.score > 0, 'payout de US$50k ainda deve vencer a penalidade de histórico sozinho');
+  assert.ok(withHistory.reasons.some((r) => /histórico real/.test(r)));
 });
 
 test('classifyCandidate: programa bloqueado nunca é elegível, mesmo com linguagem suportada e tamanho ok', () => {

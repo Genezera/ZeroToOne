@@ -10,6 +10,9 @@ import { packageFinding } from './package-for-submission.mjs';
 import { assessNoveltyRisk, duplicateCheckGate } from './novelty-risk.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, duplicateHistoryForFinding } from './outcome-intelligence.mjs';
+import { codeAgeSignal } from './code-age.mjs';
+import { computeFindingDimensions } from './finding-dimensions.mjs';
+import { computeExpectedValue } from './ev-ranking.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -203,6 +206,50 @@ export function cmdAssessNovelty(patch) {
   return assessNoveltyRisk(patch);
 }
 
+/** `get` deixa de devolver só o registro cru do banco -- acrescenta
+ * `dimensions` (finding-dimensions.mjs) computado a partir das mesmas
+ * evidências satélite que os gates já consultam, pra "confirmado mas não
+ * reportável" e "não é novo mas é válido" ficarem visíveis sem precisar
+ * juntar `state`+impactAssessment+duplicateCheck manualmente toda vez. */
+export function cmdGetFinding(db, id) {
+  const finding = getFinding(db, id);
+  if (!finding) return null;
+  const impactAssessment = latestImpactAssessment(db, id);
+  const duplicateCheck = latestDuplicateCheck(db, id);
+  return { ...finding, dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck }) };
+}
+
+/** `ownerRepo` no formato "owner/repo". Chamada de rede real, de propósito
+ * separada de assess-novelty (que é síncrono/offline) -- mesmo padrão de
+ * refresh-scope-live ser separado de check-scope. Devolve o sinal pronto
+ * pra colar direto num --patch de assess-novelty/record-duplicate-check. */
+export async function cmdCodeAge(ownerRepo, filePath, ref) {
+  const [owner, repo] = String(ownerRepo || '').split('/');
+  if (!owner || !repo) throw new Error('formato esperado: owner/repo (ex.: kiwicom/js-iam-middleware)');
+  if (!filePath) throw new Error('precisa do caminho do arquivo dentro do repositório (ex.: src/authorizationDirective.ts)');
+  return codeAgeSignal(owner, repo, filePath, ref ? { ref } : {});
+}
+
+/** Junta os sinais REAIS já registrados pro achado (impactAssessment,
+ * duplicateCheck) com o que só quem chama sabe (bounty esperado do
+ * programa, custo de pesquisa já gasto/estimado) -- ver ev-ranking.mjs.
+ * `opts.expectedBountyUsd`/`opts.researchCostUsd` seguem null quando não
+ * informados (computeExpectedValue já trata como 0, nunca inventa). */
+export function cmdRankFinding(db, id, opts = {}) {
+  const finding = getFinding(db, id);
+  if (!finding) throw new Error(`finding "${id}" não existe no banco`);
+  const impactAssessment = latestImpactAssessment(db, id);
+  const duplicateCheck = latestDuplicateCheck(db, id);
+  const ev = computeExpectedValue({
+    technicalValidity: impactAssessment?.technicalValidity ?? null,
+    riskScore: duplicateCheck?.riskScore ?? null,
+    impactAssessment,
+    expectedBountyUsd: opts.expectedBountyUsd,
+    researchCostUsd: opts.researchCostUsd,
+  });
+  return { findingId: id, state: finding.state, ...ev };
+}
+
 export function cmdSubmissionStats(db) {
   const submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db));
   return computeStatsFromSubmissions(submissions);
@@ -224,6 +271,7 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now() } = {}) {
     findingId: id,
     state: finding.state,
     semanticFingerprint: finding.semanticFingerprint,
+    dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck }),
     ready: readiness.ok,
     reason: readiness.reason,
     evidence: { report, impactAssessment, duplicateCheck },
@@ -451,7 +499,7 @@ async function main() {
         printJson(cmdStatus(db));
         break;
       case 'get': {
-        printJson(getFinding(db, positional[0]));
+        printJson(cmdGetFinding(db, positional[0]));
         break;
       }
       case 'upsert-finding':
@@ -487,8 +535,14 @@ async function main() {
       case 'assess-novelty':
         printJson(cmdAssessNovelty(parseJsonFlag(flags, 'patch')));
         break;
+      case 'code-age':
+        printJson(await cmdCodeAge(positional[0], positional[1], positional[2]));
+        break;
       case 'submission-stats':
         printJson(cmdSubmissionStats(db));
+        break;
+      case 'rank-finding':
+        printJson(cmdRankFinding(db, positional[0], parseJsonFlag(flags, 'opts')));
         break;
       case 'submission-preflight':
         printJson(cmdSubmissionPreflight(db, positional[0]));
@@ -515,7 +569,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, record-platform-outcome, submission-stats, submission-preflight, evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, code-age <owner/repo> <path> [ref], record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

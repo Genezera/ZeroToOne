@@ -34,5 +34,9 @@ test('view enriquecido ensina risco por report distinto, não por detector', () 
   assert.equal(stats.duplicateSubmissions, 1);
   assert.equal(stats.byRepository['acme/api'].submissions, 1);
   assert.equal(stats.bySemanticFingerprint['sf:1'].submissions, 1);
+  // byWeakness: 1 submissão só (ambos findings são 'ssrf'), não 2 --
+  // mesmo princípio de "por report, não por detector" do nome do teste.
+  assert.equal(stats.byWeakness['ssrf'].submissions, 1);
+  assert.equal(stats.byWeakness['ssrf'].duplicate, 1);
 });
 

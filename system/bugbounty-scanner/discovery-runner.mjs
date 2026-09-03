@@ -22,7 +22,8 @@ import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runSlitherAgainstTarget, toQueueFindings as slitherToQueueFindings } from './slither-runner.mjs';
 import { runOsvScannerAgainstTarget, toQueueFindings as osvToQueueFindings } from './osv-scanner-runner.mjs';
 import { runSemgrepAgainstTarget, toQueueFindings as semgrepToQueueFindings } from './semgrep-runner.mjs';
-import { openDb, upsertFinding, closeDb } from './db.mjs';
+import { openDb, upsertFinding, closeDb, listSubmissions, listFindings } from './db.mjs';
+import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
 // usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
@@ -118,12 +119,28 @@ export async function runDiscovery() {
   // (estado de ANTES desta rodada) -- nunca promove o mesmo repo 2x.
   const existingPromotedKeys = new Set(AUTO_PROMOTED_TARGETS.map((t) => `${t.owner.toLowerCase()}/${t.repo.toLowerCase()}`));
   const programPolicy = loadProgramPolicy();
+  // Fecha a lacuna #6 da revisão de 03/09/2026 ("delta hunting"): sem isso,
+  // promoteTargets pontuava um programa do jeito sempre igual, mesmo depois
+  // de 6/6 envios reais voltarem duplicate nele. Abre/fecha o banco só pra
+  // esta leitura -- mesmo padrão de escopo curto já usado nos blocos
+  // Slither/OSV/Semgrep abaixo, nunca mantém conexão aberta ociosa.
+  let duplicateHistoryByProgram = {};
+  {
+    const historyDb = openDb(DB_PATH);
+    try {
+      const submissions = enrichSubmissionsWithFindings(listSubmissions(historyDb), listFindings(historyDb));
+      duplicateHistoryByProgram = computeStatsFromSubmissions(submissions).byProgram;
+    } finally {
+      closeDb(historyDb);
+    }
+  }
   const promotionResult = promoteTargets(result.discovered, {
     programPolicy,
     existingPromotedKeys,
     maxPromotionsPerRun: DEFAULT_MAX_PROMOTIONS_PER_RUN,
     maxTotalPromoted: DEFAULT_MAX_TOTAL_PROMOTED,
     currentTotalPromoted: AUTO_PROMOTED_TARGETS.length,
+    duplicateHistoryByProgram,
   });
   const mergedAutoPromoted = [...AUTO_PROMOTED_TARGETS, ...promotionResult.promoted];
   if (promotionResult.promoted.length > 0) {

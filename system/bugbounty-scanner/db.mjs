@@ -16,6 +16,18 @@ import { validateImpactAssessment } from './impact-assessment.mjs';
 // guarda o hash resultante junto da linha operacional, pra as duas
 // fontes ficarem cruzáveis sem ficarem redundantes.
 
+// Lacuna #8 da revisão de 03/09/2026: "cada evento precisa de contrato
+// versionado". Não construímos um barramento de eventos novo (o ledger
+// hash-chain já cumpre "estruturado, imutável, consumível" -- ninguém
+// pediu pra rodar um message bus além disso); isto é o pedaço proporcional
+// que faltava: um número de versão em cada evento bugbounty_* gravado, pra
+// um consumidor futuro (dashboard, outro ambiente lendo o ledger) saber
+// tratar o formato mudando sem adivinhar pela presença/ausência de campos.
+// correlationId (ligar report->duplicateCheck->impactAssessment->outcome
+// pelo mesmo id) continua em aberto -- precisa de um id de investigação
+// threading por várias funções record*, mudança maior que cabe aqui.
+export const LEDGER_SCHEMA_VERSION = 1;
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS findings (
   id TEXT PRIMARY KEY,
@@ -320,6 +332,7 @@ export function recordTransition(db, findingId, toState, { actor, context = {} }
   const ts = new Date().toISOString();
   const ledgerEntry = appendEntry('research', {
     type: 'bugbounty_state_transition',
+    schemaVersion: LEDGER_SCHEMA_VERSION,
     findingId,
     from: result.from,
     to: result.to,
@@ -358,7 +371,7 @@ export function recordValidation(db, findingId, { type, command, result, rawOutp
   // o outcome do SSRF (image-optimizer.ts, HackerOne #3988959) sumindo
   // entre ambientes. Ver docs/zerotoone-v2/IMPLEMENTATION_STATE.md, seção
   // "Bug real encontrado (2026-09-02)", item (c).
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_validation', findingId, validationType: type, result, ts });
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_validation', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, validationType: type, result, ts });
   return { findingId, type, result, ts, ledgerHash: ledgerEntry.hash };
 }
 
@@ -375,7 +388,7 @@ export function recordDeploymentEvidence(db, findingId, evidence) {
     evidence.deployedAddress || null, evidence.chainId || null, evidence.blockNumber || null, evidence.bytecodeHash || null,
     evidence.confidence, evidence.notes || null, ts);
   // Ledger backing -- ver comentário em recordValidation.
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_deployment_evidence', findingId, confidence: evidence.confidence, deployedAddress: evidence.deployedAddress || null, ts });
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_deployment_evidence', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, confidence: evidence.confidence, deployedAddress: evidence.deployedAddress || null, ts });
   return { findingId, ...evidence, ts, ledgerHash: ledgerEntry.hash };
 }
 
@@ -410,7 +423,7 @@ export function recordDuplicateCheck(db, findingId, {
     notes || null, ts,
   );
   const ledgerEntry = appendEntry('research', {
-    type: 'bugbounty_duplicate_check', findingId, methods,
+    type: 'bugbounty_duplicate_check', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, methods,
     foundExisting: !!foundExisting, noveltyStatus: noveltyStatus || null,
     riskScore: Number.isFinite(riskScore) ? riskScore : null, ts,
   });
@@ -453,7 +466,7 @@ export function recordImpactAssessment(db, findingId, assessment) {
     VALUES (?, ?, ?, ?)
   `).run(findingId, JSON.stringify(payload), payload.reportable ? 1 : 0, ts);
   const ledgerEntry = appendEntry('research', {
-    type: 'bugbounty_impact_assessment', findingId,
+    type: 'bugbounty_impact_assessment', schemaVersion: LEDGER_SCHEMA_VERSION, findingId,
     technicalValidity: payload.technicalValidity,
     reportable: payload.reportable,
     impactScope: payload.impactScope,
@@ -475,7 +488,7 @@ export function recordReport(db, findingId, reportPath, { createdAt } = {}) {
   const ts = createdAt || new Date().toISOString();
   db.prepare('INSERT INTO reports (finding_id, path, created_at) VALUES (?, ?, ?)').run(findingId, reportPath, ts);
   // Ledger backing -- ver comentário em recordValidation.
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_report', findingId, path: reportPath, ts });
+  const ledgerEntry = appendEntry('research', { type: 'bugbounty_report', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, path: reportPath, ts });
   return { findingId, path: reportPath, createdAt: ts, ledgerHash: ledgerEntry.hash };
 }
 
@@ -632,7 +645,7 @@ export function recordPlatformOutcome(db, findingId, outcome) {
   // (#3988959) tinha sumido entre ambientes porque nada aqui tocava o
   // ledger nem o export -- agora sobrevive nos dois.
   const ledgerEntry = appendEntry('research', {
-    type: 'bugbounty_platform_outcome', findingId,
+    type: 'bugbounty_platform_outcome', schemaVersion: LEDGER_SCHEMA_VERSION, findingId,
     platform: outcome.platform || null,
     externalReportId: outcome.externalReportId || null,
     originalReportId: outcome.originalReportId || null,

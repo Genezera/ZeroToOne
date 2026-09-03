@@ -40,6 +40,43 @@ popular, root cause óbvio e duplicates anteriores aumentam o risco; mudança
 recente, programa novo, ativo recém-adicionado e regressão verificada
 reduzem. Match público sempre bloqueia.
 
+### Fechamento da lista de 8 pontos da revisão de 03/09/2026
+
+Depois do 6º relatório seguido voltar duplicate (Kiwi.com), uma revisão
+externa apontou 8 problemas concretos. Os 4 primeiros (entidade Submission,
+duplicate check bloqueante, fingerprint semântico, SecurityImpactGate) já
+tinham sido implementados quando a lista foi fechada; os 4 que faltavam:
+
+- **"Delta hunting" na descoberta** (`code-age.mjs` + `promote-targets.mjs`):
+  `code-age <owner/repo> <path> [ref]` calcula `codeAgeDays` de verdade a
+  partir do commit mais recente que tocou um arquivo (1 chamada de API,
+  honesto sobre não ser blame da linha exata — ver limitação no próprio
+  retorno). `promoteTargets`/`scoreCandidate` agora aceitam
+  `duplicateHistoryByProgram` (dado real de `outcome-intelligence.mjs`) e
+  penalizam repo de programa com histórico ruim de duplicate — não
+  bloqueiam, reduzem prioridade. `discovery-runner.mjs` já calcula isso do
+  banco real antes de cada rodada de promoção.
+- **Dimensões ortogonais** (`finding-dimensions.mjs`): `technicalValidity`,
+  `securityImpact`, `novelty`, `submissionState` computados por cima de
+  `state`+`impactAssessment`+`duplicateCheck`, sem substituir a máquina de
+  estados. Aparece em `get <id>` e `submission-preflight` como
+  `dimensions`.
+- **Ranking por EV** (`ev-ranking.mjs`, comando `rank-finding <id>
+  [--opts='{"expectedBountyUsd":N,"researchCostUsd":N}']`): `EV = P(válido)
+  × P(novo) × P(impacto aceito) × bounty − custo`, cada P(...) uma tabela
+  pequena e citável (nunca modelo treinado — a amostra real ainda é só 6
+  outcomes). `submission-stats` também ganhou `byWeakness` (que já cobre
+  "por detector" neste esquema — `finding.type` carrega os dois juntos,
+  ex. `semgrep_detect_child_process`). "Por idade do código" como quebra
+  agregada continua em aberto — `codeAgeDays` só é calculado sob demanda
+  por achado, não fica gravado por finding hoje.
+- **Contrato de eventos versionado** (`db.mjs::LEDGER_SCHEMA_VERSION`):
+  todo evento `bugbounty_*` gravado no ledger carrega `schemaVersion` desde
+  03/09/2026. `correlationId` ligando
+  report→duplicateCheck→impactAssessment→outcome do mesmo envio continua
+  em aberto — precisa de um id de investigação threading por várias
+  funções `record*`, mudança maior que não coube nesta rodada.
+
 ### Fluxo pelo CLI
 
 Os exemplos abaixo usam JSON ilustrativo; evidência deve vir da investigação

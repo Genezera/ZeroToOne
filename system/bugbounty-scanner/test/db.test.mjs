@@ -10,9 +10,9 @@ import {
   recordReport, latestReport, recordPlatformOutcome, latestPlatformOutcome, stateCounts,
   recordImpactAssessment, latestImpactAssessment, listSubmissions,
   exportSubmissionsToJsonl, importSubmissionsFromJsonl,
-  exportFindingsToQueueLines, closeDb,
+  exportFindingsToQueueLines, closeDb, LEDGER_SCHEMA_VERSION,
 } from '../db.mjs';
-import { verifyChain } from '../../ledger/ledger.mjs';
+import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-db-test-'));
@@ -322,5 +322,31 @@ test('submissions.jsonl torna todo o histórico de reports portátil, inclusive 
     assert.equal(listSubmissions(db2)[0].externalReportId, '777');
     assert.deepEqual(listSubmissions(db2)[0].findingIds, [SAMPLE.id]);
     closeDb(db2);
+  });
+});
+
+// Lacuna #8 da revisão de 03/09/2026: cada evento bugbounty_* gravado no
+// ledger carrega schemaVersion -- verifica contra o arquivo real gravado
+// em disco (readLedger), não só o objeto devolvido em memória.
+test('todo evento bugbounty_* gravado no ledger carrega schemaVersion', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    recordDuplicateCheck(db, SAMPLE.id, { methods: ['github_issues'], foundExisting: false, riskScore: 10 });
+    recordImpactAssessment(db, SAMPLE.id, {
+      technicalValidity: 'confirmed', reportable: true, attackerControlledInput: true,
+      attacker: 'atacante', victim: 'vítima', securityBoundary: 'fronteira', observableOutcome: 'resultado', rationale: 'motivo real',
+      confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user',
+    });
+    recordReport(db, SAMPLE.id, 'reports/x.md');
+    recordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', externalReportId: '999', state: 'duplicate' });
+    closeDb(db);
+
+    const entries = readLedger('research').filter((e) => e.findingId === SAMPLE.id);
+    const bugbountyEvents = entries.filter((e) => e.type?.startsWith('bugbounty_'));
+    assert.ok(bugbountyEvents.length >= 4, `esperava pelo menos 4 eventos, achou ${bugbountyEvents.length}`);
+    for (const e of bugbountyEvents) {
+      assert.equal(e.schemaVersion, LEDGER_SCHEMA_VERSION, `evento "${e.type}" sem schemaVersion`);
+    }
   });
 });

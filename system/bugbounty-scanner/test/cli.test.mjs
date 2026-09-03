@@ -8,7 +8,7 @@ import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplica
 import {
   cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
   cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
-  cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight,
+  cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight, cmdGetFinding, cmdRankFinding,
 } from '../cli.mjs';
 
 function withTempEnv(fn) {
@@ -136,6 +136,37 @@ test('duplicate outcome anterior alimenta automaticamente risco e estatística p
   });
 });
 
+test('cmdGetFinding devolve dimensions calculado, e null pra achado inexistente', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    const result = cmdGetFinding(db, SAMPLE.id);
+    assert.equal(result.id, SAMPLE.id);
+    assert.deepEqual(result.dimensions, { technicalValidity: null, securityImpact: null, novelty: null, submissionState: 'not_planned' });
+    assert.equal(cmdGetFinding(db, 'não-existe'), null);
+    closeDb(db);
+  });
+});
+
+test('cmdRankFinding junta impactAssessment+duplicateCheck reais com bounty/custo informados por quem chama', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const finding = { ...SAMPLE, id: 'p::f2::fn::type2', state: 'scope_verified' };
+    upsertFinding(db, finding);
+    recordImpactAssessment(db, finding.id, {
+      technicalValidity: 'confirmed', reportable: false, attackerControlledInput: false,
+      attacker: 'nenhum', victim: 'nenhum', securityBoundary: 'nenhuma', observableOutcome: 'nenhum',
+      rationale: 'sem impacto real', confidentiality: 'none', integrity: 'none', availability: 'none', impactScope: 'self_request_only',
+    });
+    recordDuplicateCheck(db, finding.id, { methods: ['github_issues'], foundExisting: false, riskScore: 100 });
+    const rank = cmdRankFinding(db, finding.id, { expectedBountyUsd: 500, researchCostUsd: 50 });
+    assert.equal(rank.probabilityImpactAccepted, 0); // reportable=false
+    assert.equal(rank.netExpectedValueUsd, -50);
+    assert.throws(() => cmdRankFinding(db, 'não-existe'), /não existe no banco/);
+    closeDb(db);
+  });
+});
+
 test('submission-preflight é fail-closed e explica a limitação de reports privados', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
@@ -159,6 +190,11 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
     });
     const ready = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime() });
     assert.equal(ready.ready, true, ready.reason);
+    // Lacuna #1 da revisão de 03/09/2026: dimensões ortogonais visíveis
+    // sem juntar state+impactAssessment+duplicateCheck manualmente.
+    assert.deepEqual(ready.dimensions, {
+      technicalValidity: 'confirmed', securityImpact: 'verified', novelty: 'private_unknown', submissionState: 'not_planned',
+    });
     closeDb(db);
   });
 });
