@@ -5903,3 +5903,35 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (3
 arquivos novos em `vercel/turborepo`). `Block Open Source`/`Circle BBP`
 seguem fora de escopo desta sessão por política local
 (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud concorrente)
+
+`program-policy.json` checado como passo zero: `Block Open Source` e
+`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`list-pending` global = 0. Esta rodada rodou em paralelo com a
+rodada acima (mesmo dia, mesmo repo `vercel/turborepo`) — ao sincronizar
+via `git fetch`/rebase, confirmei que os arquivos escolhidos não se
+sobrepunham e mesclei os dois conjuntos em `deep-read-log.json` em vez
+de descartar um dos dois.
+
+Arquivos lidos nesta sessão (fechando o crate `turborepo-auth` por
+completo, exceto `Cargo.toml`/testes):
+
+- `crates/turborepo-auth/src/error.rs` — enum de erro do fluxo de
+  login/SSO/OAuth/device-flow. Nenhuma variante interpola token ou
+  segredo bruto na mensagem (só status HTTP, código OAuth, URL
+  configurada). Reforça o hardening já visto em `sso.rs`/`login.rs`:
+  `UntrustedVercelApiUrl`, `UntrustedNonVercelLoginUrlSource`/
+  `UntrustedNonVercelApiUrlSource` (exige `--login`/`--api` explícito ou
+  `TURBO_LOGIN`/`TURBO_API` pra confiar em endpoint não-Vercel),
+  `UntrustedNonVercelLoginUrlScheme` (exige HTTPS exceto localhost) e
+  `LoginUrlIncludesCredentials` (recusa URL com usuário/senha embutido).
+  Sem achado.
+- `crates/turborepo-auth/src/ui/mod.rs` — 3 linhas, só
+  `pub use messages::print_cli_authorized`, sem lógica própria.
+- `crates/turborepo-boundaries/bindings/Permissions.ts` — gerado por
+  `ts-rs` (comentário no topo confirma), só declara o tipo
+  `{ allow?: string[], deny?: string[] }`, sem lógica de runtime.
+
+Nenhum achado novo. `Block Open Source`/`Circle BBP` seguem fora de
+escopo por política local, nenhum repo desses tocado.
