@@ -5138,3 +5138,58 @@ repo, não depois.
 `list-pending` global = 0, nenhuma transição de estado nesta rodada.
 Os dois achados travados de Block Open Source seguem intocados por
 política.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado ANTES de tocar qualquer repo (passo
+zero, sem exceção): `Block Open Source` (`aiResearchBanned: true`) e
+`Circle BBP` (`blocked: true`) seguem fora de escopo desta sessão,
+apesar do prompt agendado listar os 4 programas como ativos. Nenhum
+repo `cashapp/*`/`afterpay/*`/`square/wire`/`circlefin/*` clonado, lido
+ou tocado. `list-pending` global = 0 no início da rodada.
+
+Reconciliação com sessões concorrentes: o commit inicial desta rodada
+foi feito em cima de um `origin/master` que já havia avançado 3
+commits (leitura em `vercel/turborepo`, correção de um incidente de
+processo em outra sessão, atualização do Kiwi.com). `git reset --hard
+origin/master` + `migrate-to-v2` re-rodado a partir do `queue.jsonl`
+já atualizado por essas sessões, e só o conteúdo genuinamente novo
+desta rodada foi reaplicado por cima (mesmo procedimento documentado em
+rodadas anteriores).
+
+Leitura profunda proativa em `sveltejs/svelte` (repo com bem menos
+cobertura que os `vercel/*` já bastante esgotados hoje), sparse-clone
+(`git clone --depth 1 --filter=blob:none --sparse`, só
+`packages/svelte/src`, não persistido no repo) para localizar arquivos
+com `html`/`sanitiz`/`escape`/`innerHTML` no conteúdo ainda não lidos.
+3 arquivos novos lidos por completo, fechando a auditoria da feature
+`{@html}` (o único ponto do framework que deliberadamente não escapa
+saída) nas duas pontas — runtime já lido em rodada anterior, compile-
+time agora:
+
+- `internal/client/dom/elements/attributes.js` — `set_attributes`
+  (spread de atributos dinâmicos no DOM client-side). Valores string
+  sempre passam por `element.setAttribute`, nunca por um setter de
+  propriedade perigoso: `get_setters()` explicitamente exclui
+  `innerHTML`/`textContent`/`innerText` do cache de setters (linha
+  608-611, comentário do próprio código: "dangerous... we don't want
+  spread attributes to mess with HTML content"). Handlers `on*` são
+  ligados via `addEventListener`/`delegate` com a função JS real do
+  componente, nunca `eval`/atribuição de string a `onclick`. Mesmo
+  modelo de ameaça de qualquer framework com spread de props (React
+  JSX incluso): não sanitiza URL/atributo controlado pelo app-autor,
+  responsabilidade de quem constrói o valor, não bug do framework. Sem
+  falha encontrada.
+- `compiler/phases/3-transform/client/visitors/HtmlTag.js` e
+  `.../server/visitors/HtmlTag.js` (compile-time, ambos completos, 61 e
+  25 linhas) — os dois só compilam `{@html expr}` para uma chamada ao
+  runtime `$.html(...)` já auditado (`internal/{client,server}/.../
+  html.js`, rodada anterior) sem nenhuma lógica própria de
+  escaping/sanitização — confirma que a ausência de escaping em
+  `{@html}` é 100% intencional e documentada (feature de raw-HTML), não
+  um bug de implementação faltando um passo. Sem falha encontrada.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`sveltejs/svelte`
++3 arquivos, agora 9 no total). `list-pending` global = 0, nenhuma
+transição de estado nesta rodada. Os dois achados travados de Block
+Open Source seguem intocados por política.
