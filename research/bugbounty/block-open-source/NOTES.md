@@ -2714,3 +2714,18 @@ side-channel no gateway token — ver NOTES.md de Vercel Open Source).
 `Root.kt::DirectoryRoot.resolve::path_traversal_risk` em
 `human_ready`) seguem intocados, ainda aguardando decisão humana sobre
 o segundo.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero, antes de tocar em
+qualquer repo (disciplina reforçada desde o incidente de processo
+registrado em Circle BBP): `aiResearchBanned: true` ainda vigente pra
+"Block Open Source" (RoE da Bugcrowd). Nenhum repo `cashapp/*`/
+`afterpay/*`/`square/wire` clonado, lido ou tocado nesta rodada, mesmo
+com o prompt agendado listando o programa como ativo — segui a
+política do repositório, não o texto (desatualizado) do agendamento.
+Leitura profunda proativa desta rodada foi em `vercel/workflow`
+(`packages/core/src/runtime/resume-hook.ts`,
+`packages/core/src/create-hook.ts` — ver NOTES.md de Vercel Open
+Source). `list-pending` global = 0. Os dois achados travados seguem
+intocados, sem mudança.

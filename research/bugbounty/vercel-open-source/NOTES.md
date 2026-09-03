@@ -4971,3 +4971,50 @@ grandes segundo `list-deep-read-candidates.mjs`): 3 arquivos novos —
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/workflow` +3 arquivos, agora 16 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Continuando em `vercel/workflow` na área de
+"hook tokens" (motivada pelos changesets históricos já corrigidos —
+`hook-token-reuse-after-dispose.md`, `hook-token-claim-release.md`,
+`reject-empty-hook-token.md`, `quickjs-hook-dispose-token.md` — nenhum
+achado novo neles, só contexto para revisar a superfície de
+resume-by-token de novo em busca de regressão residual):
+
+- `packages/core/src/runtime/resume-hook.ts` (`resumeHook`/
+  `resumeHookImpl`/`resumeWebhook`, 768 linhas): rastreei a cadeia
+  completa de resume via token — `getHookByTokenWithKey` →
+  `world.hooks.getByToken(token)` → grava `hook_received` (dedup via
+  `resumeId`+digest quando o backend atesta suporte) → publica wake na
+  queue. Terminal-run check no fallback path client-side
+  (`isTerminalWorkflowRunStatus`) e no fast path server-side (rejeição
+  do backend re-chaveada pra `HookNotFoundError`); `resumeWebhook`
+  rejeita hooks não-webhook com o mesmo erro "not found" de token
+  inválido, evitando oráculo de existência de token. `resumeHookImpl`
+  interno nunca é exportado com o parâmetro de atestação
+  `hookFreshlyLookedUp` alcançável por chamador externo — o próprio
+  comentário no código explica por que isso evita reativar dynamic
+  dedup contra um backend com rollback. Design deliberadamente
+  cauteloso, sem caminho óbvio de bypass. Sem achado.
+- `packages/core/src/create-hook.ts` (`createHook`/`createWebhook`,
+  definições de tipo/API pública — implementação real fica em
+  `runtime/`): a própria doc do `HookOptions.token` já avisa
+  explicitamente que um token gerado "não é trivial de adivinhar mas
+  não é um contrato de segurança" e recomenda autenticar webhooks em
+  vez de confiar em URL secrecy — postura de segurança correta e já
+  documentada, não vulnerabilidade. Sem achado.
+
+Nota lateral (não é achado, é limitação de ambiente): comparações
+`hook?.token === token` em `packages/world-local/src/storage/
+hooks-storage.ts` usam `===` simples, não constant-time — mas o lookup
+já é por path de arquivo derivado do próprio token
+(`hookTokenClaimPath`), não um scan sobre candidatos, e `world-local`
+é o adapter de dev/test local, não o backend de produção
+(`world-vercel`, fechado). Mesma classe de raciocínio já aplicada a
+`SecretString`/`turborepo` em rodada anterior — sem atacante remoto
+posicionado pra medir timing através de fronteira de rede real. Sem
+achado, não virou finding.
+
+`deep-read-log.json` atualizado (`vercel/workflow` +2 arquivos, agora
+18 no total). `list-pending` global = 0, nenhuma transição de estado
+nesta rodada.

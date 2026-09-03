@@ -965,7 +965,9 @@
     "packages/world-vercel/src/hooks.ts",
     "packages/world-vercel/src/http-client.ts",
     "packages/world-vercel/src/deployment-id.ts",
-    "packages/world-vercel/src/create-run-id.ts"
+    "packages/world-vercel/src/create-run-id.ts",
+    "packages/core/src/runtime/resume-hook.ts",
+    "packages/core/src/create-hook.ts"
   ],
   "kubernetes/cluster-bootstrap": [
     "token/jws/jws.go",
