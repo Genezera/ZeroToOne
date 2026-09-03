@@ -763,3 +763,16 @@ NOTES.md de Vercel Open Source: `proxy.ts`, `base-url.ts`,
 transição de estado neste programa. `Block Open Source`/`Circle BBP`
 seguem fora de escopo desta sessão por política local
 (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `api.hiro.so` reconfirmado bloqueado
+(`connect_rejected` no CONNECT do agent-proxy) — os 3 contratos
+`ststxbtc-*` seguem impossíveis de baixar. Sem arquivo novo candidato
+em StackingDAO, os 15 contratos Clarity seguem 100% cobertos. Leitura
+profunda proativa desta rodada direcionada a `vercel/workflow` de novo
+(ver NOTES.md de Vercel Open Source: `http-client.ts`,
+`deployment-id.ts`, `create-run-id.ts`), nenhum achado novo, nenhuma
+transição de estado neste programa. `Block Open Source`/`Circle BBP`
+seguem fora de escopo desta sessão por política local
+(`program-policy.json`).

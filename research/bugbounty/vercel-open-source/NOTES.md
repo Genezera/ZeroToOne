@@ -4945,3 +4945,29 @@ Leitura profunda proativa em `vercel/workflow` (10 arquivos já lidos,
 
 `deep-read-log.json` atualizado (`vercel/workflow` +3 arquivos, agora
 13 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` reconfirmado antes de
+tocar em qualquer repo: `Block Open Source`/`Circle BBP` seguem fora de
+escopo (nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` tocado). Leitura profunda proativa em `vercel/workflow`
+(13 arquivos já lidos, 1% coberto — menor cobertura entre os repos
+grandes segundo `list-deep-read-candidates.mjs`): 3 arquivos novos —
+
+- `packages/world-vercel/src/http-client.ts`: só configuração de
+  dispatchers undici (pools de conexão HTTP/1.1 vs HTTP/2, timeouts,
+  janelas de fluxo H2, política de retry por rota). Nenhuma lógica de
+  auth/autorização — não lê nem envia credencial nenhuma, é
+  infraestrutura de transporte pura. Sem achado.
+- `packages/world-vercel/src/deployment-id.ts`: um único helper que
+  monta mensagem de erro quando `VERCEL_DEPLOYMENT_ID` não está
+  setada. Sem lógica. Sem achado.
+- `packages/world-vercel/src/create-run-id.ts`: geração de run ID
+  (ULID monotônico com região embutida nos 11 bits superiores da
+  seção de aleatoriedade). É um identificador ordenável, não um
+  segredo/capability token (esse papel é do hook token, já coberto em
+  `hooks.ts`/`hook-token-reuse.ts` em rodadas anteriores). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/workflow` +3 arquivos, agora 16 no total).

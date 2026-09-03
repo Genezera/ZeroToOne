@@ -962,7 +962,10 @@
     "packages/core/src/serialization/encryption.ts",
     "packages/core/src/serialization/hardened.ts",
     "packages/world-vercel/src/run-id/codec.ts",
-    "packages/world-vercel/src/hooks.ts"
+    "packages/world-vercel/src/hooks.ts",
+    "packages/world-vercel/src/http-client.ts",
+    "packages/world-vercel/src/deployment-id.ts",
+    "packages/world-vercel/src/create-run-id.ts"
   ],
   "kubernetes/cluster-bootstrap": [
     "token/jws/jws.go",
