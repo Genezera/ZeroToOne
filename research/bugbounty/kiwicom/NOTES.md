@@ -287,6 +287,41 @@ Resolution" (absoluto demais) → "...Breaks the Documented GraphQL
 
 Commit `f93b6f8`.
 
+### Sexta rodada (03/09/2026) — verificação final achou 2 divergências reais de processo
+
+**1. Cópia em `ready-to-submit` estava desatualizada**: eu tinha editado
+o relatório fonte (5ª rodada) mas nunca rodei `package-for-submission`
+de novo depois — a cópia na pasta de entrega ainda tinha o título
+antigo, os trechos já corrigidos, etc. Corrigido rodando o comando de
+novo (confirmado com `diff`, agora idêntico byte a byte).
+
+**2. Achado real, mais sério, no próprio script de verificação
+`Non-Null`**: minha alegação de que "um resolver irmão não-relacionado
+executou com sucesso" nunca foi verificada com contador de chamada real
+— só inferida olhando o JSON. A revisão rodou com contadores de verdade
+e achou: com minha query original (`{ secret other }`), `secret` (que
+lança erro) resolve PRIMEIRO, então `other` **nunca chega a executar**
+(`otherCalls=0`) — minha alegação estava errada pra essa query
+específica. Só invertendo a ordem (`{ other secret }`) o resolver
+irmão realmente roda antes do erro propagar. Reescrevi o script pra
+consultar na ordem certa E adicionar `assert` real nos contadores (não
+só imprimir e confiar no olho), reescrevi o parágrafo do relatório pra
+descrever exatamente isso.
+
+**Consertei a causa raiz do problema #1, não só o sintoma**: achei que
+`package-for-submission.mjs` sempre reescrevia o README do zero sem
+nunca olhar o que já existia na pasta — então mesmo depois de eu
+colocar um zip manualmente, rodar o comando de novo (pra atualizar o
+relatório) fazia o checklist "regredir" e voltar a dizer "nenhum zip
+aqui". Corrigido: o script agora detecta `.zip` já presente na pasta
+de destino antes de reescrever o README, e ajusta o checklist de
+acordo. 4 testes novos, incluindo um teste de regressão que reproduz a
+sequência real exata (empacota → usuário coloca zip → relatório é
+revisado → empacota de novo → confere que o README da 2ª vez reflete o
+zip). 472/472 passando.
+
+Commit `975c187`.
+
 ### Escopo confirmado
 
 `kiwicom/js-iam-middleware` nunca tinha snapshot de escopo formal
