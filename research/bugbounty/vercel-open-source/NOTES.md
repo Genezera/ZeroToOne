@@ -5838,3 +5838,68 @@ ainda não presentes no `deep-read-log.json`:
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/ai` +3 arquivos). `Block Open Source`/`Circle BBP` seguem fora
 de escopo por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`check-program` pra cada um
+dos 4 nomes do prompt agendado): `Block Open Source` e `Circle BBP`
+confirmados bloqueados, nenhum repo desses tocado nesta rodada.
+`list-pending` global = 0 nos 4 programas cobertos por esta rotina.
+Reconciliação com sessões concorrentes disputando o mesmo push
+(`vercel/eve`, Plaid, `nitrojs/nitro`, `vercel/ai`) exigiu várias rodadas
+de `git checkout -B master origin/master` + reaplicação do conteúdo desta
+rodada + `migrate-to-v2`/`export-queue` até conseguir um push
+fast-forward.
+
+Revisitei os `corroborated_static` já existentes deste programa (mcp.ts
+linhas 345/347/349, `update-remix-run-dev.js`, `verify-claim.mjs` do
+vercel-labs/agent-skills, `image-optimizer.ts` SSRF via redirect, `vercel/ai`
+bridge timing, `vercel/chat` adapter-discord): todos já com investigação
+completa documentada em rodadas anteriores deste NOTES, presos em
+`corroborated_static` por limitação real e conhecida do sistema (JS/TS não
+tem validador local -> `reproduced_local` inalcançável -> `scope_verified`
+também inalcançável pela máquina de estados, que só aceita
+`reproduced_local->scope_verified`). Nenhuma ação nova necessária neles
+além da que já está registrada.
+
+Leitura profunda proativa (3 arquivos novos, não estavam em
+`deep-read-log.json`): `vercel/turborepo`, clone raso público
+(`git clone --depth 1`, commit `3125eb1`), evitando repetir os 16 arquivos
+já cobertos em rodadas anteriores (auth/token/cache-signature já
+esgotados). Prioridade auth/token/crypto/access levou a
+`crates/turborepo-microfrontends-proxy/` (proxy HTTP local que roteia
+entre apps de um microfrontend) e `apps/docs/lib/og/sign.ts` (assinatura
+HMAC de URLs de OG image):
+
+- `headers.rs` — `validate_host_header` restringe corretamente a
+  `localhost`/`127.0.0.1` (com ou sem porta), rejeita Host duplicado,
+  malformado, e host da URI divergente do header Host; também rejeita
+  Content-Length+Transfer-Encoding simultâneos (mitigação de request
+  smuggling). Sem achado.
+- `http.rs` + `ports.rs` — `forward_request` sempre reescreve
+  Host/X-Forwarded-For/Proto/Host antes de encaminhar (não repassa
+  cegamente o que o cliente mandou), e o alvo é sempre
+  `http://localhost:<port>` — nunca um host arbitrário. `validate_port`
+  usa allowlist 3000-9999 E blocklist de portas de serviço conhecidas
+  (22/3306/5432/6379/27017/etc.) mesmo dentro do range permitido — testado
+  explicitamente que o blocklist tem prioridade. `normalize_fallback_url`
+  usa `url::Url::join` (que colapsa `..` com segurança) e depois compara
+  explicitamente `final_host == original_host`, rejeitando URL absoluta ou
+  protocol-relative na resposta de fallback que tentasse trocar de host.
+  Sem achado — é um dos exemplos mais bem endurecidos contra SSRF que já
+  vi nesta missão (defesa em profundidade real: host fixo em localhost +
+  allowlist/blocklist de porta + validação de host pós-join no fallback).
+- `sign.ts` + `app/api/og/route.tsx` — HMAC-SHA256 sobre parâmetros
+  normalizados (`URLSearchParams` ordenado), checagem de comprimento e
+  regex hex ANTES de `timingSafeEqual` (não vaza timing porque o
+  comprimento esperado de um digest SHA-256 não é segredo), e a rota
+  responde 401 fail-closed se a assinatura for ausente/inválida. O objeto
+  verificado (`{title}` ou `{title,section}`) é reconstruído a partir de
+  campos fixos do `searchParams`, não repassado cru — não há como injetar
+  parâmetro extra não assinado que mude o resultado da verificação. Sem
+  achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (3
+arquivos novos em `vercel/turborepo`). `Block Open Source`/`Circle BBP`
+seguem fora de escopo desta sessão por política local
+(`program-policy.json`).
