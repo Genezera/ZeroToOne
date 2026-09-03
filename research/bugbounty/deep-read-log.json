@@ -896,7 +896,10 @@
     "packages/cli/src/commands/vcr/permissions/clear.ts",
     "packages/cli/src/commands/project/access-groups.ts",
     "packages/cli/src/commands/project/access-summary.ts",
-    "packages/oidc/src/get-vercel-oidc-token-sync.ts (+ get-context.ts, helper usado por ela)"
+    "packages/oidc/src/get-vercel-oidc-token-sync.ts (+ get-context.ts, helper usado por ela)",
+    "packages/cli/src/util/env/env-var-config-secret-ui.ts",
+    "packages/cli/src/commands/vcr/permissions/team-refs.ts",
+    "packages/connect/src/authjs/index.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

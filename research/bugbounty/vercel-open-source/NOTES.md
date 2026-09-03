@@ -4265,3 +4265,51 @@ está descartável/reprodutível, não precisou ser versionada.
 StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
 de baixar, sem mudança em relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado primeiro, mesma disciplina de sempre:
+`Block Open Source` continua `aiResearchBanned:true` (RoE da Bugcrowd,
+proibição explícita de ferramentas de IA) e `Circle BBP` continua
+`blocked:true` (instrução direta e repetida do usuário) — nenhum repo
+desses dois programas foi tocado nesta rodada, apesar do prompt agendado
+ainda listar os 4 programas como "ativos" (texto do agendamento
+desatualizado em relação à política real do repositório; segui a
+política do repositório, não o texto do agendamento). `migrate-to-v2`
+rodado sem erro, `list-pending` global = 0 (nenhum `candidate` em
+nenhum programa).
+
+Leitura profunda proativa (3 arquivos novos, `vercel/vercel` clonado raso
+via `git clone --depth 1` em scratchpad efêmero, nunca versionado;
+mesma seleção sistemática das rodadas anteriores — lista de todo
+arquivo `.ts`/`.js` de produção com auth/session/crypto/token/login/
+password/admin/permission/access/credential/secret/oauth/oidc/jwt no
+caminho, diffada contra `deep-read-log.json`): `packages/cli/src/util/
+env/env-var-config-secret-ui.ts` (lógica cliente-side pura de
+validação/rotulagem de visibilidade `config`/`secret` de env vars —
+o comentário do próprio código confirma que espelha regras que o
+servidor já aplica via `getConfigSecretValidationError`; nenhuma
+decisão de autorização real acontece aqui, sem achado),
+`packages/cli/src/commands/vcr/permissions/team-refs.ts` (parsing
+trivial de referências de time — id `team_*` vs slug — e montagem do
+corpo da requisição; autorização real fica no servidor, sem achado),
+`packages/connect/src/authjs/index.ts` (apenas um re-export do
+subpath público `@vercel/connect/authjs`; a lógica real
+(`connect-provider.ts`) já tinha sido lida e coberta em rodada
+anterior, sem achado). Conferido também: todo o resto de
+`packages/connect/` com filename contendo auth/token/oauth/oidc
+(authorization.ts, authorization-details.ts, eve/connect-oauth.ts,
+eve/connection-authorization.ts, eve/*-credentials.ts,
+mcp/connect-auth-provider.ts, chat/webhook-verifier.ts, token.ts,
+internal/team-id.ts, internal/url-validation.ts) já estava 100% lido
+em rodadas anteriores — nada de novo a investigar ali. `deep-read-log.json`
+atualizado (`vercel/vercel` agora com 67 arquivos lidos nesta missão).
+Restam ~31 arquivos auth/token/permission não lidos, majoritariamente
+`packages/oidc/src/index*.ts` (re-exports), `packages/cli/src/util/
+telemetry/**` (telemetria, não lógica de segurança) e comandos
+`tokens`/`login`/`vcr` ainda não cobertos individualmente — candidatos
+pra próxima rodada.
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
+de baixar, sem mudança em relação às rodadas anteriores.
