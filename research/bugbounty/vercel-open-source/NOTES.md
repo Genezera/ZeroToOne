@@ -5270,24 +5270,112 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 
 ## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
 
-`list-pending` global = 0. `program-policy.json` checado como passo
-zero, antes de tocar em qualquer repo: `Block Open Source`
-(`aiResearchBanned: true`) e `Circle BBP` (`blocked: true`) seguem
-fora de escopo desta sessão, apesar do prompt agendado listar os 4
-programas como ativos — texto estático do agendamento, não reflete a
-política do repositório.
+`program-policy.json` checado antes de tocar em qualquer repo:
+`Block Open Source` (`aiResearchBanned: true`) e `Circle BBP`
+(`blocked: true`, por pedido direto e repetido do usuário) seguem fora
+de escopo desta sessão, mesmo com o prompt agendado listando os 4
+programas como ativos — nenhum repo `cashapp/*`/`afterpay/*`/
+`square/wire`/`circlefin/*` tocado. `list-pending` global = 0 no
+início da rodada. Reconciliado três vezes com sessões concorrentes que
+empurraram pro `origin/master` (svelte, nitro, vercel/vercel +
+merge do Kiwi.com) enquanto esta rodada estava em andamento
+(`git reset --hard origin/master` + reaplicação só do conteúdo
+genuinamente novo desta rodada, sem duplicar achados já registrados
+por essas outras sessões).
 
-Leitura profunda proativa em `vercel/eve` (repo já bem coberto, 51
-arquivos lidos, quase todo o pacote é infraestrutura de auth/sessão de
-agente). Sparse-clone de `packages/eve/src`, filtrado por
-auth/session/token/login/admin/permission/access/secret/verify/
-signature/jwt/oidc no caminho, excluindo o que já constava no log:
-112 candidatos restantes, 3 lidos por completo:
+Leitura profunda proativa em `vercel/eve` (maior superfície de auth do
+escopo, 51 arquivos já lidos): sparse-clone (`packages/eve/src`) pra
+listar arquivos ainda não lidos com auth/session/crypto/token/login/
+password/admin/permission/access/secret/credential no nome, excluindo
+`.test.ts`. 3 arquivos novos lidos por completo:
 
-- `packages/eve/src/harness/inline-tool-authorization.ts` — só
-  resolve/projeta sinais de interrupção de autorização já emitidos por
-  `harness/authorization.ts`; nenhuma decisão de auth própria. Sem
-  achado.
+- `packages/eve/src/harness/inline-tool-authorization.ts` — não é
+  ponto de decisão de autorização; só filtra a história de mensagens
+  pra manter apenas chamadas de ferramenta "irmãs" que completaram
+  quando uma chamada interrompida por um desafio de autorização é
+  removida. A decisão real de quais desafios seguem ativos vem de
+  `resolveActiveAuthorizationChallenges` (`harness/authorization.ts`,
+  já lido em rodada anterior). Sem achado.
+- `packages/eve/src/execution/sandbox/bindings/vercel-credentials.ts`
+  — resolve credenciais (`teamId`/`projectId`/`token`) do Vercel
+  Sandbox a partir de env vars ou, na ausência delas, de um token OIDC
+  obtido via `getVercelOidcToken` (chamada própria, não input externo)
+  e decodificado (sem verificação de assinatura) só pra extrair
+  `ownerId`/`projectId` como metadados de roteamento — o token em si,
+  não os claims decodificados, é o que autentica de fato contra a API
+  do Sandbox. Não há caminho onde um atacante forneça o JWT decodificado
+  aqui. Sem achado.
+- `packages/eve/src/runtime/skills/sandbox-access.ts` — guarda de
+  path traversal para leitura de arquivos de skill dentro do sandbox
+  (`assertSafeSkillId`/`assertSafeSkillRelativePath`): bloqueia `/`,
+  `\`, segmentos `.`/`..`, prefixo `.` e letra de drive Windows.
+  Cobertura correta contra os vetores clássicos de traversal para este
+  padrão de uso (id e relativePath vêm de definição de skill/model,
+  não de path bruto do usuário). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/eve` +3 arquivos, agora 54 no total). `list-pending` global
+= 0, nenhuma transição de estado nesta rodada. Os dois achados
+travados de Block Open Source seguem intocados por política.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open Source`
+(`aiResearchBanned: true`) e `Circle BBP` (`blocked: true`) seguem fora
+de escopo, apesar do prompt agendado listar os 4 programas — política
+do repositório tem precedência sobre o texto desatualizado do
+agendamento. Nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` clonado, lido ou tocado. `list-pending` global = 0.
+
+Reconciliado com duas sessões concorrentes que empurraram pro
+`origin/master` durante esta rodada — uma leu 3 outros arquivos de
+`nitrojs/nitro` (sem sobreposição), outra leu `vercel/eve`. `git reset
+--hard origin/master` + `migrate-to-v2` re-rodado, meu conteúdo
+reaplicado por cima.
+
+Leitura profunda proativa em `nitrojs/nitro`, 3 arquivos:
+
+- `src/presets/vercel/runtime/cron-handler.ts` — handler do endpoint
+  de Vercel Cron. Valida `CRON_SECRET` com `timingSafeEqual` (checagem
+  de tamanho igual *antes* da comparação constant-time, evitando a
+  exceção do Node em buffers de tamanho diferente sem abrir short-
+  circuit em conteúdo), exige também o header
+  `x-vercel-cron-schedule`. Sem bypass encontrado.
+- `src/runtime/internal/app.ts` — infraestrutura de composição de
+  middleware (route rules, middleware roteado), só orquestração e
+  cache de chains compostas, nenhuma lógica própria de auth/crypto.
+  Sem achado.
+- `src/presets/aws-lambda/runtime/_utils.ts` — conversão de evento
+  Lambda (API Gateway v1/v2) pra `Request` web e de volta. Notei uma
+  inconsistência funcional (não abri finding, fora do tipo de achado
+  rastreado por este scanner): `awsRequest()` (linhas 7-24) monta
+  `req.runtime.aws = { event, context }` pra expor o evento/contexto
+  Lambda bruto a código de usuário (ex.: claims de um Lambda
+  authorizer em `event.requestContext.authorizer`), mas a função
+  retorna um `new Request(...)` *diferente* na linha 23, não o `req`
+  que acabou de receber esse campo — `runtime.aws` é descartado antes
+  de sair da função. Confirmei por grep (`runtime\.aws`) que nada
+  dentro do próprio `nitrojs/nitro` depende desse campo, então não é
+  bypass de autorização interna do framework: o efeito é que código de
+  usuário/plugin que dependesse desse campo sempre veria `undefined`,
+  o que tende a falhar fechado (comparação com claim esperado dá
+  `false`), não abrir uma bypass. Registrado só pra constar.
+
+Nenhum achado novo persistido no banco. `deep-read-log.json`
+atualizado (`nitrojs/nitro` +3 arquivos, agora 18 no total). `list-
+pending` global = 0, nenhuma transição de estado nesta rodada. Os
+dois achados travados de Block Open Source seguem intocados por
+política.
+
+## Reconciliação — mesma rodada, sessão concorrente em `vercel/eve`
+
+Uma sessão concorrente rodou a leitura profunda em `vercel/eve` ao
+mesmo tempo (mesmo alvo escolhido de forma independente pelas duas
+sessões, dado quão pouco coberto o repo ainda estava fora dos módulos
+`auth/*`). Overlap em 1 arquivo (`inline-tool-authorization.ts`, já
+narrado acima); 2 arquivos adicionais, não cobertos pela outra sessão,
+lidos por completo nesta:
+
 - `packages/eve/src/cli/dev/tui/remote-auth.ts` — fluxo de login CLI
   para deployment remoto; `resolveVercelDeployment` falha fechado nos
   casos `forbidden`/`not-found`/`project-mismatch`, token OIDC só
@@ -5300,5 +5388,6 @@ signature/jwt/oidc no caminho, excluindo o que já constava no log:
   `VERCEL_BRANCH_URL`/`VERCEL_PROJECT_PRODUCTION_URL` e o protocolo é
   https. Allowlist correta, sem achado.
 
-Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
-(`vercel/eve` +3 arquivos, agora 54 no total).
+`deep-read-log.json` mesclado (`vercel/eve` agora com as duas
+contribuições, sem entrada duplicada do arquivo em comum). Nenhum
+achado novo.

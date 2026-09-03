@@ -848,12 +848,15 @@ escopo por política local (`program-policy.json`).
 
 ## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
 
-`list-pending` global = 0. `api.hiro.so` reconfirmado bloqueado
-(`curl` direto ao endpoint devolve reset de conexão pelo agent-proxy,
-exit 56) — os 3 contratos `ststxbtc-*` seguem impossíveis de baixar.
-Sem arquivo novo candidato em StackingDAO, os 15 contratos Clarity
-seguem 100% cobertos. Leitura profunda proativa desta rodada
-direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source),
-nenhum achado novo, nenhuma transição de estado neste programa.
-`Block Open Source`/`Circle BBP` seguem fora de escopo desta sessão
-por política local (`program-policy.json`).
+`list-pending` global = 0. `api.hiro.so` reconfirmado bloqueado (exit
+56/connection reset no `curl` de teste via agent-proxy) — os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar. Sem arquivo novo
+candidato em StackingDAO, os 15 contratos Clarity seguem 100%
+cobertos. Múltiplas sessões concorrentes rodaram esta mesma rodada em
+paralelo; leitura profunda proativa combinada ficou em `vercel/eve`
+(ver NOTES.md de Vercel Open Source) e `nitrojs/nitro` (`cron-handler.ts`,
+`internal/app.ts`, `aws-lambda/runtime/_utils.ts`), nenhum achado
+novo, nenhuma transição de estado neste programa. Reconciliado
+repetidas vezes contra `origin/master`. `Block Open Source`/`Circle
+BBP` seguem fora de escopo desta sessão por política local
+(`program-policy.json`).

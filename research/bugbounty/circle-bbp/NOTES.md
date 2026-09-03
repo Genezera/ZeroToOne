@@ -6654,8 +6654,9 @@ sequer considerar clonar ou ler qualquer arquivo `circlefin/*`:
 `Circle BBP` continua `blocked: true` (instrução direta e repetida do
 usuário, sem exceção). Nenhum repo `circlefin/*` foi tocado nesta
 rodada, mesmo com o prompt agendado listando o programa como ativo —
-segui a política do repositório. Leitura profunda proativa desta
-rodada foi inteiramente em `vercel/eve` (ver NOTES.md de Vercel Open
-Source). O achado travado em `corroborated_static`
+segui a política do repositório. Múltiplas sessões concorrentes
+rodaram esta mesma rodada em paralelo; leitura profunda proativa
+combinada ficou em `vercel/eve` e `nitrojs/nitro` (ver NOTES.md de
+Vercel Open Source). O achado travado em `corroborated_static`
 (`Mints.sol::_mint::unchecked_call_return`) segue intocado, sem
 nenhuma ação.
