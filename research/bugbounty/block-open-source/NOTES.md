@@ -2764,3 +2764,19 @@ NOTES.md de Vercel Open Source). `list-pending` global = 0. Os dois
 achados travados (`js_injection_unescaped_token_risk` em
 `corroborated_static` e `Root.kt::DirectoryRoot.resolve::
 path_traversal_risk` em `human_ready`) seguem intocados, sem mudança.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero desta vez (disciplina
+recuperada depois do incidente registrado em Circle BBP nesta mesma
+rodada — ver NOTES.md de lá): `aiResearchBanned: true` continua
+vigente pra "Block Open Source" (RoE da Bugcrowd). Nenhum repo
+`cashapp/*`/`afterpay/*`/`square/wire` clonado, lido ou tocado nesta
+rodada, mesmo com o prompt agendado listando o programa como ativo —
+segui a política do repositório, não o texto (desatualizado) do
+agendamento. Leitura profunda proativa desta rodada foi em
+`vercel-labs/skills` (`Circle BBP` tocado antes do gate ser checado —
+ver incidente acima; nenhum trabalho de Block foi afetado). Os dois
+achados travados (`js_injection_unescaped_token_risk` em
+`corroborated_static` e `Root.kt::DirectoryRoot.resolve::
+path_traversal_risk` em `human_ready`) seguem intocados, sem mudança.
