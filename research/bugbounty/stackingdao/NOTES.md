@@ -939,3 +939,16 @@ memória, execução de bash é o próprio produto, não um desvio de
 sandbox). Nenhum achado novo, nenhuma transição de estado neste
 programa. O achado de `vercel/chat` (CWE-208, `corroborated_static`)
 segue intocado.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`list-pending` global = 0. Sem arquivo novo candidato em StackingDAO, os
+15 contratos Clarity seguem 100% cobertos (`api.hiro.so` não testado
+nesta rodada). Leitura profunda proativa desta rodada direcionada a
+`vercel/turborepo` (ver NOTES.md de Vercel Open Source: proxy de
+microfrontends `headers.rs`/`http.rs`/`ports.rs`, assinatura HMAC de OG
+image `sign.ts`), sem achado. Nenhuma transição de estado neste
+programa. Reconciliado várias vezes com sessões concorrentes disputando
+o mesmo push (`vercel/eve`, Plaid, `nitrojs/nitro`, `vercel/ai`).
