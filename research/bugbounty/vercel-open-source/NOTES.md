@@ -5267,3 +5267,38 @@ excluindo testes/evals. 3 lidos por completo:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/vercel` +3 arquivos, agora 93 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` checado como passo
+zero, antes de tocar em qualquer repo: `Block Open Source`
+(`aiResearchBanned: true`) e `Circle BBP` (`blocked: true`) seguem
+fora de escopo desta sessão, apesar do prompt agendado listar os 4
+programas como ativos — texto estático do agendamento, não reflete a
+política do repositório.
+
+Leitura profunda proativa em `vercel/eve` (repo já bem coberto, 51
+arquivos lidos, quase todo o pacote é infraestrutura de auth/sessão de
+agente). Sparse-clone de `packages/eve/src`, filtrado por
+auth/session/token/login/admin/permission/access/secret/verify/
+signature/jwt/oidc no caminho, excluindo o que já constava no log:
+112 candidatos restantes, 3 lidos por completo:
+
+- `packages/eve/src/harness/inline-tool-authorization.ts` — só
+  resolve/projeta sinais de interrupção de autorização já emitidos por
+  `harness/authorization.ts`; nenhuma decisão de auth própria. Sem
+  achado.
+- `packages/eve/src/cli/dev/tui/remote-auth.ts` — fluxo de login CLI
+  para deployment remoto; `resolveVercelDeployment` falha fechado nos
+  casos `forbidden`/`not-found`/`project-mismatch`, token OIDC só
+  retornado depois da verificação do projeto. Sem achado.
+- `packages/eve/src/execution/session-callback-request.ts` —
+  `postSessionCallbackRequest` usa `redirect: "error"` (comentário no
+  próprio código explica: evita bounce 3xx pós-validação pra endereço
+  interno/metadata) e só anexa o header de token OIDC ambiente quando
+  o hostname da URL bate exatamente com `VERCEL_URL`/
+  `VERCEL_BRANCH_URL`/`VERCEL_PROJECT_PRODUCTION_URL` e o protocolo é
+  https. Allowlist correta, sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/eve` +3 arquivos, agora 54 no total).
