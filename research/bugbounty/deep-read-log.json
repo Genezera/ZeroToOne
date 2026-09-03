@@ -726,7 +726,10 @@
     "packages/harness-codex/src/bridge/index.ts",
     "packages/harness/src/agent/internal/permission-mode.ts",
     "packages/harness-codex/src/bridge/tool-relay-auth.ts",
-    "packages/harness-opencode/src/bridge/tool-relay-auth.ts"
+    "packages/harness-opencode/src/bridge/tool-relay-auth.ts",
+    "packages/harness/src/utils/sandbox-credential-brokering.ts",
+    "packages/harness/src/utils/credential-forwarding.ts",
+    "packages/harness/src/v1/harness-v1-credential-forwarding.ts"
   ],
   "vercel/async-sema": [
     "src/index.ts"
