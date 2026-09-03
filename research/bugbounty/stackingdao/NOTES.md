@@ -832,3 +832,16 @@ pro `origin/master` (`vercel/turborepo`, `vercel/next.js`,
 vezes. Nenhum achado, nenhuma transição de estado neste programa.
 `Block Open Source`/`Circle BBP` seguem fora de escopo desta sessão
 por política local (`program-policy.json`).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `api.hiro.so` segue bloqueado (agent-proxy)
+— os 3 contratos `ststxbtc-*` seguem impossíveis de baixar. Sem
+arquivo novo candidato em StackingDAO, os 15 contratos Clarity seguem
+100% cobertos. Leitura profunda proativa desta rodada direcionada a
+`vercel/vercel` (ver NOTES.md de Vercel Open Source: `auth-errors.ts`,
+`token-error.ts`, `util/login/types.ts`), nenhum achado novo, nenhuma
+transição de estado neste programa. Múltiplas sessões concorrentes
+empurraram pro `origin/master` durante esta rodada; reconciliado
+repetidas vezes. `Block Open Source`/`Circle BBP` seguem fora de
+escopo por política local (`program-policy.json`).

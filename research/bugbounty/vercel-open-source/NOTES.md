@@ -5238,3 +5238,32 @@ de arquivo:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`nitrojs/nitro` +3 arquivos, agora 15 no total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` checado antes de
+tocar em qualquer repo: `Block Open Source`/`Circle BBP` seguem fora
+de escopo desta sessão. Múltiplas sessões concorrentes empurraram
+rodadas pro `origin/master` durante esta rodada (`vercel/next.js`,
+`sveltejs/svelte`, `nitrojs/nitro`); reconciliado repetidas vezes via
+`git reset --hard origin/master` + `migrate-to-v2` re-rodado,
+reaplicando só o conteúdo genuinamente novo desta rodada por cima.
+
+Leitura profunda proativa em `vercel/vercel` (90 arquivos já lidos,
+maior repo do escopo): sparse-clone (`packages/`, não persistido no
+repo) pra listar arquivos ainda não lidos com auth/session/crypto/
+token/login/password/admin/permission/access/secret/csrf no nome,
+excluindo testes/evals. 3 lidos por completo:
+
+- `packages/oidc/src/auth-errors.ts` — duas classes de erro
+  (`AccessTokenMissingError`, `RefreshAccessTokenFailedError`), só
+  mensagem + `cause` opcional, nenhuma lógica de autenticação. Sem
+  achado.
+- `packages/oidc/src/token-error.ts` — `VercelOidcTokenError`, mesma
+  forma (mensagem + cause + `toString()`). Sem achado.
+- `packages/cli/src/util/login/types.ts` — só interfaces TypeScript
+  (`LoginData`, `LoginResult`, `SAMLError`), zero lógica em runtime.
+  Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/vercel` +3 arquivos, agora 93 no total).
