@@ -175,6 +175,85 @@ Nenhum código mudou, nenhuma evidência nova de PoC — só a
 correspondência entre o que é afirmado e o que está de fato provado.
 Commit `d31666b`/`5a29d28`.
 
+### Terceira revisão externa (03/09/2026) — a mais rigorosa até aqui, instrumentou rede de verdade
+
+Usuário colou uma terceira revisão que instrumentou de verdade
+`http`/`https`/DNS/TLS (confirmando zero chamada de rede), testou
+`node-fetch@2.6.7` E `2.6.9`, e testou múltiplos formatos de
+`permission`. Verifiquei cada afirmação checável de forma independente
+antes de aplicar — todas bateram:
+
+- `package.json` declara `node-fetch` como `^2.6.0` (faixa, não pin) —
+  "pins" estava errado, corrigido.
+- A diretiva SDL real é `@requires`, não `@authorization` — 3 correções.
+- **CWE-683 (Function Call With Incorrect Order of Arguments)** é
+  ChildOf CWE-628 confirmado ao vivo na própria página do MITRE, e é a
+  classificação exata (ordem incorreta, não só "incorretamente
+  especificado" genericamente) — trocado de 628 sozinho para 683
+  como principal, 628 como pai/contexto.
+- `getUser` faz `.toLowerCase()` no token antes de usar — "as plain
+  text" estava impreciso.
+- Meus próprios scripts de PoC omitem `userCache.get`/`.set` — "line-
+  for-line transcription" era literalmente falso. Corrigido pra nomear
+  a omissão e explicar por que não muda o resultado (a linha de cache-
+  write nunca é alcançada nesse caminho quebrado de qualquer forma).
+- **Testei eu mesmo, ao vivo**: o valor real documentado no README
+  (`payment-card.read`) produz um erro DIFERENTE do meu exemplo
+  inventado (`Only absolute URLs are supported` vs `Only HTTP(S)
+  protocols are supported`) — ambos falham antes de I/O de rede, mas
+  "the same failure" era impreciso. Citei o código-fonte real do
+  `node-fetch` (`request.js::getNodeRequestOptions`) confirmando que os
+  dois erros vêm do mesmo lugar, antes de qualquer socket abrir.
+- Suavizado "every real invocation" (absoluto demais) e "primary usage
+  pattern" (subjetivo) para o que foi de fato testado/documentado.
+- Corrigido número de linha desatualizado (51 → 56-63).
+
+Nenhum print precisou ser refeito — toda correção foi de precisão de
+texto, não mudança no que os prints mostram ou no que os scripts fazem.
+Commit `86cfda8`/`6f53908`.
+
+### Quarta rodada (03/09/2026) — busca por consumidor real (negativa) + cadeia condicional verificada e corretamente descartada
+
+**Busca por consumidor público real**: usuário propôs um plano de 3
+passos (PoC de integração real, busca por consumidor, só então
+considerar teste ao vivo). Rodei o passo 2 com o `gh` CLI já
+autenticado neste projeto (a tentativa anônima anterior batia em
+"Requires authentication"), 5 termos de busca diferentes, org
+`kiwicom` inteira (193 repos públicos). Resultado: 100% dos hits vêm
+do próprio `kiwicom/js-iam-middleware` — zero consumidor externo
+público. Não descarta consumidor privado (limite estrutural de sempre),
+mas fecha a hipótese de achar impacto real via GitHub público.
+
+**Cadeia condicional com permissão em formato de URL — verificada e
+corretamente excluída do relatório**: usuário trouxe uma análise
+mostrando que, SE `@requires(permission: "http://...")` fosse um valor
+real de schema, o token realmente sairia pela rede e o resolver seria
+autorizado. Reproduzi isso eu mesmo com um servidor HTTP local real
+(não simulado) — confirma exatamente: `authorized result: true`,
+servidor recebeu `service=bearer%20mixed_case_token`. Mecanismo real,
+mas **não vai pro relatório**: `permission` já está provado como
+controlado só por quem escreve o schema (ponto 7 do call chain) — sem
+isso, é uma corrente condicional que depende de uma pré-condição
+impossível, exatamente o tipo de coisa que as revisões anteriores já
+avisaram pra não forçar.
+
+**Propagação de erro Non-Null do GraphQL — verificada com o pacote
+`graphql` real**: confirma que erro num campo `Non-Null` zera a
+resposta INTEIRA (`data: null`), mesmo com outro campo não-relacionado
+pedido na mesma query. Isso é real e vale pro relatório — mudei o
+título pra liderar com o impacto funcional/disponibilidade (bem mais
+defensável) em vez de "token na URL" (sempre secundário), e adicionei
+esse fato ao Impact.
+
+**Decisão consciente de NÃO reconstruir a PoC como integração GraphQL
+completa** (instalar `@kiwicom/iam@2.3.0` do npm de verdade, servidor
+`apollo-server`/`graphql-tools` real, controle positivo) — melhoraria
+o rigor da PoC mas não muda a conclusão de impacto, e custaria uma 3ª
+rodada de print do usuário pra ganho marginal. Registrado como parada
+deliberada, não descuido.
+
+Commit `1575137`.
+
 ### Escopo confirmado
 
 `kiwicom/js-iam-middleware` nunca tinha snapshot de escopo formal
