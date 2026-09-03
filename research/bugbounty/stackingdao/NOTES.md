@@ -668,3 +668,16 @@ global-config tokens CRUD, vcr permissions command metadata — ver
 NOTES.md de Vercel Open Source) — sem arquivo novo candidato em
 StackingDAO, os 15 contratos Clarity seguem 100% cobertos. Nenhum
 achado, nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. Reconfirmado mais uma vez: `api.hiro.so`
+continua bloqueado nesta sessão (403 no CONNECT do agent-proxy) — os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar. Leitura profunda
+proativa desta rodada direcionada a `vercel/vercel` (connect token
+recovery flow, project OIDC token, tokens subcommand router — ver
+NOTES.md de Vercel Open Source) — sem arquivo novo candidato em
+StackingDAO, os 15 contratos Clarity seguem 100% cobertos. Nenhum
+achado, nenhuma transição de estado neste programa. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).

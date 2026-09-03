@@ -916,7 +916,10 @@
     "packages/oidc/src/index-edge-light.ts",
     "packages/cli/src/commands/login/command.ts",
     "packages/cli/src/commands/global-config/tokens.ts",
-    "packages/cli/src/commands/vcr/permissions/command.ts"
+    "packages/cli/src/commands/vcr/permissions/command.ts",
+    "packages/cli/src/commands/connex/token.ts",
+    "packages/cli/src/commands/project/token.ts",
+    "packages/cli/src/commands/tokens/index.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

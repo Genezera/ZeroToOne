@@ -4460,3 +4460,40 @@ prioridade.
 StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem
 impossíveis de baixar, sem mudança em relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado primeiro, disciplina mantida: `Block Open
+Source` continua `aiResearchBanned: true` e `Circle BBP` continua
+`blocked: true` — nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/
+`circlefin/*` clonado, lido ou tocado nesta rodada, mesmo com o prompt
+agendado listando os 4 programas como ativos (texto desatualizado em
+relação à política real do repositório, mesma observação de rodadas
+anteriores). `list-pending` global = 0.
+
+Leitura profunda proativa: `vercel/vercel` clonado raso via `git clone
+--depth 1` em scratchpad efêmero (nunca versionado). Diff contra
+`deep-read-log.json` encontrou 13 arquivos ainda não lidos batendo nas
+keywords de prioridade; 3 revisados nesta rodada:
+`packages/cli/src/commands/connex/token.ts` (comando `vercel connect
+token <id>`, fluxo OAuth-like de recovery via browser quando o token
+pede autorização/instalação — `clientId`/`teamId`/`scopes` sempre via
+`encodeURIComponent`/`URLSearchParams`, sem concatenação crua; recovery
+automática só dispara com `--yes` explícito ou TTY interativo, então
+`TOKEN=$(vc connect token ...)` em pipe/script nunca abre browser
+sozinho — sem achado), `packages/cli/src/commands/project/token.ts`
+(gera token OIDC de projeto via `POST /projects/:id/token`, projeto
+resolvido por `getProjectByCwdOrLink` antes do fetch, sem entrada do
+usuário na URL além do id do projeto já resolvido — sem achado),
+`packages/cli/src/commands/tokens/index.ts` (roteador puro de
+subcomando `add/remove/ls`, delega toda lógica real pros módulos já
+lidos em rodadas anteriores — sem achado). `deep-read-log.json`
+atualizado (`vercel/vercel` agora com 87 arquivos lidos nesta missão).
+Restam ~10 arquivos não lidos nas keywords de prioridade (majoritariamente
+`telemetry/commands/*` — apenas schemas de evento, baixa prioridade — e
+tipos/erros pequenos de `oidc`).
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy, reconfirmado com `curl` direto) — os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar, sem mudança em
+relação às rodadas anteriores.
