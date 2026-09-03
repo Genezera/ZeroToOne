@@ -25,7 +25,7 @@ const SUBMITTED_OR_LATER = new Set(['submitted', 'triaged', 'duplicate', 'inform
  *   todo outcome terminal -- triaged/duplicate/informative/rejected/
  *   paid/resolved já SÃO um relatório submetido, só com resultado sabido).
  */
-export function computeFindingDimensions(finding, { impactAssessment = null, duplicateCheck = null } = {}) {
+export function computeFindingDimensions(finding, { impactAssessment = null, duplicateCheck = null, submission = null } = {}) {
   const technicalValidity = impactAssessment?.technicalValidity ?? null;
 
   let securityImpact = null;
@@ -38,8 +38,17 @@ export function computeFindingDimensions(finding, { impactAssessment = null, dup
     novelty = duplicateCheck.foundExisting ? 'public_match' : (duplicateCheck.noveltyStatus || null);
   }
 
+  // Achado real (03/09/2026, ao rodar isto contra os achados de Vercel):
+  // Vercel::next.js::ssrf_redirect_allowlist_bypass_risk JÁ tem uma
+  // submission real vinculada (HackerOne:3988959, duplicate) mas o
+  // `state` do finding em si nunca avançou de corroborated_static --
+  // sem checar `submission` aqui, submissionState mentia "not_planned"
+  // pra algo que já foi enviado e já voltou. `submission` (de
+  // latestSubmissionForFinding) é a fonte de verdade mais forte quando
+  // existe -- prevalece sobre o que `state` diz sozinho.
   let submissionState = 'not_planned';
-  if (finding?.state === 'human_ready') submissionState = 'ready';
+  if (submission) submissionState = 'submitted';
+  else if (finding?.state === 'human_ready') submissionState = 'ready';
   else if (SUBMITTED_OR_LATER.has(finding?.state)) submissionState = 'submitted';
 
   return { technicalValidity, securityImpact, novelty, submissionState };

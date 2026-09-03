@@ -36,6 +36,14 @@ test('submissionState: not_planned antes de human_ready, ready em human_ready, s
   assert.equal(computeFindingDimensions({ state: 'paid' }).submissionState, 'submitted');
 });
 
+test('achado real (03/09/2026): submission vinculada prevalece sobre state ainda em corroborated_static -- caso real vercel/next.js #3988959', () => {
+  const d = computeFindingDimensions(
+    { state: 'corroborated_static' },
+    { submission: { id: 'HackerOne:3988959', state: 'duplicate' } },
+  );
+  assert.equal(d.submissionState, 'submitted', 'não deveria dizer not_planned pra algo que já foi enviado e já voltou duplicate');
+});
+
 test('caso real Kiwi.com: technicalValidity confirmed + securityImpact none coexistindo com submissionState submitted -- exatamente o par que o state único escondia', () => {
   const d = computeFindingDimensions(
     { state: 'duplicate' },

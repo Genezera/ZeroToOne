@@ -1,4 +1,4 @@
-import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, recordSubmission } from './db.mjs';
+import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, recordSubmission, latestSubmissionForFinding } from './db.mjs';
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
@@ -216,7 +216,8 @@ export function cmdGetFinding(db, id) {
   if (!finding) return null;
   const impactAssessment = latestImpactAssessment(db, id);
   const duplicateCheck = latestDuplicateCheck(db, id);
-  return { ...finding, dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck }) };
+  const submission = latestSubmissionForFinding(db, id);
+  return { ...finding, dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck, submission }) };
 }
 
 /** `ownerRepo` no formato "owner/repo". Chamada de rede real, de propósito
@@ -261,6 +262,7 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now() } = {}) {
   const report = latestReport(db, id);
   const impactAssessment = latestImpactAssessment(db, id);
   const duplicateCheck = latestDuplicateCheck(db, id);
+  const submission = latestSubmissionForFinding(db, id);
   const submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db));
   const history = duplicateHistoryForFinding(finding, submissions);
   const readiness = submissionReadinessGate(finding, {
@@ -271,7 +273,7 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now() } = {}) {
     findingId: id,
     state: finding.state,
     semanticFingerprint: finding.semanticFingerprint,
-    dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck }),
+    dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck, submission }),
     ready: readiness.ok,
     reason: readiness.reason,
     evidence: { report, impactAssessment, duplicateCheck },
