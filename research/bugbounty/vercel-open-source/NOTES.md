@@ -5579,3 +5579,51 @@ de confidence funcionando corretamente) -- achado fica travado em
 
 `deep-read-log.json` atualizado (`vercel/chat` +3 arquivos, agora 20 no
 total).
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero, igual às rodadas anteriores:
+`Circle BBP` e `Block Open Source` seguem excluídos, nenhum repo tocado.
+`list-pending` global trouxe 91 candidatos, mas todos de `Slack`/`Mattermost
+Public Bug Bounty Engagement` — dois programas fora dos "4 programas"
+descritos no prompt desta rotina, promovidos automaticamente pelo pipeline
+de descoberta sem revisão de RoE (ver `slack/NOTES.md`,
+`mattermost/NOTES.md` e a nova entrada `roeReviewNeeded` em
+`program-policy.json`). Triados mesmo assim (91 falsos positivos
+confirmados por leitura real de código), já que list-pending não filtra por
+programa e a tarefa não instruiu a ignorá-los -- mas isso expôs a lacuna de
+RoE documentada nos arquivos citados, digna de nota pro usuário. O achado
+novo em `vercel/chat` da rodada anterior (`ai_deep_read_finding`, CWE-208)
+segue intocado em `corroborated_static`, sem mudança.
+
+Leitura profunda proativa em Vercel Open Source: `deep-read-log.json` já
+cobria StackingDAO 100% e a maior parte dos caminhos sensíveis de
+`vercel/vercel`/`vercel/flags`/`vercel-labs/*`. Clone raso (blobless,
+sparse-checkout) de `vercel/vercel` comparado contra o log — sobraram só 10
+candidatos com auth/session/crypto/token/login/password/admin/permission/
+access no nome, a maioria exemplos Hydrogen/eval fixtures de baixo valor.
+3 escolhidos:
+
+- `packages/cli/src/util/telemetry/commands/tokens/index.ts` +
+  `packages/cli/src/commands/tokens/index.ts` (chamador): telemetria do
+  subcomando `tokens` (add/remove/list) manda só `subcommandOriginal` (o
+  alias digitado, ex. "add"/"create"/"rm") pra telemetria, nunca o valor do
+  token. Sem achado.
+- `packages/cli/src/commands/tokens/add.ts` (completo): token novo é
+  impresso localmente no terminal do próprio usuário
+  (`output.log(result.bearerToken)`) -- UX esperado de CLI que cria
+  credencial (mesmo padrão de `gh auth token`/AWS CLI), não é enviado a
+  telemetria nem a terceiros. `getSanitizedRerunCommand` usa
+  `stripSensitiveAuthArgs` antes de sugerir um comando de re-execução.
+  Sem achado.
+- `packages/cli/evals/setup/auth-and-config.ts`: escreve `VERCEL_TOKEN` em
+  arquivos de config/`.bashrc`/`.profile` dentro do sandbox de eval via
+  `bash -c` com interpolação de string -- mas usa `shellEscape` correto
+  (troca `'` por `'\''`, escaping padrão de shell single-quote) antes de
+  interpolar. Testei a lógica de escaping manualmente: sem injeção de
+  shell. É harness de teste (eval), não código de produção, e o token vem
+  de env do próprio operador do CI, não de terceiro não confiável. Sem
+  achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/vercel` +3 arquivos, agora 101 no total).

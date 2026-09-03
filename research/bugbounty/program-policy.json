@@ -8,5 +8,15 @@
     "blocked": true,
     "reason": "Instrução direta e repetida do usuário (02/09/2026): \"saia da circle bbp\" durante o pivô pra busca multi-programa, depois \"não quero nada da circle\" -- sem exceção nem para housekeeping de achados já concluídos. Não é restrição de RoE do programa; é escolha do usuário depois de esgotar o ângulo investigativo principal (compliance/denylist no CCTP, 4 chains). Reverter só mediante pedido explícito do usuário.",
     "flaggedAt": "2026-09-02"
+  },
+  "Slack": {
+    "roeReviewNeeded": true,
+    "reason": "ADVERTÊNCIA, não bloqueio: campo informativo, não lido por getBlockReason() -- não impede nada no pipeline sozinho. Programa promovido automaticamente pro scanner ativo pelo pipeline de descoberta (targets-auto-promoted-log.json, ver commit 83dce7a) SEM nunca passar por revisão de RoE quanto a proibição de pesquisa assistida por IA, ao contrário de Block Open Source (que só foi corretamente flagado como aiResearchBanned depois de alguém ler a RoE da Bugcrowd de verdade). Nesta rodada (2026-09-03) 86 achados semgrep_use_of_unsafe_block de slackhq/nebula foram lidos e triados (todos refutados como falso positivo, leitura de código genuína -- ver reasoning de cada finding) ANTES de checar se o programa Slack no HackerOne permite ferramentas de IA na pesquisa. Nenhum relatório foi escrito nem enviado (check-scope já bloqueia scope_verified por falta de scope snapshot), mas a pesquisa em si (clone + leitura de 14 arquivos) já aconteceu -- mesma lacuna documentada no comentário de topo de program-policy.mjs (\"isso não IMPEDE a pesquisa em si... só impede o achado de avançar no pipeline\"). Ação recomendada pro usuário: checar a RoE real do programa Slack no HackerOne antes de qualquer nova rodada de pesquisa aqui; se proibir IA, promover este campo pra aiResearchBanned:true.",
+    "flaggedAt": "2026-09-03"
+  },
+  "Mattermost Public Bug Bounty Engagement ": {
+    "roeReviewNeeded": true,
+    "reason": "Mesma lacuna do registro 'Slack' acima: promovido automaticamente pelo pipeline de descoberta (targets-auto-promoted-log.json) sem revisão de RoE da Bugcrowd quanto a pesquisa assistida por IA. Nesta rodada (2026-09-03), 5 achados (3x MD5 fraco, 2x var-in-script-tag) de mattermost/mattermost-plugin-jira foram lidos e triados como falso positivo antes de checar a RoE. Campo informativo, não bloqueia nada sozinho. Ação recomendada: checar a RoE real do engagement 'mattermost-mbb-public' no Bugcrowd; se proibir IA, promover pra aiResearchBanned:true.",
+    "flaggedAt": "2026-09-03"
   }
 }
