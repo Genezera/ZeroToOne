@@ -4023,3 +4023,139 @@ Fila Vercel Open Source: 0 `candidate` fora dos 77
 `known_vulnerable_dependency` (ainda bloqueados por `api.osv.dev`
 inacessível nesta sessão -- confirmado 403 de novo, mesma política
 de egress).
+
+## Rodada 2026-09-03 (sessão cloud — bug real de drift na migração + triagem completa dos 81 `known_vulnerable_dependency`)
+
+### Bug de infraestrutura corrigido: `migrate-to-v2.mjs` perdia veredito quando a fila regredia até "candidate"
+
+Antes de tocar em qualquer achado, `list-pending` global trouxe de volta
+36 achados deste programa (`semgrep_detect_child_process`/`sha1`/
+`subprocess_shell_true`/`exec_detected`/`httpsconnection`) que **rodadas
+anteriores já tinham triado por completo** (ver seção acima, sessão
+02/09 — `mcp.ts::line:345`/`347`/`349` `corroborated_static`, o resto
+`false_positive`). Investigação (`ledger/ledger.research.jsonl` tem o
+histórico real e correto para todos os 36) revelou a causa raiz em
+`migrate-to-v2.mjs::migrateEntry`: a checagem de drift contra o ledger
+(`deriveStatesFromLedger`, adicionada numa rodada anterior exatamente
+pra esse tipo de corrida) só disparava quando a linha bruta de
+`queue.jsonl` trazia `state` diferente de `"candidate"` — se uma
+re-ingestão de scanner (Semgrep rodando de novo sobre o mesmo repo)
+recriava a linha do mesmo `exactFingerprint` com `state:"candidate"`
+EXPLÍCITO (não "sem campo `state`", que já era coberto), a migração
+tratava como achado nunca visto e nunca consultava o ledger — voltando
+achados já `corroborated_static`/`false_positive` pra `candidate` de
+novo, silenciosamente. Rodando a migração ANTES do fix: `driftCorrected:
+0`. Depois do fix (`migrate-to-v2.mjs` agora consulta `ledgerStates`
+sempre, independente de `entry.state`): `driftCorrected: 152` no
+sistema inteiro (não só Vercel) — `candidate` caiu de 394 pra 242 na
+mesma migração. Adicionado teste de regressão real
+(`test/migrate-to-v2.test.mjs`, reproduz o cenário exato de
+`mcp.ts::line:345`) + suite completa (`node --test test/*.mjs`) rodada
+antes e depois do fix pra confirmar zero regressão (mesmos 8 fails
+pré-existentes nos dois casos, todos por ferramenta externa ausente no
+sandbox — osv-scanner/semgrep/slither/CLI real — não relacionados a
+este fix). Isso quer dizer que rodadas anteriores desperdiçaram esforço
+real re-investigando achados já fechados repetidas vezes (ver as várias
+"reconciliações" já documentadas neste mesmo NOTES) — o bug provavelmente
+afetou outros programas também, não só este.
+
+### Triagem completa dos 81 `known_vulnerable_dependency` (todos os que restavam candidate)
+
+`api.osv.dev` continuava bloqueado nesta sessão (confirmado de novo),
+mas isso não impede a análise: o CVE/GHSA já vinha embutido no
+`reasoning` de cada achado desde a descoberta original (rodada do
+OSV-Scanner local, que não depende de rede nesta sessão) — o que falta
+é só a análise de ALCANÇABILIDADE, que é trabalho de leitura de código,
+não de rede. Clonados `vercel/vercel`, `vercel/flags`,
+`vercel-labs/skills` (`check-scope` confirmou os 3 em escopo, tier 1,
+`maxSeverity=critical`). Metodologia: parser Python do YAML real de
+cada `pnpm-lock.yaml` (`importers` + `snapshots`), BFS a partir só das
+arestas `dependencies`/`optionalDependencies` (nunca `devDependencies`)
+de cada workspace, pra provar reachability real em produção (não só
+presença no manifesto) — mesma disciplina já estabelecida em
+`research/bugbounty/okg/NOTES.md`.
+
+**56 → `false_positive`** (26 comprovadamente dev-only-em-todo-lugar via
+BFS; 4 `tar-fs`/`tar` com função vulnerável de fato nunca chamada —
+`.extract()` nunca invocado, só `.pack()`, confirmado lendo
+`archive.ts`/`build.ts`; 9 do lockfile próprio de `packages/config`
+— prod deps reais são só `pretty-cache-header`+`zod`; 11 de
+`scripts/internal-dependency-trace` + 2 de `scripts/node_bench` —
+`"private":true`, ferramentas internas nunca expostas; 2 dev-only em
+`vercel-labs/skills`/`vercel/flags`; 1 `click@8.3.1` vendorizado em
+`_vendor/` do runtime Python, só usado pelo dev-server local, `edit()`
+não se aplica a execução serverless não-interativa em produção).
+
+**14 → `inconclusive`** (alcançabilidade real ambígua por causa de
+resolução de peer-dependency do pnpm — `sharp`/`browserslist`/`postcss`/
+`nanoid`x2/`fast-uri`/`path-to-regexp@6.2.1` só chegam em
+`packages/client` via `@vercel/microfrontends`, que declara `next` como
+peer dependency; o pacote é publicado fora deste repo e não foi clonado
+pra confirmar uso real — mesma leitura vale pra `sharp`/`browserslist`/
+`fast-uri`/`image-size` em `apps/docs`/`examples/*`/`tests/*` de
+`vercel/flags`, nenhum deles no SDK publicado de fato; `fast-xml-parser`+
+`uuid` via AWS SDK dentro de `oidc-aws-credentials-provider` — leitura
+proativa desta rodada de `aws-credentials-provider.ts` confirma que o
+pacote só chama `fromWebToken` da AWS oficial contra STS real, reforça
+a leitura de "provavelmente FP" mas não fechei o call site exato dentro
+do SDK da AWS pra confirmar). Documentado honestamente como incerteza
+real, não forçado pra nenhum dos dois lados.
+
+**9 → `corroborated_static`** com ressalva de modelo de ameaça mais
+fraco (`js-yaml`x3 + `minimatch`x3 + `brace-expansion`x3): todos exigem
+que o PADRÃO/conteúdo YAML seja autorado pelo desenvolvedor do próprio
+projeto sendo importado/buildado (`vercel.json` builds/functions,
+`.vercelignore`, `pnpm-workspace.yaml`, manifesto Python) — real, mas
+ou auto-DoS do próprio deployment ou, no máximo, PR malicioso de
+contribuidor externo limitado ao sandbox daquele build único.
+
+**2 achados novos e mais sérios, ambos `corroborated_static`
+(sem validador local pra ReDoS/stack-overflow-DoS de JS neste
+sistema, então ficam presos nesse estado — mesma limitação estrutural
+já documentada pros achados não-Solidity):**
+
+1. **`path-to-regexp@6.1.0` (GHSA-9wv6-86v2-598j, ReDoS,
+   severidade 7.7) — o mais significativo desta rodada.** Cadeia
+   confirmada em `packages/node/src/utils.ts` e
+   `packages/routing-utils/src/superstatic.ts`: a própria Vercel já
+   tem um `path-to-regexp-updated` (versão corrigida) instalado EM
+   PARALELO só pra log/comparação (comentário do código cita um ticket
+   interno, linear.app/vercel/issue/ZERO-3067) — mas o regex que
+   REALMENTE é usado (`return currentRegExp`) ainda vem da versão
+   vulnerável. Esse regex vira `routes[].src` no Build Output API
+   (Middleware `config.matcher` E `vercel.json` rewrites/redirects/
+   headers `source`) — exatamente o campo que a camada de roteamento
+   de PRODUÇÃO da Vercel usa pra casar o path de CADA requisição HTTP
+   recebida. Ou seja: path de requisição (controlado por qualquer
+   visitante anônimo) é testado contra um regex construído pela lib
+   vulnerável, pra QUALQUER deployment que use Middleware com matcher
+   ou rewrites/redirects — mesma classe que já gerou CVE pro
+   Express.js usando esta mesma lib. Vercel já está ciente
+   internamente (o ticket linear), mas a versão vulnerável ainda é a
+   que roda de fato.
+2. **`tar@7.5.20` em `vercel-labs/skills` (GHSA-r292-9mhp-454m,
+   recursão descontrolada em mapHas/filesFilter via opção `filter`,
+   stack-overflow DoS incapturável).** `download-source.ts::extractTar`
+   chama `tar.x({filter: ...})` — exatamente a opção que o advisory
+   aponta como vetor — sobre um tarball baixado de uma URL que vem
+   direto do argumento de linha de comando do usuário (`skills add
+   <url>`). Mesmo padrão de ataque de supply-chain via CLI (alguém
+   convence a vítima a rodar `skills add <url-maliciosa>`, similar a
+   golpes com `npx`). O código já tem proteção própria contra path
+   traversal (`isPathSafe`/`validateArchivePath`) mas nada mitiga
+   especificamente a recursão descontrolada do advisory.
+
+Leitura profunda proativa desta rodada (3 arquivos, prioridade
+auth/token/credential):
+`packages/oidc-aws-credentials-provider/src/aws-credentials-provider.ts`
+(confirma uso legítimo de `fromWebToken` contra STS real, sem achado —
+reforça mas não fecha o "inconclusive" de fast-xml-parser/uuid acima),
+`packages/cli/src/util/input/vercel-auth.ts` (prompt interativo trivial,
+sem achado), `packages/cli/src/commands/connex/revoke-tokens.ts`
+(constrói request de revogação de token pro servidor da Vercel;
+autorização real acontece server-side, fora deste repo — sem achado
+auditável no lado cliente). `deep-read-log.json` atualizado.
+
+Fila Vercel Open Source: **0 `candidate`** ao final desta rodada (era
+117 no início, contando os 36 restaurados incorretamente pra
+`candidate` pelo bug de migração).

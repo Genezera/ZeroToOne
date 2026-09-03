@@ -122,17 +122,26 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   // manual local duplicar antes do primeiro export-queue. Os dois casos
   // já aconteceram de verdade nesta sessão enquanto eu testava — por
   // isso as duas checagens, não uma só.
-  if (entry.state && entry.state !== 'candidate') {
-    // O ledger é a fonte de verdade (append-only, nunca sofre a corrida
-    // de exportação entre ambientes efêmeros concorrentes — ver
-    // deriveStatesFromLedger). Se ele registra uma transição pra este id
-    // diferente do que a linha da fila diz, o ledger vence: a linha da
-    // fila pode ser um `state` mais velho que sobrescreveu por cima de
-    // um mais novo numa corrida real de export (já aconteceu nesta
-    // missão — Vercel SSO voltou de inconclusive pra corroborated_static
-    // silenciosamente).
-    const ledgerTruth = ledgerStates.get(entry.id);
-    const driftDetected = ledgerTruth && ledgerTruth.state !== entry.state;
+  // O ledger é a fonte de verdade (append-only, nunca sofre a corrida de
+  // exportação entre ambientes efêmeros concorrentes — ver
+  // deriveStatesFromLedger). Consultado ANTES de olhar `entry.state`: uma
+  // re-ingestão de scanner (ex.: um novo scan do Semgrep/Slither sobre o
+  // mesmo repo) pode recriar a linha bruta de um id já triado com
+  // `state:"candidate"` explícito (não só "sem campo `state`" — o caso
+  // que a checagem original cobria), apagando visivelmente o rótulo mais
+  // avançado sem nunca ter tocado o ledger real. Se a checagem de drift
+  // só disparasse quando `entry.state !== 'candidate'`, esse retorno a
+  // "candidate" passava batido (confirmado ao vivo: `mcp.ts::line:345`
+  // voltou pra `candidate` na fila depois de já estar `corroborated_static`
+  // no ledger desde 02/09, e a migração não corrigiu — `driftCorrected`
+  // saiu 0 na rodada). Por isso o lookup e o `driftDetected` valem pra
+  // QUALQUER `entry.state` (incluindo ausente ou "candidate"), não só pro
+  // caso "tinha algo, virou outra coisa".
+  const ledgerTruth = ledgerStates.get(entry.id);
+  const rawState = entry.state || 'candidate';
+  const driftDetected = !!(ledgerTruth && ledgerTruth.state !== rawState);
+
+  if ((entry.state && entry.state !== 'candidate') || driftDetected) {
     const finalState = driftDetected ? ledgerTruth.state : entry.state;
 
     upsertFinding(db, {
@@ -148,7 +157,7 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
     if (driftDetected) {
       log.steps.push({
         to: finalState, ok: true,
-        reason: `DRIFT CORRIGIDO: fila trazia "${entry.state}", ledger registra "${ledgerTruth.state}" (${ledgerTruth.ts}) — ledger prevaleceu`,
+        reason: `DRIFT CORRIGIDO: fila trazia "${rawState}", ledger registra "${ledgerTruth.state}" (${ledgerTruth.ts}) — ledger prevaleceu`,
       });
     } else {
       log.steps.push({ to: entry.state, ok: true, reason: 'linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado' });

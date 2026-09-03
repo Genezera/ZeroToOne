@@ -6,7 +6,7 @@ import path from 'node:path';
 import {
   openDb, getFinding, exportFindingsToQueueLines, closeDb,
   recordPlatformOutcome, latestPlatformOutcome, recordDeploymentEvidence, latestDeploymentEvidence,
-  recordValidation, listValidations, recordReport, latestReport,
+  recordValidation, listValidations, recordReport, latestReport, recordTransition,
 } from '../db.mjs';
 import { migrateEntry } from '../migrate-to-v2.mjs';
 import { buildScopeSnapshot } from '../scope-registry.mjs';
@@ -167,6 +167,41 @@ test('migrateAll (via migrateEntry + deriveStatesFromLedger): uma linha de fila 
     const log = migrateEntry(db, staleLine, { scopeSnapshots: {}, ledgerStates });
     assert.equal(log.finalState, 'false_positive', 'o ledger deveria vencer sobre o state desatualizado da linha');
     assert.equal(getFinding(db, 'x::drift2').state, 'false_positive');
+    assert.ok(log.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO')), 'deveria registrar explicitamente que corrigiu um drift');
+    closeDb(db);
+  });
+});
+
+test('migrateEntry: linha de fila resetada pra "candidate" explícito (re-ingestão de scanner) também é corrigida pelo ledger — reprodução exata do bug real pego nesta sessão (Vercel mcp.ts::line:345, driftCorrected saiu 0 numa migração real)', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    // Estabelece o achado como candidate e transiciona de verdade pra
+    // corroborated_static — grava no ledger real (dir temporário do teste).
+    migrateEntry(db, {
+      id: 'x::reset-to-candidate', program: 'Vercel Open Source', platform: 'HackerOne', type: 'semgrep_detect_child_process', language: 'ts',
+      file: 'vercel/vercel/x.ts', filesRead: ['vercel/vercel/x.ts'], reasoning: 'fonte/sink confirmado em código real',
+    }, { scopeSnapshots: {} });
+    const step = recordTransition(db, 'x::reset-to-candidate', 'corroborated_static', {
+      actor: 'test', context: { filesRead: ['vercel/vercel/x.ts'] },
+    });
+    assert.ok(step.ok, step.reason);
+    assert.equal(getFinding(db, 'x::reset-to-candidate').state, 'corroborated_static');
+
+    const ledgerStates = deriveStatesFromLedger(readLedger('research'));
+    assert.equal(ledgerStates.get('x::reset-to-candidate').state, 'corroborated_static');
+
+    // Simula uma re-ingestão de scanner: uma rodada nova do Semgrep sobre
+    // o mesmo repo recria a linha bruta deste id com `state:"candidate"`
+    // EXPLÍCITO (não "sem campo state" — esse é o caso que a checagem
+    // original de drift já cobria). O ledger nunca viu essa "regressão"
+    // porque nada transicionou de verdade; só a linha exportada mudou.
+    const rescannedLine = {
+      id: 'x::reset-to-candidate', program: 'Vercel Open Source', platform: 'HackerOne', type: 'semgrep_detect_child_process', language: 'ts',
+      file: 'vercel/vercel/x.ts', state: 'candidate', reasoning: 'Semgrep (...): descrição genérica de novo, sem o reasoning da investigação anterior',
+    };
+    const log = migrateEntry(db, rescannedLine, { scopeSnapshots: {}, ledgerStates });
+    assert.equal(log.finalState, 'corroborated_static', 'o ledger deveria vencer mesmo quando a fila regrediu até o estado inicial "candidate"');
+    assert.equal(getFinding(db, 'x::reset-to-candidate').state, 'corroborated_static');
     assert.ok(log.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO')), 'deveria registrar explicitamente que corrigiu um drift');
     closeDb(db);
   });

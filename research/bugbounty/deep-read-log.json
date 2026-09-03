@@ -884,7 +884,10 @@
     "packages/cli/src/commands/blob/signed-token.ts",
     "packages/cli/src/util/domains/get-auth-code.ts",
     "packages/cli/src/commands/mcp/mcp.ts",
-    "packages/cli/src/util/projects/link.ts"
+    "packages/cli/src/util/projects/link.ts",
+    "packages/oidc-aws-credentials-provider/src/aws-credentials-provider.ts",
+    "packages/cli/src/util/input/vercel-auth.ts",
+    "packages/cli/src/commands/connex/revoke-tokens.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",

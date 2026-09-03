@@ -583,3 +583,13 @@ direcionada a `vercel/eve` (ver NOTES.md de Vercel Open Source, sem
 achado) — sem arquivo novo candidato em StackingDAO, os 15 contratos
 Clarity seguem 100% cobertos. Nenhum achado, nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-03 (sessão cloud — corrigido bug de drift na migração v1→v2, ver NOTES.md de Vercel Open Source para detalhes técnicos)
+
+`list-pending` deste programa = 0 antes e depois da correção do bug de
+migração (StackingDAO nunca teve achado revertido incorretamente pra
+`candidate` — os 15 contratos Clarity seguem 100% cobertos, sem
+achado histórico neste programa pra sofrer o drift). Leitura profunda
+proativa desta rodada direcionada a `vercel/vercel` (auth/token/
+credential, ver NOTES.md de Vercel Open Source). Nenhum achado,
+nenhuma transição de estado neste programa.
