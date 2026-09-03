@@ -858,7 +858,10 @@
     "crates/turborepo-api-client/src/lib.rs",
     "crates/turborepo-config/src/lib.rs",
     "crates/turborepo-config/src/turbo_json.rs",
-    "crates/turborepo-lib/src/commands/login/mod.rs"
+    "crates/turborepo-lib/src/commands/login/mod.rs",
+    "crates/turborepo-vercel-api/src/token.rs (só tipos serde, sem lógica)",
+    "crates/turborepo-lib/src/commands/login/manual.rs (login_manual: token via dialoguer::Password mascarado, valida cache access antes de gravar)",
+    "crates/turborepo-lib/src/run/task_access.rs (heurística de cache local, não é fronteira de confiança remota)"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",

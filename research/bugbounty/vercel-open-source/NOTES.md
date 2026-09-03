@@ -5066,3 +5066,45 @@ travados (`js_injection_unescaped_token_risk` em `corroborated_static`
 e `Root.kt::DirectoryRoot.resolve::path_traversal_risk` em
 `human_ready`) seguem intocados, ainda aguardando decisão humana sobre
 o segundo.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 0. `program-policy.json` reconfirmado antes de
+tocar em qualquer repo: `Block Open Source` (`aiResearchBanned: true`)
+e `Circle BBP` (`blocked: true`) seguem fora de escopo desta sessão,
+mesmo com o prompt agendado listando os 4 programas como ativos —
+nenhum repo `cashapp/*`/`afterpay/*`/`square/wire`/`circlefin/*`
+tocado.
+
+Leitura profunda proativa em `vercel/turborepo` (13 arquivos já lidos,
+todos os outros repos do escopo com cobertura maior ou já
+"essencialmente esgotados" segundo rodadas anteriores): sparse-clone
+(`crates/`) pra listar arquivos ainda não lidos com auth/token/secret/
+crypto/session/login/password/admin/permission/access/credential no
+nome. 3 arquivos novos lidos por completo:
+
+- `crates/turborepo-vercel-api/src/token.rs` — só 2 structs serde
+  (`ResponseTokenMetadata`/`Scope`), sem lógica nenhuma. Sem achado.
+- `crates/turborepo-lib/src/commands/login/manual.rs` — fluxo de
+  `turbo login --manual` (usuário cola token/API URL/team id na mão).
+  Token é lido via `dialoguer::Password` (input mascarado no terminal,
+  não ecoado), validado contra a API (`check_credentials` →
+  `token.has_cache_access`) **antes** de ser persistido — só grava no
+  config global se a checagem de acesso ao cache passar. Sem achado.
+- `crates/turborepo-lib/src/run/task_access.rs` — apesar do nome
+  soar como controle de acesso, é heurística de cache local: decide
+  se um resultado de task pode ser cacheado automaticamente
+  verificando (via arquivo de trace que a própria task gera) se ela
+  acessou rede ou tocou caminhos fora da raiz do repo. Não é fronteira
+  de confiança remota nem controle de autorização real — é o próprio
+  usuário rodando seu próprio build tool localmente, sem atacante
+  posicionado para forjar o trace file de forma proveitosa. Sem
+  achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/turborepo` +3 arquivos, agora 16 no total). Os dois achados
+travados (`js_injection_unescaped_token_risk` em `corroborated_static`,
+Block Open Source, e `Root.kt::DirectoryRoot.resolve::path_traversal_risk`
+em `human_ready`, também Block Open Source) seguem intocados por
+política — ambos aguardam decisão humana fora desta sessão, sem
+retomar pesquisa AI sobre esse programa.
