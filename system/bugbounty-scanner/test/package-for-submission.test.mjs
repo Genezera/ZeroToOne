@@ -46,6 +46,20 @@ test('buildReadmeContent avisa honestamente quando não há screenshot nenhum', 
   assert.match(content, /no screenshots folder found/);
 });
 
+test('buildReadmeContent avisa que falta zip quando nenhum foi detectado', () => {
+  const finding = { id: 'X::y::z', program: 'Kubernetes', platform: 'HackerOne', state: 'human_ready' };
+  const content = buildReadmeContent(finding, 'report.md', []);
+  assert.match(content, /- \[ \] Check whether a PoC archive/);
+});
+
+test('buildReadmeContent marca o checklist do zip como feito quando um zip é detectado', () => {
+  const finding = { id: 'X::y::z', program: 'Kubernetes', platform: 'HackerOne', state: 'human_ready' };
+  const content = buildReadmeContent(finding, 'report.md', [], ['poc.zip']);
+  assert.match(content, /- \[x\] PoC archive present: `poc\.zip`/);
+  assert.match(content, /`poc\.zip` — PoC archive, already in this folder/);
+  assert.doesNotMatch(content, /- \[ \] Check whether a PoC archive/);
+});
+
 test('packageFinding recusa achado ausente', () => {
   const result = packageFinding(null, { path: 'x.md' });
   assert.equal(result.ok, false);
@@ -111,4 +125,44 @@ test('packageFinding copia os screenshots junto quando a pasta existe', () => {
   const destDir = path.join(readyDir, 'outro-achado');
   const files = readdirSync(destDir).sort();
   assert.deepEqual(files, ['01-fonte.png', '02-run.png', 'README.md', 'outro-achado.md']);
+});
+
+test('packageFinding detecta um zip colocado manualmente na pasta e atualiza o checklist do README na próxima chamada -- regressão real (03/09/2026)', () => {
+  // Acontecido de verdade: zip colocado à mão na pasta depois de rodar
+  // packageFinding uma vez, relatório revisado, packageFinding rodado
+  // de novo pra atualizar o relatório -- o README sobrescrito voltava a
+  // dizer "nenhum zip foi colocado aqui" mesmo com o zip bem ali do
+  // lado, porque nada olhava o que já existia na pasta antes de
+  // reescrever. Este teste reproduz exatamente essa sequência.
+  const repoRoot = mkdtempSync(path.join(tmpdir(), 'pkg-test-'));
+  const readyDir = path.join(repoRoot, 'ready');
+  const screenshotsBase = path.join(repoRoot, 'screenshots');
+  mkdirSync(path.join(repoRoot, 'reports'), { recursive: true });
+  writeFileSync(path.join(repoRoot, 'reports', 'achado-zip.md'), '# v1', 'utf8');
+
+  const finding = { id: 'Programa::z::fn::tipo', program: 'Programa', platform: 'HackerOne', state: 'human_ready' };
+  const report = { path: 'reports/achado-zip.md' };
+
+  // 1ª chamada: sem zip nenhum ainda.
+  const first = packageFinding(finding, report, { readyDir, screenshotsBase, repoRoot });
+  assert.equal(first.ok, true);
+  assert.deepEqual(first.zipFileNames, []);
+  let readme = readFileSync(path.join(first.destDir, 'README.md'), 'utf8');
+  assert.match(readme, /- \[ \] Check whether a PoC archive/);
+
+  // Usuário coloca o zip à mão na pasta (fora do fluxo do script).
+  writeFileSync(path.join(first.destDir, 'poc.zip'), 'fake-zip-bytes', 'utf8');
+
+  // Relatório é revisado, packageFinding roda de novo pra atualizar.
+  writeFileSync(path.join(repoRoot, 'reports', 'achado-zip.md'), '# v2 revisado', 'utf8');
+  const second = packageFinding(finding, report, { readyDir, screenshotsBase, repoRoot });
+  assert.equal(second.ok, true);
+  assert.deepEqual(second.zipFileNames, ['poc.zip']);
+  readme = readFileSync(path.join(second.destDir, 'README.md'), 'utf8');
+  assert.match(readme, /- \[x\] PoC archive present: `poc\.zip`/);
+  assert.doesNotMatch(readme, /- \[ \] Check whether a PoC archive/);
+  // O relatório em si também foi atualizado, não só o README.
+  assert.equal(readFileSync(path.join(second.destDir, 'achado-zip.md'), 'utf8'), '# v2 revisado');
+  // O zip continua lá -- packageFinding nunca mexe em .zip, só lê.
+  assert.equal(existsSync(path.join(second.destDir, 'poc.zip')), true);
 });

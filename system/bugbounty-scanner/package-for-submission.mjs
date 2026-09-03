@@ -18,6 +18,15 @@
 // adivinhar um caminho por convenção arriscaria copiar o arquivo errado
 // silenciosamente. O checklist gerado aponta isso explicitamente em vez
 // de fingir que cobriu algo que não cobriu.
+//
+// MAS detecta um zip já colocado manualmente na pasta de destino antes
+// de reescrever o README -- achado real (03/09/2026): coloquei um zip
+// à mão na pasta do achado kiwicom, rodei este script de novo depois
+// (pra atualizar o relatório), e o README sobrescrito voltou a dizer
+// "nenhum zip foi colocado aqui" mesmo com o zip bem ali do lado --
+// porque o script sempre reescreve o README do zero e nunca olhava o
+// que já existia na pasta. Sem essa checagem, todo re-empacotamento
+// depois de colocar um zip manualmente regride a mensagem.
 
 import { existsSync, mkdirSync, copyFileSync, readdirSync, writeFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -59,7 +68,7 @@ export function findScreenshotsDir(reportPath, screenshotsBase = DEFAULT_SCREENS
  * já copiados + se existe pasta de screenshot), nunca faz I/O sozinha.
  * Checklist é deliberadamente honesto sobre o que este script NÃO fez
  * (não inventa confiança, mesmo princípio de evidence-grade.mjs). */
-export function buildReadmeContent(finding, reportFileName, screenshotFileNames = []) {
+export function buildReadmeContent(finding, reportFileName, screenshotFileNames = [], zipFileNames = []) {
   const lines = [
     `# Ready to submit: ${finding.program}`,
     '',
@@ -74,10 +83,13 @@ export function buildReadmeContent(finding, reportFileName, screenshotFileNames 
     screenshotFileNames.length > 0
       ? screenshotFileNames.map((f) => `- \`${f}\` — screenshot.`).join('\n')
       : '- (no screenshots folder found for this finding — check whether this finding needs one before submitting.)',
+    zipFileNames.length > 0 ? zipFileNames.map((f) => `- \`${f}\` — PoC archive, already in this folder.`).join('\n') : null,
     '',
     `## Before you submit — checklist`,
     `- [ ] Read the report once more, end to end.`,
-    `- [ ] Check whether a PoC archive (.zip) exists for this finding — this folder was NOT populated with one automatically (no tracked path for it yet). Search this session's earlier messages or \`E:\\dev-toolchains\\poc-repos\\\` for a matching folder/zip.`,
+    zipFileNames.length > 0
+      ? `- [x] PoC archive present: ${zipFileNames.map((f) => `\`${f}\``).join(', ')} (detected in this folder — re-verify it still matches the current report if the report changed since the archive was built).`
+      : `- [ ] Check whether a PoC archive (.zip) exists for this finding — none is in this folder yet (no tracked path for it). Search this session's earlier messages or \`E:\\dev-toolchains\\poc-repos\\\` for a matching folder/zip, and place it directly in this folder so it travels with everything else.`,
     `- [ ] Confirm the exact form fields with Claude if this program's submission form hasn't been mapped out yet (asset name, weakness/CWE, severity approach, and any program-specific template fields — these vary a lot between programs, always worth a final check).`,
     `- [ ] After submitting, tell Claude the report number so the outcome gets recorded in the pipeline (\`record-platform-outcome\` + \`transition ... submitted\`).`,
     '',
@@ -129,7 +141,13 @@ export function packageFinding(finding, report, opts = {}) {
     }
   }
 
-  const readmeContent = buildReadmeContent(finding, reportFileName, screenshotFileNames);
+  // Detecta zip já presente ANTES de reescrever o README -- ver
+  // comentário do módulo. Lido de novo a cada chamada (nunca cacheado)
+  // porque é exatamente o cenário "coloquei o zip à mão depois da
+  // última vez que rodei isto" que motivou a checagem.
+  const zipFileNames = readdirSync(destDir).filter((f) => f.toLowerCase().endsWith('.zip'));
+
+  const readmeContent = buildReadmeContent(finding, reportFileName, screenshotFileNames, zipFileNames);
   writeFileSync(path.join(destDir, 'README.md'), readmeContent, 'utf8');
 
   return {
@@ -137,5 +155,6 @@ export function packageFinding(finding, report, opts = {}) {
     destDir,
     reportFileName,
     screenshotCount: screenshotFileNames.length,
+    zipFileNames,
   };
 }
