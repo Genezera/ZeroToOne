@@ -4362,3 +4362,39 @@ lidos nesta missão).
 StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
 CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
 de baixar, sem mudança em relação às rodadas anteriores.
+
+## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado primeiro: `Block Open Source` continua
+`aiResearchBanned:true` e `Circle BBP` continua `blocked:true` — nenhum
+repo desses dois programas tocado, apesar do prompt agendado listar os 4
+programas como "ativos" (texto desatualizado; segui a política real do
+repositório, mesma disciplina de todas as rodadas anteriores).
+`list-pending` global = 0.
+
+Leitura profunda proativa: `vercel/vercel` clonado raso via `git clone
+--depth 1` em scratchpad efêmero (nunca versionado). Diff sistemático
+(todo `.ts`/`.js` de produção com auth/session/crypto/token/login/
+password/admin/permission/access/credential/secret/oauth/oidc/jwt no
+caminho, menos `deep-read-log.json`) encontrou 34 arquivos ainda não
+lidos; 5 revisados nesta rodada: `packages/connect/src/betterauth/
+index.ts` (puro re-export do subpath opcional, sem lógica), `packages/
+oidc/src/get-context.ts` + `get-vercel-oidc-token-sync.ts` (leitura do
+token OIDC do header de request context ou de `VERCEL_OIDC_TOKEN`, sem
+verificação de assinatura aqui — mas função `@deprecated`, documentada
+como não-cache/não-refresh, e o padrão já estabelecido em rodadas
+anteriores é que a verificação real acontece no servidor; sem achado),
+`packages/cli/src/commands/vcr/permissions/ls.ts` + `packages/cli/src/
+commands/vcr/utils/paths.ts` (listagem de permissões de repositório VCR
+por time; todo `idOrName`/`tag`/`cursor` fornecido pelo usuário passa por
+`encodeURIComponent` antes de entrar na URL, autorização real feita pelo
+servidor via `teamId`/`projectId` da query; sem injeção, sem achado).
+`deep-read-log.json` atualizado (`vercel/vercel` agora com 78 arquivos
+lidos nesta missão). Restam ~29 arquivos não lidos (majoritariamente
+`packages/cli/src/util/telemetry/**`, evals de teste, e templates de
+`examples/hydrogen-2`/`examples/sanity-v2` — baixa prioridade, não são
+lógica de produção da própria Vercel).
+
+StackingDAO: `api.hiro.so` continua bloqueado nesta sessão (403 no
+CONNECT do agent-proxy) — os 3 contratos `ststxbtc-*` seguem impossíveis
+de baixar, sem mudança em relação às rodadas anteriores.

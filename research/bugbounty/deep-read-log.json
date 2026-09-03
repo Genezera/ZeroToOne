@@ -905,7 +905,12 @@
     "packages/oidc-aws-credentials-provider/src/index.ts",
     "packages/functions/src/oidc/index.ts",
     "packages/cli/src/commands/vcr/login.ts",
-    "packages/cli/src/commands/vcr/utils/engine.ts"
+    "packages/cli/src/commands/vcr/utils/engine.ts",
+    "packages/connect/src/betterauth/index.ts",
+    "packages/oidc/src/get-context.ts",
+    "packages/oidc/src/get-vercel-oidc-token-sync.ts",
+    "packages/cli/src/commands/vcr/permissions/ls.ts",
+    "packages/cli/src/commands/vcr/utils/paths.ts"
   ],
   "vercel/workflow": [
     "packages/core/src/encryption.ts",
