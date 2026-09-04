@@ -32,45 +32,50 @@ nenhuma plataforma.** Antes de copiar/colar e enviar, confira:
 
 ---
 
-## ⚠️ Alerta: possível conhecimento prévio pela OKX (checar ANTES de enviar)
-Busca web (WebSearch, nesta rodada) encontrou um anúncio oficial da OKX
-("OKX Wallet announcement on the Cardano network upgrade",
-`https://www.okx.com/en-us/help/okx-wallet-announcement-on-the-cardano-network-upgrade` —
-**não foi possível abrir a página em si nesta sessão**, `EGRESS_BLOCKED`
-pela política de rede do ambiente cloud; conteúdo abaixo vem só do
-snippet indexado por busca) dizendo que a OKX Wallet fez, em
-**15/01/2026**, um "upgrade para endereços Cardano derivados, para
-melhorar a experiência de serviço e compatibilidade do Cardano",
-suspendendo temporariamente as funções da rede Cardano e recomendando
-que usuários transferissem ativos para "o primeiro endereço da carteira
-com seed phrase" antes da data — com garantia de que fundos não seriam
-perdidos.
+## ⚠️ Alerta: possível conhecimento prévio pela OKX — CONFIRMADO POR LEITURA REAL, NÃO ENVIAR SEM DECISÃO HUMANA
+**Atualização 2026-09-04 (Claude Code local, navegador real):** a rodada
+anterior encontrou isso só por snippet indexado (`EGRESS_BLOCKED` no
+ambiente cloud). Abri a página real agora
+(`https://www.okx.com/en-us/help/okx-wallet-announcement-on-the-cardano-network-upgrade`)
+e o texto completo é:
 
-Isso é **suspeito demais para ignorar**: o commit único que introduziu
-`NewXPrvKeyFromEntropy` com o clamp errado (`c0b7c8755766b8c5d61e15879a44fa0ecce21cf9`,
-"add cardano, starknet v3, update ton") é de **09/01/2026 13:46 +0800**
-— só **6 dias** antes desse anúncio. É bem plausível que a OKX tenha
-detectado internamente, logo depois do lançamento do suporte a Cardano,
-que os endereços derivados pelo app/extensão não batiam com outras
-carteiras (exatamente o sintoma deste achado) e migrado usuários em
-produção — SEM nunca corrigir o código-fonte deste repositório público
-(`git log` confirma: nenhum commit subsequente tocou
-`coins/cardano/crypto/key.go` até a data desta análise).
+> Published on Jan 7, 2026. [...] To enhance the service experience and
+> compatibility for Cardano, OKX Wallet will perform an **upgrade for
+> derived Cardano addresses** on January 15, 2026. During the upgrade,
+> all Cardano network-related functions will be temporarily suspended.
+> To ensure your assets remain accessible after the upgrade, please
+> transfer Cardano assets in your OKX Wallet to the first address under
+> your seed phrase wallet before January 15. [...] If you are unable to
+> complete the transfer in time, your assets will not be lost. Feel free
+> to contact our customer support **for assistance to regain access to
+> those assets after the upgrade**.
 
-**Isso não refuta o achado tecnicamente** — o código no repositório
-público (o próprio ativo em escopo do programa, `SOURCE_CODE`) continua
-com o clamp errado hoje, reproduzível como descrito abaixo. Mas **derruba
-fortemente a alegação de novidade**: se o anúncio de 15/01 for de fato
-sobre este exato bug, a OKX já tem conhecimento interno dele há meses,
-o que classificaria qualquer relatório novo como possível duplicata de
-conhecimento já detido pelo programa (ainda que não publicado como
-advisory formal). Um humano com acesso de navegador real precisa:
-1. Ler a página do anúncio na íntegra (bloqueada para esta sessão).
-2. Se possível, testar se o app/extensão OKX Wallet ATUAL deriva
+O commit único que introduziu `NewXPrvKeyFromEntropy` com o clamp errado
+(`c0b7c8755766b8c5d61e15879a44fa0ecce21cf9`, "add cardano, starknet v3,
+update ton") é de **09/01/2026 13:46 +0800** — só **6 dias** antes desse
+anúncio. "Upgrade para endereços DERIVADOS" e o sintoma descrito
+("pode precisar de suporte pra reganhar acesso aos ativos na mesma seed
+phrase depois do upgrade") são exatamente o comportamento esperado de
+uma mudança na fórmula de clamp/derivação — consistente com a OKX tendo
+corrigido isso internamente em produção logo após o lançamento, sem
+nunca corrigir este repositório público (`git log` confirma: nenhum
+commit subsequente tocou `coins/cardano/crypto/key.go`).
+
+**Isso ainda não é uma confirmação direta** — o anúncio nunca cita
+"clamp", "CIP-3" nem bug de derivação explicitamente; é inferência por
+timing + sintoma, forte mas circunstancial, não uma admissão. **Isso não
+refuta o achado tecnicamente** — o código público continua com o clamp
+errado hoje, reproduzível como descrito abaixo. Mas **derruba fortemente
+a alegação de novidade**. Avaliação desta sessão: dado o padrão de
+duplicatas já sofrido neste programa/pipeline, **não vale investir mais
+esforço em prova de regressão/submissão deste achado como está framed**
+(bug ainda ativo/desconhecido) — rebaixado de prioridade. Antes de
+qualquer envio, um humano ainda precisa:
+1. Se possível, testar se o app/extensão OKX Wallet ATUAL deriva
    endereços Cardano diferentes do que este código-fonte público
    produziria hoje para o mesmo mnemonic (evidência direta de que a
    produção já foi corrigida enquanto o repo público não).
-3. Decidir se ainda vale a pena reportar — por exemplo, como "o
+2. Decidir se ainda vale a pena reportar — por exemplo, como "o
    código-fonte público continua com uma vulnerabilidade que a produção
    já mitigou", que é uma categoria de achado válida mas com framing
    bem diferente do original.
