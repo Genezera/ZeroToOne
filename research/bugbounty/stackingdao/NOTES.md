@@ -1076,3 +1076,17 @@ nenhum arquivo novo candidato neste programa. Leitura profunda
 proativa desta rodada direcionada a `vercel/workflow` (`vercel-api.ts`,
 `world.ts`, `health.ts` -- ver NOTES.md de Vercel Open Source), sem
 achado. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #13 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+via `curl -m 8`: `errno=56` de novo, mesmo bloqueio de rede de todas as
+rodadas anteriores -- não confirmável se o deployer StackingDAO
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida, nenhum arquivo novo candidato neste programa.
+Leitura profunda proativa desta rodada direcionada a
+`vercel-labs/skills` (ver NOTES.md de Vercel Open Source: 3 arquivos
+completos -- `providers/wellknown.ts`, `remove.ts`, `local-lock.ts` --
+sem achado). Nenhuma transição de estado neste programa.

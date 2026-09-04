@@ -715,7 +715,10 @@
     "src/plugin-manifest.ts (completo)",
     "src/use.ts (completo)",
     "src/sync.ts (completo)",
-    "src/providers/registry.ts"
+    "src/providers/registry.ts",
+    "src/providers/wellknown.ts (completo -- WellKnownProvider: fetch de index.json arbitrario (excludedHosts so github/gitlab/huggingface), extracao de zip/tar.gz com normalizeArchivePath rejeitando absoluto/../\\0/drive-letter, digest sha256 verificado ANTES de extrair artefato v0.2.0, symlink/hardlink em tar rejeitado explicitamente. Sem achado)",
+    "src/remove.ts (completo -- paths de remocao vem de getCanonicalPath/getInstallPath que usam sanitizeName ja auditado; guarda explicita contra --all + nomes especificos accidental mass-delete. Sem achado)",
+    "src/local-lock.ts (completo -- leitura/escrita de skills-lock.json local, paths resolvidos relative a cwd, sem input de rede direto. Sem achado)"
   ],
   "vercel/ai": [
     "packages/gateway/src/gateway-realtime-auth.ts",

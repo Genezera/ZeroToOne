@@ -6852,3 +6852,57 @@ completo:
 Nenhum achado novo, nenhuma transição de estado neste programa nesta
 rodada. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
 sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #13 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` lido por completo como passo zero, antes de
+qualquer clone/leitura: `Block Open Source` (`aiResearchBanned`) e
+`Circle BBP` (`blocked`, escolha do usuário) seguem bloqueados, nenhum
+repo desses tocado nesta rodada (nem `afterpay/*`, `cashapp/*`,
+`circlefin/*`). Nota separada: o campo `Auth0 by Okta` no mesmo
+arquivo está com `roeReviewNeeded:true` (flagueado 2026-09-04, sessão
+anterior) por falta de confirmação de RoE real via navegador —
+`auth0/auth0-java` não é um dos 4 programas desta missão, então não
+foi tocado aqui, mas fica registrado que a lacuna segue aberta.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 (nenhum finding em
+`candidate`). `list-deep-read-candidates.mjs` continua falhando nesta
+sessão cloud (`SyntaxError: Unexpected non-whitespace character after
+JSON` ao buscar o dataset `bounty-targets-data` — mesmo bloqueio de
+proxy de rede de rodadas anteriores, resposta não-JSON do proxy).
+Seleção de arquivos feita à mão via clone raso + diff manual contra
+`deep-read-log.json`.
+
+Leitura profunda proativa direcionada a `vercel-labs/skills` (repo
+pequeno, CLI de instalação de "skills" de agente — supply-chain é o
+modelo de ameaça óbvio). 3 arquivos novos, todos completos:
+
+- `src/providers/wellknown.ts` — provider que busca `index.json` em
+  qualquer host HTTPS (exceto github.com/gitlab.com/huggingface.co,
+  que têm provider dedicado) via RFC 8615 well-known URI, e extrai
+  artefatos `.zip`/`.tar.gz`. Path de extração passa por
+  `normalizeArchivePath`: rejeita path absoluto, `\0`, `\`, drive
+  letter Windows, e qualquer componente `.`/`..` — sem zip-slip. Para
+  artefato v0.2.0 o digest SHA-256 é comparado (`computeDigest(bytes)
+  !== entry.digest`) **antes** de extrair, com early-return em
+  mismatch — sem uso de conteúdo não verificado. `extractTarGz` rejeita
+  explicitamente entradas symlink/hardlink (`typeFlag 0x32/0x31`) em
+  vez de resolvê-las, evitando escrita fora do diretório via link.
+  Sem achado — hardening correto e deliberado contra os vetores óbvios
+  (zip-slip, symlink, artefato adulterado).
+- `src/remove.ts` (completo) — todos os paths de remoção (`rm`
+  recursivo) vêm de `getCanonicalPath`/`getInstallPath`, que aplicam
+  `sanitizeName` (já auditado em rodada anterior via `installer.ts`
+  completo). Guarda explícita e comentada contra `--all` combinado com
+  nomes específicos (footgun documentado no próprio código: evitava
+  mass-delete acidental). Sem achado.
+- `src/local-lock.ts` (completo) — leitura/escrita de
+  `skills-lock.json` no projeto local; paths sempre resolvidos
+  relativos a `cwd` do processo local, sem input de rede/atacante
+  remoto no cálculo de path. Sem achado.
+
+`api.hiro.so` recheck (`curl -m 8`): `errno=56` de novo, mesmo bloqueio
+de rede de todas as rodadas anteriores — não confirmável se o deployer
+StackingDAO publicou contrato novo. `deep-read-log.json` atualizado
+(`vercel-labs/skills` +3, agora 20 no total). Nenhum achado novo,
+nenhuma transição de estado neste programa nesta rodada.
