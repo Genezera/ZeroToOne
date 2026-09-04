@@ -9,7 +9,7 @@ import {
   cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
   cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
   cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight, cmdGetFinding, cmdRankFinding,
-  cmdAutoTriageKnownCve,
+  cmdAutoTriageKnownCve, cmdPackageForSubmission,
 } from '../cli.mjs';
 
 function withTempEnv(fn) {
@@ -43,6 +43,14 @@ function withTempEnv(fn) {
 }
 
 const SAMPLE = { id: 'p::f::fn::type', program: 'Circle BBP', type: 'reentrancy_risk', state: 'candidate', reasoning: 'achado inicial do scanner, ainda não investigado a fundo' };
+const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const REGRESSION_PROOF = {
+  kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
+  introducedAt: '2026-09-01T12:00:00Z',
+  baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
+  candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+};
 
 test('cmdListPending / cmdStatus refletem o banco', () => {
   withTempEnv((dbPath) => {
@@ -133,9 +141,10 @@ test('duplicate outcome anterior alimenta automaticamente risco e estatística p
     const check = cmdRecordDuplicateCheck(db, newFinding.id, {
       methods: ['github_issues', 'github_advisories', 'hacktivity'],
       queries: ['function root cause', 'source sink'], foundExisting: false,
-      signals: { codeAgeDays: 30 }, ts: '2026-09-03T17:00:00Z',
+      signals: { codeAgeDays: 30, priorDuplicateSubmissions: 0 }, ts: '2026-09-03T17:00:00Z',
     });
     assert.equal(check.riskScore, 15, '20 base + 10 histórico - 15 código novo');
+    assert.equal(check.signals.priorDuplicateSubmissions, 1, 'patch não pode apagar histórico real de duplicate');
     assert.deepEqual(check.results[0].matchingSubmissionIds, ['HackerOne:100']);
 
     const stats = cmdSubmissionStats(db);
@@ -218,15 +227,15 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
     });
     cmdRecordDuplicateCheck(db, finding.id, {
       methods: ['github_issues', 'github_advisories', 'hacktivity'],
-      queries: ['auth function IDOR', 'missing ownership check'], foundExisting: false,
-      ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 },
+      queries: ['auth function IDOR', 'missing ownership check', 'commit regression IDOR'], foundExisting: false,
+      ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 }, noveltyProof: REGRESSION_PROOF,
     });
     const ready = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime() });
     assert.equal(ready.ready, true, ready.reason);
     // Lacuna #1 da revisão de 03/09/2026: dimensões ortogonais visíveis
     // sem juntar state+impactAssessment+duplicateCheck manualmente.
     assert.deepEqual(ready.dimensions, {
-      technicalValidity: 'confirmed', securityImpact: 'verified', novelty: 'private_unknown', submissionState: 'not_planned',
+      technicalValidity: 'confirmed', securityImpact: 'verified', novelty: 'regression', submissionState: 'not_planned',
     });
     closeDb(db);
   });
@@ -241,6 +250,19 @@ test('submission-preflight com relatório legado, mas sem impacto/duplicateCheck
     const result = cmdSubmissionPreflight(db, finding.id);
     assert.equal(result.ready, false);
     assert.match(result.reason, /impactAssessment incompleto/);
+    closeDb(db);
+  });
+});
+
+test('package-for-submission não empacota human_ready legado que reprova o preflight estrito', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const finding = { ...SAMPLE, id: 'p::legacy-ready::f::x', program: 'P', state: 'human_ready' };
+    upsertFinding(db, finding);
+    recordReport(db, finding.id, 'reports/legacy-ready.md');
+    const result = cmdPackageForSubmission(db, finding.id);
+    assert.equal(result.ok, false);
+    assert.match(result.reason, /preflight/);
     closeDb(db);
   });
 });

@@ -274,6 +274,8 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
       methods: ['github_issues', 'github_advisories', 'web_search'],
       queries: ['file function', 'source sink'], results: [], foundExisting: false,
       noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
+      signals: { priorDuplicateSubmissions: 0 },
+      noveltyProof: { kind: 'verified_regression', introducedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
     });
     recordImpactAssessment(db, SAMPLE.id, {
       technicalValidity: 'confirmed', attackerControlledInput: true,
@@ -292,6 +294,8 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
     const [line] = exportFindingsToQueueLines(db).map(JSON.parse);
     assert.equal(line.duplicateCheck.noveltyStatus, 'private_unknown');
     assert.equal(line.duplicateCheck.riskScore, 25);
+    assert.equal(line.duplicateCheck.signals.priorDuplicateSubmissions, 0);
+    assert.equal(line.duplicateCheck.noveltyProof.kind, 'verified_regression');
     assert.equal(line.impactAssessment.impactScope, 'other_user');
     assert.equal(line.submission.externalReportId, '3994302');
     assert.equal(line.submission.originalReportId, '3439366');

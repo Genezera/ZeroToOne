@@ -105,6 +105,15 @@ export function cmdGenerateReport(db, id, opts = {}) {
 export function cmdPackageForSubmission(db, id) {
   const finding = getFinding(db, id);
   const report = finding ? latestReport(db, id) : null;
+  if (finding) {
+    const readiness = submissionReadinessGate(finding, {
+      report,
+      duplicateCheck: latestDuplicateCheck(db, id),
+      impactAssessment: latestImpactAssessment(db, id),
+      programPolicy: loadProgramPolicy(),
+    });
+    if (!readiness.ok) return { ok: false, reason: `pacote bloqueado pelo preflight: ${readiness.reason}` };
+  }
   return packageFinding(finding, report);
 }
 
@@ -179,11 +188,15 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   const learned = duplicateHistoryForFinding(finding, submissions);
   const portfolio = computeStatsFromSubmissions(submissions);
   const signals = {
+    ...(patch.signals || {}),
+    // Estes quatro valores vêm de fontes locais auditáveis e são aplicados
+    // DEPOIS do patch: quem chama não consegue zerar o próprio histórico
+    // de duplicates nem forçar o rótulo de regressão só por JSON.
     priorDuplicateSubmissions: learned.priorDuplicateSubmissions,
     portfolioSubmissionCount: portfolio.totalSubmissions,
     portfolioDuplicateRate: portfolio.duplicateRate,
-    ...(patch.signals || {}),
     foundPublicMatch: patch.foundExisting === true,
+    regressionAfterVerifiedFix: patch.noveltyProof?.kind === 'verified_regression',
   };
   // O score gravado é sempre derivado dos sinais auditáveis. Aceitar um
   // número pronto aqui permitiria reduzir manualmente o risco para contornar
@@ -192,6 +205,7 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   return recordDuplicateCheck(db, id, {
     ...patch,
     ...risk,
+    signals,
     results: [
       ...(patch.results || []),
       ...(learned.matchingSubmissionIds.length ? [{ source: 'local_submission_history', matchingSubmissionIds: learned.matchingSubmissionIds }] : []),

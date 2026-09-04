@@ -30,9 +30,23 @@ estados falha fechado se não houver:
 - avaliação de impacto estruturada com atacante, vítima, fronteira de
   segurança, resultado observável e C/I/A;
 - checagem de anterioridade com issues/PRs, advisories e Hacktivity ou busca
-  web, pelo menos duas formulações, `foundExisting=false`, menos de 72 horas
-  e risco abaixo de 60/100;
+  web, pelo menos três formulações distintas, `foundExisting=false`, menos
+  de 24 horas e risco no máximo 25/100;
+- `noveltyStatus=regression` acompanhado de `noveltyProof`: SHA completo do
+  commit introdutor e de seu parent, data de introdução de no máximo 30 dias,
+  mesmo comando executado nos dois refs, parent com resultado
+  `not_vulnerable` e commit com resultado `vulnerable`;
+- zero submissões anteriores com outcome `duplicate` no mesmo programa ou
+  repositório, calculado do histórico local e impossível de sobrescrever pelo
+  JSON fornecido ao CLI;
 - relatório registrado e programa permitido pela política local.
+
+Esse é o **modo anti-duplicate estrito** adotado depois de 6/6 submissões
+reais voltarem como duplicate. `private_unknown`, código apenas "recente" e
+busca pública limpa não liberam mais envio. Isso reduz muito o volume e não
+promete o impossível: ainda pode existir um report privado sobre a mesma
+regressão entre a introdução e o envio. O objetivo do gate é estreitar essa
+janela ao máximo e impedir novamente a seleção de bugs antigos e óbvios.
 
 O score de risco é uma heurística transparente de priorização, não uma
 probabilidade científica. Código antigo, programa maduro, repositório muito
@@ -85,7 +99,7 @@ real:
 ```powershell
 node system/bugbounty-scanner/cli.mjs record-impact-assessment "FINDING_ID" --patch='{"technicalValidity":"confirmed","attackerControlledInput":true,"attacker":"usuário remoto","victim":"outro usuário","securityBoundary":"isolamento entre contas","observableOutcome":"leitura de dado alheio","confidentiality":"low","integrity":"none","availability":"none","impactScope":"other_user","reportable":true,"rationale":"reproduzido com duas contas próprias"}'
 
-node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patch='{"methods":["github_issues","github_advisories","hacktivity"],"queries":["função + efeito","source + sink + controle ausente"],"results":[],"foundExisting":false,"signals":{"codeAgeDays":30,"programAgeDays":120,"repoStars":400,"obviousness":"medium"}}'
+node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patch='{"methods":["github_issues","github_advisories","hacktivity"],"queries":["função + efeito","source + sink + controle ausente","commit + regressão + componente"],"results":[],"foundExisting":false,"signals":{"codeAgeDays":2,"programAgeDays":120,"repoStars":400,"obviousness":"medium"},"noveltyProof":{"kind":"verified_regression","introducedCommit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","parentCommit":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","introducedAt":"2026-09-01T12:00:00Z","baseline":{"ref":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","result":"not_vulnerable","command":"node poc.mjs","observedOutcome":"controle não reproduz"},"candidate":{"ref":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","result":"vulnerable","command":"node poc.mjs","observedOutcome":"exploit reproduz"}}}'
 
 node system/bugbounty-scanner/cli.mjs submission-preflight "FINDING_ID"
 node system/bugbounty-scanner/cli.mjs submission-stats
@@ -618,11 +632,18 @@ justificativa, e só escreve um rascunho de relatório em
 (nunca metadado/cosmético). **Nunca envia nada — todo rascunho começa com
 aviso de que precisa de revisão humana antes de qualquer envio real.**
 
-## O que ainda é 100% manual (regra da plataforma, não escolha)
+## O que ainda é manual
 - Criar conta no Immunefi/GitHub — só o usuário.
 - Enviar o relatório de verdade para o programa — só o usuário, depois de
   revisar o rascunho.
 - Receber o pagamento — só o usuário.
+
+Também continua manual por segurança operacional: executar a PoC no parent e
+no commit introdutor e registrar os dois resultados em `noveltyProof`. Rodar
+código não confiável de repositórios de terceiros automaticamente na máquina
+host, sem sandbox descartável, seria uma regressão de segurança do próprio
+caçador. O gate exige a evidência, mas não finge que já existe um executor
+isolado que o projeto ainda não possui.
 
 ## Comandos úteis
 - Rodar o scanner manualmente: `node system/bugbounty-scanner/scan-runner.mjs`
@@ -638,15 +659,13 @@ issues/PRs do repositório afetado — numa das duas rodadas isso tinha
 até sido sinalizado explicitamente como lacuna ("sem acesso à API do
 GitHub agora") e ninguém revisitou antes de recomendar envio.
 
-`state-machine.mjs` agora **exige** `ctx.duplicateCheck = { methods:
-[...], ts, query }` com `"github_issues"` presente em `methods` antes
-de permitir `scope_verified -> human_ready` — sem isso a transição
-falha com uma razão explicando o que falta, não silenciosamente. Grave
-com `record-duplicate-check <id> --patch='{"methods":["github_issues"],"query":"...","foundExisting":false}'`
-(usa a API pública do GitHub, sem autenticação, pra repositório
-público — `GET /repos/{owner}/{repo}/issues?state=all`). Tabela própria
-`duplicate_checks` no banco (mesmo padrão de `validations`/
-`deployment_evidence`), consultável via `latestDuplicateCheck`.
+`state-machine.mjs` agora exige o registro estruturado descrito no início
+deste README antes de permitir `scope_verified -> human_ready`. O gate é
+reexecutado em `human_ready -> submitted` e antes de
+`package-for-submission`: achado legado já marcado como pronto não contorna
+a política. `signals` e `noveltyProof` ficam na tabela `duplicate_checks`,
+no `queue.jsonl` portátil e no ledger. A ausência de qualquer parte bloqueia
+com uma razão explícita; ela nunca vira aprovação por default.
 
 **Hacktivity da Hacker API — explorado, não deu certo pra este uso
 (deixado documentado pra não redescobrir depois):** `GET

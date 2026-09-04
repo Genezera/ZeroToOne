@@ -318,6 +318,8 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       methods: ['github_issues', 'github_advisories', 'hacktivity'],
       queries: ['account findById IDOR', 'missing owner check'], results: [],
       foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
+      signals: { priorDuplicateSubmissions: 0, codeAgeDays: 2 },
+      noveltyProof: { kind: 'verified_regression', introducedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
       ts: '2026-09-03T17:00:00Z',
     });
     recordImpactAssessment(db1, 'x::professional-roundtrip', {
@@ -340,6 +342,8 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       migrateEntry(db2, exported, { scopeSnapshots: {} });
       assert.equal(getFinding(db2, exported.id).semanticFingerprint, exported.semanticFingerprint);
       assert.equal(latestDuplicateCheck(db2, exported.id).riskScore, 25);
+      assert.equal(latestDuplicateCheck(db2, exported.id).signals.codeAgeDays, 2);
+      assert.equal(latestDuplicateCheck(db2, exported.id).noveltyProof.kind, 'verified_regression');
       assert.equal(latestImpactAssessment(db2, exported.id).impactScope, 'other_user');
       assert.equal(listSubmissions(db2).length, 1);
       assert.equal(listSubmissions(db2)[0].originalReportId, '100');

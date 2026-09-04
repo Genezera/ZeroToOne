@@ -7,6 +7,14 @@ function finding(state, overrides = {}) {
 }
 
 const NOW = '2026-09-03T18:00:00Z';
+const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const REGRESSION_PROOF = {
+  kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
+  introducedAt: '2026-09-01T12:00:00Z',
+  baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
+  candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+};
 const GOOD_IMPACT = {
   technicalValidity: 'confirmed', attackerControlledInput: true,
   attacker: 'usuário remoto autenticado', victim: 'outro usuário',
@@ -16,8 +24,9 @@ const GOOD_IMPACT = {
 };
 const GOOD_DUPLICATE_CHECK = {
   methods: ['github_issues', 'github_advisories', 'hacktivity'],
-  queries: ['função endpoint IDOR', 'missing ownership check'],
-  foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 30,
+  queries: ['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR'],
+  foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
+  signals: { priorDuplicateSubmissions: 0 }, noveltyProof: REGRESSION_PROOF,
   ts: '2026-09-03T17:00:00Z',
 };
 
@@ -158,6 +167,13 @@ test('scope_verified -> human_ready bloqueia match público, risco alto e checag
   assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, foundExisting: true } })).ok, false);
   assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, riskScore: 80 } })).ok, false);
   assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, ts: '2026-08-01T00:00:00Z' } })).ok, false);
+});
+
+test('scope_verified -> human_ready bloqueia private_unknown e regressão sem baseline seguro comprovado', () => {
+  const f = finding('scope_verified');
+  const privateUnknown = { ...GOOD_DUPLICATE_CHECK, noveltyStatus: 'private_unknown' };
+  assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: privateUnknown })).ok, false);
+  assert.equal(transition(f, 'human_ready', readyContext({ duplicateCheck: { ...GOOD_DUPLICATE_CHECK, noveltyProof: null } })).ok, false);
 });
 
 test('scope_verified -> human_ready exige impacto reportável além da própria requisição', () => {

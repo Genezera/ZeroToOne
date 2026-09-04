@@ -126,6 +126,8 @@ CREATE TABLE IF NOT EXISTS duplicate_checks (
   query TEXT,
   queries_json TEXT,
   results_json TEXT,
+  signals_json TEXT,
+  novelty_proof_json TEXT,
   found_existing INTEGER NOT NULL DEFAULT 0,
   found_existing_ref TEXT,
   novelty_status TEXT,
@@ -201,6 +203,8 @@ export function openDb(dbPath) {
     ['platform_outcomes', 'original_state', 'TEXT'],
     ['duplicate_checks', 'queries_json', 'TEXT'],
     ['duplicate_checks', 'results_json', 'TEXT'],
+    ['duplicate_checks', 'signals_json', 'TEXT'],
+    ['duplicate_checks', 'novelty_proof_json', 'TEXT'],
     ['duplicate_checks', 'novelty_status', 'TEXT'],
     ['duplicate_checks', 'risk_score', 'REAL'],
     ['duplicate_checks', 'risk_level', 'TEXT'],
@@ -408,7 +412,7 @@ export function latestDeploymentEvidence(db, findingId) {
 }
 
 export function recordDuplicateCheck(db, findingId, {
-  methods, query, queries, results, foundExisting, foundExistingRef,
+  methods, query, queries, results, signals, noveltyProof, foundExisting, foundExistingRef,
   noveltyStatus, riskScore, riskLevel, notes, ts: suppliedTs,
 }) {
   if (!Array.isArray(methods) || methods.length === 0) {
@@ -419,13 +423,14 @@ export function recordDuplicateCheck(db, findingId, {
   const ts = suppliedTs || new Date().toISOString();
   db.prepare(`
     INSERT INTO duplicate_checks (
-      finding_id, methods_json, query, queries_json, results_json,
+      finding_id, methods_json, query, queries_json, results_json, signals_json, novelty_proof_json,
       found_existing, found_existing_ref, novelty_status, risk_score,
       risk_level, notes, ts
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     findingId, JSON.stringify(methods), query || normalizedQueries[0] || null,
     JSON.stringify(normalizedQueries), JSON.stringify(results || []),
+    JSON.stringify(signals || {}), JSON.stringify(noveltyProof || null),
     foundExisting ? 1 : 0, foundExistingRef || null, noveltyStatus || null,
     Number.isFinite(riskScore) ? riskScore : null, riskLevel || null,
     notes || null, ts,
@@ -433,11 +438,13 @@ export function recordDuplicateCheck(db, findingId, {
   const ledgerEntry = appendEntry('research', {
     type: 'bugbounty_duplicate_check', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, methods,
     foundExisting: !!foundExisting, noveltyStatus: noveltyStatus || null,
-    riskScore: Number.isFinite(riskScore) ? riskScore : null, ts,
+    riskScore: Number.isFinite(riskScore) ? riskScore : null,
+    signals: signals || {}, noveltyProof: noveltyProof || null, ts,
   });
   return {
     findingId, methods, query: query || normalizedQueries[0] || null,
-    queries: normalizedQueries, results: results || [], foundExisting: !!foundExisting,
+    queries: normalizedQueries, results: results || [], signals: signals || {},
+    noveltyProof: noveltyProof || null, foundExisting: !!foundExisting,
     foundExistingRef: foundExistingRef || null, noveltyStatus: noveltyStatus || null,
     riskScore: Number.isFinite(riskScore) ? riskScore : null,
     riskLevel: riskLevel || null, notes: notes || null, ts,
@@ -454,6 +461,8 @@ export function latestDuplicateCheck(db, findingId) {
     query: row.query,
     queries: row.queries_json ? JSON.parse(row.queries_json) : (row.query ? [row.query] : []),
     results: row.results_json ? JSON.parse(row.results_json) : [],
+    signals: row.signals_json ? JSON.parse(row.signals_json) : {},
+    noveltyProof: row.novelty_proof_json ? JSON.parse(row.novelty_proof_json) : null,
     foundExisting: !!row.found_existing,
     foundExistingRef: row.found_existing_ref,
     noveltyStatus: row.novelty_status,

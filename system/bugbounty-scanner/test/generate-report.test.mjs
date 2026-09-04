@@ -48,6 +48,22 @@ const SAMPLE = {
   state: 'candidate',
 };
 
+const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const STRICT_NOVELTY = {
+  methods: ['github_issues', 'github_advisories', 'hacktivity'],
+  queries: ['withdraw reentrancy', 'external call before state update', 'commit regression withdraw'],
+  foundExisting: false, noveltyStatus: 'regression', riskScore: 20, riskLevel: 'low',
+  signals: { priorDuplicateSubmissions: 0 },
+  noveltyProof: {
+    kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
+    introducedAt: '2026-09-01T12:00:00Z',
+    baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
+    candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+  },
+  ts: '2026-09-03T17:00:00Z',
+};
+
 test('assembleReportContext recusa achado em estado não-elegível (candidate)', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
@@ -130,11 +146,7 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
     upsertFinding(db, { ...SAMPLE, state: 'scope_verified' });
     recordValidation(db, SAMPLE.id, { type: 'foundry_poc', result: 'pass', rawOutput: 'PASS' });
     recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/vault', confidence: 'high' });
-    recordDuplicateCheck(db, SAMPLE.id, {
-      methods: ['github_issues', 'github_advisories', 'hacktivity'],
-      queries: ['withdraw reentrancy', 'external call before state update'],
-      foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 30, riskLevel: 'low',
-    });
+    recordDuplicateCheck(db, SAMPLE.id, STRICT_NOVELTY);
     recordImpactAssessment(db, SAMPLE.id, {
       technicalValidity: 'confirmed', attackerControlledInput: true,
       attacker: 'usuário remoto', victim: 'outros depositantes', securityBoundary: 'saldo por conta',
@@ -149,7 +161,7 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
 
     const onDisk = readFileSync(result.path, 'utf8');
     assert.match(onDisk, /RASCUNHO GERADO AUTOMATICAMENTE/);
-    assert.match(onDisk, /private_unknown/);
+    assert.match(onDisk, /regression/);
     assert.match(onDisk, /busca pública limpa não comprova/);
     assert.match(onDisk, /saque repetido no teste/);
 

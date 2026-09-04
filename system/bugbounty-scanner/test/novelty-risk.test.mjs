@@ -1,12 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assessNoveltyRisk, duplicateCheckGate } from '../novelty-risk.mjs';
+import { assessNoveltyRisk, duplicateCheckGate, verifiedRegressionGate } from '../novelty-risk.mjs';
 
 const NOW = new Date('2026-09-03T18:00:00Z').getTime();
+const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const PROOF = {
+  kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
+  introducedAt: '2026-09-01T12:00:00Z',
+  baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
+  candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+};
 const CLEAN = {
   methods: ['github_issues', 'github_advisories', 'hacktivity'],
-  queries: ['function root cause', 'source sink missing guard'],
-  foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 30,
+  queries: ['function root cause', 'source sink missing guard', 'commit regression vulnerability'],
+  foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
+  signals: { priorDuplicateSubmissions: 0 }, noveltyProof: PROOF,
   ts: '2026-09-03T17:00:00Z',
 };
 
@@ -33,12 +42,22 @@ test('histórico global só pesa depois de amostra mínima', () => {
   assert.match(learned.reasons.join(' '), /100% de duplicates/);
 });
 
-test('gate exige cobertura pública plural, duas consultas e frescor', () => {
+test('gate estrito exige cobertura pública plural, três consultas, frescor e regressão comprovada', () => {
   assert.equal(duplicateCheckGate(CLEAN, { now: NOW }).ok, true);
   assert.equal(duplicateCheckGate({ ...CLEAN, methods: ['github_issues'] }, { now: NOW }).ok, false);
-  assert.equal(duplicateCheckGate({ ...CLEAN, queries: ['uma só'] }, { now: NOW }).ok, false);
+  assert.equal(duplicateCheckGate({ ...CLEAN, queries: ['uma só', 'duas'] }, { now: NOW }).ok, false);
   assert.equal(duplicateCheckGate({ ...CLEAN, ts: '2026-08-01T00:00:00Z' }, { now: NOW }).ok, false);
   assert.equal(duplicateCheckGate({ ...CLEAN, riskScore: 60 }, { now: NOW }).ok, false);
+  assert.equal(duplicateCheckGate({ ...CLEAN, noveltyStatus: 'private_unknown' }, { now: NOW }).ok, false);
+  assert.equal(duplicateCheckGate({ ...CLEAN, noveltyProof: null }, { now: NOW }).ok, false);
+  assert.equal(duplicateCheckGate({ ...CLEAN, signals: { priorDuplicateSubmissions: 1 } }, { now: NOW }).ok, false);
+});
+
+test('prova de regressão compara o parent seguro com o commit vulnerável usando o mesmo comando', () => {
+  assert.equal(verifiedRegressionGate(PROOF, { now: NOW }).ok, true);
+  assert.equal(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-01-01T00:00:00Z' }, { now: NOW }).ok, false);
+  assert.equal(verifiedRegressionGate({ ...PROOF, baseline: { ...PROOF.baseline, result: 'vulnerable' } }, { now: NOW }).ok, false);
+  assert.equal(verifiedRegressionGate({ ...PROOF, candidate: { ...PROOF.candidate, command: 'node outro.mjs' } }, { now: NOW }).ok, false);
 });
 
 test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar', () => {

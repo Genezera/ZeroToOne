@@ -1,5 +1,10 @@
-export const DUPLICATE_CHECK_MAX_AGE_MS = 72 * 60 * 60 * 1000;
-export const MAX_RISK_FOR_SUBMISSION = 59;
+// Política deliberadamente conservadora depois de 6/6 submissões reais
+// voltarem como duplicate. Reports privados continuam invisíveis; portanto
+// "não achei nada em busca pública" não é evidência suficiente para enviar.
+// O gate só libera uma regressão recente demonstrada entre dois refs.
+export const DUPLICATE_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+export const MAX_RISK_FOR_SUBMISSION = 25;
+export const MAX_VERIFIED_REGRESSION_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -62,6 +67,67 @@ export function assessNoveltyRisk(signals = {}) {
   };
 }
 
+function nonEmpty(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isFullCommitSha(value) {
+  return typeof value === 'string' && /^[0-9a-f]{40}$/i.test(value);
+}
+
+/**
+ * Prova mínima de novidade forte. Não tenta "provar ausência" de report
+ * privado; prova algo verificável e temporalmente estreito: o parent do
+ * commit não reproduz e o commit introdutor reproduz, usando o mesmo teste.
+ */
+export function verifiedRegressionGate(proof, {
+  now = Date.now(),
+  maxAgeMs = MAX_VERIFIED_REGRESSION_AGE_MS,
+} = {}) {
+  if (!proof || typeof proof !== 'object' || Array.isArray(proof)) {
+    return { ok: false, reason: 'falta noveltyProof estruturada de regressão verificada' };
+  }
+  if (proof.kind !== 'verified_regression') {
+    return { ok: false, reason: 'noveltyProof.kind precisa ser verified_regression' };
+  }
+  if (!isFullCommitSha(proof.introducedCommit) || !isFullCommitSha(proof.parentCommit)) {
+    return { ok: false, reason: 'noveltyProof precisa dos SHAs completos introducedCommit e parentCommit' };
+  }
+  if (proof.introducedCommit.toLowerCase() === proof.parentCommit.toLowerCase()) {
+    return { ok: false, reason: 'introducedCommit e parentCommit precisam ser refs diferentes' };
+  }
+  const introducedAt = new Date(proof.introducedAt).getTime();
+  if (!Number.isFinite(introducedAt)) {
+    return { ok: false, reason: 'noveltyProof.introducedAt precisa ser timestamp válido' };
+  }
+  const age = now - introducedAt;
+  if (age < -5 * 60 * 1000) return { ok: false, reason: 'commit introdutor está no futuro' };
+  if (age > maxAgeMs) {
+    return { ok: false, reason: `regressão tem ${Math.floor(age / 86400000)} dias; máximo ${Math.floor(maxAgeMs / 86400000)}` };
+  }
+
+  const baseline = proof.baseline;
+  const candidate = proof.candidate;
+  if (!baseline || baseline.ref?.toLowerCase() !== proof.parentCommit.toLowerCase()) {
+    return { ok: false, reason: 'baseline.ref precisa ser exatamente o parentCommit' };
+  }
+  if (!candidate || candidate.ref?.toLowerCase() !== proof.introducedCommit.toLowerCase()) {
+    return { ok: false, reason: 'candidate.ref precisa ser exatamente o introducedCommit' };
+  }
+  if (baseline.result !== 'not_vulnerable' || candidate.result !== 'vulnerable') {
+    return { ok: false, reason: 'baseline precisa ser not_vulnerable e candidate precisa ser vulnerable' };
+  }
+  for (const [name, validation] of [['baseline', baseline], ['candidate', candidate]]) {
+    if (!nonEmpty(validation.command) || !nonEmpty(validation.observedOutcome)) {
+      return { ok: false, reason: `${name} precisa registrar command e observedOutcome reais` };
+    }
+  }
+  if (baseline.command.trim() !== candidate.command.trim()) {
+    return { ok: false, reason: 'baseline e candidate precisam usar o mesmo comando de validação' };
+  }
+  return { ok: true, reason: `regressão verificada no commit ${proof.introducedCommit.slice(0, 12)} contra o parent ${proof.parentCommit.slice(0, 12)}` };
+}
+
 export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS } = {}) {
   if (!check || typeof check !== 'object' || Array.isArray(check)) check = {};
   if (!Array.isArray(check.methods) || check.methods.length === 0) {
@@ -74,8 +140,8 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
     return { ok: false, reason: 'duplicateCheck precisa incluir hacktivity ou web_search além das fontes do repositório' };
   }
   const queries = Array.isArray(check.queries) ? check.queries : (check.query ? [check.query] : []);
-  if (queries.filter((q) => typeof q === 'string' && q.trim()).length < 2) {
-    return { ok: false, reason: 'duplicateCheck precisa registrar pelo menos 2 consultas/framing diferentes' };
+  if (new Set(queries.filter((q) => typeof q === 'string' && q.trim()).map((q) => q.trim().toLowerCase())).size < 3) {
+    return { ok: false, reason: 'duplicateCheck precisa registrar pelo menos 3 consultas/framing distintos' };
   }
   if (check.foundExisting !== false) {
     return { ok: false, reason: check.foundExisting ? 'duplicateCheck encontrou correspondência existente' : 'foundExisting precisa ser false explícito' };
@@ -85,12 +151,17 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   const age = now - ts;
   if (age < -5 * 60 * 1000) return { ok: false, reason: 'duplicateCheck tem timestamp no futuro' };
   if (age > maxAgeMs) return { ok: false, reason: `duplicateCheck expirou (${Math.floor(age / 3600000)}h; máximo ${Math.floor(maxAgeMs / 3600000)}h)` };
-  if (!['private_unknown', 'regression'].includes(check.noveltyStatus)) {
-    return { ok: false, reason: 'noveltyStatus precisa ser private_unknown ou regression; busca pública limpa nunca prova unicidade' };
+  if (check.noveltyStatus !== 'regression') {
+    return { ok: false, reason: 'modo anti-duplicate exige noveltyStatus=regression; private_unknown não é suficiente para envio' };
   }
   if (!Number.isFinite(check.riskScore)) return { ok: false, reason: 'duplicateCheck precisa de riskScore numérico' };
   if (check.riskScore > MAX_RISK_FOR_SUBMISSION) {
     return { ok: false, reason: `risco de duplicata alto (${check.riskScore}/100)` };
   }
-  return { ok: true, reason: `fontes públicas sem correspondência; privado permanece desconhecido; risco=${check.riskScore}/100` };
+  if (check.signals?.priorDuplicateSubmissions !== 0) {
+    return { ok: false, reason: 'modo anti-duplicate exige zero submissões duplicate anteriores no mesmo programa/repositório' };
+  }
+  const regression = verifiedRegressionGate(check.noveltyProof, { now });
+  if (!regression.ok) return regression;
+  return { ok: true, reason: `${regression.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
 }
