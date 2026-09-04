@@ -7562,3 +7562,50 @@ https://api.hiro.so/...` -- bloqueado de novo (`CONNECT tunnel failed,
 response 403`), mesmo padrão de dezenas de rodadas anteriores; os 15
 contratos Clarity seguem sem candidato novo. Nenhum achado novo,
 nenhuma transição de estado em nenhum programa nesta rodada.
+
+## Rodada 2026-09-04 #27 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`) confirmados; `Kubernetes` segue `roeReviewNeeded:true`.
+`migrate-to-v2.mjs` rodado. `list-pending` global trouxe 37
+candidatos, todos de programas fora de escopo desta sessão (30 Auth0
+by Okta, 4 Circle BBP, 3 Kubernetes) -- nenhum arquivo desses três
+programas clonado, aberto ou lido; nenhuma ação tomada sobre eles.
+
+Leitura profunda proativa direcionada de novo a `sveltejs/svelte` (o
+menos explorado dos repos Vercel Open Source, 14→17 arquivos no
+`deep-read-log.json`), via o mesmo clone raso/sparse já usado em
+rodadas anteriores. Busca por auth/session/crypto/token/sanitiz/
+escape/password/secret sobre `packages/svelte/src/**/*.{js,ts}` deu
+~48 candidatos por nome; 3 novos escolhidos (fora de `.test.`/`tests/`
+e do que já constava no log):
+
+- `packages/svelte/src/compiler/phases/2-analyze/visitors/OnDirective.js`
+  (completo, 28 linhas) -- visitor de análise AST pra diretiva `on:`:
+  só emite warning de depreciação em runes mode e marca a subtree como
+  dinâmica; delega a expressão do handler pro resto do pipeline
+  (`context.next`), sem lógica de auth/sanitização própria. Sem
+  achado.
+- `packages/svelte/src/reactivity/url.js` (completo, 207 linhas) --
+  `SvelteURL`, wrapper reativo em torno da classe `URL` nativa do
+  runtime: todo getter/setter (`protocol`/`hostname`/`href`/etc.)
+  delega o parsing/validação de verdade pra `super.*` (a `URL` nativa
+  do JS/WHATWG), só espelhando o valor resultante em `state()` pra
+  reatividade. Nenhum parsing ou concatenação de string própria que
+  pudesse abrir brecha de SSRF/open-redirect. Sem achado.
+- `packages/svelte/src/internal/server/hydratable.js` (completo, 147
+  linhas) -- serialização de dados de `hydratable()` pra hidratação
+  client-side via `devalue.uneval`; o código já tem comentário próprio
+  (linhas 69-71) explicando por que usa a forma-função do `.replace()`
+  ao injetar o valor resolvido de uma promise no string serializado --
+  exatamente pra evitar que padrões de replacement (`$&`, `$1` etc.)
+  em valor potencialmente controlado pelo usuário sejam interpretados.
+  Padrão defensivo correto, não vulnerável. Sem achado.
+
+`deep-read-log.json` atualizado (+3 em `sveltejs/svelte`, agora 17).
+Verificação de deploy StackingDAO: `curl -m 8 https://api.hiro.so/...`
+-- bloqueado de novo (exit 56, `CONNECT tunnel failed, response 403`),
+mesmo padrão de dezenas de rodadas consecutivas nesta sessão/ambiente.
+Nenhuma mudança de estado em nenhum programa nesta rodada; nenhum
+achado novo.
