@@ -22,6 +22,8 @@ import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runSlitherAgainstTarget, toQueueFindings as slitherToQueueFindings } from './slither-runner.mjs';
 import { runOsvScannerAgainstTarget, toQueueFindings as osvToQueueFindings } from './osv-scanner-runner.mjs';
 import { runSemgrepAgainstTarget, toQueueFindings as semgrepToQueueFindings } from './semgrep-runner.mjs';
+import { runCodeqlAgainstTarget, toQueueFindings as codeqlToQueueFindings } from './codeql-runner.mjs';
+import { recordRotationResult, selectTargetsForRotation } from './analysis-rotation.mjs';
 import { openDb, upsertFinding, closeDb, listSubmissions, listFindings } from './db.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
 
@@ -59,6 +61,7 @@ const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.jso
 const AUTO_PROMOTED_MODULE_PATH = path.join(__dirname, 'targets-auto-promoted.mjs');
 const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
+const CODEQL_ROTATION_PATH = path.join(BUGBOUNTY_DIR, 'codeql-rotation.json');
 
 function loadSeenMap() {
   if (!existsSync(SEEN_METADATA_PATH)) return {};
@@ -71,6 +74,11 @@ function loadSeenMap() {
 
 function log(msg) {
   console.log(`[${new Date().toISOString()}] ${msg}`);
+}
+
+function loadJson(filePath, fallback = {}) {
+  if (!existsSync(filePath)) return fallback;
+  try { return JSON.parse(readFileSync(filePath, 'utf8')); } catch { return fallback; }
 }
 
 export async function runDiscovery() {
@@ -346,12 +354,59 @@ export async function runDiscovery() {
   }
   log(`Semgrep: ${semgrepReposOk} repositório(s) analisado(s) com sucesso, ${semgrepReposFailed} com falha, ${semgrepNewFindings} achado(s) novo(s) (Warning+ severidade) na fila.`);
 
+  // CodeQL complementa o Semgrep com dataflow interprocedural/global. Só
+  // JavaScript/TypeScript entra nesta rotação: a extração é buildless e não
+  // executa scripts do repositório de terceiro. Go/JVM exigem build e ficam
+  // bloqueados até existir container descartável equivalente.
+  let codeqlNewFindings = 0;
+  let codeqlReposOk = 0;
+  let codeqlReposFailed = 0;
+  let codeqlRotation = loadJson(CODEQL_ROTATION_PATH, {});
+  const codeqlTargets = selectTargetsForRotation(freshJsTargets, codeqlRotation, { limit: 1 });
+  {
+    const db = openDb(DB_PATH);
+    try {
+      for (const target of codeqlTargets) {
+        let codeqlResult;
+        try {
+          codeqlResult = runCodeqlAgainstTarget(target, { log });
+          codeqlRotation = recordRotationResult(codeqlRotation, target, codeqlResult);
+          if (!codeqlResult.ok) {
+            codeqlReposFailed += 1;
+            log(`AVISO: CodeQL não rodou em ${target.owner}/${target.repo}: ${codeqlResult.reason}`);
+            continue;
+          }
+          codeqlReposOk += 1;
+          const findings = codeqlToQueueFindings(target, codeqlResult.findings);
+          let newHere = 0;
+          for (const finding of findings) {
+            const existing = db.prepare('SELECT id FROM findings WHERE id = ?').get(finding.id);
+            if (existing) continue;
+            upsertFinding(db, finding);
+            newHere += 1;
+            codeqlNewFindings += 1;
+          }
+          log(`CodeQL: ${target.owner}/${target.repo} -- ${codeqlResult.rawResultCount} resultado(s) bruto(s), ${findings.length} com security-severity 7+, ${newHere} novo(s).`);
+        } catch (error) {
+          codeqlReposFailed += 1;
+          codeqlRotation = recordRotationResult(codeqlRotation, target, { ok: false, reason: error.message });
+          log(`AVISO: CodeQL falhou em ${target.owner}/${target.repo}: ${error.message.split('\n')[0]}`);
+        }
+      }
+    } finally {
+      closeDb(db);
+    }
+  }
+  writeFileSync(CODEQL_ROTATION_PATH, `${JSON.stringify(codeqlRotation, null, 2)}\n`, 'utf8');
+  log(`CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS analisado(s), ${codeqlReposFailed} falha(s), ${codeqlNewFindings} achado(s) novo(s).`);
+
   {
     const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
     const slitherNote = slitherNewFindings > 0 ? `, ${slitherNewFindings} achado(s) novo(s) do Slither` : '';
     const osvNote = osvNewFindings > 0 ? `, ${osvNewFindings} achado(s) novo(s) do OSV-Scanner` : '';
     const semgrepNote = semgrepNewFindings > 0 ? `, ${semgrepNewFindings} achado(s) novo(s) do Semgrep` : '';
-    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}${semgrepNote}`, log);
+    const codeqlNote = codeqlNewFindings > 0 ? `, ${codeqlNewFindings} achado(s) novo(s) do CodeQL` : '';
+    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}${semgrepNote}${codeqlNote}`, log);
     if (syncResult.ok) {
       if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
     } else {
@@ -376,6 +431,7 @@ export async function runDiscovery() {
         `🔬 Slither: ${slitherReposOk}/${freshSolidityTargets.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
         `📦 OSV-Scanner: ${osvReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
         `🕵️ Semgrep: ${semgrepReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.`,
+        `🧬 CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS da rotação analisado(s)${codeqlReposFailed > 0 ? ` (${codeqlReposFailed} com falha)` : ''}, ${codeqlNewFindings} achado(s) novo(s) de dataflow global com security-severity 7+.`,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {
