@@ -1084,6 +1084,11 @@
     "src/main/java/com/auth0/client/auth/AuthorizeUrlBuilder.java",
     "src/main/java/com/auth0/client/auth/AuthAPI.java",
     "src/main/java/com/auth0/net/TokenRequest.java",
-    "src/main/java/com/auth0/json/auth/TokenHolder.java"
+    "src/main/java/com/auth0/json/auth/TokenHolder.java",
+    "src/main/java/com/auth0/client/mgmt/core/LoggingInterceptor.java (OkHttp interceptor -- loga request/response headers em debug com redação por nome de header em SENSITIVE_HEADERS (authorization, cookie, x-api-key etc, case-insensitive). URL completa e nomes de header não-sensíveis vão pro log; Management API não usa token em query string, só em Authorization header (coberto pela redação). Sem achado.)",
+    "src/main/java/com/auth0/client/mgmt/core/OAuthTokenSupplier.java (client_credentials flow -- fetchToken() monta client_id/client_secret/audience num POST JSON pro /oauth/token, cacheia accessToken/expiresAt em campos volatile com double-checked locking correto. Mensagem de erro em falha HTTP só inclui code+reason phrase, nunca o response body. Sem achado.)"
+  ],
+  "kubernetes/apimachinery": [
+    "pkg/sharding/accessor.go (ResolveFieldValue -- só extrai uid/namespace de metadata via runtime.Object accessor pra CEL field path fixo, sem I/O nem controle de acesso real. Sem achado.)"
   ]
 }

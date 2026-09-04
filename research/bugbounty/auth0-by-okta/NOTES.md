@@ -123,3 +123,41 @@ atualizado (+3 arquivos, agora 7 no total). Superfície de
 `auth0-java` core (`auth/`) agora coberta por completo; próximas
 rodadas podem migrar pra `client/mgmt/` (Management API) ou outros
 alvos JVM do programa.
+
+## Rodada 2026-09-04 #6 (push automático) — ACHADO DE PROCESSO: lacuna de revisão de RoE nunca fechada pra este programa
+
+Fila (`list-pending`) global vazia. Leitura profunda proativa migrou
+pra `client/mgmt/core/` conforme sugerido na rodada anterior: 2
+arquivos lidos (`LoggingInterceptor.java` — interceptor OkHttp que
+loga request/response em debug com redação de headers sensíveis por
+nome, sem vazamento de token pra log; `OAuthTokenSupplier.java` —
+client_credentials flow com cache de token via double-checked locking
+correto, mensagem de erro sem vazar response body). Ambos sem achado
+de segurança de código.
+
+Durante essa leitura, notei que este programa (Bugcrowd,
+`https://bugcrowd.com/engagements/auth0-okta`) já acumulou dezenas de
+rodadas de pesquisa neste pipeline (ver histórico completo acima)
+SEM NUNCA ter passado pela revisão de RoE quanto a proibição de
+ferramentas de IA — a mesma lacuna que já tinha sido identificada e
+fechada pra Slack/Mattermost/Plaid (ver `program-policy.json`), mas
+nunca aberta pra este programa. Agravante: este é Bugcrowd, a mesma
+plataforma do `Block Open Source`, que TEM proibição explícita de IA
+na RoE ("Do not use ChatGPT, Claude, DeepSeek, Google Gemini or any AI
+tools during your research"). Tentei verificar a RoE real agora
+(`WebFetch` pra `bugcrowd.com/engagements/auth0-okta` e, como
+fallback, `web.archive.org`) — ambos bloqueados pelo proxy de egress
+deste ambiente cloud (`EGRESS_BLOCKED`), não deu pra confirmar nem
+descartar. Registrei `roeReviewNeeded:true` em `program-policy.json`
+(campo informativo, não bloqueia nada sozinho, mesmo mecanismo usado
+pros 3 programas já resolvidos) e notifiquei o usuário. Ação
+necessária: usuário (ou sessão com acesso real de navegador) precisa
+ler a página completa do engagement e, se proibir IA, promover pra
+`aiResearchBanned:true`/`blocked:true` — até lá, tratar leitura
+adicional deste repositório com cautela extra. Nenhum relatório foi
+escrito nem enviado; nenhuma transição de estado deste tipo de achado
+faz sentido (é achado de processo, não de código), por isso não virou
+`ai_deep_read_finding` na fila.
+
+`deep-read-log.json` atualizado (+2 arquivos em
+`client/mgmt/core/`, agora 9 no total).

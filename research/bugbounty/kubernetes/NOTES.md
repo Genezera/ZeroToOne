@@ -396,3 +396,26 @@ auth/token/cred: `pkg/identity/keystone/authenticator.go` e
   (trusted), nunca de rede/atacante remoto.
 
 Nenhum achado novo. `deep-read-log.json` atualizado com os 3 arquivos.
+
+## Rodada 2026-09-04 (push automático) — leitura profunda proativa (apimachinery), sem achado
+
+Fila global vazia. `program-policy.json` checado como passo zero:
+`Block Open Source`/`Circle BBP` seguem bloqueados. Clone raso sparse
+de `kubernetes/apimachinery` (repo alvo ainda não tocado por este
+programa — só `cluster-bootstrap`/`cloud-provider-openstack`/
+`cloud-provider-aws` tinham leitura prévia). Grep por auth/token/
+crypto/cred/permission/access/admission em `pkg/` (excluindo `_test.go`,
+`fuzzer/`, `testing/`) achou só 1 arquivo: `pkg/sharding/
+accessor.go` — `ResolveFieldValue` extrai `uid`/`namespace` de
+metadata de um `runtime.Object` pra um path CEL fixo (`object.metadata.
+uid`/`object.metadata.namespace`), puro getter sem I/O nem lógica de
+controle de acesso (nome "accessor" é sobre acessar campo de objeto,
+não sobre access control). Sem achado. Resultado esperado — como já
+documentado nas rodadas anteriores deste programa, `apimachinery` é
+majoritariamente machinery de tipos/serialização, a lógica real de
+autenticação/autorização do Kubernetes vive em `kubernetes/kubernetes`
+(`cmd/kube-apiserver`), repo fora da lista de alvos ativos rastreados
+aqui.
+
+`deep-read-log.json` atualizado (`kubernetes/apimachinery` novo, 1
+arquivo).
