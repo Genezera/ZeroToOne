@@ -463,3 +463,78 @@ humana decidir se vale investir em confirmar o vínculo de deploy.
 
 `deep-read-log.json` atualizado com os 3 arquivos desta rodada.
 Nenhuma outra ação nesta rodada em OKG.
+
+---
+
+## Rodada 2026-09-04 (sessão cloud, gatilho push) #4
+
+Sem findings em `candidate` no início da rodada (list-pending vazio).
+Verifiquei os 2 achados anteriores desta mesma data (clamp Cardano em
+`scope_verified`, PrivateKeyFromBase58 Solana em `reproduced_local`) —
+tentei avançar ambos: o Cardano (`scope_verified->human_ready`) foi
+**recusado corretamente** por `duplicateCheckGate` ("duplicateCheck sem
+métodos rastreáveis" — o gate exige uma regressão verificada recente
+entre dois commits, que não existe aqui por ser bug antigo de 2+ anos;
+mesma barreira estrutural, não forcei). O Solana (`reproduced_local->
+scope_verified`) permanece bloqueado por `deploymentEvidence.confidence=
+unverified`, nada mudou desde a rodada anterior — não havia navegador
+real disponível nesta sessão pra confirmar vínculo de deploy.
+
+Leitura profunda proativa (3 arquivos novos, nenhum lido antes):
+`coins/filecoin/account.go`, `coins/elrond/elrond.go`,
+`coins/zkspace/zk_singer.go`.
+
+**Novo achado real: `coins/elrond/elrond.go::Transfer`.** Mesma
+assinatura de bug dos 2 achados-irmãos já documentados neste programa
+(chave privada/seed decodificada de hex sem checar erro nem tamanho
+antes de alimentar uma função criptográfica que faz panic em vez de
+devolver erro) — aqui é `ed25519.NewKeyFromSeed`, que panica pra
+qualquer seed != 32 bytes. Agravante específico deste caso:
+`AddressFromSeed`, no MESMO arquivo, faz a MESMA operação e valida
+`len(seedBytes) != 32` corretamente; `Transfer` não replica essa
+checagem. Além disso `NewAddress`, também no mesmo arquivo, documenta
+explicitamente aceitar uma chave de 64 bytes sob o mesmo nome semântico
+("chave privada em hex") — inconsistência de convenção dentro do
+próprio pacote que torna plausível um consumidor reutilizar a chave de
+64 bytes de `NewAddress` em `Transfer`, que só aceita 32.
+
+Prova executável real: `coins/elrond/zzrepro_test.go` (escrito nesta
+rodada, clone local `git clone` público), `go test -run TestRepro -v
+./...` depois de `go mod tidy` (proxy.golang.org, sem credencial).
+Saída real:
+```
+TestReproTransferPanicsOnWrongLengthKey: PANIC RECOVERED: ed25519: bad seed length: 63
+TestReproTransferSilentlyDiscardsDecodeError: panic on malformed hex input: ed25519: bad seed length: 0
+```
+
+Busquei chamadores internos (`grep -rn 'elrond.Transfer(' fora de
+teste`): zero resultados. O README do pacote, diferente dos 2 achados
+anteriores, na verdade usa consistentemente o `pk` de 32 bytes do
+próprio exemplo — não ensina literalmente o padrão de 64 bytes que
+dispara o bug; o vetor real depende de um consumidor externo trazer uma
+chave de outro ponto do mesmo SDK/pacote. Documentei essa ressalva
+explicitamente no reasoning, não escondi a limitação.
+
+Idade do bug: `coins/elrond/elrond.go` adicionado em 2023-11-03
+(commit e122a38d) — mais de 2 anos, mesma barreira de novidade que já
+bloqueia os 2 achados-irmãos (sem janela de regressão verificável de 7
+dias).
+
+Fluxo: `upsert-finding` (candidate) → `update-finding` (reasoning +
+filesRead) → `corroborated_static` (aceito) → `record-validation
+--type=go_manual_poc --result=pass` (saída real acima) →
+`reproduced_local` (aceito) → `check-scope "OKG" "okx/go-wallet-sdk"`
+(allowed=true, bountyEligible=true) → `record-deployment-evidence`
+(confidence="unverified", mesma limitação epistêmica dos 2
+achados-irmãos: sem confirmar se o app real da OKX Wallet consome este
+helper específico) → tentativa de `scope_verified` **recusada
+corretamente** pelo mesmo motivo dos irmãos ("confidence=unverified").
+Não forcei. Finding fica em `reproduced_local`.
+
+`deep-read-log.json` atualizado com os 3 arquivos desta rodada (3
+entradas novas em `okx/go-wallet-sdk`, total 14). Nenhum achado em
+`filecoin/account.go` (decodes sempre checam erro/tamanho) nem em
+`zkspace/zk_singer.go` isoladamente (delega validação pra
+`zkscrypto.NewPrivateKey`/`NewPrivateKeyRaw`, não lido ainda — fica
+como candidato pra rodada futura). Nenhuma outra ação nesta rodada em
+OKG.
