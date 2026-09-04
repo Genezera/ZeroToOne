@@ -550,3 +550,35 @@ achado novo, nenhuma transição de estado nesta rodada -- resultado
 normal e válido, consistente com o padrão já observado neste programa
 (código de translation/plumbing client-side, lógica sensível de
 auth real do core do Kubernetes vive fora dos repos rastreados aqui).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado).
+`migrate-to-v2` rodado, `list-pending` global = 0.
+
+Leitura profunda proativa: `kubernetes/component-base` (repo nunca
+lido nesta missão até agora), shallow clone público. 3 arquivos:
+
+- `configz/configz.go` (`InstallHandler`/`write`) — handler HTTP
+  `/configz` que serializa em JSON todo `ComponentConfig` registrado
+  via `configz.New`/`Set`. É um debug endpoint documentado do próprio
+  ecossistema Kubernetes (usado por `kube-scheduler` etc.), sem
+  autenticação própria embutida — decisão de montar esse handler num
+  mux exposto/autenticado (ou não) é do componente chamador, fora
+  desta lib. Padrão conhecido, não é introdução nova de vulnerabilidade
+  neste arquivo. Sem achado.
+- `logs/datapol/datapol.go` (`Verify`/`datatypes`) — reflection
+  recursiva que localiza campos marcados com a tag de struct
+  `datapolicy` para sinalizar dado sensível antes de logar; `recover()`
+  protege contra panic de reflection, recursão cobre corretamente
+  ponteiro/slice/map/struct. Sem achado.
+- `cli/flag/namedcertkey_flag.go` (`NamedCertKey.Set`/
+  `NamedCertKeyArray.Set`) — só parsing de flag de linha de comando
+  (`certfile,keyfile[:names]`), sem decisão de autorização nem I/O de
+  rede. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/component-base` novo, 3
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta
+rodada. `Block Open Source`/`Circle BBP` seguem fora de escopo por
+política local (`program-policy.json`).

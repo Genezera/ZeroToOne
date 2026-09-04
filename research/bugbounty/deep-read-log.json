@@ -1145,5 +1145,10 @@
   "kubernetes/csi-translation-lib": [
     "plugins/azure_file.go (TranslateInTreeInlineVolumeToCSI/TranslateInTreePVToCSI -- namespace do NodeStageSecretRef para volume inline vem de podNamespace (namespace do proprio pod que monta o volume, nao controlavel por outro namespace) e para PV vem de SecretNamespace explicito no PV ou ClaimRef -- ambos exigem privilegio de criar PV/inline-volume ja hoje, tradução não introduz cross-namespace read novo. Sem achado.)",
     "plugins/portworx.go (translateBackendParams/rewrite de annotations openstorage.io/auth-secret-name(space) para params CSI prefixados -- mapeamento 1:1 de valores ja presentes na StorageClass/PV, sem leitura nem elevação nova de segredo. Sem achado.)"
+  ],
+  "kubernetes/component-base": [
+    "configz/configz.go (InstallHandler/write -- handler HTTP /configz que serializa em JSON todo ComponentConfig registrado via configz.New/Set; e um debug endpoint documentado do proprio k8s (usado por kube-scheduler etc.), sem autenticacao propria -- decisao de montar ou nao esse handler num mux exposto/autenticado e do componente chamador, nao desta lib; padrao conhecido e ja documentado do ecossistema, nao uma introducao nova de vulnerabilidade neste arquivo. Sem achado.)",
+    "logs/datapol/datapol.go (Verify/datatypes -- reflection recursiva que procura tag struct `datapolicy` para marcar campos sensiveis antes de logar; recover() protegido contra panic de reflection, recursao cobre ponteiro/slice/map/struct corretamente, retorna vazio se sem tag. Sem achado.)",
+    "cli/flag/namedcertkey_flag.go (NamedCertKey.Set/NamedCertKeyArray.Set -- só parsing de flag `certfile,keyfile[:names]` para string local de CLI, nenhuma decisão de autorização nem I/O de rede. Sem achado.)"
   ]
 }
