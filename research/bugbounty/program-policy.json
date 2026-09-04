@@ -65,9 +65,16 @@
     "reviewMethod": "official_program_page_full_browser_read"
   },
   "Kubernetes": {
-    "roeReviewNeeded": true,
-    "reason": "Revisão de RoE pendente para https://hackerone.com/kubernetes; pesquisa adicional fica bloqueada até registrar decisão explícita.",
-    "flaggedAt": "2026-09-04"
+    "roeReviewed": true,
+    "aiResearchBanned": false,
+    "maxRequestsPerSecond": 5,
+    "reason": "Lacuna do registro anterior (roeReviewNeeded) RESOLVIDA (04/09/2026): li a página real do programa Kubernetes no HackerOne inteira via navegador real -- Program highlights, Overview, Disclosure Policy, Program Rules, Reward Eligibility, Tiers 1-3, Scope (Cluster Attacks/Supply Chain/Components), \"In scope but not eligible for bounty\", \"Out of scope\", notas diversas e Safe Harbor. Nenhuma menção a IA/ChatGPT/Claude/ferramentas de IA em lugar nenhum. Program Rules proíbe engenharia social e testes contra serviços de produção ao vivo, e pede QPS de scanner <=5 contra domínios kubernetes -- não se aplica a este pipeline (só lê repositório público no GitHub, nunca toca infraestrutura viva). Programa liberado pra pesquisa; consistente com pesquisa já feita anteriormente nesta sessão (achado JWS timing, fechado como duplicata de #3612349) antes desta entrada formal existir.",
+    "policyUrl": "https://hackerone.com/kubernetes",
+    "flaggedAt": "2026-09-04",
+    "reviewedAt": "2026-09-04",
+    "nextReviewAt": "2026-10-04",
+    "policyLastUpdated": "2026-04-10",
+    "reviewMethod": "official_program_page_full_browser_read"
   },
   "OKG": {
     "roeReviewed": true,
