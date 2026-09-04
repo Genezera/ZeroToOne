@@ -562,3 +562,23 @@ explorável remotamente, não virou finding.
 `deep-read-log.json` atualizado (+1 arquivo em `okx/go-wallet-sdk`,
 agora 15 no total, candidato pendente fechado). Nenhum achado novo,
 nenhuma transição de estado nesta rodada em OKG.
+
+## Rodada 2026-09-04 #19 (push automático via GitHub webhook, sessão cloud)
+
+Tentei avançar `cardano key clamp` (`scope_verified` desde rodada
+anterior, relatório já em disco) para `human_ready`: rodei
+`record-duplicate-check` (GitHub Issues API do `okx/go-wallet-sdk`
+filtrando "cardano" — 0 resultados; página de Security Advisories do
+repo — nenhum publicado; 4 buscas web distintas sobre o mecanismo
+específico do bug e sobre CIP-3/Icarus clamp em geral — nada encontrado
+em nenhuma fonte pública). A transição `scope_verified -> human_ready`
+foi **corretamente recusada** pelo modo anti-duplicate de
+`novelty-risk.mjs` (`noveltyStatus=regression` exigido — prova de
+regressão verificada entre commit-pai/commit-introdutor nas últimas
+168h): este é um bug estrutural antigo (máscara de clamp errada desde
+sempre nessa função), não uma regressão recente introduzida por um
+commit específico rastreável — não há como produzir essa prova
+honestamente, então o achado fica em `scope_verified` mesmo, como já
+estava. Nenhuma tentativa de contornar o gate — é a máquina de estados
+funcionando como projetado depois do histórico de 6/6 submissões reais
+voltarem duplicate (ver comentário no topo de `novelty-risk.mjs`).

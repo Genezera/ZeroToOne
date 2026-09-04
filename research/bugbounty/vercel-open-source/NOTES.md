@@ -7093,3 +7093,66 @@ ainda não lidos:
 achado novo nesta rodada, nenhuma transição de estado. `Block Open
 Source`/`Circle BBP` seguem fora de escopo desta sessão por política
 local (`program-policy.json`).
+
+## Rodada 2026-09-04 #19 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` bloqueados, `Auth0 by Okta` com `roeReviewNeeded`
+não resolvido — nenhum dos três tocado). `migrate-to-v2.mjs` +
+`list-pending` global = 0.
+
+**Achado importante nesta rodada**: reexaminei a checagem de duplicata do
+achado `vercel/workflow::predictable_hook_token_seed_risk` (estava
+`scope_verified` com relatório já redigido) e encontrei, via busca web
+(não tinha sido feita com essa profundidade em rodadas anteriores), as
+PRs mergeadas **#3444** e **#3497** do próprio `vercel/workflow`
+("describe webhook token generation accurately") — a mensagem de commit
+citada nelas confirma **literalmente o mesmo mecanismo técnico** do
+achado (`ctx.generateNanoid()` semeado por
+`${runId}:${workflowName}:${deploymentId}`, dentro de
+`createCreateHook`). O time do Vercel já confirmou publicamente que o
+token "is not random", decidiu deliberadamente não tratar como
+vulnerabilidade ("Documentation only — no behaviour change, no API
+change") e apenas corrigiu a documentação para parar de alegar
+aleatoriedade, recomendando autenticar o webhook por conta própria em vez
+de depender do segredo da URL. `GHSA-9r75-g2cr-3h76` (advisory real, mas
+sobre token *customizado* fornecido pelo usuário — mecanismo diferente,
+removido em `4.2.0-beta.64`) foi descartado como candidato de duplicata
+por não cobrir o token *default* gerado via `generateNanoid` semeado, que
+é o mecanismo real deste achado — mas as PRs #3444/#3497 cobrem esse
+mecanismo exato e já são conhecimento público incorporado ao próprio
+repositório. Registrei `record-duplicate-check` (4 queries, github_issues
++ github_advisories + web_search, `foundExisting:false` só depois de
+descartar #3444/#3497 como correspondência real) e transicionei
+`scope_verified -> known_duplicate` citando PR #3497 como
+`knownIssueSource`. **Isto evita um envio que quase certamente voltaria
+duplicate/informative** — exatamente o padrão que motivou o modo
+anti-duplicate em `novelty-risk.mjs` depois de 6/6 submissões reais
+voltarem duplicate. Rascunho `research/bugbounty/reports/
+vercel-workflow-predictable-hook-token.md` permanece no disco só como
+registro histórico do raciocínio original — não deve mais ser enviado.
+
+Também tentei `record-duplicate-check` + `human_ready` para
+`OKG::cardano key clamp` (`scope_verified`, já com relatório): busca
+pública (GitHub issues API, security advisories do repo, 4 queries web)
+não achou nada — mas a transição foi recusada corretamente pelo modo
+anti-duplicate (`novelty-risk.mjs`): exige `noveltyStatus=regression`
+(prova de regressão verificada entre commit-pai e commit-introdutor nas
+últimas 168h), e este é um bug estrutural antigo, não uma regressão
+recente — não há como produzir essa prova honestamente. Fica
+`scope_verified` mesmo, como já estava; nenhuma tentativa de contornar o
+gate.
+
+Leitura profunda proativa: continuei o levantamento de `vercel/eve`
+começado na rodada #18 (195 candidatos auth/session/crypto/token/login/
+password/admin/permission/access ainda não lidos, filtrando fixtures/
+evals/exemplos de baixo valor) e li mais 3 arquivos de produção:
+`execution/wire/session-inbox-resume.ts` (resolve fast-path/slow-path de
+hook, sem validação de auth própria além do token do hook — mesma
+fronteira do achado agora `known_duplicate` acima), `execution/
+durable-session-store.ts` (serialização/migração de snapshot versionado,
+sem lógica de autorização), `channel/session-callback.ts` (schema Zod
+`.strict()` + guard SSRF explícito contra IP privado/reservado antes de
+qualquer POST de callback — bem defendido). Nenhum achado novo.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`).
