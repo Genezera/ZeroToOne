@@ -69,3 +69,57 @@ Nenhum achado novo criado nesta rodada. `deep-read-log.json`
 atualizado (+3 arquivos, agora 4 no total). Ainda não lido:
 `AuthAPI.java` (1647 linhas — maior arquivo do pacote `auth`, fica pra
 próxima rodada dedicada).
+
+## Rodada 2026-09-04 #5 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses
+tocado. `migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia).
+Leitura profunda proativa desta rodada: clone raso de `auth0/auth0-java`
+(mesma cópia local da rodada anterior), fechando a superfície pendente
+apontada na rodada #1 (`AuthAPI.java`, 1648 linhas) mais dois arquivos
+correlacionados de credencial:
+
+- `src/main/java/com/auth0/client/auth/AuthAPI.java` — classe
+  principal do cliente de Authentication API. Rastreei toda superfície
+  relevante: todos os métodos de troca de token (`login`,
+  `requestToken`, `exchangeCode`/`exchangeCodeWithVerifier`,
+  `exchangeToken`, `getTokenForConnection` e variantes, `renewAuth`,
+  `revokeToken`, fluxos MFA) delegam autenticação do cliente pro
+  método privado único `addClientAuthentication` — que corretamente
+  lança `IllegalStateException` quando `required=true` e nem
+  `clientSecret` nem `clientAssertionSigner` estão configurados, e
+  prefere assertion assinada sobre secret quando ambos presentes.
+  Nenhum caminho encontrado onde client_secret vaza pra URL (todos os
+  parâmetros sensíveis — senha, otp, secret — vão no corpo da
+  requisição POST via `addParameter`, nunca em query string; os
+  poucos métodos que usam query string —
+  `authorizeUrlWithPAR`/`authorizeUrlWithJAR`/`authorizeUrl`/
+  `logoutUrl` — só carregam `client_id`/`request_uri`/`redirect_uri`,
+  não segredo). Senha e OTP são recebidos como `char[]` (não
+  `String`), consistente com boa prática de não deixar cópia
+  imutável do segredo na heap por mais tempo que o necessário.
+  `getTokenForConnection` (Token Vault, feature nova) exige
+  `addClientAuthentication(request, true)` — corretamente não permite
+  cliente público. Sem achado.
+- `src/main/java/com/auth0/net/TokenRequest.java` — só 3 setters
+  triviais (`realm`/`audience`/`scope`) que delegam pra
+  `BaseRequest.addParameter`, sem lógica própria. Sem achado.
+- `src/main/java/com/auth0/json/auth/TokenHolder.java` — DTO de
+  resposta do token endpoint (`accessToken`/`idToken`/`refreshToken`/
+  etc.), sem `toString()` customizado (usa o padrão
+  `Object.toString()`, não serializa os campos) — não há risco de
+  vazamento de token via log acidental de `TokenHolder.toString()`
+  como acontece em outras libs. Sem achado.
+
+De caminho, confirmei em `BaseRequest.addParameter`/`createRequestBody`
+que todo parâmetro (incluindo os sensíveis) vai serializado como corpo
+JSON via Jackson (`Content-Type: application/json`), nunca em query
+string nem em log — `createRequest()` só adiciona header
+`Authorization: Bearer` quando presente, nunca loga o valor.
+
+Nenhum achado novo criado nesta rodada. `deep-read-log.json`
+atualizado (+3 arquivos, agora 7 no total). Superfície de
+`auth0-java` core (`auth/`) agora coberta por completo; próximas
+rodadas podem migrar pra `client/mgmt/` (Management API) ou outros
+alvos JVM do programa.

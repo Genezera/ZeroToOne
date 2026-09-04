@@ -1081,6 +1081,9 @@
     "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java",
     "src/main/java/com/auth0/client/auth/ClientAssertionSigner.java",
     "src/main/java/com/auth0/client/auth/LogoutUrlBuilder.java",
-    "src/main/java/com/auth0/client/auth/AuthorizeUrlBuilder.java"
+    "src/main/java/com/auth0/client/auth/AuthorizeUrlBuilder.java",
+    "src/main/java/com/auth0/client/auth/AuthAPI.java",
+    "src/main/java/com/auth0/net/TokenRequest.java",
+    "src/main/java/com/auth0/json/auth/TokenHolder.java"
   ]
 }
