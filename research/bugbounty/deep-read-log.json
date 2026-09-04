@@ -1217,7 +1217,10 @@
     "cmd/publishing-bot/config/rules.go (LoadRules/readFromURL -- InsecureSkipVerify:true confirmado, cadeia completa com install.go)",
     "pkg/golang/install.go (installGoVersion -- exec.Command(\"/bin/bash\",\"-c\",...) com GoVersion não sanitizado, RCE confirmada via PoC real em Docker isolado)",
     "configs/kubernetes-configmap.yaml (confirma rules-file: https://... em producao real, nao so example-configmap.yaml)",
-    "cmd/sync-tags/gomod.go (path_traversal_risk, mesma causa raiz, nao investigado em profundidade separada)"
+    "cmd/sync-tags/gomod.go (path_traversal_risk, mesma causa raiz, nao investigado em profundidade separada)",
+    "cmd/publishing-bot/github.go (ReportOnIssue/CloseIssue -- redação best-effort de token via strings.ReplaceAll antes de logar; token vem sempre de token-file local montado como secret, nunca de input remoto. Sem achado novo.)",
+    "cmd/publishing-bot/server.go (Server.runHandler/healthzHandler -- endpoint /run sem autenticação, mas server-port default=0 (desabilitado) em main.go:60; mesmo padrão já observado em rodada anterior para outro binário. Sem achado.)",
+    "cmd/validate-rules/staging/github_utils.go (fetchKubernetesStagingDirectoryFiles -- branch concatenado direto na URL sem QueryEscape, mas branch vem de flag de CLI operado por humano, não de input remoto; http.Client{} padrão sem bypass de TLS; API pública sem token. Sem achado.)"
   ],
   "mattermost/mattermost-plugin-github": [
     "server/plugin/oauth.go (OAuthBroker -- so pub/sub interno de conclusao de OAuth por userID, sem logica de autenticacao/token. Sem achado)",
