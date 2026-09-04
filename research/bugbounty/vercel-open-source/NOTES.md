@@ -7332,3 +7332,51 @@ ainda não cobertos:
 Nenhum achado novo, nenhuma transição de estado nesta rodada. `Block
 Open Source`/`Circle BBP` seguem fora de escopo desta sessão por
 política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #23 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`
+(agora `blocked:true`, não só `aiResearchBanned`), `Circle BBP` e,
+novos desde a última rodada, `Auth0 by Okta` (`blocked:true`) e
+`Kubernetes` (`roeReviewNeeded:true`) seguem/ficaram fora de escopo;
+nenhum arquivo desses quatro programas foi clonado ou lido nesta
+rodada. `list-pending` global trouxe só achados desses quatro
+programas bloqueados/pendentes de revisão (30 Auth0, 4 Circle BBP, 3
+Kubernetes) -- nenhum tocado, conforme regra. Os 3 `known_vulnerable_dependency`
+de Mattermost foram auto-triados via `cli.mjs auto-triage-known-cve`
+(ver NOTES.md de Mattermost).
+
+Leitura profunda proativa: `nuxt/nuxt` (Tier 1 OSS, clone raso) --
+conferido contra `deep-read-log.json` (16 arquivos já cobertos), 3
+arquivos novos lidos, priorizando nome com auth/session/token:
+
+- `packages/nuxt/src/app/composables/preview.ts` (completo) --
+  `usePreviewMode`: `defaultShouldEnable` só olha `?preview=true` na
+  query, `getDefaultState` só copia `?token=` da query pra
+  `state.token` sem validar nada. Ambos são callbacks substituíveis
+  pelo app via `options.shouldEnable`/`options.getState` -- nenhuma
+  decisão de autorização acontece dentro do composable, é primitiva de
+  estado client-side pura. A checagem real do token (se o app decide
+  usar um) é responsabilidade do app integrador, mesmo padrão já
+  refutado antes em `channel/session.ts`/`execution/session.ts` do
+  `vercel/eve`. Sem achado.
+- `packages/nuxt/src/core/utils/route-rules.ts` (completo) --
+  `normalizeRouteRulePath`/`createNormalizedRouteRulesRouter`: decode
+  (via `decodeRoutePath`, `decodeURI` de passada única, não
+  recursivo, com catch-and-return-original em percent-encoding
+  malformado -- sem risco de double-decode) + case-fold opcional,
+  aplicado de forma simétrica tanto às chaves de regra quanto ao path
+  de request no ponto de match real (`nitro-server/src/index.ts:521-525`,
+  `pages/module.ts:644-646`) -- sem assimetria entre os dois lados que
+  permitisse uma rota bypassar ou "roubar" a regra de outra. Sem
+  achado.
+- `packages/nitro-server/src/runtime/utils/cache.ts` (completo) --
+  `payloadCache`/`sharedPrerenderCache`: o próprio código já tem
+  comentário do time reconhecendo explicitamente a classe de risco
+  ("keyed by path alone... would leak one principal's SSR data to
+  others") e mitigando com `import.meta.prerender` -- este cache só
+  existe em build-time (prerender estático), nunca em runtime de
+  request real com cookie/sessão de usuário. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `nuxt/nuxt`, agora
+19). Nenhum achado novo, nenhuma transição de estado nesta rodada.

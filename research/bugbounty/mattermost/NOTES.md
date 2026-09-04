@@ -34,3 +34,24 @@ cada finding.
 **Pendência pro usuário**: confirmar a RoE do engagement
 `mattermost-mbb-public` no Bugcrowd antes de qualquer rodada futura de
 pesquisa aqui (ver `program-policy.json`).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (regra do CLAUDE.md):
+programa segue `roeReviewed:true`/`aiResearchBanned:false`, liberado.
+
+`list-pending` trouxe 3 achados `known_vulnerable_dependency` em
+`mattermost/mattermost-plugin-zoom/webapp/package-lock.json`
+(`yaml@1.10.2` GHSA-48c2-rrv3-qjmp, `ajv@6.12.6` e `ajv@8.17.1`
+GHSA-2g4f-4pwh-qvx6) — todos com GHSA extraível no reasoning e sem
+verificação de alcançabilidade real ainda feita. Rodei
+`cli.mjs auto-triage-known-cve`, que fecha automaticamente este padrão
+como `known_duplicate` (não `false_positive`: o CVE é real, só não é
+achado novo — já é divulgação pública rastreável, exatamente o critério
+de `state-machine.mjs::known_duplicate`). Os 3 fecharam limpo, sem
+erro. Nenhuma leitura de arquivo do repositório-alvo foi necessária
+para isso (a decisão depende só do GHSA já publicado, não do código).
+
+Leitura profunda proativa desta rodada ficou em `nuxt/nuxt` (programa
+Vercel Open Source) — ver NOTES.md de Vercel Open Source. Nenhum achado
+novo neste programa.

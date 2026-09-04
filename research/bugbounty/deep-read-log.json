@@ -652,7 +652,10 @@
     "packages/webpack/src/utils/same-origin.ts",
     "packages/nuxt/src/core/utils/proxy.ts",
     "packages/nitro-server/src/runtime/middleware/base-url.ts",
-    "packages/nuxt/src/app/plugins/cross-origin-prefetch.client.ts"
+    "packages/nuxt/src/app/plugins/cross-origin-prefetch.client.ts",
+    "packages/nuxt/src/app/composables/preview.ts (usePreviewMode/defaultShouldEnable/getDefaultState -- shouldEnable padrão só olha ?preview=true na query, getDefaultState só copia ?token= da query pra state.token sem validar; ambos são callbacks substituíveis pelo app via options, nenhuma decisão de autorização acontece dentro do composable em si -- é primitiva de estado client-side, a checagem real do token é responsabilidade documentada do app integrador (mesmo padrão já refutado em channel/session.ts do vercel/eve). Sem achado)",
+    "packages/nuxt/src/core/utils/route-rules.ts (normalizeRouteRulePath/createNormalizedRouteRulesRouter -- decode+case-fold aplicado consistentemente tanto às chaves de regra quanto ao path de request no ponto de match (nitro-server/src/index.ts:521-525, pages/module.ts:644-646), sem assimetria entre os dois lados que permitisse bypass; decodeRoutePath (core/utils/index.ts:29) é decode único via decodeURI, não recursivo, com catch-and-return-original em percent-encoding malformado -- não há double-decode. Sem achado)",
+    "packages/nitro-server/src/runtime/utils/cache.ts (payloadCache/sharedPrerenderCache -- código já tem comentário do próprio time reconhecendo a classe do risco (\"keyed by path alone... would leak one principal's SSR data to others\") e restringindo com import.meta.prerender: cache só existe em build time (prerender), nunca em runtime de request real com cookie/auth -- não há usuário real nem dado por-principal neste momento do ciclo de vida. Sem achado)"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
