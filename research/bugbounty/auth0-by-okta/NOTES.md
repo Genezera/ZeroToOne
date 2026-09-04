@@ -161,3 +161,28 @@ faz sentido (é achado de processo, não de código), por isso não virou
 
 `deep-read-log.json` atualizado (+2 arquivos em
 `client/mgmt/core/`, agora 9 no total).
+
+## Rodada 2026-09-04 #7 (push automático) — programa agora BLOQUEADO, fila com resíduo pré-bloqueio
+
+`program-policy.json` já traz `Auth0 by Okta` como `blocked:true` (RoE
+lida integralmente: proíbe ferramenta/scanner automatizado, avisa que
+conteúdo gerado por IA sem análise humana original é rejeitado, com
+reincidência podendo remover o pesquisador — resolvido por sessão
+anterior a esta, ver entrada em `program-policy.json`). Nenhum arquivo
+deste programa foi lido, clonado ou aberto nesta rodada — nem candidato
+existente, nem leitura profunda proativa.
+
+`list-pending` desta rodada mostrou 30 candidatos ainda em `candidate`
+para `auth0/react-native-auth0::.yarn/releases/yarn-4.11.0.cjs`
+(`redos_risk`, `command_injection_risk`, `eval_usage` x4), todos com
+`createdAt: 2026-09-04T09:16:59Z` e `filesRead` já preenchido — ou seja,
+criados por uma rodada automática anterior, aparentemente antes (ou no
+mesmo instante) da entrada de bloqueio ter sido gravada em
+`program-policy.json`. Isso é precisamente o padrão de incidente descrito
+em `CLAUDE.md` (leitura ocorre antes da checagem de política). Dado que
+o bloqueio já está em vigor agora, esta rodada não tocou esses
+candidatos de forma alguma (nem update-finding, nem transition, nem
+nova leitura) — ficam intocados em `candidate`, documentados aqui pro
+usuário decidir o que fazer (provavelmente descartar/fechar manualmente,
+já que reabrir para investigar violaria a RoE de novo). Nenhum relatório
+foi gerado a partir deles em nenhum momento.

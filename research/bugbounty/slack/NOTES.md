@@ -89,3 +89,36 @@ focou em `vercel/vercel`):
 Sem achado nesta leitura -- resultado válido, não forçado. Mesma
 pendência de RoE acima também se aplica a esta leitura (aconteceu na
 mesma janela, antes de qualquer confirmação de RoE).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero antes de qualquer leitura:
+`Slack` está `roeReviewed:true`/`aiResearchBanned:false` desde 03/09 (a
+pendência mencionada acima já foi resolvida por sessão anterior).
+`Block Open Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados,
+nenhum repo desses tocado.
+
+`list-pending` global = 34 candidatos, todos pertencentes a programas
+bloqueados (30 `Auth0 by Okta` em `auth0/react-native-auth0`, 4
+`Circle BBP`) — nenhum processado, conforme regra de pular o programa
+inteiro sem ler/abrir nada. Ver `auth0-by-okta/NOTES.md` e nota de
+processo abaixo.
+
+Leitura profunda proativa (3 arquivos), continuando a fronteira de
+confiança PKI/handshake do Nebula (`slackhq/nebula`) do adendo anterior:
+- `handshake/credential.go` — só struct de dados + delega pro
+  `noise.NewHandshakeState`. Sem achado.
+- `handshake/machine.go` — máquina de estados do handshake Noise
+  (`ProcessPacket`/`validateCert`). Negociação de versão de certificado só
+  troca pra versão que o host local já aceita, e a chave pública do
+  certificado alegado é sempre conferida contra a chave estática já
+  autenticada pelo Noise DH antes de qualquer outra coisa — não dá pra
+  forjar downgrade sem já possuir a chave privada correspondente. Sem
+  achado.
+- `cert/sign.go` — usado só pela ferramenta offline `nebula-cert` (CA),
+  não pelo daemon nem por input de peer remoto; assinatura padrão
+  (ed25519/ecdsa com `crypto/rand`), normalização low-S antes de gravar.
+  Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3,
+agora 7 no total para `slackhq/nebula`).

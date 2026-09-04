@@ -6736,3 +6736,12 @@ inteiramente em `sveltejs/svelte` (ver NOTES.md de Vercel Open Source).
 O achado travado em `corroborated_static`
 (`Mints.sol::_mint::unchecked_call_return`) segue intocado, sem
 nenhuma ação.
+
+## Rodada 2026-09-04 #29 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado (`blocked: true` continua vigente).
+Nenhum repo `circlefin/*` foi clonado, lido ou tocado. Os mesmos 4
+candidatos `unchecked_call_return` em `004_UpgradeGatewayWallet.sol`
+seguem herdados de rodadas passadas, sem ação. Leitura profunda
+proativa desta rodada ficou em `slackhq/nebula` (ver NOTES.md de
+Slack). Achado travado em `corroborated_static` segue intocado.
