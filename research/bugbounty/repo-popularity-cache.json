@@ -233,5 +233,15 @@
     "stars": 1,
     "totalScannableFiles": 12,
     "fetchedAt": "2026-09-03T16:23:11.523Z"
+  },
+  "slackhq/nebula": {
+    "stars": 18284,
+    "totalScannableFiles": 177,
+    "fetchedAt": "2026-09-04T13:32:44.237Z"
+  },
+  "plaid/plaid-ruby": {
+    "stars": 247,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-04T13:32:44.705Z"
   }
 }

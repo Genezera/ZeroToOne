@@ -5977,3 +5977,39 @@ não tinha tocado:
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/ai` +3 arquivos, agora 27 no total, sem duplicar as entradas
 já gravadas pela rodada concorrente acima).
+
+## Rodada 2026-09-03 (Claude Code local, pedido explícito do usuário: "continue oque o chatgpt estava fazendo")
+
+`program-policy.json` checado antes de qualquer leitura (Block Open
+Source/Circle BBP seguem excluídos, não tocados). Continuação direta do
+sweep de auth por harness já em andamento nas rodadas anteriores
+(codex, opencode, claude-code já cobertos) -- completei os harnesses
+restantes que têm arquivo de auth próprio:
+
+- `packages/harness-cline/src/cline-auth.ts` -- resolução de modo
+  direct/ai-gateway via env vars, só monta `AI_GATEWAY_API_KEY` no env
+  do processo Cline quando presente. Sem comparação de segredo nem
+  geração de token. Sem achado.
+- `packages/harness-pi/src/pi-auth.ts` -- mesmo padrão de resolução de
+  apiKey por provider, incluindo `GOOGLE_APPLICATION_CREDENTIALS` por
+  caminho de arquivo (comparação de caminho de string, não de segredo).
+  Sem `randomBytes`/comparação insegura em lugar nenhum do arquivo. Sem
+  achado.
+- `packages/harness-deepagents/src/deepagents-auth.ts` -- mesmo padrão
+  direct/ai-gateway via env vars. Sem achado.
+- `packages/harness-grok-build/src/grok-build-harness.ts` -- este
+  harness não tem arquivo de auth dedicado (diferente dos outros);
+  checado o arquivo principal por completude do sweep, zero menção a
+  token/secret/randomBytes/comparação. Sem achado.
+
+`harness-cursor` e `harness-fx` não têm nenhum arquivo `*-auth.ts` no
+repositório (consistente com o PR #20267 que introduziu os harnesses:
+"Cursor: Unsupported -- question tool is not exposed in ACP mode",
+"fx: Unsupported -- question interaction is disabled in ACP mode") --
+nada análogo pra ler nesses dois.
+
+Isso fecha o sweep completo de arquivo-de-auth-dedicado por harness
+neste monorepo (claude-code, codex, opencode, cline, pi, deepagents
+cobertos; cursor/fx não se aplicam; grok-build não tem um dedicado,
+arquivo principal checado). Nenhum achado novo. `deep-read-log.json`
+atualizado (`vercel/ai` +4 arquivos, agora 31 no total).

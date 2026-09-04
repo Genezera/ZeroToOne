@@ -738,7 +738,11 @@
     "packages/harness/src/v1/harness-v1-credential-forwarding.ts",
     "packages/harness/src/utils/ai-gateway-auth.ts",
     "packages/harness/src/utils/authentication-environment.ts",
-    "packages/harness-claude-code/src/claude-code-auth.ts"
+    "packages/harness-claude-code/src/claude-code-auth.ts",
+    "packages/harness-cline/src/cline-auth.ts (resolução de modo de auth -- direct/ai-gateway/env vars, só monta env do processo Cline com AI_GATEWAY_API_KEY quando presente. Sem comparação de segredo, sem geração de token. Sem achado)",
+    "packages/harness-pi/src/pi-auth.ts (mesmo padrão de resolução de apiKey por provider/env var, incluindo GOOGLE_APPLICATION_CREDENTIALS por caminho de arquivo -- comparação de caminho, não de segredo. Sem randomBytes/comparação insegura. Sem achado)",
+    "packages/harness-deepagents/src/deepagents-auth.ts (mesmo padrão de resolução direct/ai-gateway via env vars. Sem achado)",
+    "packages/harness-grok-build/src/grok-build-harness.ts (harness principal, sem arquivo de auth dedicado -- checado por completude do sweep de harness-*, zero menção a token/secret/randomBytes/comparação. Sem achado)"
   ],
   "vercel/async-sema": [
     "src/index.ts"
