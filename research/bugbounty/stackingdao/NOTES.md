@@ -1127,3 +1127,16 @@ neste programa. Leitura profunda proativa desta rodada direcionada a
 Vercel Open Source), sem achado. Nenhuma transição de estado neste
 programa. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
 sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #20 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. `api.hiro.so` não retestado nesta rodada
+especificamente (já reconfirmado bloqueado em dezenas de rodadas
+consecutivas recentes); os 15 contratos Clarity seguem 100% cobertos,
+sem arquivo novo candidato em StackingDAO. Leitura profunda proativa
+desta rodada direcionada a `vercel/eve` de novo (`setup/flows/login.ts`,
+`setup/boxes/apply-ai-gateway-credential.ts`, `cli/dev/tui/
+remote-auth-command.ts` — ver NOTES.md de Vercel Open Source), sem
+achado. Nenhuma transição de estado neste programa. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).

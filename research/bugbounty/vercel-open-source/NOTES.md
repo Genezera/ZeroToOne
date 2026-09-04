@@ -7156,3 +7156,52 @@ sem lógica de autorização), `channel/session-callback.ts` (schema Zod
 qualquer POST de callback — bem defendido). Nenhum achado novo.
 
 `deep-read-log.json` atualizado (+3 entradas em `vercel/eve`).
+
+## Rodada 2026-09-04 #20 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP` bloqueados via `check-program`, nenhum dos dois tocado).
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisitados os estados
+não-terminais existentes (`corroborated_static`/`human_ready`/
+`inconclusive`/`reproduced_local`/`scope_verified`) só por leitura —
+nenhum pertence a StackingDAO ou Vercel Open Source além dos já
+documentados (`vercel/ai::runBridge::timing_attack_risk`,
+`vercel-labs/agent-skills::verify-claim.mjs::path_traversal...`,
+`vercel/vercel::update-remix-run-dev.js::command_injection_risk`,
+`vercel/next.js::image-optimizer.ts::ssrf_redirect_allowlist_bypass_risk`,
+3x `semgrep_detect_child_process` em `mcp.ts`, e o `inconclusive` de
+`cli-auth/sso.ts::waitForVerification`) — nenhum exigia ação nova nesta
+rodada (sem evento de fila os disparando).
+
+Leitura profunda proativa: clonei `vercel/eve` raso localmente (não
+estava em disco nesta sessão efêmera) pra diferenciar candidatos
+auth/session/crypto/token/... genuinamente não lidos dos ~190 já
+cobertos em rodadas anteriores (muitos falsos-positivos de substring,
+como `authored-*` que é sobre *autoria* de módulo, não autenticação —
+filtrados). Escolhi 3 arquivos de produção real ainda não lidos:
+
+- `packages/eve/src/setup/flows/login.ts` (completo) — `runLoginFlow`
+  orquestra `vercel login` via OAuth de browser dentro do TUI de setup;
+  sempre reprovoca `getVercelAuthStatus` DEPOIS do subprocesso terminar
+  em vez de confiar no exit code do CLI — um login abandonado/parcial
+  reporta `failed` honestamente, nunca falso-sucesso. Sem achado.
+- `packages/eve/src/setup/boxes/apply-ai-gateway-credential.ts`
+  (completo) — `perform` só reivindica `inherit` bem-sucedido depois que
+  `runVercelEnvPull` retorna `true` (nunca reporta "connected" que seria
+  mentira se o pull falhar); caminho `byok` escreve a key colada via
+  `writeAiGatewayApiKey`/`appendEnv`, decisão de qual modo usar já vem
+  resolvida de `state.aiGateway` a montante. Sem achado.
+- `packages/eve/src/cli/dev/tui/remote-auth-command.ts` (completo) —
+  `runRemoteAuthCommand` só orquestra painel TUI/abort/interrupt em
+  torno de `runRemoteAuthFlow` (já lido em `remote-auth.ts` em rodada
+  anterior); `mutedRenderer` silencia a UI durante interrupção mas
+  sempre deixa `warning`/`error` passarem. Não decide autenticação por
+  si mesmo. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `api.hiro.so`
+não foi retestado nesta rodada especificamente para StackingDAO (já
+reconfirmado bloqueado em dezenas de rodadas recentes consecutivas;
+os 15 contratos Clarity seguem 100% cobertos, sem mudança). `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
