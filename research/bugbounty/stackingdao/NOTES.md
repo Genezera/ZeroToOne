@@ -1182,3 +1182,16 @@ neste programa. Leitura profunda proativa desta rodada direcionada a
 novos, `1-parse/utils/html.js`, `2-analyze/visitors/HtmlTag.js`,
 `html-tree-validation.js`, sem achado). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-04 #27 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 37, todos de programas fora de escopo desta
+sessão (Auth0 by Okta, Circle BBP, Kubernetes) -- nenhum tocado. Os 15
+contratos Clarity seguem 100% cobertos, sem arquivo novo candidato
+neste programa. `api.hiro.so` rechecado via `curl -m 8`: `CONNECT
+tunnel failed, response 403` de novo -- não confirmável se o deployer
+publicou contrato novo; mesmo bloqueio de rede de dezenas de rodadas
+consecutivas. Leitura profunda proativa desta rodada direcionada a
+`sveltejs/svelte` (ver NOTES.md de Vercel Open Source: `OnDirective.js`,
+`reactivity/url.js`, `internal/server/hydratable.js`, sem achado).
+Nenhum achado novo, nenhuma transição de estado neste programa.
