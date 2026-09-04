@@ -192,3 +192,24 @@ raso e revisados todos com leitura de código real:
 sessão cloud paralela que triou Circle BBP no mesmo intervalo — ver
 commit de merge; nenhuma sobreposição de id com o trabalho deste
 programa). Fila OKG volta a ficar em 0 `candidate`.
+
+## Rodada 2026-09-04 — leitura profunda proativa (2 arquivos)
+`list-pending` vazio (0 `candidate` em todo o sistema). Leitura
+profunda proativa escolheu 2 arquivos ainda não lidos em
+`okx/go-wallet-sdk`, priorizando nome de caminho (`priv`/`seed`):
+- `coins/aptos/v2/crypto/privateKey.go` — `FormatPrivateKey`/
+  `ParsePrivateKey` são só (de)serialização hex<->AIP-80 (prefixo tipo
+  `ed25519-priv-...`); nenhuma operação criptográfica acontece aqui
+  (delega pra `util.ParseHex`/`BytesToHex`). Sem achado.
+- `coins/ton/ton/wallet/seed.go` — geração/validação de seed de 24
+  palavras da carteira TON. Comentário de atribuição no topo do
+  próprio arquivo (`Author: https://github.com/xssnick/tonutils-go`)
+  confirma que é vendored de biblioteca terceira já amplamente
+  auditada, não código original da OKX. Randomização usa
+  `crypto/rand.Int` (CSPRNG correto); checksum via HMAC-SHA512 +
+  PBKDF2 confere com o design documentado do TON (múltiplas
+  iterações até achar seed cujo checksum bate). Nada de suspeito nem
+  atribuível à OKX especificamente. Sem achado.
+
+Nenhum achado novo criado nesta rodada. `deep-read-log.json`
+atualizado com os 2 arquivos.

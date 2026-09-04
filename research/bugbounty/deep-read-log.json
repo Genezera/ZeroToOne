@@ -1053,5 +1053,12 @@
   "plaid/plaid-ruby": [
     "lib/plaid/api_client.rb",
     "lib/plaid/configuration.rb"
+  ],
+  "okx/go-wallet-sdk": [
+    "coins/aptos/v2/crypto/privateKey.go",
+    "coins/ton/ton/wallet/seed.go"
+  ],
+  "auth0/auth0-java": [
+    "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java"
   ]
 }
