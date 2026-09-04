@@ -7726,3 +7726,24 @@ Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md`
 `connect_rejected`; 15 contratos Clarity seguem 100% cobertos, sem
 mudança). Nenhuma mudança de estado em nenhum programa nesta rodada;
 nenhum achado novo elegível.
+
+## Rodada 2026-09-04 #30 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` bloqueados via `check-program` -- nenhum
+tocado). `list-pending` global = 34, 100% de programas fora de escopo
+(30 Auth0 by Okta, 4 Circle BBP) -- nenhum tocado. Leitura profunda
+proativa desta rodada direcionada a `vercel/turborepo`
+(`crates/turborepo-auth/src/ui/messages.rs`,
+`crates/turborepo-wax/src/token/mod.rs`,
+`crates/turborepo-wax/src/token/parse.rs`): `messages.rs` é só um
+`println!` de sucesso pós-login sem segredo interpolado; os dois
+arquivos de `turborepo-wax` (biblioteca de glob vendorizada, usada nas
+"boundaries"/permissões de pacote) são só o parser nom e a estrutura de
+token/AST -- nenhuma lógica de matching/enforcement de permissão está
+nestes dois arquivos especificamente (fica em outro módulo não lido
+nesta rodada); `..` é tratado como literal comum no parser, sem
+tratamento especial de path traversal aqui. Sem achado nos 3 arquivos.
+`deep-read-log.json` atualizado (vercel/turborepo agora com 28 arquivos
+lidos nesta missão). Nenhuma transição de estado em nenhum programa
+nesta rodada.
