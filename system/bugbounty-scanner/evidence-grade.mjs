@@ -10,10 +10,8 @@
 // | E1   | 1 arquivo lido, confirma condição suspeita isolada      |
 // | E2   | 2+ arquivos lidos (cadeia cross-file) OU corroborated_static |
 // | E3   | Validação real com result="pass" OU reproduced_local+   |
-// | E4   | NÃO USADO AINDA -- exigiria distinguir "ambiente isolado |
-// |      | end-to-end" de "reproduced_local" simples, e o sistema   |
-// |      | hoje não tem esse dado separado. Documentado como gap,   |
-// |      | não fingido.                                             |
+// | E4   | Regressão end-to-end em sandbox isolado, com imagem e     |
+// |      | baseline/candidate registrados                            |
 // | E5   | Resultado real de plataforma: triaged/paid/resolved      |
 
 // Reaching ANY of these proves E3 was achieved at some point, even if the
@@ -37,8 +35,9 @@ const E5_OUTCOME_STATES = new Set(['triaged', 'paid', 'resolved']);
  * informative/rejected) NÃO rebaixa o grau -- o comportamento pode
  * continuar real, só deixou de ser elegível; grau de evidência mede
  * "quão bem provado", não "quão pagável". */
-export function computeEvidenceGrade({ state, filesReadCount = 0, hasPassingValidation = false, platformOutcomeState = null }) {
+export function computeEvidenceGrade({ state, filesReadCount = 0, hasPassingValidation = false, hasIsolatedEndToEndValidation = false, platformOutcomeState = null }) {
   if (platformOutcomeState && E5_OUTCOME_STATES.has(platformOutcomeState)) return 'E5';
+  if (hasIsolatedEndToEndValidation) return 'E4';
   if (hasPassingValidation || E3_PLUS_STATES.has(state)) return 'E3';
   if (filesReadCount >= 2 || state === 'corroborated_static') return 'E2';
   if (filesReadCount >= 1) return 'E1';
@@ -51,7 +50,7 @@ export function explainGrade(grade) {
     E1: 'Um arquivo real lido, confirma condição suspeita isolada.',
     E2: 'Cadeia cross-file confirmada (2+ arquivos) ou marcado corroborated_static.',
     E3: 'Reprodução determinística local real (validação com result=pass) ou avançado além disso.',
-    E4: 'Não usado — o sistema ainda não distingue "ambiente isolado end-to-end" de reproduced_local simples.',
+    E4: 'Regressão reproduzida end-to-end em sandbox isolado, com imagem, baseline e candidate registrados.',
     E5: 'Validado por resultado real de plataforma (triaged, paid ou resolved).',
   };
   return explanations[grade] || 'Grau desconhecido.';
@@ -64,11 +63,23 @@ export function getEvidenceGrade(db, findingId, { getFinding, listValidations, l
   if (!finding) return null;
   const validations = listValidations(db, findingId) || [];
   const hasPassingValidation = validations.some((v) => v.result === 'pass');
+  const hasIsolatedEndToEndValidation = validations.some((validation) => {
+    const execution = validation.evidence?.noveltyProof?.execution;
+    return validation.result === 'pass'
+      && validation.evidence?.provenance === 'regression-sandbox'
+      && execution?.validationScope === 'end_to_end'
+      && typeof execution?.containerImageId === 'string'
+      && execution.containerImageId.length > 0
+      && String(execution?.isolation || '').includes('no-network')
+      && validation.evidence?.noveltyProof?.baseline?.result === 'not_vulnerable'
+      && validation.evidence?.noveltyProof?.candidate?.result === 'vulnerable';
+  });
   const outcome = latestPlatformOutcome(db, findingId);
   return computeEvidenceGrade({
     state: finding.state,
     filesReadCount: (finding.filesRead || []).length,
     hasPassingValidation,
+    hasIsolatedEndToEndValidation,
     platformOutcomeState: outcome?.state || null,
   });
 }

@@ -6,6 +6,7 @@ import {
   recordPlatformOutcome, latestPlatformOutcome, latestDeploymentEvidence, recordValidation, listValidations, recordReport, latestReport,
   recordDuplicateCheck, latestDuplicateCheck, recordImpactAssessment, latestImpactAssessment,
   recordSubmission, latestSubmissionForFinding,
+  recordCodeAgeEvidence, latestCodeAgeEvidence,
   importSubmissionsFromJsonl,
 } from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
@@ -120,6 +121,18 @@ function restoreSatelliteData(db, findingId, entry) {
     if (!same) {
       recordImpactAssessment(db, findingId, entry.impactAssessment);
       notes.push(`impactAssessment restaurado da fila (${entry.impactAssessment.ts || 'sem timestamp original'})`);
+    }
+  }
+
+  if (entry.codeAgeEvidence) {
+    const current = latestCodeAgeEvidence(db, findingId);
+    const same = current
+      && current.checkedAt === entry.codeAgeEvidence.checkedAt
+      && current.lastCommitSha === (entry.codeAgeEvidence.lastCommitSha || null)
+      && current.codeAgeDays === (entry.codeAgeEvidence.codeAgeDays ?? null);
+    if (!same) {
+      recordCodeAgeEvidence(db, findingId, entry.codeAgeEvidence);
+      notes.push(`codeAgeEvidence restaurado da fila (${entry.codeAgeEvidence.checkedAt || 'sem timestamp original'})`);
     }
   }
 

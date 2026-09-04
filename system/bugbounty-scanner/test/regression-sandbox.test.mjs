@@ -18,12 +18,15 @@ const base = {
 test('config de regressão aceita apenas GitHub público, SHA completo, runtime e workdir seguros', () => {
   const valid = validateRegressionConfig(base);
   assert.equal(valid.repositoryUrl, 'https://github.com/example/project.git');
+  assert.equal(valid.validationScope, 'component');
+  assert.equal(validateRegressionConfig({ ...base, validationScope: 'end_to_end' }).validationScope, 'end_to_end');
   assert.throws(() => validateRegressionConfig({ ...base, repositoryUrl: 'http://github.com/example/project' }), /somente/);
   assert.throws(() => validateRegressionConfig({ ...base, repositoryUrl: 'https://gitlab.com/example/project' }), /somente/);
   assert.throws(() => validateRegressionConfig({ ...base, introducedCommit: 'abc' }), /SHAs completos/);
   assert.throws(() => validateRegressionConfig({ ...base, runtime: 'custom-image' }), /runtime não permitido/);
   assert.throws(() => validateRegressionConfig({ ...base, workdir: '../escape' }), /workdir/);
   assert.throws(() => validateRegressionConfig({ ...base, command: 'echo ok\necho bad' }), /uma linha/);
+  assert.throws(() => validateRegressionConfig({ ...base, validationScope: 'marketing' }), /validationScope/);
 });
 
 test('marcador exige exatamente um veredito explícito em linha isolada', () => {
