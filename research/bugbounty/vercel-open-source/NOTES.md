@@ -6664,3 +6664,61 @@ de deploy-time, não input de request) e `packages/cli/src/commands/health.ts`
 (CLI local, sem fronteira de autorização remota). Nenhum achado nos
 três. `deep-read-log.json` atualizado. Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-04 (push automático, rodada seguinte)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`) confirmados bloqueados —
+nenhum repositório desses dois programas foi clonado/lido/aberto nesta
+rodada. `migrate-to-v2.mjs` + `list-pending` global = 0.
+
+Revisitei os 5 achados `corroborated_static` deste programa
+(`ssrf_redirect_allowlist_bypass_risk` em `image-optimizer.ts`,
+`command_injection_risk` em `update-remix-run-dev.js`,
+`path_traversal_arbitrary_file_read_risk` em `verify-claim.mjs`,
+`timing_attack_risk` em `harness/bridge/index.ts`, e os 3
+`semgrep_detect_child_process` em `mcp.ts`): confirmado via
+`state-machine.mjs` que a transição `corroborated_static->reproduced_local`
+só é aceita com validador local disponível (`record-validation`
+`not_applicable` para achados JS/TS sem PoC), e `reproduced_local->scope_verified`
+é a única aresta que chega em `scope_verified` — ou seja,
+`corroborated_static->scope_verified` direto não existe na máquina de
+estados. Esses 5 achados ficam permanentemente presos em
+`corroborated_static` até existir um validador de verdade para
+JS/TS/GitHub-Actions (limitação de engenharia já documentada em
+rodadas anteriores, não um problema novo). Nenhuma ação forçada,
+nenhuma transição tentada sem base.
+
+Leitura profunda proativa: todos os 16 repositórios do snapshot de
+escopo (`scope-snapshots/vercel-open-source.json`) já têm pelo menos
+uma entrada em `deep-read-log.json`. Escolhi `vercel/turborepo`
+(clone raso, descartado ao final) por ter arquivos de hashing de
+cache (`crates/turborepo-hash/`, `crates/turborepo-lockfile-hash/`)
+ainda não lidos linha a linha, potencialmente relevantes para
+cache-poisoning (se o hash de cache-key fosse fraco a ponto de
+colidir sob controle do atacante, uma tarefa de CI poderia reutilizar
+saída de outra tarefa). Lidos por completo:
+
+- `crates/turborepo-hash/src/lib.rs` — `HashableMessage` para
+  `TaskHashable`/`GlobalHashable`/`FileHashes`/`LockFilePackages`,
+  serialização canônica via Cap'n Proto + xxHash64.
+- `crates/turborepo-hash/src/oid_hash.rs` — `OidHash`, wrapper
+  stack-allocated de 40 bytes para OID git hex; valida ASCII-hex antes
+  de qualquer `unsafe` (`from_utf8_unchecked` só após
+  `assert_ascii_hex`), sem caminho de bypass.
+- `crates/turborepo-lockfile-hash/src/lib.rs` — mesmo padrão
+  xxHash64 sobre mensagem Cap'n Proto canônica.
+
+**Sem achado**: xxHash64 é hash não-criptográfico usado exclusivamente
+como fingerprint de chave de cache local/lookup — não é usado como
+segredo nem como decisão de autorização. A fronteira de segurança real
+(autenticação de artefato de cache remoto) já foi lida e confirmada
+segura em rodada anterior (`signature_authentication.rs`, HMAC-SHA256
+com comparação timing-safe, fail-closed em erro/tag inválida — ver
+entrada em `deep-read-log.json` de `vercel/turborepo`). Mesmo padrão
+já visto e não elevado a achado em `nitrojs/nitro`
+(`src/utils/hash.ts`, sha256 truncado só para chave/identificador).
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum achado
+novo, nenhuma transição de estado neste programa nesta rodada.
+`Block Open Source`/`Circle BBP` seguem fora de escopo desta sessão
+por política local (`program-policy.json`).

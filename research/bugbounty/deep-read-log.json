@@ -929,7 +929,10 @@
     "apps/docs/lib/og/sign.ts + apps/docs/app/api/og/route.tsx (HMAC-SHA256 sobre params normalizados, regex+length-check antes de timingSafeEqual, 401 fail-closed em assinatura ausente/inválida -- sem achado, padrão correto)",
     "crates/turborepo-auth/src/error.rs (variantes de erro do fluxo de login/SSO/OAuth/device-flow -- nenhuma interpola token/segredo bruto na mensagem, só status/código/URL; UntrustedVercelApiUrl/UntrustedNonVercelLoginUrlSource/UntrustedNonVercelApiUrlSource/UntrustedNonVercelLoginUrlScheme/LoginUrlIncludesCredentials mostram hardening deliberado contra login não-Vercel malicioso. Sem achado)",
     "crates/turborepo-auth/src/ui/mod.rs (3 linhas, só re-exporta messages::print_cli_authorized, sem lógica própria)",
-    "crates/turborepo-boundaries/bindings/Permissions.ts (gerado por ts-rs, só tipo TS allow/deny de tags, sem lógica de runtime)"
+    "crates/turborepo-boundaries/bindings/Permissions.ts (gerado por ts-rs, só tipo TS allow/deny de tags, sem lógica de runtime)",
+    "crates/turborepo-hash/src/lib.rs (canonical_builder/HashableMessage p/ TaskHashable/GlobalHashable/FileHashes/LockFilePackages via Cap'n Proto + xxHash64 -- fingerprint de cache-key determinístico, não segredo/autenticação; sem achado)",
+    "crates/turborepo-hash/src/oid_hash.rs (OidHash -- wrapper stack-alloc de 40 bytes p/ OID git hex, valida ascii-hex em from_hex_buf/from_hex_str, unsafe from_utf8_unchecked só após validação prévia -- sem achado)",
+    "crates/turborepo-lockfile-hash/src/lib.rs (hash() -- mesmo padrão xxHash64 sobre Cap'n Proto canônico p/ fingerprint de lockfile packages; hash não-criptográfico usado só como chave de cache local, autenticação real de artefato remoto já é feita por signature_authentication.rs (HMAC-SHA256, lido em rodada anterior) -- sem achado)"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
