@@ -1271,3 +1271,23 @@ programa. Leitura profunda proativa desta rodada direcionada a
 continuação do achado `path_traversal_arbitrary_file_read_risk`,
 segundo vetor via absolute path confirmado). Nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-04 #34 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`check-program`
+confirmou `Block Open Source`, `Circle BBP` e `Auth0 by Okta`
+bloqueados; nenhum repo desses três tocado). `list-pending` global =
+34, 100% de programas fora do escopo desta missão (30 Auth0 by Okta,
+4 Circle BBP). `api.hiro.so` recheck via `curl -m 10`: `CONNECT tunnel
+failed, response 403` no agent-proxy, mesmo bloqueio de rede de
+dezenas de rodadas consecutivas -- não confirmável se o deployer
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida, nenhum arquivo novo candidato neste programa.
+Leitura profunda proativa desta rodada direcionada a
+`vercel-labs/agent-skills` (fechamento de `references/candidates.md` +
+`references/scoring.md`, sem achado novo) e `vercel/flags`
+(`spec-extension/adapters/headers.ts`, `controller/polling-source.ts`,
+`controller-fns.ts`, sem achado -- ver NOTES.md de Vercel Open
+Source). Sem arquivo novo candidato em StackingDAO, os 15 contratos
+Clarity seguem 100% cobertos. Nenhuma transição de estado neste
+programa.

@@ -7847,3 +7847,52 @@ arquivo). Para StackingDAO: ver
 rede de dezenas de rodadas consecutivas; 15 contratos Clarity seguem
 100% cobertos, sem mudança). Nenhum achado novo, nenhuma transição de
 estado além da tentativa recusada documentada acima.
+
+## Rodada 2026-09-04 #34 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` lido/checado como passo zero (`check-program`
+confirmou `Block Open Source`, `Circle BBP` e `Auth0 by Okta`
+bloqueados; nenhum repo desses três tocado -- nem clone, nem leitura,
+nem grep de nome de arquivo). `migrate-to-v2.mjs` + `list-pending`
+global = 34 candidatos, 100% de programas fora do escopo desta missão
+(30 Auth0 by Okta, 4 Circle BBP). O achado `path_traversal_arbitrary_file_read_risk`
+permanece o único `corroborated_static` deste programa sem evidência
+nova capaz de destravar `reproduced_local` (mesma limitação de sempre:
+sem validador local para JS/TS).
+
+Leitura profunda proativa: fechei as duas pendências abertas na rodada
+#32 nesse mesmo achado -- `references/candidates.md` e
+`references/scoring.md` de `vercel-labs/agent-skills/skills/vercel-optimize`
+(clone raso público via `git clone --depth 1 --filter=blob:none --sparse`,
+removido do scratchpad ao final). `candidates.md` (gerado por
+`scripts/build-docs.mjs`) documenta os 15 gates de threshold puro que
+decidem candidatos de otimização de custo/performance (build minutes,
+cold start, CWV, etc.) -- sem relação com path/file handling. `scoring.md`
+documenta o Step 4 do pipeline (quality floor, magnitude de custo em
+buckets, template de relatório) -- também sem menção a sandboxing de
+`repoRoot`. Nenhum dos dois altera a análise já registrada; achado
+atualizado via `update-finding` só para documentar o fechamento dessas
+pendências, confidence mantida em média. Com isso, todas as
+`references/` relevantes do skill `vercel-optimize` estão cobertas.
+
+Como esse achado está de fato esgotado (sem validador local para
+avançar e sem mais arquivos óbvios pra ler), a leitura profunda
+proativa migrou pra área ainda não fechada em `vercel/flags`: li 3
+arquivos não cobertos anteriormente --
+`packages/flags/src/spec-extension/adapters/headers.ts` (adapter de
+`Headers` copiado do Next.js, só normaliza case de header keys via
+`Proxy`, sem lógica de auth), `packages/vercel-flags-core/src/controller/polling-source.ts`
+(orquestra polling por `setInterval`, delega auth/fetch pra
+`fetch-datafile.ts` já coberto em rodada anterior) e
+`packages/vercel-flags-core/src/controller-fns.ts` (funções `evaluate`/
+`bulkEvaluate` que só leem o datafile já autenticado via
+`controller.read()` e avaliam localmente -- nenhuma fronteira de
+confiança nova). Sem achado nos 3.
+
+`deep-read-log.json` atualizado (`vercel-labs/agent-skills`: +2
+arquivos; `vercel/flags`: +3 arquivos). Para StackingDAO: ver
+`research/bugbounty/stackingdao/NOTES.md` (`api.hiro.so` recheck via
+`curl -m 10`: `CONNECT tunnel failed, response 403`, mesmo bloqueio de
+rede de dezenas de rodadas consecutivas; 15 contratos Clarity seguem
+100% cobertos, sem mudança). Nenhum achado novo, nenhuma transição de
+estado nesta rodada.
