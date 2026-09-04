@@ -6805,3 +6805,50 @@ UI real do dashboard investigar se quiser.
 `deep-read-log.json` atualizado (`vercel/vercel` +4, agora 105 no
 total). Nenhum achado novo formal, nenhuma transição de estado neste
 programa nesta rodada.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2` rodado, `list-pending` global = 0. Nenhum finding em
+`corroborated_static`/`scope_verified` deste programa mudou nesta
+rodada (o único `scope_verified` daqui,
+`vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`,
+segue preso no mesmo limite estrutural já documentado — API do GitHub
+pra checar duplicata segue bloqueada nesta sessão cloud).
+
+Leitura profunda proativa: `vercel/vercel`, subdiretório
+`packages/cli/src/commands/env/` (comandos `pull`/`run`/`add` do `env`
+da CLI — nunca lidos linha a linha nesta missão apesar de 103 entradas
+prévias no log para este repo, área plausível para bug de exposição
+de segredo). Sparse clone raso via `git clone --filter=blob:none
+--no-checkout` + `sparse-checkout`, sem precisar de conta/token
+(mesmo padrão já usado em rodadas anteriores). 3 arquivos lidos por
+completo:
+
+- `pull.ts` — escreve env vars descriptografadas em arquivo local
+  (`.env.local` por padrão), comportamento documentado e esperado do
+  próprio comando. Segredos "sensitive" que vêm vazios da API viram
+  `[SENSITIVE]` no arquivo em vez de string vazia — proteção correta
+  contra falso-negativo de "variável limpa" quando na verdade é só
+  redação server-side. Path de escrita é sempre `resolve(cwd,
+  filename)` com `cwd`/`filename` controlados pelo próprio usuário
+  local, sem input de rede. Sem achado.
+- `run.ts` — injeta env vars remotas no processo filho via `execa`
+  com array de argv (`userCommand[0], userCommand.slice(1)`), sem
+  shell — `userCommand` vem do próprio argv do processo CLI local
+  (depois de `--`), não de rede/atacante remoto. Ordem de merge do
+  env (`records.env` → `localEnv` → `process.env`) deixa o ambiente
+  local sempre sobrescrever o remoto, sem inversão perigosa. Sem
+  achado.
+- `add.ts` (completo, ~1260 linhas) — toda a lógica de
+  sensitive/policy/visibility neste arquivo é só UX client-side
+  (prompts, validação de forma, avisos); a aplicação real de
+  team-policy fica no backend (`addEnvRecord`), então não há bypass
+  client-side possível mesmo que o usuário force flags contraditórias
+  — o servidor rejeitaria. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel` +3, 106 no total).
+Nenhum achado novo, nenhuma transição de estado neste programa nesta
+rodada. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
+sessão por política local (`program-policy.json`).

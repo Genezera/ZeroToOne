@@ -1037,7 +1037,10 @@
     "packages/cli/src/util/telemetry/commands/tokens/index.ts",
     "packages/cli/evals/setup/auth-and-config.ts",
     "packages/cli/src/util/connex/request-code.ts",
-    "packages/cli/src/commands/connex/create.ts"
+    "packages/cli/src/commands/connex/create.ts",
+    "packages/cli/src/commands/env/pull.ts (envPullCommandLogic -- escreve env vars descriptografadas em arquivo local .env.local/custom, comportamento documentado e esperado do comando `vercel env pull`; sensitiveKeys viram [SENSITIVE] placeholder no arquivo em vez do valor real quando o registro correspondente vem vazio da API (large-secret redaction), sem input de terceiro na escolha do path (resolve(cwd, filename), cwd e filename ambos locais/argumento do próprio usuário). .env.local sempre adicionado ao .gitignore. Sem achado)",
+    "packages/cli/src/commands/env/run.ts (spawn via execa com argv array userCommand[0]/userCommand.slice(1) -- sem shell, userCommand vem do argv do próprio processo CLI local após `--`, não de rede; env mergeado records.env -> localEnv -> process.env, ordem correta (local sempre pode sobrescrever remoto). Sem achado)",
+    "packages/cli/src/commands/env/add.ts (completo, ~1260 linhas -- toda a lógica de sensibilidade/policy/visibility é client-side UX (prompts, validação de forma), decisão real de authorization/policy fica no backend via addEnvRecord/getTeamById; nenhum caminho permite bypassar sensitive-policy do lado cliente (server ainda aplicaria). Sem achado)"
   ],
   "vercel/workflow": [
     "packages/core/src/runtime/step-ownership.ts (isStepOwnershipActive/stepLeaseRemainingSeconds/backstopIdempotencyKey/hasPendingStepOwnedByMessage -- ownership de mensagem de fila entre workers internos, nao fronteira de autorizacao de usuario; sem achado)",
