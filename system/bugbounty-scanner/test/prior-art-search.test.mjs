@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { advisoryMatchesQueries, searchPublicPriorArt, validatePriorArtConfig } from '../prior-art-search.mjs';
+import { advisoryMatchesQueries, searchPublicPriorArt, searchRecentHacktivity, validatePriorArtConfig } from '../prior-art-search.mjs';
 
 test('config exige owner/repo e três framings distintos', () => {
   assert.deepEqual(validatePriorArtConfig({ repository: 'acme/api', queries: ['um', 'dois', 'tres'] }), {
@@ -39,4 +39,36 @@ test('falha de qualquer fonte aborta a pesquisa em vez de declarar busca limpa p
   await assert.rejects(() => searchPublicPriorArt({ repository: 'acme/api', queries: ['one a', 'two b', 'three c'] }, {
     fetchImpl: async () => ({ ok: false, status: 403, headers: { get: () => '0' } }),
   }), /rate limit esgotado/);
+});
+
+test('Hacktivity recente filtra programa e framing e prova cobertura só ao cruzar a janela', async () => {
+  const pages = [
+    [
+      { id: '1', programHandle: 'acme', title: 'authorization bypass missing tenant check', latestActivityAt: '2026-09-04T00:00:00Z', url: 'https://hackerone.com/reports/1' },
+      { id: '2', programHandle: 'other', title: 'authorization bypass missing tenant check', latestActivityAt: '2026-09-03T00:00:00Z' },
+    ],
+    [{ id: '3', programHandle: 'acme', title: 'unrelated', latestActivityAt: '2026-08-20T00:00:00Z' }],
+  ];
+  const result = await searchRecentHacktivity({
+    programHandle: 'acme', queries: ['authorization bypass missing check', 'tenant isolation absent', 'cross account access'],
+    since: '2026-09-01T00:00:00Z',
+  }, { getPage: async (page) => pages[page - 1] || [], now: () => new Date('2026-09-04T12:00:00Z'), pageSize: 2 });
+  assert.equal(result.complete, true);
+  assert.equal(result.results.length, 1);
+  assert.equal(result.results[0].reportId, '1');
+});
+
+test('busca integrada só declara método hacktivity quando a janela foi coberta', async () => {
+  const fakeFetch = async (url) => {
+    if (String(url).includes('/search/')) return { ok: true, json: async () => ({ total_count: 0, items: [] }) };
+    return { ok: true, json: async () => [] };
+  };
+  const result = await searchPublicPriorArt({
+    repository: 'acme/api', programHandle: 'acme', queries: ['root cause one', 'source sink two', 'missing control three'],
+  }, {
+    fetchImpl: fakeFetch, now: () => new Date('2026-09-04T00:00:00Z'),
+    hacktivitySearch: async () => ({ complete: true, since: '2026-08-28T00:00:00Z', pagesScanned: 2, scanned: 60, oldestActivityAt: '2026-08-27T00:00:00Z', results: [] }),
+  });
+  assert.ok(result.duplicateCheckDraft.methods.includes('hacktivity'));
+  assert.deepEqual(result.manualSourcesStillRequired, []);
 });

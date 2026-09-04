@@ -22,6 +22,11 @@ test('E3 quando existe validação real com result=pass, mesmo em estado anterio
   assert.equal(computeEvidenceGrade({ state: 'corroborated_static', filesReadCount: 5, hasPassingValidation: true }), 'E3');
 });
 
+test('E4 exige validação end-to-end isolada; sandbox de componente continua E3', () => {
+  assert.equal(computeEvidenceGrade({ state: 'reproduced_local', hasPassingValidation: true }), 'E3');
+  assert.equal(computeEvidenceGrade({ state: 'reproduced_local', hasPassingValidation: true, hasIsolatedEndToEndValidation: true }), 'E4');
+});
+
 test('E3 pra reproduced_local/scope_verified/human_ready/submitted, mesmo sem validation explícita passada aqui', () => {
   for (const state of ['reproduced_local', 'scope_verified', 'human_ready', 'submitted']) {
     assert.equal(computeEvidenceGrade({ state, filesReadCount: 0 }), 'E3', `esperava E3 pra ${state}`);
@@ -55,9 +60,9 @@ test('E3 quando o ESTADO ATUAL já é um terminal pós-submissão (duplicate/inf
   }
 });
 
-test('explainGrade devolve uma frase não-vazia pra todo grau real, e sinaliza que E4 não é usado', () => {
+test('explainGrade devolve uma frase não-vazia pra todo grau real', () => {
   for (const g of ['E0', 'E1', 'E2', 'E3', 'E5']) {
     assert.ok(explainGrade(g).length > 5);
   }
-  assert.match(explainGrade('E4'), /não usado/i);
+  assert.match(explainGrade('E4'), /end-to-end/i);
 });

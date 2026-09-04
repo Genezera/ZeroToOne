@@ -21,7 +21,7 @@ test('doctor exige ferramentas e integrações sem expor valores das credenciais
     },
   });
   assert.equal(result.ok, true);
-  assert.equal(calls.length, 7);
+  assert.equal(calls.length, 8);
   assert.deepEqual(result.integrations, {
     githubTokenConfigured: true, hackerOneConfigured: true, telegramConfigured: true,
   });

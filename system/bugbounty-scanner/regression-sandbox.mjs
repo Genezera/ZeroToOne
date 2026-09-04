@@ -97,7 +97,11 @@ export function validateRegressionConfig(input) {
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > MAX_TIMEOUT_MS) {
     throw new Error(`timeoutMs precisa estar entre 1000 e ${MAX_TIMEOUT_MS}`);
   }
-  return { repositoryUrl, introducedCommit, parentCommit, runtime, command, workdir, harnessPath, timeoutMs };
+  const validationScope = input.validationScope || 'component';
+  if (!['component', 'integration', 'end_to_end'].includes(validationScope)) {
+    throw new Error('validationScope precisa ser component, integration ou end_to_end');
+  }
+  return { repositoryUrl, introducedCommit, parentCommit, runtime, command, workdir, harnessPath, timeoutMs, validationScope };
 }
 
 export function parseRegressionMarker(output) {
@@ -234,6 +238,7 @@ export function verifyRegression(input, {
           containerImage: baseline.containerImage,
           containerImageId: baseline.containerImageId,
           isolation: baseline.isolation,
+          validationScope: config.validationScope,
           baselineTree,
           candidateTree,
         },

@@ -20,6 +20,7 @@ export function runToolchainDoctor({ spawn = spawnSync, env = process.env } = {}
   const semgrep = executable([env.SEMGREP_EXE, 'E:\\dev-toolchains\\venv-security\\Scripts\\semgrep.exe', 'semgrep']);
   const osv = executable([env.OSV_SCANNER_EXE, 'E:\\dev-toolchains\\go\\bin\\osv-scanner.exe', 'osv-scanner']);
   const docker = findDockerExecutable({ env });
+  const codeql = executable([env.CODEQL_EXE, 'E:\\dev-toolchains\\codeql-2.26.4\\codeql\\codeql.exe', 'codeql']);
   const definitions = [
     ['node', process.execPath, ['--version']],
     ['git', 'git', ['--version']],
@@ -28,6 +29,7 @@ export function runToolchainDoctor({ spawn = spawnSync, env = process.env } = {}
     ['slither', 'py', ['-m', 'slither', '--version']],
     ['forge', 'forge', ['--version']],
     ['docker_engine', docker, ['info', '--format', '{{.ServerVersion}}']],
+    ['codeql', codeql, ['version', '--format=terse']],
   ];
   const tools = {};
   for (const [name, command, args] of definitions) {

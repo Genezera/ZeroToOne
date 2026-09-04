@@ -4,9 +4,10 @@ import path from 'node:path';
 import { transition as smTransition } from './state-machine.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage, shouldNotifyForTransition, formatTransitionMessage } from './telegram.mjs';
-import { loadProgramPolicy } from './program-policy.mjs';
+import { loadProgramPolicyStrict } from './program-policy.mjs';
 import { deriveSemanticFingerprint } from './semantic-fingerprint.mjs';
 import { validateImpactAssessment } from './impact-assessment.mjs';
+import { investigationIdFor } from './investigation-id.mjs';
 
 // Estado operacional local (SQLite/WAL) — substitui queue.jsonl como
 // fonte de verdade para leitura/escrita concorrente (seção 6.5 da
@@ -23,10 +24,31 @@ import { validateImpactAssessment } from './impact-assessment.mjs';
 // que faltava: um número de versão em cada evento bugbounty_* gravado, pra
 // um consumidor futuro (dashboard, outro ambiente lendo o ledger) saber
 // tratar o formato mudando sem adivinhar pela presença/ausência de campos.
-// correlationId (ligar report->duplicateCheck->impactAssessment->outcome
-// pelo mesmo id) continua em aberto -- precisa de um id de investigação
-// threading por várias funções record*, mudança maior que cabe aqui.
+// correlationId liga validation/code-age/report/duplicateCheck/
+// impactAssessment/outcome pelo id determinístico de investigação, estável
+// entre o worker local e checkouts efêmeros.
 export const LEDGER_SCHEMA_VERSION = 1;
+
+let LEDGER_WRITE_SUPPRESSION_DEPTH = 0;
+
+/** Restauração de uma materialized view local não é um novo evento de
+ * pesquisa. Este escopo síncrono permite hidratar o SQLite a partir dos
+ * arquivos versionados sem reapensar centenas de fatos já existentes. */
+export function withoutLedgerWrites(callback) {
+  LEDGER_WRITE_SUPPRESSION_DEPTH += 1;
+  try { return callback(); }
+  finally { LEDGER_WRITE_SUPPRESSION_DEPTH -= 1; }
+}
+
+function appendFindingLedger(findingId, entry) {
+  if (LEDGER_WRITE_SUPPRESSION_DEPTH > 0) return { hash: null, suppressed: true };
+  return appendEntry('research', {
+    ...entry,
+    schemaVersion: LEDGER_SCHEMA_VERSION,
+    findingId,
+    correlationId: investigationIdFor(findingId),
+  });
+}
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS findings (
@@ -72,6 +94,7 @@ CREATE TABLE IF NOT EXISTS validations (
   command TEXT,
   result TEXT NOT NULL,
   raw_output TEXT,
+  evidence_json TEXT,
   ts TEXT NOT NULL
 );
 
@@ -145,6 +168,20 @@ CREATE TABLE IF NOT EXISTS impact_assessments (
   ts TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS code_age_evidence (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  finding_id TEXT NOT NULL REFERENCES findings(id),
+  repository TEXT NOT NULL,
+  path TEXT NOT NULL,
+  ref TEXT,
+  method TEXT NOT NULL,
+  commit_sha TEXT,
+  commit_date TEXT,
+  age_days INTEGER,
+  limitation TEXT,
+  checked_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS submissions (
   id TEXT PRIMARY KEY,
   platform TEXT NOT NULL,
@@ -175,6 +212,7 @@ CREATE INDEX IF NOT EXISTS idx_findings_program ON findings(program);
 CREATE INDEX IF NOT EXISTS idx_transitions_finding ON state_transitions(finding_id);
 CREATE INDEX IF NOT EXISTS idx_duplicate_checks_finding ON duplicate_checks(finding_id);
 CREATE INDEX IF NOT EXISTS idx_impact_assessments_finding ON impact_assessments(finding_id);
+CREATE INDEX IF NOT EXISTS idx_code_age_evidence_finding ON code_age_evidence(finding_id);
 CREATE INDEX IF NOT EXISTS idx_submission_findings_finding ON submission_findings(finding_id);
 `;
 
@@ -209,6 +247,7 @@ export function openDb(dbPath) {
     ['duplicate_checks', 'risk_score', 'REAL'],
     ['duplicate_checks', 'risk_level', 'TEXT'],
     ['submissions', 'repository', 'TEXT'],
+    ['validations', 'evidence_json', 'TEXT'],
   ]) ensureColumn(db, table, column, definition);
   importSubmissionsFromJsonl(db, path.join(dir, 'submissions.jsonl'));
   backfillSemanticFingerprints(db);
@@ -253,7 +292,14 @@ export function upsertFinding(db, finding) {
     line: finding.line != null ? String(finding.line) : null,
     state: finding.state || 'candidate',
     confidence: finding.confidence || null,
-    historical_confidence: finding.historicalConfidence ?? null,
+    // O scanner produz `{fpRate,sampleSize}`; bancos antigos também podem
+    // conter um número. SQLite aceita JSON textual na coluna legada REAL,
+    // mas o driver não aceita bind direto de objeto.
+    historical_confidence: finding.historicalConfidence == null
+      ? null
+      : (typeof finding.historicalConfidence === 'object'
+        ? JSON.stringify(finding.historicalConfidence)
+        : finding.historicalConfidence),
     reasoning: finding.reasoning || null,
     files_read_json: JSON.stringify(finding.filesRead || []),
     poc_run: finding.pocRun ? 1 : 0,
@@ -267,8 +313,13 @@ export function upsertFinding(db, finding) {
 
 function rowToFinding(row) {
   if (!row) return null;
+  let historicalConfidence = row.historical_confidence;
+  if (typeof historicalConfidence === 'string' && /^[{[]/.test(historicalConfidence.trim())) {
+    try { historicalConfidence = JSON.parse(historicalConfidence); } catch { /* mantém valor legado */ }
+  }
   return {
     id: row.id,
+    correlationId: investigationIdFor(row.id),
     exactFingerprint: row.exact_fingerprint,
     semanticFingerprint: row.semantic_fingerprint,
     program: row.program,
@@ -281,7 +332,7 @@ function rowToFinding(row) {
     line: row.line,
     state: row.state,
     confidence: row.confidence,
-    historicalConfidence: row.historical_confidence,
+    historicalConfidence,
     reasoning: row.reasoning,
     filesRead: JSON.parse(row.files_read_json || '[]'),
     pocRun: !!row.poc_run,
@@ -328,16 +379,14 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
     report: latestReport(db, findingId),
     duplicateCheck: latestDuplicateCheck(db, findingId),
     impactAssessment: latestImpactAssessment(db, findingId),
-    programPolicy: loadProgramPolicy(),
+    programPolicy: loadProgramPolicyStrict(),
   };
   const result = smTransition(finding, toState, fullContext);
   if (!result.ok) return result;
 
   const ts = new Date().toISOString();
-  const ledgerEntry = appendEntry('research', {
+  const ledgerEntry = appendFindingLedger(findingId, {
     type: 'bugbounty_state_transition',
-    schemaVersion: LEDGER_SCHEMA_VERSION,
-    findingId,
     from: result.from,
     to: result.to,
     actor,
@@ -369,13 +418,13 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
     sendTelegramMessage(formatTransitionMessage(finding, toState, result.reason)).catch(() => {});
   }
 
-  return { ...result, ts, ledgerHash: ledgerEntry.hash };
+  return { ...result, correlationId: investigationIdFor(findingId), ts, ledgerHash: ledgerEntry.hash };
 }
 
-export function recordValidation(db, findingId, { type, command, result, rawOutput, ts: suppliedTs }) {
+export function recordValidation(db, findingId, { type, command, result, rawOutput, evidence = null, ts: suppliedTs }) {
   const ts = suppliedTs || new Date().toISOString();
-  db.prepare('INSERT INTO validations (finding_id, type, command, result, raw_output, ts) VALUES (?, ?, ?, ?, ?, ?)')
-    .run(findingId, type, command || null, result, rawOutput || null, ts);
+  db.prepare('INSERT INTO validations (finding_id, type, command, result, raw_output, evidence_json, ts) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .run(findingId, type, command || null, result, rawOutput || null, evidence ? JSON.stringify(evidence) : null, ts);
   // Ledger backing (02/09/2026): recordTransition sempre anexou evento
   // real; as outras 4 funções record* nunca tocaram o ledger, então essa
   // evidência só sobrevivia no stdout do momento ou em prosa que uma
@@ -383,12 +432,26 @@ export function recordValidation(db, findingId, { type, command, result, rawOutp
   // o outcome do SSRF (image-optimizer.ts, HackerOne #3988959) sumindo
   // entre ambientes. Ver docs/zerotoone-v2/IMPLEMENTATION_STATE.md, seção
   // "Bug real encontrado (2026-09-02)", item (c).
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_validation', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, validationType: type, result, ts });
-  return { findingId, type, result, ts, ledgerHash: ledgerEntry.hash };
+  const execution = evidence?.noveltyProof?.execution;
+  const ledgerEntry = appendFindingLedger(findingId, {
+    type: 'bugbounty_validation', validationType: type, result,
+    evidence: evidence ? {
+      provenance: evidence.provenance || null,
+      validationScope: execution?.validationScope || null,
+      containerImage: execution?.containerImage || null,
+      containerImageId: execution?.containerImageId || null,
+      isolation: execution?.isolation || null,
+    } : null,
+    ts,
+  });
+  return { findingId, correlationId: investigationIdFor(findingId), type, result, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function listValidations(db, findingId) {
-  return db.prepare('SELECT * FROM validations WHERE finding_id = ? ORDER BY ts ASC').all(findingId);
+  return db.prepare('SELECT * FROM validations WHERE finding_id = ? ORDER BY ts ASC').all(findingId).map((row) => ({
+    ...row,
+    evidence: row.evidence_json ? JSON.parse(row.evidence_json) : null,
+  }));
 }
 
 export function recordDeploymentEvidence(db, findingId, evidence) {
@@ -400,8 +463,8 @@ export function recordDeploymentEvidence(db, findingId, evidence) {
     evidence.deployedAddress || null, evidence.chainId || null, evidence.blockNumber || null, evidence.bytecodeHash || null,
     evidence.confidence, evidence.notes || null, ts);
   // Ledger backing -- ver comentário em recordValidation.
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_deployment_evidence', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, confidence: evidence.confidence, deployedAddress: evidence.deployedAddress || null, ts });
-  return { findingId, ...evidence, ts, ledgerHash: ledgerEntry.hash };
+  const ledgerEntry = appendFindingLedger(findingId, { type: 'bugbounty_deployment_evidence', confidence: evidence.confidence, deployedAddress: evidence.deployedAddress || null, ts });
+  return { findingId, correlationId: investigationIdFor(findingId), ...evidence, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestDeploymentEvidence(db, findingId) {
@@ -409,6 +472,48 @@ export function latestDeploymentEvidence(db, findingId) {
   // milissegundo (achado real testando duplicate_checks) -- id DESC
   // desempata por ordem de inserção real, não por timestamp de string.
   return db.prepare('SELECT * FROM deployment_evidence WHERE finding_id = ? ORDER BY ts DESC, id DESC LIMIT 1').get(findingId) || null;
+}
+
+export function recordCodeAgeEvidence(db, findingId, evidence) {
+  if (!getFinding(db, findingId)) throw new Error(`finding "${findingId}" não existe no banco`);
+  if (!evidence?.repository || !evidence?.path) throw new Error('code age evidence exige repository e path');
+  if (evidence.codeAgeDays !== null && evidence.codeAgeDays !== undefined
+    && (!Number.isInteger(evidence.codeAgeDays) || evidence.codeAgeDays < 0)) {
+    throw new Error('codeAgeDays precisa ser inteiro não-negativo ou null');
+  }
+  const checkedAt = evidence.checkedAt || new Date().toISOString();
+  const method = evidence.method || 'github_file_last_commit';
+  db.prepare(`
+    INSERT INTO code_age_evidence (
+      finding_id, repository, path, ref, method, commit_sha, commit_date,
+      age_days, limitation, checked_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    findingId, evidence.repository, evidence.path, evidence.ref || null, method,
+    evidence.lastCommitSha || null, evidence.lastCommitDate || null,
+    evidence.codeAgeDays ?? null, evidence.limitation || null, checkedAt,
+  );
+  const ledgerEntry = appendFindingLedger(findingId, {
+    type: 'bugbounty_code_age', repository: evidence.repository, path: evidence.path,
+    ref: evidence.ref || null, method, lastCommitSha: evidence.lastCommitSha || null,
+    lastCommitDate: evidence.lastCommitDate || null, codeAgeDays: evidence.codeAgeDays ?? null,
+    checkedAt,
+  });
+  return {
+    findingId, correlationId: investigationIdFor(findingId), ...evidence,
+    method, checkedAt, ledgerHash: ledgerEntry.hash,
+  };
+}
+
+export function latestCodeAgeEvidence(db, findingId) {
+  const row = db.prepare('SELECT * FROM code_age_evidence WHERE finding_id = ? ORDER BY checked_at DESC, id DESC LIMIT 1').get(findingId);
+  if (!row) return null;
+  return {
+    findingId: row.finding_id, correlationId: investigationIdFor(row.finding_id),
+    repository: row.repository, path: row.path, ref: row.ref, method: row.method,
+    lastCommitSha: row.commit_sha, lastCommitDate: row.commit_date,
+    codeAgeDays: row.age_days, limitation: row.limitation, checkedAt: row.checked_at,
+  };
 }
 
 export function recordDuplicateCheck(db, findingId, {
@@ -435,14 +540,14 @@ export function recordDuplicateCheck(db, findingId, {
     Number.isFinite(riskScore) ? riskScore : null, riskLevel || null,
     notes || null, ts,
   );
-  const ledgerEntry = appendEntry('research', {
-    type: 'bugbounty_duplicate_check', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, methods,
+  const ledgerEntry = appendFindingLedger(findingId, {
+    type: 'bugbounty_duplicate_check', methods,
     foundExisting: !!foundExisting, noveltyStatus: noveltyStatus || null,
     riskScore: Number.isFinite(riskScore) ? riskScore : null,
     signals: signals || {}, noveltyProof: noveltyProof || null, ts,
   });
   return {
-    findingId, methods, query: query || normalizedQueries[0] || null,
+    findingId, correlationId: investigationIdFor(findingId), methods, query: query || normalizedQueries[0] || null,
     queries: normalizedQueries, results: results || [], signals: signals || {},
     noveltyProof: noveltyProof || null, foundExisting: !!foundExisting,
     foundExistingRef: foundExistingRef || null, noveltyStatus: noveltyStatus || null,
@@ -482,8 +587,8 @@ export function recordImpactAssessment(db, findingId, assessment) {
     INSERT INTO impact_assessments (finding_id, assessment_json, reportable, ts)
     VALUES (?, ?, ?, ?)
   `).run(findingId, JSON.stringify(payload), payload.reportable ? 1 : 0, ts);
-  const ledgerEntry = appendEntry('research', {
-    type: 'bugbounty_impact_assessment', schemaVersion: LEDGER_SCHEMA_VERSION, findingId,
+  const ledgerEntry = appendFindingLedger(findingId, {
+    type: 'bugbounty_impact_assessment',
     technicalValidity: payload.technicalValidity,
     reportable: payload.reportable,
     impactScope: payload.impactScope,
@@ -492,7 +597,7 @@ export function recordImpactAssessment(db, findingId, assessment) {
     availability: payload.availability,
     ts,
   });
-  return { findingId, ...payload, ts, ledgerHash: ledgerEntry.hash };
+  return { findingId, correlationId: investigationIdFor(findingId), ...payload, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestImpactAssessment(db, findingId) {
@@ -505,8 +610,8 @@ export function recordReport(db, findingId, reportPath, { createdAt } = {}) {
   const ts = createdAt || new Date().toISOString();
   db.prepare('INSERT INTO reports (finding_id, path, created_at) VALUES (?, ?, ?)').run(findingId, reportPath, ts);
   // Ledger backing -- ver comentário em recordValidation.
-  const ledgerEntry = appendEntry('research', { type: 'bugbounty_report', schemaVersion: LEDGER_SCHEMA_VERSION, findingId, path: reportPath, ts });
-  return { findingId, path: reportPath, createdAt: ts, ledgerHash: ledgerEntry.hash };
+  const ledgerEntry = appendFindingLedger(findingId, { type: 'bugbounty_report', path: reportPath, ts });
+  return { findingId, correlationId: investigationIdFor(findingId), path: reportPath, createdAt: ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestReport(db, findingId) {
@@ -679,14 +784,14 @@ export function recordPlatformOutcome(db, findingId, outcome) {
   // que motivou o achado: outcome real "duplicate" da HackerOne
   // (#3988959) tinha sumido entre ambientes porque nada aqui tocava o
   // ledger nem o export -- agora sobrevive nos dois.
-  const ledgerEntry = appendEntry('research', {
-    type: 'bugbounty_platform_outcome', schemaVersion: LEDGER_SCHEMA_VERSION, findingId,
+  const ledgerEntry = appendFindingLedger(findingId, {
+    type: 'bugbounty_platform_outcome',
     platform: outcome.platform || null,
     externalReportId: outcome.externalReportId || null,
     originalReportId: outcome.originalReportId || null,
     state: outcome.state, ts,
   });
-  return { findingId, ...outcome, ts, ledgerHash: ledgerEntry.hash };
+  return { findingId, correlationId: investigationIdFor(findingId), ...outcome, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function latestPlatformOutcome(db, findingId) {
@@ -753,7 +858,7 @@ function deploymentEvidenceToExport(row) {
 }
 
 function validationToExport(row) {
-  return { type: row.type, command: row.command, result: row.result, rawOutput: row.raw_output, ts: row.ts };
+  return { type: row.type, command: row.command, result: row.result, rawOutput: row.raw_output, evidence: row.evidence || null, ts: row.ts };
 }
 
 function reportToExport(row) {
@@ -764,6 +869,12 @@ function reportToExport(row) {
 function impactAssessmentToExport(assessment) {
   if (!assessment) return null;
   const { ledgerHash, findingId, ...portable } = assessment;
+  return portable;
+}
+
+function codeAgeEvidenceToExport(evidence) {
+  if (!evidence) return null;
+  const { ledgerHash, findingId, correlationId, ...portable } = evidence;
   return portable;
 }
 
@@ -804,6 +915,7 @@ export function exportFindingsToQueueLines(db) {
     delete base.report;
     delete base.duplicateCheck;
     delete base.impactAssessment;
+    delete base.codeAgeEvidence;
     delete base.submission;
     delete base.semanticFingerprint;
     const verdict = legacyVerdictFor(f.state);
@@ -827,11 +939,13 @@ export function exportFindingsToQueueLines(db) {
     // então nunca aparecia nem como null.
     const duplicateCheck = latestDuplicateCheck(db, f.id);
     const impactAssessment = impactAssessmentToExport(latestImpactAssessment(db, f.id));
+    const codeAgeEvidence = codeAgeEvidenceToExport(latestCodeAgeEvidence(db, f.id));
     const submission = latestSubmissionForFinding(db, f.id);
 
     return JSON.stringify({
       ...base,
       id: f.id,
+      correlationId: f.correlationId,
       state: f.state,
       status: f.state === 'candidate' ? 'pending' : 'reviewed',
       ...(verdict ? { verdict } : {}),
@@ -847,6 +961,7 @@ export function exportFindingsToQueueLines(db) {
       ...(report ? { report } : {}),
       ...(duplicateCheck ? { duplicateCheck } : {}),
       ...(impactAssessment ? { impactAssessment } : {}),
+      ...(codeAgeEvidence ? { codeAgeEvidence } : {}),
       ...(submission ? { submission } : {}),
     });
   });

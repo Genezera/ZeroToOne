@@ -5,9 +5,9 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 import { extractWatchedPackageNames, runCveDigest, renderDigestMarkdown } from './cve-digest.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
+import { pullLatest, commitAndPush } from './git-sync.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -25,6 +25,8 @@ function loadQueue(filePath) {
 }
 
 export async function runDigest() {
+  const preflightSync = pullLatest(REPO_ROOT, log);
+  if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou o digest: ${preflightSync.reason}`);
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const queueEntries = loadQueue(QUEUE_PATH);
@@ -46,17 +48,9 @@ export async function runDigest() {
 
   log(`Digest completo: ${watchedPackages.length} pacote(s) observado(s), ${totalAdvisories} advisory(s) encontrado(s), ${fetchErrors} erro(s) de busca.`);
 
-  try {
-    execSync('git add -A', { cwd: REPO_ROOT });
-    const status = execSync('git status --porcelain', { cwd: REPO_ROOT }).toString().trim();
-    if (status) {
-      execSync(`git commit -m "Digest: ${watchedPackages.length} pacote(s) observado(s), ${totalAdvisories} advisory(s)"`, { cwd: REPO_ROOT });
-      execSync('git push', { cwd: REPO_ROOT });
-      log('Sincronizado com o GitHub.');
-    }
-  } catch (err) {
-    log(`AVISO: falha ao sincronizar com o GitHub: ${err.message}`);
-  }
+  const syncResult = commitAndPush(REPO_ROOT, `Digest: ${watchedPackages.length} pacote(s) observado(s), ${totalAdvisories} advisory(s)`, log);
+  if (!syncResult.ok) throw new Error(`digest concluído localmente, mas publicação falhou: ${syncResult.reason}`);
+  if (syncResult.committed) log('Sincronizado com o GitHub.');
 
   return { watchedPackages, totalAdvisories, fetchErrors };
 }

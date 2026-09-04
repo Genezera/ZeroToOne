@@ -10,8 +10,10 @@ import {
   recordReport, latestReport, recordPlatformOutcome, latestPlatformOutcome, stateCounts,
   recordImpactAssessment, latestImpactAssessment, listSubmissions,
   recordSubmission,
+  recordCodeAgeEvidence, latestCodeAgeEvidence,
   exportSubmissionsToJsonl, importSubmissionsFromJsonl,
   exportFindingsToQueueLines, closeDb, LEDGER_SCHEMA_VERSION,
+  withoutLedgerWrites,
 } from '../db.mjs';
 import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
 
@@ -246,6 +248,33 @@ test('recordPlatformOutcome/recordDeploymentEvidence/recordValidation/recordRepo
   });
 });
 
+test('historicalConfidence estruturado faz round-trip no SQLite', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { ...SAMPLE, historicalConfidence: { fpRate: 0.75, sampleSize: 8 } });
+    assert.deepEqual(getFinding(db, SAMPLE.id).historicalConfidence, { fpRate: 0.75, sampleSize: 8 });
+    closeDb(db);
+  });
+});
+
+test('code age evidence persiste, entra na fila portátil e ganha correlationId', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    const recorded = recordCodeAgeEvidence(db, SAMPLE.id, {
+      repository: 'acme/repo', path: 'src/a.ts', method: 'github_file_last_commit',
+      lastCommitSha: 'a'.repeat(40), lastCommitDate: '2026-09-01T00:00:00Z',
+      codeAgeDays: 3, checkedAt: '2026-09-04T00:00:00Z', limitation: 'proxy de idade do arquivo',
+    });
+    assert.match(recorded.correlationId, /^inv:v1:/);
+    assert.equal(latestCodeAgeEvidence(db, SAMPLE.id).codeAgeDays, 3);
+    const exported = JSON.parse(exportFindingsToQueueLines(db)[0]);
+    assert.equal(exported.codeAgeEvidence.codeAgeDays, 3);
+    assert.equal(exported.correlationId, recorded.correlationId);
+    closeDb(db);
+  });
+});
+
 test('exportFindingsToQueueLines inclui platformOutcome/deploymentEvidence/validationsHistory/report reais quando existem', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
@@ -388,6 +417,20 @@ test('todo evento bugbounty_* gravado no ledger carrega schemaVersion', () => {
     assert.ok(bugbountyEvents.length >= 4, `esperava pelo menos 4 eventos, achou ${bugbountyEvents.length}`);
     for (const e of bugbountyEvents) {
       assert.equal(e.schemaVersion, LEDGER_SCHEMA_VERSION, `evento "${e.type}" sem schemaVersion`);
+      assert.match(e.correlationId, /^inv:v1:[a-f0-9]{64}$/, `evento "${e.type}" sem correlationId`);
     }
   });
 });
+
+test('withoutLedgerWrites hidrata tabelas sem reapensar fatos no ledger', () => withTempEnv((dbPath) => {
+  const db = openDb(dbPath);
+  upsertFinding(db, SAMPLE);
+  withoutLedgerWrites(() => {
+    recordValidation(db, SAMPLE.id, { type: 'hydrate', result: 'pass', rawOutput: 'restored' });
+    recordDeploymentEvidence(db, SAMPLE.id, { confidence: 'low', notes: 'restored' });
+  });
+  assert.equal(listValidations(db, SAMPLE.id).length, 1);
+  assert.equal(latestDeploymentEvidence(db, SAMPLE.id).confidence, 'low');
+  assert.equal(verifyChain('research').entries, 0);
+  closeDb(db);
+}));

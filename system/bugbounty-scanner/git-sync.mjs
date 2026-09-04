@@ -12,19 +12,43 @@
 // a corrida acontecesse, silenciosamente, todo santo dia que a nuvem
 // empurrasse algo por perto do horário fixo da tarefa.
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
-/** Chamar ANTES de escanear -- nunca bloqueia a rodada se falhar (rede
- * fora, conflito impossível de resolver sozinho): só loga e segue com
- * o que já existe localmente, mesmo comportamento de degradação
- * graciosa já usado pro Telegram no resto do projeto. */
-export function pullLatest(repoRoot, log = () => {}) {
+function git(repoRoot, args) {
+  return execFileSync('git', args, { cwd: repoRoot, stdio: 'pipe', encoding: 'utf8' }).trim();
+}
+
+export function inspectGitState(repoRoot) {
+  const dirty = git(repoRoot, ['status', '--porcelain']);
+  let ahead = null;
+  let behind = null;
   try {
-    execSync('git pull --no-rebase --no-edit', { cwd: repoRoot, stdio: 'pipe' });
-    return { ok: true };
+    const [behindText, aheadText] = git(repoRoot, ['rev-list', '--left-right', '--count', '@{upstream}...HEAD']).split(/\s+/);
+    behind = Number(behindText);
+    ahead = Number(aheadText);
+  } catch {
+    // A mensagem principal de pull/push vai explicar upstream ausente.
+  }
+  return { clean: dirty.length === 0, dirty, ahead, behind };
+}
+
+/** Chamar ANTES de qualquer job que produza estado compartilhado.
+ * Falha fechada: pesquisar em snapshot velho gera trabalho duplicado e
+ * torna o ledger append-only impossível de reconciliar corretamente. */
+export function pullLatest(repoRoot, log = () => {}) {
+  const before = inspectGitState(repoRoot);
+  if (!before.clean) {
+    const reason = `worktree contém mudanças antes da rodada: ${before.dirty.split('\n').slice(0, 5).join(', ')}`;
+    log(`ERRO: ${reason} -- rodada bloqueada para não capturar alterações alheias nem pesquisar estado obsoleto.`);
+    return { ok: false, reason, state: before };
+  }
+  try {
+    git(repoRoot, ['pull', '--ff-only']);
+    return { ok: true, state: inspectGitState(repoRoot) };
   } catch (err) {
-    log(`AVISO: git pull antes da rodada falhou (${err.message.split('\n')[0]}) -- seguindo com o estado local atual`);
-    return { ok: false, reason: err.message };
+    const reason = `git pull --ff-only falhou: ${err.message.split('\n')[0]}`;
+    log(`ERRO: ${reason} -- rodada bloqueada (fail-closed).`);
+    return { ok: false, reason, state: inspectGitState(repoRoot) };
   }
 }
 
@@ -36,32 +60,32 @@ export function pullLatest(repoRoot, log = () => {}) {
  * pra próxima execução. */
 export function commitAndPush(repoRoot, message, log = () => {}) {
   try {
-    execSync('git add -A', { cwd: repoRoot });
-    const status = execSync('git status --porcelain', { cwd: repoRoot }).toString().trim();
+    git(repoRoot, ['add', '-A']);
+    const status = git(repoRoot, ['status', '--porcelain']);
     if (!status) return { ok: true, committed: false };
-    execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, { cwd: repoRoot });
+    git(repoRoot, ['commit', '-m', message]);
   } catch (err) {
     return { ok: false, committed: false, reason: `commit falhou: ${err.message.split('\n')[0]}` };
   }
 
   try {
-    execSync('git push', { cwd: repoRoot, stdio: 'pipe' });
+    git(repoRoot, ['push']);
     return { ok: true, committed: true, recovered: false };
   } catch (pushErr) {
-    log(`AVISO: git push falhou (provável divergência com origin) -- tentando pull + push uma vez: ${pushErr.message.split('\n')[0]}`);
+    log(`AVISO: git push falhou (provável divergência por corrida com outro produtor) -- tentando rebase + push uma vez: ${pushErr.message.split('\n')[0]}`);
     try {
-      execSync('git pull --no-rebase --no-edit', { cwd: repoRoot, stdio: 'pipe' });
+      git(repoRoot, ['pull', '--rebase']);
     } catch (pullErr) {
-      log(`AVISO: pull de recuperação falhou (provável conflito de verdade) -- abortando merge parcial e desistindo desta rodada: ${pullErr.message.split('\n')[0]}`);
-      try { execSync('git merge --abort', { cwd: repoRoot, stdio: 'pipe' }); } catch { /* nada pra abortar, ok */ }
-      return { ok: false, committed: true, reason: `pull de recuperação falhou: ${pullErr.message.split('\n')[0]}` };
+      log(`ERRO: rebase de recuperação conflitou -- abortando e preservando o commit local para reconciliação: ${pullErr.message.split('\n')[0]}`);
+      try { git(repoRoot, ['rebase', '--abort']); } catch { /* nada pra abortar */ }
+      return { ok: false, committed: true, requiresRecovery: true, reason: `rebase de recuperação falhou: ${pullErr.message.split('\n')[0]}`, state: inspectGitState(repoRoot) };
     }
     try {
-      execSync('git push', { cwd: repoRoot, stdio: 'pipe' });
-      log('Push recuperado depois de sincronizar com origin.');
+      git(repoRoot, ['push']);
+      log('Push recuperado depois de rebasear sobre origin.');
       return { ok: true, committed: true, recovered: true };
     } catch (retryErr) {
-      return { ok: false, committed: true, reason: `push continuou falhando após pull: ${retryErr.message.split('\n')[0]}` };
+      return { ok: false, committed: true, requiresRecovery: true, reason: `push continuou falhando após rebase: ${retryErr.message.split('\n')[0]}`, state: inspectGitState(repoRoot) };
     }
   }
 }

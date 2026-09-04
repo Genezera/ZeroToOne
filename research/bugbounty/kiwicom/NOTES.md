@@ -402,3 +402,41 @@ chave dinâmica (`this.cache[identifier]` com `identifier` derivado de
 email do usuário) que `getPubKey`/`cachedKeys`, mas o formato da chave
 (`${email}:${service}`, sempre com sufixo) impede a colisão com
 `"__proto__"` que existe em `cachedKeys` — não é um problema.
+
+## Rodada 2026-09-04 #5 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero (Block Open Source/Circle
+BBP seguem bloqueados, nenhum repo desses tocado). `migrate-to-v2.mjs` +
+`list-pending` global = 0 candidatos.
+
+Leitura profunda proativa: clonei `kiwicom/js-iam-middleware` de novo
+(raso, descartado ao final) só pra listar os arquivos-fonte reais ainda
+não cobertos por `deep-read-log.json` (que, por uma lacuna de rastreio
+de rodadas anteriores, nunca chegou a registrar `authorizationDirective.ts`
+apesar do finding já existir há 2 rodadas). Escolhi 3 candidatos por
+julgamento próprio, não regex: `authorizationDirective.ts` (reconferir o
+achado já existente, agora registrando-o formalmente no log),
+`getClientToken.ts` e `scripts/oauthCallback.ts` (únicos arquivos de
+lógica de auth ainda sem leitura registrada no pacote).
+
+- `authorizationDirective.ts` -- reproduzi a chamada `isUserAuthorized`
+  de dentro de `visitFieldDefinition` de forma independente com um
+  script Node local isolado (sem tocar rede/repo real), ANTES de
+  conferir `queue.jsonl` -- bati exatamente no mesmo mapeamento de
+  argumento trocado já documentado no finding
+  `Kiwi.com::kiwicom/js-iam-middleware/src/authorizationDirective.ts::visitFieldDefinition::positional_argument_mismatch`.
+  Esse finding já foi submetido (HackerOne #3994302) e voltou fechado
+  como duplicata (dup de #3439366, sem bounty) -- não criei finding
+  novo, só adicionei o arquivo ao `deep-read-log.json` (estava faltando
+  lá) pra rodadas futuras não repetirem a mesma investigação do zero.
+- `getClientToken.ts` -- POST fixo pro endpoint OAuth2 do Google
+  (`client_id`/`client_secret`/`refresh_token` vêm de config
+  server-side via `options`, nunca de input de terceiro na URL/corpo).
+  Sem achado.
+- `scripts/oauthCallback.ts` -- `isOAuthCallbackUrl` é só um parse de
+  query string pra detectar `path === "/"` com `code` presente, helper
+  puro sem lógica de autenticação. Sem achado.
+
+`deep-read-log.json` atualizado (`kiwicom/js-iam-middleware` +3
+entradas). Nenhum finding novo, nenhuma transição de estado nesta
+rodada -- resultado normal e válido.

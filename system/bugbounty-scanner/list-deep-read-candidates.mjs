@@ -58,7 +58,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { extractGithubCandidates, fetchRepoMetadata } from './discover-targets.mjs';
 import { githubHeaders } from './github-auth.mjs';
-import { loadProgramPolicy, isProgramBanned } from './program-policy.mjs';
+import { getBlockReason, loadProgramPolicyStrict, isProgramBanned } from './program-policy.mjs';
 import { openDb, closeDb } from './db.mjs';
 import { listRepoFiles, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile } from './fetch-repo.mjs';
 
@@ -284,7 +284,7 @@ export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy =
 
     const bannedProgram = programs.find((p) => isProgramBanned(p, policy));
     if (bannedProgram) {
-      blocked.push({ repo: repoKey, filesRead: count, program: bannedProgram });
+      blocked.push({ repo: repoKey, filesRead: count, program: bannedProgram, reason: getBlockReason(bannedProgram, policy) });
       continue;
     }
 
@@ -321,6 +321,13 @@ export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy =
   return { safe: [...clean, ...popular, ...flagged], blocked, unresolved, fullyCovered };
 }
 
+/** Lista mínima para qualquer I/O de metadado subsequente. A primeira
+ * seleção não precisa de popularidade para decidir política; por isso ela
+ * pode e deve acontecer antes de `refreshRepoPopularity`. */
+export function authorizedRepoKeysForDeepRead(deepReadLog, repoProgramIndex, policy = {}) {
+  return selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy).safe.map((item) => item.repo);
+}
+
 /** Único ponto de rede deste módulo pros datasets HackerOne/Bugcrowd --
  * mesmas URLs públicas que discover-targets.mjs já usa (sem custo, sem
  * token obrigatório). */
@@ -335,11 +342,13 @@ export async function fetchDatasets() {
 async function main() {
   const [hackerOneData, bugcrowdData] = await fetchDatasets();
   const index = buildRepoProgramIndex(hackerOneData, bugcrowdData);
-  const policy = loadProgramPolicy();
+  const policy = loadProgramPolicyStrict();
   const log = loadDeepReadLog();
-  const repoKeys = Object.keys(log || {});
+  const repoKeys = authorizedRepoKeysForDeepRead(log, index, policy);
 
-  // Popularidade: melhor esforço, nunca trava a listagem. Erro de rede
+  // Política já foi aplicada acima: programas bloqueados/unresolved nunca
+  // chegam a estas consultas de metadado/árvore do GitHub. Popularidade:
+  // melhor esforço, nunca trava a listagem. Erro de rede
   // no lote inteiro (ex.: sem internet) ainda deixa `main` rodar com o
   // que já estava cacheado antes.
   let popularityCache = loadRepoPopularityCache();
@@ -377,8 +386,8 @@ async function main() {
   if (safe.length > 30) console.log(`... e mais ${safe.length - 30} candidato(s)`);
 
   if (blocked.length > 0) {
-    console.log(`\n=== ${blocked.length} repositório(s) EXCLUÍDO(S) por programa banido -- NUNCA leia estes ===`);
-    for (const b of blocked) console.log(`${b.repo} -- programa "${b.program}" tem aiResearchBanned=true em program-policy.json`);
+    console.log(`\n=== ${blocked.length} repositório(s) EXCLUÍDO(S) pela política fail-closed -- NUNCA leia estes ===`);
+    for (const b of blocked) console.log(`${b.repo} -- programa "${b.program}": ${b.reason}`);
   }
 
   if (unresolved.length > 0) {

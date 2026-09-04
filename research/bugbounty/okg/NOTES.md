@@ -192,3 +192,137 @@ raso e revisados todos com leitura de código real:
 sessão cloud paralela que triou Circle BBP no mesmo intervalo — ver
 commit de merge; nenhuma sobreposição de id com o trabalho deste
 programa). Fila OKG volta a ficar em 0 `candidate`.
+
+## Rodada 2026-09-04 — leitura profunda proativa (2 arquivos)
+`list-pending` vazio (0 `candidate` em todo o sistema). Leitura
+profunda proativa escolheu 2 arquivos ainda não lidos em
+`okx/go-wallet-sdk`, priorizando nome de caminho (`priv`/`seed`):
+- `coins/aptos/v2/crypto/privateKey.go` — `FormatPrivateKey`/
+  `ParsePrivateKey` são só (de)serialização hex<->AIP-80 (prefixo tipo
+  `ed25519-priv-...`); nenhuma operação criptográfica acontece aqui
+  (delega pra `util.ParseHex`/`BytesToHex`). Sem achado.
+- `coins/ton/ton/wallet/seed.go` — geração/validação de seed de 24
+  palavras da carteira TON. Comentário de atribuição no topo do
+  próprio arquivo (`Author: https://github.com/xssnick/tonutils-go`)
+  confirma que é vendored de biblioteca terceira já amplamente
+  auditada, não código original da OKX. Randomização usa
+  `crypto/rand.Int` (CSPRNG correto); checksum via HMAC-SHA512 +
+  PBKDF2 confere com o design documentado do TON (múltiplas
+  iterações até achar seed cujo checksum bate). Nada de suspeito nem
+  atribuível à OKX especificamente. Sem achado.
+
+Nenhum achado novo criado nesta rodada. `deep-read-log.json`
+atualizado com os 2 arquivos.
+
+## Rodada 2026-09-04 #2 — leitura profunda proativa (3 arquivos)
+
+`list-pending` vazio (0 `candidate` em todo o sistema). Clonado
+`okx/go-wallet-sdk` raso de novo, mapeados todos os arquivos com
+`priv`/`seed`/`key`/`sign`/`auth`/`mnemonic`/`wallet` no caminho não lidos
+ainda; maioria é código vendored de terceiros já auditados (btcd, dcrec,
+go-ethereum, go-bip32) ou apenas serialização de tipo gerado (`.pb.go`,
+Solana/Cosmos), então priorizei 3 arquivos de assinatura próprios/vendored
+com lógica real ainda não cobertos:
+
+- `coins/eos/signer.go` (`Signer.Sign`/`SigDigest`): monta o digest EOS
+  correto (`SHA256(chainID || packedTx || SHA256(contextFreeData))`) e
+  delega a assinatura real pra `github.com/eoscanada/eos-go/ecc` (lib
+  externa, não código deste repo). `chainID`/`requiredKeys` vêm do chamador
+  (SDK), não de input remoto não confiável neste ponto. Sem achado.
+- `coins/tezos/types/key.go` + `coins/tezos/types/crypto.go`: vendored de
+  `blockwatch/tzgo` (copyright preservado no topo do arquivo). `ecSign` usa
+  `crypto/rand.Reader` por assinatura (sem reuso de nonce) + normalização
+  low-S; `decryptPrivateKey` usa PBKDF2-SHA512 (32768 iterações) + NaCl
+  `secretbox`, o mesmo esquema do `tezos-client` oficial. Único detalhe
+  investigado a fundo: `GenerateKey(KeyTypeBls12_381)` não seta `Data`
+  nem retorna erro (case vazio no switch) -- mas isso não é explorável:
+  `PrivateKey.IsValid()` já rejeita a chave resultante corretamente
+  (`SkHashType().Len()==32` vs `len(nil)==0`), e `Sign()` pra Bls12_381
+  retorna `ErrUnknownKeyType` explicitamente (comentado como `// TODO`,
+  feature nunca terminada) -- fail-closed em ambos os pontos de uso, não
+  um bypass de segurança. Sem achado.
+- `coins/nervos/crypto/signature.go`: só serialização de
+  `SignatureData` (R, S, V) pro formato Ethereum (R||S||V-27); nenhuma
+  operação de assinatura ou validação acontece aqui. Sem achado.
+
+Nenhum achado novo criado nesta rodada. `deep-read-log.json` atualizado
+com os 3 arquivos.
+
+## Rodada 2026-09-04 #3 (push automático via GitHub webhook, sessão cloud) — 1 achado real, ACHADO NOVO, chegou a `scope_verified`
+
+`list-pending` vazio (0 `candidate` em todo o sistema, confirmado via
+`migrate-to-v2.mjs` no início da rodada: 493 falso_positivo / 12
+corroborated_static / 234 known_duplicate / 4 duplicate / 2
+inconclusive / 1 human_ready / 1 scope_verified). Leitura profunda
+proativa escolheu 3 arquivos ainda não lidos em `okx/go-wallet-sdk`,
+priorizando `coins/cardano/{credential,crypto/key,crypto/derive}.go`
+(codigo original de derivacao de chave, nao vendored de terceiros —
+diferente da maioria de `coins/*/crypto` ja cobertos nas rodadas
+anteriores).
+
+**ACHADO REAL confirmado com PoC empírica**: `coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy`
+(geração de master key CIP-3/Icarus, BIP32-Ed25519) usa mascara de
+clamp errada no byte 31 — `(key[31] & 0x1f) | 0x40` em vez do
+`(key[31] & 0x7f) | 0x40` exigido pela spec oficial (CIP-3/Icarus.md,
+confirmado via WebSearch: "clearing the lowest 3 bits, clearing the
+highest bit, and setting the second highest bit"). A mascara `0x1f`
+zera indevidamente o bit5 do byte31 (a spec só manda tocar bits 6 e
+7), então sempre que esse bit valer 1 na saída crua do PBKDF2 (~50%
+de todos os mnemonics, por construção) a chave-mestra — e portanto
+TODOS os endereços derivados — diverge da que qualquer outra carteira
+Cardano compatível com CIP-3 (Yoroi/Daedalus/Eternl/Ledger/Trezor)
+calcularia para o MESMO mnemonic/path. Risco real de fundo: usuário
+migra a mesma seed phrase entre OKX e outra carteira Cardano e vê um
+endereço diferente/sem saldo em ~metade dos casos.
+
+Validado empiricamente (Go, sem tocar rede/conta real — só o clone
+local): teste `TestClampBit5Prevalence` mediu 101/200 (~50%) de
+mnemonics aleatórios com bit5=1 pré-clamp; teste
+`TestClampDivergingMnemonic` achou um mnemonic concreto nessa
+condição e rodou o fluxo real do SDK (`DerivePrvKey`/
+`NewAddressFromPrvKey`) obtendo
+`addr1q9vflaq445k7hvmtacfv98h4s5qg5lzhflg6je6t6wklp567x2g2h2dt6dftda2s8sljzr0de44hpydkugf4mmzelsqs2y237t`;
+com um patch local de UM caractere (`0x1f`→`0x7f`, a correção
+mínima), o MESMO mnemonic/path produz
+`addr1qyapj3mj06tj6akqmpc4t5ymu0d0lukkqcamwpfqwjmhdn8twmk6n7wv759hw2nqslraayxr8eq96eqxlw0xtn7l263qskavj4`
+— endereços completamente diferentes, prova direta e reproduzível.
+Teste de regressão oficial do próprio repo (`account_test.go::TestNewAddress`)
+continua passando sem alteração porque o mnemonic escolhido pelos
+autores tem bit5=0 por coincidência — falso-negativo estrutural do
+próprio test suite (qualquer mnemonic de teste só tem 50% de chance
+de expor o bug).
+
+Fluxo no sistema: `upsert-finding` (candidate) → `update-finding`
+(reasoning completo + filesRead) → `corroborated_static` →
+`record-validation --type=go_manual_poc --result=pass` (saída real
+dos 3 testes Go acima) → `reproduced_local` → `check-scope "OKG"
+"okx/go-wallet-sdk"` (allowed=true, bountyEligible=true, asset
+SOURCE_CODE explícito no scope snapshot) → `record-deployment-evidence`
+(confidence=medium: commit confirmado = HEAD atual de `main`, mas sem
+como confirmar se os apps publicados da OKX embarcam esse commit exato
+sem build interno) → **`scope_verified`** (transição aceita).
+
+**NÃO avançou pra `human_ready`, e isso é o sistema funcionando
+corretamente, não uma lacuna**: `git blame`/`git log --follow
+--diff-filter=A` no clone completo (unshallow) mostra que a linha do
+bug foi introduzida em 2026-01-09 (commit c0b7c875, autor kaijie.liau)
+— ~239 dias atrás. A política anti-duplicata de `novelty-risk.mjs`
+(endurecida deliberadamente depois de 6/6 submissões reais voltarem
+`duplicate`) exige `noveltyStatus=regression` com prova de regressão
+verificada (`baseline` não-vulnerável no commit pai + `candidate`
+vulnerável no commit introdutor, mesmo comando de validação, dentro de
+`MAX_VERIFIED_REGRESSION_AGE_MS` = 7 dias) antes de liberar
+`scope_verified->human_ready`. Um bug de 239 dias não se qualifica por
+construção — não existe "commit pai não-vulnerável recente" pra provar
+regressão, porque não é uma regressão, é um bug antigo nunca
+descoberto publicamente (busca ativa via WebSearch + GitHub issue
+search em `okx/go-wallet-sdk` por "cardano"/"clamp"/"key derivation":
+zero resultados). Tentar contornar esse gate seria exatamente o tipo
+de ação proibida pelas regras invioláveis desta rotina ("NUNCA force
+uma transição de estado nem contorne a recusa do CLI"). Finding fica
+em `scope_verified`, documentado aqui com toda a evidência, para
+revisão humana decidir se vale enviar mesmo sem a prova de regressão
+(a política é sobre risco de competição/duplicata reportável, não
+sobre se o achado é real — este é real e verificado).
+
+`deep-read-log.json` atualizado com os 3 arquivos desta rodada.

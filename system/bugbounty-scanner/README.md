@@ -2,7 +2,36 @@
 
 Dois estágios, custo bem diferente, ligados por um repositório GitHub
 compartilhado (`https://github.com/Genezera/ZeroToOne`, privado). O
-Estágio 1 cobre três programas e cinco linguagens com o mesmo desenho.
+Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
+
+## Estado operacional atual — 04/09/2026
+
+- GitHub Actions executa a varredura barata a cada 6 horas e sincroniza
+  outcomes da HackerOne a cada hora. Ambos usam o mesmo grupo de concorrência,
+  permissões mínimas explícitas e actions pinadas por SHA.
+- O serviço Windows coordena descoberta pesada, diagnóstico, heartbeat,
+  backoff e watchdog. Com `ZERO2ONE_CLOUD_PRIMARY=1`, scan e sync ficam
+  delegados aos workflows para evitar dois writers concorrentes. O SQLite é uma materialized view local:
+  cada job o hidrata de `queue.jsonl`/`submissions.jsonl`/ledger sem emitir
+  eventos duplicados antes de trabalhar.
+- A descoberta pesada integra Slither, OSV-Scanner, Semgrep e CodeQL. O CodeQL
+  roda JS/TS buildless, sem executar scripts do repositório analisado, em
+  rotação persistente; builds de Go/JVM continuam fora do CodeQL até terem
+  isolamento descartável equivalente.
+- `search-prior-art` cobre issues/PRs, commits, advisories e, quando recebe
+  `programHandle`, pagina o feed público recente de Hacktivity. Cobertura
+  truncada não é marcada como método concluído.
+- `audit-system` valida fila sem ids duplicados, cardinalidade fila↔SQLite,
+  integridade do ledger, política, toolchain, integrações e contratos dos
+  workflows. `doctor` continua disponível para diagnosticar só dependências.
+- Nada envia relatório automaticamente. `human_ready -> submitted` exige
+  aprovação humana e reexecuta os gates. Reports privados permanecem
+  invisíveis, portanto o projeto reduz — mas não pode zerar — o risco de
+  duplicate.
+- Programa ausente do registro, com `roeReviewNeeded: true` ou com revisão
+  expirada é bloqueado antes da seleção de leitura. Uma liberação exige
+  `roeReviewed: true`, `reviewedAt` e `nextReviewAt`; as revisões atuais vencem
+  em 30 dias e precisam ser refeitas contra a página oficial do programa.
 
 ## Regra operacional de novidade e submissão
 
@@ -40,6 +69,13 @@ estados falha fechado se não houver:
   repositório, calculado do histórico local e impossível de sobrescrever pelo
   JSON fornecido ao CLI;
 - relatório registrado e programa permitido pela política local.
+
+Na transição final, `humanApproval` precisa confirmar explicitamente
+`reportReviewed=true`, `technicalValidationConfirmed=true` e
+`programRulesReconfirmed=true`. Requisitos da política são adicionados ao
+rascunho e ao gate: por exemplo `aiUseDisclosed` para OKG,
+`noProductionTestingConfirmed` para Vercel e `localForkConfirmed` mais
+`priorAuditChecked` para StackingDAO. Um simples nome de ator não basta mais.
 
 Esse é o **modo anti-duplicate estrito** adotado depois de 6/6 submissões
 reais voltarem como duplicate. `private_unknown`, código apenas "recente" e
@@ -82,14 +118,13 @@ tinham sido implementados quando a lista foi fechada; os 4 que faltavam:
   outcomes). `submission-stats` também ganhou `byWeakness` (que já cobre
   "por detector" neste esquema — `finding.type` carrega os dois juntos,
   ex. `semgrep_detect_child_process`). "Por idade do código" como quebra
-  agregada continua em aberto — `codeAgeDays` só é calculado sob demanda
-  por achado, não fica gravado por finding hoje.
+  agregada continua em aberto; `codeAgeDays` é calculado sob demanda e agora
+  fica gravado como evidência ligada ao finding.
 - **Contrato de eventos versionado** (`db.mjs::LEDGER_SCHEMA_VERSION`):
   todo evento `bugbounty_*` gravado no ledger carrega `schemaVersion` desde
-  03/09/2026. `correlationId` ligando
-  report→duplicateCheck→impactAssessment→outcome do mesmo envio continua
-  em aberto — precisa de um id de investigação threading por várias
-  funções `record*`, mudança maior que não coube nesta rodada.
+  03/09/2026. `correlationId` determinístico (`investigation-id.mjs`) liga
+  validação, code age, relatório, duplicate check, impacto e outcome do mesmo
+  finding entre ambientes.
 
 ### Fluxo pelo CLI
 
@@ -104,6 +139,32 @@ node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patc
 node system/bugbounty-scanner/cli.mjs submission-preflight "FINDING_ID"
 node system/bugbounty-scanner/cli.mjs submission-stats
 ```
+
+Busca pública rastreável (inclui Hacktivity quando `programHandle` é
+informado):
+
+```json
+{
+  "repository": "owner/repo",
+  "programHandle": "handle_hackerone",
+  "since": "2026-08-28T00:00:00Z",
+  "queries": [
+    "root cause e função",
+    "source sink e efeito",
+    "controle ausente e impacto"
+  ]
+}
+```
+
+```powershell
+node system/bugbounty-scanner/cli.mjs search-prior-art --config="prior-art.json"
+node system/bugbounty-scanner/cli.mjs audit-system
+```
+
+O feed de Hacktivity é global e não expõe reports privados. O adapter pagina
+localmente até cruzar `since` (máximo 50 páginas × 50 itens); se não cruzar,
+marca a cobertura como incompleta e não adiciona `hacktivity` aos métodos que
+o gate aceita.
 
 ### Executor isolado de regressão
 
@@ -740,12 +801,12 @@ aviso de que precisa de revisão humana antes de qualquer envio real.**
   revisar o rascunho.
 - Receber o pagamento — só o usuário.
 
-Também continua manual por segurança operacional: executar a PoC no parent e
-no commit introdutor e registrar os dois resultados em `noveltyProof`. Rodar
-código não confiável de repositórios de terceiros automaticamente na máquina
-host, sem sandbox descartável, seria uma regressão de segurança do próprio
-caçador. O gate exige a evidência, mas não finge que já existe um executor
-isolado que o projeto ainda não possui.
+Construir o harness específico de cada finding ainda exige julgamento. A
+execução parent↔commit introdutor já pode ser feita por
+`verify-regression --config=... --finding-id=...`: dois checkouts em Docker,
+sem rede/segredos/capabilities e com filesystem base read-only. Resultado
+contraditório, timeout ou parent incorreto falha fechado. Isso prova a
+regressão executada; não prova ausência de report privado.
 
 ## Comandos úteis
 - Rodar o scanner manualmente: `node system/bugbounty-scanner/scan-runner.mjs`
@@ -846,9 +907,9 @@ diário do Telegram menciona quando algo é suprimido.
 
 **O que isso NÃO é**: não é o sistema de benchmark/re-certificação
 completo que a seção 6.10 da auditoria descreve (corpus rotulado,
-precision@K, mutation testing) — essa parte continua não iniciada
-(Fase 2 completa exige CodeQL/Semgrep/Slither/OSV-Scanner como adapters
-SARIF, o que é um esforço bem maior). Esta é a fatia pequena e barata
+precision@K, mutation testing) — essa parte continua não iniciada.
+CodeQL/Semgrep/Slither/OSV-Scanner já existem como adapters; re-certificação
+estatística e mutation testing continuam sendo trabalho distinto. Esta é a fatia pequena e barata
 que resolve o problema concreto já confirmado (regra específica gerando
 100% de ruído), não a arquitetura de ensemble inteira.
 
@@ -866,7 +927,7 @@ fonte de dado nova: deriva do que já está gravado (`filesRead`,
 | E1 | 1 arquivo lido, confirma condição suspeita isolada |
 | E2 | 2+ arquivos lidos (cadeia cross-file) ou `corroborated_static` |
 | E3 | Validação real com `result=pass`, ou avançou até `reproduced_local`/`scope_verified`/`human_ready`/`submitted`, ou chegou a qualquer terminal pós-submissão (`triaged`/`duplicate`/`informative`/`rejected`/`paid`/`resolved`) |
-| E4 | **Não usado.** Exigiria distinguir "ambiente isolado end-to-end" de `reproduced_local` simples, e o sistema hoje não guarda esse dado separado. Documentado como lacuna, não fingido. |
+| E4 | Validação `end_to_end` no regression sandbox, com image id e isolamento sem rede registrados; sandbox apenas de componente permanece E3 |
 | E5 | Resultado real de plataforma: `triaged`/`paid`/`resolved` |
 
 Um outcome negativo real (`duplicate`/`informative`/`rejected`) **não
@@ -1127,15 +1188,11 @@ enviar? viável prosseguir? por quê não?") que antes exigia investigação
 manual achado por achado, agora como comando repetível — só leitura,
 nunca muda estado.
 
-**Limite estrutural real que isso expõe, não esconde**: hoje só existe
-validador de PoC local (`corroborated_static->reproduced_local`) pra
-achado Solidity (Foundry/Hardhat contra fork). JS/TS, Go e JVM não têm
-nenhum validador — `pipeline-status` reporta isso como "sem validador
-local pra linguagem X" pra cada achado parado em `corroborated_static`
-por esse motivo, em vez de deixar parecer que "ninguém investigou
-ainda". Construir esses validadores é o que de fato desbloquearia
-"fazer os testes" de ponta a ponta pras outras linguagens — próximo
-passo natural, ainda não feito.
+**Limite estrutural atual**: existem convenções executáveis para Solidity,
+JS/TS, Go e JVM e um executor genérico de regressão isolada (`node22`,
+`python313`, `go127`, `jdk21`, `foundry`). O sistema não inventa um harness
+específico: `pipeline-status` continua bloqueando qualquer achado sem uma
+validação `pass` registrada. Swift segue sem runtime isolado permitido.
 
 ## "Só recebo coisas da Circle BBP no Telegram" — causa real, não impressão (31/08/2026)
 
@@ -1435,6 +1492,26 @@ heurísticas próprias, pra herdar quarentena/dashboard sem mudança
 nenhuma; o Semgrep tem MUITO mais regra que isso, então o resto vira
 `semgrep_<nome-curto-da-regra>` — rastreável, nunca escondido atrás de
 um tipo genérico.
+
+## CodeQL buildless em rotação JS/TS (04/09/2026)
+
+`codeql-runner.mjs` cria um banco CodeQL do source tree JavaScript/TypeScript
+sem executar `npm install`, package scripts ou build do repositório-alvo e
+analisa com `javascript-security-extended`. O parser de SARIF só promove
+resultado com `security-severity >= 7` e exclui caminhos não produtivos pela
+mesma política dos demais scanners. A identidade da fila preserva regra,
+arquivo e linha.
+
+`analysis-rotation.mjs` escolhe primeiro alvo nunca analisado e depois o
+sucesso mais antigo; falha grava tentativa/erro sem avançar o cursor de
+sucesso. A rotação processa um alvo JS/TS por discovery para controlar CPU e
+armazenamento. Go/JVM não entram: CodeQL nessas linguagens exige build do
+projeto de terceiro, que só será habilitado quando o build estiver num job
+descartável sem credencial de escrita.
+
+O teste de integração executa o CLI oficial de verdade contra um fixture com
+fluxo HTTP → `child_process.exec` e exige que a command injection apareça no
+SARIF. `toolchain-doctor.mjs` trata CodeQL como a oitava dependência obrigatória.
 
 ## Pipeline de promoção: throughput e peso de novidade aumentados (01/09/2026)
 

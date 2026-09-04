@@ -234,6 +234,16 @@
     "totalScannableFiles": 12,
     "fetchedAt": "2026-09-03T16:23:11.523Z"
   },
+  "kubernetes/cloud-provider-openstack": {
+    "stars": 721,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-04T04:41:21.266Z"
+  },
+  "kubernetes/cloud-provider-aws": {
+    "stars": 463,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-04T04:41:21.433Z"
+  },
   "slackhq/nebula": {
     "stars": 18284,
     "totalScannableFiles": 177,
@@ -243,5 +253,20 @@
     "stars": 247,
     "totalScannableFiles": null,
     "fetchedAt": "2026-09-04T13:32:44.705Z"
+  },
+  "okx/go-wallet-sdk": {
+    "stars": 574,
+    "totalScannableFiles": 1001,
+    "fetchedAt": "2026-09-04T04:41:22.228Z"
+  },
+  "auth0/auth0-java": {
+    "stars": 320,
+    "totalScannableFiles": 4152,
+    "fetchedAt": "2026-09-04T04:41:22.727Z"
+  },
+  "kubernetes/apimachinery": {
+    "stars": 901,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-04T04:41:22.905Z"
   }
 }

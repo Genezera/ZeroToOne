@@ -14,6 +14,8 @@ foreach ($required in @($nodeExe, $wscriptExe, $serviceVbs, $watchdogVbs)) {
 # Inicializa datas de referência sem disparar scan/discovery pesado durante
 # a instalação. O primeiro ciclo agendado só faz heartbeat; os jobs vencem
 # nos seus intervalos normais a partir daqui.
+& $nodeExe (Join-Path $scannerDir 'migrate-to-v2.mjs') '--hydrate'
+if ($LASTEXITCODE -ne 0) { throw 'Falha reconstruindo o banco operacional a partir do estado compartilhado' }
 & $nodeExe (Join-Path $scannerDir 'service-runner.mjs') '--initialize'
 if ($LASTEXITCODE -ne 0) { throw 'Falha inicializando runtime state' }
 

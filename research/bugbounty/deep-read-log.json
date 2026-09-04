@@ -628,9 +628,15 @@
     "src/routing.ts",
     "src/presets/vercel/runtime/cron-handler.ts",
     "src/runtime/internal/app.ts",
-    "src/presets/aws-lambda/runtime/_utils.ts"
+    "src/presets/aws-lambda/runtime/_utils.ts",
+    "src/utils/hash.ts (sha256 truncado p/ chave de cache/identificador gerado, sem uso em comparação de segredo. Sem achado)",
+    "src/presets/vercel/utils.ts (generateFunctionFiles/generateEdgeFunctionFiles -- bypassToken de nitro.options.vercel.config é só repassado pro .prerender-config.json do Build Output API, convenção documentada da própria Vercel p/ bypass de cache ISR pelo edge da Vercel, não input de terceiro nem comparação insegura. Sem achado)",
+    "src/config/resolvers/route-rules.ts (só valida em build-time que basicAuth não foi colocado como route rule -- aviso de config incorreta, sem lógica de autenticação própria. Sem achado)"
   ],
   "nuxt/nuxt": [
+    "packages/nuxt/src/core/plugins/import-protection.ts (createImportProtectionPatterns -- registra padrões de regex bloqueando import de módulos build-time/server em contexto client e vice-versa, aplicado via plugin Vite/Rollup em build-time; puramente allowlist declarativa sem I/O nem decisão em runtime de request, sem achado)",
+    "packages/nitro-server/src/runtime/handlers/error.ts (errorhandler completo -- forwarding de headers entre defaultHandler/SSR-render explicitamente filtra content-type/content-security-policy pra não vazar CSP que desabilitaria JS da página de erro; stack trace só serializado sob import.meta.dev; sem vazamento de segredo pro cliente em produção, sem achado)",
+    "packages/nitro-server/src/runtime/utils/dev.ts (generateErrorOverlayHTML -- overlay de erro do dev server, iframe data: URL sandboxed troca postMessage com window.parent usando targetOrigin '*' nos dois sentidos, mas o listener do lado pai (parentStorageBridge) só aceita mensagem cujo campo nonce bate com um valor aleatório de 16 bytes via crypto.getRandomValues gerado por render e embutido no próprio HTML servido -- nonce não é segredo de fronteira (já visível a quem tem a página), então não authentica origem externa, mas também não expõe nada que um atacante sem já ter alcançado o DOM da página não tivesse; feature inteira gated por import.meta.dev (só dev server local, nunca build de produção). Risco residual real mas de severidade muito baixa e fora do modelo de ameaça normal de bug bounty (tooling local de desenvolvimento, não superfície de produção) -- não abri finding, mas registrado aqui como candidato a reconsiderar se o modelo de ameaça do programa algum dia cobrir dev tooling explicitamente)",
     "packages/nuxt/src/app/island-props.ts",
     "packages/nuxt/src/app/components/island-renderer.ts",
     "packages/nitro-server/src/runtime/handlers/island.ts",
@@ -742,7 +748,10 @@
     "packages/harness-cline/src/cline-auth.ts (resolução de modo de auth -- direct/ai-gateway/env vars, só monta env do processo Cline com AI_GATEWAY_API_KEY quando presente. Sem comparação de segredo, sem geração de token. Sem achado)",
     "packages/harness-pi/src/pi-auth.ts (mesmo padrão de resolução de apiKey por provider/env var, incluindo GOOGLE_APPLICATION_CREDENTIALS por caminho de arquivo -- comparação de caminho, não de segredo. Sem randomBytes/comparação insegura. Sem achado)",
     "packages/harness-deepagents/src/deepagents-auth.ts (mesmo padrão de resolução direct/ai-gateway via env vars. Sem achado)",
-    "packages/harness-grok-build/src/grok-build-harness.ts (harness principal, sem arquivo de auth dedicado -- checado por completude do sweep de harness-*, zero menção a token/secret/randomBytes/comparação. Sem achado)"
+    "packages/harness-grok-build/src/grok-build-harness.ts (harness principal, sem arquivo de auth dedicado -- checado por completude do sweep de harness-*, zero menção a token/secret/randomBytes/comparação. Sem achado)",
+    "packages/harness-acp/src/v1/bridge/permission-controller.ts (createACPPermissionController -- request.sessionId comparado contra sessionId ativo antes de qualquer aprovação; shouldAutoApprove sempre libera kind read/search/think/fetch mesmo fora de allow-all/allow-edits -- comportamento de design da matriz de permissão do harness, documentado no próprio nome dos modos, não bypass de checagem existente. Sem achado)",
+    "packages/gateway/src/errors/parse-auth-method.ts (parseAuthMethod -- só decodifica header informativo de RESPOSTA do AI Gateway (qual método de auth foi usado), não é decisão de autenticação nem input de terceiro em fronteira de confiança. Sem achado)",
+    "packages/harness-acp/src/v1/bridge/session-lifecycle.ts (resolveACPSessionRestorationMethod/restoreACPBridgeSession -- sessionId vem do chamador interno do bridge, não de rede; resume/load fala com processo ACP local via stdio, sem fronteira de auth cruzada aqui. Sem achado)"
   ],
   "vercel/async-sema": [
     "src/index.ts"
@@ -767,7 +776,10 @@
     "packages/adapter-web/src/adapter.ts (handleWebhook delega auth pro getUser fornecido pelo app -- BYO auth por design, sem achado)",
     "examples/nextjs-chat/src/lib/authorization.ts (authorizePreviewBranchRequest -- length-check antes de timingSafeEqual, mesmo padrao ja visto em varios adapters deste repo; length do secret nao e segredo por si, sem achado)",
     "packages/adapter-slack/src/crypto.ts (so re-exporta os primitivos de adapter-shared/src/crypto.ts, sem logica propria)",
-    "packages/adapter-shared/src/crypto.ts (encryptToken/decryptToken -- AES-256-GCM, IV aleatorio de 12 bytes por chamada via crypto.randomBytes, authTag de 16 bytes verificado no decrypt, decodeKey exige exatamente 32 bytes. Sem reuso de IV, sem achado)"
+    "packages/adapter-shared/src/crypto.ts (encryptToken/decryptToken -- AES-256-GCM, IV aleatorio de 12 bytes por chamada via crypto.randomBytes, authTag de 16 bytes verificado no decrypt, decodeKey exige exatamente 32 bytes. Sem reuso de IV, sem achado)",
+    "packages/chat/src/callback-url.ts (completo -- generateToken(): 16 hex chars de crypto.randomUUID(), 64 bits de entropia, armazenado via stateAdapter com TTL 7d; resolveCallbackUrl faz acquireLock+delete no mesmo key -- token é single-use e protegido contra corrida por double-click. Validação de escopo (actionId + channelId/threadId) compara contra o `context` passado pelo chamador; rastreado até chat.ts:handleActionEvent -- context vem do evento de webhook já verificado pela assinatura do adapter (não é input direto de terceiro). Sem achado)",
+    "packages/chat/src/chat.ts (handleActionEvent, L1708-1767 -- consumidor real de decodeCallbackValue/resolveCallbackUrl/postToCallbackUrl: actionId/threadId usados no lookup vêm do `event` já autenticado pelo webhook verify.ts do adapter correspondente, não de input não confiável adicional; callbackUrl postado (`resolved.url`) vem do card originalmente construído pelo próprio app via `el.callbackUrl`, não de dado controlável pelo usuário que clicou -- sem SSRF de terceiro. Sem achado isolado; arquivo é grande (>3000 linhas), só esta função revisada nesta rodada)",
+    "packages/chat/src/ai/scope.ts (completo -- createScopeGuard/channelOf: fronteira de confinamento de ferramentas de IA contra threadId/channelId fornecido pelo próprio modelo (ex.: fetchMessages em ai/tools/threads.ts aceita `threadId` como input de tool call, potencial alvo de prompt injection). channelOf resolve o id completo \"{adapter}:...\" via adapter.channelIdFromThreadId (confirmado correto contra testes de adapter-slack/discord/linear/github, que esperam a string com prefixo). Fallback `id.split(':').slice(0,2).join(':')` só dispara quando o prefixo não corresponde a nenhum adapter registrado (id malformado/hostil) -- testado o racional: como o valor `active`/`explicit` nunca é controlável pelo agente (vem de runInConversation com o threadId real do evento, ou de `scope` fixado pelo app), um id hostil do lado `target` sempre resolve pra uma string diferente do canal ativo real (seja pela via normal, seja pelo fallback), então a comparação `sameChannel` falha e a chamada é bloqueada -- fail-closed nos dois casos, não achei bypass. Sem achado)"
   ],
   "vercel/eve": [
     "packages/eve/src/channel/auth/jwt-hmac.ts",
@@ -828,7 +840,10 @@
     "packages/eve/src/execution/session-callback-request.ts (postSessionCallbackRequest -- redirect:\"error\" documentado contra SSRF-bounce pos-validacao, token OIDC ambiente so anexado com match exato de hostname contra VERCEL_URL/VERCEL_BRANCH_URL/VERCEL_PROJECT_PRODUCTION_URL e protocolo https, sem achado)",
     "packages/eve/src/execution/wire/session-inbox-wire.v6.ts (nova versao de wire, adiciona flag tasks:boolean ao comando cancel -- rastreado ate turn-control-receiver.ts L107-113 e cancel-indexed-session-tasks-step.ts: cancelamento so itera getSessionTaskIndex da PROPRIA sessao (this.stateCursor.sessionState), sem id de sessao alheio aceito como input; sem escalonamento cross-session, sem achado)",
     "packages/eve/src/setup/flows/chatgpt-auth.ts (spawn(\"codex\",[\"login\"]) -- argv array, sem shell, sem input de usuario interpolado; sem achado)",
-    "packages/eve/src/public/channels/slack/session-operations.ts (bindSlackSessionOperations -- auth() so aceita override explicito de auth (incl. null) do chamador interno, sem input externo nao confiavel; sem achado)"
+    "packages/eve/src/public/channels/slack/session-operations.ts (bindSlackSessionOperations -- auth() so aceita override explicito de auth (incl. null) do chamador interno, sem input externo nao confiavel; sem achado)",
+    "packages/eve/src/execution/session-command-token.ts (sessionCommandHookToken deriva token determinístico eve:session:${sessionId}:inbox a partir do proprio sessionId, sem aleatoriedade -- rastreado ate uso interno em workflow-runtime.ts/workflow-entry.ts, nao exposto como webhook publico separado; sem achado isolado)",
+    "packages/eve/src/execution/turn-cancellation-token.ts (turnCancellationHookToken = `${controlToken}:cancel`, mesmo padrao deterministico; sem achado isolado)",
+    "packages/eve/src/channel/session.ts (achado inicial: cancel/compact/clear/reset nao propagam auth no comando, ao contrario de send/respond -- rastreado ate as rotas HTTP reais em eve-channel/index.ts, refutado apos ler packages/eve/README.md L15/176-178: autorizacao por-sessao e explicitamente responsabilidade documentada do app integrador, nao do framework; nenhuma rota tem binding automatico de dono por sessionId, incl. send/respond. Nao e bug de framework, ver NOTES.md Vercel Open Source rodada #9)"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
@@ -877,7 +892,15 @@
     "packages/next/src/server/dev/hot-reloader-webpack.ts",
     "packages/next/src/server/node-environment-extensions/web-crypto.tsx",
     "packages/next/src/server/node-environment-extensions/node-crypto.tsx",
-    "packages/next/src/server/node-polyfill-crypto.ts"
+    "packages/next/src/server/node-polyfill-crypto.ts",
+    "packages/next/src/client/components/http-access-fallback/http-access-fallback.ts (isHTTPAccessFallbackError/getAccessFallbackHTTPStatus -- so parseia digest constante NEXT_HTTP_ERROR_FALLBACK;<401|403|404>, sem interpolacao de dado externo no digest, sem achado)",
+    "packages/next/src/client/components/unauthorized.ts + forbidden.ts (unauthorized()/forbidden() -- lancam Error com digest fixo, gated por flag experimental __NEXT_EXPERIMENTAL_AUTH_INTERRUPTS; funcao so sinaliza pra render de fallback, decisao de autorizacao em si e sempre do app-code que a chama -- nao ha logica de auth aqui pra ter bypass. Sem achado)",
+    "packages/next/src/client/components/http-access-fallback/error-boundary.tsx + error-fallback.tsx (HTTPAccessFallbackBoundary -- getDerivedStateFromError so casa status com prop local (notFound/forbidden/unauthorized); quando boundary local nao tem o slot correspondente, rerenderiza children (que rejoga o throw) em vez de vazar conteudo protegido, propagando pro boundary pai ate achar match -- comportamento documentado, coberto por suite e2e propria (test/e2e/app-dir/unauthorized/*). Sem achado)",
+    "packages/next/src/build/turborepo-access-trace/{env,helpers,index,result,tcp,types}.ts (modulo completo -- envProxy so registra CHAVES de env var acessadas (Set<string>, nunca valor); tcpProxy so registra addr/port de net.Socket.connect; TurborepoAccessTraceResult.toPublicTrace() -- o unico formato escrito no trace file (TURBOREPO_TRACE_FILE) -- expoe so envVarKeys (nomes) + filePaths + um boolean 'network', nunca valor de env var nem endereco de rede real. Sem vazamento de segredo pro trace file que alimenta o remote cache do Turborepo. Sem achado)",
+    "packages/next/src/client/components/builtin/unauthorized.tsx (so renderiza HTTPAccessErrorFallback status=401, sem logica. Sem achado)",
+    "packages/next/src/client/components/dev-root-http-access-fallback-boundary.tsx (guard dev-only que lanca erro se notFound()/forbidden()/unauthorized() usado em root layout; sem logica de autorizacao real. Sem achado)",
+    "packages/next/src/server/app-render/dynamic-access-async-storage-instance.ts + dynamic-access-async-storage.external.ts (so wiring de AsyncLocalStorage pra abortController de dynamic access, sem logica propria, sem achado)",
+    "packages/next/src/telemetry/events/session-stopped.ts (payload de telemetria CLI -- versoes/duracao/flags, nenhum PII ou segredo, sem achado)"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",
@@ -1016,6 +1039,9 @@
     "packages/cli/evals/setup/auth-and-config.ts"
   ],
   "vercel/workflow": [
+    "packages/core/src/runtime/step-ownership.ts (isStepOwnershipActive/stepLeaseRemainingSeconds/backstopIdempotencyKey/hasPendingStepOwnedByMessage -- ownership de mensagem de fila entre workers internos, nao fronteira de autorizacao de usuario; sem achado)",
+    "packages/world-vercel/src/events-v4.ts (cliente HTTP/CBOR do protocolo de eventos v4 -- auth via getHttpConfig/baseHeaders do lado do chamador, arquivo nao decide autenticacao, so serializa/desserializa frames; sem achado)",
+    "packages/world-vercel/src/ws-transport.ts (WsEventsTransport -- bearer OIDC via @vercel/oidc injetado no handshake de upgrade, uma vez por socket, com refresh em auth_expiry e guarda contra reconectar com token repetido; sem achado)",
     "packages/core/src/encryption.ts",
     "packages/core/src/sealed-box.ts",
     "packages/core/src/runtime/deployment-guard.ts",
@@ -1033,7 +1059,17 @@
     "packages/world-vercel/src/deployment-id.ts",
     "packages/world-vercel/src/create-run-id.ts",
     "packages/core/src/runtime/resume-hook.ts",
-    "packages/core/src/create-hook.ts"
+    "packages/core/src/create-hook.ts",
+    "packages/world-local/src/storage/hook-index.ts (indexes duraveis token-index/id-index/by-run para lookup de hooks -- sem achado isolado, mas confirma o design de claim/dispose que motivou os changesets recentes de hook-token-claim-release)",
+    "packages/world-local/src/storage/hooks-storage.ts (findHookByToken/rebuildLiveHookByTokenFromEventLog -- fast path via claim file, slow path scan; sem achado isolado neste arquivo)",
+    "packages/core/src/workflow/hook.ts (createHookImpl completo -- ACHADO REAL: token = ctx.generateNanoid(), rastreado ate vm/index.ts/workflow.ts, ver finding predictable_hook_token_seed_risk)",
+    "packages/core/src/vm/index.ts (createContext -- confirma Math.random e crypto.getRandomValues sobrescritos por seedrandom(seed) dentro da VM sandboxed)",
+    "packages/core/src/workflow.ts (linhas 353-470 -- construcao do seed a partir de runId:workflowName:deploymentId, generateUlid/generateNanoid)",
+    "packages/core/src/workflow/create-hook.ts (createWebhook -- confirma que webhooks NUNCA aceitam token customizado, sempre via generateNanoid)",
+    "packages/core/src/runtime/run-id-time.ts (runIdCreatedAt -- fixedTimestamp decodificado direto do runId, ULID publico)",
+    "packages/cli/src/lib/inspect/vercel-api.ts (fetchTeamInfo/getVercelDashboardUrl -- hostname api.vercel.com fixo, sem interpolacao de input externo; sem achado)",
+    "packages/core/src/runtime/world.ts (createWorld/getWorld/getWorldHandlers -- targetWorld vem de env var WORKFLOW_TARGET_WORLD, config de deploy-time nao de request; sem achado)",
+    "packages/cli/src/commands/health.ts (Health command -- CLI local, base URL de flag/env local, sem fronteira de autorizacao remota; sem achado)"
   ],
   "kubernetes/cluster-bootstrap": [
     "token/jws/jws.go",
@@ -1042,11 +1078,21 @@
     "token/util/helpers.go",
     "token/api/types.go"
   ],
+  "kubernetes/cloud-provider-openstack": [
+    "pkg/identity/keystone/authenticator.go (AuthenticateToken -- delega validação de token pro Keystone real via GetTokenInfo/GetGroups, nunca aceita token vazio/inválido como autenticado -- erro do Keystone propaga como falha de auth, fail-closed. Sem achado)",
+    "pkg/identity/keystone/authorizer.go (policy-based authorizer -- policyList vem de config carregada no startup do apiserver pelo admin, não de input de requisição; fail-closed explícito quando user.GetExtra() é nil (\"keystone auth failed\"); policy sem campo Users aplica pra qualquer usuário só por design documentado do próprio kubernetes-keystone-webhook-authorization upstream, não é bypass de auth introduzido aqui. Sem achado)"
+  ],
+  "kubernetes/cloud-provider-aws": [
+    "cmd/ecr-credential-provider/plugin.go (ExecPlugin.Run -- protocolo oficial de credential provider exec do kubelet: request chega via stdin do próprio processo kubelet local (raiz/trusted), não de rede/atacante remoto; decode/encode via codec gerado, sem eval nem exec de conteúdo externo. Sem achado)"
+  ],
   "kiwicom/js-iam-middleware": [
     "src/validateIAPToken.ts",
     "src/authenticationMiddleware.ts",
     "src/getUser.ts",
-    "src/userCache.ts"
+    "src/userCache.ts",
+    "src/authorizationDirective.ts (relido nesta rodada, não estava neste log apesar de já ter finding -- é o mesmo positional_argument_mismatch já submetido e fechado como duplicate no HackerOne (report 3994302, dup de 3439366). Reproduzi de forma independente com verify.js local antes de checar queue.jsonl e confirmei byte-a-byte o mesmo mapeamento de argumentos trocados já documentado no finding existente -- não criei finding novo, é o mesmo)",
+    "src/getClientToken.ts (POST fixo pro endpoint OAuth2 do Google com client_id/client_secret/refresh_token vindos de config server-side, sem input de terceiro na URL/corpo. Sem achado)",
+    "src/scripts/oauthCallback.ts (isOAuthCallbackUrl -- só parse de query string pra detectar path '/' com `code` presente, helper puro sem lógica de auth. Sem achado)"
   ],
   "slackhq/nebula": [
     "cert/ca_pool.go",
@@ -1057,5 +1103,29 @@
   "plaid/plaid-ruby": [
     "lib/plaid/api_client.rb",
     "lib/plaid/configuration.rb"
+  ],
+  "okx/go-wallet-sdk": [
+    "coins/aptos/v2/crypto/privateKey.go",
+    "coins/ton/ton/wallet/seed.go",
+    "coins/eos/signer.go (Signer.Sign/SigDigest -- SHA256(chainID||packedTx||SHA256(CFD)) por spec EOS, delega geração de assinatura pra github.com/eoscanada/eos-go/ecc (lib externa auditada), sem chainID/payload controlável por atacante substituindo o real. Sem achado)",
+    "coins/tezos/types/key.go + coins/tezos/types/crypto.go (GenerateKey/Sign/ecSign/decryptPrivateKey -- vendored de blockwatch/tzgo (copyright Blockwatch Data Inc.); ecdsa.Sign com crypto/rand.Reader por assinatura + normalização low-S; decryptPrivateKey usa PBKDF2-SHA512 + NaCl secretbox, esquema padrão do tezos-client. GenerateKey(KeyTypeBls12_381) deixa Data nil sem erro -- mas IsValid() já rejeita corretamente (SkHashType().Len()==32 != len(nil)==0) e Sign() pra Bls12_381 retorna ErrUnknownKeyType explicitamente (TODO não implementado) -- feature incompleta mas fail-closed, não bypass. Sem achado)",
+    "coins/nervos/crypto/signature.go (SignatureData.ToBytes -- só serialização R||S||V-27 pro formato Ethereum, sem lógica de assinatura/validação aqui. Sem achado)",
+    "coins/cardano/crypto/key.go (NewXPrvKeyFromEntropy -- ACHADO REAL: mascara de clamp errada 0x1f em vez de 0x7f no byte 31, quebra CIP-3/Icarus em ~50% dos mnemonics; ver finding OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding, chegou a scope_verified, ver NOTES.md rodada 2026-09-04 #3)",
+    "coins/cardano/crypto/derive.go (Derive() de XPrvKey/XPubKey -- confirma que o clamp errado de key.go se propaga sem correção por toda a árvore de derivação HD, não é ponto de mitigação. Sem achado isolado aqui)",
+    "coins/cardano/credential.go (StakeCredential/NewKeyCredential/NewScriptCredential/MarshalCBOR/UnmarshalCBOR -- serialização CBOR e hash blake224 padrão, sem lógica de derivação/assinatura. Sem achado)"
+  ],
+  "auth0/auth0-java": [
+    "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java",
+    "src/main/java/com/auth0/client/auth/ClientAssertionSigner.java",
+    "src/main/java/com/auth0/client/auth/LogoutUrlBuilder.java",
+    "src/main/java/com/auth0/client/auth/AuthorizeUrlBuilder.java",
+    "src/main/java/com/auth0/client/auth/AuthAPI.java",
+    "src/main/java/com/auth0/net/TokenRequest.java",
+    "src/main/java/com/auth0/json/auth/TokenHolder.java",
+    "src/main/java/com/auth0/client/mgmt/core/LoggingInterceptor.java (OkHttp interceptor -- loga request/response headers em debug com redação por nome de header em SENSITIVE_HEADERS (authorization, cookie, x-api-key etc, case-insensitive). URL completa e nomes de header não-sensíveis vão pro log; Management API não usa token em query string, só em Authorization header (coberto pela redação). Sem achado.)",
+    "src/main/java/com/auth0/client/mgmt/core/OAuthTokenSupplier.java (client_credentials flow -- fetchToken() monta client_id/client_secret/audience num POST JSON pro /oauth/token, cacheia accessToken/expiresAt em campos volatile com double-checked locking correto. Mensagem de erro em falha HTTP só inclui code+reason phrase, nunca o response body. Sem achado.)"
+  ],
+  "kubernetes/apimachinery": [
+    "pkg/sharding/accessor.go (ResolveFieldValue -- só extrai uid/namespace de metadata via runtime.Object accessor pra CEL field path fixo, sem I/O nem controle de acesso real. Sem achado.)"
   ]
 }

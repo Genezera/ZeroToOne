@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { appendEntry } from '../ledger/ledger.mjs';
 import { escapeHtml, sendTelegramMessage } from './telegram.mjs';
+import { appendRuntimeEvent } from './runtime-event-log.mjs';
 import {
   acquireLease, backoffMs, isJobDue, loadRuntimeState, saveRuntimeState,
 } from './runtime-state.mjs';
@@ -12,29 +12,34 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 export const DEFAULT_RUNTIME_STATE_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-runtime-state.json');
 export const DEFAULT_LOCK_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-service.lock');
+export const DEFAULT_RUNTIME_EVENTS_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-runtime-events.jsonl');
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
+const isCloudPrimary = () => process.env.ZERO2ONE_CLOUD_PRIMARY === '1';
 
 export const SERVICE_JOBS = [
   {
     name: 'sync_reports', kind: 'light', intervalMs: 60 * MINUTE,
     timeoutMs: 5 * MINUTE,
-    args: [path.join(__dirname, 'cli.mjs'), 'sync-my-reports'],
-    enabled: () => !!(process.env.HACKERONE_USERNAME && process.env.HACKERONE_API_TOKEN),
-    disabledReason: 'credenciais HackerOne não configuradas neste processo',
+    args: [path.join(__dirname, 'sync-reports-runner.mjs')],
+    enabled: () => !isCloudPrimary() && !!(process.env.HACKERONE_USERNAME && process.env.HACKERONE_API_TOKEN),
+    disabledReason: () => isCloudPrimary()
+      ? 'delegado ao workflow cloud horário para evitar dois writers concorrentes'
+      : 'credenciais HackerOne não configuradas neste processo',
   },
   {
     name: 'doctor', kind: 'light', intervalMs: 24 * HOUR,
     timeoutMs: 2 * MINUTE,
-    args: [path.join(__dirname, 'toolchain-doctor.mjs')],
+    args: [path.join(__dirname, 'readiness-audit.mjs')],
     enabled: () => true,
   },
   {
     name: 'scan', kind: 'heavy', intervalMs: 6 * HOUR,
     timeoutMs: 2 * HOUR,
     args: [path.join(__dirname, 'scan-runner.mjs')],
-    enabled: () => true,
+    enabled: () => !isCloudPrimary(),
+    disabledReason: () => 'delegado ao workflow cloud de 6 horas para evitar dois writers concorrentes',
   },
   {
     name: 'discovery', kind: 'heavy', intervalMs: 24 * HOUR,
@@ -144,7 +149,7 @@ export async function runServiceCycle({
   now = () => Date.now(),
   runner = defaultRunner,
   notify = sendTelegramMessage,
-  recordEvent = (event) => appendEntry('research', event),
+  recordEvent = (event) => appendRuntimeEvent(DEFAULT_RUNTIME_EVENTS_PATH, event),
 } = {}) {
   const lease = acquireLease(lockPath, { now: now() });
   if (!lease.ok) return { ok: false, skipped: true, reason: lease.reason };
@@ -197,7 +202,9 @@ export async function runServiceCycle({
       if (!job.enabled()) {
         state.jobs[job.name] = {
           ...(state.jobs[job.name] || {}), running: false,
-          disabledReason: job.disabledReason, lastCheckedAt: new Date(now()).toISOString(),
+          disabledReason: typeof job.disabledReason === 'function' ? job.disabledReason() : job.disabledReason,
+          lastCheckedAt: new Date(now()).toISOString(), consecutiveFailures: 0,
+          nextEligibleAt: null,
         };
         continue;
       }
@@ -207,12 +214,19 @@ export async function runServiceCycle({
       ran.push({ job: job.name, succeeded });
       if (job.kind === 'heavy') heavyRan = true;
     }
-    state.service.status = recoveredOrphan || ran.some((item) => !item.succeeded) ? 'degraded' : 'healthy';
+    const failedThisCycle = ran.some((item) => !item.succeeded);
+    const outstandingFailure = Object.values(state.jobs).some((job) => (job?.consecutiveFailures || 0) > 0);
+    state.service.status = recoveredOrphan || failedThisCycle || outstandingFailure ? 'degraded' : 'healthy';
     if (state.service.status === 'healthy') state.service.lastError = null;
     state.service.lastHeartbeatAt = new Date(now()).toISOString();
     state.service.lastCycleAt = state.service.lastHeartbeatAt;
     saveRuntimeState(statePath, state);
-    return { ok: true, ran, state };
+    return {
+      ok: !failedThisCycle,
+      ran,
+      state,
+      reason: failedThisCycle ? 'um ou mais jobs falharam; veja state.jobs' : recoveredOrphan ? 'job órfão recuperado' : null,
+    };
   } catch (err) {
     const state = loadRuntimeState(statePath);
     state.service = {

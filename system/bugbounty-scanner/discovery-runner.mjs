@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { runTargetDiscovery } from './discover-targets.mjs';
 import { promoteTargets, renderAutoPromotedModule, DEFAULT_MAX_PROMOTIONS_PER_RUN, DEFAULT_MAX_TOTAL_PROMOTED } from './promote-targets.mjs';
-import { loadProgramPolicy } from './program-policy.mjs';
+import { filterBannedTargets, loadProgramPolicyStrict } from './program-policy.mjs';
 import { JS_TARGETS, JS_TARGETS_MANUAL } from './targets-js.mjs';
 import { GO_TARGETS, _PAUSED_GO_TARGETS_MANUAL } from './targets-go.mjs';
 import { JVM_TARGETS, JVM_TARGETS_MANUAL, _PAUSED_JVM_TARGETS_MANUAL } from './targets-jvm.mjs';
@@ -22,8 +22,11 @@ import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runSlitherAgainstTarget, toQueueFindings as slitherToQueueFindings } from './slither-runner.mjs';
 import { runOsvScannerAgainstTarget, toQueueFindings as osvToQueueFindings } from './osv-scanner-runner.mjs';
 import { runSemgrepAgainstTarget, toQueueFindings as semgrepToQueueFindings } from './semgrep-runner.mjs';
-import { openDb, upsertFinding, closeDb, listSubmissions, listFindings } from './db.mjs';
+import { runCodeqlAgainstTarget, toQueueFindings as codeqlToQueueFindings } from './codeql-runner.mjs';
+import { recordRotationResult, selectTargetsForRotation } from './analysis-rotation.mjs';
+import { openDb, upsertFinding, closeDb, listSubmissions, listFindings, exportFindingsToQueueJsonl } from './db.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
 // usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
@@ -59,6 +62,8 @@ const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.jso
 const AUTO_PROMOTED_MODULE_PATH = path.join(__dirname, 'targets-auto-promoted.mjs');
 const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
+const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
+const CODEQL_ROTATION_PATH = path.join(BUGBOUNTY_DIR, 'codeql-rotation.json');
 
 function loadSeenMap() {
   if (!existsSync(SEEN_METADATA_PATH)) return {};
@@ -73,15 +78,24 @@ function log(msg) {
   console.log(`[${new Date().toISOString()}] ${msg}`);
 }
 
+function loadJson(filePath, fallback = {}) {
+  if (!existsSync(filePath)) return fallback;
+  try { return JSON.parse(readFileSync(filePath, 'utf8')); } catch { return fallback; }
+}
+
 export async function runDiscovery() {
-  pullLatest(REPO_ROOT, log);
+  const preflightSync = pullLatest(REPO_ROOT, log);
+  if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou a descoberta: ${preflightSync.reason}`);
+  migrateAll({ queuePath: QUEUE_PATH, dbPath: DB_PATH, writeLog: false, emitLedger: false });
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const seenMap = loadSeenMap();
+  const programPolicy = loadProgramPolicyStrict();
   const result = await runTargetDiscovery(
     [JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS, SOLIDITY_TARGETS, _PAUSED_GO_TARGETS_MANUAL, _PAUSED_JVM_TARGETS_MANUAL, _PAUSED_SWIFT_TARGETS_MANUAL],
     seenMap,
-    getProgram
+    getProgram,
+    { programPolicy }
   );
 
   const checkedAt = new Date().toISOString();
@@ -96,6 +110,9 @@ export async function runDiscovery() {
       {
         generatedAt: new Date().toISOString(),
         totalCandidatesInDatasets: result.totalCandidatesInDatasets,
+        authorizedCandidatesInDatasets: result.authorizedCandidatesInDatasets,
+        policyBlockedCandidates: result.policyBlockedCandidates,
+        policyBlockedPrograms: result.policyBlockedPrograms,
         newCandidatesFound: result.newCandidatesFound,
         truncatedCount: result.truncatedCount,
         neverSeenRemaining: result.neverSeenRemaining,
@@ -118,7 +135,6 @@ export async function runDiscovery() {
   // existingPromotedKeys vem do módulo JÁ importado no topo do arquivo
   // (estado de ANTES desta rodada) -- nunca promove o mesmo repo 2x.
   const existingPromotedKeys = new Set(AUTO_PROMOTED_TARGETS.map((t) => `${t.owner.toLowerCase()}/${t.repo.toLowerCase()}`));
-  const programPolicy = loadProgramPolicy();
   // Fecha a lacuna #6 da revisão de 03/09/2026 ("delta hunting"): sem isso,
   // promoteTargets pontuava um programa do jeito sempre igual, mesmo depois
   // de 6/6 envios reais voltarem duplicate nele. Abre/fecha o banco só pra
@@ -151,10 +167,10 @@ export async function runDiscovery() {
   // verdade usadas dali em diante (Slither/OSV/Semgrep + resumo), nunca
   // os imports estáticos JS_TARGETS/GO_TARGETS/JVM_TARGETS/SOLIDITY_TARGETS,
   // que ficam presos ao estado de ANTES da promoção desta mesma rodada.
-  const freshGoTargets = mergedAutoPromoted.filter((t) => t.language === 'go');
-  const freshJsTargets = [...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')];
-  const freshJvmTargets = [...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')];
-  const freshSolidityTargets = [...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')];
+  const freshGoTargets = filterBannedTargets(mergedAutoPromoted.filter((t) => t.language === 'go'), programPolicy);
+  const freshJsTargets = filterBannedTargets([...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')], programPolicy);
+  const freshJvmTargets = filterBannedTargets([...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')], programPolicy);
+  const freshSolidityTargets = filterBannedTargets([...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')], programPolicy);
   writeFileSync(
     PROMOTION_LOG_PATH,
     JSON.stringify(
@@ -174,6 +190,8 @@ export async function runDiscovery() {
   appendEntry('research', {
     type: 'bugbounty_discovery',
     totalCandidatesInDatasets: result.totalCandidatesInDatasets,
+    authorizedCandidatesInDatasets: result.authorizedCandidatesInDatasets,
+    policyBlockedCandidates: result.policyBlockedCandidates,
     newCandidatesFound: result.newCandidatesFound,
     truncatedCount: result.truncatedCount,
     neverSeenRemaining: result.neverSeenRemaining,
@@ -185,7 +203,7 @@ export async function runDiscovery() {
     totalActiveAutoPromoted: mergedAutoPromoted.length,
   });
 
-  log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} novo(s) (não rastreado ainda), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
+  log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty no dataset; ${result.authorizedCandidatesInDatasets} autorizados pela RoE local, ${result.policyBlockedCandidates} excluídos antes de qualquer consulta ao GitHub; ${result.newCandidatesFound} novo(s) autorizado(s), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
   if (result.programAgeSkippedReason) {
     log(`AVISO: idade de programa (sinal de concorrência) não pôde ser buscada nesta rodada: ${result.programAgeSkippedReason}`);
   } else {
@@ -345,16 +363,72 @@ export async function runDiscovery() {
   }
   log(`Semgrep: ${semgrepReposOk} repositório(s) analisado(s) com sucesso, ${semgrepReposFailed} com falha, ${semgrepNewFindings} achado(s) novo(s) (Warning+ severidade) na fila.`);
 
+  // CodeQL complementa o Semgrep com dataflow interprocedural/global. Só
+  // JavaScript/TypeScript entra nesta rotação: a extração é buildless e não
+  // executa scripts do repositório de terceiro. Go/JVM exigem build e ficam
+  // bloqueados até existir container descartável equivalente.
+  let codeqlNewFindings = 0;
+  let codeqlReposOk = 0;
+  let codeqlReposFailed = 0;
+  let codeqlRotation = loadJson(CODEQL_ROTATION_PATH, {});
+  const codeqlTargets = selectTargetsForRotation(freshJsTargets, codeqlRotation, { limit: 1 });
+  {
+    const db = openDb(DB_PATH);
+    try {
+      for (const target of codeqlTargets) {
+        let codeqlResult;
+        try {
+          codeqlResult = runCodeqlAgainstTarget(target, { log });
+          codeqlRotation = recordRotationResult(codeqlRotation, target, codeqlResult);
+          if (!codeqlResult.ok) {
+            codeqlReposFailed += 1;
+            log(`AVISO: CodeQL não rodou em ${target.owner}/${target.repo}: ${codeqlResult.reason}`);
+            continue;
+          }
+          codeqlReposOk += 1;
+          const findings = codeqlToQueueFindings(target, codeqlResult.findings);
+          let newHere = 0;
+          for (const finding of findings) {
+            const existing = db.prepare('SELECT id FROM findings WHERE id = ?').get(finding.id);
+            if (existing) continue;
+            upsertFinding(db, finding);
+            newHere += 1;
+            codeqlNewFindings += 1;
+          }
+          log(`CodeQL: ${target.owner}/${target.repo} -- ${codeqlResult.rawResultCount} resultado(s) bruto(s), ${findings.length} com security-severity 7+, ${newHere} novo(s).`);
+        } catch (error) {
+          codeqlReposFailed += 1;
+          codeqlRotation = recordRotationResult(codeqlRotation, target, { ok: false, reason: error.message });
+          log(`AVISO: CodeQL falhou em ${target.owner}/${target.repo}: ${error.message.split('\n')[0]}`);
+        }
+      }
+    } finally {
+      closeDb(db);
+    }
+  }
+  writeFileSync(CODEQL_ROTATION_PATH, `${JSON.stringify(codeqlRotation, null, 2)}\n`, 'utf8');
+  log(`CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS analisado(s), ${codeqlReposFailed} falha(s), ${codeqlNewFindings} achado(s) novo(s).`);
+
+  // Ferramentas pesadas gravam primeiro no SQLite para preservar o estado
+  // existente. Publica a visão completa de volta na fila compartilhada;
+  // sem isso, findings novos existiam apenas no .db local ignorado pelo Git.
+  {
+    const exportDb = openDb(DB_PATH);
+    try { exportFindingsToQueueJsonl(exportDb, QUEUE_PATH); }
+    finally { closeDb(exportDb); }
+  }
+
   {
     const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
     const slitherNote = slitherNewFindings > 0 ? `, ${slitherNewFindings} achado(s) novo(s) do Slither` : '';
     const osvNote = osvNewFindings > 0 ? `, ${osvNewFindings} achado(s) novo(s) do OSV-Scanner` : '';
     const semgrepNote = semgrepNewFindings > 0 ? `, ${semgrepNewFindings} achado(s) novo(s) do Semgrep` : '';
-    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}${semgrepNote}`, log);
+    const codeqlNote = codeqlNewFindings > 0 ? `, ${codeqlNewFindings} achado(s) novo(s) do CodeQL` : '';
+    const syncResult = commitAndPush(REPO_ROOT, `Descoberta: ${result.newCandidatesFound} candidato(s) novo(s) de alvo${promotionNote}${slitherNote}${osvNote}${semgrepNote}${codeqlNote}`, log);
     if (syncResult.ok) {
       if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
     } else {
-      log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
+      throw new Error(`descoberta concluída localmente, mas publicação falhou: ${syncResult.reason}`);
     }
   }
 
@@ -365,7 +439,8 @@ export async function runDiscovery() {
     await sendTelegramMessage(
       [
         '🗓️ <b>ZeroToOne — descoberta semanal</b>',
-        `${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} ainda não rastreado(s).`,
+        `${result.totalCandidatesInDatasets} candidato(s) com bounty no dataset; ${result.authorizedCandidatesInDatasets} autorizados e ${result.policyBlockedCandidates} excluídos pela política antes de consultar o GitHub.`,
+        `${result.newCandidatesFound} candidato(s) autorizado(s) ainda não rastreado(s).`,
         `${result.discovered.length} receberam metadado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficaram pra semana que vem)` : ''}.`,
         newestProgram ? `Programa mais novo visto: ${newestProgram.programs?.[0]?.program || '?'} (${newestProgram.owner}/${newestProgram.repo}).` : null,
         promotionResult.promoted.length > 0
@@ -375,6 +450,7 @@ export async function runDiscovery() {
         `🔬 Slither: ${slitherReposOk}/${freshSolidityTargets.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
         `📦 OSV-Scanner: ${osvReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
         `🕵️ Semgrep: ${semgrepReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.`,
+        `🧬 CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS da rotação analisado(s)${codeqlReposFailed > 0 ? ` (${codeqlReposFailed} com falha)` : ''}, ${codeqlNewFindings} achado(s) novo(s) de dataflow global com security-severity 7+.`,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {

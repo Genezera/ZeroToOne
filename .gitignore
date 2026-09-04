@@ -31,3 +31,4 @@ logs/bugbounty-watchdog-state.json
 logs/bugbounty-service.lock
 logs/bugbounty-service.log
 logs/bugbounty-watchdog.log
+logs/bugbounty-runtime-events.jsonl

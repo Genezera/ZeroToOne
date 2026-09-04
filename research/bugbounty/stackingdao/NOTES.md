@@ -973,3 +973,106 @@ mudança conhecida. Rodou em paralelo com a rodada acima (mesmo dia);
 ambas escolheram `vercel/turborepo` pra leitura profunda proativa, mas
 arquivos diferentes (ver NOTES.md de Vercel Open Source) — mesclado
 sem perda ao sincronizar. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado
+nesta rodada. `migrate-to-v2.mjs` + `list-pending` global = 0 (fila
+vazia). `api.hiro.so` recheck rápido: `connect_rejected` no CONNECT do
+agent-proxy (mesmo bloqueio de rodadas anteriores) — não deu pra
+confirmar se o deployer `SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG`
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida, nenhum arquivo novo candidato neste programa. Leitura
+profunda proativa desta rodada direcionada a `nitrojs/nitro` (ver
+NOTES.md de Vercel Open Source: `utils/hash.ts`, `presets/vercel/
+utils.ts`, `config/resolvers/route-rules.ts`), sem achado. Nenhuma
+transição de estado neste programa.
+
+## Rodada 2026-09-04 #3 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia). `api.hiro.so`
+recheck rápido: CONNECT tunnel falhou com 403 no agent-proxy (mesmo
+bloqueio das rodadas anteriores) — não deu pra confirmar se o deployer
+`SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato novo; os 15
+contratos Clarity já cobertos seguem sem mudança conhecida, nenhum
+arquivo novo candidato neste programa. Leitura profunda proativa desta
+rodada direcionada a `vercel/next.js` (ver NOTES.md de Vercel Open
+Source: módulo `turborepo-access-trace/*` — instrumentação de
+env/TCP pra cache key do Turborepo, confirmado que só nomes de env var
+e não valores vazam pro trace file — e dois componentes de UI de
+fallback de auth), sem achado. Nenhuma transição de estado neste
+programa.
+
+## Rodada 2026-09-04 #7 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` não
+testado nesta rodada (bloqueios de rede das rodadas anteriores seguem
+sem motivo pra reverificar todo run) — os 15 contratos Clarity já
+cobertos seguem sem mudança conhecida, nenhum arquivo novo candidato
+neste programa. Trabalho desta rodada concentrado em avançar findings
+`corroborated_static` já existentes de Vercel Open Source (limitação
+estrutural real da máquina de estados documentada — ver NOTES.md de
+Vercel Open Source) e leitura profunda proativa em `vercel/next.js`
+(sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #? (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl`: falha de conexão (`errno=56`, mesmo bloqueio do
+agent-proxy de rodadas anteriores) — não deu pra confirmar se o deployer
+`SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato novo; os 15
+contratos Clarity já cobertos seguem sem mudança conhecida, nenhum
+arquivo novo candidato neste programa. Leitura profunda proativa desta
+rodada direcionada a `nuxt/nuxt` (ver NOTES.md de Vercel Open Source),
+sem achado. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #9 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl -m 8`: `errno=56` (connection reset), mesmo bloqueio
+de rede de todas as rodadas anteriores -- não deu pra confirmar se o
+deployer `SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato
+novo; os 15 contratos Clarity já cobertos seguem sem mudança conhecida,
+nenhum arquivo novo candidato neste programa. Leitura profunda proativa
+desta rodada direcionada a `vercel/eve` (ver NOTES.md de Vercel Open
+Source: achado inicial de possível IDOR em cancel/compact/clear/reset,
+refutado como responsabilidade documentada do app integrador, não bug
+de framework). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #10 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl -m 8`: `errno=56` (connection reset), mesmo bloqueio de
+rede de todas as rodadas anteriores -- não deu pra confirmar se o
+deployer `SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato
+novo; os 15 contratos Clarity já cobertos seguem sem mudança conhecida,
+nenhum arquivo novo candidato neste programa. Leitura profunda proativa
+desta rodada direcionada a `vercel/chat` (ver NOTES.md de Vercel Open
+Source: `packages/chat` núcleo -- `callback-url.ts`, `chat.ts`
+`handleActionEvent`, `ai/scope.ts`), sem achado. Nenhuma transição de
+estado neste programa.
+
+## Rodada 2026-09-04 #12 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` lido por completo como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado
+(inclusive notado que `list-deep-read-candidates.mjs` não reconhece os
+repos de Block Open Source como bloqueados no dataset -- excluídos à
+mão, ver NOTES.md de Vercel Open Source para detalhe). `migrate-to-v2.mjs`
++ `list-pending` global = 0. `api.hiro.so` não retestado nesta rodada;
+os 15 contratos Clarity já cobertos seguem sem mudança conhecida,
+nenhum arquivo novo candidato neste programa. Leitura profunda
+proativa desta rodada direcionada a `vercel/workflow` (`vercel-api.ts`,
+`world.ts`, `health.ts` -- ver NOTES.md de Vercel Open Source), sem
+achado. Nenhuma transição de estado neste programa.

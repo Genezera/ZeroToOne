@@ -33,6 +33,8 @@ import { openDb, upsertFinding, closeDb, stateCounts } from './db.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runTelegramDigest } from './telegram-digest.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
+import { filterBannedTargets, loadProgramPolicyStrict } from './program-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -56,8 +58,21 @@ function fingerprint(f) {
 }
 
 function loadSeen() {
-  if (!existsSync(SEEN_PATH)) return new Set();
-  return new Set(JSON.parse(readFileSync(SEEN_PATH, 'utf8')));
+  const seen = existsSync(SEEN_PATH)
+    ? new Set(JSON.parse(readFileSync(SEEN_PATH, 'utf8')))
+    : new Set();
+  // A descoberta (Slither/OSV/Semgrep) também cria itens em queue.jsonl,
+  // mas historicamente não atualizava scanner-seen.json. Sem esta união,
+  // o scan barato podia anexar novamente o mesmo id já revisado e até
+  // rebaixá-lo visualmente para pending. A fila é a fonte de identidade
+  // mais ampla; todo id que já existe nela precisa ser considerado visto.
+  if (existsSync(QUEUE_PATH)) {
+    for (const line of readFileSync(QUEUE_PATH, 'utf8').split('\n').filter(Boolean)) {
+      const id = JSON.parse(line)?.id;
+      if (id) seen.add(id);
+    }
+  }
+  return seen;
 }
 
 function saveSeen(seen) {
@@ -176,8 +191,25 @@ export async function runScan() {
   // a tarefa agendada podia escanear em cima de estado desatualizado
   // e, pior, perder o próprio commit se uma corrida de push acontecesse
   // (achado real em logs/bugbounty-scanner.log, 30/08/2026).
-  pullLatest(REPO_ROOT, log);
+  const preflightSync = pullLatest(REPO_ROOT, log);
+  if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou o scan: ${preflightSync.reason}`);
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
+  // O SQLite é materialized view local e não é versionado. Todo ambiente
+  // (inclusive checkout efêmero do GitHub Actions) o reconstrói antes de
+  // calcular histórico/dashboards. Hidratação nunca reapensa o ledger.
+  migrateAll({ queuePath: QUEUE_PATH, dbPath: DB_PATH, writeLog: false, emitLedger: false });
+  const programPolicy = loadProgramPolicyStrict();
+  const configuredTargetLists = {
+    clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS,
+    jvm: JVM_TARGETS, swift: SWIFT_TARGETS, solidity: SOLIDITY_TARGETS,
+  };
+  const targetLists = Object.fromEntries(Object.entries(configuredTargetLists)
+    .map(([language, targets]) => [language, filterBannedTargets(targets, programPolicy)]));
+  const blockedTargetCount = Object.values(configuredTargetLists).reduce((sum, targets) => sum + targets.length, 0)
+    - Object.values(targetLists).reduce((sum, targets) => sum + targets.length, 0);
+  if (blockedTargetCount > 0) {
+    log(`Política fail-closed: ${blockedTargetCount} alvo(s) não serão lidos nesta rodada (programa bloqueado, RoE pendente ou sem decisão explícita).`);
+  }
   const seen = loadSeen();
   const newFindings = [];
   const priorStats = loadStats(STATS_JSON_PATH);
@@ -186,7 +218,7 @@ export async function runScan() {
   let contractsChecked = 0;
   let fetchErrors = 0;
 
-  for (const target of TARGETS) {
+  for (const target of targetLists.clarity) {
     const dir = path.join(BUGBOUNTY_DIR, target.program.toLowerCase().replace(/\s+/g, '-'));
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 
@@ -218,18 +250,18 @@ export async function runScan() {
   }
 
   const repoShas = loadRepoShas();
-  const jsResult = await runLanguageScan(JS_TARGETS, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats, quarantineOverrides);
-  const goResult = await runLanguageScan(GO_TARGETS, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats, quarantineOverrides);
-  const jvmResult = await runLanguageScan(JVM_TARGETS, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats, quarantineOverrides);
-  const swiftResult = await runLanguageScan(SWIFT_TARGETS, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats, quarantineOverrides);
-  const solidityResult = await runLanguageScan(SOLIDITY_TARGETS, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats, quarantineOverrides);
+  const jsResult = await runLanguageScan(targetLists.js, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats, quarantineOverrides);
+  const goResult = await runLanguageScan(targetLists.go, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats, quarantineOverrides);
+  const jvmResult = await runLanguageScan(targetLists.jvm, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats, quarantineOverrides);
+  const swiftResult = await runLanguageScan(targetLists.swift, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats, quarantineOverrides);
+  const solidityResult = await runLanguageScan(targetLists.solidity, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats, quarantineOverrides);
   quarantinedTotal += jsResult.quarantinedCount + goResult.quarantinedCount + jvmResult.quarantinedCount + swiftResult.quarantinedCount + solidityResult.quarantinedCount;
 
   // Cross-referência de dependência conhecida vulnerável (OSV.dev) — roda
   // nos mesmos alvos JS/Go/JVM já rastreados (reusa pathPrefixes e
   // repoShas, sem alvo/cache novo). Swift fica de fora: CocoaPods/SwiftPM
   // não são ecossistemas suportados pelo OSV.dev (confirmado ao vivo).
-  const depResult = await runDependencyScan([...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS], repoShas);
+  const depResult = await runDependencyScan([...targetLists.js, ...targetLists.go, ...targetLists.jvm], repoShas);
   for (const f of depResult.findings) {
     const fp = fingerprint(f);
     if (seen.has(fp)) continue;
@@ -307,7 +339,8 @@ export async function runScan() {
     newFindingsCount: newFindings.length,
     newlyReviewedCount: verdictResult.newlyReviewed.length,
     quarantinedCount: quarantinedTotal,
-    programs: [...new Set([...TARGETS, ...JS_TARGETS, ...GO_TARGETS, ...JVM_TARGETS, ...SWIFT_TARGETS, ...SOLIDITY_TARGETS].map((t) => t.program))],
+    programs: [...new Set(Object.values(targetLists).flat().map((t) => t.program))],
+    blockedTargetCount,
   });
 
   // Regra com 100% de FP em amostra suficiente (ex.: ssrf_risk, 13/13)
@@ -321,7 +354,7 @@ export async function runScan() {
 
   generateStatusDashboard({
     queuePath: QUEUE_PATH,
-    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS, solidity: SOLIDITY_TARGETS },
+    targetLists,
     statusPath: STATUS_PATH,
     lastScanAt: scanTimestamp,
   });
@@ -332,7 +365,7 @@ export async function runScan() {
     queuePath: QUEUE_PATH,
     statsJsonPath: STATS_JSON_PATH,
     ledgerEntries: readLedger('research'),
-    targetLists: { clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS, jvm: JVM_TARGETS, swift: SWIFT_TARGETS, solidity: SOLIDITY_TARGETS },
+    targetLists,
     outputPath: DASHBOARD_PATH,
     lastScanSummary: { contractsChecked, repoFilesChecked, manifestsChecked: depResult.filesChecked, fetchErrors },
     lastScanAt: scanTimestamp,
@@ -387,7 +420,7 @@ export async function runScan() {
   if (syncResult.ok) {
     if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''} — agente de nuvem vai ver na próxima checagem.`);
   } else {
-    log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
+    throw new Error(`scan concluído localmente, mas publicação falhou: ${syncResult.reason}`);
   }
 
   return { contractsChecked, fetchErrors, newFindings };

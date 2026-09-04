@@ -6,6 +6,14 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const NOW = new Date('2026-08-31T00:00:00Z').getTime();
+const REVIEWED_POLICY = {
+  'Foo Program': { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31' },
+  X: { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31' },
+};
+
+function reviewedOptions(overrides = {}) {
+  return { programPolicy: REVIEWED_POLICY, now: NOW, ...overrides };
+}
 
 function candidate(overrides = {}) {
   return {
@@ -128,13 +136,13 @@ test('classifyCandidate: programa bloqueado nunca é elegível, mesmo com lingua
 });
 
 test('classifyCandidate: linguagem não suportada é excluída explicitamente, não promovida silenciosamente', () => {
-  const r = classifyCandidate(candidate({ language: 'Python' }), { now: NOW });
+  const r = classifyCandidate(candidate({ language: 'Python' }), reviewedOptions());
   assert.equal(r.verdict, 'unsupported_language');
   assert.equal(r.githubLanguage, 'Python');
 });
 
 test('classifyCandidate: repo maior que o teto vira revisão manual, não descarte nem promoção às cegas', () => {
-  const r = classifyCandidate(candidate({ sizeKb: MAX_REPO_SIZE_KB + 1 }), { now: NOW });
+  const r = classifyCandidate(candidate({ sizeKb: MAX_REPO_SIZE_KB + 1 }), reviewedOptions());
   assert.equal(r.verdict, 'too_large');
 });
 
@@ -144,7 +152,7 @@ test('classifyCandidate: erro de metadado (fetch falhou) vira categoria própria
 });
 
 test('classifyCandidate: candidato limpo é elegível e carrega score+reasons+bestProgram', () => {
-  const r = classifyCandidate(candidate({ programs: [{ program: 'X', maxPayoutUsd: 5000 }], stars: 500 }), { now: NOW });
+  const r = classifyCandidate(candidate({ programs: [{ program: 'X', maxPayoutUsd: 5000 }], stars: 500 }), reviewedOptions());
   assert.equal(r.verdict, 'eligible');
   assert.equal(r.language, 'go');
   assert.ok(r.score > 0);
@@ -157,7 +165,7 @@ test('promoteTargets: promove os de maior score primeiro, respeitando o teto por
     candidate({ owner: 'high', repo: 'b', programs: [{ program: 'X', maxPayoutUsd: 50000 }] }),
     candidate({ owner: 'mid', repo: 'c', programs: [{ program: 'X', maxPayoutUsd: 10000 }] }),
   ];
-  const result = promoteTargets(candidates, { maxPromotionsPerRun: 2, now: NOW });
+  const result = promoteTargets(candidates, reviewedOptions({ maxPromotionsPerRun: 2 }));
   assert.equal(result.promoted.length, 2);
   assert.deepEqual(result.promoted.map((p) => p.repo), ['b', 'c']); // high, mid — não low
   assert.deepEqual(result.skipped.deferredToNextRun.map((r) => r.repo), ['a']); // low ainda elegível, só não coube no orçamento desta rodada
@@ -166,27 +174,27 @@ test('promoteTargets: promove os de maior score primeiro, respeitando o teto por
 
 test('promoteTargets: nunca promove o mesmo repo duas vezes entre rodadas (existingPromotedKeys)', () => {
   const candidates = [candidate({ owner: 'foo', repo: 'bar' })];
-  const result = promoteTargets(candidates, { existingPromotedKeys: new Set(['foo/bar']), now: NOW });
+  const result = promoteTargets(candidates, reviewedOptions({ existingPromotedKeys: new Set(['foo/bar']) }));
   assert.equal(result.promoted.length, 0);
   assert.equal(result.skipped.alreadyPromoted, 1);
 });
 
 test('promoteTargets: respeita o teto TOTAL de alvos auto-promovidos, não só o teto por rodada', () => {
   const candidates = [candidate({ owner: 'a', repo: '1', stars: 500 }), candidate({ owner: 'b', repo: '2', stars: 500 })];
-  const result = promoteTargets(candidates, { maxPromotionsPerRun: 5, maxTotalPromoted: 10, currentTotalPromoted: 9, now: NOW });
+  const result = promoteTargets(candidates, reviewedOptions({ maxPromotionsPerRun: 5, maxTotalPromoted: 10, currentTotalPromoted: 9 }));
   assert.equal(result.promoted.length, 1); // só 1 vaga sobrando, mesmo com orçamento por rodada de 5
 });
 
 test('promoteTargets: teto total já esgotado reporta atCap=true em vez de promover além do limite', () => {
   const candidates = [candidate({ stars: 500 })];
-  const result = promoteTargets(candidates, { maxTotalPromoted: 10, currentTotalPromoted: 10, now: NOW });
+  const result = promoteTargets(candidates, reviewedOptions({ maxTotalPromoted: 10, currentTotalPromoted: 10 }));
   assert.equal(result.promoted.length, 0);
   assert.equal(result.skipped.atCap, true);
 });
 
 test('promoteTargets: candidato sem NENHUM sinal positivo (score 0) nunca é promovido só pra preencher a rodada — bug real pego na primeira rodada ao vivo (ExodusOSS/crypto, ExodusOSS/hydra)', () => {
   const candidates = [candidate({ owner: 'sem-sinal', repo: 'x' })]; // sem payout, sem estrelas, sem push recente, sem idade de programa
-  const result = promoteTargets(candidates, { now: NOW });
+  const result = promoteTargets(candidates, reviewedOptions());
   assert.equal(result.promoted.length, 0);
   assert.deepEqual(result.skipped.insufficientSignal, [{ owner: 'sem-sinal', repo: 'x', score: 0 }]);
 });
@@ -200,7 +208,7 @@ test('promoteTargets: nenhum candidato desaparece em silêncio — todo mundo ap
     candidate({ owner: 'e', repo: '5', stars: 500 }), // único com sinal real — vira o "promoted" desta lista
     candidate({ owner: 'f', repo: '6' }), // sem sinal nenhum — vira insufficientSignal
   ];
-  const policy = { Bloqueado: { aiResearchBanned: true, reason: 'x' } };
+  const policy = { ...REVIEWED_POLICY, Bloqueado: { aiResearchBanned: true, reason: 'x' } };
   const result = promoteTargets(candidates, { programPolicy: policy, now: NOW });
   const accountedFor =
     result.promoted.length +
@@ -214,13 +222,13 @@ test('promoteTargets: nenhum candidato desaparece em silêncio — todo mundo ap
 });
 
 test('classifyCandidate: score exatamente 0 (nenhum sinal) vira insufficient_signal, não eligible', () => {
-  const r = classifyCandidate(candidate(), { now: NOW });
+  const r = classifyCandidate(candidate(), reviewedOptions());
   assert.equal(r.verdict, 'insufficient_signal');
   assert.equal(r.score, 0);
 });
 
 test('promoteTargets: entrada promovida tem o formato exato que scan-runner.mjs espera de um target', () => {
-  const result = promoteTargets([candidate({ programs: [{ program: 'X', platform: 'HackerOne', maxPayoutUsd: 5000 }], defaultBranch: 'develop' })], { now: NOW });
+  const result = promoteTargets([candidate({ programs: [{ program: 'X', platform: 'HackerOne', maxPayoutUsd: 5000 }], defaultBranch: 'develop' })], reviewedOptions());
   const t = result.promoted[0];
   assert.equal(t.program, 'X');
   assert.equal(t.platform, 'HackerOne');
@@ -236,7 +244,7 @@ test('promoteTargets: entrada promovida tem o formato exato que scan-runner.mjs 
 });
 
 test('promoteTargets: sem defaultBranch, usa "main" como fallback', () => {
-  const result = promoteTargets([candidate({ defaultBranch: undefined, stars: 500 })], { now: NOW });
+  const result = promoteTargets([candidate({ defaultBranch: undefined, stars: 500 })], reviewedOptions());
   assert.equal(result.promoted[0].branch, 'main');
 });
 

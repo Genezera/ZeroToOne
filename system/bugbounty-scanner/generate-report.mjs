@@ -22,6 +22,7 @@ import { getFinding, listValidations, latestDeploymentEvidence, latestDuplicateC
 import { duplicateCheckGate } from './novelty-risk.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { loadSnapshot } from './scope-registry.mjs';
+import { loadProgramPolicyStrict } from './program-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_REPORTS_DIR = path.resolve(__dirname, '..', '..', 'research', 'bugbounty', 'reports');
@@ -61,6 +62,7 @@ export function assembleReportContext(db, findingId) {
   const duplicateCheck = latestDuplicateCheck(db, findingId);
   const impactAssessment = latestImpactAssessment(db, findingId);
   const snapshot = loadSnapshot(finding.program);
+  const policyEntry = loadProgramPolicyStrict()[finding.program] || null;
   return {
     ok: true,
     finding,
@@ -69,12 +71,22 @@ export function assembleReportContext(db, findingId) {
     duplicateCheck,
     impactAssessment,
     officialUrl: snapshot ? snapshot.officialUrl : null,
+    policyEntry,
   };
 }
 
 export function renderReportDraft(ctx) {
-  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, officialUrl } = ctx;
+  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, officialUrl, policyEntry = null } = ctx;
   const now = new Date().toISOString();
+  const policyChecklist = [
+    policyEntry?.aiDisclosureRequired ? '- [ ] Uso de IA declarado explicitamente no relatório' : null,
+    policyEntry?.productionTestingProhibited ? '- [ ] Confirmado que nenhum teste foi executado em produção' : null,
+    policyEntry?.localForkRequired ? '- [ ] PoC executada somente em fork local permitido pelo programa' : null,
+    policyEntry?.priorAuditCheckRequired ? '- [ ] Audits anteriores revisados e o mesmo root cause não aparece neles' : null,
+  ].filter(Boolean).join('\n');
+  const aiDisclosureSection = policyEntry?.aiDisclosureRequired
+    ? `\n## Divulgação obrigatória de uso de IA\n\nEste trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, análise e preparação do rascunho. Antes do envio, o pesquisador revisou independentemente o código, executou a PoC e confirmou pessoalmente cada alegação técnica e de impacto.\n`
+    : '';
 
   const pocSection = passingValidation
     ? `## Prova de conceito executável\n\`\`\`\ncomando: ${passingValidation.command || '{{comando não registrado}}'}\n\`\`\`\nSaída real (${passingValidation.type}, ${passingValidation.ts}):\n\`\`\`\n${passingValidation.rawOutput || '{{raw_output não registrado -- ver validations no banco}}'}\n\`\`\`\n`
@@ -134,6 +146,8 @@ Este arquivo foi montado por \`generate-report.mjs\` a partir do que já está g
 - [ ] Evidência/PoC conferida linha por linha (não é paráfrase/alucinação)
 - [ ] Checagem de duplicata está atualizada
 - [ ] Resumo/Impacto/Correção sugerida escritos de verdade, não deixados como placeholder
+- [ ] Revisão humana do relatório e validação técnica independente concluídas
+${policyChecklist}
 
 ---
 
@@ -178,6 +192,7 @@ ${impactSection}
 
 ## Correção sugerida
 {{RASCUNHO -- mudança concreta e mínima}}
+${aiDisclosureSection}
 
 ## Checagem de duplicata
 ${dupLine}

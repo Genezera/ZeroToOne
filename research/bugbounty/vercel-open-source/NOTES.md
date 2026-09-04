@@ -6013,3 +6013,690 @@ neste monorepo (claude-code, codex, opencode, cline, pi, deepagents
 cobertos; cursor/fx não se aplicam; grok-build não tem um dedicado,
 arquivo principal checado). Nenhum achado novo. `deep-read-log.json`
 atualizado (`vercel/ai` +4 arquivos, agora 31 no total).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia nos 4
+programas desta missão). Os 13 achados em `corroborated_static` de
+rodadas anteriores (inclusive o de `vercel/chat`/`adapter-discord`
+CWE-208 e o de `vercel/ai`/`runBridge` timing_attack_risk) não foram
+reabertos nesta rodada — seguem fora do laço de `list-pending` (só
+processa `candidate`), consistente com o padrão das rodadas anteriores.
+
+Leitura profunda proativa: todos os 16 repos em escopo do programa já
+tinham sido tocados em rodadas anteriores (`nitrojs/nitro`, `nuxt/
+nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`, `vercel-labs/
+skills`, `vercel/ai`, `vercel/async-sema`, `vercel/chat`, `vercel/eve`,
+`vercel/flags`, `vercel/ms`, `vercel/next.js`, `vercel/swr`, `vercel/
+turborepo`, `vercel/vercel`, `vercel/workflow`) — escolhi `nitrojs/
+nitro` de novo por ter poucos arquivos logados e procurei arquivo novo
+ainda não lido com grep por auth/session/token/crypto/login/password/
+admin/permission/access em `src/`:
+
+- `src/utils/hash.ts` (completo, 9 linhas) — `createHash("sha256")`
+  truncado pra chave de cache/identificador gerado (build-time), sem
+  uso em comparação de segredo nem verificação de assinatura. Sem
+  achado.
+- `src/presets/vercel/utils.ts` (`generateFunctionFiles`/
+  `generateEdgeFunctionFiles`) — `bypassToken` de
+  `nitro.options.vercel.config` só é repassado pro
+  `.prerender-config.json` do Build Output API da própria Vercel
+  (convenção documentada, consumida pelo edge da Vercel pra bypass de
+  cache ISR) — não é input de terceiro nem comparação insegura dentro
+  deste repo. Sem achado.
+- `src/config/resolvers/route-rules.ts` — só emite aviso em build-time
+  se `basicAuth` foi colocado como route rule em vez de middleware
+  (erro de configuração, não bug de autenticação). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`nitrojs/nitro` +3 arquivos).
+
+## Rodada 2026-09-04 #2 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero antes de qualquer
+clone/leitura: `Block Open Source`/`Circle BBP` confirmados bloqueados
+(nenhum repo `afterpay/*`, `cashapp/*`, `misk`, `square/wire`,
+`circlefin/*` tocado). `migrate-to-v2.mjs` + `list-pending` global = 0
+novamente — fila vazia.
+
+Leitura profunda proativa: com `nitrojs/nitro` já esgotado (rodada
+anterior), fui pro repo com maior superfície ainda não coberta —
+`vercel/next.js` (256 arquivos no repo batendo o grep auth/session/
+crypto/token/login/password/admin/permission/access, só 26 já
+logados). Clone raso (`--filter=blob:none --sparse`) só pra listar nomes de
+arquivo via `git ls-tree`, sem baixar blobs desnecessários. Filtrei fora test/e2e fixtures, `__testfixtures__` de
+codemod, `docs/`, `.compiled/` (libs vendorizadas: crypto-browserify,
+jsonwebtoken, babel runtime — terceiros já auditados a montante, fora
+do escopo de código próprio da Vercel) e `errors/*.mdx`. Sobrou o
+mecanismo de fronteira de autorização nativo do App Router
+(`unauthorized()`/`forbidden()`), feature real que todo app Next.js em
+produção usando App Router pode habilitar via
+`experimental.authInterrupts`:
+
+- `packages/next/src/client/components/http-access-fallback/http-access-fallback.ts`
+  — `isHTTPAccessFallbackError`/`getAccessFallbackHTTPStatus` só
+  parseiam um digest **constante** (`NEXT_HTTP_ERROR_FALLBACK;401` /
+  `;403` / `;404`), sem interpolação de dado externo/request — sem
+  superfície de injeção no digest.
+- `packages/next/src/client/components/unauthorized.ts` +
+  `forbidden.ts` — `unauthorized()`/`forbidden()` só lançam um `Error`
+  com esse digest fixo, atrás da flag experimental
+  `__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS`. A decisão de autorização em si
+  (quando chamar a função) é sempre do código do app — não há lógica
+  de auth aqui pra ter bypass; a função é só o mecanismo de sinalização
+  de "renderize o fallback", equivalente ao `notFound()` já existente.
+- `packages/next/src/client/components/http-access-fallback/error-boundary.tsx`
+  (+ `error-fallback.tsx`) — `HTTPAccessFallbackErrorBoundary.
+  getDerivedStateFromError` casa o status só com a prop local
+  (`notFound`/`forbidden`/`unauthorized`) desse boundary específico;
+  quando o boundary da camada atual não tem o slot correspondente, ele
+  **rerenderiza `children`** (que rejoga o mesmo throw na próxima
+  renderização) em vez de silenciosamente cair pra `null`/vazar o
+  conteúdo protegido por baixo — isso propaga o erro pro boundary pai
+  mais próximo que tenha o slot certo, em vez de expor a árvore
+  protegida. Esse comportamento é documentado (mesmo padrão do
+  `notFound()`) e tem suite e2e própria e dedicada em
+  `test/e2e/app-dir/unauthorized/{basic,default}/`. Rastreei a cadeia
+  completa (chamada → digest → `getDerivedStateFromError` →
+  match/propagação de boundary → render do fallback) e não achei
+  caminho onde o `children` protegido escapa pro DOM quando o status
+  está `triggeredStatus` setado sem slot casado.
+
+Nenhum achado novo nesta rodada — mecanismo de auth-boundary do App
+Router se mostrou corretamente implementado (decisão de auth é
+responsabilidade do app-code, framework só faz roteamento de UI de
+fallback, sem vazamento identificado). `deep-read-log.json` atualizado
+(`vercel/next.js` +3 entradas, cobrindo 5 arquivos correlacionados).
+
+## Rodada 2026-09-04 #3 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses
+tocado. `migrate-to-v2.mjs` + `list-pending` global = 0 novamente —
+fila vazia.
+
+Leitura profunda proativa: clone raso sparse de `vercel/next.js`
+(`--filter=blob:none --sparse`, sem baixar blobs à toa) só pra listar
+nomes via `git ls-tree`. Grep por auth/session/crypto/token/login/
+password/admin/permission/access em `packages/` (excluindo test/
+fixtures/docs/`.compiled` vendorizado como nas rodadas anteriores)
+achou 29 arquivos batendo o padrão, 22 ainda não logados. Escolhi 3
+itens (um deles um módulo inteiro de 6 arquivos, li tudo por ser
+pequeno e coeso):
+
+- `packages/next/src/build/turborepo-access-trace/{env,helpers,index,
+  result,tcp,types}.ts` — mecanismo que instrumenta `process.env` (via
+  `Proxy`) e `net.Socket.prototype.connect` durante o build pra
+  detectar quais env vars e endereços de rede o build tocou, usado
+  pelo Turborepo pra decidir chave de cache remoto. Ponto de atenção
+  óbvio de primeira leitura: será que o *valor* de alguma env var
+  secreta vaza pro `TURBOREPO_TRACE_FILE` (arquivo que alimenta o
+  remote cache, potencialmente compartilhado entre devs/CI)? Não —
+  `envProxy` só adiciona a *chave* (`envVars.add(key)`, nunca
+  `Reflect.get(...)`'s valor) ao Set; `TurborepoAccessTraceResult.
+  toPublicTrace()` — o único formato de fato serializado pro trace
+  file em `writeTurborepoAccessTraceResult` — expõe só `envVarKeys`
+  (nomes), `filePaths` (caminhos) e um boolean `network`, nunca valor
+  de env var nem endereço/porta reais (esses ficam só na
+  representação interna `serialize()`, usada pra merge entre workers,
+  não escrita em disco). Rastreei toda a cadeia get→proxy→result→
+  write. Sem achado.
+- `packages/next/src/client/components/builtin/unauthorized.tsx` — só
+  renderiza `HTTPAccessErrorFallback status={401}`, sem lógica
+  própria (componente puramente de apresentação, já coberto
+  indiretamente pela leitura do `error-fallback.tsx` em rodada
+  anterior). Sem achado.
+- `packages/next/src/client/components/dev-root-http-access-fallback-boundary.tsx`
+  — guard só ativo em dev que lança erro se `notFound()`/`forbidden()`/
+  `unauthorized()` forem usados no root layout (uso indevido gera erro
+  de build, não é lógica de autorização). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/next.js` +3 entradas, cobrindo 8 arquivos).
+
+## Rodada 2026-09-04 #7 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`Auth0 by Okta` (`roeReviewNeeded`, flagged na rodada anterior #6) também
+não tocado nesta rodada — Bugcrowd, mesma plataforma do Block Open
+Source banido, sem confirmação de RoE; ver nota de escalonamento ao
+usuário mais abaixo. `migrate-to-v2.mjs` + `list-pending` global = 0
+(fila vazia).
+
+Trabalho principal desta rodada: avançar os 8 findings `corroborated_static`
+deste programa que já estavam parados esperando PoC:
+- `vercel/ai::runBridge::timing_attack_risk`,
+  `vercel-labs/agent-skills::verify-claim.mjs::path_traversal_arbitrary_file_read_risk`,
+  `vercel/vercel::update-remix-run-dev.js::command_injection_risk`,
+  `vercel/next.js::image-optimizer.ts::ssrf_redirect_allowlist_bypass_risk`
+  — os 4 são achados JS/TS reais e já confirmados linha a linha em
+  rodadas anteriores, mas continuam **permanentemente presos** em
+  `corroborated_static`: confirmado lendo `state-machine.mjs` que a
+  transição `corroborated_static->reproduced_local` só aceita
+  `validations` com `result="pass"`, e `result="not_applicable"` é
+  **recusado de propósito** ("fica em corroborated_static até Fase 2/4
+  adicionar um validador de verdade"). Além disso `scope_verified` só
+  tem precondição a partir de `reproduced_local` — não existe aresta
+  `corroborated_static->scope_verified` na máquina de estados, então
+  mesmo achado JS/TS com escopo confirmado e deployment evidence não
+  tem como avançar até um validador local de verdade existir pra esse
+  tipo (fora do escopo desta rotina). Registrei `record-validation
+  ...=not_applicable` formal nos 4 (documentando a limitação, não
+  simulando), tentei a transição esperando recusa (recusada, como
+  previsto) — nenhuma mudança de estado, apenas documentação mais
+  completa no ledger.
+- `vercel/vercel::mcp.ts` linhas 345/347/349 (`semgrep_detect_child_process`,
+  3 branches do mesmo bloco `execSync` de deeplink `cursor://`) —
+  decisão de rodada anterior (03/09) de não investigar mais fundo por
+  risco de duplicata alto (mesmo tipo de achado já virou duplicate no
+  mesmo repo) segue válida, nada mudou, sem ação nesta rodada.
+- `vercel/chat::adapter-discord/index.ts::handleWebhook` (suposto
+  timing leak) — reasoning já registrado em rodada anterior tinha DUAS
+  tentativas reais de PoC de timing (metodologia simples + rigorosa
+  com JIT warmup/mediana de 20 rodadas) com resultado **negativo** nas
+  duas (sem correlação mensurável). Como isso é uma refutação real já
+  documentada e nunca persistida como transição, promovido nesta
+  rodada: `transition ... false_positive` (aceito).
+
+Leitura profunda proativa: sparse clone de `vercel/next.js` (HEAD
+`090f1b7`), grep auth/session/crypto/token/login/password/admin/
+permission/access em `packages/` deu 33 candidatos, dos quais 4 ainda
+não cobertos (excluindo vendorizados em `src/compiled/`, que são cópias
+de terceiros já auditadas fora daqui — `jsonwebtoken`, `crypto-browserify`,
+`@edge-runtime/primitives`). Li 3:
+- `dynamic-access-async-storage-instance.ts` + `.external.ts` — só
+  wiring de `AsyncLocalStorage` pra um `abortController`, zero lógica
+  própria. Sem achado.
+- `telemetry/events/session-stopped.ts` — payload de telemetria do CLI
+  (versões, duração, flags de build) — nenhum PII, segredo ou dado de
+  usuário no payload. "Session" aqui é sessão de CLI/build, não sessão
+  de autenticação. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/next.js` +2 entradas, cobrindo
+3 arquivos). `access-error-styles.ts` (só CSS) fica pra próxima rodada,
+baixa prioridade.
+
+**Nota de escalonamento (não é achado de segurança do programa, é sobre
+o próprio processo desta rotina):** `program-policy.json` registra desde
+a rodada #6 de hoje que `Auth0 by Okta` (Bugcrowd) teve dezenas de
+rodadas de leitura profunda em `auth0/auth0-java` sem NUNCA passar por
+revisão de RoE quanto a proibição de ferramentas de IA — mesma
+plataforma (Bugcrowd) do `Block Open Source`, que tem essa proibição
+explícita. `WebFetch` pra `bugcrowd.com`/`web.archive.org` falhou
+(`EGRESS_BLOCKED`) nas tentativas de verificar isso automaticamente.
+Campo continua `roeReviewNeeded:true`, não escalado a `aiResearchBanned`
+sem confirmação real. Verificação humana (navegador real) da RoE do
+Auth0 by Okta em bugcrowd.com/engagements/auth0-okta segue pendente.
+
+## Rodada 2026-09-04 #8 (push automático via GitHub webhook) — ACHADO NOVO, avançado até `scope_verified`, rascunho de relatório escrito
+
+`program-policy.json` checado como passo zero: `Block Open Source`/
+`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia).
+
+Leitura profunda proativa direcionada a `vercel/workflow` (ainda pouco
+coberto — 18 entradas antigas, quase todas na área "hook token", motivada
+pelos changesets recentes `.changeset/hook-token-reuse-after-dispose.md`,
+`.changeset/reject-empty-hook-token.md`, `.changeset/hook-token-claim-release.md`
+etc., todos sobre bugs de CICLO DE VIDA do token, não sobre previsibilidade).
+Segui a pista até a geração do token em si (`packages/core/src/workflow/hook.ts`
+→ `packages/core/src/workflow.ts` → `packages/core/src/vm/index.ts`) e achei
+algo estrutural, não um bug de ciclo de vida:
+
+**`createHook()`/`createWebhook()` geram o token via `seedrandom(seed)`
+(PRNG determinístico, necessário pro replay do motor de workflow), e o
+`seed` é `runId:workflowName:deploymentId` (branch main/v5-beta) ou
+`runId:workflowName:+startedAt` (pacote ESTÁVEL publicado
+`@workflow/core@4.8.5`, confirmado baixando o tarball real do registry
+npm) — os 3 componentes são explicitamente NÃO-secretos pela própria
+documentação/API do produto (`runId` é aceito por `getRun(runId)`;
+`workflowName` é literal de código-fonte; `deploymentId`/`startedAt` são
+metadados de rotina; `fixedTimestamp` é decodificado DIRETO do próprio
+`runId`, que é um ULID). A doc oficial declara que esse token "is the
+only authorization performed for incoming requests" no endpoint público
+`/.well-known/workflow/v1/webhook/:token`.**
+
+PoC real rodada localmente (`node --test`, dependências exatas fixadas
+pelo projeto — `seedrandom@3.0.5`, `nanoid@5.1.6`, `ulid@3.0.1`, sem
+tocar infraestrutura real): duas execuções independentes do mesmo seed
+produzem o token IDÊNTICO — `ok 1` no `node --test`, confirmando que o
+token não carrega entropia própria.
+
+Achado registrado como
+`Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk`,
+avançado via CLI real (sem forçar nenhuma transição):
+`candidate` → `corroborated_static` (filesRead + reasoning) →
+`reproduced_local` (validação `local_repro_script` + depois `node_test`,
+ambas `result=pass` reais) → `scope_verified` (`check-scope("Vercel Open
+Source","vercel/workflow")` = `allowed:true,bountyEligible:true`;
+`record-deployment-evidence` com `confidence=high`, porque baixei o
+tarball publicado no npm registry e confirmei bit-a-bit o mesmo padrão
+vulnerável no código compilado distribuído, não só no branch de
+desenvolvimento). Rascunho de relatório escrito seguindo o TEMPLATE.md
+exato, salvo em
+`research/bugbounty/reports/vercel-workflow-predictable-hook-token.md`,
+`record-report` registrado.
+
+**Bloqueado em `scope_verified`, não `human_ready` — limitação real,
+não contornada**: a transição pra `human_ready` exige
+`record-impact-assessment` (feito, `reportable:true`) E
+`record-duplicate-check` com métodos rastreáveis reais
+(`github_issues`+`github_advisories`+`hacktivity`/`web_search`, ≥3
+queries distintas). Tentei `search-prior-art` de verdade (config real
+com 3 queries sobre "hook token predictable seed" contra
+`vercel/workflow`) e a API do GitHub devolveu `401` neste ambiente —
+mesma classe de bloqueio de rede já documentada várias vezes neste
+projeto (ex. `api.hiro.so` bloqueado pro StackingDAO). Além disso, ao
+ler `novelty-risk.mjs::duplicateCheckGate`, confirmei que o gate atual
+exige `noveltyStatus==="regression"` com prova de regressão verificada
+(commit introdutor vs. parent, mesma validação em ambos) — desenhado
+pra achados que são REINTRODUÇÃO de um bug já corrigido antes, não pra
+uma descoberta genuinamente nova como esta. Não forcei/simulei nenhum
+dos dois (nem prior-art fake, nem prova de regressão que não existe) —
+documentando aqui como limitação estrutural real do gate atual pra
+achados de primeira descoberta, não como falha da investigação. O único
+`human_ready` existente no sistema inteiro (`Block Open Source::wire...`)
+é de antes do programa ser bloqueado — não há precedente de um achado
+genuinamente novo ter passado por este gate específico ainda.
+
+`deep-read-log.json` atualizado (`vercel/workflow` +7 entradas, agora 25
+no total).
+
+## Rodada 2026-09-04 #? (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado
+nesta rodada. `migrate-to-v2.mjs` + `list-pending` global = 0 (fila
+vazia). Retentei `search-prior-art` (3 queries reais) pro finding
+`scope_verified` de `vercel/workflow` (`predictable_hook_token_seed_risk`)
+esperando que o bloqueio de rede tivesse mudado — continua idêntico:
+`GitHub API HTTP 401` no `api.github.com/search/*`. Achado segue preso em
+`scope_verified`, mesma limitação estrutural já documentada na rodada
+anterior (gate de `human_ready` exige duplicate-check rastreável que a
+rede deste ambiente não permite fazer de verdade); não forçado.
+
+Leitura profunda proativa desta rodada: `nuxt/nuxt` (repo com cobertura
+relativamente leve — só 13 entradas antigas, quase todas em torno de
+`island-*`/cookie/proxy). Sparse clone raso de `packages/`, grep
+auth/session/crypto/token/login/password/admin/permission/access, 3
+arquivos novos lidos:
+- `packages/nuxt/src/core/plugins/import-protection.ts` — allowlist
+  declarativa de padrões de import bloqueados entre contexto client/
+  server/shared, aplicada em build-time via plugin Vite/Rollup, sem
+  I/O nem decisão em runtime de request. Sem achado.
+- `packages/nitro-server/src/runtime/handlers/error.ts` — handler de
+  erro do Nitro; filtra explicitamente `content-security-policy` do
+  forwarding de headers pra não desabilitar JS da página de erro,
+  stack trace só serializado sob `import.meta.dev`. Sem achado.
+- `packages/nitro-server/src/runtime/utils/dev.ts` — overlay de erro
+  do dev server (iframe `data:` URL sandboxed com `postMessage`
+  target `'*'` nos dois sentidos, validado só por nonce aleatório de
+  16 bytes embutido no próprio HTML servido). Nonce não protege
+  contra atacante que já tem acesso ao DOM da página (já visível no
+  source), e toda a feature é gated por `import.meta.dev` — só dev
+  server local, nunca build de produção. Risco residual real mas
+  severidade muito baixa e fora do modelo de ameaça normal de bug
+  bounty (tooling de desenvolvimento local, não superfície de
+  produção rodando pra usuário final). Não abri finding — documentado
+  em `deep-read-log.json` como candidato a reconsiderar só se o
+  modelo de ameaça do programa cobrir explicitamente dev tooling.
+
+`deep-read-log.json` atualizado (`nuxt/nuxt` +3 entradas, agora 16 no
+total). Nenhuma transição de estado neste programa nesta rodada.
+
+## Rodada 2026-09-04 #9 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados -- confirmado explicitamente que
+os repos `afterpay/*`, `cashapp/*` e `square/wire` que aparecem em
+`deep-read-log.json` pertencem ao scope-snapshot de `Block Open Source`
+(`research/bugbounty/scope-snapshots/block-open-source.json`), não a
+este programa -- nenhum deles tocado nesta rodada. `migrate-to-v2.mjs` +
+`list-pending` global = 0 (fila vazia).
+
+Leitura profunda proativa desta rodada direcionada a `vercel/eve`
+(pacote com maior superfície ainda de auth/session, 59 entradas prévias
+mas repo muito grande). Sparse clone raso de `packages/eve/src`, grep
+auth/session/crypto/token/login/password/admin/permission/access/
+secret/credential contra o log já existente. 3 arquivos novos lidos
+(mais rastreamento de cadeia de chamada em vários arquivos já
+catalogados, sem contar pro limite de 3):
+
+- `packages/eve/src/execution/session-command-token.ts` -- gera o
+  "stable command inbox token" de uma sessão como
+  `eve:session:${sessionId}:inbox`, ou seja, **derivado
+  deterministicamente do próprio sessionId, não randômico** (diferente
+  do padrão `generateNanoid()` usado pros webhook hooks públicos em
+  `packages/core/src/workflow/create-hook.ts`, já coberto pelo achado
+  `predictable_hook_token_seed_risk` de `vercel/workflow`).
+- `packages/eve/src/execution/turn-cancellation-token.ts` -- deriva o
+  token de cancelamento de turno como `${controlToken}:cancel`, mesmo
+  padrão determinístico.
+- `packages/eve/src/channel/session.ts` -- **achado inicial que motivou
+  a investigação**: os métodos `cancel()`/`compact()`/`clear()`/
+  `reset()` do objeto `Session` montam o comando SEM o campo `auth`
+  (`{ kind: "cancel", ... }`, sem `auth: options.auth`), ao contrário de
+  `send()`/`respond()` que sempre incluem `auth: options.auth` no
+  comando despachado. Rastreei a cadeia completa até a rota HTTP real:
+
+  `packages/eve/src/eve-channel/index.ts` (POST
+  `EVE_SESSION_CANCEL_ROUTE_PATTERN`/`_COMPACT_`/`_CLEAR_`/`_RESET_`,
+  L372-499) -- toda rota chama `routeAuth(req, input.auth)` primeiro e
+  descarta o `SessionAuthContext` resolvido (só usa pra decidir 401,
+  nunca compara contra o dono da sessão) e então
+  `attachSession(sessionId).cancel(...)` usando só o `sessionId` do
+  path param (`requireSessionId(params)`), sem nenhum vínculo entre o
+  principal autenticado e a sessão-alvo. Hipótese inicial: IDOR/BOLA --
+  qualquer principal que passe em `routeAuth` (autenticação de
+  *canal*, não de *sessão*) e conheça/adivinhe outro `sessionId` poderia
+  cancelar/resetar/limpar/compactar a sessão de outro usuário.
+
+  **Refutada como achado de framework** depois de ler
+  `packages/eve/README.md` (L15): "You are responsible for configuring
+  approval policies, tool restrictions, connection scopes, **route/
+  session authorization**, sandbox controls, telemetry exports, and
+  other safeguards appropriate for your use case." -- e L176-178: o
+  protocolo HTTP público expõe `sessionId` como identificador único,
+  sem nenhuma promessa de que posse do ID por si só implica autorização
+  automática por dono. Autorização por-sessão é **explicitamente**
+  documentada como responsabilidade do app que integra `eve`, não do
+  framework -- mesmo padrão de divisão de responsabilidade de
+  frameworks web genéricos (Express etc.) que não são considerados
+  vulneráveis por não forçar auth automaticamente. Também confirmei que
+  `send`/`respond` não fazem verificação de posse por sessão via o
+  campo `auth` de forma diferente -- não encontrei nenhum ponto onde
+  `command.auth` seja comparado contra um "dono" persistido da sessão;
+  o campo parece existir só pra propagar identidade do chamador pro
+  contexto do agente (tools/OBO), não pra gate de autorização de
+  dispatch. Ou seja, a ausência de `auth` em cancel/reset não é uma
+  assimetria real de proteção -- nenhuma rota tem proteção por-sessão
+  automática, por design documentado.
+
+  Não abri finding formal (refutado antes de formalizar, mesmo padrão
+  já usado antes pra achados de baixo risco/fora do modelo de ameaça --
+  ver entrada de `nuxt/nuxt` da rodada anterior). Documentando aqui em
+  detalhe porque é o tipo de padrão (capability-ID vs. token realmente
+  secreto) que vale a pena não re-investigar do zero numa rodada futura
+  sem motivo novo.
+
+`api.hiro.so` recheck rápido via `curl`: `errno=56` (connection reset),
+mesmo bloqueio de rede de rodadas anteriores -- não deu pra confirmar
+contrato novo do deployer StackingDAO nesta rodada (ver NOTES.md de
+StackingDAO). `deep-read-log.json` atualizado (`vercel/eve` +3
+entradas, agora 62 no total). Nenhuma transição de estado neste
+programa nesta rodada; achado `scope_verified` de `vercel/workflow`
+(`predictable_hook_token_seed_risk`) segue preso na mesma limitação
+estrutural já documentada (duplicate-check gate exige acesso de rede
+bloqueado neste ambiente).
+
+## Rodada 2026-09-04 (cloud, push trigger)
+
+`list-pending` vazio (nenhum finding em `candidate`). Rodei
+`list-deep-read-candidates.mjs` (com `GITHUB_TOKEN` do ambiente
+temporariamente desconsiderado nesta chamada só -- o proxy deste
+ambiente cloud injeta um `GITHUB_TOKEN` placeholder que o
+`raw.githubusercontent.com` rejeita com 404 quando enviado como
+`Authorization: Bearer`, então a chamada anônima sem esse header foi o
+jeito de fazer a checagem mecânica funcionar; nenhuma mudança de código
+feita, só a variável de ambiente omitida pra essa invocação pontual)
+pra escolher os próximos 3 arquivos de leitura profunda dentro do
+escopo dos 4 programas desta rodada (StackingDAO + Vercel Open Source
+liberados; Block Open Source e Circle BBP excluídos manualmente, já
+que o dataset público usado pelo script não reconhece os repos do
+Block Open Source -- afterpay/*, cashapp/*, square/wire -- sob esse
+nome, então eles caem em "sem programa reconhecido" em vez de
+"bloqueado"; tratei como bloqueado mesmo assim por conhecimento própio
+do programa via `program-policy.json`). StackingDAO conferido à mão
+contra `targets.mjs`: os 13 contratos curados já estão todos cobertos
+em `deep-read-log.json` (15 arquivos, incluindo `stacker-4`/`stacker-5`
+além dos curados) -- nada novo pra ler lá.
+
+Escolhidos 3 arquivos ainda não lidos de `vercel/ai` (0% cobertura
+reportada pela ferramenta, prioridade auth/session/permission no
+caminho), via clone raso local (`git clone --depth 1
+--filter=blob:none`, descartado ao final):
+
+- `packages/harness-acp/src/v1/bridge/permission-controller.ts` --
+  `createACPPermissionController`: `request.sessionId` comparado
+  contra a sessão ativa antes de qualquer aprovação;
+  `shouldAutoApprove` libera automaticamente `kind` `read`/`search`/
+  `think`/`fetch` mesmo fora dos modos `allow-all`/`allow-edits` --
+  comportamento de design da matriz de permissão do harness (a
+  intenção documentada dos próprios nomes de modo), não bypass de
+  checagem já existente. Sem achado.
+- `packages/gateway/src/errors/parse-auth-method.ts` --
+  `parseAuthMethod` só decodifica um header informativo de *resposta*
+  do AI Gateway (indica qual método de auth foi usado), não é decisão
+  de autenticação nem consome input de terceiro numa fronteira de
+  confiança. Sem achado.
+- `packages/harness-acp/src/v1/bridge/session-lifecycle.ts` --
+  `resolveACPSessionRestorationMethod`/`restoreACPBridgeSession`: o
+  `sessionId` vem do chamador interno do bridge (não de rede), e
+  resume/load conversa com um processo ACP local via stdio -- sem
+  fronteira de auth cruzada neste arquivo. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/ai` +3 entradas, agora 30 no
+total). Nenhum finding novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #2 (cloud, push trigger -- gatilho é o próprio
+commit desta rodada anterior, #10)
+
+`list-pending` vazio de novo. Confirmado no `program-policy.json` antes
+de tocar em qualquer repositório (Block Open Source e Circle BBP
+seguem `aiResearchBanned`/`blocked` -- nem clonados, nem lidos nesta
+rodada). `list-deep-read-candidates.mjs` rodado com `GITHUB_TOKEN`
+omitido (mesmo workaround da rodada anterior -- o proxy injeta um
+placeholder que `raw.githubusercontent.com` rejeita como
+`Authorization: Bearer`); confirma StackingDAO 15/15 já coberto
+(nada novo pra ler lá) e `vercel/workflow` como o próximo candidato
+Vercel Open Source com menor cobertura (25 arquivos lidos, 2%) depois
+de excluir manualmente os repositórios fora do escopo desta rodada
+(Kubernetes/Plaid/Auth0/OKX/Slack/Kiwi.com não fazem parte dos 4
+programas desta rodada de hoje).
+
+Clone raso de `vercel/workflow` (`git clone --depth 1
+--filter=blob:none`, descartado ao final). 3 arquivos novos, escolhidos
+por julgamento próprio (não regex -- nenhum tinha auth/session/token/
+etc. literal no caminho, mas todos tocam a mesma superfície temática do
+achado já existente de `predictable_hook_token_seed_risk`: quem pode
+"possuir"/autenticar uma operação sobre um run):
+
+- `packages/core/src/runtime/step-ownership.ts` -- ownership de step é
+  ownership de MENSAGEM DE FILA entre workers internos do mesmo
+  processo de execução (via `ownerMessageId` carimbado em
+  `step_started`), não uma fronteira de autorização de usuário/tenant.
+  Sem achado.
+- `packages/world-vercel/src/events-v4.ts` -- cliente HTTP/CBOR do
+  protocolo de eventos v4 (POST/LIST/batch). Autenticação é resolvida
+  por `getHttpConfig`/`baseHeaders` fora deste arquivo; o arquivo em si
+  só serializa/desserializa frames e trata erros de transporte, não
+  toma nenhuma decisão de quem-pode-o-quê. Sem achado.
+- `packages/world-vercel/src/ws-transport.ts` -- transporte WS: bearer
+  OIDC (`@vercel/oidc`) resolvido uma vez por socket no handshake de
+  upgrade (`resolveUpgradeHeaders`), com guarda explícita contra
+  reconectar repetindo um token já rejeitado em `auth_expiry` (evita
+  queimar o orçamento de tentativas com um 401 previsível). Design de
+  auth-por-conexão parece correto; nenhuma fronteira sem verificação
+  encontrada. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/workflow` +3 entradas, agora
+28 no total). Nenhum finding novo, nenhuma transição de estado nesta
+rodada.
+
+## Rodada 2026-09-04 #4 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl -m 8`: `errno=56` (connection reset), mesmo bloqueio de
+rede de todas as rodadas anteriores -- os 15 contratos Clarity de
+StackingDAO já cobertos seguem sem mudança conhecida, nenhum arquivo
+novo candidato lá.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/chat`
+(clone raso local, descartado ao final), focando o pacote núcleo
+`packages/chat` que ainda não tinha nenhum arquivo próprio lido (rodadas
+anteriores só cobriram os adapters de webhook e o crypto compartilhado).
+Escolhidos por julgamento próprio (não regex) por tocarem fronteiras de
+confiança reais -- token de callback e escopo de ferramentas de IA:
+
+- `packages/chat/src/callback-url.ts` (completo) -- `generateToken()`
+  usa 16 hex chars de `crypto.randomUUID()` (64 bits de entropia),
+  guardado no `stateAdapter` com TTL de 7 dias. `resolveCallbackUrl` faz
+  `acquireLock` + `delete` na mesma chave -- token é single-use e
+  protegido contra corrida em double-click. A validação de escopo
+  (`actionId` + `channelId`/`threadId`) compara contra o `context`
+  passado pelo chamador -- rastreado até o único call site real
+  (`chat.ts:handleActionEvent`). Sem achado isolado neste arquivo.
+- `packages/chat/src/chat.ts` (`handleActionEvent`, L1708-1767 --
+  consumidor real de `decodeCallbackValue`/`resolveCallbackUrl`/
+  `postToCallbackUrl`) -- `actionId`/`threadId` usados no lookup vêm do
+  `event` já autenticado pela verificação de assinatura do adapter
+  correspondente (ex.: `adapter-slack/verify.ts`), não de input extra
+  não confiável; o `callbackUrl` que acaba sendo postado
+  (`resolved.url`) vem do card originalmente construído pelo próprio
+  app via `el.callbackUrl` no momento de montar a mensagem, não de dado
+  controlável por quem clicou no botão -- sem SSRF de terceiro aqui.
+  Arquivo é grande (>3000 linhas); só esta função revisada nesta
+  rodada. Sem achado.
+- `packages/chat/src/ai/scope.ts` (completo) -- `createScopeGuard`/
+  `channelOf` são a fronteira real de confinamento de ferramentas de IA
+  contra `threadId`/`channelId` fornecido pelo próprio modelo (ex.:
+  `fetchMessages` em `ai/tools/threads.ts` aceita `threadId` como input
+  de tool call -- alvo plausível de prompt injection vindo do conteúdo
+  de uma mensagem). Investiguei a fundo se o parsing de id
+  `"{adapter}:..."` em `channelOf` poderia ser explorado com um id
+  hostil pra escapar do canal ativo: confirmei contra os testes reais
+  de `adapter-slack`/`adapter-discord`/`adapter-linear`/`adapter-github`
+  que `channelIdFromThreadId` espera mesmo a string com prefixo
+  completo (não um id "cru"), então a chamada em `channelOf` está
+  correta. O fallback (`id.split(':').slice(0,2).join(':')`) só
+  dispara quando o prefixo não corresponde a nenhum adapter registrado
+  (id malformado/hostil) -- mas como `active`/`explicit` nunca é
+  controlável pelo agente (vem de `runInConversation` com o threadId
+  real do evento verificado, ou de um `scope` fixo definido pelo
+  próprio app no código), um id hostil do lado `target` sempre resolve
+  pra uma string diferente do canal ativo real, seja pela via normal
+  (adapter real que devolve outro canal), seja pelo fallback (string
+  literal que não bate com nada) -- a comparação `sameChannel` falha
+  nos dois casos e a chamada é bloqueada. Fail-closed; não achei bypass
+  real, mas documentando o raciocínio completo aqui porque é a
+  fronteira de segurança mais sensível que li nesta rodada (é o que
+  impede um agente manipulado por prompt injection de vazar
+  mensagens de outro canal/thread).
+
+`deep-read-log.json` atualizado (`vercel/chat` +3 entradas). Nenhum
+finding novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #5 (push automático via GitHub webhook) — descoberta importante sobre GHSA-9r75-g2cr-3h76
+
+`program-policy.json` checado como passo zero. `migrate-to-v2.mjs` +
+`list-pending` = 0 candidatos globais. Antes da leitura profunda
+proativa (que foi direcionada a `kiwicom/js-iam-middleware`, ver
+NOTES.md do Kiwi.com), tentei avançar o finding já `scope_verified`
+`vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk`
+(criado numa rodada anterior no mesmo dia, com relatório já escrito em
+`research/bugbounty/reports/vercel-workflow-predictable-hook-token.md`)
+pra `human_ready`, já que os pré-requisitos óbvios (report, impact
+assessment) já estavam presentes.
+
+**Recusado pelo CLI**: `"duplicateCheck sem métodos rastreáveis"` —
+nenhuma rodada anterior tinha rodado `record-duplicate-check` pra este
+finding. Tentei `search-prior-art --config=...` (a ferramenta real que
+popula github_issues/commits/advisories via API) e **bati num bloqueio
+de rede deste ambiente cloud**: `api.github.com` devolve 403 pra
+qualquer repositório fora do escopo desta sessão (só
+`genezera/zerotoone`), mesmo com `GITHUB_TOKEN` setado (é token de
+instalação escopado, não PAT pessoal). `add_repo(vercel/workflow,
+access=read)` confirma que leitura via `git clone` anônimo já
+funciona (usado em todas as rodadas), mas a API REST só abre
+anexando com `access=push` — decidi **não fazer isso**: anexar
+credenciais de escrita a um repositório de terceiro só pra rodar uma
+busca de leitura é desproporcional e não claramente autorizado pelo
+escopo desta tarefa, então não contornei o gate dessa forma (nem
+fabriquei um `duplicateCheck` falso).
+
+**O que a pesquisa manual via `WebSearch` (sem tocar API do GitHub)
+achou, e que é importante o suficiente pra registrar aqui com
+destaque**: existe um advisory público JÁ PUBLICADO exatamente sobre
+"token de webhook previsível" neste mesmo pacote —
+**GHSA-9r75-g2cr-3h76** ("Vercel Workflow Allows Webhook Creation
+with Predictable User-Specified Tokens", severidade High, disclosed
+2026-03-06, corrigido em 4.2.0-beta.64). A causa raiz documentada
+nesse advisory é diferente da nossa, mas adjacente o bastante pra
+exigir julgamento humano cuidadoso:
+
+- **GHSA-9r75-g2cr-3h76** (já público, já corrigido): cobre token
+  CUSTOMIZADO fornecido pelo próprio desenvolvedor (ex.:
+  `createWebhook({token: "github_webhook:repo_name"})`, um padrão que
+  a documentação antiga chegou a recomendar). Fix oficial: removeram a
+  opção de token customizado; a mitigação recomendada pelo próprio
+  advisory é "use `createWebhook()` sem passar `token` — usa nanoid
+  aleatório não-adivinhável por padrão".
+- **Nosso achado** (`predictable_hook_token_seed_risk`): mostra que
+  mesmo o caminho PADRÃO/recomendado pelo próprio GHSA como seguro
+  (token auto-gerado via `nanoid`) NÃO é criptograficamente aleatório,
+  porque `nanoid` consome `Math.random()`, que é sobrescrito dentro da
+  VM do workflow por um PRNG semeado (`seedrandom(seed)`) com
+  `runId:workflowName:deploymentId` (ou `+startedAt` na 4.8.5
+  publicada) — todos não-secretos. PoC local já rodou `pass`
+  (reconstrução independente do token, sem acesso ao processo real).
+
+Se o achado desta sessão for real como documentado, **a mitigação
+oficial do GHSA-9r75-g2cr-3h76 está incompleta**: resolve o sintoma
+óbvio (token literal escolhido por humano) mas não a causa raiz mais
+profunda (a fonte de aleatoriedade de toda a VM do workflow é
+determinística por design, não só no caminho de token customizado).
+Registrei isso no `reasoning` do finding via `update-finding`, e
+**não avancei o estado** — ficou em `scope_verified`, exatamente
+como está desde a rodada anterior, com a lacuna concreta documentada
+pra quando alguém com acesso de rede/API completo (fora deste
+ambiente restrito) puder rodar `search-prior-art` de verdade e decidir
+se isso é: (a) uma variante genuinamente distinta e não coberta pelo
+advisory existente → completar `record-duplicate-check` e seguir o
+fluxo normal até `human_ready`; ou (b) a mesma vulnerabilidade só
+reformulada → marcar como duplicata/sobreposição com
+GHSA-9r75-g2cr-3h76, não enviar como achado novo.
+
+Nenhum finding novo criado nesta rodada especificamente sobre Vercel
+Open Source (a leitura profunda proativa desta rodada foi pro
+Kiwi.com, ver seu próprio NOTES.md).
+
+## Rodada 2026-09-04 #12 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`check-program`
+não usado diretamente, arquivo lido à mão): `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`) confirmados bloqueados
+— nenhum repositório desses dois programas foi clonado, lido ou aberto
+nesta rodada, mesmo aparecendo nomeados na tarefa desta sessão (a regra
+do CLAUDE.md prevalece sobre o prompt da tarefa). Notei de passagem que
+`list-deep-read-candidates.mjs` só reconhece os repos `circlefin/*`
+como bloqueados no dataset — os repos de Block Open Source
+(`afterpay/*`, `cashapp/*`, `square/wire`) aparecem na lista de
+"sem programa reconhecido", não na lista de excluídos. Isso é uma
+lacuna real da ferramenta (não cobre o bloqueio por nome de programa
+quando o dataset não mapeia o repo pro programa certo) — tratada
+manualmente aqui (excluídos à mão desta rodada), mas vale registrar
+como pendência de engenharia: o scanner não pode depender só do
+dataset público pra aplicar `program-policy.json`.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisado o finding
+`scope_verified` de `predictable_hook_token_seed_risk`
+(`vercel/workflow`) já discutido na rodada #5 de hoje: nada novo desde
+então (segue bloqueado em `record-duplicate-check` por falta de acesso
+de API fora do escopo `genezera/zerotoone` desta sessão) — não repeti a
+tentativa de contornar o gate, mesma decisão de rodadas anteriores.
+
+Leitura profunda proativa: 3 arquivos novos em `vercel/workflow`
+(clone raso, descartado ao final), escolhidos por tocarem superfícies
+de rede/env (autenticação de API remota, seleção de world em runtime,
+health-check local) ainda não lidas: `packages/cli/src/lib/inspect/vercel-api.ts`
+(hostname fixo `api.vercel.com`, sem interpolação de input externo),
+`packages/core/src/runtime/world.ts` (`WORKFLOW_TARGET_WORLD` é env var
+de deploy-time, não input de request) e `packages/cli/src/commands/health.ts`
+(CLI local, sem fronteira de autorização remota). Nenhum achado nos
+três. `deep-read-log.json` atualizado. Nenhuma transição de estado
+neste programa.
