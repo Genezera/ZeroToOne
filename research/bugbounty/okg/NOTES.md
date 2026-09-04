@@ -538,3 +538,27 @@ entradas novas em `okx/go-wallet-sdk`, total 14). Nenhum achado em
 `zkscrypto.NewPrivateKey`/`NewPrivateKeyRaw`, não lido ainda — fica
 como candidato pra rodada futura). Nenhuma outra ação nesta rodada em
 OKG.
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. Leitura profunda
+proativa fechou o candidato pendente da rodada anterior:
+`coins/zksync/zkscrypto/zkscrypto.go` (o pacote interno que
+`zk_singer.go` delega validação de chave privada). Ao contrário dos 3
+achados-irmãos já existentes (cardano clamp, solana `PrivateKeyFromBase58`,
+elrond `Transfer`), este pacote **valida corretamente**: `NewPrivateKeyRaw`
+rejeita `len(pk) != 32` com erro tratável (`errPrivateKeyLen`) antes de
+aceitar, e `NewPrivateKey` (via seed) delega a validação de tamanho pro
+lado C (`zks_crypto_private_key_from_seed`, `result==1` -> erro tratável,
+sem panic). Não repete o padrão de inconsistência dos irmãos — sem achado.
+Nota lateral: `SignTransfer` em `zk_singer.go` tem
+`hex.DecodeString(txData.From[2:])` que poderia panicar com string curta
+demais, mas `From`/`To` são construídos pelo próprio chamador da lib (SDK
+de carteira, não input de rede de terceiro) — avaliado como não
+explorável remotamente, não virou finding.
+
+`deep-read-log.json` atualizado (+1 arquivo em `okx/go-wallet-sdk`,
+agora 15 no total, candidato pendente fechado). Nenhum achado novo,
+nenhuma transição de estado nesta rodada em OKG.

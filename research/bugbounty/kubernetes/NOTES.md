@@ -582,3 +582,37 @@ lido nesta missão até agora), shallow clone público. 3 arquivos:
 arquivos). Nenhum achado novo, nenhuma transição de estado nesta
 rodada. `Block Open Source`/`Circle BBP` seguem fora de escopo por
 política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` seguem bloqueados). `migrate-to-v2` + `list-pending`
+global = 0.
+
+Leitura profunda proativa: `kubernetes/apiserver` (repo nunca lido nesta
+missão até agora, alvo de alto valor — decisão de autorização real),
+shallow clone público. 2 arquivos na fronteira de autorização:
+
+- `pkg/authorization/union/union.go` (`Authorize`/`ConditionsAwareAuthorize`/
+  `EvaluateConditions`) — encadeia múltiplos sub-authorizers, retorna a
+  primeira decisão Allow/Deny (short-circuit correto), NoOpinion sempre
+  continua a cadeia. Investiguei com ceticismo se `return decision, reason,
+  err` com `decision==Allow` e `err!=nil` (linha 92-93) seria um bypass —
+  rastreei até o ponto de consumo real
+  (`pkg/endpoints/filters/authorization.go:78-79`), que documenta e trata
+  isso deliberadamente: *"an authorizer like RBAC could encounter
+  evaluation errors and still allow the request, so authorizer decision is
+  checked before error here"*. Comportamento intencional e já documentado
+  no consumidor, não introduzido por `union.go`. Sem achado.
+- `plugin/pkg/authorizer/webhook/webhook.go` (`WebhookAuthorizer.Authorize`) —
+  fail-open documentado no próprio TODO do código-fonte ("We are failing
+  open now to preserve backwards compatible behavior"), `decisionOnError`
+  é config do operador do cluster, comportamento conhecido e configurável
+  há anos no kube-apiserver, não é vulnerabilidade introduzida pela lib.
+  `shouldCache` evita cache de attrs muito grandes (mitigação de DoS via
+  cache poisoning já presente). Sem achado novo.
+
+`deep-read-log.json` atualizado (`kubernetes/apiserver` novo, 2
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada.
+`Block Open Source`/`Circle BBP` seguem fora de escopo por política
+local (`program-policy.json`).
