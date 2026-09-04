@@ -1199,5 +1199,11 @@
     "configz/configz.go (InstallHandler/write -- handler HTTP /configz que serializa em JSON todo ComponentConfig registrado via configz.New/Set; e um debug endpoint documentado do proprio k8s (usado por kube-scheduler etc.), sem autenticacao propria -- decisao de montar ou nao esse handler num mux exposto/autenticado e do componente chamador, nao desta lib; padrao conhecido e ja documentado do ecossistema, nao uma introducao nova de vulnerabilidade neste arquivo. Sem achado.)",
     "logs/datapol/datapol.go (Verify/datatypes -- reflection recursiva que procura tag struct `datapolicy` para marcar campos sensiveis antes de logar; recover() protegido contra panic de reflection, recursao cobre ponteiro/slice/map/struct corretamente, retorna vazio se sem tag. Sem achado.)",
     "cli/flag/namedcertkey_flag.go (NamedCertKey.Set/NamedCertKeyArray.Set -- só parsing de flag `certfile,keyfile[:names]` para string local de CLI, nenhuma decisão de autorização nem I/O de rede. Sem achado.)"
+  ],
+  "mattermost/mattermost-plugin-github": [
+    "server/plugin/oauth.go (OAuthBroker -- so pub/sub interno de conclusao de OAuth por userID, sem logica de autenticacao/token. Sem achado)",
+    "server/plugin/api.go (connectUserToGitHub/completeConnectUserToGitHub -- state OAuth (model.NewId()[:15]) armazenado server-side no KV store com TTL, chave de lookup e o proprio state.Token; comparacao extra state.UserID != c.UserID contra sessao Mattermost autenticada antes de aceitar o code exchange; escopo do token validado via validateOAuthScopes pos-exchange. Sem achado)",
+    "server/plugin/webhook.go (verifyWebhookSignature/signBody -- HMAC-SHA1 sobre body cru, hmac.Equal (constant-time), length-check de 45 chars + prefixo sha1= antes do hex.Decode, fail-closed em erro/invalido. Sem achado)",
+    "server/plugin/mm_34646_token_refresh.go (forceResetAllMM34646 -- job de manutencao interno gated por cluster.NewMutex, sem input de rede/usuario controlavel; BasicAuthTransport usa client_id/client_secret do proprio config, nao segredo de terceiro. Sem achado)"
   ]
 }

@@ -55,3 +55,38 @@ para isso (a decisão depende só do GHSA já publicado, não do código).
 Leitura profunda proativa desta rodada ficou em `nuxt/nuxt` (programa
 Vercel Open Source) — ver NOTES.md de Vercel Open Source. Nenhum achado
 novo neste programa.
+
+## Rodada 2026-09-04 #2 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` bloqueados via `check-program`, `Kubernetes`
+com `roeReviewNeeded` (revisão pendente) — nenhum dos quatro tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 37, todos pertencentes a
+esses quatro programas fora de escopo desta sessão; nenhum candidato
+pendente em Mattermost.
+
+Leitura profunda proativa desta rodada em `mattermost-plugin-github`
+(primeiro repo Mattermost tocado por leitura profunda — `-plugin-jira`
+e `-plugin-zoom` só tinham sido cobertos por achados de fila, nunca por
+sweep proativo), clonado raso localmente, 4 arquivos (`oauth.go`,
+`api.go` — trecho `connectUserToGitHub`/`completeConnectUserToGitHub`,
+`webhook.go` — `verifyWebhookSignature`/`signBody`,
+`mm_34646_token_refresh.go`):
+
+- Fluxo OAuth (`api.go`): state token gerado com `model.NewId()[:15]`,
+  guardado no KV store server-side com TTL, chave de lookup já é o
+  próprio token; `state.UserID != c.UserID` checado contra a sessão
+  Mattermost autenticada antes de aceitar o code exchange do GitHub;
+  escopo do token OAuth validado pós-exchange via
+  `validateOAuthScopes`. Sem achado.
+- Assinatura de webhook (`webhook.go`): HMAC-SHA1 sobre o body cru,
+  comparação via `hmac.Equal` (constant-time), length-check de 45
+  chars + prefixo `sha1=` antes do `hex.Decode`, fail-closed em erro ou
+  assinatura inválida. Sem achado.
+- `oauth.go`/`mm_34646_token_refresh.go`: pub/sub interno e job de
+  manutenção histórico gated por mutex de cluster, sem input de
+  rede/usuário controlável alcançando nenhum dos dois. Sem achado.
+
+`deep-read-log.json` atualizado (+1 repo, `mattermost/mattermost-plugin-github`,
+4 entradas). Nenhum achado novo, nenhuma transição de estado nesta
+rodada em Mattermost — resultado normal e válido.
