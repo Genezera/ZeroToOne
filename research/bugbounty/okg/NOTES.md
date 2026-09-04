@@ -374,3 +374,92 @@ tentativa de `human_ready` foi recusada corretamente pelo
 esperado: não fabriquei uma prova de regressão que não existe. Finding
 permanece em `scope_verified`, não forçado — mesma disciplina de
 sempre. Nenhuma outra ação nesta rodada em OKG.
+
+## Rodada 2026-09-04 (push automático, sessão cloud, segunda leitura profunda do dia) — novo achado em coins/solana/base/keys.go, capado em reproduced_local
+
+Fila global (`list-pending`) vazia no início desta rodada. Antes da
+leitura profunda proativa, conferi `research/bugbounty/program-policy.json`
+como exige o CLAUDE.md do repo — Block Open Source e Circle BBP
+confirmados bloqueados (`check-program`), nenhum arquivo desses dois
+foi tocado. Também notei o registro `roeReviewNeeded` de "Auth0 by
+Okta" (adicionado mais cedo no mesmo dia por outra sessão) e tentei
+resolver a lacuna via WebFetch em bugcrowd.com/engagements/auth0-okta
+— falhou de novo com `EGRESS_BLOCKED` (mesmo resultado documentado na
+rodada anterior). Não li nenhum arquivo novo de auth0/auth0-java nesta
+rodada por cautela extra, conforme a própria nota recomendava.
+
+Leitura profunda escolheu continuar minerando `okx/go-wallet-sdk`
+(mesmo repo do achado do clamp Cardano acima — sinal de que vale a
+pena, dado o histórico real de achado confirmado ali), evitando os 8
+arquivos já registrados em `deep-read-log.json`. Três arquivos lidos:
+`coins/stellar/keypair/full.go` e `coins/stellar/strkey/main.go` (SEP-23
+e geração de keypair Ed25519 — portes fiéis do stellar-go upstream, sem
+achado) e `coins/solana/base/keys.go`, onde encontrei um achado real:
+
+**`PrivateKeyFromBase58` (coins/solana/base/keys.go) descarta toda
+validação que o upstream tem.** `res := base58.Decode(privkey); return
+res, nil` — nem propaga erro de decode (o decoder usado, `base58.Decode`
+do próprio repo, retorna silenciosamente `[]byte("")` em qualquer
+caractere fora do alfabeto base58, sem erro), nem checa comprimento,
+nem checa consistência seed↔pubkey. Comparado com o upstream que o
+arquivo credita (`gagliardetto/solana-go`, lido via
+raw.githubusercontent.com para comparação): a versão atual de lá tem
+as três camadas de validação que faltam aqui. O padrão de uso
+*documentado* no próprio README do pacote (seções "Transfer"/"Transfer
+Token": `fromPrivate, _ := base.PrivateKeyFromBase58(...)` seguido de
+`fromPrivate.PublicKey().String()`) é exatamente o padrão vulnerável —
+descarta o erro (que aliás nunca viria preenchido) e usa o resultado
+direto.
+
+Escrevi uma prova executável real em Go (não Solidity — sem forge
+aplicável aqui, achado não é dos 4 tipos que exigem PoC Foundry):
+`coins/solana/base/zzrepro_test.go` num clone local do repo (`git
+clone` público + `git fetch --unshallow` pra checar idade via
+`git blame`, `go mod tidy` contra proxy.golang.org sem credencial).
+Saída real capturada:
+```
+PrivateKeyFromBase58(malformed) -> key= (len=0) err=<nil>
+PANIC RECOVERED: runtime error: slice bounds out of range [32:0]
+PrivateKeyFromBase58(" ") -> key= (len=0) err=<nil>
+```
+Confirma que uma chave privada base58 com um único caractere inválido
+(erro humano comum de digitação — base58 exclui 0/O/I/l propositalmente
+por isso) ou espaço em branco extra derruba (panic) o processo no
+primeiro uso documentado, em vez de devolver um erro tratável.
+
+Ceticismo sobre severidade: não é perda de fundos direta (é a própria
+chave malformada do usuário causando o próprio panic, não um atacante
+forjando chave alheia). Impacto real é robustez/disponibilidade — mais
+preocupante se usado server-side processando múltiplos usuários no
+mesmo processo sem `recover()` por request (DoS cross-user, não só
+self-harm), mas não encontrei nenhum chamador interno deste helper no
+repo inteiro (`grep -rl` vazio) além do próprio `MustPrivateKeyFromBase58` —
+a única "documentação" de uso é o README, que ensina o padrão inseguro.
+Registrado como vetor adicional plausível e não verificado: base58
+válido mas de comprimento errado (ex. seed de 32 bytes em vez de
+keypair de 64) seria aceito sem a checagem de consistência seed/pubkey
+que o upstream tem, produzindo endereço/assinatura sem correspondência
+real, também sem erro.
+
+`git blame` (clone unshallow) mostra a função presente desde a criação
+do arquivo (commit 021275db, minmin.yan, 2023-07-20) — mais de 2 anos,
+não é regressão recente, mesma barreira de novidade que o achado do
+clamp Cardano já documentou (sem janela de regressão verificável de 7
+dias para provar).
+
+Fluxo: `update-finding` (reasoning completo + filesRead) →
+`corroborated_static` (aceito) → `record-validation
+--type=go_manual_poc --result=pass` (saída real do teste acima) →
+`reproduced_local` (aceito) → `check-scope "OKG" "okx/go-wallet-sdk"`
+(allowed=true, bountyEligible=true, mesmo asset SOURCE_CODE do achado
+irmão) → `record-deployment-evidence` (confidence="unverified": HEAD
+atual de `main` confirmado, mas sem forma de confirmar se o app/extensão
+real da OKX Wallet consome este helper específico) → tentativa de
+`scope_verified` **recusada corretamente**: "DeploymentEvidence existe
+mas confidence=\"unverified\"... precisa de vínculo real (commit↔
+release↔deploy) com confidence >= \"low\"". Não forcei. Finding fica em
+`reproduced_local`, documentado aqui com toda a evidência para revisão
+humana decidir se vale investir em confirmar o vínculo de deploy.
+
+`deep-read-log.json` atualizado com os 3 arquivos desta rodada.
+Nenhuma outra ação nesta rodada em OKG.

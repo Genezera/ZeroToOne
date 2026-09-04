@@ -1118,7 +1118,10 @@
     "coins/nervos/crypto/signature.go (SignatureData.ToBytes -- só serialização R||S||V-27 pro formato Ethereum, sem lógica de assinatura/validação aqui. Sem achado)",
     "coins/cardano/crypto/key.go (NewXPrvKeyFromEntropy -- ACHADO REAL: mascara de clamp errada 0x1f em vez de 0x7f no byte 31, quebra CIP-3/Icarus em ~50% dos mnemonics; ver finding OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding, chegou a scope_verified, ver NOTES.md rodada 2026-09-04 #3)",
     "coins/cardano/crypto/derive.go (Derive() de XPrvKey/XPubKey -- confirma que o clamp errado de key.go se propaga sem correção por toda a árvore de derivação HD, não é ponto de mitigação. Sem achado isolado aqui)",
-    "coins/cardano/credential.go (StakeCredential/NewKeyCredential/NewScriptCredential/MarshalCBOR/UnmarshalCBOR -- serialização CBOR e hash blake224 padrão, sem lógica de derivação/assinatura. Sem achado)"
+    "coins/cardano/credential.go (StakeCredential/NewKeyCredential/NewScriptCredential/MarshalCBOR/UnmarshalCBOR -- serialização CBOR e hash blake224 padrão, sem lógica de derivação/assinatura. Sem achado)",
+    "coins/stellar/keypair/full.go (newFull/newFullFromRawSeed -- ed25519.GenerateKey a partir de seed decodificado via strkey.Decode(VersionByteSeed), porte fiel do stellar-go original. Sem achado)",
+    "coins/stellar/strkey/main.go (Encode/Decode/DecodeAny -- implementacao SEP-23 correta: checksum crc16 validado, checagem de codificacao canonica base32 nao-padded igual ao stellar-go upstream. Sem achado)",
+    "coins/solana/base/keys.go (PrivateKeyFromBase58 -- ACHADO REAL: decode silencioso sem checar erro/tamanho/consistencia seed-pubkey que o upstream gagliardetto/solana-go tem, panic reproduzido com go test real em input malformado usado exatamente no padrao documentado do README (Transfer/Transfer Token); ver finding OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_finding, chegou a reproduced_local, capado em scope_verified por deploymentEvidence.confidence=unverified, mesma barreira do finding-irmao do clamp Cardano)"
   ],
   "auth0/auth0-java": [
     "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java",
