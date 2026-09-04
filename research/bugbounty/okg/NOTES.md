@@ -326,3 +326,259 @@ revisão humana decidir se vale enviar mesmo sem a prova de regressão
 sobre se o achado é real — este é real e verificado).
 
 `deep-read-log.json` atualizado com os 3 arquivos desta rodada.
+
+## Rodada 2026-09-04 (push automático, sessão cloud) — rascunho de relatório escrito + pista crítica de possível conhecimento prévio pela OKX
+
+Fila global (`list-pending`) vazia no início desta rodada. Ao revisar
+findings em `scope_verified` (rotina normal antes de leitura profunda
+proativa), encontrei o achado `NewXPrvKeyFromEntropy` acima já em
+`scope_verified` desde a rodada anterior, sem rascunho de relatório
+ainda escrito — completei isso: `research/bugbounty/reports/okg-go-wallet-sdk-cardano-key-clamp.md`
+(`record-report` registrado), seguindo exatamente o `TEMPLATE.md`.
+
+**Achado novo desta rodada, antes de tentar novamente `human_ready`**:
+WebSearch (não tentado nas rodadas anteriores com esses termos
+específicos) encontrou um anúncio oficial da OKX — "OKX Wallet
+announcement on the Cardano network upgrade"
+(`www.okx.com/en-us/help/okx-wallet-announcement-on-the-cardano-network-upgrade`,
+página em si bloqueada por `EGRESS_BLOCKED` nesta sessão cloud, só o
+snippet indexado foi lido) — anunciando, em **15/01/2026**, um "upgrade
+para endereços Cardano derivados, para melhorar a experiência de
+serviço e compatibilidade do Cardano", com suspensão temporária das
+funções Cardano e recomendação para usuários moverem fundos para "o
+primeiro endereço da carteira com seed phrase" antes da mudança —
+justamente **6 dias** depois do commit que introduziu este exato bug
+(`c0b7c875`, 09/01/2026). Padrão temporal fortemente sugestivo de que a
+OKX já detectou e mitigou este problema em produção (app/extensão) sem
+nunca corrigir o código-fonte deste repositório público — `git log`
+confirma que nenhum commit subsequente tocou `key.go` até hoje.
+
+Isso não refuta o achado tecnicamente (o código-fonte público, que é o
+próprio ativo declarado em escopo, continua com o clamp errado,
+reproduzível como documentado acima), mas derruba fortemente a
+alegação de novidade que a rodada anterior já vinha discutindo por
+outro ângulo (bug de 239 dias, fora da janela de regressão verificável
+de 7 dias do `duplicateCheckGate`). Registrei um alerta destacado no
+topo do rascunho de relatório e ampliei o campo `reasoning` do finding
+(`update-finding`) com o achado completo — um humano com acesso real
+de navegador precisa ler a página do anúncio (bloqueada para esta
+sessão) e, idealmente, testar o app/extensão OKX Wallet atual contra o
+mesmo mnemonic de teste antes de decidir se ainda vale enviar, e sob
+que enquadramento (ex.: "SDK público desatualizado em relação à
+correção já aplicada em produção" em vez de "vulnerabilidade nova").
+
+Também registrei formalmente o `impactAssessment` estruturado
+(`record-impact-assessment`) — passou no shape/validação, mas a
+tentativa de `human_ready` foi recusada corretamente pelo
+`duplicateCheckGate` (`"duplicateCheck sem métodos rastreáveis"`), como
+esperado: não fabriquei uma prova de regressão que não existe. Finding
+permanece em `scope_verified`, não forçado — mesma disciplina de
+sempre. Nenhuma outra ação nesta rodada em OKG.
+
+## Rodada 2026-09-04 (push automático, sessão cloud, segunda leitura profunda do dia) — novo achado em coins/solana/base/keys.go, capado em reproduced_local
+
+Fila global (`list-pending`) vazia no início desta rodada. Antes da
+leitura profunda proativa, conferi `research/bugbounty/program-policy.json`
+como exige o CLAUDE.md do repo — Block Open Source e Circle BBP
+confirmados bloqueados (`check-program`), nenhum arquivo desses dois
+foi tocado. Também notei o registro `roeReviewNeeded` de "Auth0 by
+Okta" (adicionado mais cedo no mesmo dia por outra sessão) e tentei
+resolver a lacuna via WebFetch em bugcrowd.com/engagements/auth0-okta
+— falhou de novo com `EGRESS_BLOCKED` (mesmo resultado documentado na
+rodada anterior). Não li nenhum arquivo novo de auth0/auth0-java nesta
+rodada por cautela extra, conforme a própria nota recomendava.
+
+Leitura profunda escolheu continuar minerando `okx/go-wallet-sdk`
+(mesmo repo do achado do clamp Cardano acima — sinal de que vale a
+pena, dado o histórico real de achado confirmado ali), evitando os 8
+arquivos já registrados em `deep-read-log.json`. Três arquivos lidos:
+`coins/stellar/keypair/full.go` e `coins/stellar/strkey/main.go` (SEP-23
+e geração de keypair Ed25519 — portes fiéis do stellar-go upstream, sem
+achado) e `coins/solana/base/keys.go`, onde encontrei um achado real:
+
+**`PrivateKeyFromBase58` (coins/solana/base/keys.go) descarta toda
+validação que o upstream tem.** `res := base58.Decode(privkey); return
+res, nil` — nem propaga erro de decode (o decoder usado, `base58.Decode`
+do próprio repo, retorna silenciosamente `[]byte("")` em qualquer
+caractere fora do alfabeto base58, sem erro), nem checa comprimento,
+nem checa consistência seed↔pubkey. Comparado com o upstream que o
+arquivo credita (`gagliardetto/solana-go`, lido via
+raw.githubusercontent.com para comparação): a versão atual de lá tem
+as três camadas de validação que faltam aqui. O padrão de uso
+*documentado* no próprio README do pacote (seções "Transfer"/"Transfer
+Token": `fromPrivate, _ := base.PrivateKeyFromBase58(...)` seguido de
+`fromPrivate.PublicKey().String()`) é exatamente o padrão vulnerável —
+descarta o erro (que aliás nunca viria preenchido) e usa o resultado
+direto.
+
+Escrevi uma prova executável real em Go (não Solidity — sem forge
+aplicável aqui, achado não é dos 4 tipos que exigem PoC Foundry):
+`coins/solana/base/zzrepro_test.go` num clone local do repo (`git
+clone` público + `git fetch --unshallow` pra checar idade via
+`git blame`, `go mod tidy` contra proxy.golang.org sem credencial).
+Saída real capturada:
+```
+PrivateKeyFromBase58(malformed) -> key= (len=0) err=<nil>
+PANIC RECOVERED: runtime error: slice bounds out of range [32:0]
+PrivateKeyFromBase58(" ") -> key= (len=0) err=<nil>
+```
+Confirma que uma chave privada base58 com um único caractere inválido
+(erro humano comum de digitação — base58 exclui 0/O/I/l propositalmente
+por isso) ou espaço em branco extra derruba (panic) o processo no
+primeiro uso documentado, em vez de devolver um erro tratável.
+
+Ceticismo sobre severidade: não é perda de fundos direta (é a própria
+chave malformada do usuário causando o próprio panic, não um atacante
+forjando chave alheia). Impacto real é robustez/disponibilidade — mais
+preocupante se usado server-side processando múltiplos usuários no
+mesmo processo sem `recover()` por request (DoS cross-user, não só
+self-harm), mas não encontrei nenhum chamador interno deste helper no
+repo inteiro (`grep -rl` vazio) além do próprio `MustPrivateKeyFromBase58` —
+a única "documentação" de uso é o README, que ensina o padrão inseguro.
+Registrado como vetor adicional plausível e não verificado: base58
+válido mas de comprimento errado (ex. seed de 32 bytes em vez de
+keypair de 64) seria aceito sem a checagem de consistência seed/pubkey
+que o upstream tem, produzindo endereço/assinatura sem correspondência
+real, também sem erro.
+
+`git blame` (clone unshallow) mostra a função presente desde a criação
+do arquivo (commit 021275db, minmin.yan, 2023-07-20) — mais de 2 anos,
+não é regressão recente, mesma barreira de novidade que o achado do
+clamp Cardano já documentou (sem janela de regressão verificável de 7
+dias para provar).
+
+Fluxo: `update-finding` (reasoning completo + filesRead) →
+`corroborated_static` (aceito) → `record-validation
+--type=go_manual_poc --result=pass` (saída real do teste acima) →
+`reproduced_local` (aceito) → `check-scope "OKG" "okx/go-wallet-sdk"`
+(allowed=true, bountyEligible=true, mesmo asset SOURCE_CODE do achado
+irmão) → `record-deployment-evidence` (confidence="unverified": HEAD
+atual de `main` confirmado, mas sem forma de confirmar se o app/extensão
+real da OKX Wallet consome este helper específico) → tentativa de
+`scope_verified` **recusada corretamente**: "DeploymentEvidence existe
+mas confidence=\"unverified\"... precisa de vínculo real (commit↔
+release↔deploy) com confidence >= \"low\"". Não forcei. Finding fica em
+`reproduced_local`, documentado aqui com toda a evidência para revisão
+humana decidir se vale investir em confirmar o vínculo de deploy.
+
+`deep-read-log.json` atualizado com os 3 arquivos desta rodada.
+Nenhuma outra ação nesta rodada em OKG.
+
+---
+
+## Rodada 2026-09-04 (sessão cloud, gatilho push) #4
+
+Sem findings em `candidate` no início da rodada (list-pending vazio).
+Verifiquei os 2 achados anteriores desta mesma data (clamp Cardano em
+`scope_verified`, PrivateKeyFromBase58 Solana em `reproduced_local`) —
+tentei avançar ambos: o Cardano (`scope_verified->human_ready`) foi
+**recusado corretamente** por `duplicateCheckGate` ("duplicateCheck sem
+métodos rastreáveis" — o gate exige uma regressão verificada recente
+entre dois commits, que não existe aqui por ser bug antigo de 2+ anos;
+mesma barreira estrutural, não forcei). O Solana (`reproduced_local->
+scope_verified`) permanece bloqueado por `deploymentEvidence.confidence=
+unverified`, nada mudou desde a rodada anterior — não havia navegador
+real disponível nesta sessão pra confirmar vínculo de deploy.
+
+Leitura profunda proativa (3 arquivos novos, nenhum lido antes):
+`coins/filecoin/account.go`, `coins/elrond/elrond.go`,
+`coins/zkspace/zk_singer.go`.
+
+**Novo achado real: `coins/elrond/elrond.go::Transfer`.** Mesma
+assinatura de bug dos 2 achados-irmãos já documentados neste programa
+(chave privada/seed decodificada de hex sem checar erro nem tamanho
+antes de alimentar uma função criptográfica que faz panic em vez de
+devolver erro) — aqui é `ed25519.NewKeyFromSeed`, que panica pra
+qualquer seed != 32 bytes. Agravante específico deste caso:
+`AddressFromSeed`, no MESMO arquivo, faz a MESMA operação e valida
+`len(seedBytes) != 32` corretamente; `Transfer` não replica essa
+checagem. Além disso `NewAddress`, também no mesmo arquivo, documenta
+explicitamente aceitar uma chave de 64 bytes sob o mesmo nome semântico
+("chave privada em hex") — inconsistência de convenção dentro do
+próprio pacote que torna plausível um consumidor reutilizar a chave de
+64 bytes de `NewAddress` em `Transfer`, que só aceita 32.
+
+Prova executável real: `coins/elrond/zzrepro_test.go` (escrito nesta
+rodada, clone local `git clone` público), `go test -run TestRepro -v
+./...` depois de `go mod tidy` (proxy.golang.org, sem credencial).
+Saída real:
+```
+TestReproTransferPanicsOnWrongLengthKey: PANIC RECOVERED: ed25519: bad seed length: 63
+TestReproTransferSilentlyDiscardsDecodeError: panic on malformed hex input: ed25519: bad seed length: 0
+```
+
+Busquei chamadores internos (`grep -rn 'elrond.Transfer(' fora de
+teste`): zero resultados. O README do pacote, diferente dos 2 achados
+anteriores, na verdade usa consistentemente o `pk` de 32 bytes do
+próprio exemplo — não ensina literalmente o padrão de 64 bytes que
+dispara o bug; o vetor real depende de um consumidor externo trazer uma
+chave de outro ponto do mesmo SDK/pacote. Documentei essa ressalva
+explicitamente no reasoning, não escondi a limitação.
+
+Idade do bug: `coins/elrond/elrond.go` adicionado em 2023-11-03
+(commit e122a38d) — mais de 2 anos, mesma barreira de novidade que já
+bloqueia os 2 achados-irmãos (sem janela de regressão verificável de 7
+dias).
+
+Fluxo: `upsert-finding` (candidate) → `update-finding` (reasoning +
+filesRead) → `corroborated_static` (aceito) → `record-validation
+--type=go_manual_poc --result=pass` (saída real acima) →
+`reproduced_local` (aceito) → `check-scope "OKG" "okx/go-wallet-sdk"`
+(allowed=true, bountyEligible=true) → `record-deployment-evidence`
+(confidence="unverified", mesma limitação epistêmica dos 2
+achados-irmãos: sem confirmar se o app real da OKX Wallet consome este
+helper específico) → tentativa de `scope_verified` **recusada
+corretamente** pelo mesmo motivo dos irmãos ("confidence=unverified").
+Não forcei. Finding fica em `reproduced_local`.
+
+`deep-read-log.json` atualizado com os 3 arquivos desta rodada (3
+entradas novas em `okx/go-wallet-sdk`, total 14). Nenhum achado em
+`filecoin/account.go` (decodes sempre checam erro/tamanho) nem em
+`zkspace/zk_singer.go` isoladamente (delega validação pra
+`zkscrypto.NewPrivateKey`/`NewPrivateKeyRaw`, não lido ainda — fica
+como candidato pra rodada futura). Nenhuma outra ação nesta rodada em
+OKG.
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. Leitura profunda
+proativa fechou o candidato pendente da rodada anterior:
+`coins/zksync/zkscrypto/zkscrypto.go` (o pacote interno que
+`zk_singer.go` delega validação de chave privada). Ao contrário dos 3
+achados-irmãos já existentes (cardano clamp, solana `PrivateKeyFromBase58`,
+elrond `Transfer`), este pacote **valida corretamente**: `NewPrivateKeyRaw`
+rejeita `len(pk) != 32` com erro tratável (`errPrivateKeyLen`) antes de
+aceitar, e `NewPrivateKey` (via seed) delega a validação de tamanho pro
+lado C (`zks_crypto_private_key_from_seed`, `result==1` -> erro tratável,
+sem panic). Não repete o padrão de inconsistência dos irmãos — sem achado.
+Nota lateral: `SignTransfer` em `zk_singer.go` tem
+`hex.DecodeString(txData.From[2:])` que poderia panicar com string curta
+demais, mas `From`/`To` são construídos pelo próprio chamador da lib (SDK
+de carteira, não input de rede de terceiro) — avaliado como não
+explorável remotamente, não virou finding.
+
+`deep-read-log.json` atualizado (+1 arquivo em `okx/go-wallet-sdk`,
+agora 15 no total, candidato pendente fechado). Nenhum achado novo,
+nenhuma transição de estado nesta rodada em OKG.
+
+## Rodada 2026-09-04 #19 (push automático via GitHub webhook, sessão cloud)
+
+Tentei avançar `cardano key clamp` (`scope_verified` desde rodada
+anterior, relatório já em disco) para `human_ready`: rodei
+`record-duplicate-check` (GitHub Issues API do `okx/go-wallet-sdk`
+filtrando "cardano" — 0 resultados; página de Security Advisories do
+repo — nenhum publicado; 4 buscas web distintas sobre o mecanismo
+específico do bug e sobre CIP-3/Icarus clamp em geral — nada encontrado
+em nenhuma fonte pública). A transição `scope_verified -> human_ready`
+foi **corretamente recusada** pelo modo anti-duplicate de
+`novelty-risk.mjs` (`noveltyStatus=regression` exigido — prova de
+regressão verificada entre commit-pai/commit-introdutor nas últimas
+168h): este é um bug estrutural antigo (máscara de clamp errada desde
+sempre nessa função), não uma regressão recente introduzida por um
+commit específico rastreável — não há como produzir essa prova
+honestamente, então o achado fica em `scope_verified` mesmo, como já
+estava. Nenhuma tentativa de contornar o gate — é a máquina de estados
+funcionando como projetado depois do histórico de 6/6 submissões reais
+voltarem duplicate (ver comentário no topo de `novelty-risk.mjs`).

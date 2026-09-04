@@ -6700,3 +6700,635 @@ de deploy-time, não input de request) e `packages/cli/src/commands/health.ts`
 (CLI local, sem fronteira de autorização remota). Nenhum achado nos
 três. `deep-read-log.json` atualizado. Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-04 (push automático, rodada seguinte)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`) confirmados bloqueados —
+nenhum repositório desses dois programas foi clonado/lido/aberto nesta
+rodada. `migrate-to-v2.mjs` + `list-pending` global = 0.
+
+Revisitei os 5 achados `corroborated_static` deste programa
+(`ssrf_redirect_allowlist_bypass_risk` em `image-optimizer.ts`,
+`command_injection_risk` em `update-remix-run-dev.js`,
+`path_traversal_arbitrary_file_read_risk` em `verify-claim.mjs`,
+`timing_attack_risk` em `harness/bridge/index.ts`, e os 3
+`semgrep_detect_child_process` em `mcp.ts`): confirmado via
+`state-machine.mjs` que a transição `corroborated_static->reproduced_local`
+só é aceita com validador local disponível (`record-validation`
+`not_applicable` para achados JS/TS sem PoC), e `reproduced_local->scope_verified`
+é a única aresta que chega em `scope_verified` — ou seja,
+`corroborated_static->scope_verified` direto não existe na máquina de
+estados. Esses 5 achados ficam permanentemente presos em
+`corroborated_static` até existir um validador de verdade para
+JS/TS/GitHub-Actions (limitação de engenharia já documentada em
+rodadas anteriores, não um problema novo). Nenhuma ação forçada,
+nenhuma transição tentada sem base.
+
+Leitura profunda proativa: todos os 16 repositórios do snapshot de
+escopo (`scope-snapshots/vercel-open-source.json`) já têm pelo menos
+uma entrada em `deep-read-log.json`. Escolhi `vercel/turborepo`
+(clone raso, descartado ao final) por ter arquivos de hashing de
+cache (`crates/turborepo-hash/`, `crates/turborepo-lockfile-hash/`)
+ainda não lidos linha a linha, potencialmente relevantes para
+cache-poisoning (se o hash de cache-key fosse fraco a ponto de
+colidir sob controle do atacante, uma tarefa de CI poderia reutilizar
+saída de outra tarefa). Lidos por completo:
+
+- `crates/turborepo-hash/src/lib.rs` — `HashableMessage` para
+  `TaskHashable`/`GlobalHashable`/`FileHashes`/`LockFilePackages`,
+  serialização canônica via Cap'n Proto + xxHash64.
+- `crates/turborepo-hash/src/oid_hash.rs` — `OidHash`, wrapper
+  stack-allocated de 40 bytes para OID git hex; valida ASCII-hex antes
+  de qualquer `unsafe` (`from_utf8_unchecked` só após
+  `assert_ascii_hex`), sem caminho de bypass.
+- `crates/turborepo-lockfile-hash/src/lib.rs` — mesmo padrão
+  xxHash64 sobre mensagem Cap'n Proto canônica.
+
+**Sem achado**: xxHash64 é hash não-criptográfico usado exclusivamente
+como fingerprint de chave de cache local/lookup — não é usado como
+segredo nem como decisão de autorização. A fronteira de segurança real
+(autenticação de artefato de cache remoto) já foi lida e confirmada
+segura em rodada anterior (`signature_authentication.rs`, HMAC-SHA256
+com comparação timing-safe, fail-closed em erro/tag inválida — ver
+entrada em `deep-read-log.json` de `vercel/turborepo`). Mesmo padrão
+já visto e não elevado a achado em `nitrojs/nitro`
+(`src/utils/hash.ts`, sha256 truncado só para chave/identificador).
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum achado
+novo, nenhuma transição de estado neste programa nesta rodada.
+`Block Open Source`/`Circle BBP` seguem fora de escopo desta sessão
+por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 (push automático, sessão cloud) — relatório de OKG escrito + leitura profunda em vercel/vercel (connex)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`list-pending` global vazio. Antes da leitura profunda, revisei os
+findings em `scope_verified` de qualquer programa (rotina que faltava
+nas últimas rodadas) e encontrei
+`vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`
+já com rascunho de relatório escrito, preso no mesmo limite estrutural
+já documentado (duplicate-check exige acesso à API do GitHub, que
+segue bloqueada nesta sessão cloud — reconfirmado com `curl` direto,
+`403`). Nenhuma mudança nele. (O outro `scope_verified` do sistema,
+`OKG::...NewXPrvKeyFromEntropy`, não é deste programa — ver
+`research/bugbounty/okg/NOTES.md` para o trabalho feito nele nesta
+rodada: relatório escrito + achado de possível conhecimento prévio da
+OKX.)
+
+Leitura profunda proativa: `vercel/vercel` (o maior asset do programa,
+101 entradas prévias em `deep-read-log.json`, mas ainda com superfície
+nova). Sparse clone raso de `packages/cli/src`, grep auth/token/
+session/credential contra o log existente — priorizei
+`packages/cli/src/util/connex/` e `packages/cli/src/commands/connex/`
+("Connect", integração OAuth-like da CLI com serviços de terceiros via
+navegador — nunca lido antes, feature relativamente nova). 4 arquivos
+lidos por completo:
+
+- `util/connex/request-code.ts` — `generateRequestCode()` gera
+  `verifier` (37 bytes aleatórios, mantido só localmente no processo da
+  CLI) e `requestCode = SHA256(verifier)` (enviado ao servidor).
+  `awaitConnexResult` faz poll de `GET /v1/connect/result/{verifier}`
+  usando o segredo bruto — padrão PKCE correto: o servidor guarda o
+  resultado sob a chave `requestCode` e só libera pra quem apresentar o
+  `verifier` que gera esse hash.
+- `commands/connex/create.ts` — fluxo completo: POST inicial já manda
+  `body.request_code = requestCode` (nunca o verifier); se o servidor
+  responde 422 com `registerUrl`, a CLI abre esse URL no navegador
+  (`open()`) só com parâmetros de branding (ícone/cores) anexados —
+  **o `verifier` nunca é incluído no URL aberto no navegador**, fica só
+  em memória do processo CLI, que depois faz o poll. Consistente com o
+  design PKCE de `request-code.ts`.
+- `commands/connex/revoke-tokens.ts` — escopo `mine`/`all` decidido
+  antes da chamada `DELETE /v1/connect/connectors/:id/tokens`; corpo
+  da requisição inclui `subject.id = client.authConfig.userId` só no
+  escopo `mine` (o servidor decide o resto). Sem lógica de autorização
+  do lado cliente que possa ser manipulada — a decisão real de quem
+  pode revogar o quê é responsabilidade do servidor (`403` tratado como
+  caminho normal). Sem achado.
+- `commands/connex/token.ts` — mesmo padrão PKCE de `create.ts`
+  reaplicado para o fluxo de recuperação de token (`authorize`/
+  `install`). `buildActionUrl` monta a URL de ação
+  (`https://vercel.com/api/v1/connect/{authorize|install}/{clientId}?...&request_code=...`)
+  só com `request_code` (hash) e parâmetros não-secretos — mesma
+  garantia de não vazar o verifier.
+
+**Observação registrada, não elevada a achado formal**: o design
+completo (`request_code` gerado do lado CLI, URL de autorização aberta
+no navegador do usuário sem nenhum vínculo visível entre CLI e
+navegador além desse código) é estruturalmente do mesmo formato de
+"device authorization flow" (RFC 8628) — uma classe conhecida de fluxo
+onde, se um atacante conseguir fazer a VÍTIMA abrir uma URL de
+autorização gerada pela CLI do PRÓPRIO ATACANTE (ex. via phishing) enquanto
+a vítima está autenticada no navegador em vercel.com, a vítima
+autorizaria/instalaria o conector em nome do atacante, e o atacante
+(que já tem o `verifier` correspondente, gerado localmente por ele) receberia
+o token resultante. Essa é uma vulnerabilidade estrutural conhecida de
+QUALQUER fluxo de device-code que não mostre um "user code" curto para
+o usuário confirmar visualmente que corresponde ao dispositivo que
+pediu (mitigação padrão do RFC 8628, seção 5.4) — não é um bug
+introduzido por este código cliente especificamente, e a página de
+autorização real (`vercel.com/api/v1/connect/authorize/...`) fica no
+backend/dashboard da Vercel, **fora deste repositório e fora do que dá
+pra confirmar ou refutar só lendo a CLI open source**. Mesma limitação
+estrutural já documentada em achados anteriores deste programa
+(ex. SSO loopback) — não abri candidato novo porque não há cadeia de
+chamada verificável dentro do escopo de código acessível que confirme
+ausência de mitigação server-side (rate limiting, TTL curto, exibição de
+código de confirmação); fica registrado aqui para quem tiver acesso à
+UI real do dashboard investigar se quiser.
+
+`deep-read-log.json` atualizado (`vercel/vercel` +4, agora 105 no
+total). Nenhum achado novo formal, nenhuma transição de estado neste
+programa nesta rodada.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2` rodado, `list-pending` global = 0. Nenhum finding em
+`corroborated_static`/`scope_verified` deste programa mudou nesta
+rodada (o único `scope_verified` daqui,
+`vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`,
+segue preso no mesmo limite estrutural já documentado — API do GitHub
+pra checar duplicata segue bloqueada nesta sessão cloud).
+
+Leitura profunda proativa: `vercel/vercel`, subdiretório
+`packages/cli/src/commands/env/` (comandos `pull`/`run`/`add` do `env`
+da CLI — nunca lidos linha a linha nesta missão apesar de 103 entradas
+prévias no log para este repo, área plausível para bug de exposição
+de segredo). Sparse clone raso via `git clone --filter=blob:none
+--no-checkout` + `sparse-checkout`, sem precisar de conta/token
+(mesmo padrão já usado em rodadas anteriores). 3 arquivos lidos por
+completo:
+
+- `pull.ts` — escreve env vars descriptografadas em arquivo local
+  (`.env.local` por padrão), comportamento documentado e esperado do
+  próprio comando. Segredos "sensitive" que vêm vazios da API viram
+  `[SENSITIVE]` no arquivo em vez de string vazia — proteção correta
+  contra falso-negativo de "variável limpa" quando na verdade é só
+  redação server-side. Path de escrita é sempre `resolve(cwd,
+  filename)` com `cwd`/`filename` controlados pelo próprio usuário
+  local, sem input de rede. Sem achado.
+- `run.ts` — injeta env vars remotas no processo filho via `execa`
+  com array de argv (`userCommand[0], userCommand.slice(1)`), sem
+  shell — `userCommand` vem do próprio argv do processo CLI local
+  (depois de `--`), não de rede/atacante remoto. Ordem de merge do
+  env (`records.env` → `localEnv` → `process.env`) deixa o ambiente
+  local sempre sobrescrever o remoto, sem inversão perigosa. Sem
+  achado.
+- `add.ts` (completo, ~1260 linhas) — toda a lógica de
+  sensitive/policy/visibility neste arquivo é só UX client-side
+  (prompts, validação de forma, avisos); a aplicação real de
+  team-policy fica no backend (`addEnvRecord`), então não há bypass
+  client-side possível mesmo que o usuário force flags contraditórias
+  — o servidor rejeitaria. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel` +3, 106 no total).
+Nenhum achado novo, nenhuma transição de estado neste programa nesta
+rodada. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
+sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #13 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` lido por completo como passo zero, antes de
+qualquer clone/leitura: `Block Open Source` (`aiResearchBanned`) e
+`Circle BBP` (`blocked`, escolha do usuário) seguem bloqueados, nenhum
+repo desses tocado nesta rodada (nem `afterpay/*`, `cashapp/*`,
+`circlefin/*`). Nota separada: o campo `Auth0 by Okta` no mesmo
+arquivo está com `roeReviewNeeded:true` (flagueado 2026-09-04, sessão
+anterior) por falta de confirmação de RoE real via navegador —
+`auth0/auth0-java` não é um dos 4 programas desta missão, então não
+foi tocado aqui, mas fica registrado que a lacuna segue aberta.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 (nenhum finding em
+`candidate`). `list-deep-read-candidates.mjs` continua falhando nesta
+sessão cloud (`SyntaxError: Unexpected non-whitespace character after
+JSON` ao buscar o dataset `bounty-targets-data` — mesmo bloqueio de
+proxy de rede de rodadas anteriores, resposta não-JSON do proxy).
+Seleção de arquivos feita à mão via clone raso + diff manual contra
+`deep-read-log.json`.
+
+Leitura profunda proativa direcionada a `vercel-labs/skills` (repo
+pequeno, CLI de instalação de "skills" de agente — supply-chain é o
+modelo de ameaça óbvio). 3 arquivos novos, todos completos:
+
+- `src/providers/wellknown.ts` — provider que busca `index.json` em
+  qualquer host HTTPS (exceto github.com/gitlab.com/huggingface.co,
+  que têm provider dedicado) via RFC 8615 well-known URI, e extrai
+  artefatos `.zip`/`.tar.gz`. Path de extração passa por
+  `normalizeArchivePath`: rejeita path absoluto, `\0`, `\`, drive
+  letter Windows, e qualquer componente `.`/`..` — sem zip-slip. Para
+  artefato v0.2.0 o digest SHA-256 é comparado (`computeDigest(bytes)
+  !== entry.digest`) **antes** de extrair, com early-return em
+  mismatch — sem uso de conteúdo não verificado. `extractTarGz` rejeita
+  explicitamente entradas symlink/hardlink (`typeFlag 0x32/0x31`) em
+  vez de resolvê-las, evitando escrita fora do diretório via link.
+  Sem achado — hardening correto e deliberado contra os vetores óbvios
+  (zip-slip, symlink, artefato adulterado).
+- `src/remove.ts` (completo) — todos os paths de remoção (`rm`
+  recursivo) vêm de `getCanonicalPath`/`getInstallPath`, que aplicam
+  `sanitizeName` (já auditado em rodada anterior via `installer.ts`
+  completo). Guarda explícita e comentada contra `--all` combinado com
+  nomes específicos (footgun documentado no próprio código: evitava
+  mass-delete acidental). Sem achado.
+- `src/local-lock.ts` (completo) — leitura/escrita de
+  `skills-lock.json` no projeto local; paths sempre resolvidos
+  relativos a `cwd` do processo local, sem input de rede/atacante
+  remoto no cálculo de path. Sem achado.
+
+`api.hiro.so` recheck (`curl -m 8`): `errno=56` de novo, mesmo bloqueio
+de rede de todas as rodadas anteriores — não confirmável se o deployer
+StackingDAO publicou contrato novo. `deep-read-log.json` atualizado
+(`vercel-labs/skills` +3, agora 20 no total). Nenhum achado novo,
+nenhuma transição de estado neste programa nesta rodada.
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` lido por completo como passo zero, antes de
+qualquer clone/leitura: `Block Open Source`/`Circle BBP` seguem
+bloqueados, nenhum repo desses tocado. Nota separada: `Auth0 by Okta`
+segue `roeReviewNeeded:true`, não é um dos 4 programas desta missão,
+não tocado.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Antes de ir pra
+leitura profunda, revisei os 2 findings em `scope_verified` pendentes
+no board inteiro (não só deste programa): `OKG` (cardano key clamp) e
+o único deste programa
+(`vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`).
+Investiguei especificamente se este último poderia agora satisfazer o
+gate anti-duplicata (`duplicateCheckGate`, que exige prova de
+regressão verificada — bisecção entre commit introdutor e seu parent,
+com <=7 dias de idade) antes de tentar `human_ready`: clonei
+`vercel/workflow` (histórico completo) e rodei `git log
+--diff-filter=A -- packages/core/src/vm/index.ts` — o padrão
+`seedrandom(seed)`/`Math.random=rng` existe desde o PRIMEIRO commit
+deste arquivo (`4ca9a3edb`, 2025-10-23, "Introducing Workflow
+DevKit"), ~10 meses atrás — decisão de design fundacional, não
+regressão recente. `verifiedRegressionGate` falharia estruturalmente
+(idade >> 7 dias) mesmo com um `duplicateCheck` completo, então não
+investi nisso. Reasoning do finding atualizado (concatenado ao
+anterior, não substituído) documentando essa confirmação. Estado
+mantido em `scope_verified` deliberadamente — mesma categoria/limite
+estrutural do achado OKG cardano-key-clamp (código antigo e
+estrutural, não janela estreita de exposição nova). Relatório de
+rascunho já existente continua válido pra revisão humana direta.
+
+Leitura profunda proativa direcionada a `vercel/ai` (30 entradas
+prévias no log; sparse clone raso, sem conta/token). Candidatos
+selecionados por path (`auth|token|session|...`) e cruzados contra o
+log pra achar os ainda não lidos: 5 arquivos completos —
+
+- `packages/provider/src/realtime-model/v4/realtime-model-v4-client-secret.ts`
+  — só tipos (`RealtimeModelV4ClientSecretOptions`/`Result`), sem
+  lógica. Sem achado.
+- `packages/openai/src/realtime/openai-realtime-model.ts`
+  (`doCreateClientSecret` completo) — chama o endpoint real
+  `POST /realtime/client_secrets` da própria OpenAI, server-side, com
+  a API key real; devolve só o token efêmero pro browser.
+  `getWebSocketConfig` usa o protocolo `openai-insecure-api-key.$
+  {token}` documentado pela própria OpenAI para o token efêmero —
+  nunca a key real chega ao cliente. Sem achado.
+- `packages/google/src/realtime/google-realtime-model.ts`
+  (`doCreateClientSecret` completo) — chama `POST .../auth_tokens` da
+  Google server-side. Notei `uses: 0` (token multi-uso, sem limite de
+  quantas vezes pode abrir sessão) + `expireTime` ~30min além da
+  janela de abertura — ambos com rationale comentado no próprio
+  código (suportar reconnect de WebSocket sem quebrar). É ampliação
+  deliberada e documentada do raio de reuso do token efêmero exposto
+  ao browser, não um bug — mas fica anotado aqui como tradeoff de
+  design digno de reavaliação humana caso um dia se queira apertar
+  (token só abre sessão com o `bidiGenerateContentSetup` já fixado na
+  emissão, sem acesso a API Google mais ampla — não é bypass de
+  autorização). Sem achado reportável.
+- `packages/harness-acp/src/acp-auth.ts` (completo) — resolução de
+  modo de autenticação ACP (`direct` vs `ai-gateway`), lê
+  `AI_GATEWAY_API_KEY`/`VERCEL_OIDC_TOKEN` do env do processo local
+  (sem input de rede/atacante); digest sha256 usado só pra
+  identidade/cache de perfil, não decisão de segurança. Sem achado.
+- `packages/harness/src/v1/harness-v1-session.ts` (completo) — só
+  tipos/interface (`HarnessV1Session`, `HarnessV1StartOptions`), sem
+  lógica. Sem achado.
+
+`api.hiro.so` recheck (`curl -m 8`): `CONNECT tunnel failed, response
+403` — mesma categoria de bloqueio de rede de todas as rodadas
+anteriores, mensagem específica mudou. `deep-read-log.json` atualizado
+(`vercel/ai` +5, agora 35 no total). Nenhum achado novo nesta rodada;
+nenhuma transição de estado além da atualização de reasoning do
+finding `scope_verified` já existente (não é transição de estado, só
+documentação).
+
+## Rodada 2026-09-04 #17 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` lido por completo como passo zero, antes de
+qualquer clone/leitura: `Block Open Source`/`Circle BBP` seguem
+bloqueados, nenhum repo desses tocado nesta rodada.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisitei os
+findings em estados avançados (`corroborated_static`/`reproduced_local`/
+`scope_verified`/`human_ready`) de todos os programas só para
+confirmar que nada mudou de forma acionável: os 2 itens deste programa
+(`vercel/next.js::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk`,
+`vercel/vercel::update-remix-run-dev.js::command_injection_risk`, mais os
+3 `semgrep_detect_child_process` em `mcp.ts` e o `timing_attack_risk` em
+`vercel/ai/harness/bridge/index.ts`) seguem em `corroborated_static` sem
+novidade; `vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`
+segue em `scope_verified` (já com rascunho de relatório existente,
+gate anti-duplicata confirmado inaplicável em rodada anterior por ser
+código fundacional de 10 meses, não regressão recente). Nenhuma ação
+nova necessária nestes.
+
+Leitura profunda proativa: como `vercel/vercel`, `nuxt/nuxt` e
+`nitrojs/nitro` já estão com cobertura heurística (auth/token/session/
+crypto/login/password/admin/permission/access) esgotada (clone raso +
+diff contra `deep-read-log.json` confirmou 0 candidato novo de
+substância nos três — só arquivos triviais como schema de exemplo/eval
+de teste sobraram em `vercel/vercel`), direcionei a `vercel/next.js`
+(sparse clone de `packages/next/src`) e `vercel/eve` (sparse clone de
+`packages/eve/src`), escolhendo o que realmente sobrava depois do mesmo
+diff:
+
+- `packages/next/src/server/app-render/get-script-nonce-from-header.tsx`
+  (completo) — `getScriptNonceFromHeader` só extrai o nonce de um header
+  CSP que a própria aplicação já gerou (não é input de terceiro),
+  procurando primeiro `script-src` depois `default-src`; nonce malformado
+  ou ausente retorna `undefined` (fail-open documentado: segue sem nonce
+  em vez de falhar a request). Sem achado.
+- `packages/next/src/client/components/styles/access-error-styles.ts`
+  — objeto CSS-in-JS estático para páginas de erro 401/403/404, sem
+  lógica. Sem achado.
+- `packages/eve/src/protocol/clear-session.ts` +
+  `compact-session.ts` + `reset-session.ts` (completos) — únicos 3
+  arquivos que faltavam ler diretamente das rotas `clear`/`compact`/
+  `reset` mencionadas na investigação já refutada de
+  `channel/session.ts` (rodada #9: "cancel/compact/clear/reset não
+  propagam auth, refutado — responsabilidade documentada do app
+  integrador"). Os 3 são só tipos/schemas Zod de resposta
+  (`ClearResponseSchema`/`CompactResponseSchema`/`ResetResponseSchema`),
+  nenhuma lógica de autorização ou de negócio neles — confirma
+  novamente, agora pela ponta oposta da cadeia, que a ausência de auth
+  explícita observada antes não está escondida nestes arquivos
+  específicos. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/next.js` +2, `vercel/eve` +1
+entrada cobrindo 3 arquivos). Nenhum achado novo nesta rodada, nenhuma
+transição de estado. `Block Open Source`/`Circle BBP` seguem fora de
+escopo desta sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #18 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisitei os 2 findings
+`scope_verified` (`vercel/workflow::predictable_hook_token_seed_risk` e
+`OKG::cardano key clamp`) e o único `human_ready`
+(`Block Open Source::wire-schema` — legado, nada de novo a fazer, estado
+já terminal aguardando revisão humana): nenhum mudou, gate anti-duplicata
+segue corretamente inaplicável nos dois `scope_verified` (código
+fundacional antigo, não regressão recente), rascunho de relatório do
+`vercel/workflow` continua válido em
+`research/bugbounty/reports/vercel-workflow-predictable-hook-token.md`.
+
+Leitura profunda proativa: clonei `vercel/eve` (raso, HEAD atual) e
+diffei a lista de arquivos `.ts`/`.tsx` de produção (excluindo
+`.test.`/`.spec.`/`test/`/`tests/`) que casam com as palavras-chave de
+prioridade (auth/session/crypto/token/login/password/admin/permission/
+access) contra `deep-read-log.json` — sobraram 195 candidatos não lidos,
+maioria arquivos de eval/fixture E2E (baixo valor: fixtures de teste do
+próprio repo, não superfície de produto) ou templates de exemplo em
+`apps/docs/registry/`/`apps/frameworks/next/` (better-auth boilerplate
+de exemplo, não código de framework). Escolhi 3 arquivos de produção real
+ainda não lidos:
+
+- `packages/eve/src/harness/session-limit-enforcement.ts` (completo) —
+  `applySessionLimitContinuation`/`enforceSessionUsageLimit` são política
+  de orçamento de tokens/custo do harness (grant/park/fail), não
+  fronteira de autorização; a decisão grant/decline já chega resolvida
+  via continuation token tratado alhures. Sem achado.
+- `packages/eve/src/execution/session-command-inbox.ts` (completo) —
+  `createSessionCommandInbox` multiplexa hooks `stable`/`continuation`/
+  `authorization` por token, mas não GERA nem valida o token aqui
+  (`claimHookOwnership`/`createHook` fazem isso alhures — mesma raiz já
+  coberta pelo achado separado `predictable_hook_token_seed_risk` em
+  `vercel/workflow`, `scope_verified` acima); `setAuthorizationWindow` só
+  controla QUANDO um read de callback de autorização já resolvido
+  aparece na fila multiplexada (ordem de entrega), não decide se é
+  legítimo. Sem achado isolado neste arquivo.
+- `packages/eve/src/execution/wire/session-inbox-wire.ts` (completo) —
+  `decode()` do payload persistido no hook durable: cadeia de migração
+  de versão v0→v6 com checagem de `version` numérica e detecção de
+  shape-mismatch por versão declarada (`containsCurrentTaskMessages`
+  bloqueia um payload de versão nova sendo aceito sob uma versão antiga
+  declarada — proteção deliberada contra confusão de versão). Campos
+  `auth`/`caller` só são repassados através do decode, não validados
+  aqui — validação de autorização é responsabilidade do consumidor,
+  mesmo padrão já documentado em `channel/session.ts` (rodada #9). Sem
+  achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`). Nenhum
+achado novo nesta rodada, nenhuma transição de estado. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
+
+## Rodada 2026-09-04 #19 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` bloqueados, `Auth0 by Okta` com `roeReviewNeeded`
+não resolvido — nenhum dos três tocado). `migrate-to-v2.mjs` +
+`list-pending` global = 0.
+
+**Achado importante nesta rodada**: reexaminei a checagem de duplicata do
+achado `vercel/workflow::predictable_hook_token_seed_risk` (estava
+`scope_verified` com relatório já redigido) e encontrei, via busca web
+(não tinha sido feita com essa profundidade em rodadas anteriores), as
+PRs mergeadas **#3444** e **#3497** do próprio `vercel/workflow`
+("describe webhook token generation accurately") — a mensagem de commit
+citada nelas confirma **literalmente o mesmo mecanismo técnico** do
+achado (`ctx.generateNanoid()` semeado por
+`${runId}:${workflowName}:${deploymentId}`, dentro de
+`createCreateHook`). O time do Vercel já confirmou publicamente que o
+token "is not random", decidiu deliberadamente não tratar como
+vulnerabilidade ("Documentation only — no behaviour change, no API
+change") e apenas corrigiu a documentação para parar de alegar
+aleatoriedade, recomendando autenticar o webhook por conta própria em vez
+de depender do segredo da URL. `GHSA-9r75-g2cr-3h76` (advisory real, mas
+sobre token *customizado* fornecido pelo usuário — mecanismo diferente,
+removido em `4.2.0-beta.64`) foi descartado como candidato de duplicata
+por não cobrir o token *default* gerado via `generateNanoid` semeado, que
+é o mecanismo real deste achado — mas as PRs #3444/#3497 cobrem esse
+mecanismo exato e já são conhecimento público incorporado ao próprio
+repositório. Registrei `record-duplicate-check` (4 queries, github_issues
++ github_advisories + web_search, `foundExisting:false` só depois de
+descartar #3444/#3497 como correspondência real) e transicionei
+`scope_verified -> known_duplicate` citando PR #3497 como
+`knownIssueSource`. **Isto evita um envio que quase certamente voltaria
+duplicate/informative** — exatamente o padrão que motivou o modo
+anti-duplicate em `novelty-risk.mjs` depois de 6/6 submissões reais
+voltarem duplicate. Rascunho `research/bugbounty/reports/
+vercel-workflow-predictable-hook-token.md` permanece no disco só como
+registro histórico do raciocínio original — não deve mais ser enviado.
+
+Também tentei `record-duplicate-check` + `human_ready` para
+`OKG::cardano key clamp` (`scope_verified`, já com relatório): busca
+pública (GitHub issues API, security advisories do repo, 4 queries web)
+não achou nada — mas a transição foi recusada corretamente pelo modo
+anti-duplicate (`novelty-risk.mjs`): exige `noveltyStatus=regression`
+(prova de regressão verificada entre commit-pai e commit-introdutor nas
+últimas 168h), e este é um bug estrutural antigo, não uma regressão
+recente — não há como produzir essa prova honestamente. Fica
+`scope_verified` mesmo, como já estava; nenhuma tentativa de contornar o
+gate.
+
+Leitura profunda proativa: continuei o levantamento de `vercel/eve`
+começado na rodada #18 (195 candidatos auth/session/crypto/token/login/
+password/admin/permission/access ainda não lidos, filtrando fixtures/
+evals/exemplos de baixo valor) e li mais 3 arquivos de produção:
+`execution/wire/session-inbox-resume.ts` (resolve fast-path/slow-path de
+hook, sem validação de auth própria além do token do hook — mesma
+fronteira do achado agora `known_duplicate` acima), `execution/
+durable-session-store.ts` (serialização/migração de snapshot versionado,
+sem lógica de autorização), `channel/session-callback.ts` (schema Zod
+`.strict()` + guard SSRF explícito contra IP privado/reservado antes de
+qualquer POST de callback — bem defendido). Nenhum achado novo.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`).
+
+## Rodada 2026-09-04 #20 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP` bloqueados via `check-program`, nenhum dos dois tocado).
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisitados os estados
+não-terminais existentes (`corroborated_static`/`human_ready`/
+`inconclusive`/`reproduced_local`/`scope_verified`) só por leitura —
+nenhum pertence a StackingDAO ou Vercel Open Source além dos já
+documentados (`vercel/ai::runBridge::timing_attack_risk`,
+`vercel-labs/agent-skills::verify-claim.mjs::path_traversal...`,
+`vercel/vercel::update-remix-run-dev.js::command_injection_risk`,
+`vercel/next.js::image-optimizer.ts::ssrf_redirect_allowlist_bypass_risk`,
+3x `semgrep_detect_child_process` em `mcp.ts`, e o `inconclusive` de
+`cli-auth/sso.ts::waitForVerification`) — nenhum exigia ação nova nesta
+rodada (sem evento de fila os disparando).
+
+Leitura profunda proativa: clonei `vercel/eve` raso localmente (não
+estava em disco nesta sessão efêmera) pra diferenciar candidatos
+auth/session/crypto/token/... genuinamente não lidos dos ~190 já
+cobertos em rodadas anteriores (muitos falsos-positivos de substring,
+como `authored-*` que é sobre *autoria* de módulo, não autenticação —
+filtrados). Escolhi 3 arquivos de produção real ainda não lidos:
+
+- `packages/eve/src/setup/flows/login.ts` (completo) — `runLoginFlow`
+  orquestra `vercel login` via OAuth de browser dentro do TUI de setup;
+  sempre reprovoca `getVercelAuthStatus` DEPOIS do subprocesso terminar
+  em vez de confiar no exit code do CLI — um login abandonado/parcial
+  reporta `failed` honestamente, nunca falso-sucesso. Sem achado.
+- `packages/eve/src/setup/boxes/apply-ai-gateway-credential.ts`
+  (completo) — `perform` só reivindica `inherit` bem-sucedido depois que
+  `runVercelEnvPull` retorna `true` (nunca reporta "connected" que seria
+  mentira se o pull falhar); caminho `byok` escreve a key colada via
+  `writeAiGatewayApiKey`/`appendEnv`, decisão de qual modo usar já vem
+  resolvida de `state.aiGateway` a montante. Sem achado.
+- `packages/eve/src/cli/dev/tui/remote-auth-command.ts` (completo) —
+  `runRemoteAuthCommand` só orquestra painel TUI/abort/interrupt em
+  torno de `runRemoteAuthFlow` (já lido em `remote-auth.ts` em rodada
+  anterior); `mutedRenderer` silencia a UI durante interrupção mas
+  sempre deixa `warning`/`error` passarem. Não decide autenticação por
+  si mesmo. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `api.hiro.so`
+não foi retestado nesta rodada especificamente para StackingDAO (já
+reconfirmado bloqueado em dezenas de rodadas recentes consecutivas;
+os 15 contratos Clarity seguem 100% cobertos, sem mudança). `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
+
+## Rodada 2026-09-04 #21 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Revisitados os estados não-terminais
+existentes (`corroborated_static`/`human_ready`/`inconclusive`/
+`reproduced_local`/`scope_verified`) só por leitura -- nenhum exigia
+ação nova nesta rodada (sem evento de fila os disparando).
+
+Leitura profunda proativa: clone raso de `vercel/eve` (efêmero, não
+estava em disco nesta sessão) para continuar o levantamento dos
+candidatos auth/session/crypto/token/... ainda não lidos. Desta vez
+direcionado à família de arquivos de *criação/identidade* de sessão em
+vez de canais de auth (já bem cobertos): 3 arquivos de produção novos --
+
+- `execution/session.ts` (completo) -- `createSession`/
+  `refreshSessionFromTurnAgent`/`projectToDurableSession`/
+  `hydrateDurableSession`: só estrutura de dados da sessão (agent/
+  compaction/history/limits); `sessionId`/`continuationToken` chegam
+  como input do chamador, não são gerados nem validados aqui.
+  `mintSubagentContinuationToken` usa `crypto.randomUUID()` quando
+  `suffix` não é fornecido (imprevisível); o path determinístico só
+  existe quando o próprio chamador interno já fornece um `suffix`
+  explícito -- nenhuma superfície de input externo rastreada até aqui.
+  Nenhuma decisão de autorização neste arquivo, consistente com o
+  achado já refutado de `channel/session.ts` (rodada #18: auth por-
+  sessão é responsabilidade documentada do app integrador). Sem achado.
+- `execution/create-session-step.ts` (completo) -- `createSessionStep`
+  monta a sessão durable a partir do bundle compilado + limits herdados
+  do pai (tighter-wins: filho nunca alarga a cota do pai); `sessionId`/
+  `continuationToken`/`rootSessionId` só são repassados do input do
+  workflow runtime chamador, sem geração nem checagem de auth aqui. Sem
+  achado.
+- `runtime/sessions/runtime-session.ts` (completo) -- `RuntimeSession` é
+  container process-scoped só para cache de artefatos compilados/bundle,
+  isolado por `AsyncLocalStorage` em testes; sem input de rede, sem
+  decisão de autorização, puro cache de build-time. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
+
+## Rodada 2026-09-04 #22 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`/
+`Circle BBP` seguem bloqueados (`aiResearchBanned`/`blocked`), nenhum
+arquivo desses dois programas clonado ou lido nesta rodada, inclusive
+os já em disco de rodadas passadas não foram reabertos. `list-pending`
+global = 0. Revisitados os 8 findings não-terminais de `Vercel Open
+Source` (`corroborated_static` x6, `inconclusive` x1 -- listados por
+consulta direta ao SQLite, já documentados em rodadas anteriores) só
+por leitura de estado; nenhum evento de fila os disparando nesta
+rodada, nenhuma ação nova.
+
+Leitura profunda proativa: `vercel/turborepo` (clone raso) -- conferido
+contra `deep-read-log.json` já existente (25 arquivos, toda a crate
+`turborepo-auth` e `signature_authentication.rs` já cobertos em rodadas
+anteriores); os 3 arquivos ainda não lidos de nome com "token"
+(`turborepo-wax/src/token/{mod,parse,variance}.rs`) são da crate
+vendorizada `wax` (glob matching de terceiro, não-Vercel) -- "token" ali
+é token de parser de glob, não token de autenticação; falso positivo de
+substring, mesmo padrão já filtrado em rodadas anteriores para
+`authored-*` em `vercel/eve`. Sem superfície nova em turborepo, pivotei
+para `nitrojs/nitro` (Tier 1 OSS, também em escopo) e li 3 arquivos
+ainda não cobertos:
+
+- `src/presets/azure/runtime/_utils.ts` (completo) --
+  `getAzureParsedCookiesFromHeaders` só traduz `Set-Cookie` da
+  *resposta* que o próprio Nitro app gerou pro formato `Cookie[]` da
+  Azure Functions runtime; não trata nenhum header de entrada como
+  confiável. Sem achado.
+- `src/presets/azure/runtime/azure-swa.ts` (completo) -- `handle()`
+  reconstrói a `Request` a partir de `x-ms-original-url` (ou
+  `/api/*`), mas repassa só `method`+`body` pro `new Request(...)` --
+  **não inclui `req.headers`**. Na prática isso significa que nenhum
+  header de entrada (cookies, `authorization`,
+  `x-ms-client-principal` do Azure Static Web Apps auth) chega ao app
+  Nitro por este preset específico. Investiguei se isso abriria bypass
+  de autorização (padrão clássico: app confia em header ausente como
+  "não autenticado" e outra camada abre exceção) -- não há essa
+  segunda camada aqui, o efeito é fail-closed/funcional (a integração
+  de auth do SWA simplesmente não funcionaria via este preset, não é
+  um bypass que dá acesso extra a um atacante). Documentado como
+  observação, não como achado de segurança.
+- `src/presets/netlify/types.ts` (completo) -- só declarações de tipo
+  TS da Netlify Frameworks API, sem lógica em runtime. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `nitrojs/nitro`).
+Nenhum achado novo, nenhuma transição de estado nesta rodada. `Block
+Open Source`/`Circle BBP` seguem fora de escopo desta sessão por
+política local (`program-policy.json`).

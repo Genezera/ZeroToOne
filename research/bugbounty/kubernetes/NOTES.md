@@ -419,3 +419,251 @@ aqui.
 
 `deep-read-log.json` atualizado (`kubernetes/apimachinery` novo, 1
 arquivo).
+
+## Rodada 2026-09-04 (push automático, webhook head 8c9169b) -- leitura profunda (cloud-provider), sem achado
+
+`program-policy.json` conferido como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia). Leitura
+profunda proativa direcionada a `kubernetes/cloud-provider` (repo alvo
+ativo em `STATUS.md` ainda não tocado por este programa -- só
+`cluster-bootstrap`/`cloud-provider-openstack`/`cloud-provider-aws`/
+`apimachinery` tinham leitura prévia). Clone raso, grep por
+auth/token/crypto/login/password/admin/permission/access/secret/cred
+em `*.go` (excluindo `_test.go`), 3 candidatos escolhidos por
+julgamento próprio entre os poucos hits genuinamente relacionados a
+segurança (maioria dos hits era ruído de "config"/"access" em nomes
+comuns de campo, não lógica de autenticação real):
+
+- `credentialconfig/registry.go`: só struct de tipos (`RegistryConfig`/
+  `RegistryConfigEntry`) pra representar config docker de pull de
+  imagem -- comentário no topo confirma que é código copiado de
+  `/pkg/credentialprovider/config.go` do core k8s; sem lógica de
+  leitura/parsing/uso neste arquivo. Sem achado.
+- `app/webhooks.go` (`WebhookHandler.ServeHTTP`/`parseRequest`):
+  servidor HTTP dos admission webhooks do cloud-controller-manager.
+  `ServeHTTP` não valida identidade do chamador além da própria camada
+  TLS (sem shared secret nem verificação adicional no handler) -- mas
+  esse é o modelo de confiança padrão do admission webhook do
+  Kubernetes: é o apiserver quem autentica o servingCert do webhook via
+  `caBundle` configurado no registro do webhook, não o inverso: o
+  endpoint não expõe ação privilegiada diretamente a partir do payload
+  (`AdmissionHandler` só decide allow/deny, delegado por webhook
+  específico). Comportamento upstream documentado, não é bypass
+  introduzido aqui.
+- `options/webhook.go` (`WebhookServingOptions.ApplyTo`): setup do TLS
+  server-side (cert/key/cipher-suites/curve-preferences/SNI) pro
+  listener do webhook -- confirma que não há `ClientCA`/mTLS
+  configurado nesta camada, consistente com o modelo de confiança
+  descrito acima (o server não autentica o cliente; é o cliente/
+  apiserver que autentica o server via `caBundle`). Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cloud-provider` novo, 3
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta
+rodada -- resultado normal e válido.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open Source`/
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado. Também notado
+`Auth0 by Okta` com `roeReviewNeeded` (flag de processo de rodada
+anterior, mesma plataforma Bugcrowd do Block Open Source) -- tratado com
+cautela extra, `auth0/auth0-java` não foi escolhido como alvo nesta
+rodada. `migrate-to-v2.mjs` + `list-pending` global = 0.
+
+Também revisado (sem alteração) o estado geral da fila via
+`pipeline-status`: os dois achados travados de Block Open Source
+(`js_injection_unescaped_token_risk` em `corroborated_static` e
+`Root.kt::DirectoryRoot.resolve::path_traversal_risk` em `human_ready`)
+seguem intocados, como esperado -- nenhuma ação tomada sobre eles nesta
+rodada (não avançam, não são revertidos, apenas confirmados como
+"não tocar").
+
+Leitura profunda proativa: mais 2 arquivos de `kubernetes/cloud-provider`
+(clone raso público, mesmo repo de rodadas anteriores):
+
+- `controllers/service/controller.go` (`Controller.syncLoadBalancerIfNeeded`/
+  `ensureLoadBalancer`/`addFinalizer`/`removeFinalizer`/`patchStatus`):
+  loop de reconciliação padrão do service controller; toda lógica
+  sensível (validação de `LoadBalancerSourceRanges`, `ExternalIPs`, etc.)
+  é delegada ao `balancer.EnsureLoadBalancer` específico de cada cloud
+  provider, que não vive neste repo. Finalizer add/remove e patchStatus
+  usam só API padrão do client-go contra o próprio objeto Service, sem
+  trust boundary novo. Sem achado.
+- `controllers/nodelifecycle/node_lifecycle_controller.go`
+  (`CloudNodeLifecycleController.MonitorNodes`/`getProviderID`/
+  `shutdownInCloudProvider`/`ensureNodeExistsByProviderID`):
+  `getProviderID` confia em `node.Spec.ProviderID` se já setado no
+  objeto Node, sem re-verificar contra o cloud provider -- superfície já
+  conhecida e documentada pela comunidade k8s (mitigada pelo
+  `NodeRestriction` admission plugin, que impede o kubelet de setar o
+  `ProviderID` de outro node), não um bug novo introduzido aqui; nenhuma
+  lógica de auth/token neste arquivo, só orquestração de delete/taint
+  baseada em `InstanceExists`/`InstanceShutdown` do cloud provider. Sem
+  achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cloud-provider`, +2
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada
+-- resultado normal e válido.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud, rodada seguinte -- kubernetes/cli-runtime + kubernetes/csi-translation-lib)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`/
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado; `Auth0 by
+Okta` segue com `roeReviewNeeded` (informativo, não bloqueia) -- não
+escolhido como alvo. `migrate-to-v2.mjs` + `list-pending` global = 0
+(fila vazia, nenhum finding em `candidate`).
+
+Leitura profunda proativa em 2 repos alvo ainda não tocados por este
+programa (`STATUS.md`): `kubernetes/cli-runtime` e `kubernetes/
+csi-translation-lib`. Clone raso público, grep de conteúdo (não só nome
+de arquivo -- nenhum arquivo tinha auth/token/secret/credential/access
+no *nome*) por password/secret/credential/token/authoriz/authent, 3
+candidatos escolhidos por julgamento próprio:
+
+- `cli-runtime/pkg/genericclioptions/config_flags.go`
+  (`ConfigFlags.AddFlags`/uso de `BearerToken`/`Password`/`Username`):
+  flags de linha de comando do kubectl sobrescrevem o `AuthInfo` do
+  kubeconfig carregado localmente -- sem trust boundary novo, é o
+  próprio usuário que roda o comando e já possui os valores em texto
+  claro nos argumentos/env que digitou. Plumbing client-side padrão do
+  client-go/clientcmd. Sem achado.
+- `csi-translation-lib/plugins/azure_file.go`
+  (`TranslateInTreeInlineVolumeToCSI`/`TranslateInTreePVToCSI`):
+  namespace do `NodeStageSecretRef` pra volume inline vem de
+  `podNamespace` (namespace do próprio pod que monta o volume -- não
+  controlável a partir de outro namespace) e pra PV vem de
+  `SecretNamespace` explícito no PV ou do `ClaimRef` -- ambos os casos
+  já exigem privilégio de criar PV/volume inline hoje; a tradução
+  in-tree→CSI não introduz leitura cross-namespace de secret nova, só
+  copia o que já estava no objeto original. Sem achado.
+- `csi-translation-lib/plugins/portworx.go`
+  (parâmetros `openstorage.io/auth-secret-name(space)` reescritos pra
+  chaves CSI prefixadas -- `provisioner-secret-name`,
+  `controller-publish-secret-name`, etc.): mapeamento 1:1 de valores já
+  presentes nos annotations/params da StorageClass/PV original, sem
+  leitura nem elevação nova de segredo. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cli-runtime` novo, 1
+arquivo; `kubernetes/csi-translation-lib` novo, 2 arquivos). Nenhum
+achado novo, nenhuma transição de estado nesta rodada -- resultado
+normal e válido, consistente com o padrão já observado neste programa
+(código de translation/plumbing client-side, lógica sensível de
+auth real do core do Kubernetes vive fora dos repos rastreados aqui).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado).
+`migrate-to-v2` rodado, `list-pending` global = 0.
+
+Leitura profunda proativa: `kubernetes/component-base` (repo nunca
+lido nesta missão até agora), shallow clone público. 3 arquivos:
+
+- `configz/configz.go` (`InstallHandler`/`write`) — handler HTTP
+  `/configz` que serializa em JSON todo `ComponentConfig` registrado
+  via `configz.New`/`Set`. É um debug endpoint documentado do próprio
+  ecossistema Kubernetes (usado por `kube-scheduler` etc.), sem
+  autenticação própria embutida — decisão de montar esse handler num
+  mux exposto/autenticado (ou não) é do componente chamador, fora
+  desta lib. Padrão conhecido, não é introdução nova de vulnerabilidade
+  neste arquivo. Sem achado.
+- `logs/datapol/datapol.go` (`Verify`/`datatypes`) — reflection
+  recursiva que localiza campos marcados com a tag de struct
+  `datapolicy` para sinalizar dado sensível antes de logar; `recover()`
+  protege contra panic de reflection, recursão cobre corretamente
+  ponteiro/slice/map/struct. Sem achado.
+- `cli/flag/namedcertkey_flag.go` (`NamedCertKey.Set`/
+  `NamedCertKeyArray.Set`) — só parsing de flag de linha de comando
+  (`certfile,keyfile[:names]`), sem decisão de autorização nem I/O de
+  rede. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/component-base` novo, 3
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta
+rodada. `Block Open Source`/`Circle BBP` seguem fora de escopo por
+política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` seguem bloqueados). `migrate-to-v2` + `list-pending`
+global = 0.
+
+Leitura profunda proativa: `kubernetes/apiserver` (repo nunca lido nesta
+missão até agora, alvo de alto valor — decisão de autorização real),
+shallow clone público. 2 arquivos na fronteira de autorização:
+
+- `pkg/authorization/union/union.go` (`Authorize`/`ConditionsAwareAuthorize`/
+  `EvaluateConditions`) — encadeia múltiplos sub-authorizers, retorna a
+  primeira decisão Allow/Deny (short-circuit correto), NoOpinion sempre
+  continua a cadeia. Investiguei com ceticismo se `return decision, reason,
+  err` com `decision==Allow` e `err!=nil` (linha 92-93) seria um bypass —
+  rastreei até o ponto de consumo real
+  (`pkg/endpoints/filters/authorization.go:78-79`), que documenta e trata
+  isso deliberadamente: *"an authorizer like RBAC could encounter
+  evaluation errors and still allow the request, so authorizer decision is
+  checked before error here"*. Comportamento intencional e já documentado
+  no consumidor, não introduzido por `union.go`. Sem achado.
+- `plugin/pkg/authorizer/webhook/webhook.go` (`WebhookAuthorizer.Authorize`) —
+  fail-open documentado no próprio TODO do código-fonte ("We are failing
+  open now to preserve backwards compatible behavior"), `decisionOnError`
+  é config do operador do cluster, comportamento conhecido e configurável
+  há anos no kube-apiserver, não é vulnerabilidade introduzida pela lib.
+  `shouldCache` evita cache de attrs muito grandes (mitigação de DoS via
+  cache poisoning já presente). Sem achado novo.
+
+`deep-read-log.json` atualizado (`kubernetes/apiserver` novo, 2
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada.
+`Block Open Source`/`Circle BBP` seguem fora de escopo por política
+local (`program-policy.json`).
+
+## Rodada 2026-09-04 #15 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`/
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado. `Auth0 by
+Okta` segue com `roeReviewNeeded` -- tentei resolver a lacuna de novo
+(`WebFetch` direto em `bugcrowd.com/engagements/auth0-okta`), mas o
+proxy de egress deste ambiente cloud continua bloqueando o domínio
+(`EGRESS_BLOCKED`, mesmo resultado da tentativa anterior registrada no
+próprio campo) -- `auth0/auth0-java` não escolhido como alvo nesta
+rodada, cautela extra mantida. `migrate-to-v2.mjs` + `list-pending`
+global = 0 (fila vazia).
+
+Continuação da leitura profunda em `kubernetes/apiserver` (mesmo repo
+da rodada #14, ainda na fronteira de autenticação): mais 3 arquivos,
+nenhum tocado antes.
+
+- `pkg/authentication/token/cache/cached_token_authenticator.go`
+  (`cachedTokenAuthenticator.AuthenticateToken`/`doAuthenticateToken`/
+  `keyFunc`) -- cache de resultado de autenticação por token. Chave é
+  HMAC-SHA256 com segredo aleatório por processo sobre
+  `token+audiences` com length-prefix (`writeLengthPrefixedString`
+  evita ambiguidade tipo `"xy"+"z" == "x"+"yz"`); `singleflight.Group`
+  colapsa lookups concorrentes pra mesma chave (evita cache
+  stampede/chamadas duplicadas ao authenticator real). Token nunca fica
+  em texto puro na cache, só o hash; HMAC com chave aleatória mitiga
+  DoS por colisão de hash com input controlado por atacante. Uso de
+  `unsafe.Slice`/`unsafe.String` é só pra evitar alocação, não introduz
+  mutabilidade insegura. Sem achado.
+- `pkg/authentication/request/bearertoken/bearertoken.go`
+  (`Authenticator.AuthenticateRequest`) -- parse do header
+  `Authorization: Bearer <token>`, rejeita corretamente scheme
+  diferente de "bearer" (case-insensitive) e token vazio; remove o
+  header `Authorization` após autenticação bem-sucedida pra não vazar o
+  token adiante na cadeia de handlers. Sem achado.
+- `pkg/endpoints/filters/authentication.go` (`WithAuthentication`) --
+  filtro HTTP principal: valida `audiencesAreAcceptable` (interseção
+  não-vazia entre audiências esperadas e retornadas quando ambas
+  non-empty), remove headers de front-proxy (`X-Remote-*`), tanto o
+  conjunto padrão quanto o customizado via `requestHeaderConfig`,
+  *antes* de invocar o handler downstream -- previne spoofing de
+  identidade via header injetado diretamente pelo cliente (só aceito se
+  vier de proxy configurado e validado pelo próprio
+  `auth.AuthenticateRequest`). Mitigação de HTTP/2 rapid-reset
+  (CVE-2023-44487/CVE-2023-39325) pra conexões anônimas presente e
+  documentada. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/apiserver`, +3 arquivos,
+total 5). Nenhum achado novo, nenhuma transição de estado nesta rodada
+-- resultado normal e válido. `Block Open Source`/`Circle BBP` seguem
+fora de escopo por política local.

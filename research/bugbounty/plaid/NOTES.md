@@ -83,3 +83,41 @@ lido/triado achados deste programa em duas rodadas. Registrado em
 `program-policy.json` (`"roeReviewNeeded": true`) como advertência pro
 usuário revisar a RoE real do programa Plaid antes de qualquer
 pesquisa futura aqui.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado
+(inclusive `cashapp/*`/`afterpay/*`/`square/wire`, que aparecem no
+histórico de `deep-read-log.json` de rodadas anteriores a essa regra —
+confirmado que fazem parte do escopo de `Block Open Source` via
+`scope-snapshots/block-open-source.json`, nenhum deles lido nesta
+rodada). Nota lateral: a lacuna de RoE já foi fechada pra Plaid em
+03/09 (`program-policy.json`: `roeReviewed:true`,
+`aiResearchBanned:false`) — programa segue liberado.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0 candidatos. Leitura
+profunda proativa: `plaid/plaid-ruby` de novo, fechando os últimos
+arquivos hand-written do pacote ainda sem registro em
+`deep-read-log.json` (`api_client.rb`/`configuration.rb` já cobertos
+em rodada anterior; `lib/plaid.rb` é só `autoload`/`require`
+gerado — 2226 linhas de boilerplate sem lógica, não conta como
+leitura de substância):
+
+- `lib/plaid/api_error.rb` — `ApiError#initialize` aceita um Hash e
+  faz `instance_variable_set "@#{k}", v` pra cada chave. Em princípio
+  isso permite setar ivar arbitrária, mas o Hash só é construído
+  internamente por `api_client.rb` (chaves fixas: `:code`,
+  `:response_headers`, `:response_body`, `:message`) — nenhum dado de
+  rede/atacante controla o NOME das chaves, só os valores. Sem
+  achado.
+- `lib/plaid/version.rb` — só a constante `VERSION`. Sem achado.
+
+Todos os arquivos hand-written de `lib/plaid/` (fora de
+`api/`/`models/`, 100% gerados pelo `openapi-generator` e já
+verificados como não tendo lógica de auth própria em rodada anterior)
+agora estão cobertos em `deep-read-log.json`. Repositório
+`plaid/plaid-ruby` está, na prática, esgotado como alvo de leitura
+profunda proativa até que uma nova versão publique lógica hand-written
+nova. Nenhum achado novo, nenhuma transição de estado neste programa
+nesta rodada.

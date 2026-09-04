@@ -1076,3 +1076,80 @@ nenhum arquivo novo candidato neste programa. Leitura profunda
 proativa desta rodada direcionada a `vercel/workflow` (`vercel-api.ts`,
 `world.ts`, `health.ts` -- ver NOTES.md de Vercel Open Source), sem
 achado. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #13 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+via `curl -m 8`: `errno=56` de novo, mesmo bloqueio de rede de todas as
+rodadas anteriores -- não confirmável se o deployer StackingDAO
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida, nenhum arquivo novo candidato neste programa.
+Leitura profunda proativa desta rodada direcionada a
+`vercel-labs/skills` (ver NOTES.md de Vercel Open Source: 3 arquivos
+completos -- `providers/wellknown.ts`, `remove.ts`, `local-lock.ts` --
+sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+via `curl -m 8`: `CONNECT tunnel failed, response 403` (mesma
+categoria de bloqueio de rede do agent-proxy de todas as rodadas
+anteriores, só a mensagem de erro específica mudou) -- não confirmável
+se o deployer StackingDAO publicou contrato novo; os 15 contratos
+Clarity já cobertos seguem sem mudança conhecida, nenhum arquivo novo
+candidato neste programa. Trabalho desta rodada concentrado em revisar
+os 2 findings `scope_verified` pendentes (nenhum deste programa) e
+leitura profunda proativa em `vercel/ai` (ver NOTES.md de Vercel Open
+Source). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #17 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. `api.hiro.so` não testado nesta rodada (sem
+necessidade — leitura profunda proativa foi direcionada a
+`vercel/next.js` e `vercel/eve`, ver NOTES.md de Vercel Open Source);
+os 15 contratos Clarity seguem 100% cobertos, sem arquivo novo
+candidato em StackingDAO. Nenhum achado, nenhuma transição de estado
+neste programa. `Block Open Source`/`Circle BBP` seguem fora de escopo
+desta sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #18 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. `api.hiro.so` não retestado nesta rodada (sem
+indício novo de contrato adicional publicado); os 15 contratos Clarity
+já cobertos seguem sem mudança conhecida, nenhum arquivo novo candidato
+neste programa. Leitura profunda proativa desta rodada direcionada a
+`vercel/eve` (3 arquivos de produção — `session-limit-enforcement.ts`,
+`session-command-inbox.ts`, `session-inbox-wire.ts` — ver NOTES.md de
+Vercel Open Source), sem achado. Nenhuma transição de estado neste
+programa. `Block Open Source`/`Circle BBP` seguem fora de escopo desta
+sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #20 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. `api.hiro.so` não retestado nesta rodada
+especificamente (já reconfirmado bloqueado em dezenas de rodadas
+consecutivas recentes); os 15 contratos Clarity seguem 100% cobertos,
+sem arquivo novo candidato em StackingDAO. Leitura profunda proativa
+desta rodada direcionada a `vercel/eve` de novo (`setup/flows/login.ts`,
+`setup/boxes/apply-ai-gateway-credential.ts`, `cli/dev/tui/
+remote-auth-command.ts` — ver NOTES.md de Vercel Open Source), sem
+achado. Nenhuma transição de estado neste programa. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
+
+## Rodada 2026-09-04 #21 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP` bloqueados via `check-program`, nenhum dos dois tocado).
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+via `curl -m 8`: `http_code=000` (timeout/falha de conexão, mesma
+categoria de bloqueio de rede do agent-proxy de todas as rodadas
+anteriores) -- não confirmável se o deployer StackingDAO publicou
+contrato novo; os 15 contratos Clarity já cobertos seguem sem mudança
+conhecida, nenhum arquivo novo candidato neste programa. Leitura
+profunda proativa desta rodada direcionada a `vercel/eve` (ver NOTES.md
+de Vercel Open Source). Nenhuma transição de estado neste programa.
