@@ -988,3 +988,20 @@ profunda proativa desta rodada direcionada a `nitrojs/nitro` (ver
 NOTES.md de Vercel Open Source: `utils/hash.ts`, `presets/vercel/
 utils.ts`, `config/resolvers/route-rules.ts`), sem achado. Nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-04 #3 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia). `api.hiro.so`
+recheck rápido: CONNECT tunnel falhou com 403 no agent-proxy (mesmo
+bloqueio das rodadas anteriores) — não deu pra confirmar se o deployer
+`SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato novo; os 15
+contratos Clarity já cobertos seguem sem mudança conhecida, nenhum
+arquivo novo candidato neste programa. Leitura profunda proativa desta
+rodada direcionada a `vercel/next.js` (ver NOTES.md de Vercel Open
+Source: módulo `turborepo-access-trace/*` — instrumentação de
+env/TCP pra cache key do Turborepo, confirmado que só nomes de env var
+e não valores vazam pro trace file — e dois componentes de UI de
+fallback de auth), sem achado. Nenhuma transição de estado neste
+programa.

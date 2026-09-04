@@ -6073,3 +6073,49 @@ Router se mostrou corretamente implementado (decisão de auth é
 responsabilidade do app-code, framework só faz roteamento de UI de
 fallback, sem vazamento identificado). `deep-read-log.json` atualizado
 (`vercel/next.js` +3 entradas, cobrindo 5 arquivos correlacionados).
+
+## Rodada 2026-09-04 #3 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses
+tocado. `migrate-to-v2.mjs` + `list-pending` global = 0 novamente —
+fila vazia.
+
+Leitura profunda proativa: clone raso sparse de `vercel/next.js`
+(`--filter=blob:none --sparse`, sem baixar blobs à toa) só pra listar
+nomes via `git ls-tree`. Grep por auth/session/crypto/token/login/
+password/admin/permission/access em `packages/` (excluindo test/
+fixtures/docs/`.compiled` vendorizado como nas rodadas anteriores)
+achou 29 arquivos batendo o padrão, 22 ainda não logados. Escolhi 3
+itens (um deles um módulo inteiro de 6 arquivos, li tudo por ser
+pequeno e coeso):
+
+- `packages/next/src/build/turborepo-access-trace/{env,helpers,index,
+  result,tcp,types}.ts` — mecanismo que instrumenta `process.env` (via
+  `Proxy`) e `net.Socket.prototype.connect` durante o build pra
+  detectar quais env vars e endereços de rede o build tocou, usado
+  pelo Turborepo pra decidir chave de cache remoto. Ponto de atenção
+  óbvio de primeira leitura: será que o *valor* de alguma env var
+  secreta vaza pro `TURBOREPO_TRACE_FILE` (arquivo que alimenta o
+  remote cache, potencialmente compartilhado entre devs/CI)? Não —
+  `envProxy` só adiciona a *chave* (`envVars.add(key)`, nunca
+  `Reflect.get(...)`'s valor) ao Set; `TurborepoAccessTraceResult.
+  toPublicTrace()` — o único formato de fato serializado pro trace
+  file em `writeTurborepoAccessTraceResult` — expõe só `envVarKeys`
+  (nomes), `filePaths` (caminhos) e um boolean `network`, nunca valor
+  de env var nem endereço/porta reais (esses ficam só na
+  representação interna `serialize()`, usada pra merge entre workers,
+  não escrita em disco). Rastreei toda a cadeia get→proxy→result→
+  write. Sem achado.
+- `packages/next/src/client/components/builtin/unauthorized.tsx` — só
+  renderiza `HTTPAccessErrorFallback status={401}`, sem lógica
+  própria (componente puramente de apresentação, já coberto
+  indiretamente pela leitura do `error-fallback.tsx` em rodada
+  anterior). Sem achado.
+- `packages/next/src/client/components/dev-root-http-access-fallback-boundary.tsx`
+  — guard só ativo em dev que lança erro se `notFound()`/`forbidden()`/
+  `unauthorized()` forem usados no root layout (uso indevido gera erro
+  de build, não é lógica de autorização). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`vercel/next.js` +3 entradas, cobrindo 8 arquivos).
