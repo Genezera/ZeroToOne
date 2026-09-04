@@ -213,3 +213,37 @@ profunda proativa escolheu 2 arquivos ainda não lidos em
 
 Nenhum achado novo criado nesta rodada. `deep-read-log.json`
 atualizado com os 2 arquivos.
+
+## Rodada 2026-09-04 #2 — leitura profunda proativa (3 arquivos)
+
+`list-pending` vazio (0 `candidate` em todo o sistema). Clonado
+`okx/go-wallet-sdk` raso de novo, mapeados todos os arquivos com
+`priv`/`seed`/`key`/`sign`/`auth`/`mnemonic`/`wallet` no caminho não lidos
+ainda; maioria é código vendored de terceiros já auditados (btcd, dcrec,
+go-ethereum, go-bip32) ou apenas serialização de tipo gerado (`.pb.go`,
+Solana/Cosmos), então priorizei 3 arquivos de assinatura próprios/vendored
+com lógica real ainda não cobertos:
+
+- `coins/eos/signer.go` (`Signer.Sign`/`SigDigest`): monta o digest EOS
+  correto (`SHA256(chainID || packedTx || SHA256(contextFreeData))`) e
+  delega a assinatura real pra `github.com/eoscanada/eos-go/ecc` (lib
+  externa, não código deste repo). `chainID`/`requiredKeys` vêm do chamador
+  (SDK), não de input remoto não confiável neste ponto. Sem achado.
+- `coins/tezos/types/key.go` + `coins/tezos/types/crypto.go`: vendored de
+  `blockwatch/tzgo` (copyright preservado no topo do arquivo). `ecSign` usa
+  `crypto/rand.Reader` por assinatura (sem reuso de nonce) + normalização
+  low-S; `decryptPrivateKey` usa PBKDF2-SHA512 (32768 iterações) + NaCl
+  `secretbox`, o mesmo esquema do `tezos-client` oficial. Único detalhe
+  investigado a fundo: `GenerateKey(KeyTypeBls12_381)` não seta `Data`
+  nem retorna erro (case vazio no switch) -- mas isso não é explorável:
+  `PrivateKey.IsValid()` já rejeita a chave resultante corretamente
+  (`SkHashType().Len()==32` vs `len(nil)==0`), e `Sign()` pra Bls12_381
+  retorna `ErrUnknownKeyType` explicitamente (comentado como `// TODO`,
+  feature nunca terminada) -- fail-closed em ambos os pontos de uso, não
+  um bypass de segurança. Sem achado.
+- `coins/nervos/crypto/signature.go`: só serialização de
+  `SignatureData` (R, S, V) pro formato Ethereum (R||S||V-27); nenhuma
+  operação de assinatura ou validação acontece aqui. Sem achado.
+
+Nenhum achado novo criado nesta rodada. `deep-read-log.json` atualizado
+com os 3 arquivos.
