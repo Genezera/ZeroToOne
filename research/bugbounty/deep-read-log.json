@@ -1106,7 +1106,9 @@
   ],
   "plaid/plaid-ruby": [
     "lib/plaid/api_client.rb",
-    "lib/plaid/configuration.rb"
+    "lib/plaid/configuration.rb",
+    "lib/plaid/api_error.rb",
+    "lib/plaid/version.rb"
   ],
   "okx/go-wallet-sdk": [
     "coins/aptos/v2/crypto/privateKey.go",
