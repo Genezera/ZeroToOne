@@ -128,6 +128,35 @@ test('renderReportDraft produz markdown com aviso de rascunho e seções do TEMP
   });
 });
 
+// Achado real, 04/09/2026: a linha de "Prova de regressão" assumia sempre
+// o formato baseline/candidate (parentCommit) mesmo quando noveltyProof.kind
+// era verified_longstanding_exposure (sem parentCommit) -- renderizava
+// "{{parent ausente}}" no relatório final, parecendo um placeholder
+// esquecido em vez de uma prova real e completa de outro tipo.
+test('renderReportDraft distingue prova de regressão de prova de exposição de longa data', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { ...SAMPLE, state: 'scope_verified' });
+    recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/vault', confidence: 'low' });
+    recordDuplicateCheck(db, SAMPLE.id, {
+      methods: ['github_issues', 'github_advisories', 'web_search'],
+      queries: ['a', 'b', 'c'], foundExisting: false,
+      noveltyStatus: 'longstanding_exposure',
+      noveltyProof: {
+        kind: 'verified_longstanding_exposure', introducedCommit: INTRODUCED,
+        introducedAt: '2018-02-13T12:00:00Z', ageDays: 3000, stillPresentOnDefaultBranch: true,
+      },
+    });
+    const ctx = assembleReportContext(db, SAMPLE.id);
+    const md = renderReportDraft(ctx);
+    assert.match(md, /Prova de exposição de longa data/);
+    assert.match(md, /3000 dias/);
+    assert.doesNotMatch(md, /\{\{parent ausente\}\}/);
+    assert.doesNotMatch(md, /Prova de regressão: `/);
+    closeDb(db);
+  });
+});
+
 test('renderReportDraft marca explicitamente quando não há PoC "pass" -- nunca inventa uma', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);

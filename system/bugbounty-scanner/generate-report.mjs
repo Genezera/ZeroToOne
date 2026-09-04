@@ -109,9 +109,11 @@ export function renderReportDraft(ctx) {
         `- Consultas: ${(duplicateCheck.queries || [duplicateCheck.query]).filter(Boolean).map((q) => `\`${q}\``).join('; ') || '{{não registradas}}'}`,
         `- Correspondência pública encontrada: **${duplicateCheck.foundExisting ? 'sim' : 'não'}**${duplicateCheck.foundExistingRef ? ` — ${duplicateCheck.foundExistingRef}` : ''}`,
         `- Classificação de novidade: **${duplicateCheck.noveltyStatus || 'não calculada'}**; risco estimado: **${duplicateCheck.riskScore ?? 'não calculado'}/100**`,
-        duplicateCheck.noveltyProof
-          ? `- Prova de regressão: \`${duplicateCheck.noveltyProof.parentCommit || '{{parent ausente}}'}\` (não vulnerável) → \`${duplicateCheck.noveltyProof.introducedCommit || '{{commit ausente}}'}\` (vulnerável), introduzida em ${duplicateCheck.noveltyProof.introducedAt || '{{data ausente}}'}`
-          : '- Prova de regressão: **ausente** — modo anti-duplicate bloqueia o envio',
+        duplicateCheck.noveltyProof?.kind === 'verified_longstanding_exposure'
+          ? `- Prova de exposição de longa data: commit \`${duplicateCheck.noveltyProof.introducedCommit || '{{commit ausente}}'}\`, introduzido em ${duplicateCheck.noveltyProof.introducedAt || '{{data ausente}}'} (${duplicateCheck.noveltyProof.ageDays ?? '{{idade ausente}}'} dias), ainda ancestral da branch padrão -- não é regressão recente, é design/omissão original de longa data`
+          : duplicateCheck.noveltyProof
+            ? `- Prova de regressão: \`${duplicateCheck.noveltyProof.parentCommit || '{{parent ausente}}'}\` (não vulnerável) → \`${duplicateCheck.noveltyProof.introducedCommit || '{{commit ausente}}'}\` (vulnerável), introduzida em ${duplicateCheck.noveltyProof.introducedAt || '{{data ausente}}'}`
+            : '- Prova de regressão: **ausente** — modo anti-duplicate bloqueia o envio',
         `- Gate atual: **${duplicateGate.ok ? 'PASS' : 'BLOCK'}** — ${duplicateGate.reason}`,
         '',
         '> Limitação: uma busca pública limpa não comprova que o achado é único. Reports privados continuam invisíveis; o estado correto é `private_unknown`, nunca “sem duplicata”.',

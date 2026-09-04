@@ -635,3 +635,41 @@ achado explorável dentro da alcançabilidade exigida aqui.
 `deep-read-log.json` atualizado (+5 entradas em `okx/go-wallet-sdk`,
 2 sobre o achado novo + 1 nota lateral + 2 sobre o não-achado do
 waves). Nenhuma outra ação nesta rodada em OKG.
+
+## Rodada 2026-09-04 (Claude Code local) -- 3 achados de panic avançados até human_ready
+
+Os 3 achados-irmãos de panic (DoS) em `okx/go-wallet-sdk` --
+`coins/solana/base/keys.go::PrivateKeyFromBase58`,
+`coins/elrond/elrond.go::Transfer`,
+`coins/helium/helium.go::Sign+NewAddress` -- já estavam em
+`reproduced_local` com PoC real (investigação já completa de rodadas
+anteriores). Faltava só o trabalho mecânico: `check-scope` real
+(confirmado `SOURCE_CODE`/`eligibleForBounty`/`maxSeverity:critical`),
+`deploymentEvidence` (`confidence=low` -- função pública exportada de
+topo do SDK, sem confirmação de qual produto OKX específico chama,
+mesma calibração honesta do achado-irmão de `kubernetes/publishing-bot`
+desta sessão), `impactAssessment` (DoS/robustez, C/I/A none/none/high,
+não é perda de fundos direta) e checagem de duplicata real (github
+issues: 5 resultados amplos, todos bugs diferentes -- decode de tx
+Solana, derivation path, Schnorr Bitcoin; advisories: nenhum; web
+search: sem hit específico, achado de contexto único foi
+vegaprotocol/vega#768, mesmo padrão geral "ed25519 bad seed length
+panic" em projeto totalmente diferente).
+
+Os 3 são código de mais de 2-3 anos (não regressão recente) -- usado o
+segundo caminho de prova do gate anti-duplicate construído nesta mesma
+sessão (`verifiedLongstandingExposureGate`): commits reais confirmados
+via `verify-longstanding-exposure` (clone real, `git show`/
+`merge-base --is-ancestor`) -- Solana 1142 dias
+(`021275dbe7bf`, 2023-07-20), Elrond 1036 dias (`e122a38d828c`,
+2023-11-03), Helium 1032 dias (`5cd6c132d638`, 2023-11-07), todos
+ainda ancestrais de `origin/HEAD`. Os 3 avançaram
+`reproduced_local -> scope_verified -> human_ready` pelo gate real (não
+contornado). Rascunhos completos e revisados manualmente em
+`research/bugbounty/reports/okg-coins-{solana-base-keys,elrond-elrond,helium-helium}-go-ai-deep-read-finding.md`.
+
+Achado colateral corrigido nesta rodada: `generate-report.mjs`
+renderizava a prova de exposição de longa data como se fosse sempre
+uma prova de regressão (`{{parent ausente}}` aparecia literalmente no
+rascunho gerado) -- corrigido pra distinguir os dois formatos de
+`noveltyProof.kind`, com teste novo.
