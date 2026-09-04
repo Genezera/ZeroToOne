@@ -36,3 +36,36 @@ atualizado com o arquivo acima. Ainda restam bastante superfície não
 lida (`AuthAPI.java`, `AuthorizeUrlBuilder.java`,
 `LogoutUrlBuilder.java`, `ClientAssertionSigner.java` base) pra
 próximas rodadas.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão
+cloud seguinte) — leitura profunda proativa (3 arquivos)
+`program-policy.json` checado como passo zero (`Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado).
+`list-pending` global = 0. Continuando a superfície apontada na
+rodada anterior, priorizando `auth`/`sign` no caminho:
+- `src/main/java/com/auth0/client/auth/ClientAssertionSigner.java`
+  — só a interface base (`createSignedClientAssertion(issuer,
+  audience, subject)`), sem lógica própria; `RSAClientAssertionSigner`
+  (já revisado) é a única implementação vista até agora. Sem achado.
+- `src/main/java/com/auth0/client/auth/LogoutUrlBuilder.java` —
+  builder de URL de logout (`/v2/logout`). `returnTo` entra via
+  `addEncodedQueryParameter` (não re-encoda — assume que o chamador já
+  passou uma URL válida/codificada), `client_id` via
+  `addQueryParameter` normal. Superfície de open-redirect existe em
+  teoria (`returnTo` arbitrário), mas a proteção real é do lado do
+  tenant Auth0 (Allowed Logout URLs), documentada explicitamente no
+  Javadoc da própria classe — não é bug do SDK cliente, é o padrão
+  esperado de builder que só monta a URL que o desenvolvedor consumidor
+  decide pra onde apontar. Sem achado.
+- `src/main/java/com/auth0/client/auth/AuthorizeUrlBuilder.java` —
+  builder de URL `/authorize` (Authorization Code Flow, com suporte a
+  PKCE via `withCodeChallenge`/`code_challenge_method=S256` fixo).
+  Mesmo padrão: `redirect_uri` via `addEncodedQueryParameter`,
+  protegido no tenant (Allowed Callback URLs), não no SDK. Nenhum
+  parâmetro é gerado ou validado de forma insegura aqui — é só
+  concatenação de query string. Sem achado.
+
+Nenhum achado novo criado nesta rodada. `deep-read-log.json`
+atualizado (+3 arquivos, agora 4 no total). Ainda não lido:
+`AuthAPI.java` (1647 linhas — maior arquivo do pacote `auth`, fica pra
+próxima rodada dedicada).

@@ -1059,6 +1059,9 @@
     "coins/ton/ton/wallet/seed.go"
   ],
   "auth0/auth0-java": [
-    "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java"
+    "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java",
+    "src/main/java/com/auth0/client/auth/ClientAssertionSigner.java",
+    "src/main/java/com/auth0/client/auth/LogoutUrlBuilder.java",
+    "src/main/java/com/auth0/client/auth/AuthorizeUrlBuilder.java"
   ]
 }
