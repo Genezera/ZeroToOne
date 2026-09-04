@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   buildDockerArgs, parseRegressionMarker, runContainerCheck, validateRegressionConfig,
+  validateLongstandingExposureConfig,
 } from '../regression-sandbox.mjs';
 
 const base = {
@@ -27,6 +28,18 @@ test('config de regressão aceita apenas GitHub público, SHA completo, runtime 
   assert.throws(() => validateRegressionConfig({ ...base, workdir: '../escape' }), /workdir/);
   assert.throws(() => validateRegressionConfig({ ...base, command: 'echo ok\necho bad' }), /uma linha/);
   assert.throws(() => validateRegressionConfig({ ...base, validationScope: 'marketing' }), /validationScope/);
+});
+
+test('config de exposição de longa data aceita só GitHub público e SHA completo (não precisa runtime/command -- não executa nada)', () => {
+  const valid = validateLongstandingExposureConfig({
+    repositoryUrl: 'https://github.com/example/project', introducedCommit: 'a'.repeat(40),
+  });
+  assert.equal(valid.repositoryUrl, 'https://github.com/example/project.git');
+  assert.equal(valid.introducedCommit, 'a'.repeat(40));
+  assert.throws(() => validateLongstandingExposureConfig({ repositoryUrl: 'http://github.com/example/project', introducedCommit: 'a'.repeat(40) }), /somente/);
+  assert.throws(() => validateLongstandingExposureConfig({ repositoryUrl: 'https://gitlab.com/example/project', introducedCommit: 'a'.repeat(40) }), /somente/);
+  assert.throws(() => validateLongstandingExposureConfig({ repositoryUrl: 'https://github.com/example/project', introducedCommit: 'abc' }), /SHA completo/);
+  assert.throws(() => validateLongstandingExposureConfig(null), /objeto JSON/);
 });
 
 test('marcador exige exatamente um veredito explícito em linha isolada', () => {

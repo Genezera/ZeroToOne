@@ -204,6 +204,35 @@ mas ainda precisa ser combinado com busca pública recente e impacto
 comprovado. O executor prova a regressão; não prova ausência de report
 privado.
 
+### Exposição pública de longa data (alternativa à regressão)
+
+`verifiedRegressionGate` só aceita commit introdutor com no máximo 7 dias
+de idade -- não cobre código que nunca foi seguro (design original, não
+regressão recente). Achado real, 04/09/2026: um achado real e alcançável
+(`kubernetes/publishing-bot`, `InsecureSkipVerify:true` introduzido em
+2018 junto com a própria feature) não tinha caminho nenhum para passar o
+gate, por mais esforço de arqueologia git que se investisse.
+
+`verify-longstanding-exposure --config=<arquivo.json>` é o segundo
+caminho: clona o repositório público, confirma via `git show` a data real
+do commit introdutor (nunca confia numa data alegada) e via
+`merge-base --is-ancestor` que ele continua ancestral de `origin/HEAD`
+(ainda em produção, não revertido). Se a idade real for
+`>= MIN_LONGSTANDING_EXPOSURE_DAYS` (365 dias, `novelty-risk.mjs`), o
+`noveltyProof` retornado (`kind: "verified_longstanding_exposure"`) é
+aceito por `duplicateCheckGate` com `noveltyStatus: "longstanding_exposure"`
+em vez de `"regression"` -- mesmo campo `noveltyProof`, mesma exigência de
+busca pública plural/3 consultas/frescor/risco baixo/zero duplicatas
+prévias, só o requisito de commit muda. A lógica é o espelho da regressão:
+quanto mais tempo código público e ativamente mantido ficou exposto sem
+nenhum issue/advisory/relato associado, mais crível é que ninguém tenha
+achado e reportado antes -- o oposto de "recém-introduzido, ninguém teve
+tempo ainda".
+
+```powershell
+node system/bugbounty-scanner/cli.mjs verify-longstanding-exposure --config="caminho\longstanding.json"
+```
+
 ### Busca pública de anterioridade
 
 `search-prior-art --config=<arquivo.json>` recebe `repository` no formato
@@ -806,7 +835,10 @@ execução parent↔commit introdutor já pode ser feita por
 `verify-regression --config=... --finding-id=...`: dois checkouts em Docker,
 sem rede/segredos/capabilities e com filesystem base read-only. Resultado
 contraditório, timeout ou parent incorreto falha fechado. Isso prova a
-regressão executada; não prova ausência de report privado.
+regressão executada; não prova ausência de report privado. Para código
+que nunca foi seguro (não regressão -- ver "Exposição pública de longa
+data" acima), `verify-longstanding-exposure --config=... --finding-id=...`
+verifica idade real do commit introdutor via git, sem executar nada.
 
 ## Comandos úteis
 - Rodar o scanner manualmente: `node system/bugbounty-scanner/scan-runner.mjs`

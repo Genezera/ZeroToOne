@@ -257,3 +257,86 @@ export function loadRegressionConfig(configPath) {
   if (!configPath) throw new Error('informe --config=<arquivo.json>');
   return JSON.parse(readFileSync(path.resolve(configPath), 'utf8'));
 }
+
+export function validateLongstandingExposureConfig(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    throw new Error('config precisa ser um objeto JSON');
+  }
+  let repositoryUrl;
+  try {
+    const url = new URL(input.repositoryUrl);
+    if (url.protocol !== 'https:' || url.hostname.toLowerCase() !== 'github.com') {
+      throw new Error('somente repositório público https://github.com é aceito');
+    }
+    const parts = url.pathname.replace(/\.git$/i, '').split('/').filter(Boolean);
+    if (parts.length !== 2) throw new Error('repositoryUrl precisa ter formato https://github.com/owner/repo');
+    repositoryUrl = `https://github.com/${parts[0]}/${parts[1]}.git`;
+  } catch (error) {
+    if (error.message.includes('somente') || error.message.includes('formato')) throw error;
+    throw new Error(`repositoryUrl inválida: ${error.message}`);
+  }
+  const introducedCommit = String(input.introducedCommit || '').toLowerCase();
+  if (!SHA_RE.test(introducedCommit)) {
+    throw new Error('introducedCommit precisa ser um SHA completo de 40 caracteres');
+  }
+  return { repositoryUrl, introducedCommit };
+}
+
+/** Prova alternativa de novidade para código que nunca foi seguro -- não uma
+ * regressão recente (ver verifyRegression). Não tenta provar ausência de
+ * report privado; prova algo verificável e objetivo: o commit introdutor é
+ * real (não uma data alegada), continua ancestral da branch padrão pública
+ * (ainda em produção, não revertido) e tem idade real >= o mínimo exigido
+ * por verifiedLongstandingExposureGate (novelty-risk.mjs). A força do
+ * argumento é a mesma usada em codeAgeDays (assessNoveltyRisk): quanto mais
+ * tempo código público e mantido ativamente ficou exposto sem nenhum
+ * issue/advisory/relato associado, mais surpreendente (logo mais crível)
+ * é que ninguém tenha achado e reportado antes -- oposto de "recém-
+ * introduzido, ninguém teve tempo ainda". */
+export function verifyLongstandingExposure(input, {
+  gitExe = 'git', workspaceRoot = tmpdir(), now = () => new Date(),
+} = {}) {
+  const config = validateLongstandingExposureConfig(input);
+  const tempRoot = mkdtempSync(path.join(path.resolve(workspaceRoot), 'zto-longstanding-'));
+  const repoDir = path.join(tempRoot, 'repo');
+  try {
+    git(gitExe, ['-c', 'core.hooksPath=NUL', '-c', 'filter.lfs.smudge=', '-c', 'filter.lfs.required=false',
+      'clone', '--no-checkout', '--filter=blob:none', '--', config.repositoryUrl, repoDir]);
+    git(gitExe, ['-C', repoDir, 'fetch', '--no-tags', '--depth=2', 'origin', config.introducedCommit]);
+    try {
+      git(gitExe, ['-C', repoDir, 'merge-base', '--is-ancestor', config.introducedCommit, 'origin/HEAD']);
+    } catch {
+      throw new Error('introducedCommit não está no histórico da branch padrão pública (origin/HEAD) -- pode ter sido revertido, não conta como exposição contínua');
+    }
+    const introducedAt = git(gitExe, ['-C', repoDir, 'show', '-s', '--format=%cI', config.introducedCommit]).stdout.trim();
+    const introducedAtMs = new Date(introducedAt).getTime();
+    if (!Number.isFinite(introducedAtMs)) throw new Error('git retornou data inválida para o commit introdutor');
+    const nowMs = now().getTime();
+    if (introducedAtMs > nowMs) throw new Error('commit introdutor tem data no futuro');
+    const ageDays = Math.floor((nowMs - introducedAtMs) / 86400000);
+    return {
+      ok: true,
+      repositoryUrl: config.repositoryUrl,
+      longstandingExposureProof: {
+        kind: 'verified_longstanding_exposure',
+        repositoryUrl: config.repositoryUrl,
+        introducedCommit: config.introducedCommit,
+        introducedAt,
+        ageDays,
+        stillPresentOnDefaultBranch: true,
+        verifiedAt: new Date(nowMs).toISOString(),
+      },
+    };
+  } finally {
+    const resolved = path.resolve(tempRoot);
+    const allowedRoot = path.resolve(workspaceRoot) + path.sep;
+    if (resolved.startsWith(allowedRoot) && path.basename(resolved).startsWith('zto-longstanding-')) {
+      rmSync(resolved, { recursive: true, force: true });
+    }
+  }
+}
+
+export function loadLongstandingExposureConfig(configPath) {
+  if (!configPath) throw new Error('informe --config=<arquivo.json>');
+  return JSON.parse(readFileSync(path.resolve(configPath), 'utf8'));
+}

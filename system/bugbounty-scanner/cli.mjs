@@ -15,7 +15,7 @@ import { knownIssueSourceForVulnerableDependency } from './advisory-triage.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
 import { computeFindingDimensions } from './finding-dimensions.mjs';
 import { computeExpectedValue } from './ev-ranking.mjs';
-import { loadRegressionConfig, verifyRegression } from './regression-sandbox.mjs';
+import { loadRegressionConfig, verifyRegression, loadLongstandingExposureConfig, verifyLongstandingExposure } from './regression-sandbox.mjs';
 import { loadRuntimeState, summarizeRuntimeHealth } from './runtime-state.mjs';
 import { DEFAULT_RUNTIME_STATE_PATH } from './service-runner.mjs';
 import { runToolchainDoctor } from './toolchain-doctor.mjs';
@@ -577,6 +577,24 @@ async function main() {
     printJson(result);
     return;
   }
+  if (command === 'verify-longstanding-exposure') {
+    const result = verifyLongstandingExposure(loadLongstandingExposureConfig(flags.config));
+    if (flags['finding-id'] && result.ok) {
+      const db = openDb(DB_PATH);
+      try {
+        result.validation = recordValidation(db, flags['finding-id'], {
+          type: 'verified_longstanding_exposure', result: 'pass',
+          command: `git show -s --format=%cI ${result.longstandingExposureProof.introducedCommit}`,
+          rawOutput: `introducedAt=${result.longstandingExposureProof.introducedAt}, ageDays=${result.longstandingExposureProof.ageDays}, stillPresentOnDefaultBranch=${result.longstandingExposureProof.stillPresentOnDefaultBranch}`,
+          evidence: { provenance: 'regression-sandbox', repositoryUrl: result.repositoryUrl, longstandingExposureProof: result.longstandingExposureProof },
+        });
+      } finally {
+        closeDb(db);
+      }
+    }
+    printJson(result);
+    return;
+  }
   if (command === 'runtime-status') {
     const statePath = flags.state ? path.resolve(String(flags.state)) : DEFAULT_RUNTIME_STATE_PATH;
     const state = loadRuntimeState(statePath);
@@ -683,7 +701,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, runtime-status, doctor, audit-system, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, verify-longstanding-exposure --config=<arquivo.json>, runtime-status, doctor, audit-system, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

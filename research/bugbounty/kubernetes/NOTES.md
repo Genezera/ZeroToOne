@@ -815,6 +815,47 @@ para `confidence="low"` -- suficiente pra passar o gate
 superestimar o que dá pra confirmar sem acesso ao cluster real do SIG
 k8s-infra. **Estado atual real: `scope_verified`**, não `reproduced_local`
 como a rodada #16 registrou -- aquele estado ficou desatualizado assim
-que esta reconciliação rodou. Decisão sobre o gate de regressão de 9
-anos (`novelty-risk.mjs`) continua não tomada, aguardando revisão
-humana antes de `human_ready`.
+que esta reconciliação rodou.
+
+## Rodada 2026-09-04 (Claude Code local, "decide você sobre o gate de regressão e siga") -- gate estendido, achado chega em `human_ready`
+
+Decisão explicitamente delegada pelo usuário. `verifiedRegressionGate`
+(`novelty-risk.mjs`) só aceita commit introdutor com <=7 dias -- nunca
+poderia se aplicar a `InsecureSkipVerify:true` (design original de 2018,
+não regressão), não importa quanto esforço de arqueologia git se
+investisse. Em vez de contornar o gate manualmente pra este achado,
+estendi o próprio pipeline com um segundo caminho de prova, aplicável a
+qualquer achado futuro no mesmo perfil:
+
+- `regression-sandbox.mjs::verifyLongstandingExposure` (+ `validateLongstandingExposureConfig`,
+  `loadLongstandingExposureConfig`): clona o repo real, confirma via
+  `git show` a data REAL do commit introdutor (nunca confia em data
+  alegada) e via `merge-base --is-ancestor` que continua ancestral de
+  `origin/HEAD` (ainda em produção, não revertido).
+- `novelty-risk.mjs::verifiedLongstandingExposureGate` +
+  `MIN_LONGSTANDING_EXPOSURE_DAYS=365` (mesmo limiar já usado como sinal
+  em `assessNoveltyRisk::codeAgeDays`): consome a proof, exige idade real
+  >= 365 dias, ancestralidade confirmada, `ageDays` batendo com
+  `introducedAt` (não confia em número solto do chamador).
+- `duplicateCheckGate` aceita `noveltyStatus: "longstanding_exposure"`
+  como alternativa a `"regression"` (mesmo campo `noveltyProof`,
+  distinguido por `proof.kind`) -- todos os outros requisitos
+  compartilhados continuam idênticos (cobertura pública plural, 3
+  consultas, frescor de 24h, risco baixo, zero duplicatas prévias).
+- CLI: `verify-longstanding-exposure --config=... [--finding-id=...]`.
+- 3 testes novos (`novelty-risk.test.mjs` x2, `regression-sandbox.test.mjs` x1),
+  591/591 passando. Documentado em `system/bugbounty-scanner/README.md`.
+
+Aplicado de verdade a este achado (não simulado): busquei o commit real
+via GitHub API (`edcff13f8546ec0db2ed86c248e94fca7e28fc7e`, "allow to
+fetch rules from URL", Michal Fojtik, 2018-02-13T13:06:34+01:00, PGP
+verificado pelo GitHub) e rodei `verify-longstanding-exposure` de
+verdade contra `kubernetes/publishing-bot` -- confirmado **3125 dias**
+de exposição pública contínua, ainda ancestral de `origin/HEAD`. Gate
+real aceitou (não contornado): `duplicateCheck` atualizado com
+`noveltyStatus=longstanding_exposure` e a proof real, transição
+`scope_verified->human_ready` executada via `recordTransition` e
+**aceita pelo gate real**. **Estado atual: `human_ready`** -- ainda
+exige `humanApproval` com ator humano (nunca agente/IA) antes de
+`submitted`, gate que não foi tocado nem precisa ser. Rascunho
+atualizado com todos os detalhes.

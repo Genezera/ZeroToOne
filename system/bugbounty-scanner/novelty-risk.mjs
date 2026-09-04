@@ -5,6 +5,15 @@
 export const DUPLICATE_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const MAX_RISK_FOR_SUBMISSION = 25;
 export const MAX_VERIFIED_REGRESSION_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+// Caminho alternativo a "regressão recente" (achado real, 04/09/2026):
+// verifiedRegressionGate só aceita commit introdutor com <=7 dias -- não
+// cobre código que nunca foi seguro (design original, não regressão). O
+// mesmo limiar de 1 ano já usado como sinal em assessNoveltyRisk
+// (codeAgeDays >= 365) vira aqui um segundo caminho de prova: exposição
+// pública longa e ininterrupta, sem nenhum achado associado, é evidência
+// forte de novidade pelo motivo oposto ao da regressão (tempo pra alguém
+// achar já passou, ninguém achou -- não "ninguém teve tempo ainda").
+export const MIN_LONGSTANDING_EXPOSURE_DAYS = 365;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -128,6 +137,50 @@ export function verifiedRegressionGate(proof, {
   return { ok: true, reason: `regressão verificada no commit ${proof.introducedCommit.slice(0, 12)} contra o parent ${proof.parentCommit.slice(0, 12)}` };
 }
 
+/** Prova mínima de novidade forte, alternativa a verifiedRegressionGate,
+ * para código que nunca foi seguro (não uma regressão recente -- ver
+ * comentário de MIN_LONGSTANDING_EXPOSURE_DAYS acima). Consome a mesma
+ * proof (check.noveltyProof) produzida por verifyLongstandingExposure
+ * (regression-sandbox.mjs), distinguida de uma regressão por proof.kind --
+ * não há coluna separada no banco, é o mesmo campo noveltyProof genérico.
+ * Nunca confia numa data alegada pelo chamador sem verificação real via
+ * git. */
+export function verifiedLongstandingExposureGate(proof, {
+  now = Date.now(),
+  minDays = MIN_LONGSTANDING_EXPOSURE_DAYS,
+} = {}) {
+  if (!proof || typeof proof !== 'object' || Array.isArray(proof)) {
+    return { ok: false, reason: 'falta longstandingExposureProof estruturada' };
+  }
+  if (proof.kind !== 'verified_longstanding_exposure') {
+    return { ok: false, reason: 'longstandingExposureProof.kind precisa ser verified_longstanding_exposure' };
+  }
+  if (!isFullCommitSha(proof.introducedCommit)) {
+    return { ok: false, reason: 'longstandingExposureProof precisa do SHA completo introducedCommit' };
+  }
+  if (!proof.stillPresentOnDefaultBranch) {
+    return { ok: false, reason: 'longstandingExposureProof precisa confirmar que o commit é ancestral da branch padrão atual (ainda em produção, não revertido)' };
+  }
+  const introducedAt = new Date(proof.introducedAt).getTime();
+  if (!Number.isFinite(introducedAt)) {
+    return { ok: false, reason: 'longstandingExposureProof.introducedAt precisa ser timestamp válido' };
+  }
+  if (introducedAt > now + 5 * 60 * 1000) {
+    return { ok: false, reason: 'commit introdutor está no futuro' };
+  }
+  if (!nonEmpty(proof.repositoryUrl) || !nonEmpty(proof.verifiedAt)) {
+    return { ok: false, reason: 'longstandingExposureProof precisa de repositoryUrl e verifiedAt' };
+  }
+  const realAgeDays = Math.floor((now - introducedAt) / 86400000);
+  if (!Number.isFinite(proof.ageDays) || Math.abs(proof.ageDays - realAgeDays) > 2) {
+    return { ok: false, reason: 'longstandingExposureProof.ageDays não bate com introducedAt' };
+  }
+  if (realAgeDays < minDays) {
+    return { ok: false, reason: `código vulnerável tem só ${realAgeDays} dia(s) de exposição pública verificada; mínimo ${minDays} pra contar como longa data` };
+  }
+  return { ok: true, reason: `exposição pública de longa data verificada -- commit ${proof.introducedCommit.slice(0, 12)} tem ${realAgeDays} dias, ainda ancestral da branch padrão` };
+}
+
 export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS } = {}) {
   if (!check || typeof check !== 'object' || Array.isArray(check)) check = {};
   if (!Array.isArray(check.methods) || check.methods.length === 0) {
@@ -155,8 +208,8 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   const age = now - ts;
   if (age < -5 * 60 * 1000) return { ok: false, reason: 'duplicateCheck tem timestamp no futuro' };
   if (age > maxAgeMs) return { ok: false, reason: `duplicateCheck expirou (${Math.floor(age / 3600000)}h; máximo ${Math.floor(maxAgeMs / 3600000)}h)` };
-  if (check.noveltyStatus !== 'regression') {
-    return { ok: false, reason: 'modo anti-duplicate exige noveltyStatus=regression; private_unknown não é suficiente para envio' };
+  if (check.noveltyStatus !== 'regression' && check.noveltyStatus !== 'longstanding_exposure') {
+    return { ok: false, reason: 'modo anti-duplicate exige noveltyStatus=regression ou longstanding_exposure; private_unknown sozinho não é suficiente para envio' };
   }
   if (!Number.isFinite(check.riskScore)) return { ok: false, reason: 'duplicateCheck precisa de riskScore numérico' };
   if (check.riskScore > MAX_RISK_FOR_SUBMISSION) {
@@ -165,7 +218,15 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   if (check.signals?.priorDuplicateSubmissions !== 0) {
     return { ok: false, reason: 'modo anti-duplicate exige zero submissões duplicate anteriores no mesmo programa/repositório' };
   }
-  const regression = verifiedRegressionGate(check.noveltyProof, { now });
-  if (!regression.ok) return regression;
-  return { ok: true, reason: `${regression.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
+  if (check.noveltyStatus === 'regression') {
+    const regression = verifiedRegressionGate(check.noveltyProof, { now });
+    if (!regression.ok) return regression;
+    return { ok: true, reason: `${regression.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
+  }
+  // noveltyStatus === 'longstanding_exposure' -- caminho alternativo, ver
+  // comentário de MIN_LONGSTANDING_EXPOSURE_DAYS acima. Mesmo campo
+  // noveltyProof, distinguido por proof.kind.
+  const longstanding = verifiedLongstandingExposureGate(check.noveltyProof, { now });
+  if (!longstanding.ok) return longstanding;
+  return { ok: true, reason: `${longstanding.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
 }

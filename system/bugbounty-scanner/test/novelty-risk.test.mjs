@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assessNoveltyRisk, duplicateCheckGate, verifiedRegressionGate } from '../novelty-risk.mjs';
+import { assessNoveltyRisk, duplicateCheckGate, verifiedRegressionGate, verifiedLongstandingExposureGate, MIN_LONGSTANDING_EXPOSURE_DAYS } from '../novelty-risk.mjs';
 
 const NOW = new Date('2026-09-03T18:00:00Z').getTime();
 const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -65,4 +65,52 @@ test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar',
   const result = duplicateCheckGate(null, { now: NOW });
   assert.equal(result.ok, false);
   assert.match(result.reason, /sem métodos/);
+});
+
+// Achado real, 04/09/2026: verifiedRegressionGate só aceita commit
+// introdutor com <=7 dias -- não cobre código que nunca foi seguro (design
+// original, não regressão). LONGSTANDING_PROOF é o caminho alternativo:
+// mesmo rigor de verificação real (git), limiar temporal oposto.
+const LONGSTANDING_PROOF = {
+  kind: 'verified_longstanding_exposure',
+  repositoryUrl: 'https://github.com/kubernetes/publishing-bot.git',
+  introducedCommit: INTRODUCED,
+  introducedAt: '2018-02-13T11:12:50Z',
+  ageDays: Math.floor((NOW - Date.parse('2018-02-13T11:12:50Z')) / 86400000),
+  stillPresentOnDefaultBranch: true,
+  verifiedAt: '2026-09-03T17:55:00Z',
+};
+const LONGSTANDING_CLEAN = {
+  ...CLEAN, noveltyStatus: 'longstanding_exposure', noveltyProof: LONGSTANDING_PROOF,
+};
+
+test('exposição de longa data verificada é um segundo caminho de prova, não substitui os outros requisitos', () => {
+  assert.equal(duplicateCheckGate(LONGSTANDING_CLEAN, { now: NOW }).ok, true);
+  // continua exigindo os mesmos requisitos compartilhados (cobertura, consultas, frescor, risco, zero duplicatas prévias)
+  assert.equal(duplicateCheckGate({ ...LONGSTANDING_CLEAN, methods: ['github_issues'] }, { now: NOW }).ok, false);
+  assert.equal(duplicateCheckGate({ ...LONGSTANDING_CLEAN, riskScore: 60 }, { now: NOW }).ok, false);
+  assert.equal(duplicateCheckGate({ ...LONGSTANDING_CLEAN, signals: { priorDuplicateSubmissions: 1 } }, { now: NOW }).ok, false);
+  // noveltyStatus continua tendo que ser um dos dois valores reconhecidos
+  assert.equal(duplicateCheckGate({ ...LONGSTANDING_CLEAN, noveltyStatus: 'private_unknown' }, { now: NOW }).ok, false);
+});
+
+test('verifiedLongstandingExposureGate exige idade mínima, ancestralidade real e proof consistente', () => {
+  assert.equal(verifiedLongstandingExposureGate(LONGSTANDING_PROOF, { now: NOW }).ok, true);
+  assert.match(
+    verifiedLongstandingExposureGate({ ...LONGSTANDING_PROOF, introducedAt: '2026-08-01T00:00:00Z', ageDays: 33 }, { now: NOW }).reason,
+    new RegExp(`mínimo ${MIN_LONGSTANDING_EXPOSURE_DAYS}`),
+  );
+  assert.equal(
+    verifiedLongstandingExposureGate({ ...LONGSTANDING_PROOF, stillPresentOnDefaultBranch: false }, { now: NOW }).ok,
+    false,
+  );
+  assert.equal(
+    verifiedLongstandingExposureGate({ ...LONGSTANDING_PROOF, ageDays: 1 }, { now: NOW }).ok,
+    false,
+  ); // ageDays não bate com introducedAt real -- não confia em número solto do chamador
+  assert.equal(
+    verifiedLongstandingExposureGate({ ...LONGSTANDING_PROOF, kind: 'verified_regression' }, { now: NOW }).ok,
+    false,
+  );
+  assert.equal(verifiedLongstandingExposureGate(null, { now: NOW }).ok, false);
 });
