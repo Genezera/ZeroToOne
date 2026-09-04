@@ -1,0 +1,9 @@
+{
+  "repositoryUrl": "https://github.com/octocat/Hello-World",
+  "introducedCommit": "762941318ee16e59dabbacb1b4049eec22f0d303",
+  "parentCommit": "553c2077f0edc3d5dc5d17262f6aa498e69d6f8e",
+  "runtime": "node22",
+  "command": "node -e \"const fs=require('fs');const b=fs.readFileSync('README');console.log(b.at(-1)===10?'ZTO_RESULT=VULNERABLE':'ZTO_RESULT=NOT_VULNERABLE')\"",
+  "workdir": ".",
+  "timeoutMs": 120000
+}

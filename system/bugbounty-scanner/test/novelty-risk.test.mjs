@@ -58,6 +58,7 @@ test('prova de regressão compara o parent seguro com o commit vulnerável usand
   assert.equal(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-01-01T00:00:00Z' }, { now: NOW }).ok, false);
   assert.equal(verifiedRegressionGate({ ...PROOF, baseline: { ...PROOF.baseline, result: 'vulnerable' } }, { now: NOW }).ok, false);
   assert.equal(verifiedRegressionGate({ ...PROOF, candidate: { ...PROOF.candidate, command: 'node outro.mjs' } }, { now: NOW }).ok, false);
+  assert.match(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-08-26T00:00:00Z' }, { now: NOW }).reason, /máximo 7/);
 });
 
 test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar', () => {

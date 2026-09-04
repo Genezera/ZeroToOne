@@ -1,4 +1,4 @@
-import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, recordSubmission, latestSubmissionForFinding } from './db.mjs';
+import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, getSubmission, recordSubmission, latestSubmissionForFinding } from './db.mjs';
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
@@ -15,6 +15,11 @@ import { knownIssueSourceForVulnerableDependency } from './advisory-triage.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
 import { computeFindingDimensions } from './finding-dimensions.mjs';
 import { computeExpectedValue } from './ev-ranking.mjs';
+import { loadRegressionConfig, verifyRegression } from './regression-sandbox.mjs';
+import { loadRuntimeState, summarizeRuntimeHealth } from './runtime-state.mjs';
+import { DEFAULT_RUNTIME_STATE_PATH } from './service-runner.mjs';
+import { runToolchainDoctor } from './toolchain-doctor.mjs';
+import { loadPriorArtConfig, searchPublicPriorArt } from './prior-art-search.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -446,10 +451,12 @@ export async function cmdSyncMyReports(db) {
     findingIdsByReport.set(key, ids);
   }
   const imported = [];
+  let changed = 0;
   for (const summary of summaries) {
     const live = await getReport(summary.id);
     const findingIds = findingIdsByReport.get(String(live.id)) || [];
     const localProgram = findingIds.length ? getFinding(db, findingIds[0])?.program : null;
+    const before = getSubmission(db, `HackerOne:${live.id}`);
     const submission = recordSubmission(db, {
       platform: 'HackerOne',
       externalReportId: live.id,
@@ -462,9 +469,10 @@ export async function cmdSyncMyReports(db) {
       severityFinal: live.severityRating || null,
       comments: live.originalReportId ? `Duplicate relacionado ao report #${live.originalReportId}` : null,
     }, findingIds);
+    if (!before || before.updatedAt !== submission.updatedAt) changed += 1;
     imported.push(submission);
   }
-  return { imported: imported.length, submissions: imported };
+  return { checked: imported.length, changed, unchanged: imported.length - changed, submissions: imported };
 }
 
 /**
@@ -533,6 +541,26 @@ async function main() {
   }
   if (command === 'my-reports') {
     printJson(await cmdMyReports());
+    return;
+  }
+  if (command === 'verify-regression') {
+    printJson(verifyRegression(loadRegressionConfig(flags.config)));
+    return;
+  }
+  if (command === 'runtime-status') {
+    const statePath = flags.state ? path.resolve(String(flags.state)) : DEFAULT_RUNTIME_STATE_PATH;
+    const state = loadRuntimeState(statePath);
+    printJson({ statePath, health: summarizeRuntimeHealth(state), state });
+    return;
+  }
+  if (command === 'doctor') {
+    const result = runToolchainDoctor();
+    printJson(result);
+    if (!result.ok) process.exitCode = 1;
+    return;
+  }
+  if (command === 'search-prior-art') {
+    printJson(await searchPublicPriorArt(loadPriorArtConfig(flags.config)));
     return;
   }
 
@@ -619,7 +647,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, code-age <owner/repo> <path> [ref], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, runtime-status, doctor, code-age <owner/repo> <path> [ref], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

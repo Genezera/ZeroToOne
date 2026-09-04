@@ -548,6 +548,24 @@ export function recordSubmission(db, submission, findingIds = []) {
   // fornecido por importadores. Isto impede a mesma submissão externa de
   // virar duas amostras estatísticas com ids locais diferentes.
   const id = submissionId(platform, submission.externalReportId);
+  const existing = getSubmission(db, id);
+  if (existing) {
+    const fields = [
+      'program', 'repository', 'title', 'submittedAt', 'state',
+      'originalReportId', 'originalSubmittedAt', 'originalState',
+      'severityFinal', 'bountyAmount', 'comments',
+    ];
+    const unchangedFields = fields.every((field) => {
+      const incoming = submission[field];
+      const effective = incoming === undefined || incoming === null || incoming === '' ? existing[field] : incoming;
+      return effective === existing[field];
+    });
+    const effectiveFindingIds = [...new Set([...(existing.findingIds || []), ...findingIds])].sort();
+    const existingFindingIds = [...(existing.findingIds || [])].sort();
+    if (unchangedFields && JSON.stringify(effectiveFindingIds) === JSON.stringify(existingFindingIds)) {
+      return existing;
+    }
+  }
   const ts = submission.updatedAt || new Date().toISOString();
   db.prepare(`
     INSERT INTO submissions (

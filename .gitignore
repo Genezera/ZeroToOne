@@ -23,3 +23,11 @@ research/bugbounty/*.db-shm
 # seus próprios caminhos). Commitar isso duplicaria conteúdo já versionado
 # em outro lugar sem nenhum ganho real, só peso no repo.
 research/bugbounty/ready-to-submit/
+
+# Heartbeat/leases do coordenador 24/7 são estado local e de alta frequência;
+# não pertencem ao barramento Git compartilhado.
+logs/bugbounty-runtime-state.json
+logs/bugbounty-watchdog-state.json
+logs/bugbounty-service.lock
+logs/bugbounty-service.log
+logs/bugbounty-watchdog.log

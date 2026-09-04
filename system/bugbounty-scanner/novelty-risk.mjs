@@ -4,7 +4,7 @@
 // O gate só libera uma regressão recente demonstrada entre dois refs.
 export const DUPLICATE_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const MAX_RISK_FOR_SUBMISSION = 25;
-export const MAX_VERIFIED_REGRESSION_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+export const MAX_VERIFIED_REGRESSION_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -145,6 +145,10 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   }
   if (check.foundExisting !== false) {
     return { ok: false, reason: check.foundExisting ? 'duplicateCheck encontrou correspondência existente' : 'foundExisting precisa ser false explícito' };
+  }
+  const pendingCandidates = (check.results || []).filter((result) => result?.candidate === true && result.disposition !== 'ruled_out');
+  if (pendingCandidates.length > 0) {
+    return { ok: false, reason: `duplicateCheck ainda tem ${pendingCandidates.length} correspondência(s) pública(s) sem revisão` };
   }
   const ts = new Date(check.ts).getTime();
   if (!Number.isFinite(ts)) return { ok: false, reason: 'duplicateCheck precisa de timestamp válido' };

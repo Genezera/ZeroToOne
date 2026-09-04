@@ -33,7 +33,7 @@ estados falha fechado se não houver:
   web, pelo menos três formulações distintas, `foundExisting=false`, menos
   de 24 horas e risco no máximo 25/100;
 - `noveltyStatus=regression` acompanhado de `noveltyProof`: SHA completo do
-  commit introdutor e de seu parent, data de introdução de no máximo 30 dias,
+  commit introdutor e de seu parent, data de introdução de no máximo 7 dias,
   mesmo comando executado nos dois refs, parent com resultado
   `not_vulnerable` e commit com resultado `vulnerable`;
 - zero submissões anteriores com outcome `duplicate` no mesmo programa ou
@@ -104,6 +104,75 @@ node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patc
 node system/bugbounty-scanner/cli.mjs submission-preflight "FINDING_ID"
 node system/bugbounty-scanner/cli.mjs submission-stats
 ```
+
+### Executor isolado de regressão
+
+`verify-regression --config=<arquivo.json>` não aceita um par de resultados
+declarado manualmente como prova. Ele clona um repositório **público do
+GitHub**, confirma que `parentCommit` é o parent real de
+`introducedCommit` e executa exatamente o mesmo comando nos dois checkouts.
+O comando precisa terminar com exit code zero e imprimir, em linha isolada,
+um e somente um destes marcadores:
+
+```text
+ZTO_RESULT=NOT_VULNERABLE
+ZTO_RESULT=VULNERABLE
+```
+
+Cada execução ocorre em Docker sem rede, sem variáveis secretas do host,
+com root filesystem/read-only mount do checkout, capabilities removidas e
+limites de PID, CPU, memória e tempo. O código é copiado para um `tmpfs`
+gravável dentro do contêiner; um harness local opcional pode ser montado
+read-only como `/harness`. Resultado faltante, contraditório, exit não-zero,
+timeout, parent incorreto ou `baseline != not_vulnerable` /
+`candidate != vulnerable` bloqueia a prova.
+
+Runtimes permitidos ficam numa allowlist versionada em
+`regression-sandbox.mjs` (`node22`, `python313`, `go127`, `jdk21`,
+`foundry`). O arquivo `test/fixtures/regression-smoke.json` é apenas um
+smoke test público da infraestrutura; a mudança de newline usada ali **não
+é um finding de segurança**. Para um finding real, use um harness específico
+e execute:
+
+```powershell
+node system/bugbounty-scanner/cli.mjs verify-regression --config="caminho\regression.json"
+```
+
+O `noveltyProof` retornado tem o formato aceito pelo gate anti-duplicate,
+mas ainda precisa ser combinado com busca pública recente e impacto
+comprovado. O executor prova a regressão; não prova ausência de report
+privado.
+
+### Busca pública de anterioridade
+
+`search-prior-art --config=<arquivo.json>` recebe `repository` no formato
+`owner/repo` e pelo menos três `queries`. Ele consulta pela API oficial do
+GitHub issues/PRs, mensagens de commits e advisories publicados do próprio
+repositório. Uma falha ou rate limit aborta toda a busca; nunca converte
+resultado parcial em “limpo”. Cada hit fica `candidate=true` e
+`disposition=unreviewed`, o que bloqueia o gate até revisão humana explícita
+como `ruled_out`.
+
+```json
+{
+  "repository": "owner/repo",
+  "queries": [
+    "função afetada efeito observável",
+    "source sink controle ausente",
+    "componente classe de fraqueza regressão"
+  ]
+}
+```
+
+```powershell
+node system/bugbounty-scanner/cli.mjs search-prior-art --config="caminho\prior-art.json"
+```
+
+A saída é só um `duplicateCheckDraft`: Hacktivity ou uma busca web
+independente continua obrigatória porque não há API pública que exponha
+reports privados de terceiros. Mesmo quando todas as fontes públicas vêm
+limpas, o status continua `private_unknown` até a prova de regressão ser
+anexada.
 
 `submission-preflight` é somente leitura e devolve `ready`, a razão, toda a
 evidência usada, o fingerprint e o histórico local de duplicates relevantes.
@@ -233,9 +302,42 @@ seguros; nas outras 4 linguagens, roda contra o código real de
 0 erros) sem quebrar e sem falso-positivo óbvio — ver
 `system/bugbounty-scanner/test/` (37 testes).
 
-Automação: tarefa do Windows Task Scheduler `ZeroToOne_BugBountyScanner`,
-diária às 9h — mesma tarefa cobre todos os estágios/linguagens, não há
-tarefa separada por linguagem ou plataforma.
+### Operação contínua, recuperação e observabilidade
+
+`install-service-tasks.ps1` instala duas tarefas independentes no Windows:
+
+- `ZeroToOne_BugBountyService`, ciclo a cada 5 minutos: sincroniza outcomes
+  do HackerOne a cada hora, roda um doctor do toolchain a cada 24 horas,
+  scan a cada 6 horas e discovery a cada 24 horas. Jobs pesados nunca se
+  sobrepõem e um lease impede duas instâncias.
+- `ZeroToOne_BugBountyWatchdog`, a cada 10 minutos: lê o heartbeat por outra
+  entrada do Task Scheduler e alerta via Telegram somente quando o estado
+  muda para indisponível ou volta a saudável.
+
+O estado é escrito atomicamente em `logs/bugbounty-runtime-state.json`;
+falhas usam backoff exponencial, ficam no ledger e provocam alerta. As
+tarefas reiniciam até três vezes, recuperam execução perdida, aceitam
+bateria, podem acordar o computador e são disparadas novamente no logon.
+Os logs giram em 10 MiB (`.log` e `.log.1`). As tarefas diárias antigas são
+apenas desabilitadas para evitar execução dupla, não apagadas. Estado atual:
+
+```powershell
+node system/bugbounty-scanner/cli.mjs runtime-status
+node system/bugbounty-scanner/cli.mjs doctor
+```
+
+Instalação/reinstalação idempotente:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File system/bugbounty-scanner/install-service-tasks.ps1
+```
+
+As tarefas usam o usuário interativo atual para preservar acesso seguro às
+credenciais do usuário e à chave Git; portanto executam continuamente
+enquanto essa sessão estiver logada. Rodar deslogado exigiria armazenar uma
+senha no Task Scheduler ou migrar segredos/SSH para uma conta de serviço —
+isso não é feito automaticamente porque aumentaria materialmente a
+superfície de exposição.
 
 ## Prova de conceito executável (Solidity, via Foundry fork local)
 Diferente de só ler código, o agente de nuvem agora escreve e RODA um

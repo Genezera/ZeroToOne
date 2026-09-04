@@ -9,6 +9,7 @@ import {
   recordDuplicateCheck, latestDuplicateCheck,
   recordReport, latestReport, recordPlatformOutcome, latestPlatformOutcome, stateCounts,
   recordImpactAssessment, latestImpactAssessment, listSubmissions,
+  recordSubmission,
   exportSubmissionsToJsonl, importSubmissionsFromJsonl,
   exportFindingsToQueueLines, closeDb, LEDGER_SCHEMA_VERSION,
 } from '../db.mjs';
@@ -341,6 +342,27 @@ test('submissions.jsonl torna todo o histórico de reports portátil, inclusive 
     assert.equal(listSubmissions(db2)[0].externalReportId, '777');
     assert.deepEqual(listSubmissions(db2)[0].findingIds, [SAMPLE.id]);
     closeDb(db2);
+  });
+});
+
+test('recordSubmission é idempotente quando sync remoto não trouxe mudança material', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const first = recordSubmission(db, {
+      platform: 'HackerOne', externalReportId: '42', program: 'P', state: 'duplicate',
+      updatedAt: '2026-09-01T00:00:00Z',
+    });
+    const second = recordSubmission(db, {
+      platform: 'HackerOne', externalReportId: '42', program: 'P', state: 'duplicate',
+    });
+    assert.equal(second.updatedAt, first.updatedAt, 'poll sem mudança não deve reescrever timestamp nem arquivo portátil');
+    const changed = recordSubmission(db, {
+      platform: 'HackerOne', externalReportId: '42', program: 'P', state: 'resolved',
+      updatedAt: '2026-09-02T00:00:00Z',
+    });
+    assert.equal(changed.state, 'resolved');
+    assert.equal(changed.updatedAt, '2026-09-02T00:00:00Z');
+    closeDb(db);
   });
 });
 
