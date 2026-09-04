@@ -1090,3 +1090,18 @@ Leitura profunda proativa desta rodada direcionada a
 `vercel-labs/skills` (ver NOTES.md de Vercel Open Source: 3 arquivos
 completos -- `providers/wellknown.ts`, `remove.ts`, `local-lock.ts` --
 sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+via `curl -m 8`: `CONNECT tunnel failed, response 403` (mesma
+categoria de bloqueio de rede do agent-proxy de todas as rodadas
+anteriores, só a mensagem de erro específica mudou) -- não confirmável
+se o deployer StackingDAO publicou contrato novo; os 15 contratos
+Clarity já cobertos seguem sem mudança conhecida, nenhum arquivo novo
+candidato neste programa. Trabalho desta rodada concentrado em revisar
+os 2 findings `scope_verified` pendentes (nenhum deste programa) e
+leitura profunda proativa em `vercel/ai` (ver NOTES.md de Vercel Open
+Source). Nenhuma transição de estado neste programa.

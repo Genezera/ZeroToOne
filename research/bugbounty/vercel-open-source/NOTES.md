@@ -6906,3 +6906,78 @@ de rede de todas as rodadas anteriores — não confirmável se o deployer
 StackingDAO publicou contrato novo. `deep-read-log.json` atualizado
 (`vercel-labs/skills` +3, agora 20 no total). Nenhum achado novo,
 nenhuma transição de estado neste programa nesta rodada.
+
+## Rodada 2026-09-04 #14 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` lido por completo como passo zero, antes de
+qualquer clone/leitura: `Block Open Source`/`Circle BBP` seguem
+bloqueados, nenhum repo desses tocado. Nota separada: `Auth0 by Okta`
+segue `roeReviewNeeded:true`, não é um dos 4 programas desta missão,
+não tocado.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Antes de ir pra
+leitura profunda, revisei os 2 findings em `scope_verified` pendentes
+no board inteiro (não só deste programa): `OKG` (cardano key clamp) e
+o único deste programa
+(`vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`).
+Investiguei especificamente se este último poderia agora satisfazer o
+gate anti-duplicata (`duplicateCheckGate`, que exige prova de
+regressão verificada — bisecção entre commit introdutor e seu parent,
+com <=7 dias de idade) antes de tentar `human_ready`: clonei
+`vercel/workflow` (histórico completo) e rodei `git log
+--diff-filter=A -- packages/core/src/vm/index.ts` — o padrão
+`seedrandom(seed)`/`Math.random=rng` existe desde o PRIMEIRO commit
+deste arquivo (`4ca9a3edb`, 2025-10-23, "Introducing Workflow
+DevKit"), ~10 meses atrás — decisão de design fundacional, não
+regressão recente. `verifiedRegressionGate` falharia estruturalmente
+(idade >> 7 dias) mesmo com um `duplicateCheck` completo, então não
+investi nisso. Reasoning do finding atualizado (concatenado ao
+anterior, não substituído) documentando essa confirmação. Estado
+mantido em `scope_verified` deliberadamente — mesma categoria/limite
+estrutural do achado OKG cardano-key-clamp (código antigo e
+estrutural, não janela estreita de exposição nova). Relatório de
+rascunho já existente continua válido pra revisão humana direta.
+
+Leitura profunda proativa direcionada a `vercel/ai` (30 entradas
+prévias no log; sparse clone raso, sem conta/token). Candidatos
+selecionados por path (`auth|token|session|...`) e cruzados contra o
+log pra achar os ainda não lidos: 5 arquivos completos —
+
+- `packages/provider/src/realtime-model/v4/realtime-model-v4-client-secret.ts`
+  — só tipos (`RealtimeModelV4ClientSecretOptions`/`Result`), sem
+  lógica. Sem achado.
+- `packages/openai/src/realtime/openai-realtime-model.ts`
+  (`doCreateClientSecret` completo) — chama o endpoint real
+  `POST /realtime/client_secrets` da própria OpenAI, server-side, com
+  a API key real; devolve só o token efêmero pro browser.
+  `getWebSocketConfig` usa o protocolo `openai-insecure-api-key.$
+  {token}` documentado pela própria OpenAI para o token efêmero —
+  nunca a key real chega ao cliente. Sem achado.
+- `packages/google/src/realtime/google-realtime-model.ts`
+  (`doCreateClientSecret` completo) — chama `POST .../auth_tokens` da
+  Google server-side. Notei `uses: 0` (token multi-uso, sem limite de
+  quantas vezes pode abrir sessão) + `expireTime` ~30min além da
+  janela de abertura — ambos com rationale comentado no próprio
+  código (suportar reconnect de WebSocket sem quebrar). É ampliação
+  deliberada e documentada do raio de reuso do token efêmero exposto
+  ao browser, não um bug — mas fica anotado aqui como tradeoff de
+  design digno de reavaliação humana caso um dia se queira apertar
+  (token só abre sessão com o `bidiGenerateContentSetup` já fixado na
+  emissão, sem acesso a API Google mais ampla — não é bypass de
+  autorização). Sem achado reportável.
+- `packages/harness-acp/src/acp-auth.ts` (completo) — resolução de
+  modo de autenticação ACP (`direct` vs `ai-gateway`), lê
+  `AI_GATEWAY_API_KEY`/`VERCEL_OIDC_TOKEN` do env do processo local
+  (sem input de rede/atacante); digest sha256 usado só pra
+  identidade/cache de perfil, não decisão de segurança. Sem achado.
+- `packages/harness/src/v1/harness-v1-session.ts` (completo) — só
+  tipos/interface (`HarnessV1Session`, `HarnessV1StartOptions`), sem
+  lógica. Sem achado.
+
+`api.hiro.so` recheck (`curl -m 8`): `CONNECT tunnel failed, response
+403` — mesma categoria de bloqueio de rede de todas as rodadas
+anteriores, mensagem específica mudou. `deep-read-log.json` atualizado
+(`vercel/ai` +5, agora 35 no total). Nenhum achado novo nesta rodada;
+nenhuma transição de estado além da atualização de reasoning do
+finding `scope_verified` já existente (não é transição de estado, só
+documentação).
