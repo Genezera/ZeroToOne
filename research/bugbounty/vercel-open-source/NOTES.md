@@ -6981,3 +6981,60 @@ anteriores, mensagem específica mudou. `deep-read-log.json` atualizado
 nenhuma transição de estado além da atualização de reasoning do
 finding `scope_verified` já existente (não é transição de estado, só
 documentação).
+
+## Rodada 2026-09-04 #17 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` lido por completo como passo zero, antes de
+qualquer clone/leitura: `Block Open Source`/`Circle BBP` seguem
+bloqueados, nenhum repo desses tocado nesta rodada.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisitei os
+findings em estados avançados (`corroborated_static`/`reproduced_local`/
+`scope_verified`/`human_ready`) de todos os programas só para
+confirmar que nada mudou de forma acionável: os 2 itens deste programa
+(`vercel/next.js::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk`,
+`vercel/vercel::update-remix-run-dev.js::command_injection_risk`, mais os
+3 `semgrep_detect_child_process` em `mcp.ts` e o `timing_attack_risk` em
+`vercel/ai/harness/bridge/index.ts`) seguem em `corroborated_static` sem
+novidade; `vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`
+segue em `scope_verified` (já com rascunho de relatório existente,
+gate anti-duplicata confirmado inaplicável em rodada anterior por ser
+código fundacional de 10 meses, não regressão recente). Nenhuma ação
+nova necessária nestes.
+
+Leitura profunda proativa: como `vercel/vercel`, `nuxt/nuxt` e
+`nitrojs/nitro` já estão com cobertura heurística (auth/token/session/
+crypto/login/password/admin/permission/access) esgotada (clone raso +
+diff contra `deep-read-log.json` confirmou 0 candidato novo de
+substância nos três — só arquivos triviais como schema de exemplo/eval
+de teste sobraram em `vercel/vercel`), direcionei a `vercel/next.js`
+(sparse clone de `packages/next/src`) e `vercel/eve` (sparse clone de
+`packages/eve/src`), escolhendo o que realmente sobrava depois do mesmo
+diff:
+
+- `packages/next/src/server/app-render/get-script-nonce-from-header.tsx`
+  (completo) — `getScriptNonceFromHeader` só extrai o nonce de um header
+  CSP que a própria aplicação já gerou (não é input de terceiro),
+  procurando primeiro `script-src` depois `default-src`; nonce malformado
+  ou ausente retorna `undefined` (fail-open documentado: segue sem nonce
+  em vez de falhar a request). Sem achado.
+- `packages/next/src/client/components/styles/access-error-styles.ts`
+  — objeto CSS-in-JS estático para páginas de erro 401/403/404, sem
+  lógica. Sem achado.
+- `packages/eve/src/protocol/clear-session.ts` +
+  `compact-session.ts` + `reset-session.ts` (completos) — únicos 3
+  arquivos que faltavam ler diretamente das rotas `clear`/`compact`/
+  `reset` mencionadas na investigação já refutada de
+  `channel/session.ts` (rodada #9: "cancel/compact/clear/reset não
+  propagam auth, refutado — responsabilidade documentada do app
+  integrador"). Os 3 são só tipos/schemas Zod de resposta
+  (`ClearResponseSchema`/`CompactResponseSchema`/`ResetResponseSchema`),
+  nenhuma lógica de autorização ou de negócio neles — confirma
+  novamente, agora pela ponta oposta da cadeia, que a ausência de auth
+  explícita observada antes não está escondida nestes arquivos
+  específicos. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/next.js` +2, `vercel/eve` +1
+entrada cobrindo 3 arquivos). Nenhum achado novo nesta rodada, nenhuma
+transição de estado. `Block Open Source`/`Circle BBP` seguem fora de
+escopo desta sessão por política local (`program-policy.json`).

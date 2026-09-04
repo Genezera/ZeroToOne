@@ -1105,3 +1105,13 @@ candidato neste programa. Trabalho desta rodada concentrado em revisar
 os 2 findings `scope_verified` pendentes (nenhum deste programa) e
 leitura profunda proativa em `vercel/ai` (ver NOTES.md de Vercel Open
 Source). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #17 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. `api.hiro.so` não testado nesta rodada (sem
+necessidade — leitura profunda proativa foi direcionada a
+`vercel/next.js` e `vercel/eve`, ver NOTES.md de Vercel Open Source);
+os 15 contratos Clarity seguem 100% cobertos, sem arquivo novo
+candidato em StackingDAO. Nenhum achado, nenhuma transição de estado
+neste programa. `Block Open Source`/`Circle BBP` seguem fora de escopo
+desta sessão por política local (`program-policy.json`).

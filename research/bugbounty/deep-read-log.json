@@ -847,7 +847,8 @@
     "packages/eve/src/public/channels/slack/session-operations.ts (bindSlackSessionOperations -- auth() so aceita override explicito de auth (incl. null) do chamador interno, sem input externo nao confiavel; sem achado)",
     "packages/eve/src/execution/session-command-token.ts (sessionCommandHookToken deriva token determinístico eve:session:${sessionId}:inbox a partir do proprio sessionId, sem aleatoriedade -- rastreado ate uso interno em workflow-runtime.ts/workflow-entry.ts, nao exposto como webhook publico separado; sem achado isolado)",
     "packages/eve/src/execution/turn-cancellation-token.ts (turnCancellationHookToken = `${controlToken}:cancel`, mesmo padrao deterministico; sem achado isolado)",
-    "packages/eve/src/channel/session.ts (achado inicial: cancel/compact/clear/reset nao propagam auth no comando, ao contrario de send/respond -- rastreado ate as rotas HTTP reais em eve-channel/index.ts, refutado apos ler packages/eve/README.md L15/176-178: autorizacao por-sessao e explicitamente responsabilidade documentada do app integrador, nao do framework; nenhuma rota tem binding automatico de dono por sessionId, incl. send/respond. Nao e bug de framework, ver NOTES.md Vercel Open Source rodada #9)"
+    "packages/eve/src/channel/session.ts (achado inicial: cancel/compact/clear/reset nao propagam auth no comando, ao contrario de send/respond -- rastreado ate as rotas HTTP reais em eve-channel/index.ts, refutado apos ler packages/eve/README.md L15/176-178: autorizacao por-sessao e explicitamente responsabilidade documentada do app integrador, nao do framework; nenhuma rota tem binding automatico de dono por sessionId, incl. send/respond. Nao e bug de framework, ver NOTES.md Vercel Open Source rodada #9)",
+    "packages/eve/src/protocol/clear-session.ts + compact-session.ts + reset-session.ts (completo -- so tipos/schemas Zod de resposta das rotas clear/compact/reset (ClearResponseSchema/CompactResponseSchema/ResetResponseSchema), sem nenhuma logica de autorizacao ou de negocio; confirma que a ausencia de auth explicita observada em channel/session.ts nao esta nem aqui -- e mesmo assim design do app integrador, nao lacuna destes arquivos. Sem achado)"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",
@@ -904,7 +905,9 @@
     "packages/next/src/client/components/builtin/unauthorized.tsx (so renderiza HTTPAccessErrorFallback status=401, sem logica. Sem achado)",
     "packages/next/src/client/components/dev-root-http-access-fallback-boundary.tsx (guard dev-only que lanca erro se notFound()/forbidden()/unauthorized() usado em root layout; sem logica de autorizacao real. Sem achado)",
     "packages/next/src/server/app-render/dynamic-access-async-storage-instance.ts + dynamic-access-async-storage.external.ts (so wiring de AsyncLocalStorage pra abortController de dynamic access, sem logica propria, sem achado)",
-    "packages/next/src/telemetry/events/session-stopped.ts (payload de telemetria CLI -- versoes/duracao/flags, nenhum PII ou segredo, sem achado)"
+    "packages/next/src/telemetry/events/session-stopped.ts (payload de telemetria CLI -- versoes/duracao/flags, nenhum PII ou segredo, sem achado)",
+    "packages/next/src/server/app-render/get-script-nonce-from-header.tsx (getScriptNonceFromHeader -- so extrai o nonce de um header CSP local via regex, procurando script-src depois default-src; fonte do header e o proprio response da aplicacao, nao input de terceiro; fail-open documentado (retorna undefined em nonce malformado/ausente, request continua sem nonce em vez de falhar) -- comportamento seguro por padrao, sem achado)",
+    "packages/next/src/client/components/styles/access-error-styles.ts (so objeto CSS-in-JS estatico p/ paginas de erro 401/403/404, sem logica, sem achado)"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",
