@@ -6395,3 +6395,52 @@ programa nesta rodada; achado `scope_verified` de `vercel/workflow`
 (`predictable_hook_token_seed_risk`) segue preso na mesma limitação
 estrutural já documentada (duplicate-check gate exige acesso de rede
 bloqueado neste ambiente).
+
+## Rodada 2026-09-04 (cloud, push trigger)
+
+`list-pending` vazio (nenhum finding em `candidate`). Rodei
+`list-deep-read-candidates.mjs` (com `GITHUB_TOKEN` do ambiente
+temporariamente desconsiderado nesta chamada só -- o proxy deste
+ambiente cloud injeta um `GITHUB_TOKEN` placeholder que o
+`raw.githubusercontent.com` rejeita com 404 quando enviado como
+`Authorization: Bearer`, então a chamada anônima sem esse header foi o
+jeito de fazer a checagem mecânica funcionar; nenhuma mudança de código
+feita, só a variável de ambiente omitida pra essa invocação pontual)
+pra escolher os próximos 3 arquivos de leitura profunda dentro do
+escopo dos 4 programas desta rodada (StackingDAO + Vercel Open Source
+liberados; Block Open Source e Circle BBP excluídos manualmente, já
+que o dataset público usado pelo script não reconhece os repos do
+Block Open Source -- afterpay/*, cashapp/*, square/wire -- sob esse
+nome, então eles caem em "sem programa reconhecido" em vez de
+"bloqueado"; tratei como bloqueado mesmo assim por conhecimento própio
+do programa via `program-policy.json`). StackingDAO conferido à mão
+contra `targets.mjs`: os 13 contratos curados já estão todos cobertos
+em `deep-read-log.json` (15 arquivos, incluindo `stacker-4`/`stacker-5`
+além dos curados) -- nada novo pra ler lá.
+
+Escolhidos 3 arquivos ainda não lidos de `vercel/ai` (0% cobertura
+reportada pela ferramenta, prioridade auth/session/permission no
+caminho), via clone raso local (`git clone --depth 1
+--filter=blob:none`, descartado ao final):
+
+- `packages/harness-acp/src/v1/bridge/permission-controller.ts` --
+  `createACPPermissionController`: `request.sessionId` comparado
+  contra a sessão ativa antes de qualquer aprovação;
+  `shouldAutoApprove` libera automaticamente `kind` `read`/`search`/
+  `think`/`fetch` mesmo fora dos modos `allow-all`/`allow-edits` --
+  comportamento de design da matriz de permissão do harness (a
+  intenção documentada dos próprios nomes de modo), não bypass de
+  checagem já existente. Sem achado.
+- `packages/gateway/src/errors/parse-auth-method.ts` --
+  `parseAuthMethod` só decodifica um header informativo de *resposta*
+  do AI Gateway (indica qual método de auth foi usado), não é decisão
+  de autenticação nem consome input de terceiro numa fronteira de
+  confiança. Sem achado.
+- `packages/harness-acp/src/v1/bridge/session-lifecycle.ts` --
+  `resolveACPSessionRestorationMethod`/`restoreACPBridgeSession`: o
+  `sessionId` vem do chamador interno do bridge (não de rede), e
+  resume/load conversa com um processo ACP local via stdio -- sem
+  fronteira de auth cruzada neste arquivo. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/ai` +3 entradas, agora 30 no
+total). Nenhum finding novo, nenhuma transição de estado nesta rodada.

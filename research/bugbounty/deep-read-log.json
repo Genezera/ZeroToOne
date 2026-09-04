@@ -744,7 +744,10 @@
     "packages/harness/src/v1/harness-v1-credential-forwarding.ts",
     "packages/harness/src/utils/ai-gateway-auth.ts",
     "packages/harness/src/utils/authentication-environment.ts",
-    "packages/harness-claude-code/src/claude-code-auth.ts"
+    "packages/harness-claude-code/src/claude-code-auth.ts",
+    "packages/harness-acp/src/v1/bridge/permission-controller.ts (createACPPermissionController -- request.sessionId comparado contra sessionId ativo antes de qualquer aprovação; shouldAutoApprove sempre libera kind read/search/think/fetch mesmo fora de allow-all/allow-edits -- comportamento de design da matriz de permissão do harness, documentado no próprio nome dos modos, não bypass de checagem existente. Sem achado)",
+    "packages/gateway/src/errors/parse-auth-method.ts (parseAuthMethod -- só decodifica header informativo de RESPOSTA do AI Gateway (qual método de auth foi usado), não é decisão de autenticação nem input de terceiro em fronteira de confiança. Sem achado)",
+    "packages/harness-acp/src/v1/bridge/session-lifecycle.ts (resolveACPSessionRestorationMethod/restoreACPBridgeSession -- sessionId vem do chamador interno do bridge, não de rede; resume/load fala com processo ACP local via stdio, sem fronteira de auth cruzada aqui. Sem achado)"
   ],
   "vercel/async-sema": [
     "src/index.ts"
