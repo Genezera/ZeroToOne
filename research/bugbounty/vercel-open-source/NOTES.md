@@ -7038,3 +7038,58 @@ diff:
 entrada cobrindo 3 arquivos). Nenhum achado novo nesta rodada, nenhuma
 transição de estado. `Block Open Source`/`Circle BBP` seguem fora de
 escopo desta sessão por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #18 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisitei os 2 findings
+`scope_verified` (`vercel/workflow::predictable_hook_token_seed_risk` e
+`OKG::cardano key clamp`) e o único `human_ready`
+(`Block Open Source::wire-schema` — legado, nada de novo a fazer, estado
+já terminal aguardando revisão humana): nenhum mudou, gate anti-duplicata
+segue corretamente inaplicável nos dois `scope_verified` (código
+fundacional antigo, não regressão recente), rascunho de relatório do
+`vercel/workflow` continua válido em
+`research/bugbounty/reports/vercel-workflow-predictable-hook-token.md`.
+
+Leitura profunda proativa: clonei `vercel/eve` (raso, HEAD atual) e
+diffei a lista de arquivos `.ts`/`.tsx` de produção (excluindo
+`.test.`/`.spec.`/`test/`/`tests/`) que casam com as palavras-chave de
+prioridade (auth/session/crypto/token/login/password/admin/permission/
+access) contra `deep-read-log.json` — sobraram 195 candidatos não lidos,
+maioria arquivos de eval/fixture E2E (baixo valor: fixtures de teste do
+próprio repo, não superfície de produto) ou templates de exemplo em
+`apps/docs/registry/`/`apps/frameworks/next/` (better-auth boilerplate
+de exemplo, não código de framework). Escolhi 3 arquivos de produção real
+ainda não lidos:
+
+- `packages/eve/src/harness/session-limit-enforcement.ts` (completo) —
+  `applySessionLimitContinuation`/`enforceSessionUsageLimit` são política
+  de orçamento de tokens/custo do harness (grant/park/fail), não
+  fronteira de autorização; a decisão grant/decline já chega resolvida
+  via continuation token tratado alhures. Sem achado.
+- `packages/eve/src/execution/session-command-inbox.ts` (completo) —
+  `createSessionCommandInbox` multiplexa hooks `stable`/`continuation`/
+  `authorization` por token, mas não GERA nem valida o token aqui
+  (`claimHookOwnership`/`createHook` fazem isso alhures — mesma raiz já
+  coberta pelo achado separado `predictable_hook_token_seed_risk` em
+  `vercel/workflow`, `scope_verified` acima); `setAuthorizationWindow` só
+  controla QUANDO um read de callback de autorização já resolvido
+  aparece na fila multiplexada (ordem de entrega), não decide se é
+  legítimo. Sem achado isolado neste arquivo.
+- `packages/eve/src/execution/wire/session-inbox-wire.ts` (completo) —
+  `decode()` do payload persistido no hook durable: cadeia de migração
+  de versão v0→v6 com checagem de `version` numérica e detecção de
+  shape-mismatch por versão declarada (`containsCurrentTaskMessages`
+  bloqueia um payload de versão nova sendo aceito sob uma versão antiga
+  declarada — proteção deliberada contra confusão de versão). Campos
+  `auth`/`caller` só são repassados através do decode, não validados
+  aqui — validação de autorização é responsabilidade do consumidor,
+  mesmo padrão já documentado em `channel/session.ts` (rodada #9). Sem
+  achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`). Nenhum
+achado novo nesta rodada, nenhuma transição de estado. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
