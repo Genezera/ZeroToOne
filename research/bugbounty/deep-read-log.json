@@ -1099,7 +1099,10 @@
     "coins/ton/ton/wallet/seed.go",
     "coins/eos/signer.go (Signer.Sign/SigDigest -- SHA256(chainID||packedTx||SHA256(CFD)) por spec EOS, delega geração de assinatura pra github.com/eoscanada/eos-go/ecc (lib externa auditada), sem chainID/payload controlável por atacante substituindo o real. Sem achado)",
     "coins/tezos/types/key.go + coins/tezos/types/crypto.go (GenerateKey/Sign/ecSign/decryptPrivateKey -- vendored de blockwatch/tzgo (copyright Blockwatch Data Inc.); ecdsa.Sign com crypto/rand.Reader por assinatura + normalização low-S; decryptPrivateKey usa PBKDF2-SHA512 + NaCl secretbox, esquema padrão do tezos-client. GenerateKey(KeyTypeBls12_381) deixa Data nil sem erro -- mas IsValid() já rejeita corretamente (SkHashType().Len()==32 != len(nil)==0) e Sign() pra Bls12_381 retorna ErrUnknownKeyType explicitamente (TODO não implementado) -- feature incompleta mas fail-closed, não bypass. Sem achado)",
-    "coins/nervos/crypto/signature.go (SignatureData.ToBytes -- só serialização R||S||V-27 pro formato Ethereum, sem lógica de assinatura/validação aqui. Sem achado)"
+    "coins/nervos/crypto/signature.go (SignatureData.ToBytes -- só serialização R||S||V-27 pro formato Ethereum, sem lógica de assinatura/validação aqui. Sem achado)",
+    "coins/cardano/crypto/key.go (NewXPrvKeyFromEntropy -- ACHADO REAL: mascara de clamp errada 0x1f em vez de 0x7f no byte 31, quebra CIP-3/Icarus em ~50% dos mnemonics; ver finding OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding, chegou a scope_verified, ver NOTES.md rodada 2026-09-04 #3)",
+    "coins/cardano/crypto/derive.go (Derive() de XPrvKey/XPubKey -- confirma que o clamp errado de key.go se propaga sem correção por toda a árvore de derivação HD, não é ponto de mitigação. Sem achado isolado aqui)",
+    "coins/cardano/credential.go (StakeCredential/NewKeyCredential/NewScriptCredential/MarshalCBOR/UnmarshalCBOR -- serialização CBOR e hash blake224 padrão, sem lógica de derivação/assinatura. Sem achado)"
   ],
   "auth0/auth0-java": [
     "src/main/java/com/auth0/client/auth/RSAClientAssertionSigner.java",
