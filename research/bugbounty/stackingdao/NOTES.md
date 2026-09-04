@@ -1195,3 +1195,18 @@ consecutivas. Leitura profunda proativa desta rodada direcionada a
 `sveltejs/svelte` (ver NOTES.md de Vercel Open Source: `OnDirective.js`,
 `reactivity/url.js`, `internal/server/hydratable.js`, sem achado).
 Nenhum achado novo, nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #28 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` bloqueados, `check-program` confirmado --
+nenhum tocado). `list-pending` global = 34, 100% de programas fora de
+escopo (30 Auth0, 4 Circle BBP). `api.hiro.so` recheck via
+`curl -m 8`: `connect_rejected` no agent-proxy (`api.hiro.so:443`),
+mesmo padrão de dezenas de rodadas consecutivas -- não confirmável se
+o deployer publicou contrato novo; os 15 contratos Clarity já cobertos
+seguem sem mudança conhecida, nenhum arquivo novo candidato neste
+programa. Leitura profunda proativa desta rodada direcionada de novo a
+`sveltejs/svelte` (ver NOTES.md de Vercel Open Source: 3 arquivos
+novos -- `decode_sourcemap.js`, `custom-element.js`, `bindings/
+input.js` --, sem achado). Nenhuma transição de estado neste programa.
