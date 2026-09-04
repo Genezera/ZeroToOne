@@ -6444,3 +6444,48 @@ caminho), via clone raso local (`git clone --depth 1
 
 `deep-read-log.json` atualizado (`vercel/ai` +3 entradas, agora 30 no
 total). Nenhum finding novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #2 (cloud, push trigger -- gatilho é o próprio
+commit desta rodada anterior, #10)
+
+`list-pending` vazio de novo. Confirmado no `program-policy.json` antes
+de tocar em qualquer repositório (Block Open Source e Circle BBP
+seguem `aiResearchBanned`/`blocked` -- nem clonados, nem lidos nesta
+rodada). `list-deep-read-candidates.mjs` rodado com `GITHUB_TOKEN`
+omitido (mesmo workaround da rodada anterior -- o proxy injeta um
+placeholder que `raw.githubusercontent.com` rejeita como
+`Authorization: Bearer`); confirma StackingDAO 15/15 já coberto
+(nada novo pra ler lá) e `vercel/workflow` como o próximo candidato
+Vercel Open Source com menor cobertura (25 arquivos lidos, 2%) depois
+de excluir manualmente os repositórios fora do escopo desta rodada
+(Kubernetes/Plaid/Auth0/OKX/Slack/Kiwi.com não fazem parte dos 4
+programas desta rodada de hoje).
+
+Clone raso de `vercel/workflow` (`git clone --depth 1
+--filter=blob:none`, descartado ao final). 3 arquivos novos, escolhidos
+por julgamento próprio (não regex -- nenhum tinha auth/session/token/
+etc. literal no caminho, mas todos tocam a mesma superfície temática do
+achado já existente de `predictable_hook_token_seed_risk`: quem pode
+"possuir"/autenticar uma operação sobre um run):
+
+- `packages/core/src/runtime/step-ownership.ts` -- ownership de step é
+  ownership de MENSAGEM DE FILA entre workers internos do mesmo
+  processo de execução (via `ownerMessageId` carimbado em
+  `step_started`), não uma fronteira de autorização de usuário/tenant.
+  Sem achado.
+- `packages/world-vercel/src/events-v4.ts` -- cliente HTTP/CBOR do
+  protocolo de eventos v4 (POST/LIST/batch). Autenticação é resolvida
+  por `getHttpConfig`/`baseHeaders` fora deste arquivo; o arquivo em si
+  só serializa/desserializa frames e trata erros de transporte, não
+  toma nenhuma decisão de quem-pode-o-quê. Sem achado.
+- `packages/world-vercel/src/ws-transport.ts` -- transporte WS: bearer
+  OIDC (`@vercel/oidc`) resolvido uma vez por socket no handshake de
+  upgrade (`resolveUpgradeHeaders`), com guarda explícita contra
+  reconectar repetindo um token já rejeitado em `auth_expiry` (evita
+  queimar o orçamento de tentativas com um 401 previsível). Design de
+  auth-por-conexão parece correto; nenhuma fronteira sem verificação
+  encontrada. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/workflow` +3 entradas, agora
+28 no total). Nenhum finding novo, nenhuma transição de estado nesta
+rodada.

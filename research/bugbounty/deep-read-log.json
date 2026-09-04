@@ -1032,6 +1032,9 @@
     "packages/cli/evals/setup/auth-and-config.ts"
   ],
   "vercel/workflow": [
+    "packages/core/src/runtime/step-ownership.ts (isStepOwnershipActive/stepLeaseRemainingSeconds/backstopIdempotencyKey/hasPendingStepOwnedByMessage -- ownership de mensagem de fila entre workers internos, nao fronteira de autorizacao de usuario; sem achado)",
+    "packages/world-vercel/src/events-v4.ts (cliente HTTP/CBOR do protocolo de eventos v4 -- auth via getHttpConfig/baseHeaders do lado do chamador, arquivo nao decide autenticacao, so serializa/desserializa frames; sem achado)",
+    "packages/world-vercel/src/ws-transport.ts (WsEventsTransport -- bearer OIDC via @vercel/oidc injetado no handshake de upgrade, uma vez por socket, com refresh em auth_expiry e guarda contra reconectar com token repetido; sem achado)",
     "packages/core/src/encryption.ts",
     "packages/core/src/sealed-box.ts",
     "packages/core/src/runtime/deployment-guard.ts",
