@@ -461,3 +461,47 @@ comuns de campo, não lógica de autenticação real):
 `deep-read-log.json` atualizado (`kubernetes/cloud-provider` novo, 3
 arquivos). Nenhum achado novo, nenhuma transição de estado nesta
 rodada -- resultado normal e válido.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open Source`/
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado. Também notado
+`Auth0 by Okta` com `roeReviewNeeded` (flag de processo de rodada
+anterior, mesma plataforma Bugcrowd do Block Open Source) -- tratado com
+cautela extra, `auth0/auth0-java` não foi escolhido como alvo nesta
+rodada. `migrate-to-v2.mjs` + `list-pending` global = 0.
+
+Também revisado (sem alteração) o estado geral da fila via
+`pipeline-status`: os dois achados travados de Block Open Source
+(`js_injection_unescaped_token_risk` em `corroborated_static` e
+`Root.kt::DirectoryRoot.resolve::path_traversal_risk` em `human_ready`)
+seguem intocados, como esperado -- nenhuma ação tomada sobre eles nesta
+rodada (não avançam, não são revertidos, apenas confirmados como
+"não tocar").
+
+Leitura profunda proativa: mais 2 arquivos de `kubernetes/cloud-provider`
+(clone raso público, mesmo repo de rodadas anteriores):
+
+- `controllers/service/controller.go` (`Controller.syncLoadBalancerIfNeeded`/
+  `ensureLoadBalancer`/`addFinalizer`/`removeFinalizer`/`patchStatus`):
+  loop de reconciliação padrão do service controller; toda lógica
+  sensível (validação de `LoadBalancerSourceRanges`, `ExternalIPs`, etc.)
+  é delegada ao `balancer.EnsureLoadBalancer` específico de cada cloud
+  provider, que não vive neste repo. Finalizer add/remove e patchStatus
+  usam só API padrão do client-go contra o próprio objeto Service, sem
+  trust boundary novo. Sem achado.
+- `controllers/nodelifecycle/node_lifecycle_controller.go`
+  (`CloudNodeLifecycleController.MonitorNodes`/`getProviderID`/
+  `shutdownInCloudProvider`/`ensureNodeExistsByProviderID`):
+  `getProviderID` confia em `node.Spec.ProviderID` se já setado no
+  objeto Node, sem re-verificar contra o cloud provider -- superfície já
+  conhecida e documentada pela comunidade k8s (mitigada pelo
+  `NodeRestriction` admission plugin, que impede o kubelet de setar o
+  `ProviderID` de outro node), não um bug novo introduzido aqui; nenhuma
+  lógica de auth/token neste arquivo, só orquestração de delete/taint
+  baseada em `InstanceExists`/`InstanceShutdown` do cloud provider. Sem
+  achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cloud-provider`, +2
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada
+-- resultado normal e válido.
