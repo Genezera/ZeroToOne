@@ -7747,3 +7747,152 @@ tratamento especial de path traversal aqui. Sem achado nos 3 arquivos.
 `deep-read-log.json` atualizado (vercel/turborepo agora com 28 arquivos
 lidos nesta missão). Nenhuma transição de estado em nenhum programa
 nesta rodada.
+
+## Rodada 2026-09-04 #31 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` lido/checado como passo zero (`check-program`
+confirmou `Block Open Source` e `Circle BBP` bloqueados; nenhum repo
+desses dois tocado -- nem clone, nem leitura, nem grep de nome de
+arquivo). `migrate-to-v2.mjs` + `list-pending` global = 34 candidatos,
+100% de programas fora do escopo desta missão (30 Auth0 by Okta -- nem
+um dos 4 programas da missão, e mesmo assim confirmado bloqueado no
+policy file --, 4 Circle BBP). Os 5 achados `corroborated_static` já
+existentes deste programa seguem sem evidência nova (mesma conclusão de
+dezenas de rodadas anteriores); nenhuma transição tentada.
+
+Leitura profunda proativa concluiu a exploração do módulo
+`turbo boundaries` do `vercel/turborepo` iniciada na rodada #30 (clone
+raso público `git clone --depth 1 --filter=blob:none --sparse`,
+removido do scratchpad ao final): achei o crate real de enforcement
+(`turborepo-boundaries`, referenciado por
+`turborepo-lib/src/boundaries/mod.rs`) e li os 3 arquivos que faltavam:
+
+- `src/config.rs` -- só a struct serde/deserializable de configuração
+  (`BoundariesConfig`/`Rule`/`Permissions`, allow/deny de tags). Sem
+  lógica de enforcement, puro schema. Sem achado.
+- `src/tags.rs` (949 linhas, incl. testes) -- `validate_relation`/
+  `check_package_tags`: motor de matching allow/deny de tags contra
+  dependências/dependentes transitivos do grafo de pacotes. Modelo de
+  ameaça errado para bug bounty: é um linter de arquitetura rodado pelo
+  próprio desenvolvedor contra o próprio monorepo em build-time
+  (`turbo boundaries`), sem input de terceiro/untrusted -- produz só
+  diagnóstico (erro de CI), nunca controla acesso em runtime. Mesmo se
+  o matching tivesse um bypass, não haveria vítima (o "atacante" seria
+  o próprio dono do repo). Sem achado reportável.
+- `src/imports.rs` (1158 linhas, incl. testes) -- `check_import`/
+  `check_file_import`: resolve import relativo e verifica se o caminho
+  resolvido sai do diretório do pacote via `relation_to_path` (nota no
+  código: deliberadamente não usa `contains`, que panica com excesso de
+  `..`). Comentários mostram hardening consciente contra falsos
+  positivos de paths gerados por ferramentas (ex.
+  `../../../node_modules/@sveltejs/kit/...` do SvelteKit). Mesmo modelo
+  de ameaça de `tags.rs` -- lint de dev-time sobre código do próprio
+  usuário, não fronteira de confiança real. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/turborepo`: +3 arquivos,
+módulo `boundaries` agora coberto por completo). Para StackingDAO: ver
+`research/bugbounty/stackingdao/NOTES.md` (`api.hiro.so` continua
+bloqueado pelo agent-proxy, `CONNECT tunnel failed, response 403`; 15
+contratos Clarity seguem 100% cobertos, sem mudança). Nenhum achado
+novo, nenhuma transição de estado em nenhum programa nesta rodada.
+
+## Rodada 2026-09-04 #32 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`check-program`
+confirmou `Block Open Source` e `Circle BBP` bloqueados; nenhum repo
+desses dois tocado). `list-pending` global = 34, 100% de programas fora
+do escopo desta missão (30 Auth0 by Okta -- também bloqueado no policy
+file --, 4 Circle BBP). Nenhum candidato novo neste programa.
+
+Leitura profunda proativa desta rodada continuou a investigação já
+aberta do achado `path_traversal_arbitrary_file_read_risk` em
+`vercel-labs/agent-skills` (`corroborated_static`, confidence média),
+lendo os 2 arquivos que faltavam (clone raso público via
+`git clone --depth 1 --filter=blob:none --sparse`, removido do
+scratchpad ao final):
+
+- `skills/vercel-optimize/lib/repo-root.mjs` -- confirma que o mesmo
+  padrão de falta de containment aparece também na auto-detecção de
+  `repoRoot` (`pickProbeFile`/`detectRepoRoot` usam o mesmo campo
+  potencialmente controlado pelo sub-agente LLM como probe file, sem
+  checagem de que o resultado do walk-up fique dentro de um diretório
+  esperado). Não é o sink de leitura em si, mas reforça que a falta de
+  contenção é um padrão recorrente no módulo.
+- `references/verification.md` (lido por completo) -- não menciona em
+  lugar nenhum path traversal/sandboxing de `repoRoot`; nenhuma
+  mitigação documentada, reforça que o gap não é comportamento
+  conhecido/aceito.
+
+Reler `repoPaths()` (verify-claim.mjs L1234-1244) com mais atenção
+revelou um segundo vetor, mais direto que o traversal relativo já
+documentado: `if (isAbsolute(file)) return [file];` devolve um path
+ABSOLUTO da claim sem NUNCA fazer join com `repoRoot` -- não depende de
+contar `../`, só exige que o sub-agente LLM emita
+`affectedFiles[0]`/`findingRefs[0]` como path absoluto (ex.
+`~/.ssh/id_rsa`, `~/.aws/credentials`). Finding atualizado via
+`update-finding` com esse achado adicional e os 2 arquivos novos em
+`filesRead`. Tentativa de `transition ... reproduced_local` recusada
+como esperado (`"precisa de pelo menos uma validação com result=pass"`)
+-- mesma limitação de sempre (sem validador local para JS/TS), achado
+permanece limitado a `corroborated_static`; confidence mantida em
+média (mecanismo de código 100% confirmado, vetor de indução real via
+prompt injection contra o sub-agente ainda não demonstrado). Ainda em
+aberto para rodada futura, se necessário: `references/candidates.md` e
+`references/scoring.md` deste mesmo skill, não lidos nesta rodada.
+
+`deep-read-log.json` atualizado (`vercel-labs/agent-skills`: +1
+arquivo). Para StackingDAO: ver
+`research/bugbounty/stackingdao/NOTES.md` (`api.hiro.so` recheck via
+`curl -m 10`: `CONNECT tunnel failed, response 403`, mesmo bloqueio de
+rede de dezenas de rodadas consecutivas; 15 contratos Clarity seguem
+100% cobertos, sem mudança). Nenhum achado novo, nenhuma transição de
+estado além da tentativa recusada documentada acima.
+
+## Rodada 2026-09-04 #34 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` lido/checado como passo zero (`check-program`
+confirmou `Block Open Source`, `Circle BBP` e `Auth0 by Okta`
+bloqueados; nenhum repo desses três tocado -- nem clone, nem leitura,
+nem grep de nome de arquivo). `migrate-to-v2.mjs` + `list-pending`
+global = 34 candidatos, 100% de programas fora do escopo desta missão
+(30 Auth0 by Okta, 4 Circle BBP). O achado `path_traversal_arbitrary_file_read_risk`
+permanece o único `corroborated_static` deste programa sem evidência
+nova capaz de destravar `reproduced_local` (mesma limitação de sempre:
+sem validador local para JS/TS).
+
+Leitura profunda proativa: fechei as duas pendências abertas na rodada
+#32 nesse mesmo achado -- `references/candidates.md` e
+`references/scoring.md` de `vercel-labs/agent-skills/skills/vercel-optimize`
+(clone raso público via `git clone --depth 1 --filter=blob:none --sparse`,
+removido do scratchpad ao final). `candidates.md` (gerado por
+`scripts/build-docs.mjs`) documenta os 15 gates de threshold puro que
+decidem candidatos de otimização de custo/performance (build minutes,
+cold start, CWV, etc.) -- sem relação com path/file handling. `scoring.md`
+documenta o Step 4 do pipeline (quality floor, magnitude de custo em
+buckets, template de relatório) -- também sem menção a sandboxing de
+`repoRoot`. Nenhum dos dois altera a análise já registrada; achado
+atualizado via `update-finding` só para documentar o fechamento dessas
+pendências, confidence mantida em média. Com isso, todas as
+`references/` relevantes do skill `vercel-optimize` estão cobertas.
+
+Como esse achado está de fato esgotado (sem validador local para
+avançar e sem mais arquivos óbvios pra ler), a leitura profunda
+proativa migrou pra área ainda não fechada em `vercel/flags`: li 3
+arquivos não cobertos anteriormente --
+`packages/flags/src/spec-extension/adapters/headers.ts` (adapter de
+`Headers` copiado do Next.js, só normaliza case de header keys via
+`Proxy`, sem lógica de auth), `packages/vercel-flags-core/src/controller/polling-source.ts`
+(orquestra polling por `setInterval`, delega auth/fetch pra
+`fetch-datafile.ts` já coberto em rodada anterior) e
+`packages/vercel-flags-core/src/controller-fns.ts` (funções `evaluate`/
+`bulkEvaluate` que só leem o datafile já autenticado via
+`controller.read()` e avaliam localmente -- nenhuma fronteira de
+confiança nova). Sem achado nos 3.
+
+`deep-read-log.json` atualizado (`vercel-labs/agent-skills`: +2
+arquivos; `vercel/flags`: +3 arquivos). Para StackingDAO: ver
+`research/bugbounty/stackingdao/NOTES.md` (`api.hiro.so` recheck via
+`curl -m 10`: `CONNECT tunnel failed, response 403`, mesmo bloqueio de
+rede de dezenas de rodadas consecutivas; 15 contratos Clarity seguem
+100% cobertos, sem mudança). Nenhum achado novo, nenhuma transição de
+estado nesta rodada.
