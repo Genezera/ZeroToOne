@@ -1153,3 +1153,32 @@ contrato novo; os 15 contratos Clarity já cobertos seguem sem mudança
 conhecida, nenhum arquivo novo candidato neste programa. Leitura
 profunda proativa desta rodada direcionada a `vercel/eve` (ver NOTES.md
 de Vercel Open Source). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #25 (leitura profunda proativa, escopo restrito a StackingDAO + Vercel Open Source)
+
+`program-policy.json` checado como passo zero (rodada explicitamente
+restrita a estes dois programas). Os 15 contratos Clarity seguem 100%
+cobertos, sem candidato novo em `deep-read-log.json`. Única tentativa
+desta rodada de checar deploy de contrato novo:
+`curl -m 8 https://api.hiro.so/...` -- bloqueado de novo (exit 56,
+connection failure no CONNECT do agent-proxy), mesmo padrão de ~10+
+rodadas consecutivas. Leitura profunda proativa desta rodada
+direcionada a `vercel/flags` (ver NOTES.md de Vercel Open Source, sem
+achado). Nenhum achado novo, nenhuma transição de estado neste
+programa.
+
+## Rodada 2026-09-04 #26 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` bloqueados, `Kubernetes` com revisão de
+RoE pendente -- nenhum repo desses tocado). `list-pending` global = 37,
+todos de programas fora de escopo. `api.hiro.so` recheck via
+`curl -m 8`: `CONNECT tunnel failed, response 403`, mesmo bloqueio de
+rede de dezenas de rodadas anteriores -- não confirmável se o deployer
+StackingDAO publicou contrato novo; os 15 contratos Clarity já
+cobertos seguem sem mudança conhecida, nenhum arquivo novo candidato
+neste programa. Leitura profunda proativa desta rodada direcionada a
+`sveltejs/svelte` (ver NOTES.md de Vercel Open Source: 3 arquivos
+novos, `1-parse/utils/html.js`, `2-analyze/visitors/HtmlTag.js`,
+`html-tree-validation.js`, sem achado). Nenhuma transição de estado
+neste programa.

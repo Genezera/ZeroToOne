@@ -652,7 +652,10 @@
     "packages/webpack/src/utils/same-origin.ts",
     "packages/nuxt/src/core/utils/proxy.ts",
     "packages/nitro-server/src/runtime/middleware/base-url.ts",
-    "packages/nuxt/src/app/plugins/cross-origin-prefetch.client.ts"
+    "packages/nuxt/src/app/plugins/cross-origin-prefetch.client.ts",
+    "packages/nuxt/src/app/composables/preview.ts (usePreviewMode/defaultShouldEnable/getDefaultState -- shouldEnable padrão só olha ?preview=true na query, getDefaultState só copia ?token= da query pra state.token sem validar; ambos são callbacks substituíveis pelo app via options, nenhuma decisão de autorização acontece dentro do composable em si -- é primitiva de estado client-side, a checagem real do token é responsabilidade documentada do app integrador (mesmo padrão já refutado em channel/session.ts do vercel/eve). Sem achado)",
+    "packages/nuxt/src/core/utils/route-rules.ts (normalizeRouteRulePath/createNormalizedRouteRulesRouter -- decode+case-fold aplicado consistentemente tanto às chaves de regra quanto ao path de request no ponto de match (nitro-server/src/index.ts:521-525, pages/module.ts:644-646), sem assimetria entre os dois lados que permitisse bypass; decodeRoutePath (core/utils/index.ts:29) é decode único via decodeURI, não recursivo, com catch-and-return-original em percent-encoding malformado -- não há double-decode. Sem achado)",
+    "packages/nitro-server/src/runtime/utils/cache.ts (payloadCache/sharedPrerenderCache -- código já tem comentário do próprio time reconhecendo a classe do risco (\"keyed by path alone... would leak one principal's SSR data to others\") e restringindo com import.meta.prerender: cache só existe em build time (prerender), nunca em runtime de request real com cookie/auth -- não há usuário real nem dado por-principal neste momento do ciclo de vida. Sem achado)"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
@@ -682,7 +685,10 @@
     "packages/svelte/src/compiler/phases/3-transform/client/visitors/HtmlTag.js",
     "packages/svelte/src/compiler/phases/3-transform/server/visitors/HtmlTag.js",
     "packages/svelte/src/internal/server/crypto.js",
-    "packages/svelte/src/internal/server/crypto.test.ts"
+    "packages/svelte/src/internal/server/crypto.test.ts",
+    "packages/svelte/src/compiler/phases/1-parse/utils/html.js (decode_character_references/validate_code -- decodificação de entidades HTML durante o parse do template-fonte .svelte em compile-time, não processamento de dado de runtime não confiável; sem achado)",
+    "packages/svelte/src/compiler/phases/2-analyze/visitors/HtmlTag.js (visitor trivial de análise AST para {@html ...} -- só valida contexto de runes e marca subtree dinâmica, sem lógica de sanitização/segurança própria, delega pro restante do pipeline já coberto em rodadas anteriores. Sem achado)",
+    "packages/svelte/src/html-tree-validation.js (closing_tag_omitted/is_tag_valid_with_ancestor/is_tag_valid_with_parent -- tabelas estáticas de regras de nesting HTML e validação em compile-time para evitar mismatch de hidratação; nenhuma superfície de auth/injeção, puro diagnóstico de estrutura de tags. Sem achado)"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
@@ -793,6 +799,10 @@
     "packages/chat/src/ai/scope.ts (completo -- createScopeGuard/channelOf: fronteira de confinamento de ferramentas de IA contra threadId/channelId fornecido pelo próprio modelo (ex.: fetchMessages em ai/tools/threads.ts aceita `threadId` como input de tool call, potencial alvo de prompt injection). channelOf resolve o id completo \"{adapter}:...\" via adapter.channelIdFromThreadId (confirmado correto contra testes de adapter-slack/discord/linear/github, que esperam a string com prefixo). Fallback `id.split(':').slice(0,2).join(':')` só dispara quando o prefixo não corresponde a nenhum adapter registrado (id malformado/hostil) -- testado o racional: como o valor `active`/`explicit` nunca é controlável pelo agente (vem de runInConversation com o threadId real do evento, ou de `scope` fixado pelo app), um id hostil do lado `target` sempre resolve pra uma string diferente do canal ativo real (seja pela via normal, seja pelo fallback), então a comparação `sameChannel` falha e a chamada é bloqueada -- fail-closed nos dois casos, não achei bypass. Sem achado)"
   ],
   "vercel/eve": [
+    ".github/actions/vcr-login/lib.mjs (helper de mascaramento de output GHA + constantes; sem achado)",
+    ".github/actions/vcr-login/main.mjs (completo -- login Docker no vcr.vercel.com via troca de OIDC token do GitHub por access token Vercel; team injetado só em URLSearchParams/docker --username via spawnSync array (sem shell), token sempre mascarado via ::add-mask:: antes de salvar em GITHUB_STATE com delimiter randomUUID + checagem anti-colisão. Sem achado)",
+    ".github/actions/vcr-login/post.mjs (completo -- cleanup: docker logout best-effort + revoke do access token na Vercel, token mascarado antes de qualquer log. Sem achado)",
+    "packages/eve-buzz-acp-adapter/src/remote-target-auth.ts (completo -- só delega pra inspectVerifiedRemoteAgent/readEveTargetInfo de outro pacote, sem decisão de auth própria. Sem achado)",
     "packages/eve/src/channel/auth/jwt-hmac.ts",
     "packages/eve/src/channel/auth/jwt-ecdsa.ts",
     "packages/eve/src/shared/validate-authorization.ts",
@@ -885,7 +895,10 @@
     "packages/vercel-flags-core/src/controller/fetch-datafile.ts",
     "packages/flags/src/spec-extension/adapters/request-cookies.ts",
     "packages/flags/src/next/evaluate.ts",
-    "packages/vercel-flags-core/src/controller/bundled-source.ts"
+    "packages/vercel-flags-core/src/controller/bundled-source.ts",
+    "packages/vercel-flags-core/src/create-raw-client.ts (createRawClient/api -- orquestra initialize/evaluate/bulkEvaluate/experimental_reportOverride sobre fns.* injetadas; nenhuma decisao de autenticacao propria, origin.sdkKey so passa por aqui como metadado opaco (nunca comparado/validado neste arquivo) -- checagem real de SDK key ja coberta em controller/auth.ts. Sem achado)",
+    "packages/adapter-vercel/src/index.ts (completo -- createVercelAdapter/vercelAdapter/getOrCreateClient: cache de FlagsClient por sdkKey (Map<string|undefined,FlagsClient>) e por design compartilha um unico client quando sdkKey e undefined (comentario explicito: caso OIDC), decide()/bulkDecide() so repassam pra flagsClient.evaluate/bulkEvaluate (auth real fica em controller/auth.ts, ja coberto). Sem achado)",
+    "packages/vercel-flags-core/src/utils/usage/flags-config-read.ts + utils/request-context.ts (completo -- FlagsConfigReadEvent so extrai x-vercel-id e host de um allowlist explicito de 2 chaves do objeto headers do request-context global, nunca repassa o objeto headers inteiro nem authorization/cookie pro payload de telemetria enviado ao ingest endpoint. Sem achado)"
   ],
   "vercel/ms": [
     "src/index.ts"
@@ -1202,5 +1215,11 @@
     "pkg/golang/install.go (installGoVersion -- exec.Command(\"/bin/bash\",\"-c\",...) com GoVersion não sanitizado, RCE confirmada via PoC real em Docker isolado)",
     "configs/kubernetes-configmap.yaml (confirma rules-file: https://... em producao real, nao so example-configmap.yaml)",
     "cmd/sync-tags/gomod.go (path_traversal_risk, mesma causa raiz, nao investigado em profundidade separada)"
+  ],
+  "mattermost/mattermost-plugin-github": [
+    "server/plugin/oauth.go (OAuthBroker -- so pub/sub interno de conclusao de OAuth por userID, sem logica de autenticacao/token. Sem achado)",
+    "server/plugin/api.go (connectUserToGitHub/completeConnectUserToGitHub -- state OAuth (model.NewId()[:15]) armazenado server-side no KV store com TTL, chave de lookup e o proprio state.Token; comparacao extra state.UserID != c.UserID contra sessao Mattermost autenticada antes de aceitar o code exchange; escopo do token validado via validateOAuthScopes pos-exchange. Sem achado)",
+    "server/plugin/webhook.go (verifyWebhookSignature/signBody -- HMAC-SHA1 sobre body cru, hmac.Equal (constant-time), length-check de 45 chars + prefixo sha1= antes do hex.Decode, fail-closed em erro/invalido. Sem achado)",
+    "server/plugin/mm_34646_token_refresh.go (forceResetAllMM34646 -- job de manutencao interno gated por cluster.NewMutex, sem input de rede/usuario controlavel; BasicAuthTransport usa client_id/client_secret do proprio config, nao segredo de terceiro. Sem achado)"
   ]
 }

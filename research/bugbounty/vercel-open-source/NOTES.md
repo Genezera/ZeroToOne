@@ -7332,3 +7332,233 @@ ainda não cobertos:
 Nenhum achado novo, nenhuma transição de estado nesta rodada. `Block
 Open Source`/`Circle BBP` seguem fora de escopo desta sessão por
 política local (`program-policy.json`).
+
+## Rodada 2026-09-04 #23 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`
+(agora `blocked:true`, não só `aiResearchBanned`), `Circle BBP` e,
+novos desde a última rodada, `Auth0 by Okta` (`blocked:true`) e
+`Kubernetes` (`roeReviewNeeded:true`) seguem/ficaram fora de escopo;
+nenhum arquivo desses quatro programas foi clonado ou lido nesta
+rodada. `list-pending` global trouxe só achados desses quatro
+programas bloqueados/pendentes de revisão (30 Auth0, 4 Circle BBP, 3
+Kubernetes) -- nenhum tocado, conforme regra. Os 3 `known_vulnerable_dependency`
+de Mattermost foram auto-triados via `cli.mjs auto-triage-known-cve`
+(ver NOTES.md de Mattermost).
+
+Leitura profunda proativa: `nuxt/nuxt` (Tier 1 OSS, clone raso) --
+conferido contra `deep-read-log.json` (16 arquivos já cobertos), 3
+arquivos novos lidos, priorizando nome com auth/session/token:
+
+- `packages/nuxt/src/app/composables/preview.ts` (completo) --
+  `usePreviewMode`: `defaultShouldEnable` só olha `?preview=true` na
+  query, `getDefaultState` só copia `?token=` da query pra
+  `state.token` sem validar nada. Ambos são callbacks substituíveis
+  pelo app via `options.shouldEnable`/`options.getState` -- nenhuma
+  decisão de autorização acontece dentro do composable, é primitiva de
+  estado client-side pura. A checagem real do token (se o app decide
+  usar um) é responsabilidade do app integrador, mesmo padrão já
+  refutado antes em `channel/session.ts`/`execution/session.ts` do
+  `vercel/eve`. Sem achado.
+- `packages/nuxt/src/core/utils/route-rules.ts` (completo) --
+  `normalizeRouteRulePath`/`createNormalizedRouteRulesRouter`: decode
+  (via `decodeRoutePath`, `decodeURI` de passada única, não
+  recursivo, com catch-and-return-original em percent-encoding
+  malformado -- sem risco de double-decode) + case-fold opcional,
+  aplicado de forma simétrica tanto às chaves de regra quanto ao path
+  de request no ponto de match real (`nitro-server/src/index.ts:521-525`,
+  `pages/module.ts:644-646`) -- sem assimetria entre os dois lados que
+  permitisse uma rota bypassar ou "roubar" a regra de outra. Sem
+  achado.
+- `packages/nitro-server/src/runtime/utils/cache.ts` (completo) --
+  `payloadCache`/`sharedPrerenderCache`: o próprio código já tem
+  comentário do time reconhecendo explicitamente a classe de risco
+  ("keyed by path alone... would leak one principal's SSR data to
+  others") e mitigando com `import.meta.prerender` -- este cache só
+  existe em build-time (prerender estático), nunca em runtime de
+  request real com cookie/sessão de usuário. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `nuxt/nuxt`, agora
+19). Nenhum achado novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #24 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`research/bugbounty/program-policy.json`
+lido antes de tocar qualquer repositório) — `Block Open Source`
+(`blocked:true`), `Circle BBP` (`blocked:true`) e `Auth0 by Okta`
+(`blocked:true`, novo desde a rodada #23) confirmados bloqueados;
+`Kubernetes` segue `roeReviewNeeded:true`, revisão de RoE ainda
+pendente. `migrate-to-v2.mjs` rodado (Passo 0). `list-pending` global
+trouxe 37 candidatos, TODOS de programas fora de escopo desta sessão
+(30 Auth0 by Okta, 4 Circle BBP, 3 Kubernetes) — nenhum arquivo desses
+três programas clonado, aberto ou lido nesta rodada, nenhuma transição
+de estado tentada. Nota: os candidatos Auth0 já chegam com trechos de
+código reais no campo `reasoning`/`raw.note` (populados por uma etapa
+de scan anterior a esta sessão, não por esta rodada) — isso é uma
+lacuna de engenharia upstream (o scanner automático não checa
+`program-policy.json` antes de criar o candidato, só esta sessão checa
+antes de investigar), já registrada e não nova desde a rodada #23;
+não gerou ação aqui além de, mais uma vez, não tocar nenhum desses
+achados.
+
+Leitura profunda proativa: `vercel/eve` (clone raso, efêmero), 4
+arquivos novos (fora do padrão de 3, por serem pequenos/relacionados):
+
+- `.github/actions/vcr-login/lib.mjs` — helper de mascaramento de
+  output do GitHub Actions + constantes (registry/app id). Sem achado.
+- `.github/actions/vcr-login/main.mjs` (completo) — GitHub Action que
+  troca um OIDC token do GitHub Actions por um access token da Vercel
+  (token-exchange OAuth) e faz `docker login` no `vcr.vercel.com`. O
+  input `team` não é validado além de um aviso estético
+  (`startsWith("team_")`), mas só é usado dentro de
+  `URLSearchParams` (form-encoded, sem risco de injeção HTTP) e como
+  `--username` num array de argumentos passado a `spawnSync` (sem
+  shell, sem risco de injeção de comando). O `vercelToken` retornado é
+  mascarado via `::add-mask::` **antes** de ser persistido em
+  `GITHUB_STATE`, e a gravação usa um delimitador `randomUUID()` com
+  checagem explícita de colisão (se o próprio token contivesse o
+  delimitador gerado, lança erro em vez de corromper o arquivo de
+  estado). Sem achado.
+- `.github/actions/vcr-login/post.mjs` (completo) — cleanup: tenta
+  `docker logout` (best-effort, só warning se falhar) e revoga o
+  access token na Vercel via `/login/oauth/token/revoke`, sempre
+  mascarando o token antes de qualquer log/warning. Sem achado.
+- `packages/eve-buzz-acp-adapter/src/remote-target-auth.ts` (completo)
+  — só delega para `inspectVerifiedRemoteAgent`/`readEveTargetInfo` de
+  outro pacote (`eve/setup`), nenhuma decisão de autorização própria
+  neste arquivo. Sem achado.
+
+`deep-read-log.json` atualizado (+4 entradas em `vercel/eve`). Nenhum
+achado novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #25 (leitura profunda proativa, escopo restrito a StackingDAO + Vercel Open Source)
+
+`program-policy.json` checado como passo zero, antes de tocar qualquer
+repositório -- esta rodada foi explicitamente restrita pelo operador a
+só `StackingDAO` e `Vercel Open Source`; `Block Open Source`
+(`aiResearchBanned`/`blocked`), `Circle BBP` (`blocked`), `Auth0 by
+Okta` (`blocked`) e `Kubernetes` (`roeReviewNeeded`) não foram tocados
+-- nenhum repo desses quatro programas clonado, aberto ou lido.
+`list-pending` trouxe só candidatos desses quatro programas fora de
+escopo (Auth0/Circle/Kubernetes); nenhum deles foi lido além do que o
+próprio `list-pending` já expõe no reasoning (etapa de scan anterior),
+nenhuma ação tomada sobre eles.
+
+Leitura profunda proativa direcionada a `vercel/flags` (16 arquivos já
+cobertos em rodadas anteriores -- `controller/auth.ts`,
+`verify-access.ts`, `sdk-keys.ts` etc.). Clone raso, listagem completa
+do repo (`find` sobre todos os `.ts`/`.tsx`) comparada contra
+`deep-read-log.json`; a maior parte da superfície nova é doc site/
+examples/testes, sem risco. 3 arquivos novos lidos por completo,
+priorizando o que ainda tocava client/adapter/telemetria não coberto:
+
+- `packages/vercel-flags-core/src/create-raw-client.ts` (completo) --
+  `createCreateRawClient`/`createRawClient`: só orquestra
+  `initialize`/`evaluate`/`bulkEvaluate`/`experimental_reportOverride`
+  sobre funções injetadas (`fns.*`); `origin.sdkKey` passa por aqui só
+  como metadado opaco, nunca comparado nem validado neste arquivo --
+  a checagem real de SDK key já foi confirmada em `controller/auth.ts`
+  em rodada anterior. Sem achado.
+- `packages/adapter-vercel/src/index.ts` (completo) --
+  `createVercelAdapter`/`vercelAdapter`/`getOrCreateClient`: cacheia um
+  `FlagsClient` por `sdkKey` num `Map`; quando `sdkKey` é `undefined`
+  (caso OIDC), o design deliberadamente compartilha um único client
+  (comentário explícito no código confirma a intenção). `decide()`/
+  `bulkDecide()` só repassam pra `flagsClient.evaluate`/`bulkEvaluate`
+  -- a fronteira de auth real segue em `controller/auth.ts`. Investiguei
+  se o cache por `sdkKey` indefinido poderia misturar dados entre
+  tenants diferentes: não, porque cada chamador que não passa `sdkKey`
+  está no mesmo caminho OIDC (identidade do próprio ambiente Vercel,
+  não de terceiro), então "compartilhar" aqui é o comportamento
+  pretendido, não confused-deputy. Sem achado.
+- `packages/vercel-flags-core/src/utils/usage/flags-config-read.ts` +
+  `packages/vercel-flags-core/src/utils/request-context.ts` (completos)
+  -- `FlagsConfigReadEvent` monta o payload de telemetria enviado ao
+  ingest endpoint da Vercel; verifiquei se o objeto `headers` inteiro
+  do request (que poderia conter `authorization`/`cookie`) vazava pro
+  payload -- não vaza: `request-context.ts` só expõe
+  `Record<string,string>` já filtrado pelo runtime global, e
+  `FlagsConfigReadEvent` extrai só duas chaves explícitas
+  (`x-vercel-id`, `host`), nunca itera nem repassa o objeto inteiro.
+  Sem achado.
+
+Também revisados brevemente (sem entrar no log, achados óbvios demais
+pra contar como leitura formal): `headers.ts` (cópia reduzida do
+`HeadersAdapter` do Next.js, sem lógica de auth própria),
+`controller/polling-source.ts` (delega toda auth pra `fetch-datafile.ts`,
+já coberto) e `errors.ts` (2 classes de erro triviais, sem interpolar
+segredo). `deep-read-log.json` atualizado com as 3 entradas formais em
+`vercel/flags` (agora 19 arquivos).
+
+Para StackingDAO: conferido `research/bugbounty/stackingdao/NOTES.md`
+(os 15 contratos Clarity seguem 100% cobertos, sem candidato novo).
+Tentativa única de checar deploy de contrato novo via
+`curl -m 8 https://api.hiro.so/...` -- bloqueado de novo (exit 56,
+connection failure no CONNECT do agent-proxy), mesmo padrão de ~10+
+rodadas consecutivas nesta sessão/ambiente. Nenhuma mudança de estado
+em nenhum programa nesta rodada; nenhum achado novo.
+
+## Rodada 2026-09-04 #26 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero, antes de tocar qualquer
+repositório: `Block Open Source` (`aiResearchBanned`/`blocked`),
+`Circle BBP` (`blocked`) e `Auth0 by Okta` (`blocked`) confirmados;
+`Kubernetes` segue `roeReviewNeeded:true`. `migrate-to-v2.mjs` rodado
+(Passo 0). `list-pending` global trouxe 37 candidatos, todos de
+programas fora de escopo (30 Auth0 by Okta, 4 Circle BBP, 3
+Kubernetes) -- nenhum arquivo desses três programas clonado, aberto ou
+lido; nenhuma ação tomada sobre eles.
+
+Também revisados os `corroborated_static` já existentes deste programa
+(5 achados: `runBridge` timing_attack_risk, `verify-claim.mjs`
+path_traversal, `update-remix-run-dev.js` command_injection,
+`image-optimizer.ts` SSRF -- este último já tem `submission`/
+`platformOutcome` registrados como `duplicate` do report #3943945,
+então já está fora do fluxo de avanço de estado -- e os 3
+`semgrep_detect_child_process` de `mcp.ts`, deliberadamente estacionados
+em rodada anterior por alto risco de duplicata). Nenhum desses tinha
+nova evidência que justificasse reabrir a investigação ou tentar nova
+transição de estado nesta rodada; não tocados.
+
+Leitura profunda proativa: repositórios Vercel já estavam com a
+superfície auth/session/crypto/token/login/password/admin/permission/
+access essencialmente esgotada (`vercel/vercel`: 43 arquivos candidatos
+por esses termos, 0 novos vs. `deep-read-log.json`). Redirecionado pra
+`sveltejs/svelte` (só 11 arquivos cobertos até agora, o menos explorado
+dos repos em escopo) -- clone raso público via
+`git clone --depth 1 --filter=blob:none --sparse
+https://github.com/sveltejs/svelte.git` + `sparse-checkout set
+packages`. Busca por nome (auth/session/crypto/token/sanitiz/escape/
+html) sobre todo `packages/**/*.{js,ts}` deu 9 candidatos, 6 já lidos
+em rodadas anteriores, 3 novos:
+
+- `packages/svelte/src/compiler/phases/1-parse/utils/html.js`
+  (completo) -- `decode_character_references`/`validate_code`:
+  decodifica entidades HTML (`&amp;`, `&#123;` etc.) durante o parse do
+  código-fonte `.svelte` em compile-time. Não processa dado de
+  runtime/usuário final -- é o compilador lendo o próprio template que
+  o desenvolvedor escreveu, mesma classe de "trust" que o resto do
+  parser. Sem achado.
+- `packages/svelte/src/compiler/phases/2-analyze/visitors/HtmlTag.js`
+  (completo) -- visitor de análise AST para `{@html ...}`: só valida
+  contexto de runes (`validate_opening_tag`) e marca a subtree como
+  dinâmica (`mark_subtree_dynamic`) para fins de otimização de
+  renderização; nenhuma lógica de sanitização própria -- delega pro
+  restante do pipeline de `{@html}` já coberto em rodadas anteriores
+  (`escaping.js`, `blocks/html.js` client/server, ambos sem achado).
+  Sem achado.
+- `packages/svelte/src/html-tree-validation.js` (completo, 239 linhas)
+  -- tabelas estáticas (`autoclosing_children`/`disallowed_children`)
+  e funções (`closing_tag_omitted`/`is_tag_valid_with_ancestor`/
+  `is_tag_valid_with_parent`) que replicam as regras de
+  auto-fechamento/nesting do parser HTML do WHATWG, usadas só para
+  emitir warnings de compile-time sobre HTML que vai quebrar hidratação
+  (ex. `<p>` dentro de `<p>`). Puro diagnóstico estrutural, nenhuma
+  superfície de auth/injeção/segredo. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `sveltejs/svelte`,
+agora 14). Verificação de deploy StackingDAO: `curl -m 8
+https://api.hiro.so/...` -- bloqueado de novo (`CONNECT tunnel failed,
+response 403`), mesmo padrão de dezenas de rodadas anteriores; os 15
+contratos Clarity seguem sem candidato novo. Nenhum achado novo,
+nenhuma transição de estado em nenhum programa nesta rodada.

@@ -34,3 +34,59 @@ cada finding.
 **Pendência pro usuário**: confirmar a RoE do engagement
 `mattermost-mbb-public` no Bugcrowd antes de qualquer rodada futura de
 pesquisa aqui (ver `program-policy.json`).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (regra do CLAUDE.md):
+programa segue `roeReviewed:true`/`aiResearchBanned:false`, liberado.
+
+`list-pending` trouxe 3 achados `known_vulnerable_dependency` em
+`mattermost/mattermost-plugin-zoom/webapp/package-lock.json`
+(`yaml@1.10.2` GHSA-48c2-rrv3-qjmp, `ajv@6.12.6` e `ajv@8.17.1`
+GHSA-2g4f-4pwh-qvx6) — todos com GHSA extraível no reasoning e sem
+verificação de alcançabilidade real ainda feita. Rodei
+`cli.mjs auto-triage-known-cve`, que fecha automaticamente este padrão
+como `known_duplicate` (não `false_positive`: o CVE é real, só não é
+achado novo — já é divulgação pública rastreável, exatamente o critério
+de `state-machine.mjs::known_duplicate`). Os 3 fecharam limpo, sem
+erro. Nenhuma leitura de arquivo do repositório-alvo foi necessária
+para isso (a decisão depende só do GHSA já publicado, não do código).
+
+Leitura profunda proativa desta rodada ficou em `nuxt/nuxt` (programa
+Vercel Open Source) — ver NOTES.md de Vercel Open Source. Nenhum achado
+novo neste programa.
+
+## Rodada 2026-09-04 #2 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` bloqueados via `check-program`, `Kubernetes`
+com `roeReviewNeeded` (revisão pendente) — nenhum dos quatro tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 37, todos pertencentes a
+esses quatro programas fora de escopo desta sessão; nenhum candidato
+pendente em Mattermost.
+
+Leitura profunda proativa desta rodada em `mattermost-plugin-github`
+(primeiro repo Mattermost tocado por leitura profunda — `-plugin-jira`
+e `-plugin-zoom` só tinham sido cobertos por achados de fila, nunca por
+sweep proativo), clonado raso localmente, 4 arquivos (`oauth.go`,
+`api.go` — trecho `connectUserToGitHub`/`completeConnectUserToGitHub`,
+`webhook.go` — `verifyWebhookSignature`/`signBody`,
+`mm_34646_token_refresh.go`):
+
+- Fluxo OAuth (`api.go`): state token gerado com `model.NewId()[:15]`,
+  guardado no KV store server-side com TTL, chave de lookup já é o
+  próprio token; `state.UserID != c.UserID` checado contra a sessão
+  Mattermost autenticada antes de aceitar o code exchange do GitHub;
+  escopo do token OAuth validado pós-exchange via
+  `validateOAuthScopes`. Sem achado.
+- Assinatura de webhook (`webhook.go`): HMAC-SHA1 sobre o body cru,
+  comparação via `hmac.Equal` (constant-time), length-check de 45
+  chars + prefixo `sha1=` antes do `hex.Decode`, fail-closed em erro ou
+  assinatura inválida. Sem achado.
+- `oauth.go`/`mm_34646_token_refresh.go`: pub/sub interno e job de
+  manutenção histórico gated por mutex de cluster, sem input de
+  rede/usuário controlável alcançando nenhum dos dois. Sem achado.
+
+`deep-read-log.json` atualizado (+1 repo, `mattermost/mattermost-plugin-github`,
+4 entradas). Nenhum achado novo, nenhuma transição de estado nesta
+rodada em Mattermost — resultado normal e válido.
