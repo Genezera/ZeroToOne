@@ -685,7 +685,10 @@
     "packages/svelte/src/compiler/phases/3-transform/client/visitors/HtmlTag.js",
     "packages/svelte/src/compiler/phases/3-transform/server/visitors/HtmlTag.js",
     "packages/svelte/src/internal/server/crypto.js",
-    "packages/svelte/src/internal/server/crypto.test.ts"
+    "packages/svelte/src/internal/server/crypto.test.ts",
+    "packages/svelte/src/compiler/phases/1-parse/utils/html.js (decode_character_references/validate_code -- decodificação de entidades HTML durante o parse do template-fonte .svelte em compile-time, não processamento de dado de runtime não confiável; sem achado)",
+    "packages/svelte/src/compiler/phases/2-analyze/visitors/HtmlTag.js (visitor trivial de análise AST para {@html ...} -- só valida contexto de runes e marca subtree dinâmica, sem lógica de sanitização/segurança própria, delega pro restante do pipeline já coberto em rodadas anteriores. Sem achado)",
+    "packages/svelte/src/html-tree-validation.js (closing_tag_omitted/is_tag_valid_with_ancestor/is_tag_valid_with_parent -- tabelas estáticas de regras de nesting HTML e validação em compile-time para evitar mismatch de hidratação; nenhuma superfície de auth/injeção, puro diagnóstico de estrutura de tags. Sem achado)"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

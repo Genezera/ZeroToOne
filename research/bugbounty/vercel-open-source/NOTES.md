@@ -7497,3 +7497,68 @@ Tentativa única de checar deploy de contrato novo via
 connection failure no CONNECT do agent-proxy), mesmo padrão de ~10+
 rodadas consecutivas nesta sessão/ambiente. Nenhuma mudança de estado
 em nenhum programa nesta rodada; nenhum achado novo.
+
+## Rodada 2026-09-04 #26 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero, antes de tocar qualquer
+repositório: `Block Open Source` (`aiResearchBanned`/`blocked`),
+`Circle BBP` (`blocked`) e `Auth0 by Okta` (`blocked`) confirmados;
+`Kubernetes` segue `roeReviewNeeded:true`. `migrate-to-v2.mjs` rodado
+(Passo 0). `list-pending` global trouxe 37 candidatos, todos de
+programas fora de escopo (30 Auth0 by Okta, 4 Circle BBP, 3
+Kubernetes) -- nenhum arquivo desses três programas clonado, aberto ou
+lido; nenhuma ação tomada sobre eles.
+
+Também revisados os `corroborated_static` já existentes deste programa
+(5 achados: `runBridge` timing_attack_risk, `verify-claim.mjs`
+path_traversal, `update-remix-run-dev.js` command_injection,
+`image-optimizer.ts` SSRF -- este último já tem `submission`/
+`platformOutcome` registrados como `duplicate` do report #3943945,
+então já está fora do fluxo de avanço de estado -- e os 3
+`semgrep_detect_child_process` de `mcp.ts`, deliberadamente estacionados
+em rodada anterior por alto risco de duplicata). Nenhum desses tinha
+nova evidência que justificasse reabrir a investigação ou tentar nova
+transição de estado nesta rodada; não tocados.
+
+Leitura profunda proativa: repositórios Vercel já estavam com a
+superfície auth/session/crypto/token/login/password/admin/permission/
+access essencialmente esgotada (`vercel/vercel`: 43 arquivos candidatos
+por esses termos, 0 novos vs. `deep-read-log.json`). Redirecionado pra
+`sveltejs/svelte` (só 11 arquivos cobertos até agora, o menos explorado
+dos repos em escopo) -- clone raso público via
+`git clone --depth 1 --filter=blob:none --sparse
+https://github.com/sveltejs/svelte.git` + `sparse-checkout set
+packages`. Busca por nome (auth/session/crypto/token/sanitiz/escape/
+html) sobre todo `packages/**/*.{js,ts}` deu 9 candidatos, 6 já lidos
+em rodadas anteriores, 3 novos:
+
+- `packages/svelte/src/compiler/phases/1-parse/utils/html.js`
+  (completo) -- `decode_character_references`/`validate_code`:
+  decodifica entidades HTML (`&amp;`, `&#123;` etc.) durante o parse do
+  código-fonte `.svelte` em compile-time. Não processa dado de
+  runtime/usuário final -- é o compilador lendo o próprio template que
+  o desenvolvedor escreveu, mesma classe de "trust" que o resto do
+  parser. Sem achado.
+- `packages/svelte/src/compiler/phases/2-analyze/visitors/HtmlTag.js`
+  (completo) -- visitor de análise AST para `{@html ...}`: só valida
+  contexto de runes (`validate_opening_tag`) e marca a subtree como
+  dinâmica (`mark_subtree_dynamic`) para fins de otimização de
+  renderização; nenhuma lógica de sanitização própria -- delega pro
+  restante do pipeline de `{@html}` já coberto em rodadas anteriores
+  (`escaping.js`, `blocks/html.js` client/server, ambos sem achado).
+  Sem achado.
+- `packages/svelte/src/html-tree-validation.js` (completo, 239 linhas)
+  -- tabelas estáticas (`autoclosing_children`/`disallowed_children`)
+  e funções (`closing_tag_omitted`/`is_tag_valid_with_ancestor`/
+  `is_tag_valid_with_parent`) que replicam as regras de
+  auto-fechamento/nesting do parser HTML do WHATWG, usadas só para
+  emitir warnings de compile-time sobre HTML que vai quebrar hidratação
+  (ex. `<p>` dentro de `<p>`). Puro diagnóstico estrutural, nenhuma
+  superfície de auth/injeção/segredo. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `sveltejs/svelte`,
+agora 14). Verificação de deploy StackingDAO: `curl -m 8
+https://api.hiro.so/...` -- bloqueado de novo (`CONNECT tunnel failed,
+response 403`), mesmo padrão de dezenas de rodadas anteriores; os 15
+contratos Clarity seguem sem candidato novo. Nenhum achado novo,
+nenhuma transição de estado em nenhum programa nesta rodada.
