@@ -21,7 +21,7 @@ export const SERVICE_JOBS = [
   {
     name: 'sync_reports', kind: 'light', intervalMs: 60 * MINUTE,
     timeoutMs: 5 * MINUTE,
-    args: [path.join(__dirname, 'cli.mjs'), 'sync-my-reports'],
+    args: [path.join(__dirname, 'sync-reports-runner.mjs')],
     enabled: () => !!(process.env.HACKERONE_USERNAME && process.env.HACKERONE_API_TOKEN),
     disabledReason: 'credenciais HackerOne não configuradas neste processo',
   },

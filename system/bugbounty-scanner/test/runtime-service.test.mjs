@@ -98,6 +98,11 @@ test('due/backoff e health são fail-closed, mas job pesado ativo não gera fals
   stale.service.activeJob = 'scan';
   stale.service.activeJobStartedAt = '2026-09-03T11:00:00Z';
   assert.equal(summarizeRuntimeHealth(stale, { now }).healthy, true);
+  stale.service.status = 'degraded';
+  assert.equal(summarizeRuntimeHealth(stale, { now }).healthy, false);
+  stale.service.status = 'healthy';
+  stale.jobs.scan = { consecutiveFailures: 1 };
+  assert.equal(summarizeRuntimeHealth(stale, { now }).healthy, false);
 });
 
 test('service inicializa sem disparar carga e depois roda leves + no máximo um pesado', async () => {

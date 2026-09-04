@@ -1,0 +1,49 @@
+name: Bug bounty - HackerOne outcome sync
+
+on:
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zerotoone-bugbounty-writer
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout the current master
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Configure automation identity
+        run: |
+          git config user.name "ZeroToOne Outcome Sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Synchronize HackerOne outcomes and publish atomically
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HACKERONE_USERNAME: ${{ secrets.HACKERONE_USERNAME }}
+          HACKERONE_API_TOKEN: ${{ secrets.HACKERONE_API_TOKEN }}
+        run: node system/bugbounty-scanner/sync-reports-runner.mjs
+
+      - name: Assert the published worktree is clean
+        run: git diff --exit-code && test -z "$(git status --porcelain)"

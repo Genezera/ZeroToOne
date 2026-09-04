@@ -147,7 +147,6 @@ export function summarizeRuntimeHealth(state, {
   now = Date.now(),
   maxHeartbeatAgeMs = 20 * 60 * 1000,
   maxActiveJobAgeMs = 4 * 60 * 60 * 1000,
-  maxConsecutiveFailures = 2,
 } = {}) {
   const reasons = [];
   const heartbeat = new Date(state?.service?.lastHeartbeatAt || 0).getTime();
@@ -160,8 +159,9 @@ export function summarizeRuntimeHealth(state, {
   }
   if (state?.service?.activeJob && !activeWithinDeadline) reasons.push(`job ${state.service.activeJob} excedeu o limite operacional`);
   if (state?.service?.status === 'failed') reasons.push('último ciclo do serviço falhou');
+  if (state?.service?.status === 'degraded') reasons.push('serviço está degradado');
   for (const [name, job] of Object.entries(state?.jobs || {})) {
-    if ((job.consecutiveFailures || 0) >= maxConsecutiveFailures) {
+    if ((job.consecutiveFailures || 0) > 0) {
       reasons.push(`${name} falhou ${job.consecutiveFailures} vezes consecutivas`);
     }
   }
