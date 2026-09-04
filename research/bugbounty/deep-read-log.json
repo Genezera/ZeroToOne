@@ -876,7 +876,10 @@
     "packages/next/src/server/dev/hot-reloader-webpack.ts",
     "packages/next/src/server/node-environment-extensions/web-crypto.tsx",
     "packages/next/src/server/node-environment-extensions/node-crypto.tsx",
-    "packages/next/src/server/node-polyfill-crypto.ts"
+    "packages/next/src/server/node-polyfill-crypto.ts",
+    "packages/next/src/client/components/http-access-fallback/http-access-fallback.ts (isHTTPAccessFallbackError/getAccessFallbackHTTPStatus -- so parseia digest constante NEXT_HTTP_ERROR_FALLBACK;<401|403|404>, sem interpolacao de dado externo no digest, sem achado)",
+    "packages/next/src/client/components/unauthorized.ts + forbidden.ts (unauthorized()/forbidden() -- lancam Error com digest fixo, gated por flag experimental __NEXT_EXPERIMENTAL_AUTH_INTERRUPTS; funcao so sinaliza pra render de fallback, decisao de autorizacao em si e sempre do app-code que a chama -- nao ha logica de auth aqui pra ter bypass. Sem achado)",
+    "packages/next/src/client/components/http-access-fallback/error-boundary.tsx + error-fallback.tsx (HTTPAccessFallbackBoundary -- getDerivedStateFromError so casa status com prop local (notFound/forbidden/unauthorized); quando boundary local nao tem o slot correspondente, rerenderiza children (que rejoga o throw) em vez de vazar conteudo protegido, propagando pro boundary pai ate achar match -- comportamento documentado, coberto por suite e2e propria (test/e2e/app-dir/unauthorized/*). Sem achado)"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",

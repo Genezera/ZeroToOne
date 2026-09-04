@@ -6016,3 +6016,60 @@ admin/permission/access em `src/`:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`nitrojs/nitro` +3 arquivos).
+
+## Rodada 2026-09-04 #2 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero antes de qualquer
+clone/leitura: `Block Open Source`/`Circle BBP` confirmados bloqueados
+(nenhum repo `afterpay/*`, `cashapp/*`, `misk`, `square/wire`,
+`circlefin/*` tocado). `migrate-to-v2.mjs` + `list-pending` global = 0
+novamente — fila vazia.
+
+Leitura profunda proativa: com `nitrojs/nitro` já esgotado (rodada
+anterior), fui pro repo com maior superfície ainda não coberta —
+`vercel/next.js` (256 arquivos no repo batendo o grep auth/session/
+crypto/token/login/password/admin/permission/access, só 26 já
+logados). Clone raso (`--filter=blob:none --sparse`) só pra listar nomes de
+arquivo via `git ls-tree`, sem baixar blobs desnecessários. Filtrei fora test/e2e fixtures, `__testfixtures__` de
+codemod, `docs/`, `.compiled/` (libs vendorizadas: crypto-browserify,
+jsonwebtoken, babel runtime — terceiros já auditados a montante, fora
+do escopo de código próprio da Vercel) e `errors/*.mdx`. Sobrou o
+mecanismo de fronteira de autorização nativo do App Router
+(`unauthorized()`/`forbidden()`), feature real que todo app Next.js em
+produção usando App Router pode habilitar via
+`experimental.authInterrupts`:
+
+- `packages/next/src/client/components/http-access-fallback/http-access-fallback.ts`
+  — `isHTTPAccessFallbackError`/`getAccessFallbackHTTPStatus` só
+  parseiam um digest **constante** (`NEXT_HTTP_ERROR_FALLBACK;401` /
+  `;403` / `;404`), sem interpolação de dado externo/request — sem
+  superfície de injeção no digest.
+- `packages/next/src/client/components/unauthorized.ts` +
+  `forbidden.ts` — `unauthorized()`/`forbidden()` só lançam um `Error`
+  com esse digest fixo, atrás da flag experimental
+  `__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS`. A decisão de autorização em si
+  (quando chamar a função) é sempre do código do app — não há lógica
+  de auth aqui pra ter bypass; a função é só o mecanismo de sinalização
+  de "renderize o fallback", equivalente ao `notFound()` já existente.
+- `packages/next/src/client/components/http-access-fallback/error-boundary.tsx`
+  (+ `error-fallback.tsx`) — `HTTPAccessFallbackErrorBoundary.
+  getDerivedStateFromError` casa o status só com a prop local
+  (`notFound`/`forbidden`/`unauthorized`) desse boundary específico;
+  quando o boundary da camada atual não tem o slot correspondente, ele
+  **rerenderiza `children`** (que rejoga o mesmo throw na próxima
+  renderização) em vez de silenciosamente cair pra `null`/vazar o
+  conteúdo protegido por baixo — isso propaga o erro pro boundary pai
+  mais próximo que tenha o slot certo, em vez de expor a árvore
+  protegida. Esse comportamento é documentado (mesmo padrão do
+  `notFound()`) e tem suite e2e própria e dedicada em
+  `test/e2e/app-dir/unauthorized/{basic,default}/`. Rastreei a cadeia
+  completa (chamada → digest → `getDerivedStateFromError` →
+  match/propagação de boundary → render do fallback) e não achei
+  caminho onde o `children` protegido escapa pro DOM quando o status
+  está `triggeredStatus` setado sem slot casado.
+
+Nenhum achado novo nesta rodada — mecanismo de auth-boundary do App
+Router se mostrou corretamente implementado (decisão de auth é
+responsabilidade do app-code, framework só faz roteamento de UI de
+fallback, sem vazamento identificado). `deep-read-log.json` atualizado
+(`vercel/next.js` +3 entradas, cobrindo 5 arquivos correlacionados).
