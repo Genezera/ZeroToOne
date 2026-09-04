@@ -796,6 +796,10 @@
     "packages/chat/src/ai/scope.ts (completo -- createScopeGuard/channelOf: fronteira de confinamento de ferramentas de IA contra threadId/channelId fornecido pelo próprio modelo (ex.: fetchMessages em ai/tools/threads.ts aceita `threadId` como input de tool call, potencial alvo de prompt injection). channelOf resolve o id completo \"{adapter}:...\" via adapter.channelIdFromThreadId (confirmado correto contra testes de adapter-slack/discord/linear/github, que esperam a string com prefixo). Fallback `id.split(':').slice(0,2).join(':')` só dispara quando o prefixo não corresponde a nenhum adapter registrado (id malformado/hostil) -- testado o racional: como o valor `active`/`explicit` nunca é controlável pelo agente (vem de runInConversation com o threadId real do evento, ou de `scope` fixado pelo app), um id hostil do lado `target` sempre resolve pra uma string diferente do canal ativo real (seja pela via normal, seja pelo fallback), então a comparação `sameChannel` falha e a chamada é bloqueada -- fail-closed nos dois casos, não achei bypass. Sem achado)"
   ],
   "vercel/eve": [
+    ".github/actions/vcr-login/lib.mjs (helper de mascaramento de output GHA + constantes; sem achado)",
+    ".github/actions/vcr-login/main.mjs (completo -- login Docker no vcr.vercel.com via troca de OIDC token do GitHub por access token Vercel; team injetado só em URLSearchParams/docker --username via spawnSync array (sem shell), token sempre mascarado via ::add-mask:: antes de salvar em GITHUB_STATE com delimiter randomUUID + checagem anti-colisão. Sem achado)",
+    ".github/actions/vcr-login/post.mjs (completo -- cleanup: docker logout best-effort + revoke do access token na Vercel, token mascarado antes de qualquer log. Sem achado)",
+    "packages/eve-buzz-acp-adapter/src/remote-target-auth.ts (completo -- só delega pra inspectVerifiedRemoteAgent/readEveTargetInfo de outro pacote, sem decisão de auth própria. Sem achado)",
     "packages/eve/src/channel/auth/jwt-hmac.ts",
     "packages/eve/src/channel/auth/jwt-ecdsa.ts",
     "packages/eve/src/shared/validate-authorization.ts",

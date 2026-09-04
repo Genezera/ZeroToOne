@@ -7380,3 +7380,53 @@ arquivos novos lidos, priorizando nome com auth/session/token:
 
 `deep-read-log.json` atualizado (+3 entradas em `nuxt/nuxt`, agora
 19). Nenhum achado novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #24 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`research/bugbounty/program-policy.json`
+lido antes de tocar qualquer repositório) — `Block Open Source`
+(`blocked:true`), `Circle BBP` (`blocked:true`) e `Auth0 by Okta`
+(`blocked:true`, novo desde a rodada #23) confirmados bloqueados;
+`Kubernetes` segue `roeReviewNeeded:true`, revisão de RoE ainda
+pendente. `migrate-to-v2.mjs` rodado (Passo 0). `list-pending` global
+trouxe 37 candidatos, TODOS de programas fora de escopo desta sessão
+(30 Auth0 by Okta, 4 Circle BBP, 3 Kubernetes) — nenhum arquivo desses
+três programas clonado, aberto ou lido nesta rodada, nenhuma transição
+de estado tentada. Nota: os candidatos Auth0 já chegam com trechos de
+código reais no campo `reasoning`/`raw.note` (populados por uma etapa
+de scan anterior a esta sessão, não por esta rodada) — isso é uma
+lacuna de engenharia upstream (o scanner automático não checa
+`program-policy.json` antes de criar o candidato, só esta sessão checa
+antes de investigar), já registrada e não nova desde a rodada #23;
+não gerou ação aqui além de, mais uma vez, não tocar nenhum desses
+achados.
+
+Leitura profunda proativa: `vercel/eve` (clone raso, efêmero), 4
+arquivos novos (fora do padrão de 3, por serem pequenos/relacionados):
+
+- `.github/actions/vcr-login/lib.mjs` — helper de mascaramento de
+  output do GitHub Actions + constantes (registry/app id). Sem achado.
+- `.github/actions/vcr-login/main.mjs` (completo) — GitHub Action que
+  troca um OIDC token do GitHub Actions por um access token da Vercel
+  (token-exchange OAuth) e faz `docker login` no `vcr.vercel.com`. O
+  input `team` não é validado além de um aviso estético
+  (`startsWith("team_")`), mas só é usado dentro de
+  `URLSearchParams` (form-encoded, sem risco de injeção HTTP) e como
+  `--username` num array de argumentos passado a `spawnSync` (sem
+  shell, sem risco de injeção de comando). O `vercelToken` retornado é
+  mascarado via `::add-mask::` **antes** de ser persistido em
+  `GITHUB_STATE`, e a gravação usa um delimitador `randomUUID()` com
+  checagem explícita de colisão (se o próprio token contivesse o
+  delimitador gerado, lança erro em vez de corromper o arquivo de
+  estado). Sem achado.
+- `.github/actions/vcr-login/post.mjs` (completo) — cleanup: tenta
+  `docker logout` (best-effort, só warning se falhar) e revoga o
+  access token na Vercel via `/login/oauth/token/revoke`, sempre
+  mascarando o token antes de qualquer log/warning. Sem achado.
+- `packages/eve-buzz-acp-adapter/src/remote-target-auth.ts` (completo)
+  — só delega para `inspectVerifiedRemoteAgent`/`readEveTargetInfo` de
+  outro pacote (`eve/setup`), nenhuma decisão de autorização própria
+  neste arquivo. Sem achado.
+
+`deep-read-log.json` atualizado (+4 entradas em `vercel/eve`). Nenhum
+achado novo, nenhuma transição de estado nesta rodada.
