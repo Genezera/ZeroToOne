@@ -120,6 +120,10 @@ func PrivateKeyFromBase58(privkey string) (PrivateKey, error) {
 ```
 Espelhar a validação que `PublicKeyFromBase58`, no mesmo arquivo, já faz. Como defesa adicional, considerar propagar erro real de `base58.Decode` (ou trocar pela implementação `FastBase58DecodingAlphabet`, já presente no mesmo pacote, que detecta caractere inválido) em vez de retornar `[]byte("")` silenciosamente.
 
+## Divulgação obrigatória de uso de IA
+
+Este trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, análise e preparação do rascunho. Antes do envio, o pesquisador revisou independentemente o código, executou a PoC e confirmou pessoalmente cada alegação técnica e de impacto.
+
 ---
 
 ## Checagem de duplicata

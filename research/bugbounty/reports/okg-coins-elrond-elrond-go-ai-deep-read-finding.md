@@ -115,6 +115,10 @@ func Transfer(args ArgCreateTransaction, privateKeyHex string) (string, error) {
 ```
 Espelhar exatamente a validação que `AddressFromSeed`, no mesmo arquivo, já implementa. Considerar também renomear o parâmetro ou documentar explicitamente que `Transfer` espera um seed de 32 bytes, distinto do formato de 64 bytes aceito por `NewAddress`, para eliminar a ambiguidade de API que agrava o risco de uso incorreto.
 
+## Divulgação obrigatória de uso de IA
+
+Este trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, análise e preparação do rascunho. Antes do envio, o pesquisador revisou independentemente o código, executou a PoC e confirmou pessoalmente cada alegação técnica e de impacto.
+
 ---
 
 ## Checagem de duplicata

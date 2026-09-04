@@ -115,6 +115,10 @@ func NewKeypairFromHex(keyType int, privHex string) (*Keypair, error) {
 ```
 Validar o comprimento uma única vez em `NewKeypairFromHex` corrige `Sign` e `NewAddress` ao mesmo tempo, já que ambas passam por este construtor comum.
 
+## Divulgação obrigatória de uso de IA
+
+Este trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, análise e preparação do rascunho. Antes do envio, o pesquisador revisou independentemente o código, executou a PoC e confirmou pessoalmente cada alegação técnica e de impacto.
+
 ---
 
 ## Checagem de duplicata
