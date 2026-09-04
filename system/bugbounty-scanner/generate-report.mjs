@@ -76,8 +76,8 @@ export function assembleReportContext(db, findingId) {
 }
 
 export function renderReportDraft(ctx) {
-  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, officialUrl, policyEntry = null } = ctx;
-  const now = new Date().toISOString();
+  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, officialUrl, policyEntry = null, now: nowMs = Date.now() } = ctx;
+  const now = new Date(nowMs).toISOString();
   const policyChecklist = [
     policyEntry?.aiDisclosureRequired ? '- [ ] Uso de IA declarado explicitamente no relatório' : null,
     policyEntry?.productionTestingProhibited ? '- [ ] Confirmado que nenhum teste foi executado em produção' : null,
@@ -101,7 +101,7 @@ export function renderReportDraft(ctx) {
       ].filter(Boolean).join('\n')
     : '{{deploymentEvidence não registrado -- não deveria ser possível chegar aqui sem isso, ver state-machine.mjs}}';
 
-  const duplicateGate = duplicateCheck ? duplicateCheckGate(duplicateCheck) : null;
+  const duplicateGate = duplicateCheck ? duplicateCheckGate(duplicateCheck, { now: nowMs }) : null;
   const dupLine = duplicateCheck
     ? [
         `- Data: ${duplicateCheck.ts}`,
@@ -207,9 +207,10 @@ ${finding.reasoning || '{{reasoning vazio -- não deveria ser possível chegar a
 `;
 }
 
-export function generateReport(db, findingId, { reportsDir = DEFAULT_REPORTS_DIR } = {}) {
+export function generateReport(db, findingId, { reportsDir = DEFAULT_REPORTS_DIR, now = Date.now() } = {}) {
   const ctx = assembleReportContext(db, findingId);
   if (!ctx.ok) return ctx;
+  ctx.now = now;
   const markdown = renderReportDraft(ctx);
   if (!existsSync(reportsDir)) mkdirSync(reportsDir, { recursive: true });
   const reportPath = path.join(reportsDir, `${reportSlugFor(ctx.finding)}.md`);
@@ -218,7 +219,10 @@ export function generateReport(db, findingId, { reportsDir = DEFAULT_REPORTS_DIR
   const warnings = [];
   if (!ctx.passingValidation) warnings.push('sem validação PoC com result="pass" registrada');
   if (!ctx.duplicateCheck) warnings.push('sem checagem de duplicata registrada ainda (obrigatória antes de human_ready)');
-  else if (!duplicateCheckGate(ctx.duplicateCheck).ok) warnings.push(`checagem de duplicata não passa o gate: ${duplicateCheckGate(ctx.duplicateCheck).reason}`);
+  else {
+    const duplicateGate = duplicateCheckGate(ctx.duplicateCheck, { now });
+    if (!duplicateGate.ok) warnings.push(`checagem de duplicata não passa o gate: ${duplicateGate.reason}`);
+  }
   if (!ctx.impactAssessment) warnings.push('sem avaliação estruturada de impacto registrada');
   else if (!reportabilityGate(ctx.impactAssessment).ok) warnings.push(`impacto não passa o gate: ${reportabilityGate(ctx.impactAssessment).reason}`);
   return { ok: true, path: reportPath, warnings };

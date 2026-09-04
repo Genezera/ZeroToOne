@@ -172,7 +172,7 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
       confidentiality: 'none', integrity: 'high', availability: 'none', impactScope: 'other_user', reportable: true,
     });
 
-    const result = generateReport(db, SAMPLE.id, { reportsDir });
+    const result = generateReport(db, SAMPLE.id, { reportsDir, now: Date.parse('2026-09-03T18:00:00Z') });
     assert.equal(result.ok, true);
     assert.equal(existsSync(result.path), true);
     assert.deepEqual(result.warnings, []);
