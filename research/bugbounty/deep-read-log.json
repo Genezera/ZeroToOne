@@ -1041,6 +1041,13 @@
     "token/util/helpers.go",
     "token/api/types.go"
   ],
+  "kubernetes/cloud-provider-openstack": [
+    "pkg/identity/keystone/authenticator.go (AuthenticateToken -- delega validação de token pro Keystone real via GetTokenInfo/GetGroups, nunca aceita token vazio/inválido como autenticado -- erro do Keystone propaga como falha de auth, fail-closed. Sem achado)",
+    "pkg/identity/keystone/authorizer.go (policy-based authorizer -- policyList vem de config carregada no startup do apiserver pelo admin, não de input de requisição; fail-closed explícito quando user.GetExtra() é nil (\"keystone auth failed\"); policy sem campo Users aplica pra qualquer usuário só por design documentado do próprio kubernetes-keystone-webhook-authorization upstream, não é bypass de auth introduzido aqui. Sem achado)"
+  ],
+  "kubernetes/cloud-provider-aws": [
+    "cmd/ecr-credential-provider/plugin.go (ExecPlugin.Run -- protocolo oficial de credential provider exec do kubelet: request chega via stdin do próprio processo kubelet local (raiz/trusted), não de rede/atacante remoto; decode/encode via codec gerado, sem eval nem exec de conteúdo externo. Sem achado)"
+  ],
   "kiwicom/js-iam-middleware": [
     "src/validateIAPToken.ts",
     "src/authenticationMiddleware.ts",
