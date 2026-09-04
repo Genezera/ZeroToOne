@@ -892,7 +892,10 @@
     "packages/vercel-flags-core/src/controller/fetch-datafile.ts",
     "packages/flags/src/spec-extension/adapters/request-cookies.ts",
     "packages/flags/src/next/evaluate.ts",
-    "packages/vercel-flags-core/src/controller/bundled-source.ts"
+    "packages/vercel-flags-core/src/controller/bundled-source.ts",
+    "packages/vercel-flags-core/src/create-raw-client.ts (createRawClient/api -- orquestra initialize/evaluate/bulkEvaluate/experimental_reportOverride sobre fns.* injetadas; nenhuma decisao de autenticacao propria, origin.sdkKey so passa por aqui como metadado opaco (nunca comparado/validado neste arquivo) -- checagem real de SDK key ja coberta em controller/auth.ts. Sem achado)",
+    "packages/adapter-vercel/src/index.ts (completo -- createVercelAdapter/vercelAdapter/getOrCreateClient: cache de FlagsClient por sdkKey (Map<string|undefined,FlagsClient>) e por design compartilha um unico client quando sdkKey e undefined (comentario explicito: caso OIDC), decide()/bulkDecide() so repassam pra flagsClient.evaluate/bulkEvaluate (auth real fica em controller/auth.ts, ja coberto). Sem achado)",
+    "packages/vercel-flags-core/src/utils/usage/flags-config-read.ts + utils/request-context.ts (completo -- FlagsConfigReadEvent so extrai x-vercel-id e host de um allowlist explicito de 2 chaves do objeto headers do request-context global, nunca repassa o objeto headers inteiro nem authorization/cookie pro payload de telemetria enviado ao ingest endpoint. Sem achado)"
   ],
   "vercel/ms": [
     "src/index.ts"

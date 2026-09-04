@@ -1153,3 +1153,16 @@ contrato novo; os 15 contratos Clarity já cobertos seguem sem mudança
 conhecida, nenhum arquivo novo candidato neste programa. Leitura
 profunda proativa desta rodada direcionada a `vercel/eve` (ver NOTES.md
 de Vercel Open Source). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #25 (leitura profunda proativa, escopo restrito a StackingDAO + Vercel Open Source)
+
+`program-policy.json` checado como passo zero (rodada explicitamente
+restrita a estes dois programas). Os 15 contratos Clarity seguem 100%
+cobertos, sem candidato novo em `deep-read-log.json`. Única tentativa
+desta rodada de checar deploy de contrato novo:
+`curl -m 8 https://api.hiro.so/...` -- bloqueado de novo (exit 56,
+connection failure no CONNECT do agent-proxy), mesmo padrão de ~10+
+rodadas consecutivas. Leitura profunda proativa desta rodada
+direcionada a `vercel/flags` (ver NOTES.md de Vercel Open Source, sem
+achado). Nenhum achado novo, nenhuma transição de estado neste
+programa.

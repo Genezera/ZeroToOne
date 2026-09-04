@@ -7430,3 +7430,70 @@ arquivos novos (fora do padrão de 3, por serem pequenos/relacionados):
 
 `deep-read-log.json` atualizado (+4 entradas em `vercel/eve`). Nenhum
 achado novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #25 (leitura profunda proativa, escopo restrito a StackingDAO + Vercel Open Source)
+
+`program-policy.json` checado como passo zero, antes de tocar qualquer
+repositório -- esta rodada foi explicitamente restrita pelo operador a
+só `StackingDAO` e `Vercel Open Source`; `Block Open Source`
+(`aiResearchBanned`/`blocked`), `Circle BBP` (`blocked`), `Auth0 by
+Okta` (`blocked`) e `Kubernetes` (`roeReviewNeeded`) não foram tocados
+-- nenhum repo desses quatro programas clonado, aberto ou lido.
+`list-pending` trouxe só candidatos desses quatro programas fora de
+escopo (Auth0/Circle/Kubernetes); nenhum deles foi lido além do que o
+próprio `list-pending` já expõe no reasoning (etapa de scan anterior),
+nenhuma ação tomada sobre eles.
+
+Leitura profunda proativa direcionada a `vercel/flags` (16 arquivos já
+cobertos em rodadas anteriores -- `controller/auth.ts`,
+`verify-access.ts`, `sdk-keys.ts` etc.). Clone raso, listagem completa
+do repo (`find` sobre todos os `.ts`/`.tsx`) comparada contra
+`deep-read-log.json`; a maior parte da superfície nova é doc site/
+examples/testes, sem risco. 3 arquivos novos lidos por completo,
+priorizando o que ainda tocava client/adapter/telemetria não coberto:
+
+- `packages/vercel-flags-core/src/create-raw-client.ts` (completo) --
+  `createCreateRawClient`/`createRawClient`: só orquestra
+  `initialize`/`evaluate`/`bulkEvaluate`/`experimental_reportOverride`
+  sobre funções injetadas (`fns.*`); `origin.sdkKey` passa por aqui só
+  como metadado opaco, nunca comparado nem validado neste arquivo --
+  a checagem real de SDK key já foi confirmada em `controller/auth.ts`
+  em rodada anterior. Sem achado.
+- `packages/adapter-vercel/src/index.ts` (completo) --
+  `createVercelAdapter`/`vercelAdapter`/`getOrCreateClient`: cacheia um
+  `FlagsClient` por `sdkKey` num `Map`; quando `sdkKey` é `undefined`
+  (caso OIDC), o design deliberadamente compartilha um único client
+  (comentário explícito no código confirma a intenção). `decide()`/
+  `bulkDecide()` só repassam pra `flagsClient.evaluate`/`bulkEvaluate`
+  -- a fronteira de auth real segue em `controller/auth.ts`. Investiguei
+  se o cache por `sdkKey` indefinido poderia misturar dados entre
+  tenants diferentes: não, porque cada chamador que não passa `sdkKey`
+  está no mesmo caminho OIDC (identidade do próprio ambiente Vercel,
+  não de terceiro), então "compartilhar" aqui é o comportamento
+  pretendido, não confused-deputy. Sem achado.
+- `packages/vercel-flags-core/src/utils/usage/flags-config-read.ts` +
+  `packages/vercel-flags-core/src/utils/request-context.ts` (completos)
+  -- `FlagsConfigReadEvent` monta o payload de telemetria enviado ao
+  ingest endpoint da Vercel; verifiquei se o objeto `headers` inteiro
+  do request (que poderia conter `authorization`/`cookie`) vazava pro
+  payload -- não vaza: `request-context.ts` só expõe
+  `Record<string,string>` já filtrado pelo runtime global, e
+  `FlagsConfigReadEvent` extrai só duas chaves explícitas
+  (`x-vercel-id`, `host`), nunca itera nem repassa o objeto inteiro.
+  Sem achado.
+
+Também revisados brevemente (sem entrar no log, achados óbvios demais
+pra contar como leitura formal): `headers.ts` (cópia reduzida do
+`HeadersAdapter` do Next.js, sem lógica de auth própria),
+`controller/polling-source.ts` (delega toda auth pra `fetch-datafile.ts`,
+já coberto) e `errors.ts` (2 classes de erro triviais, sem interpolar
+segredo). `deep-read-log.json` atualizado com as 3 entradas formais em
+`vercel/flags` (agora 19 arquivos).
+
+Para StackingDAO: conferido `research/bugbounty/stackingdao/NOTES.md`
+(os 15 contratos Clarity seguem 100% cobertos, sem candidato novo).
+Tentativa única de checar deploy de contrato novo via
+`curl -m 8 https://api.hiro.so/...` -- bloqueado de novo (exit 56,
+connection failure no CONNECT do agent-proxy), mesmo padrão de ~10+
+rodadas consecutivas nesta sessão/ambiente. Nenhuma mudança de estado
+em nenhum programa nesta rodada; nenhum achado novo.
