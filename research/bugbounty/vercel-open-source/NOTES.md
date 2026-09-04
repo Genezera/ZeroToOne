@@ -6489,3 +6489,68 @@ achado já existente de `predictable_hook_token_seed_risk`: quem pode
 `deep-read-log.json` atualizado (`vercel/workflow` +3 entradas, agora
 28 no total). Nenhum finding novo, nenhuma transição de estado nesta
 rodada.
+
+## Rodada 2026-09-04 #4 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl -m 8`: `errno=56` (connection reset), mesmo bloqueio de
+rede de todas as rodadas anteriores -- os 15 contratos Clarity de
+StackingDAO já cobertos seguem sem mudança conhecida, nenhum arquivo
+novo candidato lá.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/chat`
+(clone raso local, descartado ao final), focando o pacote núcleo
+`packages/chat` que ainda não tinha nenhum arquivo próprio lido (rodadas
+anteriores só cobriram os adapters de webhook e o crypto compartilhado).
+Escolhidos por julgamento próprio (não regex) por tocarem fronteiras de
+confiança reais -- token de callback e escopo de ferramentas de IA:
+
+- `packages/chat/src/callback-url.ts` (completo) -- `generateToken()`
+  usa 16 hex chars de `crypto.randomUUID()` (64 bits de entropia),
+  guardado no `stateAdapter` com TTL de 7 dias. `resolveCallbackUrl` faz
+  `acquireLock` + `delete` na mesma chave -- token é single-use e
+  protegido contra corrida em double-click. A validação de escopo
+  (`actionId` + `channelId`/`threadId`) compara contra o `context`
+  passado pelo chamador -- rastreado até o único call site real
+  (`chat.ts:handleActionEvent`). Sem achado isolado neste arquivo.
+- `packages/chat/src/chat.ts` (`handleActionEvent`, L1708-1767 --
+  consumidor real de `decodeCallbackValue`/`resolveCallbackUrl`/
+  `postToCallbackUrl`) -- `actionId`/`threadId` usados no lookup vêm do
+  `event` já autenticado pela verificação de assinatura do adapter
+  correspondente (ex.: `adapter-slack/verify.ts`), não de input extra
+  não confiável; o `callbackUrl` que acaba sendo postado
+  (`resolved.url`) vem do card originalmente construído pelo próprio
+  app via `el.callbackUrl` no momento de montar a mensagem, não de dado
+  controlável por quem clicou no botão -- sem SSRF de terceiro aqui.
+  Arquivo é grande (>3000 linhas); só esta função revisada nesta
+  rodada. Sem achado.
+- `packages/chat/src/ai/scope.ts` (completo) -- `createScopeGuard`/
+  `channelOf` são a fronteira real de confinamento de ferramentas de IA
+  contra `threadId`/`channelId` fornecido pelo próprio modelo (ex.:
+  `fetchMessages` em `ai/tools/threads.ts` aceita `threadId` como input
+  de tool call -- alvo plausível de prompt injection vindo do conteúdo
+  de uma mensagem). Investiguei a fundo se o parsing de id
+  `"{adapter}:..."` em `channelOf` poderia ser explorado com um id
+  hostil pra escapar do canal ativo: confirmei contra os testes reais
+  de `adapter-slack`/`adapter-discord`/`adapter-linear`/`adapter-github`
+  que `channelIdFromThreadId` espera mesmo a string com prefixo
+  completo (não um id "cru"), então a chamada em `channelOf` está
+  correta. O fallback (`id.split(':').slice(0,2).join(':')`) só
+  dispara quando o prefixo não corresponde a nenhum adapter registrado
+  (id malformado/hostil) -- mas como `active`/`explicit` nunca é
+  controlável pelo agente (vem de `runInConversation` com o threadId
+  real do evento verificado, ou de um `scope` fixo definido pelo
+  próprio app no código), um id hostil do lado `target` sempre resolve
+  pra uma string diferente do canal ativo real, seja pela via normal
+  (adapter real que devolve outro canal), seja pelo fallback (string
+  literal que não bate com nada) -- a comparação `sameChannel` falha
+  nos dois casos e a chamada é bloqueada. Fail-closed; não achei bypass
+  real, mas documentando o raciocínio completo aqui porque é a
+  fronteira de segurança mais sensível que li nesta rodada (é o que
+  impede um agente manipulado por prompt injection de vazar
+  mensagens de outro canal/thread).
+
+`deep-read-log.json` atualizado (`vercel/chat` +3 entradas). Nenhum
+finding novo, nenhuma transição de estado nesta rodada.
