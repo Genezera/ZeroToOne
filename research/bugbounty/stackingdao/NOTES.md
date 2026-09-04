@@ -973,3 +973,18 @@ mudança conhecida. Rodou em paralelo com a rodada acima (mesmo dia);
 ambas escolheram `vercel/turborepo` pra leitura profunda proativa, mas
 arquivos diferentes (ver NOTES.md de Vercel Open Source) — mesclado
 sem perda ao sincronizar. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado
+nesta rodada. `migrate-to-v2.mjs` + `list-pending` global = 0 (fila
+vazia). `api.hiro.so` recheck rápido: `connect_rejected` no CONNECT do
+agent-proxy (mesmo bloqueio de rodadas anteriores) — não deu pra
+confirmar se o deployer `SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG`
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida, nenhum arquivo novo candidato neste programa. Leitura
+profunda proativa desta rodada direcionada a `nitrojs/nitro` (ver
+NOTES.md de Vercel Open Source: `utils/hash.ts`, `presets/vercel/
+utils.ts`, `config/resolvers/route-rules.ts`), sem achado. Nenhuma
+transição de estado neste programa.

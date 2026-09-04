@@ -628,7 +628,10 @@
     "src/routing.ts",
     "src/presets/vercel/runtime/cron-handler.ts",
     "src/runtime/internal/app.ts",
-    "src/presets/aws-lambda/runtime/_utils.ts"
+    "src/presets/aws-lambda/runtime/_utils.ts",
+    "src/utils/hash.ts (sha256 truncado p/ chave de cache/identificador gerado, sem uso em comparação de segredo. Sem achado)",
+    "src/presets/vercel/utils.ts (generateFunctionFiles/generateEdgeFunctionFiles -- bypassToken de nitro.options.vercel.config é só repassado pro .prerender-config.json do Build Output API, convenção documentada da própria Vercel p/ bypass de cache ISR pelo edge da Vercel, não input de terceiro nem comparação insegura. Sem achado)",
+    "src/config/resolvers/route-rules.ts (só valida em build-time que basicAuth não foi colocado como route rule -- aviso de config incorreta, sem lógica de autenticação própria. Sem achado)"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/app/island-props.ts",

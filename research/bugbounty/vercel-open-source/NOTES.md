@@ -5977,3 +5977,42 @@ não tinha tocado:
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/ai` +3 arquivos, agora 27 no total, sem duplicar as entradas
 já gravadas pela rodada concorrente acima).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia nos 4
+programas desta missão). Os 13 achados em `corroborated_static` de
+rodadas anteriores (inclusive o de `vercel/chat`/`adapter-discord`
+CWE-208 e o de `vercel/ai`/`runBridge` timing_attack_risk) não foram
+reabertos nesta rodada — seguem fora do laço de `list-pending` (só
+processa `candidate`), consistente com o padrão das rodadas anteriores.
+
+Leitura profunda proativa: todos os 16 repos em escopo do programa já
+tinham sido tocados em rodadas anteriores (`nitrojs/nitro`, `nuxt/
+nuxt`, `sveltejs/svelte`, `vercel-labs/agent-skills`, `vercel-labs/
+skills`, `vercel/ai`, `vercel/async-sema`, `vercel/chat`, `vercel/eve`,
+`vercel/flags`, `vercel/ms`, `vercel/next.js`, `vercel/swr`, `vercel/
+turborepo`, `vercel/vercel`, `vercel/workflow`) — escolhi `nitrojs/
+nitro` de novo por ter poucos arquivos logados e procurei arquivo novo
+ainda não lido com grep por auth/session/token/crypto/login/password/
+admin/permission/access em `src/`:
+
+- `src/utils/hash.ts` (completo, 9 linhas) — `createHash("sha256")`
+  truncado pra chave de cache/identificador gerado (build-time), sem
+  uso em comparação de segredo nem verificação de assinatura. Sem
+  achado.
+- `src/presets/vercel/utils.ts` (`generateFunctionFiles`/
+  `generateEdgeFunctionFiles`) — `bypassToken` de
+  `nitro.options.vercel.config` só é repassado pro
+  `.prerender-config.json` do Build Output API da própria Vercel
+  (convenção documentada, consumida pelo edge da Vercel pra bypass de
+  cache ISR) — não é input de terceiro nem comparação insegura dentro
+  deste repo. Sem achado.
+- `src/config/resolvers/route-rules.ts` — só emite aviso em build-time
+  se `basicAuth` foi colocado como route rule em vez de middleware
+  (erro de configuração, não bug de autenticação). Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(`nitrojs/nitro` +3 arquivos).
