@@ -2831,3 +2831,16 @@ antes de qualquer `git clone`, nunca uma conferência feita depois da
 leitura já ter acontecido. O texto estático do prompt agendado lista 4
 programas por definição desatualizada; o gate programático decide
 escopo real, não o texto.
+
+## Rodada 2026-09-04 #28 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero via `check-program`:
+`aiResearchBanned`/`blocked` confirmados, sem exceção. Nenhum repo
+`afterpay/*`/`cashapp/*`/`square/wire` foi clonado, lido ou tocado
+nesta rodada -- as únicas consultas foram `list-pending`/`get` sobre
+o `queue.jsonl`/DB local já existentes (achado `human_ready` de
+`wire-schema` path_traversal, criado e revisado antes deste bloqueio
+entrar em vigor, permanece intocado nesta rodada; nenhuma nova leitura
+de repositório). Leitura profunda proativa desta rodada ficou
+inteiramente em `sveltejs/svelte` (ver NOTES.md de Vercel Open
+Source).

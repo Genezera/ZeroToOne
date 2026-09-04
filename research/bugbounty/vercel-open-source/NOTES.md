@@ -7609,3 +7609,120 @@ Verificação de deploy StackingDAO: `curl -m 8 https://api.hiro.so/...`
 mesmo padrão de dezenas de rodadas consecutivas nesta sessão/ambiente.
 Nenhuma mudança de estado em nenhum programa nesta rodada; nenhum
 achado novo.
+
+## Rodada 2026-09-04 #28 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero via `check-program`:
+`Block Open Source` (`aiResearchBanned`), `Circle BBP` (`blocked`) e
+`Auth0 by Okta` (`blocked`) confirmados -- nenhum repo desses três
+tocado. `migrate-to-v2.mjs` + `list-pending` global = 34 candidatos,
+100% de programas fora de escopo desta sessão (30 Auth0 by Okta, 4
+Circle BBP) -- nenhum arquivo desses dois programas clonado, aberto ou
+lido; nenhuma ação tomada sobre eles. Nota de processo: o texto
+estático do prompt agendado ainda lista "Block Open Source" e "Circle
+BBP" como 2 dos 4 programas da rodada -- o gate programático
+(`program-policy.json`) é quem decide escopo real, não o texto do
+prompt, e ambos seguem bloqueados por decisão já registrada
+(RoE proíbe IA / instrução direta do usuário, respectivamente).
+
+Os 5 achados `corroborated_static` já existentes deste programa
+(`runBridge` timing_attack_risk, `verify-claim.mjs` path_traversal,
+`update-remix-run-dev.js` command_injection, `image-optimizer.ts` SSRF
+-- já com `platformOutcome: duplicate` do report #3943945 -- e os 3
+`semgrep_detect_child_process` de `mcp.ts`) foram checados: nenhuma
+evidência nova, nenhuma transição tentada, consistente com dezenas de
+rodadas anteriores.
+
+Leitura profunda proativa: `vercel/vercel`/`vercel/next.js`/`vercel/ai`
+seguem com a superfície auth/session/crypto/token essencialmente
+esgotada (mesma conclusão de rodadas anteriores). Continuado
+`sveltejs/svelte` (17→20 arquivos no `deep-read-log.json`), clone raso
+público via `git clone --depth 1 --filter=blob:none --sparse` +
+`sparse-checkout set packages`, removido do scratchpad ao final. Busca
+por auth/session/token/secret/password/crypto/sanitiz/escape/
+permission/access/cookie sobre `packages/svelte/src/**/*.{js,ts}` deu
+~70 candidatos por nome; 3 novos escolhidos (fora do que já constava
+no log):
+
+- `packages/svelte/src/compiler/preprocess/decode_sourcemap.js`
+  (completo) -- `decode_map`/`decoded_sourcemap_from_generator`: só
+  transforma um objeto de sourcemap fornecido pelo próprio
+  desenvolvedor (via preprocessor, compile-time) através de
+  `JSON.parse`/desestruturação de arrays -- nenhuma leitura de
+  filesystem por path externo, nenhum sink de execução. Sem achado.
+- `packages/svelte/src/internal/client/dom/elements/custom-element.js`
+  (completo) -- `SvelteElement`/`create_custom_element`: reflexão de
+  props↔atributos de custom elements no browser em runtime;
+  `get_custom_element_value` só (de)serializa tipos `Object`/`Array`
+  via `JSON.parse`/`JSON.stringify` (nunca `eval`), e toda escrita no
+  DOM usa `setAttribute`/`removeAttribute`/propriedades nativas
+  (auto-escapadas pelo browser, sem concatenação de HTML própria).
+  Sem achado.
+- `packages/svelte/src/internal/client/dom/elements/bindings/input.js`
+  (completo) -- `bind_value`/`bind_group`/`bind_checked`/`bind_files`:
+  binding bidirecional de `<input>`, só lê/escreve `.value`/`.checked`/
+  `.files` via propriedades nativas do DOM, nenhuma concatenação de
+  HTML nem `innerHTML`. Sem achado.
+
+Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md` (15
+contratos Clarity seguem 100% cobertos, `api.hiro.so` bloqueado de
+novo pelo agent-proxy). Nenhuma mudança de estado em nenhum programa
+nesta rodada; nenhum achado novo.
+
+## Rodada 2026-09-04 #29 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` confirmados bloqueados via
+`check-program`/leitura direta do arquivo -- nenhum repo desses
+tocado). `migrate-to-v2.mjs` + `list-pending` global = 34, 100% de
+programas fora de escopo (30 Auth0 by Okta, 4 Circle BBP) -- nenhum
+investigado, consistente com dezenas de rodadas anteriores.
+
+Leitura profunda proativa direcionada a `vercel/vercel` (clone raso
+público `git clone --depth 1 --filter=blob:none --sparse`, sem
+credencial). Busca por
+auth/session/crypto/token/login/password/admin/permission/access/
+secret/credential/jwt/oauth/sso sobre a árvore completa do repo
+(`git ls-tree -r --name-only HEAD`, ~13k arquivos) excluindo o que já
+constava em `deep-read-log.json` e ruído óbvio (exemplos, testes,
+configs, vendored) deu 5 candidatos; 3 lidos por completo nesta
+rodada:
+
+- `packages/cli-auth/sso.ts` -- `reauthorizeTeam`/`waitForVerification`:
+  fluxo de re-autorização SSO do CLI. Sobe um `http.createServer()` em
+  `127.0.0.1` com porta efêmera, abre o browser numa URL
+  `vercel.com/sso/<team>` e espera UMA requisição de callback (extrai
+  `token`/`loginError` da query string, sem validar nenhum segredo de
+  estado gerado pelo próprio CLI contra a resposta recebida além do
+  `session_id`/`client_id` já usados na introspecção prévia do token
+  existente). Em teoria qualquer processo local rodando como o mesmo
+  usuário do SO poderia vencer a corrida e bater nessa porta antes do
+  browser real, injetando um `token` arbitrário que o CLI aceitaria
+  como `verificationToken` e reenviaria pra
+  `api.vercel.com/registration/verify`. Investigado como possível
+  achado, mas **refutado como não-elegível**: exige execução de código
+  arbitrário já estabelecida na MESMA máquina do usuário como
+  pré-condição (mesmo modelo de ameaça do `oauth.ts`/local callback já
+  revisado em rodadas anteriores desta missão, e padrão idêntico ao
+  usado por `gh auth login`/outras CLIs -- loopback OAuth é uma
+  categoria de design aceita, não uma falha nova). Sem achado
+  reportável.
+- `packages/cli-config/src/cred-storage.ts` --
+  `getLikelyEffectiveCredStorage`/`getLikelyConfiguredCredStorage`:
+  decide `file` vs `keyring` como backend de armazenamento de
+  credencial, lendo config global + env var `VERCEL_TOKEN_STORAGE`.
+  Puramente decisório (qual storage usar), não implementa
+  criptografia nem persiste segredo diretamente -- delega pra
+  `cli-config.ts`/keyring do SO. Sem achado.
+- `packages/cli/src/util/integration/build-sso-link.ts` -- monta URL
+  de SSO de marketplace (`teamId`/`integrationConfigurationId`/
+  `resource_id` via `URLSearchParams.set`, que já faz encoding
+  correto). Função trivial de 15 linhas, sem sink de injeção. Sem
+  achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel` 104→107 arquivos).
+Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md`
+(`api.hiro.so` reconfirmado bloqueado pelo agent-proxy nesta rodada,
+`connect_rejected`; 15 contratos Clarity seguem 100% cobertos, sem
+mudança). Nenhuma mudança de estado em nenhum programa nesta rodada;
+nenhum achado novo elegível.

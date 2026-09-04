@@ -6722,3 +6722,17 @@ comparação não timing-safe de bot token em `adapter-discord`). O
 achado travado em `corroborated_static`
 (`Mints.sol::_mint::unchecked_call_return`) segue intocado, sem
 nenhuma ação.
+
+## Rodada 2026-09-04 #28 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado (`blocked: true` continua vigente,
+instrução direta do usuário, sem exceção). Nenhum repo `circlefin/*`
+foi clonado, lido ou tocado nesta rodada -- as únicas consultas foram
+`list-pending`/`get` sobre o `queue.jsonl` já existente (4 candidatos
+`unchecked_call_return` em `004_UpgradeGatewayWallet.sol` e o achado
+já em `corroborated_static`, todos herdados de rodadas passadas, sem
+pesquisa nova). Leitura profunda proativa desta rodada ficou
+inteiramente em `sveltejs/svelte` (ver NOTES.md de Vercel Open Source).
+O achado travado em `corroborated_static`
+(`Mints.sol::_mint::unchecked_call_return`) segue intocado, sem
+nenhuma ação.
