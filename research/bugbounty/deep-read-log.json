@@ -631,7 +631,10 @@
     "src/presets/aws-lambda/runtime/_utils.ts",
     "src/utils/hash.ts (sha256 truncado p/ chave de cache/identificador gerado, sem uso em comparação de segredo. Sem achado)",
     "src/presets/vercel/utils.ts (generateFunctionFiles/generateEdgeFunctionFiles -- bypassToken de nitro.options.vercel.config é só repassado pro .prerender-config.json do Build Output API, convenção documentada da própria Vercel p/ bypass de cache ISR pelo edge da Vercel, não input de terceiro nem comparação insegura. Sem achado)",
-    "src/config/resolvers/route-rules.ts (só valida em build-time que basicAuth não foi colocado como route rule -- aviso de config incorreta, sem lógica de autenticação própria. Sem achado)"
+    "src/config/resolvers/route-rules.ts (só valida em build-time que basicAuth não foi colocado como route rule -- aviso de config incorreta, sem lógica de autenticação própria. Sem achado)",
+    "src/presets/azure/runtime/_utils.ts (getAzureParsedCookiesFromHeaders -- so traduz Set-Cookie de SAIDA da resposta Nitro pro formato Cookie[] da Azure Functions runtime, sem decisao de auth nem header de entrada tratado como confiavel. Sem achado)",
+    "src/presets/azure/runtime/azure-swa.ts (handle() reconstroi Request a partir de x-ms-original-url ou /api/*, mas NAO repassa req.headers (so method+body) pro novo Request -- headers de entrada como cookies/authorization/x-ms-client-principal nunca chegam ao app Nitro por esse preset. Efeito e fail-closed/funcional (app nunca ve credencial de entrada, nao ha bypass de autorizacao possivel por isso), nao e uma vulnerabilidade exploravel; registrado como observacao, sem achado)",
+    "src/presets/netlify/types.ts (so declaracoes de tipo TS do Netlify Frameworks API, sem logica em runtime. Sem achado)"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/core/plugins/import-protection.ts (createImportProtectionPatterns -- registra padrões de regex bloqueando import de módulos build-time/server em contexto client e vice-versa, aplicado via plugin Vite/Rollup em build-time; puramente allowlist declarativa sem I/O nem decisão em runtime de request, sem achado)",

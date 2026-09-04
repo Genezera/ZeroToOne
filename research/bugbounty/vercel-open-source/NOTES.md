@@ -7246,3 +7246,53 @@ vez de canais de auth (já bem cobertos): 3 arquivos de produção novos --
 achado novo, nenhuma transição de estado nesta rodada. `Block Open
 Source`/`Circle BBP` seguem fora de escopo desta sessão por política
 local (`program-policy.json`).
+
+## Rodada 2026-09-04 #22 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`/
+`Circle BBP` seguem bloqueados (`aiResearchBanned`/`blocked`), nenhum
+arquivo desses dois programas clonado ou lido nesta rodada, inclusive
+os já em disco de rodadas passadas não foram reabertos. `list-pending`
+global = 0. Revisitados os 8 findings não-terminais de `Vercel Open
+Source` (`corroborated_static` x6, `inconclusive` x1 -- listados por
+consulta direta ao SQLite, já documentados em rodadas anteriores) só
+por leitura de estado; nenhum evento de fila os disparando nesta
+rodada, nenhuma ação nova.
+
+Leitura profunda proativa: `vercel/turborepo` (clone raso) -- conferido
+contra `deep-read-log.json` já existente (25 arquivos, toda a crate
+`turborepo-auth` e `signature_authentication.rs` já cobertos em rodadas
+anteriores); os 3 arquivos ainda não lidos de nome com "token"
+(`turborepo-wax/src/token/{mod,parse,variance}.rs`) são da crate
+vendorizada `wax` (glob matching de terceiro, não-Vercel) -- "token" ali
+é token de parser de glob, não token de autenticação; falso positivo de
+substring, mesmo padrão já filtrado em rodadas anteriores para
+`authored-*` em `vercel/eve`. Sem superfície nova em turborepo, pivotei
+para `nitrojs/nitro` (Tier 1 OSS, também em escopo) e li 3 arquivos
+ainda não cobertos:
+
+- `src/presets/azure/runtime/_utils.ts` (completo) --
+  `getAzureParsedCookiesFromHeaders` só traduz `Set-Cookie` da
+  *resposta* que o próprio Nitro app gerou pro formato `Cookie[]` da
+  Azure Functions runtime; não trata nenhum header de entrada como
+  confiável. Sem achado.
+- `src/presets/azure/runtime/azure-swa.ts` (completo) -- `handle()`
+  reconstrói a `Request` a partir de `x-ms-original-url` (ou
+  `/api/*`), mas repassa só `method`+`body` pro `new Request(...)` --
+  **não inclui `req.headers`**. Na prática isso significa que nenhum
+  header de entrada (cookies, `authorization`,
+  `x-ms-client-principal` do Azure Static Web Apps auth) chega ao app
+  Nitro por este preset específico. Investiguei se isso abriria bypass
+  de autorização (padrão clássico: app confia em header ausente como
+  "não autenticado" e outra camada abre exceção) -- não há essa
+  segunda camada aqui, o efeito é fail-closed/funcional (a integração
+  de auth do SWA simplesmente não funcionaria via este preset, não é
+  um bypass que dá acesso extra a um atacante). Documentado como
+  observação, não como achado de segurança.
+- `src/presets/netlify/types.ts` (completo) -- só declarações de tipo
+  TS da Netlify Frameworks API, sem lógica em runtime. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `nitrojs/nitro`).
+Nenhum achado novo, nenhuma transição de estado nesta rodada. `Block
+Open Source`/`Circle BBP` seguem fora de escopo desta sessão por
+política local (`program-policy.json`).
