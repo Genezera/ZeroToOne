@@ -6194,3 +6194,77 @@ explícita. `WebFetch` pra `bugcrowd.com`/`web.archive.org` falhou
 Campo continua `roeReviewNeeded:true`, não escalado a `aiResearchBanned`
 sem confirmação real. Verificação humana (navegador real) da RoE do
 Auth0 by Okta em bugcrowd.com/engagements/auth0-okta segue pendente.
+
+## Rodada 2026-09-04 #8 (push automático via GitHub webhook) — ACHADO NOVO, avançado até `scope_verified`, rascunho de relatório escrito
+
+`program-policy.json` checado como passo zero: `Block Open Source`/
+`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia).
+
+Leitura profunda proativa direcionada a `vercel/workflow` (ainda pouco
+coberto — 18 entradas antigas, quase todas na área "hook token", motivada
+pelos changesets recentes `.changeset/hook-token-reuse-after-dispose.md`,
+`.changeset/reject-empty-hook-token.md`, `.changeset/hook-token-claim-release.md`
+etc., todos sobre bugs de CICLO DE VIDA do token, não sobre previsibilidade).
+Segui a pista até a geração do token em si (`packages/core/src/workflow/hook.ts`
+→ `packages/core/src/workflow.ts` → `packages/core/src/vm/index.ts`) e achei
+algo estrutural, não um bug de ciclo de vida:
+
+**`createHook()`/`createWebhook()` geram o token via `seedrandom(seed)`
+(PRNG determinístico, necessário pro replay do motor de workflow), e o
+`seed` é `runId:workflowName:deploymentId` (branch main/v5-beta) ou
+`runId:workflowName:+startedAt` (pacote ESTÁVEL publicado
+`@workflow/core@4.8.5`, confirmado baixando o tarball real do registry
+npm) — os 3 componentes são explicitamente NÃO-secretos pela própria
+documentação/API do produto (`runId` é aceito por `getRun(runId)`;
+`workflowName` é literal de código-fonte; `deploymentId`/`startedAt` são
+metadados de rotina; `fixedTimestamp` é decodificado DIRETO do próprio
+`runId`, que é um ULID). A doc oficial declara que esse token "is the
+only authorization performed for incoming requests" no endpoint público
+`/.well-known/workflow/v1/webhook/:token`.**
+
+PoC real rodada localmente (`node --test`, dependências exatas fixadas
+pelo projeto — `seedrandom@3.0.5`, `nanoid@5.1.6`, `ulid@3.0.1`, sem
+tocar infraestrutura real): duas execuções independentes do mesmo seed
+produzem o token IDÊNTICO — `ok 1` no `node --test`, confirmando que o
+token não carrega entropia própria.
+
+Achado registrado como
+`Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk`,
+avançado via CLI real (sem forçar nenhuma transição):
+`candidate` → `corroborated_static` (filesRead + reasoning) →
+`reproduced_local` (validação `local_repro_script` + depois `node_test`,
+ambas `result=pass` reais) → `scope_verified` (`check-scope("Vercel Open
+Source","vercel/workflow")` = `allowed:true,bountyEligible:true`;
+`record-deployment-evidence` com `confidence=high`, porque baixei o
+tarball publicado no npm registry e confirmei bit-a-bit o mesmo padrão
+vulnerável no código compilado distribuído, não só no branch de
+desenvolvimento). Rascunho de relatório escrito seguindo o TEMPLATE.md
+exato, salvo em
+`research/bugbounty/reports/vercel-workflow-predictable-hook-token.md`,
+`record-report` registrado.
+
+**Bloqueado em `scope_verified`, não `human_ready` — limitação real,
+não contornada**: a transição pra `human_ready` exige
+`record-impact-assessment` (feito, `reportable:true`) E
+`record-duplicate-check` com métodos rastreáveis reais
+(`github_issues`+`github_advisories`+`hacktivity`/`web_search`, ≥3
+queries distintas). Tentei `search-prior-art` de verdade (config real
+com 3 queries sobre "hook token predictable seed" contra
+`vercel/workflow`) e a API do GitHub devolveu `401` neste ambiente —
+mesma classe de bloqueio de rede já documentada várias vezes neste
+projeto (ex. `api.hiro.so` bloqueado pro StackingDAO). Além disso, ao
+ler `novelty-risk.mjs::duplicateCheckGate`, confirmei que o gate atual
+exige `noveltyStatus==="regression"` com prova de regressão verificada
+(commit introdutor vs. parent, mesma validação em ambos) — desenhado
+pra achados que são REINTRODUÇÃO de um bug já corrigido antes, não pra
+uma descoberta genuinamente nova como esta. Não forcei/simulei nenhum
+dos dois (nem prior-art fake, nem prova de regressão que não existe) —
+documentando aqui como limitação estrutural real do gate atual pra
+achados de primeira descoberta, não como falha da investigação. O único
+`human_ready` existente no sistema inteiro (`Block Open Source::wire...`)
+é de antes do programa ser bloqueado — não há precedente de um achado
+genuinamente novo ter passado por este gate específico ainda.
+
+`deep-read-log.json` atualizado (`vercel/workflow` +7 entradas, agora 25
+no total).

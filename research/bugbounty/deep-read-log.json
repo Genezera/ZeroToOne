@@ -1040,7 +1040,14 @@
     "packages/world-vercel/src/deployment-id.ts",
     "packages/world-vercel/src/create-run-id.ts",
     "packages/core/src/runtime/resume-hook.ts",
-    "packages/core/src/create-hook.ts"
+    "packages/core/src/create-hook.ts",
+    "packages/world-local/src/storage/hook-index.ts (indexes duraveis token-index/id-index/by-run para lookup de hooks -- sem achado isolado, mas confirma o design de claim/dispose que motivou os changesets recentes de hook-token-claim-release)",
+    "packages/world-local/src/storage/hooks-storage.ts (findHookByToken/rebuildLiveHookByTokenFromEventLog -- fast path via claim file, slow path scan; sem achado isolado neste arquivo)",
+    "packages/core/src/workflow/hook.ts (createHookImpl completo -- ACHADO REAL: token = ctx.generateNanoid(), rastreado ate vm/index.ts/workflow.ts, ver finding predictable_hook_token_seed_risk)",
+    "packages/core/src/vm/index.ts (createContext -- confirma Math.random e crypto.getRandomValues sobrescritos por seedrandom(seed) dentro da VM sandboxed)",
+    "packages/core/src/workflow.ts (linhas 353-470 -- construcao do seed a partir de runId:workflowName:deploymentId, generateUlid/generateNanoid)",
+    "packages/core/src/workflow/create-hook.ts (createWebhook -- confirma que webhooks NUNCA aceitam token customizado, sempre via generateNanoid)",
+    "packages/core/src/runtime/run-id-time.ts (runIdCreatedAt -- fixedTimestamp decodificado direto do runId, ULID publico)"
   ],
   "kubernetes/cluster-bootstrap": [
     "token/jws/jws.go",
