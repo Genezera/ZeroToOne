@@ -582,3 +582,56 @@ honestamente, então o achado fica em `scope_verified` mesmo, como já
 estava. Nenhuma tentativa de contornar o gate — é a máquina de estados
 funcionando como projetado depois do histórico de 6/6 submissões reais
 voltarem duplicate (ver comentário no topo de `novelty-risk.mjs`).
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 34 candidatos, todos em
+programas bloqueados (30 Auth0/Okta, 4 Circle BBP) — nenhum tocado, só
+documentado (mesmo padrão das 2 rodadas anteriores).
+
+Leitura profunda proativa fechou o candidato pendente
+(`coins/zkspace/zk_singer.go` já tinha sido fechado na rodada #14) e
+abriu uma nova frente em `okx/go-wallet-sdk` seguindo o mesmo padrão
+dos 3 achados-irmãos já confirmados (cardano clamp, solana
+`PrivateKeyFromBase58`, elrond `Transfer`): **4º achado real**,
+`coins/helium/helium.go` (`Sign`/`NewAddress`, funções públicas de
+topo do SDK) → `coins/helium/keypair/keypair.go`
+(`NewKeypairFromHex`/`Keypair.Sign`/`CreateAddressable`). `private`
+(hex string, entrada do usuário) é decodificado sem checar o
+comprimento resultante antes de `ed25519.NewKeyFromSeed`, que faz
+panic (stdlib, não retorna erro) para qualquer seed != 32 bytes.
+
+PoC real rodada: `go mod tidy` resolveu `go.sum` do módulo
+`coins/helium` (download via proxy padrão do Go, sem conta), `go
+test` real com 2 casos (`TestNewAddress_PanicsOnShortPrivateKey`,
+`TestSign_PanicsOnShortPrivateKey`) capturando o panic via
+`recover()` — ambos **PASS**, confirmando panic real: `ed25519: bad
+seed length: 4` e `ed25519: bad seed length: 1`. Fluxo completo:
+`update-finding` (reasoning+filesRead) → `transition
+corroborated_static` (aceito) → `record-validation
+--type=go_manual_poc --result=pass` (saída real acima) →
+`transition reproduced_local` (aceito) → `check-scope "OKG"
+"okx/go-wallet-sdk"` (allowed=true, bountyEligible=true) →
+`record-deployment-evidence` (confidence="unverified", mesma
+limitação epistêmica dos 3 achados-irmãos: sem confirmar se o app
+real da OKX Wallet consome especificamente `coins/helium`) →
+tentativa de `scope_verified` **recusada corretamente** pelo mesmo
+motivo dos irmãos ("confidence=unverified"). Não forcei. Finding fica
+em `reproduced_local`.
+
+Nota lateral encontrada de passagem (não virou finding, documentada
+pra rodada futura): `coins/helium/keypair/address.go`
+(`NewAddressable`) tem o mesmo padrão de bug (`base58.Decode` sem
+checar erro + slice sem checar comprimento mínimo) no parâmetro
+`from`/`to`. Também verificado sem achado: `coins/waves/crypto/crypto.go`
+`GenerateSecretKey` tem o mesmo padrão de slice sem checar
+comprimento, mas o único chamador interno do SDK sempre alimenta um
+digest sha256 de 32 bytes fixo — sem seed atacante-controlado
+alcançando essa função via API pública deste SDK, não caracteriza
+achado explorável dentro da alcançabilidade exigida aqui.
+
+`deep-read-log.json` atualizado (+5 entradas em `okx/go-wallet-sdk`,
+2 sobre o achado novo + 1 nota lateral + 2 sobre o não-achado do
+waves). Nenhuma outra ação nesta rodada em OKG.
