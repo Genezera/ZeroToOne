@@ -711,7 +711,8 @@
     "skills/vercel-optimize/lib/investigation-brief.mjs",
     "skills/vercel-optimize/lib/dedup-recs.mjs",
     "skills/vercel-optimize/lib/grade-recommendation.mjs",
-    "skills/vercel-optimize/lib/repo-root.mjs"
+    "skills/vercel-optimize/lib/repo-root.mjs",
+    "skills/vercel-optimize/references/verification.md"
   ],
   "vercel-labs/skills": [
     "src/github-host.ts",

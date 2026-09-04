@@ -1,5 +1,5 @@
 {
-  "migratedAt": "2026-09-04T18:19:37.735Z",
+  "migratedAt": "2026-09-04T18:22:07.873Z",
   "total": 791,
   "driftCorrected": 0,
   "logs": [
@@ -6761,21 +6761,6 @@
       "id": "Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_risk",
       "steps": [
         {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_test_local_no_docker_needed\" (2026-09-04T17:57:34.144Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\kubernetes-kubernetes-publishing-bot-pkg-golang-install-go-command-injection-risk.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-04T17:53:08.249Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T17:57:56.942Z)"
-        },
-        {
           "to": "scope_verified",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -8711,6 +8696,12 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-04T18:12:50.038Z) restaurada da fila"
+        },
         {
           "to": "reproduced_local",
           "ok": true,

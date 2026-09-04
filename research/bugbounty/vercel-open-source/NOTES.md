@@ -7795,3 +7795,55 @@ módulo `boundaries` agora coberto por completo). Para StackingDAO: ver
 bloqueado pelo agent-proxy, `CONNECT tunnel failed, response 403`; 15
 contratos Clarity seguem 100% cobertos, sem mudança). Nenhum achado
 novo, nenhuma transição de estado em nenhum programa nesta rodada.
+
+## Rodada 2026-09-04 #32 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`check-program`
+confirmou `Block Open Source` e `Circle BBP` bloqueados; nenhum repo
+desses dois tocado). `list-pending` global = 34, 100% de programas fora
+do escopo desta missão (30 Auth0 by Okta -- também bloqueado no policy
+file --, 4 Circle BBP). Nenhum candidato novo neste programa.
+
+Leitura profunda proativa desta rodada continuou a investigação já
+aberta do achado `path_traversal_arbitrary_file_read_risk` em
+`vercel-labs/agent-skills` (`corroborated_static`, confidence média),
+lendo os 2 arquivos que faltavam (clone raso público via
+`git clone --depth 1 --filter=blob:none --sparse`, removido do
+scratchpad ao final):
+
+- `skills/vercel-optimize/lib/repo-root.mjs` -- confirma que o mesmo
+  padrão de falta de containment aparece também na auto-detecção de
+  `repoRoot` (`pickProbeFile`/`detectRepoRoot` usam o mesmo campo
+  potencialmente controlado pelo sub-agente LLM como probe file, sem
+  checagem de que o resultado do walk-up fique dentro de um diretório
+  esperado). Não é o sink de leitura em si, mas reforça que a falta de
+  contenção é um padrão recorrente no módulo.
+- `references/verification.md` (lido por completo) -- não menciona em
+  lugar nenhum path traversal/sandboxing de `repoRoot`; nenhuma
+  mitigação documentada, reforça que o gap não é comportamento
+  conhecido/aceito.
+
+Reler `repoPaths()` (verify-claim.mjs L1234-1244) com mais atenção
+revelou um segundo vetor, mais direto que o traversal relativo já
+documentado: `if (isAbsolute(file)) return [file];` devolve um path
+ABSOLUTO da claim sem NUNCA fazer join com `repoRoot` -- não depende de
+contar `../`, só exige que o sub-agente LLM emita
+`affectedFiles[0]`/`findingRefs[0]` como path absoluto (ex.
+`~/.ssh/id_rsa`, `~/.aws/credentials`). Finding atualizado via
+`update-finding` com esse achado adicional e os 2 arquivos novos em
+`filesRead`. Tentativa de `transition ... reproduced_local` recusada
+como esperado (`"precisa de pelo menos uma validação com result=pass"`)
+-- mesma limitação de sempre (sem validador local para JS/TS), achado
+permanece limitado a `corroborated_static`; confidence mantida em
+média (mecanismo de código 100% confirmado, vetor de indução real via
+prompt injection contra o sub-agente ainda não demonstrado). Ainda em
+aberto para rodada futura, se necessário: `references/candidates.md` e
+`references/scoring.md` deste mesmo skill, não lidos nesta rodada.
+
+`deep-read-log.json` atualizado (`vercel-labs/agent-skills`: +1
+arquivo). Para StackingDAO: ver
+`research/bugbounty/stackingdao/NOTES.md` (`api.hiro.so` recheck via
+`curl -m 10`: `CONNECT tunnel failed, response 403`, mesmo bloqueio de
+rede de dezenas de rodadas consecutivas; 15 contratos Clarity seguem
+100% cobertos, sem mudança). Nenhum achado novo, nenhuma transição de
+estado além da tentativa recusada documentada acima.
