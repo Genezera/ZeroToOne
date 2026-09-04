@@ -125,7 +125,9 @@ function renderJsonl(entries) {
 }
 
 function git(repoRoot, args) {
-  return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8', stdio: 'pipe' }).trim();
+  return execFileSync('git', args, {
+    cwd: repoRoot, encoding: 'utf8', stdio: 'pipe', maxBuffer: 256 * 1024 * 1024,
+  }).trim();
 }
 
 function show(repoRoot, ref, relativePath) {
