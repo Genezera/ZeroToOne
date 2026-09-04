@@ -422,6 +422,26 @@ test('todo evento bugbounty_* gravado no ledger carrega schemaVersion', () => {
   });
 });
 
+test('recordSubmission nunca deixa outcome portátil antigo sobrescrever estado/timestamp novo ao religar finding', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    recordSubmission(db, {
+      platform: 'HackerOne', externalReportId: '42', program: 'P', state: 'resolved',
+      comments: 'estado mais novo', updatedAt: '2026-09-02T00:00:00Z',
+    });
+    const merged = recordSubmission(db, {
+      platform: 'HackerOne', externalReportId: '42', program: 'P', state: 'duplicate',
+      comments: 'cópia velha da fila', updatedAt: '2026-09-01T00:00:00Z',
+    }, [SAMPLE.id]);
+    assert.equal(merged.state, 'resolved');
+    assert.equal(merged.comments, 'estado mais novo');
+    assert.equal(merged.updatedAt, '2026-09-02T00:00:00Z');
+    assert.deepEqual(merged.findingIds, [SAMPLE.id], 'vínculo novo ainda deve ser incorporado');
+    closeDb(db);
+  });
+});
+
 test('withoutLedgerWrites hidrata tabelas sem reapensar fatos no ledger', () => withTempEnv((dbPath) => {
   const db = openDb(dbPath);
   upsertFinding(db, SAMPLE);

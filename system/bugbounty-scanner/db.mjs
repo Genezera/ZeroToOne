@@ -654,14 +654,29 @@ export function recordSubmission(db, submission, findingIds = []) {
   // virar duas amostras estatísticas com ids locais diferentes.
   const id = submissionId(platform, submission.externalReportId);
   const existing = getSubmission(db, id);
+  const fields = [
+    'program', 'repository', 'title', 'submittedAt', 'state',
+    'originalReportId', 'originalSubmittedAt', 'originalState',
+    'severityFinal', 'bountyAmount', 'comments',
+  ];
+  let effectiveSubmission = submission;
+  let ts = submission.updatedAt || new Date().toISOString();
   if (existing) {
-    const fields = [
-      'program', 'repository', 'title', 'submittedAt', 'state',
-      'originalReportId', 'originalSubmittedAt', 'originalState',
-      'severityFinal', 'bountyAmount', 'comments',
-    ];
+    const incomingTime = submission.updatedAt ? Date.parse(submission.updatedAt) : Number.NaN;
+    const existingTime = existing.updatedAt ? Date.parse(existing.updatedAt) : Number.NaN;
+    if (Number.isFinite(incomingTime) && Number.isFinite(existingTime) && incomingTime < existingTime) {
+      // Hydration can see the portable submissions.jsonl first and an older
+      // platformOutcome embedded in queue.jsonl later. The older copy may
+      // add a missing finding link, but it must never roll back the current
+      // report state, text or timestamp.
+      effectiveSubmission = {
+        ...submission,
+        ...Object.fromEntries(fields.map((field) => [field, existing[field]])),
+      };
+      ts = existing.updatedAt;
+    }
     const unchangedFields = fields.every((field) => {
-      const incoming = submission[field];
+      const incoming = effectiveSubmission[field];
       const effective = incoming === undefined || incoming === null || incoming === '' ? existing[field] : incoming;
       return effective === existing[field];
     });
@@ -671,7 +686,6 @@ export function recordSubmission(db, submission, findingIds = []) {
       return existing;
     }
   }
-  const ts = submission.updatedAt || new Date().toISOString();
   db.prepare(`
     INSERT INTO submissions (
       id, platform, external_report_id, program, title, submitted_at, state,
@@ -693,12 +707,12 @@ export function recordSubmission(db, submission, findingIds = []) {
       comments=COALESCE(excluded.comments, submissions.comments),
       updated_at=excluded.updated_at
   `).run(
-    id, platform, String(submission.externalReportId), submission.program || null,
-    submission.title || null, submission.submittedAt || null, submission.state || null,
-    submission.repository || null,
-    submission.originalReportId || null, submission.originalSubmittedAt || null,
-    submission.originalState || null, submission.severityFinal || null,
-    submission.bountyAmount || null, submission.comments || null, ts,
+    id, platform, String(submission.externalReportId), effectiveSubmission.program || null,
+    effectiveSubmission.title || null, effectiveSubmission.submittedAt || null, effectiveSubmission.state || null,
+    effectiveSubmission.repository || null,
+    effectiveSubmission.originalReportId || null, effectiveSubmission.originalSubmittedAt || null,
+    effectiveSubmission.originalState || null, effectiveSubmission.severityFinal || null,
+    effectiveSubmission.bountyAmount || null, effectiveSubmission.comments || null, ts,
   );
   for (const findingId of findingIds) {
     db.prepare('INSERT OR IGNORE INTO submission_findings (submission_id, finding_id) VALUES (?, ?)').run(id, findingId);
