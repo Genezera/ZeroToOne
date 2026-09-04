@@ -1062,7 +1062,10 @@
     "packages/core/src/vm/index.ts (createContext -- confirma Math.random e crypto.getRandomValues sobrescritos por seedrandom(seed) dentro da VM sandboxed)",
     "packages/core/src/workflow.ts (linhas 353-470 -- construcao do seed a partir de runId:workflowName:deploymentId, generateUlid/generateNanoid)",
     "packages/core/src/workflow/create-hook.ts (createWebhook -- confirma que webhooks NUNCA aceitam token customizado, sempre via generateNanoid)",
-    "packages/core/src/runtime/run-id-time.ts (runIdCreatedAt -- fixedTimestamp decodificado direto do runId, ULID publico)"
+    "packages/core/src/runtime/run-id-time.ts (runIdCreatedAt -- fixedTimestamp decodificado direto do runId, ULID publico)",
+    "packages/cli/src/lib/inspect/vercel-api.ts (fetchTeamInfo/getVercelDashboardUrl -- hostname api.vercel.com fixo, sem interpolacao de input externo; sem achado)",
+    "packages/core/src/runtime/world.ts (createWorld/getWorld/getWorldHandlers -- targetWorld vem de env var WORKFLOW_TARGET_WORLD, config de deploy-time nao de request; sem achado)",
+    "packages/cli/src/commands/health.ts (Health command -- CLI local, base URL de flag/env local, sem fronteira de autorizacao remota; sem achado)"
   ],
   "kubernetes/cluster-bootstrap": [
     "token/jws/jws.go",

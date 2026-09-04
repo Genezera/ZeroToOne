@@ -6628,3 +6628,39 @@ GHSA-9r75-g2cr-3h76, não enviar como achado novo.
 Nenhum finding novo criado nesta rodada especificamente sobre Vercel
 Open Source (a leitura profunda proativa desta rodada foi pro
 Kiwi.com, ver seu próprio NOTES.md).
+
+## Rodada 2026-09-04 #12 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero (`check-program`
+não usado diretamente, arquivo lido à mão): `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`) confirmados bloqueados
+— nenhum repositório desses dois programas foi clonado, lido ou aberto
+nesta rodada, mesmo aparecendo nomeados na tarefa desta sessão (a regra
+do CLAUDE.md prevalece sobre o prompt da tarefa). Notei de passagem que
+`list-deep-read-candidates.mjs` só reconhece os repos `circlefin/*`
+como bloqueados no dataset — os repos de Block Open Source
+(`afterpay/*`, `cashapp/*`, `square/wire`) aparecem na lista de
+"sem programa reconhecido", não na lista de excluídos. Isso é uma
+lacuna real da ferramenta (não cobre o bloqueio por nome de programa
+quando o dataset não mapeia o repo pro programa certo) — tratada
+manualmente aqui (excluídos à mão desta rodada), mas vale registrar
+como pendência de engenharia: o scanner não pode depender só do
+dataset público pra aplicar `program-policy.json`.
+
+`migrate-to-v2.mjs` + `list-pending` global = 0. Revisado o finding
+`scope_verified` de `predictable_hook_token_seed_risk`
+(`vercel/workflow`) já discutido na rodada #5 de hoje: nada novo desde
+então (segue bloqueado em `record-duplicate-check` por falta de acesso
+de API fora do escopo `genezera/zerotoone` desta sessão) — não repeti a
+tentativa de contornar o gate, mesma decisão de rodadas anteriores.
+
+Leitura profunda proativa: 3 arquivos novos em `vercel/workflow`
+(clone raso, descartado ao final), escolhidos por tocarem superfícies
+de rede/env (autenticação de API remota, seleção de world em runtime,
+health-check local) ainda não lidas: `packages/cli/src/lib/inspect/vercel-api.ts`
+(hostname fixo `api.vercel.com`, sem interpolação de input externo),
+`packages/core/src/runtime/world.ts` (`WORKFLOW_TARGET_WORLD` é env var
+de deploy-time, não input de request) e `packages/cli/src/commands/health.ts`
+(CLI local, sem fronteira de autorização remota). Nenhum achado nos
+três. `deep-read-log.json` atualizado. Nenhuma transição de estado
+neste programa.

@@ -1062,3 +1062,17 @@ desta rodada direcionada a `vercel/chat` (ver NOTES.md de Vercel Open
 Source: `packages/chat` núcleo -- `callback-url.ts`, `chat.ts`
 `handleActionEvent`, `ai/scope.ts`), sem achado. Nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-04 #12 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` lido por completo como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado
+(inclusive notado que `list-deep-read-candidates.mjs` não reconhece os
+repos de Block Open Source como bloqueados no dataset -- excluídos à
+mão, ver NOTES.md de Vercel Open Source para detalhe). `migrate-to-v2.mjs`
++ `list-pending` global = 0. `api.hiro.so` não retestado nesta rodada;
+os 15 contratos Clarity já cobertos seguem sem mudança conhecida,
+nenhum arquivo novo candidato neste programa. Leitura profunda
+proativa desta rodada direcionada a `vercel/workflow` (`vercel-api.ts`,
+`world.ts`, `health.ts` -- ver NOTES.md de Vercel Open Source), sem
+achado. Nenhuma transição de estado neste programa.
