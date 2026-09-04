@@ -419,3 +419,45 @@ aqui.
 
 `deep-read-log.json` atualizado (`kubernetes/apimachinery` novo, 1
 arquivo).
+
+## Rodada 2026-09-04 (push automático, webhook head 8c9169b) -- leitura profunda (cloud-provider), sem achado
+
+`program-policy.json` conferido como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0 (fila vazia). Leitura
+profunda proativa direcionada a `kubernetes/cloud-provider` (repo alvo
+ativo em `STATUS.md` ainda não tocado por este programa -- só
+`cluster-bootstrap`/`cloud-provider-openstack`/`cloud-provider-aws`/
+`apimachinery` tinham leitura prévia). Clone raso, grep por
+auth/token/crypto/login/password/admin/permission/access/secret/cred
+em `*.go` (excluindo `_test.go`), 3 candidatos escolhidos por
+julgamento próprio entre os poucos hits genuinamente relacionados a
+segurança (maioria dos hits era ruído de "config"/"access" em nomes
+comuns de campo, não lógica de autenticação real):
+
+- `credentialconfig/registry.go`: só struct de tipos (`RegistryConfig`/
+  `RegistryConfigEntry`) pra representar config docker de pull de
+  imagem -- comentário no topo confirma que é código copiado de
+  `/pkg/credentialprovider/config.go` do core k8s; sem lógica de
+  leitura/parsing/uso neste arquivo. Sem achado.
+- `app/webhooks.go` (`WebhookHandler.ServeHTTP`/`parseRequest`):
+  servidor HTTP dos admission webhooks do cloud-controller-manager.
+  `ServeHTTP` não valida identidade do chamador além da própria camada
+  TLS (sem shared secret nem verificação adicional no handler) -- mas
+  esse é o modelo de confiança padrão do admission webhook do
+  Kubernetes: é o apiserver quem autentica o servingCert do webhook via
+  `caBundle` configurado no registro do webhook, não o inverso: o
+  endpoint não expõe ação privilegiada diretamente a partir do payload
+  (`AdmissionHandler` só decide allow/deny, delegado por webhook
+  específico). Comportamento upstream documentado, não é bypass
+  introduzido aqui.
+- `options/webhook.go` (`WebhookServingOptions.ApplyTo`): setup do TLS
+  server-side (cert/key/cipher-suites/curve-preferences/SNI) pro
+  listener do webhook -- confirma que não há `ClientCA`/mTLS
+  configurado nesta camada, consistente com o modelo de confiança
+  descrito acima (o server não autentica o cliente; é o cliente/
+  apiserver que autentica o server via `caBundle`). Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cloud-provider` novo, 3
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta
+rodada -- resultado normal e válido.

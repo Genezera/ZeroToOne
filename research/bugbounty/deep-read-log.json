@@ -1128,5 +1128,10 @@
   ],
   "kubernetes/apimachinery": [
     "pkg/sharding/accessor.go (ResolveFieldValue -- só extrai uid/namespace de metadata via runtime.Object accessor pra CEL field path fixo, sem I/O nem controle de acesso real. Sem achado.)"
+  ],
+  "kubernetes/cloud-provider": [
+    "credentialconfig/registry.go (RegistryConfig/RegistryConfigEntry -- só struct de tipos pra config docker de pull de imagem, sem lógica de leitura/parsing/uso aqui. Sem achado.)",
+    "app/webhooks.go (WebhookHandler.ServeHTTP/parseRequest -- servidor HTTP dos admission webhooks do cloud-controller-manager; ServeHTTP não valida identidade do chamador além da camada TLS (sem shared secret nem verificação adicional), mas isso é o modelo de confiança padrão do admission webhook do próprio Kubernetes -- o apiserver é quem valida o servingCert do webhook via caBundle configurado no webhook registration, não o inverso; endpoint não expõe ação privilegiada direta a partir do payload (AdmissionHandler só decide allow/deny). Sem achado, comportamento upstream documentado.)",
+    "options/webhook.go (WebhookServingOptions.ApplyTo -- setup de TLS server-side (cert/key/cipher/curve/SNI) pro listener do webhook; não configura ClientCA/mTLS nesta camada, consistente com o modelo de confiança descrito acima (server não autentica o cliente, cliente/apiserver que autentica o server via caBundle). Sem achado.)"
   ]
 }
