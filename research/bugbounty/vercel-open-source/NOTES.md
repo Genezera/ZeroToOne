@@ -6268,3 +6268,45 @@ genuinamente novo ter passado por este gate específico ainda.
 
 `deep-read-log.json` atualizado (`vercel/workflow` +7 entradas, agora 25
 no total).
+
+## Rodada 2026-09-04 #? (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado
+nesta rodada. `migrate-to-v2.mjs` + `list-pending` global = 0 (fila
+vazia). Retentei `search-prior-art` (3 queries reais) pro finding
+`scope_verified` de `vercel/workflow` (`predictable_hook_token_seed_risk`)
+esperando que o bloqueio de rede tivesse mudado — continua idêntico:
+`GitHub API HTTP 401` no `api.github.com/search/*`. Achado segue preso em
+`scope_verified`, mesma limitação estrutural já documentada na rodada
+anterior (gate de `human_ready` exige duplicate-check rastreável que a
+rede deste ambiente não permite fazer de verdade); não forçado.
+
+Leitura profunda proativa desta rodada: `nuxt/nuxt` (repo com cobertura
+relativamente leve — só 13 entradas antigas, quase todas em torno de
+`island-*`/cookie/proxy). Sparse clone raso de `packages/`, grep
+auth/session/crypto/token/login/password/admin/permission/access, 3
+arquivos novos lidos:
+- `packages/nuxt/src/core/plugins/import-protection.ts` — allowlist
+  declarativa de padrões de import bloqueados entre contexto client/
+  server/shared, aplicada em build-time via plugin Vite/Rollup, sem
+  I/O nem decisão em runtime de request. Sem achado.
+- `packages/nitro-server/src/runtime/handlers/error.ts` — handler de
+  erro do Nitro; filtra explicitamente `content-security-policy` do
+  forwarding de headers pra não desabilitar JS da página de erro,
+  stack trace só serializado sob `import.meta.dev`. Sem achado.
+- `packages/nitro-server/src/runtime/utils/dev.ts` — overlay de erro
+  do dev server (iframe `data:` URL sandboxed com `postMessage`
+  target `'*'` nos dois sentidos, validado só por nonce aleatório de
+  16 bytes embutido no próprio HTML servido). Nonce não protege
+  contra atacante que já tem acesso ao DOM da página (já visível no
+  source), e toda a feature é gated por `import.meta.dev` — só dev
+  server local, nunca build de produção. Risco residual real mas
+  severidade muito baixa e fora do modelo de ameaça normal de bug
+  bounty (tooling de desenvolvimento local, não superfície de
+  produção rodando pra usuário final). Não abri finding — documentado
+  em `deep-read-log.json` como candidato a reconsiderar só se o
+  modelo de ameaça do programa cobrir explicitamente dev tooling.
+
+`deep-read-log.json` atualizado (`nuxt/nuxt` +3 entradas, agora 16 no
+total). Nenhuma transição de estado neste programa nesta rodada.

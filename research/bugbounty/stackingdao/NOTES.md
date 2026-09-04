@@ -1019,3 +1019,16 @@ neste programa. Trabalho desta rodada concentrado em avançar findings
 estrutural real da máquina de estados documentada — ver NOTES.md de
 Vercel Open Source) e leitura profunda proativa em `vercel/next.js`
 (sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #? (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl`: falha de conexão (`errno=56`, mesmo bloqueio do
+agent-proxy de rodadas anteriores) — não deu pra confirmar se o deployer
+`SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato novo; os 15
+contratos Clarity já cobertos seguem sem mudança conhecida, nenhum
+arquivo novo candidato neste programa. Leitura profunda proativa desta
+rodada direcionada a `nuxt/nuxt` (ver NOTES.md de Vercel Open Source),
+sem achado. Nenhuma transição de estado neste programa.
