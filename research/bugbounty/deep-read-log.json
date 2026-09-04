@@ -882,7 +882,9 @@
     "packages/next/src/client/components/http-access-fallback/error-boundary.tsx + error-fallback.tsx (HTTPAccessFallbackBoundary -- getDerivedStateFromError so casa status com prop local (notFound/forbidden/unauthorized); quando boundary local nao tem o slot correspondente, rerenderiza children (que rejoga o throw) em vez de vazar conteudo protegido, propagando pro boundary pai ate achar match -- comportamento documentado, coberto por suite e2e propria (test/e2e/app-dir/unauthorized/*). Sem achado)",
     "packages/next/src/build/turborepo-access-trace/{env,helpers,index,result,tcp,types}.ts (modulo completo -- envProxy so registra CHAVES de env var acessadas (Set<string>, nunca valor); tcpProxy so registra addr/port de net.Socket.connect; TurborepoAccessTraceResult.toPublicTrace() -- o unico formato escrito no trace file (TURBOREPO_TRACE_FILE) -- expoe so envVarKeys (nomes) + filePaths + um boolean 'network', nunca valor de env var nem endereco de rede real. Sem vazamento de segredo pro trace file que alimenta o remote cache do Turborepo. Sem achado)",
     "packages/next/src/client/components/builtin/unauthorized.tsx (so renderiza HTTPAccessErrorFallback status=401, sem logica. Sem achado)",
-    "packages/next/src/client/components/dev-root-http-access-fallback-boundary.tsx (guard dev-only que lanca erro se notFound()/forbidden()/unauthorized() usado em root layout; sem logica de autorizacao real. Sem achado)"
+    "packages/next/src/client/components/dev-root-http-access-fallback-boundary.tsx (guard dev-only que lanca erro se notFound()/forbidden()/unauthorized() usado em root layout; sem logica de autorizacao real. Sem achado)",
+    "packages/next/src/server/app-render/dynamic-access-async-storage-instance.ts + dynamic-access-async-storage.external.ts (so wiring de AsyncLocalStorage pra abortController de dynamic access, sem logica propria, sem achado)",
+    "packages/next/src/telemetry/events/session-stopped.ts (payload de telemetria CLI -- versoes/duracao/flags, nenhum PII ou segredo, sem achado)"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",

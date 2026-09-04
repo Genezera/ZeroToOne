@@ -1005,3 +1005,17 @@ env/TCP pra cache key do Turborepo, confirmado que só nomes de env var
 e não valores vazam pro trace file — e dois componentes de UI de
 fallback de auth), sem achado. Nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-04 #7 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` não
+testado nesta rodada (bloqueios de rede das rodadas anteriores seguem
+sem motivo pra reverificar todo run) — os 15 contratos Clarity já
+cobertos seguem sem mudança conhecida, nenhum arquivo novo candidato
+neste programa. Trabalho desta rodada concentrado em avançar findings
+`corroborated_static` já existentes de Vercel Open Source (limitação
+estrutural real da máquina de estados documentada — ver NOTES.md de
+Vercel Open Source) e leitura profunda proativa em `vercel/next.js`
+(sem achado). Nenhuma transição de estado neste programa.

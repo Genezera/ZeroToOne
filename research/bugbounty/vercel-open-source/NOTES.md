@@ -6119,3 +6119,78 @@ pequeno e coeso):
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (`vercel/next.js` +3 entradas, cobrindo 8 arquivos).
+
+## Rodada 2026-09-04 #7 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` confirmados bloqueados, nenhum repo desses tocado.
+`Auth0 by Okta` (`roeReviewNeeded`, flagged na rodada anterior #6) também
+não tocado nesta rodada — Bugcrowd, mesma plataforma do Block Open
+Source banido, sem confirmação de RoE; ver nota de escalonamento ao
+usuário mais abaixo. `migrate-to-v2.mjs` + `list-pending` global = 0
+(fila vazia).
+
+Trabalho principal desta rodada: avançar os 8 findings `corroborated_static`
+deste programa que já estavam parados esperando PoC:
+- `vercel/ai::runBridge::timing_attack_risk`,
+  `vercel-labs/agent-skills::verify-claim.mjs::path_traversal_arbitrary_file_read_risk`,
+  `vercel/vercel::update-remix-run-dev.js::command_injection_risk`,
+  `vercel/next.js::image-optimizer.ts::ssrf_redirect_allowlist_bypass_risk`
+  — os 4 são achados JS/TS reais e já confirmados linha a linha em
+  rodadas anteriores, mas continuam **permanentemente presos** em
+  `corroborated_static`: confirmado lendo `state-machine.mjs` que a
+  transição `corroborated_static->reproduced_local` só aceita
+  `validations` com `result="pass"`, e `result="not_applicable"` é
+  **recusado de propósito** ("fica em corroborated_static até Fase 2/4
+  adicionar um validador de verdade"). Além disso `scope_verified` só
+  tem precondição a partir de `reproduced_local` — não existe aresta
+  `corroborated_static->scope_verified` na máquina de estados, então
+  mesmo achado JS/TS com escopo confirmado e deployment evidence não
+  tem como avançar até um validador local de verdade existir pra esse
+  tipo (fora do escopo desta rotina). Registrei `record-validation
+  ...=not_applicable` formal nos 4 (documentando a limitação, não
+  simulando), tentei a transição esperando recusa (recusada, como
+  previsto) — nenhuma mudança de estado, apenas documentação mais
+  completa no ledger.
+- `vercel/vercel::mcp.ts` linhas 345/347/349 (`semgrep_detect_child_process`,
+  3 branches do mesmo bloco `execSync` de deeplink `cursor://`) —
+  decisão de rodada anterior (03/09) de não investigar mais fundo por
+  risco de duplicata alto (mesmo tipo de achado já virou duplicate no
+  mesmo repo) segue válida, nada mudou, sem ação nesta rodada.
+- `vercel/chat::adapter-discord/index.ts::handleWebhook` (suposto
+  timing leak) — reasoning já registrado em rodada anterior tinha DUAS
+  tentativas reais de PoC de timing (metodologia simples + rigorosa
+  com JIT warmup/mediana de 20 rodadas) com resultado **negativo** nas
+  duas (sem correlação mensurável). Como isso é uma refutação real já
+  documentada e nunca persistida como transição, promovido nesta
+  rodada: `transition ... false_positive` (aceito).
+
+Leitura profunda proativa: sparse clone de `vercel/next.js` (HEAD
+`090f1b7`), grep auth/session/crypto/token/login/password/admin/
+permission/access em `packages/` deu 33 candidatos, dos quais 4 ainda
+não cobertos (excluindo vendorizados em `src/compiled/`, que são cópias
+de terceiros já auditadas fora daqui — `jsonwebtoken`, `crypto-browserify`,
+`@edge-runtime/primitives`). Li 3:
+- `dynamic-access-async-storage-instance.ts` + `.external.ts` — só
+  wiring de `AsyncLocalStorage` pra um `abortController`, zero lógica
+  própria. Sem achado.
+- `telemetry/events/session-stopped.ts` — payload de telemetria do CLI
+  (versões, duração, flags de build) — nenhum PII, segredo ou dado de
+  usuário no payload. "Session" aqui é sessão de CLI/build, não sessão
+  de autenticação. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/next.js` +2 entradas, cobrindo
+3 arquivos). `access-error-styles.ts` (só CSS) fica pra próxima rodada,
+baixa prioridade.
+
+**Nota de escalonamento (não é achado de segurança do programa, é sobre
+o próprio processo desta rotina):** `program-policy.json` registra desde
+a rodada #6 de hoje que `Auth0 by Okta` (Bugcrowd) teve dezenas de
+rodadas de leitura profunda em `auth0/auth0-java` sem NUNCA passar por
+revisão de RoE quanto a proibição de ferramentas de IA — mesma
+plataforma (Bugcrowd) do `Block Open Source`, que tem essa proibição
+explícita. `WebFetch` pra `bugcrowd.com`/`web.archive.org` falhou
+(`EGRESS_BLOCKED`) nas tentativas de verificar isso automaticamente.
+Campo continua `roeReviewNeeded:true`, não escalado a `aiResearchBanned`
+sem confirmação real. Verificação humana (navegador real) da RoE do
+Auth0 by Okta em bugcrowd.com/engagements/auth0-okta segue pendente.
