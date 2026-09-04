@@ -580,7 +580,7 @@
   "Vercel Open Source::vercel/flags/pnpm-lock.yaml::fflate@0.8.2::known_vulnerable_dependency": "falso_positivo",
   "Auth0 by Okta::auth0/auth0-spa-js/package-lock.json::brace-expansion@1.1.14::known_vulnerable_dependency": "falso_positivo",
   "Auth0 by Okta::auth0/auth0-spa-js/.github/actions/lint-pr-title/package-lock.json::fast-uri@3.1.3::known_vulnerable_dependency": "falso_positivo",
-  "Vercel Open Source::vercel/chat/packages/adapter-discord/src/index.ts::handleWebhook::ai_deep_read_finding": "confirmado",
+  "Vercel Open Source::vercel/chat/packages/adapter-discord/src/index.ts::handleWebhook::ai_deep_read_finding": "falso_positivo",
   "Slack::slackhq/nebula/wfp/wfp_windows.go::line:303::semgrep_use_of_unsafe_block": "falso_positivo",
   "Slack::slackhq/nebula/wfp/wfp_windows.go::line:369::semgrep_use_of_unsafe_block": "falso_positivo",
   "Slack::slackhq/nebula/wfp/wfp_windows.go::line:283::semgrep_use_of_unsafe_block": "falso_positivo",
@@ -745,5 +745,16 @@
   "Kubernetes::kubernetes/cloud-provider-openstack/pkg/kms/server/server.go::line:76::semgrep_grpc_server_insecure_connection": "falso_positivo",
   "Kubernetes::kubernetes/cloud-provider-openstack/pkg/csi/cinder/openstack/openstack.go::line:163::semgrep_use_tls": "falso_positivo",
   "Kubernetes::kubernetes/cloud-provider-aws/pkg/providers/v1/aws_loadbalancer.go::line:690::semgrep_use_of_sha1": "falso_positivo",
-  "OKG::okx/go-wallet-sdk/coins/bitcoin/src20inscribe.go::line:99::weak_crypto_risk": "falso_positivo"
+  "OKG::okx/go-wallet-sdk/coins/bitcoin/src20inscribe.go::line:99::weak_crypto_risk": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_finding": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::ajv@6.12.6::known_vulnerable_dependency": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::ajv@8.17.1::known_vulnerable_dependency": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::yaml@1.10.2::known_vulnerable_dependency": "falso_positivo",
+  "Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_risk": "confirmado",
+  "Kubernetes::kubernetes/publishing-bot/cmd/publishing-bot/config/rules.go::line:127::insecure_tls": "confirmado",
+  "Kubernetes::kubernetes/publishing-bot/cmd/sync-tags/gomod.go::line:218::path_traversal_risk": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding": "confirmado",
+  "Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk": "falso_positivo"
 }

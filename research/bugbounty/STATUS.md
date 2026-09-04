@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-04T09:25:37.918Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-04T20:48:27.134Z.
 
 ## Alvos ativos
 
@@ -13,8 +13,6 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | js | Vercel Open Source | HackerOne | vercel-labs/skills |
 | js | Plaid | HackerOne | plaid/react-plaid-link |
 | js | Kiwi.com | HackerOne | kiwicom/js-iam-middleware |
-| js | Auth0 by Okta | Bugcrowd | auth0/auth0-spa-js |
-| js | Auth0 by Okta | Bugcrowd | auth0/react-native-auth0 |
 | js | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-gitlab |
 | go | Kubernetes | HackerOne | kubernetes/apimachinery |
 | go | OKG | HackerOne | okx/go-wallet-sdk |
@@ -46,26 +44,20 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-zoom |
 | go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-github |
 | go | Slack | HackerOne | slackhq/nebula |
-| jvm | Auth0 by Okta | Bugcrowd | auth0/auth0-java |
 | jvm | Kiwi.com | HackerOne | kiwicom/navigation-compose-typed |
 | jvm | Plaid | HackerOne | plaid/plaid-link-android |
-| solidity | Circle BBP | HackerOne | circlefin/evm-cctp-contracts |
-| solidity | Circle BBP | HackerOne | circlefin/evm-gateway-contracts |
-| solidity | Circle BBP | HackerOne | circlefin/buidl-wallet-contracts |
-| solidity | Circle BBP | HackerOne | circlefin/evm-xreserve-contracts |
-| solidity | Circle BBP | HackerOne | circlefin/evm-cpn-contracts |
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **43**
-- Já revisados: 746
+- Pendentes (aguardando o agente de nuvem): **36**
+- Já revisados: 757
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
-| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
-| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
-| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
-| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
-| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
+| known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | falso_positivo | 2026-09-04T09:25:31.999Z |
+| known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | falso_positivo | 2026-09-04T09:25:31.999Z |
+| known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | falso_positivo | 2026-09-04T09:25:31.999Z |
+| command_injection_risk | Kubernetes | confirmado | 2026-09-04T09:20:40.920Z |
+| path_traversal_risk | Kubernetes | falso_positivo | 2026-09-04T09:20:38.102Z |

@@ -6,26 +6,30 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 
 | Tipo | Linguagem | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
+| ai_deep_read_finding | Go | 2 | 2 | 0 | 0 | 0% |
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
+| ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 2 | 1 | 1 | 0 | 50% |
+| ai_deep_read_finding | go | 4 | 3 | 1 | 0 | 25% |
 | ai_deep_read_finding | kotlin | 4 | 1 | 2 | 1 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | rust | 3 | 2 | 1 | 0 | 33% |
 | ai_deep_read_finding | solidity | 4 | 0 | 4 | 0 | 100% |
 | ai_deep_read_finding | swift | 2 | 1 | 1 | 0 | 50% |
-| ai_deep_read_finding | typescript | 4 | 3 | 0 | 1 | 0% |
+| ai_deep_read_finding | typescript | 4 | 2 | 1 | 1 | 25% |
 | auth_arg_inconsistency | clarity | 1 | 0 | 1 | 0 | 100% |
+| command_injection_risk | go | 1 | 1 | 0 | 0 | 0% |
 | command_injection_risk | js | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | solidity | 1 | 0 | 1 | 0 | 100% |
 | eval_usage | js | 3 | 0 | 3 | 0 | 100% |
-| insecure_tls | go | 2 | 1 | 1 | 0 | 50% |
+| insecure_tls | go | 3 | 2 | 1 | 0 | 33% |
 | known_vulnerable_dependency | go | 119 | 0 | 119 | 0 | 100% |
-| known_vulnerable_dependency | js | 220 | 0 | 220 | 0 | 100% |
+| known_vulnerable_dependency | js | 223 | 0 | 223 | 0 | 100% |
 | known_vulnerable_dependency | jvm | 4 | 0 | 4 | 0 | 100% |
 | known_vulnerable_dependency | unknown | 2 | 0 | 2 | 0 | 100% |
 | non_constant_time_hmac_comparison | go | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_arbitrary_file_read_risk | javascript | 1 | 1 | 0 | 0 | 0% |
+| path_traversal_risk | go | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | js | 2 | 0 | 2 | 0 | 100% |
 | positional_argument_mismatch | js | 1 | 1 | 0 | 0 | 0% |
 | prototype_pollution_risk | js | 2 | 0 | 2 | 0 | 100% |
@@ -66,23 +70,26 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 |---|---|---|---|---|---|---|
 | ai_deep_read_finding | Block Open Source | 6 | 2 | 3 | 1 | 50% |
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
+| ai_deep_read_finding | OKG | 4 | 4 | 0 | 0 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | Vercel Open Source | 4 | 3 | 0 | 1 | 0% |
+| ai_deep_read_finding | Vercel Open Source | 5 | 2 | 2 | 1 | 40% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
+| command_injection_risk | Kubernetes | 1 | 1 | 0 | 0 | 0% |
 | command_injection_risk | Vercel Open Source | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | Circle BBP | 1 | 0 | 1 | 0 | 100% |
 | eval_usage | Vercel Open Source | 3 | 0 | 3 | 0 | 100% |
-| insecure_tls | Kubernetes | 2 | 1 | 1 | 0 | 50% |
+| insecure_tls | Kubernetes | 3 | 2 | 1 | 0 | 33% |
 | known_vulnerable_dependency | Auth0 by Okta | 14 | 0 | 14 | 0 | 100% |
 | known_vulnerable_dependency | Block Open Source | 6 | 0 | 6 | 0 | 100% |
 | known_vulnerable_dependency | Kiwi.com | 46 | 0 | 46 | 0 | 100% |
 | known_vulnerable_dependency | Kubernetes | 42 | 0 | 42 | 0 | 100% |
-| known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | 35 | 0 | 35 | 0 | 100% |
+| known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | 38 | 0 | 38 | 0 | 100% |
 | known_vulnerable_dependency | OKG | 72 | 0 | 72 | 0 | 100% |
 | known_vulnerable_dependency | Plaid | 48 | 0 | 48 | 0 | 100% |
 | known_vulnerable_dependency | Vercel Open Source | 82 | 0 | 82 | 0 | 100% |
 | non_constant_time_hmac_comparison | Kubernetes | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_arbitrary_file_read_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
+| path_traversal_risk | Kubernetes | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |
 | positional_argument_mismatch | Kiwi.com | 1 | 1 | 0 | 0 | 0% |
 | prototype_pollution_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |

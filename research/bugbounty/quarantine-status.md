@@ -2,12 +2,12 @@
 
 Gerado automaticamente por `quarantine.mjs` a cada rodada do scanner. Não editar à mão.
 
-71 candidato(s) suprimido(s) nesta rodada por regra quarentenada.
+24 candidato(s) suprimido(s) nesta rodada por regra quarentenada.
 
 | Tipo | Linguagem | Revisados | Falso-positivo | Taxa FP |
 |---|---|---|---|---|
 | known_vulnerable_dependency | go | 119 | 119 | 100% |
-| known_vulnerable_dependency | js | 220 | 220 | 100% |
+| known_vulnerable_dependency | js | 223 | 223 | 100% |
 | semgrep_math_random_used | go | 22 | 22 | 100% |
 | semgrep_use_of_unsafe_block | go | 231 | 231 | 100% |
 | ssrf_risk | js | 13 | 13 | 100% |
