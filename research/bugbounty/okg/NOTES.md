@@ -326,3 +326,51 @@ revisão humana decidir se vale enviar mesmo sem a prova de regressão
 sobre se o achado é real — este é real e verificado).
 
 `deep-read-log.json` atualizado com os 3 arquivos desta rodada.
+
+## Rodada 2026-09-04 (push automático, sessão cloud) — rascunho de relatório escrito + pista crítica de possível conhecimento prévio pela OKX
+
+Fila global (`list-pending`) vazia no início desta rodada. Ao revisar
+findings em `scope_verified` (rotina normal antes de leitura profunda
+proativa), encontrei o achado `NewXPrvKeyFromEntropy` acima já em
+`scope_verified` desde a rodada anterior, sem rascunho de relatório
+ainda escrito — completei isso: `research/bugbounty/reports/okg-go-wallet-sdk-cardano-key-clamp.md`
+(`record-report` registrado), seguindo exatamente o `TEMPLATE.md`.
+
+**Achado novo desta rodada, antes de tentar novamente `human_ready`**:
+WebSearch (não tentado nas rodadas anteriores com esses termos
+específicos) encontrou um anúncio oficial da OKX — "OKX Wallet
+announcement on the Cardano network upgrade"
+(`www.okx.com/en-us/help/okx-wallet-announcement-on-the-cardano-network-upgrade`,
+página em si bloqueada por `EGRESS_BLOCKED` nesta sessão cloud, só o
+snippet indexado foi lido) — anunciando, em **15/01/2026**, um "upgrade
+para endereços Cardano derivados, para melhorar a experiência de
+serviço e compatibilidade do Cardano", com suspensão temporária das
+funções Cardano e recomendação para usuários moverem fundos para "o
+primeiro endereço da carteira com seed phrase" antes da mudança —
+justamente **6 dias** depois do commit que introduziu este exato bug
+(`c0b7c875`, 09/01/2026). Padrão temporal fortemente sugestivo de que a
+OKX já detectou e mitigou este problema em produção (app/extensão) sem
+nunca corrigir o código-fonte deste repositório público — `git log`
+confirma que nenhum commit subsequente tocou `key.go` até hoje.
+
+Isso não refuta o achado tecnicamente (o código-fonte público, que é o
+próprio ativo declarado em escopo, continua com o clamp errado,
+reproduzível como documentado acima), mas derruba fortemente a
+alegação de novidade que a rodada anterior já vinha discutindo por
+outro ângulo (bug de 239 dias, fora da janela de regressão verificável
+de 7 dias do `duplicateCheckGate`). Registrei um alerta destacado no
+topo do rascunho de relatório e ampliei o campo `reasoning` do finding
+(`update-finding`) com o achado completo — um humano com acesso real
+de navegador precisa ler a página do anúncio (bloqueada para esta
+sessão) e, idealmente, testar o app/extensão OKX Wallet atual contra o
+mesmo mnemonic de teste antes de decidir se ainda vale enviar, e sob
+que enquadramento (ex.: "SDK público desatualizado em relação à
+correção já aplicada em produção" em vez de "vulnerabilidade nova").
+
+Também registrei formalmente o `impactAssessment` estruturado
+(`record-impact-assessment`) — passou no shape/validação, mas a
+tentativa de `human_ready` foi recusada corretamente pelo
+`duplicateCheckGate` (`"duplicateCheck sem métodos rastreáveis"`), como
+esperado: não fabriquei uma prova de regressão que não existe. Finding
+permanece em `scope_verified`, não forçado — mesma disciplina de
+sempre. Nenhuma outra ação nesta rodada em OKG.

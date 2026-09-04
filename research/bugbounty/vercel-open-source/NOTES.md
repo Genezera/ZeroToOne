@@ -6722,3 +6722,86 @@ já visto e não elevado a achado em `nitrojs/nitro`
 novo, nenhuma transição de estado neste programa nesta rodada.
 `Block Open Source`/`Circle BBP` seguem fora de escopo desta sessão
 por política local (`program-policy.json`).
+
+## Rodada 2026-09-04 (push automático, sessão cloud) — relatório de OKG escrito + leitura profunda em vercel/vercel (connex)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`list-pending` global vazio. Antes da leitura profunda, revisei os
+findings em `scope_verified` de qualquer programa (rotina que faltava
+nas últimas rodadas) e encontrei
+`vercel/workflow::createWorkflowSessionInner::predictable_hook_token_seed_risk`
+já com rascunho de relatório escrito, preso no mesmo limite estrutural
+já documentado (duplicate-check exige acesso à API do GitHub, que
+segue bloqueada nesta sessão cloud — reconfirmado com `curl` direto,
+`403`). Nenhuma mudança nele. (O outro `scope_verified` do sistema,
+`OKG::...NewXPrvKeyFromEntropy`, não é deste programa — ver
+`research/bugbounty/okg/NOTES.md` para o trabalho feito nele nesta
+rodada: relatório escrito + achado de possível conhecimento prévio da
+OKX.)
+
+Leitura profunda proativa: `vercel/vercel` (o maior asset do programa,
+101 entradas prévias em `deep-read-log.json`, mas ainda com superfície
+nova). Sparse clone raso de `packages/cli/src`, grep auth/token/
+session/credential contra o log existente — priorizei
+`packages/cli/src/util/connex/` e `packages/cli/src/commands/connex/`
+("Connect", integração OAuth-like da CLI com serviços de terceiros via
+navegador — nunca lido antes, feature relativamente nova). 4 arquivos
+lidos por completo:
+
+- `util/connex/request-code.ts` — `generateRequestCode()` gera
+  `verifier` (37 bytes aleatórios, mantido só localmente no processo da
+  CLI) e `requestCode = SHA256(verifier)` (enviado ao servidor).
+  `awaitConnexResult` faz poll de `GET /v1/connect/result/{verifier}`
+  usando o segredo bruto — padrão PKCE correto: o servidor guarda o
+  resultado sob a chave `requestCode` e só libera pra quem apresentar o
+  `verifier` que gera esse hash.
+- `commands/connex/create.ts` — fluxo completo: POST inicial já manda
+  `body.request_code = requestCode` (nunca o verifier); se o servidor
+  responde 422 com `registerUrl`, a CLI abre esse URL no navegador
+  (`open()`) só com parâmetros de branding (ícone/cores) anexados —
+  **o `verifier` nunca é incluído no URL aberto no navegador**, fica só
+  em memória do processo CLI, que depois faz o poll. Consistente com o
+  design PKCE de `request-code.ts`.
+- `commands/connex/revoke-tokens.ts` — escopo `mine`/`all` decidido
+  antes da chamada `DELETE /v1/connect/connectors/:id/tokens`; corpo
+  da requisição inclui `subject.id = client.authConfig.userId` só no
+  escopo `mine` (o servidor decide o resto). Sem lógica de autorização
+  do lado cliente que possa ser manipulada — a decisão real de quem
+  pode revogar o quê é responsabilidade do servidor (`403` tratado como
+  caminho normal). Sem achado.
+- `commands/connex/token.ts` — mesmo padrão PKCE de `create.ts`
+  reaplicado para o fluxo de recuperação de token (`authorize`/
+  `install`). `buildActionUrl` monta a URL de ação
+  (`https://vercel.com/api/v1/connect/{authorize|install}/{clientId}?...&request_code=...`)
+  só com `request_code` (hash) e parâmetros não-secretos — mesma
+  garantia de não vazar o verifier.
+
+**Observação registrada, não elevada a achado formal**: o design
+completo (`request_code` gerado do lado CLI, URL de autorização aberta
+no navegador do usuário sem nenhum vínculo visível entre CLI e
+navegador além desse código) é estruturalmente do mesmo formato de
+"device authorization flow" (RFC 8628) — uma classe conhecida de fluxo
+onde, se um atacante conseguir fazer a VÍTIMA abrir uma URL de
+autorização gerada pela CLI do PRÓPRIO ATACANTE (ex. via phishing) enquanto
+a vítima está autenticada no navegador em vercel.com, a vítima
+autorizaria/instalaria o conector em nome do atacante, e o atacante
+(que já tem o `verifier` correspondente, gerado localmente por ele) receberia
+o token resultante. Essa é uma vulnerabilidade estrutural conhecida de
+QUALQUER fluxo de device-code que não mostre um "user code" curto para
+o usuário confirmar visualmente que corresponde ao dispositivo que
+pediu (mitigação padrão do RFC 8628, seção 5.4) — não é um bug
+introduzido por este código cliente especificamente, e a página de
+autorização real (`vercel.com/api/v1/connect/authorize/...`) fica no
+backend/dashboard da Vercel, **fora deste repositório e fora do que dá
+pra confirmar ou refutar só lendo a CLI open source**. Mesma limitação
+estrutural já documentada em achados anteriores deste programa
+(ex. SSO loopback) — não abri candidato novo porque não há cadeia de
+chamada verificável dentro do escopo de código acessível que confirme
+ausência de mitigação server-side (rate limiting, TTL curto, exibição de
+código de confirmação); fica registrado aqui para quem tiver acesso à
+UI real do dashboard investigar se quiser.
+
+`deep-read-log.json` atualizado (`vercel/vercel` +4, agora 105 no
+total). Nenhum achado novo formal, nenhuma transição de estado neste
+programa nesta rodada.
