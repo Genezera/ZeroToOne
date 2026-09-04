@@ -1225,3 +1225,18 @@ Leitura profunda proativa desta rodada direcionada a `vercel/vercel`
 (`sso.ts`/`cred-storage.ts`/`build-sso-link.ts`, ver NOTES.md de Vercel
 Open Source -- sem achado reportável). Nenhum achado novo, nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-04 #30 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` bloqueados -- nenhum tocado).
+`list-pending` global = 34, 100% de programas fora de escopo (30 Auth0
+by Okta, 4 Circle BBP). `api.hiro.so` recheck via `curl -m 10`:
+`connect_rejected` no CONNECT do agent-proxy, mesmo bloqueio de rede de
+dezenas de rodadas consecutivas -- não confirmável se o deployer
+publicou contrato novo; os 15 contratos Clarity já cobertos seguem sem
+mudança conhecida, nenhum arquivo novo candidato neste programa.
+Leitura profunda proativa desta rodada direcionada a `vercel/turborepo`
+(ver NOTES.md de Vercel Open Source: `turborepo-auth/src/ui/messages.rs`,
+`turborepo-wax/src/token/{mod,parse}.rs`, sem achado). Nenhuma
+transição de estado neste programa.

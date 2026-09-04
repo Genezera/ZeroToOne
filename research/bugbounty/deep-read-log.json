@@ -981,7 +981,10 @@
     "crates/turborepo-boundaries/bindings/Permissions.ts (gerado por ts-rs, só tipo TS allow/deny de tags, sem lógica de runtime)",
     "crates/turborepo-hash/src/lib.rs (canonical_builder/HashableMessage p/ TaskHashable/GlobalHashable/FileHashes/LockFilePackages via Cap'n Proto + xxHash64 -- fingerprint de cache-key determinístico, não segredo/autenticação; sem achado)",
     "crates/turborepo-hash/src/oid_hash.rs (OidHash -- wrapper stack-alloc de 40 bytes p/ OID git hex, valida ascii-hex em from_hex_buf/from_hex_str, unsafe from_utf8_unchecked só após validação prévia -- sem achado)",
-    "crates/turborepo-lockfile-hash/src/lib.rs (hash() -- mesmo padrão xxHash64 sobre Cap'n Proto canônico p/ fingerprint de lockfile packages; hash não-criptográfico usado só como chave de cache local, autenticação real de artefato remoto já é feita por signature_authentication.rs (HMAC-SHA256, lido em rodada anterior) -- sem achado)"
+    "crates/turborepo-lockfile-hash/src/lib.rs (hash() -- mesmo padrão xxHash64 sobre Cap'n Proto canônico p/ fingerprint de lockfile packages; hash não-criptográfico usado só como chave de cache local, autenticação real de artefato remoto já é feita por signature_authentication.rs (HMAC-SHA256, lido em rodada anterior) -- sem achado)",
+    "crates/turborepo-auth/src/ui/messages.rs (println! de sucesso pos-login, sem interpolar segredo, sem lógica -- sem achado)",
+    "crates/turborepo-wax/src/token/mod.rs (AST/estrutura de token do glob wax vendorizado -- Tokenized/TokenKind/Walk, só cálculo de variance p/ otimização de compilação, nenhuma lógica de matching/autorização -- sem achado)",
+    "crates/turborepo-wax/src/token/parse.rs (parser nom do glob wax -- literal()/separator()/wildcard()/class()/alternative(), \"..\" tratado como literal comum sem tratamento especial de path traversal aqui; matching/enforcement de boundaries fica em outro arquivo não lido nesta rodada -- sem achado)"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
