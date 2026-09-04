@@ -36,6 +36,14 @@ test('submissionState: not_planned antes de human_ready, ready em human_ready, s
   assert.equal(computeFindingDimensions({ state: 'paid' }).submissionState, 'submitted');
 });
 
+test('human_ready legado aparece blocked quando o preflight atual reprova', () => {
+  const d = computeFindingDimensions(
+    { state: 'human_ready' },
+    { submissionReadiness: { ok: false, reason: 'novidade insuficiente' } },
+  );
+  assert.equal(d.submissionState, 'blocked');
+});
+
 test('achado real (03/09/2026): submission vinculada prevalece sobre state ainda em corroborated_static -- caso real vercel/next.js #3988959', () => {
   const d = computeFindingDimensions(
     { state: 'corroborated_static' },

@@ -104,7 +104,7 @@ Teste ficou apenas no clone local efêmero desta sessão (`coins/solana/base/zzr
 - Resultado observado: panic real e reproduzível, não simulado
 - C/I/A: **nenhum/nenhum/alto** — é um bug de robustez/disponibilidade, não de confidencialidade ou integridade de fundos
 - Escopo do impacto: além do próprio usuário que forneceu a chave malformada — potencialmente outros usuários processados no mesmo processo/backend
-- Gate atual: **PASS** — impacto reportável confirmado
+- Gate de impacto: **PASS** — impacto reportável confirmado; isto não satisfaz o gate separado de novidade
 
 **Ceticismo sobre severidade/alcance:** isto não é perda de fundos direta. O impacto real é robustez/disponibilidade: (a) qualquer app/serviço que siga o README ao pé da letra crasheia com input de usuário minimamente malformado em vez de devolver erro tratável; (b) se usado server-side processando chaves de múltiplos usuários no mesmo processo, pode ser DoS cross-user real, não só self-harm. Não encontrei uso deste helper dentro do próprio SDK (só exportado como API pública do subpacote `base`) — a explorabilidade real depende de como consumidores externos (potencialmente a própria OKX) usam o pacote, a mesma limitação epistêmica documentada nos dois achados-irmãos deste mesmo repositório.
 
@@ -130,9 +130,8 @@ Este trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, a
 - Data: 2026-09-04
 - Fontes: `github_issues` (busca por "panic" OR "bad seed length" OR "private key" em `okx/go-wallet-sdk`: 5 resultados, todos sobre bugs completamente diferentes — decode de transação Solana, derivation path, assinatura Schnorr Bitcoin — nenhum relacionado a este achado), `github_advisories` (nenhum publicado neste repositório), `web_search` ("okx go-wallet-sdk panic bad seed length ed25519 private key vulnerability" — nenhum hit específico a este SDK; achado de contexto: o mesmo padrão geral "ed25519 bad seed length panic" já apareceu em [vegaprotocol/vega#768](https://github.com/vegaprotocol/vega/issues/768), projeto totalmente diferente — confirma que é uma classe de bug conhecida em geral, não que este achado específico já foi reportado)
 - Correspondência pública encontrada: **não**
-- Classificação de novidade: **longstanding_exposure** — commit real `021275dbe7bff1ae0e7897446b10313953b1144e` (criação do arquivo, 2023-07-20), **1142 dias** de exposição pública contínua confirmados via `verify-longstanding-exposure` (clone real, `git show`/`merge-base --is-ancestor`), ainda ancestral de `origin/HEAD`
-
-> Mesmo achado-irmão de `kubernetes/publishing-bot` desta sessão: o bug é design/omissão original de mais de 3 anos, não regressão recente — não haveria caminho possível pelo gate de regressão de 7 dias deste pipeline, não importa o esforço investido. Usado aqui o segundo caminho de prova (exposição pública de longa data verificada, ver `novelty-risk.mjs::MIN_LONGSTANDING_EXPOSURE_DAYS`).
+- Classificação registrada: **longstanding_exposure** — commit real `021275dbe7bff1ae0e7897446b10313953b1144e` (criação do arquivo, 2023-07-20), **1142 dias** confirmados via git; isto é evidência de idade, não de novidade
+- Gate anti-duplicate: **BLOCK** — não é regressão recente; longa exposição aumenta a chance de report privado anterior. Não enviar com a evidência atual.
 
 ---
 *Rascunho revisado manualmente em 2026-09-04 a partir do achado `OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_finding`. Raciocínio bruto completo da investigação em `ledger/ledger.research.jsonl` e no campo `reasoning` do achado no banco.*

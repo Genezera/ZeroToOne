@@ -23,6 +23,7 @@ import { runReadinessAudit } from './readiness-audit.mjs';
 import { loadPriorArtConfig, searchPublicPriorArt } from './prior-art-search.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
 // acesso MCP ao banco) uma forma estruturada de mudar estado — em vez de
@@ -83,11 +84,28 @@ export function cmdUpdateFinding(db, id, patch) {
   return upsertFinding(db, { ...existing.raw, ...existing, ...patch, id });
 }
 
-export function cmdTransition(db, id, toState, actor, context) {
+const RESEARCH_ADVANCING_STATES = new Set([
+  'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready', 'submitted',
+]);
+
+export function cmdTransition(db, id, toState, actor, context, {
+  programPolicy = loadProgramPolicyStrict(),
+} = {}) {
+  const finding = getFinding(db, id);
+  if (!finding) return { ok: false, reason: `finding "${id}" não existe no banco` };
+  if (RESEARCH_ADVANCING_STATES.has(toState)) {
+    const blockReason = getBlockReason(finding.program, programPolicy);
+    if (blockReason) {
+      return { ok: false, reason: `programa "${finding.program}" bloqueado antes de avançar pesquisa: ${blockReason}` };
+    }
+  }
   return recordTransition(db, id, toState, { actor, context });
 }
 
 export function cmdRecordValidation(db, id, { type, result, command, output, evidence = null }) {
+  if (type === 'isolated_regression' || evidence?.provenance === 'regression-sandbox') {
+    throw new Error('isolated_regression/regression-sandbox é evidência reservada; use verify-regression --config=... --finding-id=... para executá-la e registrá-la');
+  }
   return recordValidation(db, id, { type, result, command, rawOutput: output, evidence });
 }
 
@@ -129,10 +147,19 @@ export function cmdPackageForSubmission(db, id) {
  * exigia investigação manual finding por finding, agora como comando
  * repetível. Não muda nada, só lê estado já gravado.
  */
-export function cmdPipelineStatus(db) {
+export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict() } = {}) {
   const nonTerminal = listFindings(db, {}).filter((f) => !isTerminal(f.state));
   return nonTerminal.map((f) => {
     let blocker;
+    const blockReason = getBlockReason(f.program, programPolicy);
+    if (blockReason) {
+      return {
+        id: f.id,
+        program: f.program,
+        state: f.state,
+        blocker: `bloqueado por política: ${blockReason}`,
+      };
+    }
     switch (f.state) {
       case 'candidate':
         blocker = 'aguardando leitura profunda (deep-read) -- ainda não investigado';
@@ -159,22 +186,18 @@ export function cmdPipelineStatus(db) {
         else {
           const readiness = submissionReadinessGate(f, {
             report, duplicateCheck, impactAssessment,
-            programPolicy: loadProgramPolicyStrict(),
+            programPolicy,
           });
           blocker = readiness.ok ? 'evidência completa -- pronto pra virar human_ready' : `NÃO enviar: ${readiness.reason}`;
         }
         break;
       }
       case 'human_ready': {
-        const blockReason = getBlockReason(f.program, loadProgramPolicyStrict());
-        if (blockReason) blocker = `bloqueado por política: ${blockReason}`;
-        else {
-          const impact = reportabilityGate(latestImpactAssessment(db, f.id));
-          const duplicate = duplicateCheckGate(latestDuplicateCheck(db, f.id));
-          blocker = impact.ok && duplicate.ok
-            ? 'aguardando decisão humana de enviar; impacto e novidade revalidados'
-            : `NÃO enviar até revalidar: ${!impact.ok ? impact.reason : duplicate.reason}`;
-        }
+        const impact = reportabilityGate(latestImpactAssessment(db, f.id));
+        const duplicate = duplicateCheckGate(latestDuplicateCheck(db, f.id));
+        blocker = impact.ok && duplicate.ok
+          ? 'aguardando decisão humana de enviar; impacto e novidade revalidados'
+          : `NÃO enviar até revalidar: ${!impact.ok ? impact.reason : duplicate.reason}`;
         break;
       }
       case 'inconclusive':
@@ -194,6 +217,18 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   const learned = duplicateHistoryForFinding(finding, submissions);
   const portfolio = computeStatsFromSubmissions(submissions);
   const recordedCodeAge = latestCodeAgeEvidence(db, id);
+  const requestedProof = patch.noveltyProof?.kind === 'verified_regression'
+    ? patch.noveltyProof
+    : null;
+  const regressionAttestation = requestedProof
+    ? [...listValidations(db, id)].reverse().find((validation) => (
+        validation.type === 'isolated_regression'
+        && validation.result === 'pass'
+        && validation.evidence?.provenance === 'regression-sandbox'
+        && isDeepStrictEqual(validation.evidence?.noveltyProof, requestedProof)
+      )) || null
+    : null;
+  const attestedNoveltyProof = regressionAttestation ? requestedProof : null;
   const signals = {
     ...(patch.signals || {}),
     // Estes quatro valores vêm de fontes locais auditáveis e são aplicados
@@ -203,7 +238,7 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
     portfolioSubmissionCount: portfolio.totalSubmissions,
     portfolioDuplicateRate: portfolio.duplicateRate,
     foundPublicMatch: patch.foundExisting === true,
-    regressionAfterVerifiedFix: patch.noveltyProof?.kind === 'verified_regression',
+    regressionAfterVerifiedFix: Boolean(regressionAttestation),
     ...(recordedCodeAge ? {
       codeAgeDays: recordedCodeAge.codeAgeDays,
       codeAgeCommitSha: recordedCodeAge.lastCommitSha,
@@ -217,11 +252,17 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   const risk = assessNoveltyRisk(signals);
   return recordDuplicateCheck(db, id, {
     ...patch,
+    noveltyProof: attestedNoveltyProof,
     ...risk,
     signals,
     results: [
       ...(patch.results || []),
       ...(learned.matchingSubmissionIds.length ? [{ source: 'local_submission_history', matchingSubmissionIds: learned.matchingSubmissionIds }] : []),
+      ...(requestedProof ? [{
+        source: 'isolated_regression_attestation',
+        disposition: regressionAttestation ? 'verified' : 'missing_or_mismatched',
+        validationTs: regressionAttestation?.ts || null,
+      }] : []),
       { source: 'local_portfolio', submissions: portfolio.totalSubmissions, duplicateRate: portfolio.duplicateRate },
     ],
   });
@@ -243,10 +284,20 @@ export function cmdAssessNovelty(patch) {
 export function cmdGetFinding(db, id) {
   const finding = getFinding(db, id);
   if (!finding) return null;
+  const report = latestReport(db, id);
   const impactAssessment = latestImpactAssessment(db, id);
   const duplicateCheck = latestDuplicateCheck(db, id);
   const submission = latestSubmissionForFinding(db, id);
-  return { ...finding, dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck, submission }) };
+  const submissionReadiness = submissionReadinessGate(finding, {
+    report, impactAssessment, duplicateCheck,
+    programPolicy: loadProgramPolicyStrict(),
+  });
+  return {
+    ...finding,
+    dimensions: computeFindingDimensions(finding, {
+      impactAssessment, duplicateCheck, submission, submissionReadiness,
+    }),
+  };
 }
 
 /** `ownerRepo` no formato "owner/repo". Chamada de rede real, de propósito
@@ -339,7 +390,9 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy
     findingId: id,
     state: finding.state,
     semanticFingerprint: finding.semanticFingerprint,
-    dimensions: computeFindingDimensions(finding, { impactAssessment, duplicateCheck, submission }),
+    dimensions: computeFindingDimensions(finding, {
+      impactAssessment, duplicateCheck, submission, submissionReadiness: readiness,
+    }),
     ready: readiness.ok,
     reason: readiness.reason,
     evidence: { report, impactAssessment, duplicateCheck },

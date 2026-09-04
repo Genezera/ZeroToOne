@@ -128,12 +128,7 @@ test('renderReportDraft produz markdown com aviso de rascunho e seções do TEMP
   });
 });
 
-// Achado real, 04/09/2026: a linha de "Prova de regressão" assumia sempre
-// o formato baseline/candidate (parentCommit) mesmo quando noveltyProof.kind
-// era verified_longstanding_exposure (sem parentCommit) -- renderizava
-// "{{parent ausente}}" no relatório final, parecendo um placeholder
-// esquecido em vez de uma prova real e completa de outro tipo.
-test('renderReportDraft distingue prova de regressão de prova de exposição de longa data', () => {
+test('renderReportDraft rotula longa exposição como idade, não como prova de novidade', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
     upsertFinding(db, { ...SAMPLE, state: 'scope_verified' });
@@ -149,8 +144,10 @@ test('renderReportDraft distingue prova de regressão de prova de exposição de
     });
     const ctx = assembleReportContext(db, SAMPLE.id);
     const md = renderReportDraft(ctx);
-    assert.match(md, /Prova de exposição de longa data/);
+    assert.match(md, /Evidência de idade do código/);
     assert.match(md, /3000 dias/);
+    assert.match(md, /não prova novidade nem libera envio/);
+    assert.match(md, /Gate atual: \*\*BLOCK\*\*/);
     assert.doesNotMatch(md, /\{\{parent ausente\}\}/);
     assert.doesNotMatch(md, /Prova de regressão: `/);
     closeDb(db);

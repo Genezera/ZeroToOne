@@ -859,3 +859,14 @@ real aceitou (não contornado): `duplicateCheck` atualizado com
 exige `humanApproval` com ator humano (nunca agente/IA) antes de
 `submitted`, gate que não foi tocado nem precisa ser. Rascunho
 atualizado com todos os detalhes.
+
+### Correção metodológica — 2026-09-04
+
+A conclusão acima sobre `longstanding_exposure` foi revertida após revisão
+independente do raciocínio. Exposição pública antiga não prova novidade:
+ela aumenta o tempo em que um report privado invisível pode ter sido feito.
+`verifiedLongstandingExposureGate` foi removido e `duplicateCheckGate`
+voltou a aceitar somente regressão recente verificada. A evidência de idade
+continua válida como contexto, mas este achado está **bloqueado para envio**;
+o `human_ready` histórico no ledger não autoriza submissão e o preflight
+atual deve recusá-lo.

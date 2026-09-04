@@ -21,11 +21,16 @@ const SUBMITTED_OR_LATER = new Set(['submitted', 'triaged', 'duplicate', 'inform
  * novelty: public_match|private_unknown|regression|null (null = nenhuma
  *   duplicateCheck registrada ainda -- nunca "no_public_match" por
  *   omissão, esse é exatamente o erro que motivou a revisão inteira).
- * submissionState: not_planned|ready|submitted (submitted cobre também
+ * submissionState: not_planned|blocked|ready|submitted (submitted cobre também
  *   todo outcome terminal -- triaged/duplicate/informative/rejected/
  *   paid/resolved já SÃO um relatório submetido, só com resultado sabido).
  */
-export function computeFindingDimensions(finding, { impactAssessment = null, duplicateCheck = null, submission = null } = {}) {
+export function computeFindingDimensions(finding, {
+  impactAssessment = null,
+  duplicateCheck = null,
+  submission = null,
+  submissionReadiness = null,
+} = {}) {
   const technicalValidity = impactAssessment?.technicalValidity ?? null;
 
   let securityImpact = null;
@@ -48,7 +53,9 @@ export function computeFindingDimensions(finding, { impactAssessment = null, dup
   // existe -- prevalece sobre o que `state` diz sozinho.
   let submissionState = 'not_planned';
   if (submission) submissionState = 'submitted';
-  else if (finding?.state === 'human_ready') submissionState = 'ready';
+  else if (finding?.state === 'human_ready') {
+    submissionState = submissionReadiness?.ok === false ? 'blocked' : 'ready';
+  }
   else if (SUBMITTED_OR_LATER.has(finding?.state)) submissionState = 'submitted';
 
   return { technicalValidity, securityImpact, novelty, submissionState };

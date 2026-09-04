@@ -96,7 +96,7 @@ Teste ficou apenas no clone local efêmero desta sessão (`coins/helium/panic_po
 - Resultado observado: panic real e reproduzível nas duas funções, não simulado
 - C/I/A: **nenhum/nenhum/alto**
 - Escopo do impacto: além do próprio usuário que forneceu a chave malformada — potencialmente outros usuários processados no mesmo processo/backend
-- Gate atual: **PASS** — impacto reportável confirmado
+- Gate de impacto: **PASS** — impacto reportável confirmado; isto não satisfaz o gate separado de novidade
 
 **Ceticismo sobre severidade/alcance:** mesma classe dos dois achados-irmãos deste repositório (DoS/robustez, não perda de fundos direta). Não confirmo uso real server-side das duas funções — só o código-fonte público; a explorabilidade prática exata depende de como consumidores externos (potencialmente a própria OKX) integram o pacote.
 
@@ -125,9 +125,8 @@ Este trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, a
 - Data: 2026-09-04
 - Fontes: `github_issues` (busca por "panic" OR "bad seed length" OR "private key" em `okx/go-wallet-sdk`: 5 resultados, todos sobre bugs completamente diferentes — decode de transação Solana, derivation path, assinatura Schnorr Bitcoin — nenhum relacionado), `github_advisories` (nenhum publicado neste repositório), `web_search` ("okx go-wallet-sdk panic bad seed length ed25519 private key vulnerability" — nenhum hit específico a este SDK; único achado de contexto foi [vegaprotocol/vega#768](https://github.com/vegaprotocol/vega/issues/768), o mesmo padrão geral de bug num projeto totalmente diferente)
 - Correspondência pública encontrada: **não**
-- Classificação de novidade: **longstanding_exposure** — commit real `5cd6c132d6382bfbcaa53af013efeacfd88d30f5` ("add coin helium and unit test", 2023-11-07), **1032 dias** de exposição pública contínua confirmados via `verify-longstanding-exposure` (clone real, `git show`/`merge-base --is-ancestor`), ainda ancestral de `origin/HEAD`
-
-> Mesmo achado-irmão de `kubernetes/publishing-bot` desta sessão: o bug é design/omissão original de mais de 2 anos, não regressão recente. Usado aqui o segundo caminho de prova do pipeline (exposição pública de longa data verificada, ver `novelty-risk.mjs::MIN_LONGSTANDING_EXPOSURE_DAYS`).
+- Classificação registrada: **longstanding_exposure** — commit real `5cd6c132d6382bfbcaa53af013efeacfd88d30f5` ("add coin helium and unit test", 2023-11-07), **1032 dias** confirmados via git; isto é evidência de idade, não de novidade
+- Gate anti-duplicate: **BLOCK** — não é regressão recente; longa exposição aumenta a chance de report privado anterior. Não enviar com a evidência atual.
 
 ---
 *Rascunho revisado manualmente em 2026-09-04 a partir do achado `OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding`. Raciocínio bruto completo da investigação em `ledger/ledger.research.jsonl` e no campo `reasoning` do achado no banco.*

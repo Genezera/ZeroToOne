@@ -95,7 +95,7 @@ Teste ficou apenas no clone local efêmero desta sessão (`coins/elrond/zzrepro_
 - Resultado observado: panic real e reproduzível, não simulado
 - C/I/A: **nenhum/nenhum/alto**
 - Escopo do impacto: além do próprio usuário que forneceu a chave malformada — potencialmente outros usuários processados no mesmo processo/backend
-- Gate atual: **PASS** — impacto reportável confirmado
+- Gate de impacto: **PASS** — impacto reportável confirmado; isto não satisfaz o gate separado de novidade
 
 **Ceticismo sobre severidade/alcance:** mesma classe dos achados-irmãos deste repositório (DoS/robustez, não perda de fundos direta — é o próprio input malformado/mal-formatado do chamador que derruba o processo). Pior que o achado-irmão de Solana num aspecto específico: ali `PublicKeyFromBase58`, no arquivo vizinho, ao menos validava tamanho; aqui `Transfer()` não tem nenhuma camada de validação, apesar de `AddressFromSeed`, no MESMO arquivo, já implementar exatamente a checagem que falta. Busca por chamadores internos (`grep -rn 'elrond.Transfer('` em todo o repo, fora de teste): zero resultados — a única "documentação" de uso real é o README do pacote, que usa consistentemente o formato de 32 bytes do próprio exemplo de `AddressFromSeed` (então o README isoladamente não ensina o padrão de 64 bytes que dispara o bug; o vetor real é um consumidor externo que reutilize uma chave de 64 bytes de outro lugar do mesmo SDK). Não confirmo uso real server-side — só o código-fonte público.
 
@@ -125,9 +125,8 @@ Este trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, a
 - Data: 2026-09-04
 - Fontes: `github_issues` (busca por "panic" OR "bad seed length" OR "private key" em `okx/go-wallet-sdk`: 5 resultados, todos sobre bugs completamente diferentes — decode de transação Solana, derivation path, assinatura Schnorr Bitcoin — nenhum relacionado), `github_advisories` (nenhum publicado neste repositório), `web_search` ("okx go-wallet-sdk panic bad seed length ed25519 private key vulnerability" — nenhum hit específico a este SDK; único achado de contexto foi [vegaprotocol/vega#768](https://github.com/vegaprotocol/vega/issues/768), o mesmo padrão geral de bug num projeto totalmente diferente)
 - Correspondência pública encontrada: **não**
-- Classificação de novidade: **longstanding_exposure** — commit real `e122a38d828cc1eb8a201dcdcf2b64c4c55e039f` ("add coins on elrond", 2023-11-03), **1036 dias** de exposição pública contínua confirmados via `verify-longstanding-exposure` (clone real, `git show`/`merge-base --is-ancestor`), ainda ancestral de `origin/HEAD`
-
-> Mesmo achado-irmão de `kubernetes/publishing-bot` desta sessão: o bug é design/omissão original de mais de 2 anos, não regressão recente. Usado aqui o segundo caminho de prova do pipeline (exposição pública de longa data verificada, ver `novelty-risk.mjs::MIN_LONGSTANDING_EXPOSURE_DAYS`).
+- Classificação registrada: **longstanding_exposure** — commit real `e122a38d828cc1eb8a201dcdcf2b64c4c55e039f` ("add coins on elrond", 2023-11-03), **1036 dias** confirmados via git; isto é evidência de idade, não de novidade
+- Gate anti-duplicate: **BLOCK** — não é regressão recente; longa exposição aumenta a chance de report privado anterior. Não enviar com a evidência atual.
 
 ---
 *Rascunho revisado manualmente em 2026-09-04 a partir do achado `OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding`. Raciocínio bruto completo da investigação em `ledger/ledger.research.jsonl` e no campo `reasoning` do achado no banco.*

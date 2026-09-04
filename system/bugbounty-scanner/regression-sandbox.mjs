@@ -282,17 +282,13 @@ export function validateLongstandingExposureConfig(input) {
   return { repositoryUrl, introducedCommit };
 }
 
-/** Prova alternativa de novidade para código que nunca foi seguro -- não uma
- * regressão recente (ver verifyRegression). Não tenta provar ausência de
- * report privado; prova algo verificável e objetivo: o commit introdutor é
- * real (não uma data alegada), continua ancestral da branch padrão pública
- * (ainda em produção, não revertido) e tem idade real >= o mínimo exigido
- * por verifiedLongstandingExposureGate (novelty-risk.mjs). A força do
- * argumento é a mesma usada em codeAgeDays (assessNoveltyRisk): quanto mais
- * tempo código público e mantido ativamente ficou exposto sem nenhum
- * issue/advisory/relato associado, mais surpreendente (logo mais crível)
- * é que ninguém tenha achado e reportado antes -- oposto de "recém-
- * introduzido, ninguém teve tempo ainda". */
+/** Evidência informativa de idade para código que nunca foi seguro -- não
+ * uma regressão recente (ver verifyRegression). Não tenta provar ausência
+ * de report privado; confirma apenas fatos objetivos: o commit introdutor é
+ * real, continua ancestral da branch padrão pública e tem determinada
+ * idade. O gate anti-duplicate não aceita longa exposição como novidade:
+ * código antigo teve mais tempo para ser descoberto e reportado, inclusive
+ * de forma privada. */
 export function verifyLongstandingExposure(input, {
   gitExe = 'git', workspaceRoot = tmpdir(), now = () => new Date(),
 } = {}) {

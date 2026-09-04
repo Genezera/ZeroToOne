@@ -202,32 +202,28 @@ node system/bugbounty-scanner/cli.mjs verify-regression --config="caminho\regres
 O `noveltyProof` retornado tem o formato aceito pelo gate anti-duplicate,
 mas ainda precisa ser combinado com busca pública recente e impacto
 comprovado. O executor prova a regressão; não prova ausência de report
-privado.
+privado. Para contar no gate, a prova precisa ter sido registrada pelo
+próprio `verify-regression --finding-id=...`: `record-duplicate-check`
+confere um atestado `isolated_regression` idêntico no banco. O comando
+genérico `record-validation` recusa esse tipo/provenance reservado, então
+colar um JSON manual com `kind: "verified_regression"` não libera envio.
 
-### Exposição pública de longa data (alternativa à regressão)
+### Exposição pública de longa data (informativa; nunca prova novidade)
 
-`verifiedRegressionGate` só aceita commit introdutor com no máximo 7 dias
-de idade -- não cobre código que nunca foi seguro (design original, não
-regressão recente). Achado real, 04/09/2026: um achado real e alcançável
-(`kubernetes/publishing-bot`, `InsecureSkipVerify:true` introduzido em
-2018 junto com a própria feature) não tinha caminho nenhum para passar o
-gate, por mais esforço de arqueologia git que se investisse.
+`verify-longstanding-exposure --config=<arquivo.json>` clona o repositório
+público, confirma via `git show` a data real do commit introdutor (sem
+confiar em uma data alegada) e via `merge-base --is-ancestor` se ele ainda
+está no histórico de `origin/HEAD`. O resultado é evidência auditável da
+idade do código e pode alimentar `codeAgeDays`.
 
-`verify-longstanding-exposure --config=<arquivo.json>` é o segundo
-caminho: clona o repositório público, confirma via `git show` a data real
-do commit introdutor (nunca confia numa data alegada) e via
-`merge-base --is-ancestor` que ele continua ancestral de `origin/HEAD`
-(ainda em produção, não revertido). Se a idade real for
-`>= MIN_LONGSTANDING_EXPOSURE_DAYS` (365 dias, `novelty-risk.mjs`), o
-`noveltyProof` retornado (`kind: "verified_longstanding_exposure"`) é
-aceito por `duplicateCheckGate` com `noveltyStatus: "longstanding_exposure"`
-em vez de `"regression"` -- mesmo campo `noveltyProof`, mesma exigência de
-busca pública plural/3 consultas/frescor/risco baixo/zero duplicatas
-prévias, só o requisito de commit muda. A lógica é o espelho da regressão:
-quanto mais tempo código público e ativamente mantido ficou exposto sem
-nenhum issue/advisory/relato associado, mais crível é que ninguém tenha
-achado e reportado antes -- o oposto de "recém-introduzido, ninguém teve
-tempo ainda".
+Ele **não é um caminho alternativo para o gate anti-duplicate**. Código
+antigo teve mais tempo para ser descoberto e reportado, inclusive em reports
+privados invisíveis. Por isso `noveltyStatus: "longstanding_exposure"` é
+recusado por `duplicateCheckGate`; somente uma regressão recente verificada
+parent seguro → commit vulnerável pode liberar a etapa de novidade. Esta
+restrição corrige uma exceção metodologicamente invertida criada em
+04/09/2026 e impede que “não encontrei nada publicamente em anos” seja
+tratado como prova de ausência.
 
 ```powershell
 node system/bugbounty-scanner/cli.mjs verify-longstanding-exposure --config="caminho\longstanding.json"
@@ -836,9 +832,10 @@ execução parent↔commit introdutor já pode ser feita por
 sem rede/segredos/capabilities e com filesystem base read-only. Resultado
 contraditório, timeout ou parent incorreto falha fechado. Isso prova a
 regressão executada; não prova ausência de report privado. Para código
-que nunca foi seguro (não regressão -- ver "Exposição pública de longa
-data" acima), `verify-longstanding-exposure --config=... --finding-id=...`
-verifica idade real do commit introdutor via git, sem executar nada.
+que nunca foi seguro (não regressão),
+`verify-longstanding-exposure --config=... --finding-id=...` verifica a
+idade real do commit introdutor via git, sem executar nada, mas o resultado
+é somente contexto de risco e não libera envio.
 
 ## Comandos úteis
 - Rodar o scanner manualmente: `node system/bugbounty-scanner/scan-runner.mjs`

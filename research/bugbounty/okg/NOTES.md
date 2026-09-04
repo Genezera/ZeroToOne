@@ -673,3 +673,13 @@ renderizava a prova de exposição de longa data como se fosse sempre
 uma prova de regressão (`{{parent ausente}}` aparecia literalmente no
 rascunho gerado) -- corrigido pra distinguir os dois formatos de
 `noveltyProof.kind`, com teste novo.
+
+### Correção metodológica — 2026-09-04
+
+A promoção acima foi revertida conceitualmente após revisão independente.
+Código antigo teve mais oportunidade de já ser reportado de forma privada;
+logo, `longstanding_exposure` é contexto de risco e não prova de novidade.
+O gate alternativo foi removido e os três rascunhos agora dizem **BLOCK**.
+Os estados `human_ready` permanecem como história append-only, mas o
+preflight atual recusa submissão enquanto não houver regressão recente
+verificada.

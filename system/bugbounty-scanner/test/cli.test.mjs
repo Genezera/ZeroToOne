@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplicateCheck, latestPlatformOutcome, getFinding, recordReport, recordImpactAssessment } from '../db.mjs';
+import { openDb, upsertFinding, closeDb, recordDeploymentEvidence, recordDuplicateCheck, recordValidation, latestPlatformOutcome, getFinding, recordReport, recordImpactAssessment } from '../db.mjs';
 import {
   cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
   cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
@@ -52,6 +52,7 @@ const REGRESSION_PROOF = {
   candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
 };
 const TEST_PROGRAM_POLICY = {
+  'Circle BBP': { roeReviewed: true, reviewedAt: '2026-09-03', nextReviewAt: '2099-12-31' },
   P: { roeReviewed: true, reviewedAt: '2026-09-03', nextReviewAt: '2099-12-31' },
 };
 
@@ -82,9 +83,9 @@ test('cmdTransition usa a mesma state-machine — recusa sem contexto válido', 
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
     upsertFinding(db, SAMPLE);
-    const bad = cmdTransition(db, SAMPLE.id, 'corroborated_static', 'cloud-agent', {});
+    const bad = cmdTransition(db, SAMPLE.id, 'corroborated_static', 'cloud-agent', {}, { programPolicy: TEST_PROGRAM_POLICY });
     assert.equal(bad.ok, false);
-    const good = cmdTransition(db, SAMPLE.id, 'corroborated_static', 'cloud-agent', { filesRead: ['a.sol'] });
+    const good = cmdTransition(db, SAMPLE.id, 'corroborated_static', 'cloud-agent', { filesRead: ['a.sol'] }, { programPolicy: TEST_PROGRAM_POLICY });
     assert.equal(good.ok, true);
     closeDb(db);
   });
@@ -119,13 +120,57 @@ test('cmdPipelineStatus lista bloqueio de cada achado não-terminal', () => {
     upsertFinding(db, SAMPLE); // candidate
     upsertFinding(db, { ...SAMPLE, id: 'p2::f::fn::type', state: 'corroborated_static' });
     upsertFinding(db, { ...SAMPLE, id: 'p3::f::fn::type', state: 'false_positive' }); // terminal, deve sumir da lista
-    const status = cmdPipelineStatus(db);
+    const status = cmdPipelineStatus(db, { programPolicy: TEST_PROGRAM_POLICY });
     const ids = status.map((s) => s.id);
     assert.ok(ids.includes(SAMPLE.id));
     assert.ok(ids.includes('p2::f::fn::type'));
     assert.ok(!ids.includes('p3::f::fn::type'));
     const candidateRow = status.find((s) => s.id === SAMPLE.id);
     assert.match(candidateRow.blocker, /leitura profunda/);
+    closeDb(db);
+  });
+});
+
+test('cmdRecordValidation não permite fabricar o tipo/provenance reservado do executor de regressão', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    assert.throws(
+      () => cmdRecordValidation(db, SAMPLE.id, {
+        type: 'isolated_regression', result: 'pass', output: 'inventado',
+      }),
+      /evidência reservada/,
+    );
+    assert.throws(
+      () => cmdRecordValidation(db, SAMPLE.id, {
+        type: 'manual', result: 'pass', output: 'inventado', evidence: { provenance: 'regression-sandbox' },
+      }),
+      /evidência reservada/,
+    );
+    closeDb(db);
+  });
+});
+
+test('policy bloqueia toda progressão de pesquisa no CLI, mas preserva encerramento cético', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    const blockedPolicy = {
+      'Circle BBP': { blocked: true, reason: 'fora da operação autorizada' },
+    };
+    const advance = cmdTransition(
+      db, SAMPLE.id, 'corroborated_static', 'cloud-agent',
+      { filesRead: ['a.sol'] }, { programPolicy: blockedPolicy },
+    );
+    assert.equal(advance.ok, false);
+    assert.match(advance.reason, /bloqueado antes de avançar pesquisa/);
+    assert.equal(getFinding(db, SAMPLE.id).state, 'candidate');
+
+    const status = cmdPipelineStatus(db, { programPolicy: blockedPolicy });
+    assert.match(status[0].blocker, /bloqueado por política/);
+
+    const close = cmdTransition(db, SAMPLE.id, 'false_positive', 'cloud-agent', {}, { programPolicy: blockedPolicy });
+    assert.equal(close.ok, true, close.reason);
     closeDb(db);
   });
 });
@@ -154,6 +199,25 @@ test('duplicate outcome anterior alimenta automaticamente risco e estatística p
     assert.equal(stats.totalSubmissions, 1);
     assert.equal(stats.duplicateSubmissions, 1);
     assert.equal(stats.byRepository['acme/api'].submissions, 1);
+    closeDb(db);
+  });
+});
+
+test('record-duplicate-check recusa noveltyProof de regressão sem atestado idêntico do executor isolado', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const finding = { ...SAMPLE, id: 'p::forged::fn::idor', program: 'P' };
+    upsertFinding(db, finding);
+    const check = cmdRecordDuplicateCheck(db, finding.id, {
+      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      queries: ['q1 root cause', 'q2 source sink', 'q3 commit regression'],
+      foundExisting: false,
+      ts: '2026-09-03T17:00:00Z',
+      noveltyProof: REGRESSION_PROOF,
+    });
+    assert.equal(check.noveltyStatus, 'private_unknown');
+    assert.equal(check.noveltyProof, null);
+    assert.equal(check.results.find((r) => r.source === 'isolated_regression_attestation').disposition, 'missing_or_mismatched');
     closeDb(db);
   });
 });
@@ -227,6 +291,10 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
       attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'isolamento entre contas',
       observableOutcome: 'leitura de dado da vítima', rationale: 'duas contas próprias',
       confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user', reportable: true,
+    });
+    recordValidation(db, finding.id, {
+      type: 'isolated_regression', result: 'pass', command: 'node poc.mjs', rawOutput: 'exploit reproduzido',
+      evidence: { provenance: 'regression-sandbox', noveltyProof: REGRESSION_PROOF },
     });
     cmdRecordDuplicateCheck(db, finding.id, {
       methods: ['github_issues', 'github_advisories', 'hacktivity'],
