@@ -6,19 +6,19 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 
 | Tipo | Linguagem | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
-| ai_deep_read_finding | Go | 2 | 2 | 0 | 0 | 0% |
+| ai_deep_read_finding | Go | 2 | 0 | 0 | 2 | 0% |
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 4 | 3 | 1 | 0 | 25% |
-| ai_deep_read_finding | kotlin | 4 | 1 | 2 | 1 | 50% |
+| ai_deep_read_finding | go | 4 | 2 | 1 | 1 | 25% |
+| ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | rust | 3 | 2 | 1 | 0 | 33% |
 | ai_deep_read_finding | solidity | 4 | 0 | 4 | 0 | 100% |
 | ai_deep_read_finding | swift | 2 | 1 | 1 | 0 | 50% |
 | ai_deep_read_finding | typescript | 4 | 2 | 1 | 1 | 25% |
 | auth_arg_inconsistency | clarity | 1 | 0 | 1 | 0 | 100% |
-| command_injection_risk | go | 1 | 1 | 0 | 0 | 0% |
+| command_injection_risk | go | 1 | 0 | 0 | 1 | 0% |
 | command_injection_risk | js | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | solidity | 1 | 0 | 1 | 0 | 100% |
 | eval_usage | js | 3 | 0 | 3 | 0 | 100% |
@@ -68,13 +68,13 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 
 | Tipo | Programa | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
-| ai_deep_read_finding | Block Open Source | 6 | 2 | 3 | 1 | 50% |
+| ai_deep_read_finding | Block Open Source | 6 | 1 | 3 | 2 | 50% |
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
-| ai_deep_read_finding | OKG | 4 | 4 | 0 | 0 | 0% |
+| ai_deep_read_finding | OKG | 4 | 1 | 0 | 3 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 5 | 2 | 2 | 1 | 40% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
-| command_injection_risk | Kubernetes | 1 | 1 | 0 | 0 | 0% |
+| command_injection_risk | Kubernetes | 1 | 0 | 0 | 1 | 0% |
 | command_injection_risk | Vercel Open Source | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | Circle BBP | 1 | 0 | 1 | 0 | 100% |
 | eval_usage | Vercel Open Source | 3 | 0 | 3 | 0 | 100% |

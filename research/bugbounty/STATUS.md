@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-04T20:48:27.134Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-04T21:13:10.069Z.
 
 ## Alvos ativos
 
@@ -49,7 +49,7 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **36**
+- Pendentes (aguardando o agente de nuvem): **34**
 - Já revisados: 757
 
 ### Últimos vereditos
@@ -59,5 +59,5 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | falso_positivo | 2026-09-04T09:25:31.999Z |
 | known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | falso_positivo | 2026-09-04T09:25:31.999Z |
 | known_vulnerable_dependency | Mattermost Public Bug Bounty Engagement  | falso_positivo | 2026-09-04T09:25:31.999Z |
-| command_injection_risk | Kubernetes | confirmado | 2026-09-04T09:20:40.920Z |
+| command_injection_risk | Kubernetes | inconclusivo | 2026-09-04T09:20:40.920Z |
 | path_traversal_risk | Kubernetes | falso_positivo | 2026-09-04T09:20:38.102Z |
