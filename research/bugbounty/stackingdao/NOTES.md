@@ -1140,3 +1140,16 @@ remote-auth-command.ts` — ver NOTES.md de Vercel Open Source), sem
 achado. Nenhuma transição de estado neste programa. `Block Open
 Source`/`Circle BBP` seguem fora de escopo desta sessão por política
 local (`program-policy.json`).
+
+## Rodada 2026-09-04 #21 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP` bloqueados via `check-program`, nenhum dos dois tocado).
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+via `curl -m 8`: `http_code=000` (timeout/falha de conexão, mesma
+categoria de bloqueio de rede do agent-proxy de todas as rodadas
+anteriores) -- não confirmável se o deployer StackingDAO publicou
+contrato novo; os 15 contratos Clarity já cobertos seguem sem mudança
+conhecida, nenhum arquivo novo candidato neste programa. Leitura
+profunda proativa desta rodada direcionada a `vercel/eve` (ver NOTES.md
+de Vercel Open Source). Nenhuma transição de estado neste programa.

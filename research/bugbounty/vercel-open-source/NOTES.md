@@ -7205,3 +7205,44 @@ reconfirmado bloqueado em dezenas de rodadas recentes consecutivas;
 os 15 contratos Clarity seguem 100% cobertos, sem mudança). `Block Open
 Source`/`Circle BBP` seguem fora de escopo desta sessão por política
 local (`program-policy.json`).
+
+## Rodada 2026-09-04 #21 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 0. Revisitados os estados não-terminais
+existentes (`corroborated_static`/`human_ready`/`inconclusive`/
+`reproduced_local`/`scope_verified`) só por leitura -- nenhum exigia
+ação nova nesta rodada (sem evento de fila os disparando).
+
+Leitura profunda proativa: clone raso de `vercel/eve` (efêmero, não
+estava em disco nesta sessão) para continuar o levantamento dos
+candidatos auth/session/crypto/token/... ainda não lidos. Desta vez
+direcionado à família de arquivos de *criação/identidade* de sessão em
+vez de canais de auth (já bem cobertos): 3 arquivos de produção novos --
+
+- `execution/session.ts` (completo) -- `createSession`/
+  `refreshSessionFromTurnAgent`/`projectToDurableSession`/
+  `hydrateDurableSession`: só estrutura de dados da sessão (agent/
+  compaction/history/limits); `sessionId`/`continuationToken` chegam
+  como input do chamador, não são gerados nem validados aqui.
+  `mintSubagentContinuationToken` usa `crypto.randomUUID()` quando
+  `suffix` não é fornecido (imprevisível); o path determinístico só
+  existe quando o próprio chamador interno já fornece um `suffix`
+  explícito -- nenhuma superfície de input externo rastreada até aqui.
+  Nenhuma decisão de autorização neste arquivo, consistente com o
+  achado já refutado de `channel/session.ts` (rodada #18: auth por-
+  sessão é responsabilidade documentada do app integrador). Sem achado.
+- `execution/create-session-step.ts` (completo) -- `createSessionStep`
+  monta a sessão durable a partir do bundle compilado + limits herdados
+  do pai (tighter-wins: filho nunca alarga a cota do pai); `sessionId`/
+  `continuationToken`/`rootSessionId` só são repassados do input do
+  workflow runtime chamador, sem geração nem checagem de auth aqui. Sem
+  achado.
+- `runtime/sessions/runtime-session.ts` (completo) -- `RuntimeSession` é
+  container process-scoped só para cache de artefatos compilados/bundle,
+  isolado por `AsyncLocalStorage` em testes; sem input de rede, sem
+  decisão de autorização, puro cache de build-time. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `vercel/eve`). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `Block Open
+Source`/`Circle BBP` seguem fora de escopo desta sessão por política
+local (`program-policy.json`).
