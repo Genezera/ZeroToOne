@@ -616,3 +616,54 @@ shallow clone público. 2 arquivos na fronteira de autorização:
 arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada.
 `Block Open Source`/`Circle BBP` seguem fora de escopo por política
 local (`program-policy.json`).
+
+## Rodada 2026-09-04 #15 (push automático via GitHub webhook, rodada seguinte)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`/
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado. `Auth0 by
+Okta` segue com `roeReviewNeeded` -- tentei resolver a lacuna de novo
+(`WebFetch` direto em `bugcrowd.com/engagements/auth0-okta`), mas o
+proxy de egress deste ambiente cloud continua bloqueando o domínio
+(`EGRESS_BLOCKED`, mesmo resultado da tentativa anterior registrada no
+próprio campo) -- `auth0/auth0-java` não escolhido como alvo nesta
+rodada, cautela extra mantida. `migrate-to-v2.mjs` + `list-pending`
+global = 0 (fila vazia).
+
+Continuação da leitura profunda em `kubernetes/apiserver` (mesmo repo
+da rodada #14, ainda na fronteira de autenticação): mais 3 arquivos,
+nenhum tocado antes.
+
+- `pkg/authentication/token/cache/cached_token_authenticator.go`
+  (`cachedTokenAuthenticator.AuthenticateToken`/`doAuthenticateToken`/
+  `keyFunc`) -- cache de resultado de autenticação por token. Chave é
+  HMAC-SHA256 com segredo aleatório por processo sobre
+  `token+audiences` com length-prefix (`writeLengthPrefixedString`
+  evita ambiguidade tipo `"xy"+"z" == "x"+"yz"`); `singleflight.Group`
+  colapsa lookups concorrentes pra mesma chave (evita cache
+  stampede/chamadas duplicadas ao authenticator real). Token nunca fica
+  em texto puro na cache, só o hash; HMAC com chave aleatória mitiga
+  DoS por colisão de hash com input controlado por atacante. Uso de
+  `unsafe.Slice`/`unsafe.String` é só pra evitar alocação, não introduz
+  mutabilidade insegura. Sem achado.
+- `pkg/authentication/request/bearertoken/bearertoken.go`
+  (`Authenticator.AuthenticateRequest`) -- parse do header
+  `Authorization: Bearer <token>`, rejeita corretamente scheme
+  diferente de "bearer" (case-insensitive) e token vazio; remove o
+  header `Authorization` após autenticação bem-sucedida pra não vazar o
+  token adiante na cadeia de handlers. Sem achado.
+- `pkg/endpoints/filters/authentication.go` (`WithAuthentication`) --
+  filtro HTTP principal: valida `audiencesAreAcceptable` (interseção
+  não-vazia entre audiências esperadas e retornadas quando ambas
+  non-empty), remove headers de front-proxy (`X-Remote-*`), tanto o
+  conjunto padrão quanto o customizado via `requestHeaderConfig`,
+  *antes* de invocar o handler downstream -- previne spoofing de
+  identidade via header injetado diretamente pelo cliente (só aceito se
+  vier de proxy configurado e validado pelo próprio
+  `auth.AuthenticateRequest`). Mitigação de HTTP/2 rapid-reset
+  (CVE-2023-44487/CVE-2023-39325) pra conexões anônimas presente e
+  documentada. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/apiserver`, +3 arquivos,
+total 5). Nenhum achado novo, nenhuma transição de estado nesta rodada
+-- resultado normal e válido. `Block Open Source`/`Circle BBP` seguem
+fora de escopo por política local.
