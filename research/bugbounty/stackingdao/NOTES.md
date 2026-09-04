@@ -1240,3 +1240,18 @@ Leitura profunda proativa desta rodada direcionada a `vercel/turborepo`
 (ver NOTES.md de Vercel Open Source: `turborepo-auth/src/ui/messages.rs`,
 `turborepo-wax/src/token/{mod,parse}.rs`, sem achado). Nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-04 #31 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP` bloqueados via `check-program` -- nenhum tocado).
+`list-pending` global = 34, 100% de programas fora de escopo (30 Auth0
+by Okta, 4 Circle BBP). `api.hiro.so` recheck via `curl -m 10`:
+`CONNECT tunnel failed, response 403` no agent-proxy, mesmo bloqueio de
+rede de dezenas de rodadas consecutivas -- não confirmável se o
+deployer publicou contrato novo; os 15 contratos Clarity já cobertos
+seguem sem mudança conhecida, nenhum arquivo novo candidato neste
+programa. Leitura profunda proativa desta rodada direcionada a
+`vercel/turborepo` (ver NOTES.md de Vercel Open Source: módulo
+`turborepo-boundaries` -- config.rs/tags.rs/imports.rs -- concluído,
+sem achado). Nenhuma transição de estado neste programa.

@@ -7747,3 +7747,51 @@ tratamento especial de path traversal aqui. Sem achado nos 3 arquivos.
 `deep-read-log.json` atualizado (vercel/turborepo agora com 28 arquivos
 lidos nesta missão). Nenhuma transição de estado em nenhum programa
 nesta rodada.
+
+## Rodada 2026-09-04 #31 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` lido/checado como passo zero (`check-program`
+confirmou `Block Open Source` e `Circle BBP` bloqueados; nenhum repo
+desses dois tocado -- nem clone, nem leitura, nem grep de nome de
+arquivo). `migrate-to-v2.mjs` + `list-pending` global = 34 candidatos,
+100% de programas fora do escopo desta missão (30 Auth0 by Okta -- nem
+um dos 4 programas da missão, e mesmo assim confirmado bloqueado no
+policy file --, 4 Circle BBP). Os 5 achados `corroborated_static` já
+existentes deste programa seguem sem evidência nova (mesma conclusão de
+dezenas de rodadas anteriores); nenhuma transição tentada.
+
+Leitura profunda proativa concluiu a exploração do módulo
+`turbo boundaries` do `vercel/turborepo` iniciada na rodada #30 (clone
+raso público `git clone --depth 1 --filter=blob:none --sparse`,
+removido do scratchpad ao final): achei o crate real de enforcement
+(`turborepo-boundaries`, referenciado por
+`turborepo-lib/src/boundaries/mod.rs`) e li os 3 arquivos que faltavam:
+
+- `src/config.rs` -- só a struct serde/deserializable de configuração
+  (`BoundariesConfig`/`Rule`/`Permissions`, allow/deny de tags). Sem
+  lógica de enforcement, puro schema. Sem achado.
+- `src/tags.rs` (949 linhas, incl. testes) -- `validate_relation`/
+  `check_package_tags`: motor de matching allow/deny de tags contra
+  dependências/dependentes transitivos do grafo de pacotes. Modelo de
+  ameaça errado para bug bounty: é um linter de arquitetura rodado pelo
+  próprio desenvolvedor contra o próprio monorepo em build-time
+  (`turbo boundaries`), sem input de terceiro/untrusted -- produz só
+  diagnóstico (erro de CI), nunca controla acesso em runtime. Mesmo se
+  o matching tivesse um bypass, não haveria vítima (o "atacante" seria
+  o próprio dono do repo). Sem achado reportável.
+- `src/imports.rs` (1158 linhas, incl. testes) -- `check_import`/
+  `check_file_import`: resolve import relativo e verifica se o caminho
+  resolvido sai do diretório do pacote via `relation_to_path` (nota no
+  código: deliberadamente não usa `contains`, que panica com excesso de
+  `..`). Comentários mostram hardening consciente contra falsos
+  positivos de paths gerados por ferramentas (ex.
+  `../../../node_modules/@sveltejs/kit/...` do SvelteKit). Mesmo modelo
+  de ameaça de `tags.rs` -- lint de dev-time sobre código do próprio
+  usuário, não fronteira de confiança real. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/turborepo`: +3 arquivos,
+módulo `boundaries` agora coberto por completo). Para StackingDAO: ver
+`research/bugbounty/stackingdao/NOTES.md` (`api.hiro.so` continua
+bloqueado pelo agent-proxy, `CONNECT tunnel failed, response 403`; 15
+contratos Clarity seguem 100% cobertos, sem mudança). Nenhum achado
+novo, nenhuma transição de estado em nenhum programa nesta rodada.

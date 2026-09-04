@@ -984,7 +984,10 @@
     "crates/turborepo-lockfile-hash/src/lib.rs (hash() -- mesmo padrão xxHash64 sobre Cap'n Proto canônico p/ fingerprint de lockfile packages; hash não-criptográfico usado só como chave de cache local, autenticação real de artefato remoto já é feita por signature_authentication.rs (HMAC-SHA256, lido em rodada anterior) -- sem achado)",
     "crates/turborepo-auth/src/ui/messages.rs (println! de sucesso pos-login, sem interpolar segredo, sem lógica -- sem achado)",
     "crates/turborepo-wax/src/token/mod.rs (AST/estrutura de token do glob wax vendorizado -- Tokenized/TokenKind/Walk, só cálculo de variance p/ otimização de compilação, nenhuma lógica de matching/autorização -- sem achado)",
-    "crates/turborepo-wax/src/token/parse.rs (parser nom do glob wax -- literal()/separator()/wildcard()/class()/alternative(), \"..\" tratado como literal comum sem tratamento especial de path traversal aqui; matching/enforcement de boundaries fica em outro arquivo não lido nesta rodada -- sem achado)"
+    "crates/turborepo-wax/src/token/parse.rs (parser nom do glob wax -- literal()/separator()/wildcard()/class()/alternative(), \"..\" tratado como literal comum sem tratamento especial de path traversal aqui; matching/enforcement de boundaries fica em outro arquivo não lido nesta rodada -- sem achado)",
+    "crates/turborepo-boundaries/src/config.rs (schema serde/deserializable de BoundariesConfig/Rule/Permissions -- só estrutura de dados (allow/deny de tags), nenhuma lógica de enforcement aqui; sem achado)",
+    "crates/turborepo-boundaries/src/tags.rs (validate_relation/check_package_tags -- lint de arquitetura em tempo de build de `turbo boundaries`, não fronteira de confiança em runtime: developer roda contra o próprio monorepo, sem input externo/untrusted; produz só diagnóstico de CI, nunca bloqueia execução real. Sem achado reportável)",
+    "crates/turborepo-boundaries/src/imports.rs (check_import/check_file_import -- resolve import relativo e checa se caminho resolvido sai do pacote via `relation_to_path` (não `contains`, que panicaria com muitos `..`); mesmo modelo de ameaça de tags.rs (lint de dev-time sobre código do próprio usuário, não input de terceiro) -- comentários mostram hardening deliberado contra `node_modules`/paths gerados por SvelteKit. Sem achado)"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
