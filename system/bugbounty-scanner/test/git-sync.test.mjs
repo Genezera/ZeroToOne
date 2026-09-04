@@ -127,3 +127,17 @@ test('pullLatest: puxa de verdade quando há commit novo no remote', () => {
     cleanup(root);
   }
 });
+
+test('pullLatest: falha fechado quando o worktree já está sujo', () => {
+  const { root, cloneADir } = initRepoWithRemote();
+  try {
+    writeFileSync(path.join(cloneADir, 'nao-commitado.txt'), 'não capturar\n', 'utf8');
+    const logs = [];
+    const result = pullLatest(cloneADir, (message) => logs.push(message));
+    assert.equal(result.ok, false);
+    assert.match(result.reason, /worktree contém mudanças/);
+    assert.ok(logs.some((line) => line.includes('fail') || line.includes('bloqueada')));
+  } finally {
+    cleanup(root);
+  }
+});

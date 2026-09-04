@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -9,6 +9,7 @@ import {
 } from '../runtime-state.mjs';
 import { runServiceCycle } from '../service-runner.mjs';
 import { runWatchdog } from '../watchdog-runner.mjs';
+import { appendRuntimeEvent } from '../runtime-event-log.mjs';
 
 async function withTempDir(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-runtime-test-'));
@@ -24,6 +25,19 @@ test('runtime state usa round-trip atômico e recupera JSON inválido sem lança
     assert.equal(loadRuntimeState(statePath).service.status, 'healthy');
     writeFileSync(statePath, '{ quebrado', 'utf8');
     assert.equal(loadRuntimeState(statePath).service.status, 'initializing');
+  });
+});
+
+test('telemetria de runtime fica em JSONL local independente do ledger de pesquisa', async () => {
+  await withTempDir((dir) => {
+    const eventPath = path.join(dir, 'logs', 'runtime-events.jsonl');
+    appendRuntimeEvent(eventPath, { type: 'bugbounty_runtime_job', job: 'scan', status: 'failure' }, {
+      now: () => new Date('2026-09-04T10:00:00Z'),
+    });
+    const event = JSON.parse(readFileSync(eventPath, 'utf8').trim());
+    assert.equal(event.job, 'scan');
+    assert.equal(event.status, 'failure');
+    assert.equal(event.ts, '2026-09-04T10:00:00.000Z');
   });
 });
 
@@ -138,6 +152,8 @@ test('falha de job gera backoff, persiste erro e notifica; watchdog só avisa na
         recordEvent: () => {},
       });
       assert.equal(failed.state.jobs.scan.consecutiveFailures, 1);
+      assert.equal(failed.ok, false, 'falha de filho precisa chegar ao exit code do coordenador');
+      assert.equal(failed.state.service.status, 'degraded');
       assert.match(failed.state.jobs.scan.lastOutput, /falha sintética/);
       assert.equal(messages.length, 1);
 

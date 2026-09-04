@@ -74,7 +74,8 @@ function log(msg) {
 }
 
 export async function runDiscovery() {
-  pullLatest(REPO_ROOT, log);
+  const preflightSync = pullLatest(REPO_ROOT, log);
+  if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou a descoberta: ${preflightSync.reason}`);
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const seenMap = loadSeenMap();
@@ -354,7 +355,7 @@ export async function runDiscovery() {
     if (syncResult.ok) {
       if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''}.`);
     } else {
-      log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
+      throw new Error(`descoberta concluída localmente, mas publicação falhou: ${syncResult.reason}`);
     }
   }
 

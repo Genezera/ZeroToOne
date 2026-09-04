@@ -176,7 +176,8 @@ export async function runScan() {
   // a tarefa agendada podia escanear em cima de estado desatualizado
   // e, pior, perder o próprio commit se uma corrida de push acontecesse
   // (achado real em logs/bugbounty-scanner.log, 30/08/2026).
-  pullLatest(REPO_ROOT, log);
+  const preflightSync = pullLatest(REPO_ROOT, log);
+  if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou o scan: ${preflightSync.reason}`);
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
   const seen = loadSeen();
   const newFindings = [];
@@ -387,7 +388,7 @@ export async function runScan() {
   if (syncResult.ok) {
     if (syncResult.committed) log(`Sincronizado com o GitHub${syncResult.recovered ? ' (depois de recuperar de uma divergência)' : ''} — agente de nuvem vai ver na próxima checagem.`);
   } else {
-    log(`AVISO: falha ao sincronizar com o GitHub: ${syncResult.reason}`);
+    throw new Error(`scan concluído localmente, mas publicação falhou: ${syncResult.reason}`);
   }
 
   return { contractsChecked, fetchErrors, newFindings };

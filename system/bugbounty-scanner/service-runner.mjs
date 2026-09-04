@@ -2,8 +2,8 @@ import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { appendEntry } from '../ledger/ledger.mjs';
 import { escapeHtml, sendTelegramMessage } from './telegram.mjs';
+import { appendRuntimeEvent } from './runtime-event-log.mjs';
 import {
   acquireLease, backoffMs, isJobDue, loadRuntimeState, saveRuntimeState,
 } from './runtime-state.mjs';
@@ -12,6 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 export const DEFAULT_RUNTIME_STATE_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-runtime-state.json');
 export const DEFAULT_LOCK_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-service.lock');
+export const DEFAULT_RUNTIME_EVENTS_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-runtime-events.jsonl');
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
@@ -144,7 +145,7 @@ export async function runServiceCycle({
   now = () => Date.now(),
   runner = defaultRunner,
   notify = sendTelegramMessage,
-  recordEvent = (event) => appendEntry('research', event),
+  recordEvent = (event) => appendRuntimeEvent(DEFAULT_RUNTIME_EVENTS_PATH, event),
 } = {}) {
   const lease = acquireLease(lockPath, { now: now() });
   if (!lease.ok) return { ok: false, skipped: true, reason: lease.reason };
@@ -207,12 +208,19 @@ export async function runServiceCycle({
       ran.push({ job: job.name, succeeded });
       if (job.kind === 'heavy') heavyRan = true;
     }
-    state.service.status = recoveredOrphan || ran.some((item) => !item.succeeded) ? 'degraded' : 'healthy';
+    const failedThisCycle = ran.some((item) => !item.succeeded);
+    const outstandingFailure = Object.values(state.jobs).some((job) => (job?.consecutiveFailures || 0) > 0);
+    state.service.status = recoveredOrphan || failedThisCycle || outstandingFailure ? 'degraded' : 'healthy';
     if (state.service.status === 'healthy') state.service.lastError = null;
     state.service.lastHeartbeatAt = new Date(now()).toISOString();
     state.service.lastCycleAt = state.service.lastHeartbeatAt;
     saveRuntimeState(statePath, state);
-    return { ok: true, ran, state };
+    return {
+      ok: !failedThisCycle,
+      ran,
+      state,
+      reason: failedThisCycle ? 'um ou mais jobs falharam; veja state.jobs' : recoveredOrphan ? 'job órfão recuperado' : null,
+    };
   } catch (err) {
     const state = loadRuntimeState(statePath);
     state.service = {
