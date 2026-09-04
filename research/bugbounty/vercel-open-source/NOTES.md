@@ -6310,3 +6310,88 @@ arquivos novos lidos:
 
 `deep-read-log.json` atualizado (`nuxt/nuxt` +3 entradas, agora 16 no
 total). Nenhuma transição de estado neste programa nesta rodada.
+
+## Rodada 2026-09-04 #9 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados -- confirmado explicitamente que
+os repos `afterpay/*`, `cashapp/*` e `square/wire` que aparecem em
+`deep-read-log.json` pertencem ao scope-snapshot de `Block Open Source`
+(`research/bugbounty/scope-snapshots/block-open-source.json`), não a
+este programa -- nenhum deles tocado nesta rodada. `migrate-to-v2.mjs` +
+`list-pending` global = 0 (fila vazia).
+
+Leitura profunda proativa desta rodada direcionada a `vercel/eve`
+(pacote com maior superfície ainda de auth/session, 59 entradas prévias
+mas repo muito grande). Sparse clone raso de `packages/eve/src`, grep
+auth/session/crypto/token/login/password/admin/permission/access/
+secret/credential contra o log já existente. 3 arquivos novos lidos
+(mais rastreamento de cadeia de chamada em vários arquivos já
+catalogados, sem contar pro limite de 3):
+
+- `packages/eve/src/execution/session-command-token.ts` -- gera o
+  "stable command inbox token" de uma sessão como
+  `eve:session:${sessionId}:inbox`, ou seja, **derivado
+  deterministicamente do próprio sessionId, não randômico** (diferente
+  do padrão `generateNanoid()` usado pros webhook hooks públicos em
+  `packages/core/src/workflow/create-hook.ts`, já coberto pelo achado
+  `predictable_hook_token_seed_risk` de `vercel/workflow`).
+- `packages/eve/src/execution/turn-cancellation-token.ts` -- deriva o
+  token de cancelamento de turno como `${controlToken}:cancel`, mesmo
+  padrão determinístico.
+- `packages/eve/src/channel/session.ts` -- **achado inicial que motivou
+  a investigação**: os métodos `cancel()`/`compact()`/`clear()`/
+  `reset()` do objeto `Session` montam o comando SEM o campo `auth`
+  (`{ kind: "cancel", ... }`, sem `auth: options.auth`), ao contrário de
+  `send()`/`respond()` que sempre incluem `auth: options.auth` no
+  comando despachado. Rastreei a cadeia completa até a rota HTTP real:
+
+  `packages/eve/src/eve-channel/index.ts` (POST
+  `EVE_SESSION_CANCEL_ROUTE_PATTERN`/`_COMPACT_`/`_CLEAR_`/`_RESET_`,
+  L372-499) -- toda rota chama `routeAuth(req, input.auth)` primeiro e
+  descarta o `SessionAuthContext` resolvido (só usa pra decidir 401,
+  nunca compara contra o dono da sessão) e então
+  `attachSession(sessionId).cancel(...)` usando só o `sessionId` do
+  path param (`requireSessionId(params)`), sem nenhum vínculo entre o
+  principal autenticado e a sessão-alvo. Hipótese inicial: IDOR/BOLA --
+  qualquer principal que passe em `routeAuth` (autenticação de
+  *canal*, não de *sessão*) e conheça/adivinhe outro `sessionId` poderia
+  cancelar/resetar/limpar/compactar a sessão de outro usuário.
+
+  **Refutada como achado de framework** depois de ler
+  `packages/eve/README.md` (L15): "You are responsible for configuring
+  approval policies, tool restrictions, connection scopes, **route/
+  session authorization**, sandbox controls, telemetry exports, and
+  other safeguards appropriate for your use case." -- e L176-178: o
+  protocolo HTTP público expõe `sessionId` como identificador único,
+  sem nenhuma promessa de que posse do ID por si só implica autorização
+  automática por dono. Autorização por-sessão é **explicitamente**
+  documentada como responsabilidade do app que integra `eve`, não do
+  framework -- mesmo padrão de divisão de responsabilidade de
+  frameworks web genéricos (Express etc.) que não são considerados
+  vulneráveis por não forçar auth automaticamente. Também confirmei que
+  `send`/`respond` não fazem verificação de posse por sessão via o
+  campo `auth` de forma diferente -- não encontrei nenhum ponto onde
+  `command.auth` seja comparado contra um "dono" persistido da sessão;
+  o campo parece existir só pra propagar identidade do chamador pro
+  contexto do agente (tools/OBO), não pra gate de autorização de
+  dispatch. Ou seja, a ausência de `auth` em cancel/reset não é uma
+  assimetria real de proteção -- nenhuma rota tem proteção por-sessão
+  automática, por design documentado.
+
+  Não abri finding formal (refutado antes de formalizar, mesmo padrão
+  já usado antes pra achados de baixo risco/fora do modelo de ameaça --
+  ver entrada de `nuxt/nuxt` da rodada anterior). Documentando aqui em
+  detalhe porque é o tipo de padrão (capability-ID vs. token realmente
+  secreto) que vale a pena não re-investigar do zero numa rodada futura
+  sem motivo novo.
+
+`api.hiro.so` recheck rápido via `curl`: `errno=56` (connection reset),
+mesmo bloqueio de rede de rodadas anteriores -- não deu pra confirmar
+contrato novo do deployer StackingDAO nesta rodada (ver NOTES.md de
+StackingDAO). `deep-read-log.json` atualizado (`vercel/eve` +3
+entradas, agora 62 no total). Nenhuma transição de estado neste
+programa nesta rodada; achado `scope_verified` de `vercel/workflow`
+(`predictable_hook_token_seed_risk`) segue preso na mesma limitação
+estrutural já documentada (duplicate-check gate exige acesso de rede
+bloqueado neste ambiente).

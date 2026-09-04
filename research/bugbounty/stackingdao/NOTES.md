@@ -1032,3 +1032,18 @@ contratos Clarity já cobertos seguem sem mudança conhecida, nenhum
 arquivo novo candidato neste programa. Leitura profunda proativa desta
 rodada direcionada a `nuxt/nuxt` (ver NOTES.md de Vercel Open Source),
 sem achado. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-04 #9 (push automático via GitHub webhook)
+
+`program-policy.json` checado como passo zero: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 0. `api.hiro.so` recheck
+rápido via `curl -m 8`: `errno=56` (connection reset), mesmo bloqueio
+de rede de todas as rodadas anteriores -- não deu pra confirmar se o
+deployer `SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG` publicou contrato
+novo; os 15 contratos Clarity já cobertos seguem sem mudança conhecida,
+nenhum arquivo novo candidato neste programa. Leitura profunda proativa
+desta rodada direcionada a `vercel/eve` (ver NOTES.md de Vercel Open
+Source: achado inicial de possível IDOR em cancel/compact/clear/reset,
+refutado como responsabilidade documentada do app integrador, não bug
+de framework). Nenhuma transição de estado neste programa.
