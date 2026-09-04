@@ -6554,3 +6554,77 @@ confiança reais -- token de callback e escopo de ferramentas de IA:
 
 `deep-read-log.json` atualizado (`vercel/chat` +3 entradas). Nenhum
 finding novo, nenhuma transição de estado nesta rodada.
+
+## Rodada 2026-09-04 #5 (push automático via GitHub webhook) — descoberta importante sobre GHSA-9r75-g2cr-3h76
+
+`program-policy.json` checado como passo zero. `migrate-to-v2.mjs` +
+`list-pending` = 0 candidatos globais. Antes da leitura profunda
+proativa (que foi direcionada a `kiwicom/js-iam-middleware`, ver
+NOTES.md do Kiwi.com), tentei avançar o finding já `scope_verified`
+`vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk`
+(criado numa rodada anterior no mesmo dia, com relatório já escrito em
+`research/bugbounty/reports/vercel-workflow-predictable-hook-token.md`)
+pra `human_ready`, já que os pré-requisitos óbvios (report, impact
+assessment) já estavam presentes.
+
+**Recusado pelo CLI**: `"duplicateCheck sem métodos rastreáveis"` —
+nenhuma rodada anterior tinha rodado `record-duplicate-check` pra este
+finding. Tentei `search-prior-art --config=...` (a ferramenta real que
+popula github_issues/commits/advisories via API) e **bati num bloqueio
+de rede deste ambiente cloud**: `api.github.com` devolve 403 pra
+qualquer repositório fora do escopo desta sessão (só
+`genezera/zerotoone`), mesmo com `GITHUB_TOKEN` setado (é token de
+instalação escopado, não PAT pessoal). `add_repo(vercel/workflow,
+access=read)` confirma que leitura via `git clone` anônimo já
+funciona (usado em todas as rodadas), mas a API REST só abre
+anexando com `access=push` — decidi **não fazer isso**: anexar
+credenciais de escrita a um repositório de terceiro só pra rodar uma
+busca de leitura é desproporcional e não claramente autorizado pelo
+escopo desta tarefa, então não contornei o gate dessa forma (nem
+fabriquei um `duplicateCheck` falso).
+
+**O que a pesquisa manual via `WebSearch` (sem tocar API do GitHub)
+achou, e que é importante o suficiente pra registrar aqui com
+destaque**: existe um advisory público JÁ PUBLICADO exatamente sobre
+"token de webhook previsível" neste mesmo pacote —
+**GHSA-9r75-g2cr-3h76** ("Vercel Workflow Allows Webhook Creation
+with Predictable User-Specified Tokens", severidade High, disclosed
+2026-03-06, corrigido em 4.2.0-beta.64). A causa raiz documentada
+nesse advisory é diferente da nossa, mas adjacente o bastante pra
+exigir julgamento humano cuidadoso:
+
+- **GHSA-9r75-g2cr-3h76** (já público, já corrigido): cobre token
+  CUSTOMIZADO fornecido pelo próprio desenvolvedor (ex.:
+  `createWebhook({token: "github_webhook:repo_name"})`, um padrão que
+  a documentação antiga chegou a recomendar). Fix oficial: removeram a
+  opção de token customizado; a mitigação recomendada pelo próprio
+  advisory é "use `createWebhook()` sem passar `token` — usa nanoid
+  aleatório não-adivinhável por padrão".
+- **Nosso achado** (`predictable_hook_token_seed_risk`): mostra que
+  mesmo o caminho PADRÃO/recomendado pelo próprio GHSA como seguro
+  (token auto-gerado via `nanoid`) NÃO é criptograficamente aleatório,
+  porque `nanoid` consome `Math.random()`, que é sobrescrito dentro da
+  VM do workflow por um PRNG semeado (`seedrandom(seed)`) com
+  `runId:workflowName:deploymentId` (ou `+startedAt` na 4.8.5
+  publicada) — todos não-secretos. PoC local já rodou `pass`
+  (reconstrução independente do token, sem acesso ao processo real).
+
+Se o achado desta sessão for real como documentado, **a mitigação
+oficial do GHSA-9r75-g2cr-3h76 está incompleta**: resolve o sintoma
+óbvio (token literal escolhido por humano) mas não a causa raiz mais
+profunda (a fonte de aleatoriedade de toda a VM do workflow é
+determinística por design, não só no caminho de token customizado).
+Registrei isso no `reasoning` do finding via `update-finding`, e
+**não avancei o estado** — ficou em `scope_verified`, exatamente
+como está desde a rodada anterior, com a lacuna concreta documentada
+pra quando alguém com acesso de rede/API completo (fora deste
+ambiente restrito) puder rodar `search-prior-art` de verdade e decidir
+se isso é: (a) uma variante genuinamente distinta e não coberta pelo
+advisory existente → completar `record-duplicate-check` e seguir o
+fluxo normal até `human_ready`; ou (b) a mesma vulnerabilidade só
+reformulada → marcar como duplicata/sobreposição com
+GHSA-9r75-g2cr-3h76, não enviar como achado novo.
+
+Nenhum finding novo criado nesta rodada especificamente sobre Vercel
+Open Source (a leitura profunda proativa desta rodada foi pro
+Kiwi.com, ver seu próprio NOTES.md).

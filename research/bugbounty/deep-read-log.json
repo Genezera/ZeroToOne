@@ -1082,7 +1082,10 @@
     "src/validateIAPToken.ts",
     "src/authenticationMiddleware.ts",
     "src/getUser.ts",
-    "src/userCache.ts"
+    "src/userCache.ts",
+    "src/authorizationDirective.ts (relido nesta rodada, não estava neste log apesar de já ter finding -- é o mesmo positional_argument_mismatch já submetido e fechado como duplicate no HackerOne (report 3994302, dup de 3439366). Reproduzi de forma independente com verify.js local antes de checar queue.jsonl e confirmei byte-a-byte o mesmo mapeamento de argumentos trocados já documentado no finding existente -- não criei finding novo, é o mesmo)",
+    "src/getClientToken.ts (POST fixo pro endpoint OAuth2 do Google com client_id/client_secret/refresh_token vindos de config server-side, sem input de terceiro na URL/corpo. Sem achado)",
+    "src/scripts/oauthCallback.ts (isOAuthCallbackUrl -- só parse de query string pra detectar path '/' com `code` presente, helper puro sem lógica de auth. Sem achado)"
   ],
   "slackhq/nebula": [
     "cert/ca_pool.go",
