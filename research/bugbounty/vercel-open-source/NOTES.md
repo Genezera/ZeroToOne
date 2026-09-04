@@ -7668,3 +7668,61 @@ Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md` (15
 contratos Clarity seguem 100% cobertos, `api.hiro.so` bloqueado de
 novo pelo agent-proxy). Nenhuma mudança de estado em nenhum programa
 nesta rodada; nenhum achado novo.
+
+## Rodada 2026-09-04 #29 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` confirmados bloqueados via
+`check-program`/leitura direta do arquivo -- nenhum repo desses
+tocado). `migrate-to-v2.mjs` + `list-pending` global = 34, 100% de
+programas fora de escopo (30 Auth0 by Okta, 4 Circle BBP) -- nenhum
+investigado, consistente com dezenas de rodadas anteriores.
+
+Leitura profunda proativa direcionada a `vercel/vercel` (clone raso
+público `git clone --depth 1 --filter=blob:none --sparse`, sem
+credencial). Busca por
+auth/session/crypto/token/login/password/admin/permission/access/
+secret/credential/jwt/oauth/sso sobre a árvore completa do repo
+(`git ls-tree -r --name-only HEAD`, ~13k arquivos) excluindo o que já
+constava em `deep-read-log.json` e ruído óbvio (exemplos, testes,
+configs, vendored) deu 5 candidatos; 3 lidos por completo nesta
+rodada:
+
+- `packages/cli-auth/sso.ts` -- `reauthorizeTeam`/`waitForVerification`:
+  fluxo de re-autorização SSO do CLI. Sobe um `http.createServer()` em
+  `127.0.0.1` com porta efêmera, abre o browser numa URL
+  `vercel.com/sso/<team>` e espera UMA requisição de callback (extrai
+  `token`/`loginError` da query string, sem validar nenhum segredo de
+  estado gerado pelo próprio CLI contra a resposta recebida além do
+  `session_id`/`client_id` já usados na introspecção prévia do token
+  existente). Em teoria qualquer processo local rodando como o mesmo
+  usuário do SO poderia vencer a corrida e bater nessa porta antes do
+  browser real, injetando um `token` arbitrário que o CLI aceitaria
+  como `verificationToken` e reenviaria pra
+  `api.vercel.com/registration/verify`. Investigado como possível
+  achado, mas **refutado como não-elegível**: exige execução de código
+  arbitrário já estabelecida na MESMA máquina do usuário como
+  pré-condição (mesmo modelo de ameaça do `oauth.ts`/local callback já
+  revisado em rodadas anteriores desta missão, e padrão idêntico ao
+  usado por `gh auth login`/outras CLIs -- loopback OAuth é uma
+  categoria de design aceita, não uma falha nova). Sem achado
+  reportável.
+- `packages/cli-config/src/cred-storage.ts` --
+  `getLikelyEffectiveCredStorage`/`getLikelyConfiguredCredStorage`:
+  decide `file` vs `keyring` como backend de armazenamento de
+  credencial, lendo config global + env var `VERCEL_TOKEN_STORAGE`.
+  Puramente decisório (qual storage usar), não implementa
+  criptografia nem persiste segredo diretamente -- delega pra
+  `cli-config.ts`/keyring do SO. Sem achado.
+- `packages/cli/src/util/integration/build-sso-link.ts` -- monta URL
+  de SSO de marketplace (`teamId`/`integrationConfigurationId`/
+  `resource_id` via `URLSearchParams.set`, que já faz encoding
+  correto). Função trivial de 15 linhas, sem sink de injeção. Sem
+  achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel` 104→107 arquivos).
+Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md`
+(`api.hiro.so` reconfirmado bloqueado pelo agent-proxy nesta rodada,
+`connect_rejected`; 15 contratos Clarity seguem 100% cobertos, sem
+mudança). Nenhuma mudança de estado em nenhum programa nesta rodada;
+nenhum achado novo elegível.
