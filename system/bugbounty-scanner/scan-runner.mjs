@@ -56,8 +56,21 @@ function fingerprint(f) {
 }
 
 function loadSeen() {
-  if (!existsSync(SEEN_PATH)) return new Set();
-  return new Set(JSON.parse(readFileSync(SEEN_PATH, 'utf8')));
+  const seen = existsSync(SEEN_PATH)
+    ? new Set(JSON.parse(readFileSync(SEEN_PATH, 'utf8')))
+    : new Set();
+  // A descoberta (Slither/OSV/Semgrep) também cria itens em queue.jsonl,
+  // mas historicamente não atualizava scanner-seen.json. Sem esta união,
+  // o scan barato podia anexar novamente o mesmo id já revisado e até
+  // rebaixá-lo visualmente para pending. A fila é a fonte de identidade
+  // mais ampla; todo id que já existe nela precisa ser considerado visto.
+  if (existsSync(QUEUE_PATH)) {
+    for (const line of readFileSync(QUEUE_PATH, 'utf8').split('\n').filter(Boolean)) {
+      const id = JSON.parse(line)?.id;
+      if (id) seen.add(id);
+    }
+  }
+  return seen;
 }
 
 function saveSeen(seen) {

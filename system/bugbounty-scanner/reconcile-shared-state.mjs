@@ -41,20 +41,35 @@ export function mergeJson(base, current, source, keyPath = '') {
   return { value: current, conflicts: [{ path: keyPath || '<root>', base, current, source }] };
 }
 
-function mapById(entries, label) {
+const STATE_RANK = new Map([
+  ['candidate', 10], ['corroborated_static', 20], ['reproduced_local', 30],
+  ['scope_verified', 40], ['human_ready', 50], ['submitted', 60],
+  ['inconclusive', 70], ['false_positive', 70], ['known_duplicate', 70],
+  ['duplicate', 80], ['informative', 80], ['rejected', 80], ['triaged', 90],
+  ['resolved', 100], ['paid', 110],
+]);
+
+function queueEntryScore(entry) {
+  const reviewed = entry?.status && entry.status !== 'pending' ? 1_000 : 0;
+  const state = STATE_RANK.get(entry?.state) || 0;
+  const evidence = (entry?.reasoning?.length || 0) + (entry?.filesRead?.length || 0) * 50;
+  return reviewed + state + Math.min(evidence, 500);
+}
+
+export function collapseDuplicateQueueEntries(entries) {
   const map = new Map();
   for (const entry of entries) {
-    if (!entry?.id) throw new Error(`${label} contém entrada sem id`);
-    if (map.has(entry.id)) throw new Error(`${label} contém id duplicado: ${entry.id}`);
-    map.set(entry.id, entry);
+    if (!entry?.id) throw new Error('fila contém entrada sem id');
+    const previous = map.get(entry.id);
+    if (!previous || queueEntryScore(entry) > queueEntryScore(previous)) map.set(entry.id, entry);
   }
   return map;
 }
 
 export function mergeQueueEntries(baseEntries, currentEntries, sourceEntries) {
-  const base = mapById(baseEntries, 'base');
-  const current = mapById(currentEntries, 'current');
-  const source = mapById(sourceEntries, 'source');
+  const base = collapseDuplicateQueueEntries(baseEntries);
+  const current = collapseDuplicateQueueEntries(currentEntries);
+  const source = collapseDuplicateQueueEntries(sourceEntries);
   const ids = new Set([...base.keys(), ...current.keys(), ...source.keys()]);
   const merged = [];
   const conflicts = [];

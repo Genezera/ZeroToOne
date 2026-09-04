@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import {
-  appendLedgerEvents, ledgerSuffix, mergeJson, mergeQueueEntries,
+  appendLedgerEvents, collapseDuplicateQueueEntries, ledgerSuffix, mergeJson, mergeQueueEntries,
 } from '../reconcile-shared-state.mjs';
 
 function ledgerEntry(payload, prevHash = '0'.repeat(64)) {
@@ -28,6 +28,14 @@ test('mergeQueueEntries preserva revisão da nuvem e importa candidato novo do s
   assert.deepEqual(result.conflicts, []);
   assert.equal(result.entries.find((item) => item.id === 'old').state, 'false_positive');
   assert.equal(result.entries.find((item) => item.id === 'new').state, 'candidate');
+});
+
+test('fila duplicada conserva a entrada revisada em vez do pending reaparecido', () => {
+  const pending = { id: 'same', state: 'candidate', status: 'pending', foundAt: '2026-09-04T09:00:00Z' };
+  const reviewed = { id: 'same', state: 'known_duplicate', status: 'reviewed', verdict: 'falso_positivo', reasoning: 'advisory já público' };
+  const collapsed = collapseDuplicateQueueEntries([reviewed, pending]);
+  assert.equal(collapsed.size, 1);
+  assert.equal(collapsed.get('same').state, 'known_duplicate');
 });
 
 test('ledgerSuffix exige ancestral comum e reencadeia eventos sem telemetria de runtime', () => {
