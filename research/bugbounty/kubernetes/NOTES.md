@@ -667,3 +667,35 @@ nenhum tocado antes.
 total 5). Nenhum achado novo, nenhuma transição de estado nesta rodada
 -- resultado normal e válido. `Block Open Source`/`Circle BBP` seguem
 fora de escopo por política local.
+
+## Rodada 2026-09-04 (Claude Code local) -- RoE review + achado real em publishing-bot
+
+`program-policy.json` tinha `roeReviewNeeded:true` pendente pra este
+programa desde antes desta rodada (nunca formalizado apesar de já ter
+achado fechado como duplicata #3612349) -- resolvido lendo a página
+real do HackerOne inteira via navegador (Program highlights, Overview,
+Disclosure Policy, Program Rules, Reward Eligibility, Tiers, Scope
+completo, Safe Harbor): zero menção a IA em lugar nenhum. Programa
+liberado.
+
+Leitura profunda proativa em `kubernetes/publishing-bot` (nunca lido
+antes): `cmd/publishing-bot/config/rules.go`, `pkg/golang/install.go`,
+`cmd/publishing-bot/publisher.go`, `configs/kubernetes-configmap.yaml`.
+Achado confirmado e alcançável na infra real: `readFromURL()` busca
+`rules.yaml` por HTTPS com `InsecureSkipVerify:true` (config real de
+produção usa exatamente essa rota); o campo `smoke-test` do YAML
+(bash arbitrário por design) não passa por nenhuma validação de
+conteúdo e é executado via `exec.Command("/bin/bash","-xec",...)` na
+próxima sincronização de branch -- confirmado por PoC real (Go test
+local, sem rede). **Auto-correção registrada nesta mesma rodada:** a
+hipótese inicial (injeção via `DefaultGoVersion` em `install.go:103`)
+foi confirmada isolada (PoC real em Docker), mas ao verificar
+alcançabilidade no binário real descobri que `publisher.go` sempre
+valida a versão via regex antes de consumir o valor -- teoria refutada
+por PoC de controle antes de qualquer relatório ser fechado. Achado
+avançado até `scope_verified` (rascunho em
+`research/bugbounty/reports/kubernetes-kubernetes-publishing-bot-pkg-golang-install-go-command-injection-risk.md`);
+não avançado a `human_ready` -- gate anti-duplicate exige prova de
+regressão via commit, e o `InsecureSkipVerify` tem ~9 anos (não é
+regressão recente); decisão de aceitar blame+PoC como evidência
+alternativa fica para revisão humana.
