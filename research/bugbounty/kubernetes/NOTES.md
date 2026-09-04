@@ -505,3 +505,48 @@ Leitura profunda proativa: mais 2 arquivos de `kubernetes/cloud-provider`
 `deep-read-log.json` atualizado (`kubernetes/cloud-provider`, +2
 arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada
 -- resultado normal e válido.
+
+## Rodada 2026-09-04 (push automático via GitHub webhook, sessão cloud, rodada seguinte -- kubernetes/cli-runtime + kubernetes/csi-translation-lib)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`/
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado; `Auth0 by
+Okta` segue com `roeReviewNeeded` (informativo, não bloqueia) -- não
+escolhido como alvo. `migrate-to-v2.mjs` + `list-pending` global = 0
+(fila vazia, nenhum finding em `candidate`).
+
+Leitura profunda proativa em 2 repos alvo ainda não tocados por este
+programa (`STATUS.md`): `kubernetes/cli-runtime` e `kubernetes/
+csi-translation-lib`. Clone raso público, grep de conteúdo (não só nome
+de arquivo -- nenhum arquivo tinha auth/token/secret/credential/access
+no *nome*) por password/secret/credential/token/authoriz/authent, 3
+candidatos escolhidos por julgamento próprio:
+
+- `cli-runtime/pkg/genericclioptions/config_flags.go`
+  (`ConfigFlags.AddFlags`/uso de `BearerToken`/`Password`/`Username`):
+  flags de linha de comando do kubectl sobrescrevem o `AuthInfo` do
+  kubeconfig carregado localmente -- sem trust boundary novo, é o
+  próprio usuário que roda o comando e já possui os valores em texto
+  claro nos argumentos/env que digitou. Plumbing client-side padrão do
+  client-go/clientcmd. Sem achado.
+- `csi-translation-lib/plugins/azure_file.go`
+  (`TranslateInTreeInlineVolumeToCSI`/`TranslateInTreePVToCSI`):
+  namespace do `NodeStageSecretRef` pra volume inline vem de
+  `podNamespace` (namespace do próprio pod que monta o volume -- não
+  controlável a partir de outro namespace) e pra PV vem de
+  `SecretNamespace` explícito no PV ou do `ClaimRef` -- ambos os casos
+  já exigem privilégio de criar PV/volume inline hoje; a tradução
+  in-tree→CSI não introduz leitura cross-namespace de secret nova, só
+  copia o que já estava no objeto original. Sem achado.
+- `csi-translation-lib/plugins/portworx.go`
+  (parâmetros `openstorage.io/auth-secret-name(space)` reescritos pra
+  chaves CSI prefixadas -- `provisioner-secret-name`,
+  `controller-publish-secret-name`, etc.): mapeamento 1:1 de valores já
+  presentes nos annotations/params da StorageClass/PV original, sem
+  leitura nem elevação nova de segredo. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cli-runtime` novo, 1
+arquivo; `kubernetes/csi-translation-lib` novo, 2 arquivos). Nenhum
+achado novo, nenhuma transição de estado nesta rodada -- resultado
+normal e válido, consistente com o padrão já observado neste programa
+(código de translation/plumbing client-side, lógica sensível de
+auth real do core do Kubernetes vive fora dos repos rastreados aqui).
