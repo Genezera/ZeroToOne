@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { openDb, closeDb } from './db.mjs';
 import { cmdSyncMyReports } from './cli.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -18,12 +19,17 @@ export async function runSyncReports({
   sync = cmdSyncMyReports,
   open = openDb,
   close = closeDb,
+  hydrate = migrateAll,
   pull = pullLatest,
   publish = commitAndPush,
   logger = log,
 } = {}) {
   const preflight = pull(repoRoot, logger);
   if (!preflight.ok) throw new Error(`preflight de sincronização bloqueou o sync de reports: ${preflight.reason}`);
+  hydrate({
+    queuePath: path.join(repoRoot, 'research', 'bugbounty', 'queue.jsonl'),
+    dbPath, writeLog: false, emitLedger: false,
+  });
   const db = open(dbPath);
   let result;
   try {

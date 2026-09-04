@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { runTargetDiscovery } from './discover-targets.mjs';
 import { promoteTargets, renderAutoPromotedModule, DEFAULT_MAX_PROMOTIONS_PER_RUN, DEFAULT_MAX_TOTAL_PROMOTED } from './promote-targets.mjs';
-import { loadProgramPolicy } from './program-policy.mjs';
+import { filterBannedTargets, loadProgramPolicyStrict } from './program-policy.mjs';
 import { JS_TARGETS, JS_TARGETS_MANUAL } from './targets-js.mjs';
 import { GO_TARGETS, _PAUSED_GO_TARGETS_MANUAL } from './targets-go.mjs';
 import { JVM_TARGETS, JVM_TARGETS_MANUAL, _PAUSED_JVM_TARGETS_MANUAL } from './targets-jvm.mjs';
@@ -24,8 +24,9 @@ import { runOsvScannerAgainstTarget, toQueueFindings as osvToQueueFindings } fro
 import { runSemgrepAgainstTarget, toQueueFindings as semgrepToQueueFindings } from './semgrep-runner.mjs';
 import { runCodeqlAgainstTarget, toQueueFindings as codeqlToQueueFindings } from './codeql-runner.mjs';
 import { recordRotationResult, selectTargetsForRotation } from './analysis-rotation.mjs';
-import { openDb, upsertFinding, closeDb, listSubmissions, listFindings } from './db.mjs';
+import { openDb, upsertFinding, closeDb, listSubmissions, listFindings, exportFindingsToQueueJsonl } from './db.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
 // usa `deployer` (endereço on-chain), não `owner`/`repo` do GitHub —
@@ -61,6 +62,7 @@ const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.jso
 const AUTO_PROMOTED_MODULE_PATH = path.join(__dirname, 'targets-auto-promoted.mjs');
 const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
 const DB_PATH = path.join(BUGBOUNTY_DIR, 'zerotoone.db');
+const QUEUE_PATH = path.join(BUGBOUNTY_DIR, 'queue.jsonl');
 const CODEQL_ROTATION_PATH = path.join(BUGBOUNTY_DIR, 'codeql-rotation.json');
 
 function loadSeenMap() {
@@ -84,13 +86,16 @@ function loadJson(filePath, fallback = {}) {
 export async function runDiscovery() {
   const preflightSync = pullLatest(REPO_ROOT, log);
   if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou a descoberta: ${preflightSync.reason}`);
+  migrateAll({ queuePath: QUEUE_PATH, dbPath: DB_PATH, writeLog: false, emitLedger: false });
   if (!existsSync(BUGBOUNTY_DIR)) mkdirSync(BUGBOUNTY_DIR, { recursive: true });
 
   const seenMap = loadSeenMap();
+  const programPolicy = loadProgramPolicyStrict();
   const result = await runTargetDiscovery(
     [JS_TARGETS, GO_TARGETS, JVM_TARGETS, SWIFT_TARGETS, SOLIDITY_TARGETS, _PAUSED_GO_TARGETS_MANUAL, _PAUSED_JVM_TARGETS_MANUAL, _PAUSED_SWIFT_TARGETS_MANUAL],
     seenMap,
-    getProgram
+    getProgram,
+    { programPolicy }
   );
 
   const checkedAt = new Date().toISOString();
@@ -105,6 +110,9 @@ export async function runDiscovery() {
       {
         generatedAt: new Date().toISOString(),
         totalCandidatesInDatasets: result.totalCandidatesInDatasets,
+        authorizedCandidatesInDatasets: result.authorizedCandidatesInDatasets,
+        policyBlockedCandidates: result.policyBlockedCandidates,
+        policyBlockedPrograms: result.policyBlockedPrograms,
         newCandidatesFound: result.newCandidatesFound,
         truncatedCount: result.truncatedCount,
         neverSeenRemaining: result.neverSeenRemaining,
@@ -127,7 +135,6 @@ export async function runDiscovery() {
   // existingPromotedKeys vem do módulo JÁ importado no topo do arquivo
   // (estado de ANTES desta rodada) -- nunca promove o mesmo repo 2x.
   const existingPromotedKeys = new Set(AUTO_PROMOTED_TARGETS.map((t) => `${t.owner.toLowerCase()}/${t.repo.toLowerCase()}`));
-  const programPolicy = loadProgramPolicy();
   // Fecha a lacuna #6 da revisão de 03/09/2026 ("delta hunting"): sem isso,
   // promoteTargets pontuava um programa do jeito sempre igual, mesmo depois
   // de 6/6 envios reais voltarem duplicate nele. Abre/fecha o banco só pra
@@ -160,10 +167,10 @@ export async function runDiscovery() {
   // verdade usadas dali em diante (Slither/OSV/Semgrep + resumo), nunca
   // os imports estáticos JS_TARGETS/GO_TARGETS/JVM_TARGETS/SOLIDITY_TARGETS,
   // que ficam presos ao estado de ANTES da promoção desta mesma rodada.
-  const freshGoTargets = mergedAutoPromoted.filter((t) => t.language === 'go');
-  const freshJsTargets = [...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')];
-  const freshJvmTargets = [...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')];
-  const freshSolidityTargets = [...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')];
+  const freshGoTargets = filterBannedTargets(mergedAutoPromoted.filter((t) => t.language === 'go'), programPolicy);
+  const freshJsTargets = filterBannedTargets([...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')], programPolicy);
+  const freshJvmTargets = filterBannedTargets([...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')], programPolicy);
+  const freshSolidityTargets = filterBannedTargets([...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')], programPolicy);
   writeFileSync(
     PROMOTION_LOG_PATH,
     JSON.stringify(
@@ -183,6 +190,8 @@ export async function runDiscovery() {
   appendEntry('research', {
     type: 'bugbounty_discovery',
     totalCandidatesInDatasets: result.totalCandidatesInDatasets,
+    authorizedCandidatesInDatasets: result.authorizedCandidatesInDatasets,
+    policyBlockedCandidates: result.policyBlockedCandidates,
     newCandidatesFound: result.newCandidatesFound,
     truncatedCount: result.truncatedCount,
     neverSeenRemaining: result.neverSeenRemaining,
@@ -194,7 +203,7 @@ export async function runDiscovery() {
     totalActiveAutoPromoted: mergedAutoPromoted.length,
   });
 
-  log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} novo(s) (não rastreado ainda), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
+  log(`Descoberta completa: ${result.totalCandidatesInDatasets} candidato(s) com bounty no dataset; ${result.authorizedCandidatesInDatasets} autorizados pela RoE local, ${result.policyBlockedCandidates} excluídos antes de qualquer consulta ao GitHub; ${result.newCandidatesFound} novo(s) autorizado(s), ${result.discovered.length} com metadado buscado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficou pra próxima rodada, ${result.neverSeenRemaining} deles nunca foram checados)` : ''}.`);
   if (result.programAgeSkippedReason) {
     log(`AVISO: idade de programa (sinal de concorrência) não pôde ser buscada nesta rodada: ${result.programAgeSkippedReason}`);
   } else {
@@ -400,6 +409,15 @@ export async function runDiscovery() {
   writeFileSync(CODEQL_ROTATION_PATH, `${JSON.stringify(codeqlRotation, null, 2)}\n`, 'utf8');
   log(`CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS analisado(s), ${codeqlReposFailed} falha(s), ${codeqlNewFindings} achado(s) novo(s).`);
 
+  // Ferramentas pesadas gravam primeiro no SQLite para preservar o estado
+  // existente. Publica a visão completa de volta na fila compartilhada;
+  // sem isso, findings novos existiam apenas no .db local ignorado pelo Git.
+  {
+    const exportDb = openDb(DB_PATH);
+    try { exportFindingsToQueueJsonl(exportDb, QUEUE_PATH); }
+    finally { closeDb(exportDb); }
+  }
+
   {
     const promotionNote = promotionResult.promoted.length > 0 ? `, ${promotionResult.promoted.length} promovido(s) automaticamente pra varredura ativa` : '';
     const slitherNote = slitherNewFindings > 0 ? `, ${slitherNewFindings} achado(s) novo(s) do Slither` : '';
@@ -421,7 +439,8 @@ export async function runDiscovery() {
     await sendTelegramMessage(
       [
         '🗓️ <b>ZeroToOne — descoberta semanal</b>',
-        `${result.totalCandidatesInDatasets} candidato(s) com bounty em HackerOne+Bugcrowd, ${result.newCandidatesFound} ainda não rastreado(s).`,
+        `${result.totalCandidatesInDatasets} candidato(s) com bounty no dataset; ${result.authorizedCandidatesInDatasets} autorizados e ${result.policyBlockedCandidates} excluídos pela política antes de consultar o GitHub.`,
+        `${result.newCandidatesFound} candidato(s) autorizado(s) ainda não rastreado(s).`,
         `${result.discovered.length} receberam metadado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficaram pra semana que vem)` : ''}.`,
         newestProgram ? `Programa mais novo visto: ${newestProgram.programs?.[0]?.program || '?'} (${newestProgram.owner}/${newestProgram.repo}).` : null,
         promotionResult.promoted.length > 0

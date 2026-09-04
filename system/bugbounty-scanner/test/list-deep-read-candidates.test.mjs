@@ -6,7 +6,7 @@ import path from 'node:path';
 import {
   loadDeepReadLog, buildRepoProgramIndex, selectDeepReadCandidates,
   loadRepoPopularityCache, refreshRepoPopularity, countKnownDuplicatesByRepo,
-  POPULAR_REPO_STAR_THRESHOLD,
+  POPULAR_REPO_STAR_THRESHOLD, authorizedRepoKeysForDeepRead,
 } from '../list-deep-read-candidates.mjs';
 import { openDb, closeDb, upsertFinding, recordPlatformOutcome } from '../db.mjs';
 
@@ -91,7 +91,12 @@ test('buildRepoProgramIndex tolera datasets vazios/ausentes, nunca lança', () =
   assert.equal(buildRepoProgramIndex([], []).size, 0);
 });
 
-const POLICY = { 'Block Open Source': { aiResearchBanned: true, reason: 'RoE proíbe IA' } };
+const ALLOWED = { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31' };
+const POLICY = {
+  'Block Open Source': { aiResearchBanned: true, reason: 'RoE proíbe IA' },
+  'Vercel Open Source': ALLOWED,
+  'Programa X': ALLOWED,
+};
 
 test('selectDeepReadCandidates exclui repo de programa banido, mesmo sendo o menos lido', () => {
   const log = { 'cashapp/misk': ['a.kt'], 'vercel/vercel': ['a.ts', 'b.ts', 'c.ts'] };
@@ -115,6 +120,15 @@ test('selectDeepReadCandidates exclui repo se QUALQUER programa associado está 
   assert.equal(blocked.length, 1);
 });
 
+test('authorizedRepoKeysForDeepRead filtra política antes de qualquer consulta de metadado', () => {
+  const log = { 'permitido/repo': [], 'bloqueado/repo': [], 'sem/programa': [] };
+  const index = new Map([
+    ['permitido/repo', ['Programa X']],
+    ['bloqueado/repo', ['Block Open Source']],
+  ]);
+  assert.deepEqual(authorizedRepoKeysForDeepRead(log, index, POLICY), ['permitido/repo']);
+});
+
 test('selectDeepReadCandidates manda repo sem programa reconhecido pra unresolved, nunca pra safe', () => {
   const log = { 'algum/repo-privado': ['a.ts'] };
   const index = new Map();
@@ -136,7 +150,7 @@ test('selectDeepReadCandidates ordena safe do menos lido pro mais lido', () => {
     ['b/pouco-lido', ['Programa X']],
     ['c/meio-termo', ['Programa X']],
   ]);
-  const { safe } = selectDeepReadCandidates(log, index, {});
+  const { safe } = selectDeepReadCandidates(log, index, POLICY);
   assert.deepEqual(safe.map((s) => s.repo), ['b/pouco-lido', 'c/meio-termo', 'a/muito-lido']);
 });
 
@@ -162,7 +176,7 @@ test('selectDeepReadCandidates manda repo mega-popular pro fim mesmo com MENOS a
     ['pequena/lib', ['Programa X']],
   ]);
   const popularity = { 'vercel/next.js': { stars: 130000 } };
-  const { safe } = selectDeepReadCandidates(log, index, {}, popularity);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, popularity);
   assert.deepEqual(safe.map((s) => s.repo), ['pequena/lib', 'vercel/next.js']);
   assert.equal(safe[1].stars, 130000);
 });
@@ -174,7 +188,7 @@ test('selectDeepReadCandidates trata estrelas abaixo do limiar como camada "clea
     ['b/repo', ['Programa X']],
   ]);
   const popularity = { 'a/repo': { stars: POPULAR_REPO_STAR_THRESHOLD - 1 } };
-  const { safe } = selectDeepReadCandidates(log, index, {}, popularity);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, popularity);
   // Nenhum dos dois é "popular" (um está abaixo do limiar, o outro sem
   // dado) -- ordena só por filesRead, como sempre.
   assert.deepEqual(safe.map((s) => s.repo), ['a/repo', 'b/repo']);
@@ -188,7 +202,7 @@ test('selectDeepReadCandidates manda repo com duplicata conhecida pro fim, mesmo
     ['muito/lido', ['Programa X']],
   ]);
   const knownDuplicates = { 'ja/duplicou': 1 };
-  const { safe } = selectDeepReadCandidates(log, index, {}, {}, knownDuplicates);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, {}, knownDuplicates);
   assert.deepEqual(safe.map((s) => s.repo), ['nunca/lido', 'muito/lido', 'ja/duplicou']);
 });
 
@@ -199,7 +213,7 @@ test('selectDeepReadCandidates ordena a camada "flagged" pelo pior ofensor prime
     ['uma/duplicata', ['Programa X']],
   ]);
   const knownDuplicates = { 'duas/duplicatas': 2, 'uma/duplicata': 1 };
-  const { safe } = selectDeepReadCandidates(log, index, {}, {}, knownDuplicates);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, {}, knownDuplicates);
   assert.deepEqual(safe.map((s) => s.repo), ['duas/duplicatas', 'uma/duplicata']);
 });
 
@@ -211,7 +225,7 @@ test('selectDeepReadCandidates: duplicata conhecida vence popularidade -- flagge
   ]);
   const popularity = { 'popular/limpo': { stars: 999999 } };
   const knownDuplicates = { 'pequeno/duplicado': 1 };
-  const { safe } = selectDeepReadCandidates(log, index, {}, popularity, knownDuplicates);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, popularity, knownDuplicates);
   assert.deepEqual(safe.map((s) => s.repo), ['popular/limpo', 'pequeno/duplicado']);
 });
 
@@ -301,7 +315,7 @@ test('selectDeepReadCandidates manda repo 100% coberto pra fullyCovered, nunca p
     'pequeno/tudo-lido': { totalScannableFiles: 1 }, // 1/1 = 100%
     'grande/pouco-lido': { totalScannableFiles: 500 }, // 2/500 = 0,4%
   };
-  const { safe, fullyCovered } = selectDeepReadCandidates(log, index, {}, popularity);
+  const { safe, fullyCovered } = selectDeepReadCandidates(log, index, POLICY, popularity);
   assert.equal(fullyCovered.length, 1);
   assert.equal(fullyCovered[0].repo, 'pequeno/tudo-lido');
   assert.equal(safe.length, 1);
@@ -318,7 +332,7 @@ test('selectDeepReadCandidates ordena por coverageRatio (menos coberto primeiro)
     'a/muitos-arquivos-lidos-mas-repo-enorme': { totalScannableFiles: 10000 }, // 20/10000 = 0,2%
     'b/poucos-arquivos-lidos-repo-pequeno': { totalScannableFiles: 10 }, // 2/10 = 20%
   };
-  const { safe } = selectDeepReadCandidates(log, index, {}, popularity);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, popularity);
   // Pelo filesRead cru, "b" (2) viria antes de "a" (20) -- mas "a" tem
   // MUITO mais cobertura restante (99,8% vs 80%), então deveria vir
   // primeiro com o critério novo.
@@ -332,7 +346,7 @@ test('selectDeepReadCandidates cai pro critério antigo (filesRead) quando falta
     ['sem/dado', ['Programa X']],
   ]);
   const popularity = { 'com/dado': { totalScannableFiles: 100 } }; // 'sem/dado' não tem entrada nenhuma
-  const { safe } = selectDeepReadCandidates(log, index, {}, popularity);
+  const { safe } = selectDeepReadCandidates(log, index, POLICY, popularity);
   // Sem coverageRatio dos dois lados pra comparar, cai pro filesRead cru
   // -- 'sem/dado' (1) vem antes de 'com/dado' (3), como sempre foi.
   assert.deepEqual(safe.map((s) => s.repo), ['sem/dado', 'com/dado']);
@@ -341,7 +355,7 @@ test('selectDeepReadCandidates cai pro critério antigo (filesRead) quando falta
 test('selectDeepReadCandidates: totalScannableFiles ausente (null) nunca vira "0% coberto" nem "100% coberto" por engano', () => {
   const log = { 'sem/total-conhecido': ['a.ts'] };
   const index = new Map([['sem/total-conhecido', ['Programa X']]]);
-  const { safe, fullyCovered } = selectDeepReadCandidates(log, index, {}, { 'sem/total-conhecido': { stars: 5 } });
+  const { safe, fullyCovered } = selectDeepReadCandidates(log, index, POLICY, { 'sem/total-conhecido': { stars: 5 } });
   assert.equal(fullyCovered.length, 0);
   assert.equal(safe.length, 1);
   assert.equal(safe[0].coverageRatio, null);

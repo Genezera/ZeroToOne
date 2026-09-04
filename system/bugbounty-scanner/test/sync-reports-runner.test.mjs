@@ -8,12 +8,13 @@ test('sync de reports puxa antes, fecha banco e publica estado compartilhado', a
   const result = await runSyncReports({
     repoRoot: 'repo', dbPath: 'db', logger: () => {},
     pull: () => { calls.push('pull'); return { ok: true }; },
+    hydrate: () => calls.push('hydrate'),
     open: () => { calls.push('open'); return db; },
     sync: async (received) => { assert.equal(received, db); calls.push('sync'); return { checked: 6, changed: 1 }; },
     close: () => calls.push('close'),
     publish: (_root, message) => { calls.push('publish'); assert.match(message, /1 report/); return { ok: true, committed: true }; },
   });
-  assert.deepEqual(calls, ['pull', 'open', 'sync', 'close', 'publish']);
+  assert.deepEqual(calls, ['pull', 'hydrate', 'open', 'sync', 'close', 'publish']);
   assert.equal(result.published.ok, true);
 });
 
@@ -32,6 +33,7 @@ test('sync de reports propaga falha de publicação depois de fechar banco', asy
   await assert.rejects(() => runSyncReports({
     repoRoot: 'repo', logger: () => {},
     pull: () => ({ ok: true }), open: () => ({}), close: () => { closed = true; },
+    hydrate: () => {},
     sync: async () => ({ checked: 6, changed: 1 }),
     publish: () => ({ ok: false, reason: 'push rejeitado' }),
   }), /publicação falhou.*push rejeitado/);

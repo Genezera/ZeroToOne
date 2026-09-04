@@ -8,6 +8,7 @@ import {
   recordSubmission, latestSubmissionForFinding,
   recordCodeAgeEvidence, latestCodeAgeEvidence,
   importSubmissionsFromJsonl,
+  withoutLedgerWrites,
 } from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { readLedger } from '../ledger/ledger.mjs';
@@ -155,8 +156,9 @@ function restoreSatelliteData(db, findingId, entry) {
  * alto que a evidência REAL já registrada sustenta, e o motivo da
  * parada fica no log de migração (nunca escondido).
  */
-export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = new Map() } = {}) {
+export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = new Map(), notify = true } = {}) {
   const log = { id: entry.id, steps: [] };
+  const transitionOptions = (context) => ({ actor: 'migration-v1-to-v2', context, notify });
 
   // Idempotência precisa de DUAS checagens independentes, cobrindo os
   // dois jeitos que este script roda de verdade:
@@ -259,13 +261,13 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   }
 
   if (verdict === 'falso_positivo') {
-    const r = recordTransition(db, entry.id, 'false_positive', { actor: 'migration-v1-to-v2', context: {} });
+    const r = recordTransition(db, entry.id, 'false_positive', transitionOptions({}));
     log.steps.push({ to: 'false_positive', ...r });
     log.finalState = r.ok ? 'false_positive' : 'candidate';
     return log;
   }
   if (verdict === 'inconclusivo') {
-    const r = recordTransition(db, entry.id, 'inconclusive', { actor: 'migration-v1-to-v2', context: {} });
+    const r = recordTransition(db, entry.id, 'inconclusive', transitionOptions({}));
     log.steps.push({ to: 'inconclusive', ...r });
     log.finalState = r.ok ? 'inconclusive' : 'candidate';
     return log;
@@ -274,21 +276,15 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   if (verdict === 'confirmado') {
     // Tenta subir o mais alto que a evidência REAL hoje sustenta —
     // documentando cada degrau, inclusive onde parou e por quê.
-    const step1 = recordTransition(db, entry.id, 'corroborated_static', {
-      actor: 'migration-v1-to-v2',
-      context: { filesRead: finding.filesRead },
-    });
+    const step1 = recordTransition(db, entry.id, 'corroborated_static', transitionOptions({ filesRead: finding.filesRead }));
     log.steps.push({ to: 'corroborated_static', ...step1 });
     if (!step1.ok) { log.finalState = 'candidate'; return log; }
 
-    const step2 = recordTransition(db, entry.id, 'reproduced_local', {
-      actor: 'migration-v1-to-v2',
-      context: {
+    const step2 = recordTransition(db, entry.id, 'reproduced_local', transitionOptions({
         validations: finding.pocRun && finding.pocResult
           ? [{ type: 'foundry_poc', result: finding.pocResult, ts: entry.foundAt }]
           : [],
-      },
-    });
+      }));
     log.steps.push({ to: 'reproduced_local', ...step2 });
 
     const currentState = step2.ok ? 'reproduced_local' : 'corroborated_static';
@@ -300,10 +296,7 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
         confidence: 'unverified',
         notes: 'Migração v1→v2: nenhuma verificação de deploy/release real foi feita para este achado ainda — vínculo repo→release→deploy não confirmado.',
       });
-      const step3 = recordTransition(db, entry.id, 'scope_verified', {
-        actor: 'migration-v1-to-v2',
-        context: { scopeGateResult: gate, deploymentEvidence: { confidence: 'unverified' } },
-      });
+      const step3 = recordTransition(db, entry.id, 'scope_verified', transitionOptions({ scopeGateResult: gate, deploymentEvidence: { confidence: 'unverified' } }));
       log.steps.push({ to: 'scope_verified', ...step3 });
     }
     log.finalState = getFinding(db, entry.id).state;
@@ -315,7 +308,7 @@ export function migrateEntry(db, entry, { scopeSnapshots = {}, ledgerStates = ne
   return log;
 }
 
-export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog = true, ledgerEnv = 'research' } = {}) {
+export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog = true, ledgerEnv = 'research', emitLedger = true } = {}) {
   const entries = readQueue(queuePath);
   const db = openDb(dbPath);
   const scopeSnapshots = {
@@ -331,10 +324,14 @@ export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog 
     // Sem ledger legível (ex.: ambiente de teste isolado) — segue sem
     // reconciliação, mesmo comportamento de antes desta função existir.
   }
-  const logs = entries.map((e) => migrateEntry(db, e, { scopeSnapshots, ledgerStates }));
-  // openDb importa o portfólio antes dos findings existirem num banco
-  // novo; repete depois da migração para religar os ids agora presentes.
-  importSubmissionsFromJsonl(db, path.join(path.dirname(dbPath), path.basename(SUBMISSIONS_PATH)));
+  const restore = () => {
+    const restored = entries.map((e) => migrateEntry(db, e, { scopeSnapshots, ledgerStates, notify: emitLedger }));
+    // openDb importa o portfólio antes dos findings existirem num banco
+    // novo; repete depois da migração para religar os ids agora presentes.
+    importSubmissionsFromJsonl(db, path.join(path.dirname(dbPath), path.basename(SUBMISSIONS_PATH)));
+    return restored;
+  };
+  const logs = emitLedger ? restore() : withoutLedgerWrites(restore);
   closeDb(db);
 
   const driftCount = logs.filter((l) => l.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO'))).length;
@@ -352,10 +349,12 @@ export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog 
 
 const isMain = process.argv[1] && process.argv[1].endsWith('migrate-to-v2.mjs');
 if (isMain) {
-  const logs = migrateAll();
+  const hydrateOnly = process.argv.includes('--hydrate');
+  const logs = migrateAll({ writeLog: !hydrateOnly, emitLedger: !hydrateOnly });
   const byFinal = {};
   for (const l of logs) byFinal[l.finalState] = (byFinal[l.finalState] || 0) + 1;
   console.log(`Migrados ${logs.length} findings de queue.jsonl -> ${DB_PATH}`);
   console.log('Estado final v2, por contagem:', JSON.stringify(byFinal, null, 2));
-  console.log(`Log completo em ${MIGRATION_LOG_PATH}`);
+  if (hydrateOnly) console.log('Modo hydrate: materialized view reconstruída sem criar eventos no ledger.');
+  else console.log(`Log completo em ${MIGRATION_LOG_PATH}`);
 }

@@ -2,7 +2,7 @@ import { openDb, upsertFinding, getFinding, listFindings, recordTransition, reco
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
-import { loadProgramPolicy, getBlockReason } from './program-policy.mjs';
+import { loadProgramPolicyStrict, getBlockReason } from './program-policy.mjs';
 import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-budget.mjs';
 import { isTerminal, submissionReadinessGate } from './state-machine.mjs';
 import { generateReport } from './generate-report.mjs';
@@ -19,6 +19,7 @@ import { loadRegressionConfig, verifyRegression } from './regression-sandbox.mjs
 import { loadRuntimeState, summarizeRuntimeHealth } from './runtime-state.mjs';
 import { DEFAULT_RUNTIME_STATE_PATH } from './service-runner.mjs';
 import { runToolchainDoctor } from './toolchain-doctor.mjs';
+import { runReadinessAudit } from './readiness-audit.mjs';
 import { loadPriorArtConfig, searchPublicPriorArt } from './prior-art-search.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -115,7 +116,7 @@ export function cmdPackageForSubmission(db, id) {
       report,
       duplicateCheck: latestDuplicateCheck(db, id),
       impactAssessment: latestImpactAssessment(db, id),
-      programPolicy: loadProgramPolicy(),
+      programPolicy: loadProgramPolicyStrict(),
     });
     if (!readiness.ok) return { ok: false, reason: `pacote bloqueado pelo preflight: ${readiness.reason}` };
   }
@@ -158,14 +159,14 @@ export function cmdPipelineStatus(db) {
         else {
           const readiness = submissionReadinessGate(f, {
             report, duplicateCheck, impactAssessment,
-            programPolicy: loadProgramPolicy(),
+            programPolicy: loadProgramPolicyStrict(),
           });
           blocker = readiness.ok ? 'evidência completa -- pronto pra virar human_ready' : `NÃO enviar: ${readiness.reason}`;
         }
         break;
       }
       case 'human_ready': {
-        const blockReason = getBlockReason(f.program, loadProgramPolicy());
+        const blockReason = getBlockReason(f.program, loadProgramPolicyStrict());
         if (blockReason) blocker = `bloqueado por política: ${blockReason}`;
         else {
           const impact = reportabilityGate(latestImpactAssessment(db, f.id));
@@ -321,7 +322,7 @@ export function cmdSubmissionStats(db) {
   return computeStatsFromSubmissions(submissions);
 }
 
-export function cmdSubmissionPreflight(db, id, { now = Date.now() } = {}) {
+export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy = loadProgramPolicyStrict() } = {}) {
   const finding = getFinding(db, id);
   if (!finding) throw new Error(`finding "${id}" não existe no banco`);
   const report = latestReport(db, id);
@@ -332,7 +333,7 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now() } = {}) {
   const history = duplicateHistoryForFinding(finding, submissions);
   const readiness = submissionReadinessGate(finding, {
     report, impactAssessment, duplicateCheck,
-    programPolicy: loadProgramPolicy(), now,
+    programPolicy, now,
   });
   return {
     findingId: id,
@@ -397,7 +398,7 @@ export function cmdEvidenceGrade(db, id) {
  * mostra orçamento de envio restante quando existe um rastreado (ver
  * program-submission-budget.mjs) -- aviso, não bloqueio automático. */
 export function cmdCheckProgram(programName) {
-  const policy = loadProgramPolicy();
+  const policy = loadProgramPolicyStrict();
   const reason = getBlockReason(programName, policy);
   const budget = getSubmissionBudget(programName, loadSubmissionBudget());
   const result = reason ? { program: programName, blocked: true, reason } : { program: programName, blocked: false };
@@ -588,6 +589,12 @@ async function main() {
     if (!result.ok) process.exitCode = 1;
     return;
   }
+  if (command === 'audit-system') {
+    const result = runReadinessAudit();
+    printJson(result);
+    if (!result.ok) process.exitCode = 1;
+    return;
+  }
   if (command === 'search-prior-art') {
     printJson(await searchPublicPriorArt(loadPriorArtConfig(flags.config)));
     return;
@@ -676,7 +683,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, runtime-status, doctor, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, runtime-status, doctor, audit-system, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

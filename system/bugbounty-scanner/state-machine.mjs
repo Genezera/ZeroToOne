@@ -70,7 +70,10 @@ const REFUTABLE_FROM = STATES.filter((s) => !TERMINAL_STATES.has(s) && s !== 'in
  * - scopeGateResult: { allowed, reason, bountyEligible } (de scope-registry.mjs)
  * - deploymentEvidence: { confidence: 'unverified'|'low'|'medium'|'high', notes }
  * - report: { path } | null
- * - humanApproval: { actor, ts, rationale } | null
+ * - humanApproval: { actor, ts, rationale, reportReviewed,
+ *     technicalValidationConfirmed, programRulesReconfirmed,
+ *     aiUseDisclosed?, noProductionTestingConfirmed?, localForkConfirmed?,
+ *     priorAuditChecked? } | null
  * - platformOutcome: { state, severity, bounty } | null
  * - duplicateCheck: checagem estruturada e recente de fontes públicas
  * - impactAssessment: fatos estruturados sobre atacante/vítima/C-I-A
@@ -126,12 +129,33 @@ const PRECONDITIONS = {
     if (ctx.humanApproval.actor === 'agent' || ctx.humanApproval.actor === 'ai') {
       return fail('humanApproval.actor não pode ser um agente/IA — a submissão é sempre ação humana');
     }
+    if (ctx.humanApproval.reportReviewed !== true) {
+      return fail('aprovação humana precisa confirmar reportReviewed=true');
+    }
+    if (ctx.humanApproval.technicalValidationConfirmed !== true) {
+      return fail('aprovação humana precisa confirmar technicalValidationConfirmed=true após rever PoC e impacto');
+    }
+    if (ctx.humanApproval.programRulesReconfirmed !== true) {
+      return fail('aprovação humana precisa confirmar programRulesReconfirmed=true no momento do envio');
+    }
+    const policy = ctx.programPolicy?.[f.program] || {};
+    const conditionalRequirements = [
+      ['aiDisclosureRequired', 'aiUseDisclosed', 'o programa exige divulgar uso de IA'],
+      ['productionTestingProhibited', 'noProductionTestingConfirmed', 'o programa proíbe teste em produção'],
+      ['localForkRequired', 'localForkConfirmed', 'o programa exige PoC em fork local'],
+      ['priorAuditCheckRequired', 'priorAuditChecked', 'o programa exige descartar achados já presentes em audits anteriores'],
+    ];
+    for (const [policyFlag, approvalFlag, message] of conditionalRequirements) {
+      if (policy[policyFlag] === true && ctx.humanApproval[approvalFlag] !== true) {
+        return fail(`${message}; humanApproval.${approvalFlag}=true é obrigatório`);
+      }
+    }
     // Revalida impacto e novidade no instante do envio. Isso protege
     // findings human_ready antigos/importados que chegaram ao estado antes
     // destes gates existirem e impede uma checagem expirada.
     const readiness = submissionReadinessGate(f, ctx);
     if (!readiness.ok) return readiness;
-    return ok(`aprovado por ${ctx.humanApproval.actor} em ${ctx.humanApproval.ts || 'sem timestamp'}; ${readiness.reason}`);
+    return ok(`relatório e validação técnica aprovados por ${ctx.humanApproval.actor} em ${ctx.humanApproval.ts || 'sem timestamp'}; ${readiness.reason}`);
   },
   'submitted->triaged': (f, ctx = {}) => outcomeGate(ctx, 'triaged'),
   'submitted->duplicate': (f, ctx = {}) => outcomeGate(ctx, 'duplicate'),

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { transition, validTransitionsFrom, isTerminal, STATES, deriveStatesFromLedger } from '../state-machine.mjs';
 
 function finding(state, overrides = {}) {
-  return { id: 'x', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
+  return { id: 'x', program: 'Test Program', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
 }
 
 const NOW = '2026-09-03T18:00:00Z';
@@ -33,6 +33,7 @@ const GOOD_DUPLICATE_CHECK = {
 function readyContext(overrides = {}) {
   return {
     now: NOW,
+    programPolicy: { 'Test Program': { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31' } },
     report: { path: 'reports/x.md' },
     impactAssessment: GOOD_IMPACT,
     duplicateCheck: GOOD_DUPLICATE_CHECK,
@@ -132,11 +133,12 @@ test('scope_verified -> human_ready bloqueia programa em ctx.programPolicy com a
   assert.match(r.reason, /proíbem pesquisa assistida por IA/);
 });
 
-test('scope_verified -> human_ready não é afetado por programPolicy quando o programa do achado não está nela', () => {
+test('scope_verified -> human_ready bloqueia programa sem decisão explícita na policy', () => {
   const f = finding('scope_verified', { program: 'Circle BBP' });
   const policy = { 'Block Open Source': { aiResearchBanned: true, reason: 'x' } };
   const r = transition(f, 'human_ready', readyContext({ programPolicy: policy }));
-  assert.equal(r.ok, true);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /sem decisão explícita/);
 });
 
 test('scope_verified -> human_ready exige duplicateCheck com methods incluindo "github_issues" e timestamp', () => {
@@ -188,7 +190,31 @@ test('human_ready -> submitted exige humanApproval com actor humano (nunca agent
   assert.equal(transition(f, 'submitted', {}).ok, false);
   assert.equal(transition(f, 'submitted', { humanApproval: { actor: 'agent' } }).ok, false);
   assert.equal(transition(f, 'submitted', { humanApproval: { actor: 'ai' } }).ok, false);
-  assert.equal(transition(f, 'submitted', readyContext({ humanApproval: { actor: 'renan', ts: NOW } })).ok, true);
+  assert.equal(transition(f, 'submitted', readyContext({ humanApproval: { actor: 'renan', ts: NOW } })).ok, false);
+  assert.equal(transition(f, 'submitted', readyContext({ humanApproval: {
+    actor: 'renan', ts: NOW, reportReviewed: true,
+    technicalValidationConfirmed: true, programRulesReconfirmed: true,
+  } })).ok, true);
+});
+
+test('human_ready -> submitted aplica requisitos específicos registrados pelo programa', () => {
+  const f = finding('human_ready', { program: 'Conditional Program' });
+  const base = {
+    actor: 'renan', ts: NOW, reportReviewed: true,
+    technicalValidationConfirmed: true, programRulesReconfirmed: true,
+  };
+  const programPolicy = { 'Conditional Program': {
+    roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31', aiDisclosureRequired: true, localForkRequired: true,
+    priorAuditCheckRequired: true, productionTestingProhibited: true,
+  } };
+  const missing = transition(f, 'submitted', readyContext({ programPolicy, humanApproval: base }));
+  assert.equal(missing.ok, false);
+  assert.match(missing.reason, /aiUseDisclosed/);
+  const complete = transition(f, 'submitted', readyContext({ programPolicy, humanApproval: {
+    ...base, aiUseDisclosed: true, localForkConfirmed: true,
+    priorAuditChecked: true, noProductionTestingConfirmed: true,
+  } }));
+  assert.equal(complete.ok, true);
 });
 
 test('submitted -> triaged/duplicate/informative/rejected exigem platformOutcome real batendo com o estado pedido', () => {

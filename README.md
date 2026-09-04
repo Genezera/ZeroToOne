@@ -3,8 +3,9 @@
 An automated bug bounty research pipeline. It finds eligible open-source
 targets, analyzes their real source code for vulnerabilities, verifies
 each candidate with actual proof-of-concept execution (never a
-fabricated or purely theoretical claim), and submits real reports to
-bug bounty programs (HackerOne, Bugcrowd, Immunefi).
+fabricated or purely theoretical claim), and prepares evidence-backed
+reports for human review. Submission to a bug bounty program is always a
+deliberate human action; the automation never files a report by itself.
 
 ## How it works
 
@@ -24,19 +25,21 @@ bug bounty programs (HackerOne, Bugcrowd, Immunefi).
    or an isolated replica environment when testing the real target's
    infrastructure directly isn't allowed. Findings that can't survive
    this step are marked false positive rather than shipped.
-4. **Submit** — a corroborated finding becomes a full report (call
-   chain, evidence, PoC, suggested fix) and gets filed with the
-   program. Every finding's lifecycle (candidate → corroborated →
+4. **Review and submit** — a corroborated finding becomes a report draft
+   (call chain, evidence, PoC, suggested fix), passes fail-closed impact,
+   scope, non-expired program-policy, regression and prior-art gates,
+   and waits for explicit human approval. Every finding's lifecycle (candidate → corroborated →
    reproduced → submitted → the program's actual decision) is tracked
    in a small state machine, backed by a tamper-evident, hash-chained
    append-only ledger — nothing gets silently dropped or rewritten
    after the fact.
 
-It runs from two places at once: a local session on this machine, and
-a cloud routine triggered by pushes to this repository. Both read and
-write the same shared state — a plain-text `queue.jsonl` export and
-the ledger, both version-controlled — so either side can pick up
-exactly where the other left off.
+It runs in complementary roles: scheduled cloud workflows own the
+six-hour static scan and hourly HackerOne outcome sync, while the local
+Windows service owns heavier discovery, diagnostics and watchdog duties.
+Both exchange the same version-controlled `queue.jsonl`, submissions and
+ledger; fail-closed Git preflight prevents a stale or dirty worker from
+silently overwriting shared state.
 
 ## Where to look
 

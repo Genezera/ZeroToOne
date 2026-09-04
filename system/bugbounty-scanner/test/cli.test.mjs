@@ -51,6 +51,9 @@ const REGRESSION_PROOF = {
   baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
   candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
 };
+const TEST_PROGRAM_POLICY = {
+  P: { roeReviewed: true, reviewedAt: '2026-09-03', nextReviewAt: '2099-12-31' },
+};
 
 test('cmdListPending / cmdStatus refletem o banco', () => {
   withTempEnv((dbPath) => {
@@ -214,7 +217,7 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
     const db = openDb(dbPath);
     const finding = { ...SAMPLE, id: 'p::acme/api/auth.ts::f::idor', program: 'P', file: 'acme/api/auth.ts', state: 'scope_verified' };
     upsertFinding(db, finding);
-    const blocked = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime() });
+    const blocked = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime(), programPolicy: TEST_PROGRAM_POLICY });
     assert.equal(blocked.ready, false);
     assert.match(blocked.limitation, /não provam unicidade/);
 
@@ -230,7 +233,7 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
       queries: ['auth function IDOR', 'missing ownership check', 'commit regression IDOR'], foundExisting: false,
       ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 }, noveltyProof: REGRESSION_PROOF,
     });
-    const ready = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime() });
+    const ready = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime(), programPolicy: TEST_PROGRAM_POLICY });
     assert.equal(ready.ready, true, ready.reason);
     // Lacuna #1 da revisão de 03/09/2026: dimensões ortogonais visíveis
     // sem juntar state+impactAssessment+duplicateCheck manualmente.
@@ -247,7 +250,7 @@ test('submission-preflight com relatório legado, mas sem impacto/duplicateCheck
     const finding = { ...SAMPLE, id: 'p::legacy::f::x', program: 'P', state: 'scope_verified' };
     upsertFinding(db, finding);
     recordReport(db, finding.id, 'reports/legacy.md');
-    const result = cmdSubmissionPreflight(db, finding.id);
+    const result = cmdSubmissionPreflight(db, finding.id, { programPolicy: TEST_PROGRAM_POLICY });
     assert.equal(result.ready, false);
     assert.match(result.reason, /impactAssessment incompleto/);
     closeDb(db);

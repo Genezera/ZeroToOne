@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { toReportSummary } from '../h1-api.mjs';
+import { getHacktivityPage, toReportSummary } from '../h1-api.mjs';
 
 test('toReportSummary preserva evidência útil do report e relação de duplicate', () => {
   const item = {
@@ -51,4 +51,32 @@ test('toReportSummary aceita o formato real com attributes embutidos em relation
   assert.equal(result.originalReportId, '3439366');
   assert.equal(result.severityRating, 'low');
   assert.equal(result.assetIdentifier, 'github.com/kiwicom/js-iam-middleware');
+});
+
+test('getHacktivityPage normaliza o feed sem depender de links.next', async () => {
+  const previousUser = process.env.HACKERONE_USERNAME;
+  const previousToken = process.env.HACKERONE_API_TOKEN;
+  process.env.HACKERONE_USERNAME = 'researcher';
+  process.env.HACKERONE_API_TOKEN = 'secret';
+  try {
+    let requested = null;
+    const items = await getHacktivityPage(2, 25, { fetchImpl: async (url) => {
+      requested = String(url);
+      return { ok: true, json: async () => ({ data: [{
+        id: 42,
+        attributes: { title: 'Bug', submitted_at: '2026-09-01T00:00:00Z', latest_disclosable_activity_at: '2026-09-04T00:00:00Z', disclosed: true },
+        relationships: { program: { data: { id: 'acme', attributes: { handle: 'acme' } } } },
+      }] }) };
+    } });
+    assert.match(requested, /page%5Bnumber%5D=2/);
+    assert.equal(items[0].id, '42');
+    assert.equal(items[0].programHandle, 'acme');
+  } finally {
+    if (previousUser === undefined) delete process.env.HACKERONE_USERNAME; else process.env.HACKERONE_USERNAME = previousUser;
+    if (previousToken === undefined) delete process.env.HACKERONE_API_TOKEN; else process.env.HACKERONE_API_TOKEN = previousToken;
+  }
+});
+
+test('getHacktivityPage recusa tamanho que a API não suporta', async () => {
+  await assert.rejects(() => getHacktivityPage(1, 51), /entre 1 e 50/);
 });

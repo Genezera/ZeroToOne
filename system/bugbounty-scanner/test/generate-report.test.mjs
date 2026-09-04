@@ -140,6 +140,24 @@ test('renderReportDraft marca explicitamente quando não há PoC "pass" -- nunca
   });
 });
 
+test('renderReportDraft inclui controles e disclosure exigidos pela policy do programa', () => {
+  const md = renderReportDraft({
+    finding: { ...SAMPLE, program: 'OKG' }, passingValidation: null,
+    deploymentEvidence: null, duplicateCheck: null, impactAssessment: null,
+    officialUrl: 'https://hackerone.com/okg',
+    policyEntry: {
+      aiDisclosureRequired: true, productionTestingProhibited: true,
+      localForkRequired: true, priorAuditCheckRequired: true,
+    },
+  });
+  assert.match(md, /Uso de IA declarado explicitamente/);
+  assert.match(md, /nenhum teste foi executado em produção/);
+  assert.match(md, /fork local/);
+  assert.match(md, /Audits anteriores revisados/);
+  assert.match(md, /Divulgação obrigatória de uso de IA/);
+  assert.match(md, /revisou independentemente o código/);
+});
+
 test('generateReport escreve o arquivo em disco e registra via recordReport', () => {
   withTempEnv((dbPath, reportsDir) => {
     const db = openDb(dbPath);

@@ -16,26 +16,30 @@ export const DEFAULT_RUNTIME_EVENTS_PATH = path.join(REPO_ROOT, 'logs', 'bugboun
 
 const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
+const isCloudPrimary = () => process.env.ZERO2ONE_CLOUD_PRIMARY === '1';
 
 export const SERVICE_JOBS = [
   {
     name: 'sync_reports', kind: 'light', intervalMs: 60 * MINUTE,
     timeoutMs: 5 * MINUTE,
     args: [path.join(__dirname, 'sync-reports-runner.mjs')],
-    enabled: () => !!(process.env.HACKERONE_USERNAME && process.env.HACKERONE_API_TOKEN),
-    disabledReason: 'credenciais HackerOne não configuradas neste processo',
+    enabled: () => !isCloudPrimary() && !!(process.env.HACKERONE_USERNAME && process.env.HACKERONE_API_TOKEN),
+    disabledReason: () => isCloudPrimary()
+      ? 'delegado ao workflow cloud horário para evitar dois writers concorrentes'
+      : 'credenciais HackerOne não configuradas neste processo',
   },
   {
     name: 'doctor', kind: 'light', intervalMs: 24 * HOUR,
     timeoutMs: 2 * MINUTE,
-    args: [path.join(__dirname, 'toolchain-doctor.mjs')],
+    args: [path.join(__dirname, 'readiness-audit.mjs')],
     enabled: () => true,
   },
   {
     name: 'scan', kind: 'heavy', intervalMs: 6 * HOUR,
     timeoutMs: 2 * HOUR,
     args: [path.join(__dirname, 'scan-runner.mjs')],
-    enabled: () => true,
+    enabled: () => !isCloudPrimary(),
+    disabledReason: () => 'delegado ao workflow cloud de 6 horas para evitar dois writers concorrentes',
   },
   {
     name: 'discovery', kind: 'heavy', intervalMs: 24 * HOUR,
@@ -198,7 +202,9 @@ export async function runServiceCycle({
       if (!job.enabled()) {
         state.jobs[job.name] = {
           ...(state.jobs[job.name] || {}), running: false,
-          disabledReason: job.disabledReason, lastCheckedAt: new Date(now()).toISOString(),
+          disabledReason: typeof job.disabledReason === 'function' ? job.disabledReason() : job.disabledReason,
+          lastCheckedAt: new Date(now()).toISOString(), consecutiveFailures: 0,
+          nextEligibleAt: null,
         };
         continue;
       }

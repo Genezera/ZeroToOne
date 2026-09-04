@@ -23,9 +23,9 @@ function authHeader() {
   return `Basic ${encoded}`;
 }
 
-async function h1Get(pathAndQuery) {
+async function h1Get(pathAndQuery, { fetchImpl = fetch } = {}) {
   const url = pathAndQuery.startsWith('http') ? pathAndQuery : `${BASE_URL}${pathAndQuery}`;
-  const res = await fetch(url, {
+  const res = await fetchImpl(url, {
     headers: { Authorization: authHeader(), Accept: 'application/json' },
   });
   const body = await res.json().catch(() => null);
@@ -34,6 +34,34 @@ async function h1Get(pathAndQuery) {
     throw new Error(`HackerOne API ${res.status} em ${url}: ${msg}`);
   }
   return body;
+}
+
+/** Uma página do feed público de Hacktivity. O endpoint não devolve
+ * `links.next` de forma consistente (confirmado ao vivo em 04/09/2026),
+ * portanto paginação/limite temporal ficam deliberadamente no chamador. */
+export async function getHacktivityPage(pageNumber = 1, pageSize = 50, opts = {}) {
+  if (!Number.isInteger(pageNumber) || pageNumber < 1) throw new Error('pageNumber precisa ser inteiro >= 1');
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 50) throw new Error('pageSize precisa estar entre 1 e 50');
+  const query = new URLSearchParams({
+    'page[number]': String(pageNumber),
+    'page[size]': String(pageSize),
+  });
+  const body = await h1Get(`/hackers/hacktivity?${query}`, opts);
+  return (body.data || []).map((item) => ({
+    id: String(item.id),
+    title: item.attributes?.title || null,
+    url: item.attributes?.url || `https://hackerone.com/reports/${item.id}`,
+    submittedAt: item.attributes?.submitted_at || null,
+    latestActivityAt: item.attributes?.latest_disclosable_activity_at || null,
+    disclosedAt: item.attributes?.disclosed_at || null,
+    disclosed: item.attributes?.disclosed === true,
+    vulnerabilityInformation: item.attributes?.vulnerability_information || null,
+    cveIds: item.attributes?.cve_ids || [],
+    cwe: item.attributes?.cwe || null,
+    severityRating: item.attributes?.severity_rating || null,
+    programHandle: item.relationships?.program?.data?.attributes?.handle
+      || item.relationships?.program?.data?.id || null,
+  }));
 }
 
 /** Segue todos os links.next até esgotar as páginas. Devolve array achatado de `data`. */

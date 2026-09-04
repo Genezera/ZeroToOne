@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { writeFileSync, unlinkSync, existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { loadProgramPolicy, getBlockReason, isProgramBanned, filterBannedTargets } from '../program-policy.mjs';
+import { loadProgramPolicy, loadProgramPolicyStrict, getBlockReason, isProgramBanned, filterBannedTargets, getReviewValidityReason } from '../program-policy.mjs';
+
+const CURRENT_REVIEW = {
+  roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31',
+  policyUrl: 'https://example.test/program', reviewMethod: 'fixture_test',
+};
 
 test('loadProgramPolicy devolve {} quando o arquivo não existe, nunca lança', () => {
   const missing = path.join(tmpdir(), 'nao-existe-de-verdade-' + Date.now() + '.json');
@@ -17,6 +22,27 @@ test('loadProgramPolicy devolve {} pra JSON inválido, nunca lança', () => {
   assert.deepEqual(loadProgramPolicy(p), {});
 });
 
+test('loadProgramPolicyStrict falha fechado quando arquivo não existe ou está inválido', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'program-policy-strict-'));
+  const missing = path.join(dir, 'missing.json');
+  assert.throws(() => loadProgramPolicyStrict(missing), /obrigatória ausente/);
+  const invalid = path.join(dir, 'invalid.json');
+  writeFileSync(invalid, '{ isto nao é json', 'utf8');
+  assert.throws(() => loadProgramPolicyStrict(invalid), /policy inválida/);
+  const malformed = path.join(dir, 'malformed.json');
+  writeFileSync(malformed, JSON.stringify({ Acme: { roeReviewed: 'sim' } }), 'utf8');
+  assert.throws(() => loadProgramPolicyStrict(malformed), /roeReviewed precisa ser boolean/);
+  const contradictory = path.join(dir, 'contradictory.json');
+  writeFileSync(contradictory, JSON.stringify({ Acme: { ...CURRENT_REVIEW, blocked: true } }), 'utf8');
+  assert.throws(() => loadProgramPolicyStrict(contradictory), /contraditória/);
+  const staleShape = path.join(dir, 'missing-review-date.json');
+  writeFileSync(staleShape, JSON.stringify({ Acme: { roeReviewed: true } }), 'utf8');
+  assert.throws(() => loadProgramPolicyStrict(staleShape), /reviewedAt precisa ser data ISO/);
+  const invalidCalendarDate = path.join(dir, 'invalid-calendar-date.json');
+  writeFileSync(invalidCalendarDate, JSON.stringify({ Acme: { ...CURRENT_REVIEW, nextReviewAt: '2099-02-31' } }), 'utf8');
+  assert.throws(() => loadProgramPolicyStrict(invalidCalendarDate), /nextReviewAt precisa ser data ISO/);
+});
+
 test('loadProgramPolicy lê um arquivo real corretamente', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'program-policy-test-'));
   const p = path.join(dir, 'policy.json');
@@ -25,12 +51,12 @@ test('loadProgramPolicy lê um arquivo real corretamente', () => {
   assert.deepEqual(loadProgramPolicy(p), data);
 });
 
-test('getBlockReason devolve null pra programa ausente da policy', () => {
-  assert.equal(getBlockReason('Programa Qualquer', {}), null);
+test('getBlockReason bloqueia programa ausente da policy', () => {
+  assert.match(getBlockReason('Programa Qualquer', {}), /sem decisão explícita/);
 });
 
 test('getBlockReason devolve null pra programa presente mas sem aiResearchBanned=true', () => {
-  const policy = { 'Programa X': { aiResearchBanned: false } };
+  const policy = { 'Programa X': { ...CURRENT_REVIEW, aiResearchBanned: false } };
   assert.equal(getBlockReason('Programa X', policy), null);
 });
 
@@ -60,8 +86,20 @@ test('getBlockReason devolve uma frase genérica quando blocked=true mas reason 
 });
 
 test('getBlockReason devolve null pra programa presente mas sem blocked=true nem aiResearchBanned=true', () => {
-  const policy = { 'Programa X': { blocked: false, aiResearchBanned: false } };
+  const policy = { 'Programa X': { ...CURRENT_REVIEW, blocked: false, aiResearchBanned: false } };
   assert.equal(getBlockReason('Programa X', policy), null);
+});
+
+test('getBlockReason falha fechado enquanto revisão de RoE estiver pendente', () => {
+  const policy = { 'Programa X': { roeReviewNeeded: true, reason: 'revisar termos antes de pesquisar' } };
+  assert.equal(getBlockReason('Programa X', policy), 'revisar termos antes de pesquisar');
+  assert.equal(isProgramBanned('Programa X', policy), true);
+});
+
+test('getBlockReason falha fechado quando a revisão de RoE expira', () => {
+  const policy = { 'Programa X': { roeReviewed: true, reviewedAt: '2026-01-01', nextReviewAt: '2026-02-01' } };
+  assert.match(getBlockReason('Programa X', policy, { now: Date.parse('2026-02-02T00:00:00Z') }), /expirou/);
+  assert.equal(getReviewValidityReason(policy['Programa X'], { now: Date.parse('2026-02-01T23:59:59Z') }), null);
 });
 
 test('program-policy.json real do projeto marca Circle BBP como bloqueado (instrução direta do usuário, não RoE)', () => {
@@ -69,15 +107,19 @@ test('program-policy.json real do projeto marca Circle BBP como bloqueado (instr
   assert.equal(getBlockReason('Circle BBP', policy) !== null, true, 'program-policy.json deveria bloquear Circle BBP (usuário pediu explicitamente pra parar, 02/09/2026)');
 });
 
-test('isProgramBanned devolve true só quando aiResearchBanned=true', () => {
+test('isProgramBanned bloqueia proibição explícita e programa sem registro', () => {
   const policy = { 'Programa X': { aiResearchBanned: true, reason: 'motivo' } };
   assert.equal(isProgramBanned('Programa X', policy), true);
-  assert.equal(isProgramBanned('Programa Y', policy), false);
-  assert.equal(isProgramBanned('Programa X', {}), false);
+  assert.equal(isProgramBanned('Programa Y', policy), true);
+  assert.equal(isProgramBanned('Programa X', {}), true);
 });
 
-test('filterBannedTargets remove só candidato de programa banido, preserva o resto', () => {
-  const policy = { 'Block Open Source': { aiResearchBanned: true, reason: 'RoE proíbe IA' } };
+test('filterBannedTargets remove só candidato não autorizado, preserva programas revisados', () => {
+  const policy = {
+    'Block Open Source': { aiResearchBanned: true, reason: 'RoE proíbe IA' },
+    'Vercel Open Source': { ...CURRENT_REVIEW },
+    'Circle BBP': { ...CURRENT_REVIEW },
+  };
   const candidates = [
     { program: 'Block Open Source', owner: 'cashapp', repo: 'misk' },
     { program: 'Vercel Open Source', owner: 'vercel', repo: 'vercel' },
@@ -88,13 +130,13 @@ test('filterBannedTargets remove só candidato de programa banido, preserva o re
   assert.deepEqual(result.map((c) => c.program), ['Vercel Open Source', 'Circle BBP']);
 });
 
-test('filterBannedTargets com policy vazia não remove nada', () => {
+test('filterBannedTargets com policy vazia falha fechado', () => {
   const candidates = [{ program: 'Qualquer Programa', owner: 'a', repo: 'b' }];
-  assert.deepEqual(filterBannedTargets(candidates, {}), candidates);
+  assert.deepEqual(filterBannedTargets(candidates, {}), []);
 });
 
-test('filterBannedTargets nunca lança pra candidato sem campo program', () => {
+test('filterBannedTargets recusa candidato sem campo program', () => {
   const policy = { 'Block Open Source': { aiResearchBanned: true } };
   const candidates = [{ owner: 'a', repo: 'b' }];
-  assert.deepEqual(filterBannedTargets(candidates, policy), candidates);
+  assert.deepEqual(filterBannedTargets(candidates, policy), []);
 });

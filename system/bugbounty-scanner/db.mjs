@@ -4,7 +4,7 @@ import path from 'node:path';
 import { transition as smTransition } from './state-machine.mjs';
 import { appendEntry } from '../ledger/ledger.mjs';
 import { sendTelegramMessage, shouldNotifyForTransition, formatTransitionMessage } from './telegram.mjs';
-import { loadProgramPolicy } from './program-policy.mjs';
+import { loadProgramPolicyStrict } from './program-policy.mjs';
 import { deriveSemanticFingerprint } from './semantic-fingerprint.mjs';
 import { validateImpactAssessment } from './impact-assessment.mjs';
 import { investigationIdFor } from './investigation-id.mjs';
@@ -24,12 +24,24 @@ import { investigationIdFor } from './investigation-id.mjs';
 // que faltava: um número de versão em cada evento bugbounty_* gravado, pra
 // um consumidor futuro (dashboard, outro ambiente lendo o ledger) saber
 // tratar o formato mudando sem adivinhar pela presença/ausência de campos.
-// correlationId (ligar report->duplicateCheck->impactAssessment->outcome
-// pelo mesmo id) continua em aberto -- precisa de um id de investigação
-// threading por várias funções record*, mudança maior que cabe aqui.
+// correlationId liga validation/code-age/report/duplicateCheck/
+// impactAssessment/outcome pelo id determinístico de investigação, estável
+// entre o worker local e checkouts efêmeros.
 export const LEDGER_SCHEMA_VERSION = 1;
 
+let LEDGER_WRITE_SUPPRESSION_DEPTH = 0;
+
+/** Restauração de uma materialized view local não é um novo evento de
+ * pesquisa. Este escopo síncrono permite hidratar o SQLite a partir dos
+ * arquivos versionados sem reapensar centenas de fatos já existentes. */
+export function withoutLedgerWrites(callback) {
+  LEDGER_WRITE_SUPPRESSION_DEPTH += 1;
+  try { return callback(); }
+  finally { LEDGER_WRITE_SUPPRESSION_DEPTH -= 1; }
+}
+
 function appendFindingLedger(findingId, entry) {
+  if (LEDGER_WRITE_SUPPRESSION_DEPTH > 0) return { hash: null, suppressed: true };
   return appendEntry('research', {
     ...entry,
     schemaVersion: LEDGER_SCHEMA_VERSION,
@@ -280,7 +292,14 @@ export function upsertFinding(db, finding) {
     line: finding.line != null ? String(finding.line) : null,
     state: finding.state || 'candidate',
     confidence: finding.confidence || null,
-    historical_confidence: finding.historicalConfidence ?? null,
+    // O scanner produz `{fpRate,sampleSize}`; bancos antigos também podem
+    // conter um número. SQLite aceita JSON textual na coluna legada REAL,
+    // mas o driver não aceita bind direto de objeto.
+    historical_confidence: finding.historicalConfidence == null
+      ? null
+      : (typeof finding.historicalConfidence === 'object'
+        ? JSON.stringify(finding.historicalConfidence)
+        : finding.historicalConfidence),
     reasoning: finding.reasoning || null,
     files_read_json: JSON.stringify(finding.filesRead || []),
     poc_run: finding.pocRun ? 1 : 0,
@@ -294,6 +313,10 @@ export function upsertFinding(db, finding) {
 
 function rowToFinding(row) {
   if (!row) return null;
+  let historicalConfidence = row.historical_confidence;
+  if (typeof historicalConfidence === 'string' && /^[{[]/.test(historicalConfidence.trim())) {
+    try { historicalConfidence = JSON.parse(historicalConfidence); } catch { /* mantém valor legado */ }
+  }
   return {
     id: row.id,
     correlationId: investigationIdFor(row.id),
@@ -309,7 +332,7 @@ function rowToFinding(row) {
     line: row.line,
     state: row.state,
     confidence: row.confidence,
-    historicalConfidence: row.historical_confidence,
+    historicalConfidence,
     reasoning: row.reasoning,
     filesRead: JSON.parse(row.files_read_json || '[]'),
     pocRun: !!row.poc_run,
@@ -356,7 +379,7 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
     report: latestReport(db, findingId),
     duplicateCheck: latestDuplicateCheck(db, findingId),
     impactAssessment: latestImpactAssessment(db, findingId),
-    programPolicy: loadProgramPolicy(),
+    programPolicy: loadProgramPolicyStrict(),
   };
   const result = smTransition(finding, toState, fullContext);
   if (!result.ok) return result;

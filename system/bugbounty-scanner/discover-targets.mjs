@@ -9,6 +9,7 @@
 // replica com segurança a partir de metadado em massa.
 
 import { githubHeaders } from './github-auth.mjs';
+import { getBlockReason } from './program-policy.mjs';
 
 const HACKERONE_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/hackerone_data.json';
 const BUGCROWD_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/bugcrowd_data.json';
@@ -87,6 +88,28 @@ export function diffAgainstKnownTargets(candidates, knownTargetLists) {
     }
   }
   return candidates.filter((c) => !known.has(`${c.owner.toLowerCase()}/${c.repo.toLowerCase()}`));
+}
+
+/** Separa candidatos antes de qualquer consulta de metadado/código no
+ * GitHub. Um repo associado a pelo menos um programa não autorizado fica
+ * inteiro no lado bloqueado; isso é conservador para ativos compartilhados.
+ * O lado bloqueado ainda serve como fila de nomes de programa cuja RoE deve
+ * ser revisada, mas nunca chega a `fetchRepoMetadata`. */
+export function partitionCandidatesByProgramPolicy(candidates, policy = {}) {
+  const authorized = [];
+  const blocked = [];
+  for (const candidate of candidates || []) {
+    const policyBlocks = (candidate.programs || []).map((program) => ({
+      program: program.program,
+      reason: getBlockReason(program.program, policy),
+    })).filter((entry) => entry.reason);
+    if ((candidate.programs || []).length === 0 || policyBlocks.length > 0) {
+      blocked.push({ ...candidate, policyBlocks });
+    } else {
+      authorized.push(candidate);
+    }
+  }
+  return { authorized, blocked };
 }
 
 /** Ordena candidatos pra priorizar quem NUNCA teve metadado buscado —
@@ -201,7 +224,7 @@ export async function fetchRepoMetadata(owner, repo) {
  * default é `getProgram` de h1-api.mjs; se as credenciais da Hacker API
  * não estiverem configuradas, todo esse passo é pulado com honestidade
  * (sem idade de programa, não trava a rodada inteira por isso). */
-export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProgramInfo = null) {
+export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProgramInfo = null, { programPolicy = {} } = {}) {
   const [hackerOneRes, bugcrowdRes] = await Promise.all([fetch(HACKERONE_URL, { headers: githubHeaders() }), fetch(BUGCROWD_URL, { headers: githubHeaders() })]);
   if (!hackerOneRes.ok) throw new Error(`HTTP ${hackerOneRes.status} buscando dataset HackerOne`);
   if (!bugcrowdRes.ok) throw new Error(`HTTP ${bugcrowdRes.status} buscando dataset Bugcrowd`);
@@ -209,7 +232,16 @@ export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProg
   const bugcrowdData = await bugcrowdRes.json();
 
   const allCandidates = extractGithubCandidates(hackerOneData, bugcrowdData);
-  const newCandidates = diffAgainstKnownTargets(allCandidates, knownTargetLists);
+  const policyPartition = partitionCandidatesByProgramPolicy(allCandidates, programPolicy);
+  const newCandidates = diffAgainstKnownTargets(policyPartition.authorized, knownTargetLists);
+  const blockedProgramCounts = new Map();
+  for (const candidate of policyPartition.blocked) {
+    for (const block of candidate.policyBlocks) {
+      const previous = blockedProgramCounts.get(block.program) || { program: block.program, reason: block.reason, candidateCount: 0 };
+      previous.candidateCount += 1;
+      blockedProgramCounts.set(block.program, previous);
+    }
+  }
 
   let ageByHandle = {};
   let programAgeErrors = 0;
@@ -268,6 +300,9 @@ export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProg
 
   return {
     totalCandidatesInDatasets: allCandidates.length,
+    authorizedCandidatesInDatasets: policyPartition.authorized.length,
+    policyBlockedCandidates: policyPartition.blocked.length,
+    policyBlockedPrograms: [...blockedProgramCounts.values()].sort((a, b) => a.program.localeCompare(b.program)),
     newCandidatesFound: newCandidates.length,
     truncatedCount,
     neverSeenRemaining,

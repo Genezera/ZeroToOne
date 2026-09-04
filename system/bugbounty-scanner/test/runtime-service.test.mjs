@@ -136,6 +136,39 @@ test('service inicializa sem disparar carga e depois roda leves + no máximo um 
   });
 });
 
+test('modo cloud-primary desliga scan/sync locais e mantém doctor + discovery', async () => {
+  withTempDir(async (dir) => {
+    const originalCloudPrimary = process.env.ZERO2ONE_CLOUD_PRIMARY;
+    const originalUser = process.env.HACKERONE_USERNAME;
+    const originalToken = process.env.HACKERONE_API_TOKEN;
+    process.env.ZERO2ONE_CLOUD_PRIMARY = '1';
+    process.env.HACKERONE_USERNAME = 'user';
+    process.env.HACKERONE_API_TOKEN = 'token';
+    try {
+      const statePath = path.join(dir, 'state.json');
+      const lockPath = path.join(dir, 'service.lock');
+      let current = Date.parse('2026-09-03T12:00:00.000Z');
+      await runServiceCycle({ statePath, lockPath, initializeOnly: true, now: () => current });
+      current += 25 * 60 * 60 * 1000;
+      const ran = [];
+      const result = await runServiceCycle({
+        statePath, lockPath, now: () => current,
+        runner: (job) => { ran.push(job.name); return { status: 0, stdout: 'ok', stderr: '' }; },
+        notify: async () => ({ ok: true }), recordEvent: () => {},
+      });
+      assert.deepEqual(ran, ['doctor', 'discovery']);
+      assert.match(result.state.jobs.sync_reports.disabledReason, /workflow cloud/);
+      assert.match(result.state.jobs.scan.disabledReason, /workflow cloud/);
+      assert.equal(result.state.jobs.sync_reports.consecutiveFailures, 0);
+      assert.equal(result.state.jobs.scan.consecutiveFailures, 0);
+    } finally {
+      if (originalCloudPrimary === undefined) delete process.env.ZERO2ONE_CLOUD_PRIMARY; else process.env.ZERO2ONE_CLOUD_PRIMARY = originalCloudPrimary;
+      if (originalUser === undefined) delete process.env.HACKERONE_USERNAME; else process.env.HACKERONE_USERNAME = originalUser;
+      if (originalToken === undefined) delete process.env.HACKERONE_API_TOKEN; else process.env.HACKERONE_API_TOKEN = originalToken;
+    }
+  });
+});
+
 test('falha de job gera backoff, persiste erro e notifica; watchdog só avisa na mudança', async () => {
   await withTempDir(async (dir) => {
     const statePath = path.join(dir, 'state.json');

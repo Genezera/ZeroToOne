@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseGithubUrl, extractGithubCandidates, diffAgainstKnownTargets, prioritizeCandidates, distinctHackerOneHandles, attachProgramAge, mapWithConcurrency } from '../discover-targets.mjs';
+import { parseGithubUrl, extractGithubCandidates, diffAgainstKnownTargets, prioritizeCandidates, distinctHackerOneHandles, attachProgramAge, mapWithConcurrency, partitionCandidatesByProgramPolicy } from '../discover-targets.mjs';
 
 test('parseGithubUrl extrai owner/repo de URL simples', () => {
   assert.deepEqual(parseGithubUrl('https://github.com/vercel/flags'), { owner: 'vercel', repo: 'flags' });
@@ -46,6 +46,37 @@ test('extractGithubCandidates deduplica repo que aparece em mais de um programa,
   const candidates = extractGithubCandidates(h1, []);
   assert.equal(candidates.length, 1);
   assert.equal(candidates[0].programs.length, 2);
+});
+
+test('partitionCandidatesByProgramPolicy bloqueia antes do metadado programa ausente, proibido ou revisão expirada', () => {
+  const candidates = [
+    { owner: 'a', repo: 'ok', programs: [{ program: 'Permitido' }] },
+    { owner: 'b', repo: 'ausente', programs: [{ program: 'Desconhecido' }] },
+    { owner: 'c', repo: 'proibido', programs: [{ program: 'Bloqueado' }] },
+    { owner: 'd', repo: 'expirado', programs: [{ program: 'Expirado' }] },
+  ];
+  const policy = {
+    Permitido: { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31' },
+    Bloqueado: { blocked: true, reason: 'scanner não permitido' },
+    Expirado: { roeReviewed: true, reviewedAt: '2026-01-01', nextReviewAt: '2026-02-01' },
+  };
+  const result = partitionCandidatesByProgramPolicy(candidates, policy);
+  assert.deepEqual(result.authorized.map((item) => item.repo), ['ok']);
+  assert.deepEqual(result.blocked.map((item) => item.repo), ['ausente', 'proibido', 'expirado']);
+  assert.match(result.blocked[0].policyBlocks[0].reason, /sem decisão explícita/);
+  assert.match(result.blocked[2].policyBlocks[0].reason, /expirou/);
+});
+
+test('partitionCandidatesByProgramPolicy é conservador para repo compartilhado com programa bloqueado', () => {
+  const result = partitionCandidatesByProgramPolicy([{
+    owner: 'shared', repo: 'repo', programs: [{ program: 'Permitido' }, { program: 'Bloqueado' }],
+  }], {
+    Permitido: { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31' },
+    Bloqueado: { aiResearchBanned: true, reason: 'IA proibida' },
+  });
+  assert.equal(result.authorized.length, 0);
+  assert.equal(result.blocked.length, 1);
+  assert.equal(result.blocked[0].policyBlocks[0].program, 'Bloqueado');
 });
 
 test('diffAgainstKnownTargets remove repo já rastreado (case-insensitive)', () => {

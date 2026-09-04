@@ -13,6 +13,7 @@ import {
   recordCodeAgeEvidence, latestCodeAgeEvidence,
   exportSubmissionsToJsonl, importSubmissionsFromJsonl,
   exportFindingsToQueueLines, closeDb, LEDGER_SCHEMA_VERSION,
+  withoutLedgerWrites,
 } from '../db.mjs';
 import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
 
@@ -247,6 +248,15 @@ test('recordPlatformOutcome/recordDeploymentEvidence/recordValidation/recordRepo
   });
 });
 
+test('historicalConfidence estruturado faz round-trip no SQLite', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, { ...SAMPLE, historicalConfidence: { fpRate: 0.75, sampleSize: 8 } });
+    assert.deepEqual(getFinding(db, SAMPLE.id).historicalConfidence, { fpRate: 0.75, sampleSize: 8 });
+    closeDb(db);
+  });
+});
+
 test('code age evidence persiste, entra na fila portátil e ganha correlationId', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
@@ -411,3 +421,16 @@ test('todo evento bugbounty_* gravado no ledger carrega schemaVersion', () => {
     }
   });
 });
+
+test('withoutLedgerWrites hidrata tabelas sem reapensar fatos no ledger', () => withTempEnv((dbPath) => {
+  const db = openDb(dbPath);
+  upsertFinding(db, SAMPLE);
+  withoutLedgerWrites(() => {
+    recordValidation(db, SAMPLE.id, { type: 'hydrate', result: 'pass', rawOutput: 'restored' });
+    recordDeploymentEvidence(db, SAMPLE.id, { confidence: 'low', notes: 'restored' });
+  });
+  assert.equal(listValidations(db, SAMPLE.id).length, 1);
+  assert.equal(latestDeploymentEvidence(db, SAMPLE.id).confidence, 'low');
+  assert.equal(verifyChain('research').entries, 0);
+  closeDb(db);
+}));
