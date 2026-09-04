@@ -90,3 +90,28 @@ sweep proativo), clonado raso localmente, 4 arquivos (`oauth.go`,
 `deep-read-log.json` atualizado (+1 repo, `mattermost/mattermost-plugin-github`,
 4 entradas). Nenhum achado novo, nenhuma transição de estado nesta
 rodada em Mattermost — resultado normal e válido.
+
+## Rodada 2026-09-04 #33 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`check-program` confirmou
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` bloqueados; nenhum repo
+desses três tocado). `migrate-to-v2.mjs` + `list-pending` global = 34,
+100% fora de escopo (30 Auth0 by Okta bloqueado, 4 Circle BBP
+bloqueado). Nenhum candidato pendente em Mattermost.
+
+Leitura profunda proativa desta rodada abriu `mattermost-plugin-zoom`
+(clone raso público, descartado ao final do scratchpad) — único repo
+Mattermost com fluxo OAuth próprio ainda não coberto por sweep
+proativo (`-plugin-github` já foi coberto em rodada anterior). 1
+arquivo: `server/zoom/oauth.go`
+(`OAuthClient.GetUser`/`CreateMeeting`/`getUserViaOAuth`) — refresh de
+token OAuth2 via `tokenSource.Token()`, token novo só é persistido no
+KV store (por usuário ou super-user, conforme `isAccountLevel`) quando
+o `RefreshToken` muda; `CreateMeeting`/`GetUser` sempre usam o
+`user.Email` do próprio usuário Mattermost autenticado que disparou o
+fluxo (vindo da sessão, não de input de terceiro) — sem vetor pra um
+usuário forjar ação em nome de outro. Sem achado.
+
+`deep-read-log.json` atualizado (`mattermost/mattermost-plugin-zoom`,
++1 entrada, repo novo). Nenhum achado novo, nenhuma transição de
+estado nesta rodada em Mattermost — resultado normal e válido.

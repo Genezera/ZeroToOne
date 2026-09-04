@@ -440,3 +440,49 @@ lógica de auth ainda sem leitura registrada no pacote).
 `deep-read-log.json` atualizado (`kiwicom/js-iam-middleware` +3
 entradas). Nenhum finding novo, nenhuma transição de estado nesta
 rodada -- resultado normal e válido.
+
+## Rodada 2026-09-04 #33 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`check-program` confirmou
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` bloqueados; nenhum repo
+desses três tocado). `migrate-to-v2.mjs` + `list-pending` global = 34,
+100% fora de escopo (30 Auth0 by Okta bloqueado, 4 Circle BBP
+bloqueado). Nenhum candidato pendente em Kiwi.com.
+
+Leitura profunda proativa desta rodada abriu um repo Kiwi.com ainda
+nunca tocado por sweep proativo: `kiwicom/k8s-vault-operator` (clone
+raso público, descartado ao final do scratchpad), escolhido por
+julgamento próprio priorizando o nome "vault" (segredos/credenciais).
+2 arquivos:
+
+- `pkg/vault/auth.go` (`AuthServiceAccount.Token`/`fetchJWT`) — login
+  JWT no Vault via k8s ServiceAccount `TokenRequest` API (ou secret
+  auto-montado em `/run/secrets/...`), token de Vault cacheado com
+  `RWMutex` e expiração checada antes de reuso; `role`/`path` vêm da
+  config do operator (CRD), não de input de terceiro. Sem achado.
+- `controllers/vaultsecret_controller.go` (`Reconcile`/
+  `getAuthServiceAccount`) — cache de `AuthServiceAccount` por
+  `authSACacheKey` já usa SHA256 sobre campos length-prefixed; o
+  próprio comentário no código documenta que uma chave ingênua com
+  join por `"-"` NÃO seria injetiva (colisão cross-tenant possível,
+  já que `-` é caractere legal em namespace/SA/role/authPath) e que
+  isso permitiria um reconcile de um tenant reusar a identidade
+  Vault cacheada de outro tenant — mas essa mitigação (hash
+  length-prefixed) já está implementada no arquivo lido, não é um
+  achado novo, é documentação de um fix já existente.
+  `validateVaultAddr` usa allowlist explícita de endereço Vault,
+  rejeita endereço customizado se a allowlist estiver vazia. Sem
+  achado.
+
+Nota lateral: `plaid/plaid-link-android` também foi clonado pra avaliar
+como candidato (prioridade "token"), mas o repositório contém apenas
+o app de exemplo (`app/src/main/java/com/plaid/linksample/...`, UI de
+demonstração) — o SDK real é consumido como dependência binária, sem
+código-fonte hand-written de auth/token no repo. Não conta como leitura
+de substância, nenhum arquivo lido dele foi registrado no
+`deep-read-log.json`; repositório fica marcado como não-produtivo pra
+esse tipo de sweep até que publique código fonte real.
+
+`deep-read-log.json` atualizado (`kiwicom/k8s-vault-operator`, +2
+entradas, repo novo). Nenhum achado novo, nenhuma transição de estado
+nesta rodada em Kiwi.com — resultado normal e válido.

@@ -1245,5 +1245,12 @@
     "server/plugin/api.go (connectUserToGitHub/completeConnectUserToGitHub -- state OAuth (model.NewId()[:15]) armazenado server-side no KV store com TTL, chave de lookup e o proprio state.Token; comparacao extra state.UserID != c.UserID contra sessao Mattermost autenticada antes de aceitar o code exchange; escopo do token validado via validateOAuthScopes pos-exchange. Sem achado)",
     "server/plugin/webhook.go (verifyWebhookSignature/signBody -- HMAC-SHA1 sobre body cru, hmac.Equal (constant-time), length-check de 45 chars + prefixo sha1= antes do hex.Decode, fail-closed em erro/invalido. Sem achado)",
     "server/plugin/mm_34646_token_refresh.go (forceResetAllMM34646 -- job de manutencao interno gated por cluster.NewMutex, sem input de rede/usuario controlavel; BasicAuthTransport usa client_id/client_secret do proprio config, nao segredo de terceiro. Sem achado)"
+  ],
+  "kiwicom/k8s-vault-operator": [
+    "pkg/vault/auth.go (AuthServiceAccount.Token/fetchJWT -- login JWT no Vault via k8s ServiceAccount TokenRequest API (ou secret auto-montado), token de Vault cacheado com RWMutex e expiracao checada antes de reuso; role/path vem da config do operator (CRD), nao de input de terceiro. Sem achado)",
+    "controllers/vaultsecret_controller.go (Reconcile/getAuthServiceAccount -- cache de AuthServiceAccount por chave authSACacheKey ja usa SHA256 sobre campos length-prefixed [comentario no proprio codigo documenta que uma chave ingenua com '-' join nao seria injetiva e permitiria colisao cross-tenant -- mitigacao ja implementada, nao e um achado novo]; validateResource/validateVaultAddr usa allowlist explicita de VaultAddr, sem allowlist configurada rejeita endereco custom. Sem achado)"
+  ],
+  "mattermost/mattermost-plugin-zoom": [
+    "server/zoom/oauth.go (OAuthClient.GetUser/CreateMeeting/getUserViaOAuth -- refresh de token OAuth2 por tokenSource.Token(), token novo persistido no KV store (per-user ou super-user conforme isAccountLevel) apenas quando RefreshToken muda; CreateMeeting/GetUser usam sempre o proprio user.Email do usuario Mattermost autenticado que chamou o fluxo, nao ha input de terceiro controlando de quem e o email/ID usado na URL da API Zoom. Sem achado)"
   ]
 }
