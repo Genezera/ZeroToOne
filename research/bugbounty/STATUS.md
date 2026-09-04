@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-02T15:19:27.137Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-04T09:25:37.918Z.
 
 ## Alvos ativos
 
@@ -11,6 +11,11 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | js | Vercel Open Source | HackerOne | vercel/vercel |
 | js | Vercel Open Source | HackerOne | vercel-labs/agent-skills |
 | js | Vercel Open Source | HackerOne | vercel-labs/skills |
+| js | Plaid | HackerOne | plaid/react-plaid-link |
+| js | Kiwi.com | HackerOne | kiwicom/js-iam-middleware |
+| js | Auth0 by Okta | Bugcrowd | auth0/auth0-spa-js |
+| js | Auth0 by Okta | Bugcrowd | auth0/react-native-auth0 |
+| js | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-gitlab |
 | go | Kubernetes | HackerOne | kubernetes/apimachinery |
 | go | OKG | HackerOne | okx/go-wallet-sdk |
 | go | Kubernetes | HackerOne | kubernetes/cli-runtime |
@@ -24,7 +29,26 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | go | Kubernetes | HackerOne | kubernetes/cluster-bootstrap |
 | go | Kubernetes | HackerOne | kubernetes/csi-translation-lib |
 | go | Kubernetes | HackerOne | kubernetes/gengo |
+| go | Kubernetes | HackerOne | kubernetes/kube-controller-manager |
+| go | Kubernetes | HackerOne | kubernetes/kube-openapi |
+| go | Kubernetes | HackerOne | kubernetes/kube-proxy |
+| go | Kubernetes | HackerOne | kubernetes/kube-scheduler |
+| go | Kubernetes | HackerOne | kubernetes/kubeadm |
+| go | Kubernetes | HackerOne | kubernetes/kubelet |
+| go | Kubernetes | HackerOne | kubernetes/metrics |
+| go | Kubernetes | HackerOne | kubernetes/org |
+| go | Kubernetes | HackerOne | kubernetes/sample-cli-plugin |
+| go | Kubernetes | HackerOne | kubernetes/sample-controller |
+| go | Kubernetes | HackerOne | kubernetes/publishing-bot |
+| go | Kubernetes | HackerOne | kubernetes/utils |
+| go | Kiwi.com | HackerOne | kiwicom/k8s-vault-operator |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-jira |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-zoom |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-github |
+| go | Slack | HackerOne | slackhq/nebula |
 | jvm | Auth0 by Okta | Bugcrowd | auth0/auth0-java |
+| jvm | Kiwi.com | HackerOne | kiwicom/navigation-compose-typed |
+| jvm | Plaid | HackerOne | plaid/plaid-link-android |
 | solidity | Circle BBP | HackerOne | circlefin/evm-cctp-contracts |
 | solidity | Circle BBP | HackerOne | circlefin/evm-gateway-contracts |
 | solidity | Circle BBP | HackerOne | circlefin/buidl-wallet-contracts |
@@ -33,15 +57,15 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **260**
-- Já revisados: 140
+- Pendentes (aguardando o agente de nuvem): **43**
+- Já revisados: 746
 
 ### Últimos vereditos
 
 | Tipo | Programa | Veredito | Quando |
 |---|---|---|---|
-| ai_deep_read_finding | Circle BBP | confirmado | — |
-| insecure_tls | Kubernetes | falso_positivo | — |
-| ai_deep_read_finding | Circle BBP | falso_positivo | — |
-| ai_deep_read_finding | Vercel Open Source | confirmado | — |
-| known_vulnerable_dependency | OKG | falso_positivo | — |
+| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
+| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
+| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
+| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
+| known_vulnerable_dependency | Kubernetes | falso_positivo | 2026-09-01T12:08:41.417Z |
