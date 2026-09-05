@@ -531,3 +531,39 @@ priorizar outro repo pouco explorado (ex.: `mattermost/mattermost-plugin-github`
 `deep-read-log.json` atualizado (+3 em `kiwicom/k8s-vault-operator`).
 Nenhum achado novo, nenhuma transição de estado nesta rodada em
 Kiwi.com — resultado normal e válido.
+
+## Rodada 2026-09-05 — `js-iam-middleware` esgotado (4 arquivos restantes lidos, sem achado)
+
+`migrate-to-v2.mjs` + `list-pending` global = 34, 100% fora de escopo
+(30 Auth0 by Okta, 4 Circle BBP — ambos bloqueados em
+`program-policy.json`, nenhum arquivo desses dois programas foi
+clonado/lido nesta rodada). Nenhum candidato pendente em Kiwi.com.
+
+Leitura profunda proativa focou nos arquivos não-teste que ainda
+faltavam em `kiwicom/js-iam-middleware` (clone raso público, descartado
+ao final):
+
+- `src/scripts/getRefreshToken.ts` (`getRefreshToken`) — troca
+  authorization code por refresh token via POST fixo pro endpoint
+  OAuth2 do Google; valida `code` presente, não-array e `isASCII`
+  antes de usar; `client_id`/`client_secret` vêm de config local do
+  dev, não de input remoto. Sem achado.
+- `src/scripts/index.ts` — CLI de uso único que sobe um
+  `http.createServer` local só pra capturar o redirect OAuth e
+  imprimir o refresh token no terminal; sem `state`/nonce no fluxo, em
+  tese CSRF de authorization-code, mas o único efeito possível seria o
+  token trocado pertencer à própria conta do atacante — não há vetor
+  pelo qual um terceiro capture ou injete o `code` da vítima
+  remotamente, e a ferramenta nunca roda como serviço exposto
+  (`SIGTERM` após 1 uso). Sem cenário de exploração concreto, não
+  virou finding.
+- `src/index.ts` — barrel de reexport, sem lógica própria. Sem achado.
+- `src/types.ts` — só interfaces/types. Sem achado.
+
+Com isso todo `src/` não-teste de `js-iam-middleware` está coberto em
+`deep-read-log.json`; repo tratado como esgotado. Próxima rodada deve
+priorizar outro repo pouco explorado (`mattermost/mattermost-plugin-github`,
+`plaid/plaid-ruby`, `kubernetes/apimachinery`/`cli-runtime`/
+`cloud-provider-aws`, todos com 1-4 arquivos lidos até agora).
+Nenhum achado novo, nenhuma transição de estado nesta rodada —
+resultado normal e válido.

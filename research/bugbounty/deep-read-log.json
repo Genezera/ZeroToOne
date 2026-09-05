@@ -1179,7 +1179,11 @@
     "src/userCache.ts",
     "src/authorizationDirective.ts (relido nesta rodada, não estava neste log apesar de já ter finding -- é o mesmo positional_argument_mismatch já submetido e fechado como duplicate no HackerOne (report 3994302, dup de 3439366). Reproduzi de forma independente com verify.js local antes de checar queue.jsonl e confirmei byte-a-byte o mesmo mapeamento de argumentos trocados já documentado no finding existente -- não criei finding novo, é o mesmo)",
     "src/getClientToken.ts (POST fixo pro endpoint OAuth2 do Google com client_id/client_secret/refresh_token vindos de config server-side, sem input de terceiro na URL/corpo. Sem achado)",
-    "src/scripts/oauthCallback.ts (isOAuthCallbackUrl -- só parse de query string pra detectar path '/' com `code` presente, helper puro sem lógica de auth. Sem achado)"
+    "src/scripts/oauthCallback.ts (isOAuthCallbackUrl -- só parse de query string pra detectar path '/' com `code` presente, helper puro sem lógica de auth. Sem achado)",
+    "src/scripts/getRefreshToken.ts (getRefreshToken -- troca de authorization code por refresh token via POST fixo pra https://www.googleapis.com/oauth2/v4/token; valida code presente, não-array e isASCII antes de usar. client_id/client_secret vêm de config local do desenvolvedor, não de input remoto. Sem achado)",
+    "src/scripts/index.ts (CLI local de uso único -- sobe http.createServer local (porta configurável, default 3000) só pra capturar o redirect do OAuth do Google e imprimir o refresh token no terminal do próprio dev; sem parâmetro `state`/nonce no fluxo OAuth, então em tese há CSRF de authorization-code, mas o único efeito possível é o token trocado pertencer à própria conta do atacante -- não há como um terceiro roubar ou injetar o code da vítima remotamente, e a ferramenta nunca roda como serviço exposto (self-terminates via SIGTERM após 1 uso). Impacto real nulo; não abri finding por falta de cenário de exploração concreto. Sem achado)",
+    "src/index.ts (barrel só reexportando getUser/isUserAuthorized/authorizationDirective/validateIAPToken/authenticationMiddleware/getClientToken -- sem lógica própria. Sem achado)",
+    "src/types.ts (só interfaces/types -- DesktopIAPOptions, Fetcher, ClientFetcher -- sem lógica. Sem achado)"
   ],
   "slackhq/nebula": [
     "cert/ca_pool.go",
