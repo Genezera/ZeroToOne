@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-09-05T05:40:36.013Z",
+  "repos": {
+    "kiwicom/js-iam-middleware": {
+      "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
+      "branch": "master",
+      "parentSha": "96dca47cfc491d23cf00a48c62aacf1f34786f7d",
+      "committedAt": "2026-03-10T13:33:50Z",
+      "url": "https://github.com/kiwicom/js-iam-middleware/commit/a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
+      "title": "fix: properly get query parameters",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kiwi.com"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "kiwicom/navigation-compose-typed": {
+      "sha": "5c46ddf77d2ea6fb8d2987c16f15f358a8c1f51c",
+      "branch": "main",
+      "parentSha": "69b490c1e61c92ca01487125fadc1d3ad62ee356",
+      "committedAt": "2024-05-13T07:46:31Z",
+      "url": "https://github.com/kiwicom/navigation-compose-typed/commit/5c46ddf77d2ea6fb8d2987c16f15f358a8c1f51c",
+      "title": "add warning about sealed Result (#134)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kiwi.com"
+      ],
+      "languages": [
+        "jvm"
+      ]
+    },
+    "kubernetes/apimachinery": {
+      "sha": "b16c9f2303a7e2c721286f12a45539a244fcaeca",
+      "branch": "master",
+      "parentSha": "03c7be500e059be15dcde82769f8538845079df1",
+      "committedAt": "2026-09-04T21:48:32Z",
+      "url": "https://github.com/kubernetes/apimachinery/commit/b16c9f2303a7e2c721286f12a45539a244fcaeca",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kiwicom/k8s-vault-operator": {
+      "sha": "69834d44e50ebf714a59779d1a0bc9e19394f398",
+      "branch": "main",
+      "parentSha": "f1caa39e801aa7e1da6ce1c6f65a4239c5b775e8",
+      "committedAt": "2026-07-15T12:24:42Z",
+      "url": "https://github.com/kiwicom/k8s-vault-operator/commit/69834d44e50ebf714a59779d1a0bc9e19394f398",
+      "title": "Merge pull request #24 from kiwicom/uros/fix-sa-cache-key-collision",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kiwi.com"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/cli-runtime": {
+      "sha": "4c4e2fe8b17f4afafd1bceb052af9c65490a08a8",
+      "branch": "master",
+      "parentSha": "21f66760145b079ca155269c54d93f437c71f9fb",
+      "committedAt": "2026-09-04T22:53:06Z",
+      "url": "https://github.com/kubernetes/cli-runtime/commit/4c4e2fe8b17f4afafd1bceb052af9c65490a08a8",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/cloud-provider": {
+      "sha": "cddb7141ceb70f7f4bc308640f6ce1cfc566946a",
+      "branch": "master",
+      "parentSha": "1d5848a70dfe053e404486ea87e6362cd4aa2723",
+      "committedAt": "2026-09-04T23:11:41Z",
+      "url": "https://github.com/kubernetes/cloud-provider/commit/cddb7141ceb70f7f4bc308640f6ce1cfc566946a",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/cloud-provider-aws": {
+      "sha": "6eee3694428ea7b3f2536e700c40da938363518c",
+      "branch": "master",
+      "parentSha": "6eef6d8cf5e10ed0348dd88de9c99bc5307cb43a",
+      "committedAt": "2026-08-31T18:06:19Z",
+      "url": "https://github.com/kubernetes/cloud-provider-aws/commit/6eee3694428ea7b3f2536e700c40da938363518c",
+      "title": "Merge pull request #1482 from joshuakguo/1-37-deps-ga",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/cloud-provider-openstack": {
+      "sha": "c4c5669668425ed3d6d6252103ffce73cabf9bb8",
+      "branch": "master",
+      "parentSha": "9c52b05bfd451f255f4fd1f2f122388c7e40ae00",
+      "committedAt": "2026-09-04T16:54:20Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/c4c5669668425ed3d6d6252103ffce73cabf9bb8",
+      "title": "NO-ISSUE: Bump go.opentelemetry.io/otel to v1.44.0 in master (#3174)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/cluster-bootstrap": {
+      "sha": "c33edcfddc6b4ee7aecfed60c8f32ab5cb52e92a",
+      "branch": "master",
+      "parentSha": "6df16566d15fb15804c9130a49e2716f6b25a3c9",
+      "committedAt": "2026-09-04T23:16:23Z",
+      "url": "https://github.com/kubernetes/cluster-bootstrap/commit/c33edcfddc6b4ee7aecfed60c8f32ab5cb52e92a",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/cri-api": {
+      "sha": "b47fc37312c54caef1a68c8b4ac8e07158331a82",
+      "branch": "master",
+      "parentSha": "5055fee1b0f18bda2a82055a7933ba6cf0e40cdf",
+      "committedAt": "2026-09-04T19:00:43Z",
+      "url": "https://github.com/kubernetes/cri-api/commit/b47fc37312c54caef1a68c8b4ac8e07158331a82",
+      "title": "Merge pull request #141663 from liggitt/go127",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/code-generator": {
+      "sha": "6392f11dc417da72c71ea9d9c2bc939756717c1e",
+      "branch": "master",
+      "parentSha": "625b86917109297f24d0859223db539a8c524763",
+      "committedAt": "2026-09-05T02:02:34Z",
+      "url": "https://github.com/kubernetes/code-generator/commit/6392f11dc417da72c71ea9d9c2bc939756717c1e",
+      "title": "Merge pull request #141866 from jpbetz/validation-gen-tag-prefix",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/component-base": {
+      "sha": "f6eb7bda313f31bf67527e03610512e71d452116",
+      "branch": "master",
+      "parentSha": "40e7c75c2c08d034200fe3c4faf787cf5f41f740",
+      "committedAt": "2026-09-04T22:14:22Z",
+      "url": "https://github.com/kubernetes/component-base/commit/f6eb7bda313f31bf67527e03610512e71d452116",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/gengo": {
+      "sha": "25e2208e0dc371a827289e7faced19a2dbcd480b",
+      "branch": "master",
+      "parentSha": "5ee0d033ba5bcb073f0e69c32057520b82d75ccb",
+      "committedAt": "2026-04-08T19:25:33Z",
+      "url": "https://github.com/kubernetes/gengo/commit/25e2208e0dc371a827289e7faced19a2dbcd480b",
+      "title": "Merge pull request #317 from aramase/aramase/f/fix_generators_inline",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/csi-translation-lib": {
+      "sha": "cd85a6a11db4aa14a399604558408d08ebc41915",
+      "branch": "master",
+      "parentSha": "263b85a82e1ad2e2d0cd62ce86fa0871fbea6a84",
+      "committedAt": "2026-09-04T23:18:44Z",
+      "url": "https://github.com/kubernetes/csi-translation-lib/commit/cd85a6a11db4aa14a399604558408d08ebc41915",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kube-controller-manager": {
+      "sha": "2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
+      "branch": "master",
+      "parentSha": "637f66d233bf2878e90dbb1d3c0c418235558993",
+      "committedAt": "2026-09-04T23:14:08Z",
+      "url": "https://github.com/kubernetes/kube-controller-manager/commit/2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/klog": {
+      "sha": "ae3961e316a310e71636e2b5ec231204443c86f3",
+      "branch": "main",
+      "parentSha": "6e29b6847c50f9dea2c98b3fffe79523f3d91cce",
+      "committedAt": "2026-07-10T01:29:35Z",
+      "url": "https://github.com/kubernetes/klog/commit/ae3961e316a310e71636e2b5ec231204443c86f3",
+      "title": "Pin GitHub Actions to full-length commit SHAs",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kube-scheduler": {
+      "sha": "68103b98628a5795e4eca33c91b31e00350702f9",
+      "branch": "master",
+      "parentSha": "58fdf6521ac2b8abdd1c12601d898e41881cc92e",
+      "committedAt": "2026-09-04T23:32:46Z",
+      "url": "https://github.com/kubernetes/kube-scheduler/commit/68103b98628a5795e4eca33c91b31e00350702f9",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kube-openapi": {
+      "sha": "9ab3195f2a7252f4224482e1756278e065d72d0d",
+      "branch": "master",
+      "parentSha": "be32def86098a05c8a36333127c9b45300e7f33d",
+      "committedAt": "2026-09-04T17:06:22Z",
+      "url": "https://github.com/kubernetes/kube-openapi/commit/9ab3195f2a7252f4224482e1756278e065d72d0d",
+      "title": "Merge pull request #636 from liggitt/smdv7",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kube-proxy": {
+      "sha": "e61739d3d987a5c0e9ad75ba48b9361fb489927e",
+      "branch": "master",
+      "parentSha": "c9e2ee3d2d678f0c611a78b6b491a0538150564a",
+      "committedAt": "2026-09-04T22:57:55Z",
+      "url": "https://github.com/kubernetes/kube-proxy/commit/e61739d3d987a5c0e9ad75ba48b9361fb489927e",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kubeadm": {
+      "sha": "5bc6d39ca9ad65a5dc549dc388c80894044cf9af",
+      "branch": "main",
+      "parentSha": "b17c9dc86f9a8a9c8e3869e23292866a6e98d9ec",
+      "committedAt": "2026-08-09T10:42:01Z",
+      "url": "https://github.com/kubernetes/kubeadm/commit/5bc6d39ca9ad65a5dc549dc388c80894044cf9af",
+      "title": "Merge pull request #3326 from neolit123/1.37-update-e2e",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kubelet": {
+      "sha": "3e70798dd099cf6e0b6eccb6f6ebfc2532d3c62d",
+      "branch": "master",
+      "parentSha": "e4f70507af93759453201f4a1982421a93ba2cab",
+      "committedAt": "2026-09-04T23:06:26Z",
+      "url": "https://github.com/kubernetes/kubelet/commit/3e70798dd099cf6e0b6eccb6f6ebfc2532d3c62d",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/metrics": {
+      "sha": "cf435e17ef63478cd3033e9908e9c8a77d0d831a",
+      "branch": "master",
+      "parentSha": "811d2e5c953e904191a28798f6c67acdde124735",
+      "committedAt": "2026-09-04T22:50:28Z",
+      "url": "https://github.com/kubernetes/metrics/commit/cf435e17ef63478cd3033e9908e9c8a77d0d831a",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/org": {
+      "sha": "2394cf6fd2803870088999a95561281e4711d813",
+      "branch": "main",
+      "parentSha": "df522a95d13e1b16f433e8450237a0bb2ce3d887",
+      "committedAt": "2026-09-04T21:20:20Z",
+      "url": "https://github.com/kubernetes/org/commit/2394cf6fd2803870088999a95561281e4711d813",
+      "title": "Merge pull request #6612 from jlbutler/update-kro-admins",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/sample-controller": {
+      "sha": "b18bc997d6c9af668569cf663caa3cb5fe89b09f",
+      "branch": "master",
+      "parentSha": "085f00d4dc31e7f30db8df4df8310274025b6711",
+      "committedAt": "2026-09-04T22:42:19Z",
+      "url": "https://github.com/kubernetes/sample-controller/commit/b18bc997d6c9af668569cf663caa3cb5fe89b09f",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/sample-cli-plugin": {
+      "sha": "5414d9b64dc71107fa3b018a6eea3c5ec0fb9d58",
+      "branch": "master",
+      "parentSha": "4b59b2f44f1624427dd581899fbf59dfebbb6ddd",
+      "committedAt": "2026-09-04T22:55:30Z",
+      "url": "https://github.com/kubernetes/sample-cli-plugin/commit/5414d9b64dc71107fa3b018a6eea3c5ec0fb9d58",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/publishing-bot": {
+      "sha": "0d28d64800e40abb56d6579adfd13cd35447835f",
+      "branch": "master",
+      "parentSha": "9a7ad4025d710c95c9be38afc5cc7e60439e869b",
+      "committedAt": "2026-08-17T20:37:04Z",
+      "url": "https://github.com/kubernetes/publishing-bot/commit/0d28d64800e40abb56d6579adfd13cd35447835f",
+      "title": "Merge pull request #569 from kubernetes/dependabot/go_modules/golang.org/x/mod-0.40.0",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/utils": {
+      "sha": "cf1189d6abe3a7522bbd54a1bc1068a0a56011c8",
+      "branch": "master",
+      "parentSha": "be93311217bd4e42d0aa42a5987d08e8f5581ec0",
+      "committedAt": "2026-07-07T02:38:25Z",
+      "url": "https://github.com/kubernetes/utils/commit/cf1189d6abe3a7522bbd54a1bc1068a0a56011c8",
+      "title": "Merge pull request #355 from skitt/go-fix",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "mattermost/mattermost-plugin-github": {
+      "sha": "65082e9d6bce47d29603495c0751d6b841f36d98",
+      "branch": "master",
+      "parentSha": "4da873ece037a8a8cdf0ff6505f79e44cd0dd688",
+      "committedAt": "2026-09-04T17:13:13Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/65082e9d6bce47d29603495c0751d6b841f36d98",
+      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /e2e/playwright (#1055)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "mattermost/mattermost-plugin-gitlab": {
+      "sha": "603b0d71609299587bc2a279e986b18195c90c24",
+      "branch": "master",
+      "parentSha": "05f796f1f6a127ff9da3d38ae30472ee35968228",
+      "committedAt": "2026-09-03T09:21:47Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/603b0d71609299587bc2a279e986b18195c90c24",
+      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /webapp (#708)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "mattermost/mattermost-plugin-jira": {
+      "sha": "46be9efeec82254b6ee9397f6db4c5a8c5d2c32c",
+      "branch": "master",
+      "parentSha": "9a88304a2329fa1a2ba291a57d9ed803924ddf60",
+      "committedAt": "2026-08-24T14:49:05Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/46be9efeec82254b6ee9397f6db4c5a8c5d2c32c",
+      "title": "MM-69657 Added guards to prevent cases of replies sent on GM/DMs (#1338)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "plaid/plaid-link-android": {
+      "sha": "faf726465080e723066507dba5e942f754c5215f",
+      "branch": "master",
+      "parentSha": "fbd1e691c9787389b2bb0118ed51587850e20f05",
+      "committedAt": "2026-08-17T16:52:08Z",
+      "url": "https://github.com/plaid/plaid-link-android/commit/faf726465080e723066507dba5e942f754c5215f",
+      "title": "upgrade to 6.2.1 (#346)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Plaid"
+      ],
+      "languages": [
+        "jvm"
+      ]
+    },
+    "mattermost/mattermost-plugin-zoom": {
+      "sha": "e244b6391ae96ccd8a5a0e3d7d4136e9bab960f6",
+      "branch": "master",
+      "parentSha": "1457fb0a117f76e2cebe7e3cc69d92614e073d52",
+      "committedAt": "2026-09-03T17:18:48Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-zoom/commit/e244b6391ae96ccd8a5a0e3d7d4136e9bab960f6",
+      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /webapp (#489)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "okx/go-wallet-sdk": {
+      "sha": "12fec6b0616347265efcc23bfc240c155da710eb",
+      "branch": "main",
+      "parentSha": "73037efacdc15b608a64b06ba06bcdb80ebf6d4f",
+      "committedAt": "2026-05-23T03:07:46Z",
+      "url": "https://github.com/okx/go-wallet-sdk/commit/12fec6b0616347265efcc23bfc240c155da710eb",
+      "title": "Merge branch 'updates/may-2026' into 'main'",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "OKG"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "plaid/react-plaid-link": {
+      "sha": "f620b4822a30d6e979ee1443e91ecd122cee5247",
+      "branch": "master",
+      "parentSha": "50cfc4b0e2bb253f51db9e2809832a14683e2640",
+      "committedAt": "2026-07-24T16:05:24Z",
+      "url": "https://github.com/plaid/react-plaid-link/commit/f620b4822a30d6e979ee1443e91ecd122cee5247",
+      "title": "Release 5.0.0 (#408)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Plaid"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "slackhq/nebula": {
+      "sha": "e50f8128f4373dd6d56568ec9b0b728e5a399a23",
+      "branch": "master",
+      "parentSha": "dd8f660c0ac37903ec4080ca4d3c861ba9342ceb",
+      "committedAt": "2026-09-04T15:26:08Z",
+      "url": "https://github.com/slackhq/nebula/commit/e50f8128f4373dd6d56568ec9b0b728e5a399a23",
+      "title": "Drop hostQueries to our overlay addresses (#1866)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Slack"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "vercel-labs/agent-skills": {
+      "sha": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "branch": "main",
+      "parentSha": "20e89cc4bb256eb7b1fcbdc68f7175284709a847",
+      "committedAt": "2026-08-28T13:36:07Z",
+      "url": "https://github.com/vercel-labs/agent-skills/commit/063bee94c3f4df8453406c830b0a7df0f2860278",
+      "title": "Merge pull request #328 from vercel-labs/codex/suspense-crossfade-local-wrapper",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Vercel Open Source"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "vercel-labs/skills": {
+      "sha": "435076e78988e1e6ec40d00b0b1d76bdbbc5419a",
+      "branch": "main",
+      "parentSha": "99b56aacf31712cd704bc15d616d03830576cc15",
+      "committedAt": "2026-08-18T20:28:31Z",
+      "url": "https://github.com/vercel-labs/skills/commit/435076e78988e1e6ec40d00b0b1d76bdbbc5419a",
+      "title": "v1.5.23",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Vercel Open Source"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "vercel/flags": {
+      "sha": "c9d28116ebca661f4e3c73f301d4b2d35310c823",
+      "branch": "main",
+      "parentSha": "752a05f9ad3e31a252f5dae0cf028cf90faf320f",
+      "committedAt": "2026-09-04T12:21:17Z",
+      "url": "https://github.com/vercel/flags/commit/c9d28116ebca661f4e3c73f301d4b2d35310c823",
+      "title": "Experiments (#486)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Vercel Open Source"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "vercel/vercel": {
+      "sha": "e06cc643cec6a47bd9344af7f4589c736d95ed15",
+      "branch": "main",
+      "parentSha": "17d9ebaf8e9b335d550dea1a243743a74edc772e",
+      "committedAt": "2026-08-19T23:02:24Z",
+      "url": "https://github.com/vercel/vercel/commit/e06cc643cec6a47bd9344af7f4589c736d95ed15",
+      "title": "[skills] Add vercel comments to the CLI skill (#17522)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Vercel Open Source"
+      ],
+      "languages": [
+        "js"
+      ]
+    }
+  }
+}
