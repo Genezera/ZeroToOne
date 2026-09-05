@@ -992,7 +992,11 @@
     "src/_internal/utils/mutate.ts",
     "src/index/use-swr.ts",
     "src/mutation/index.ts",
-    "src/_internal/utils/subscribe-key.ts"
+    "src/_internal/utils/subscribe-key.ts",
+    "src/index/serialize.ts",
+    "src/infinite/serialize.ts",
+    "src/_internal/utils/normalize-args.ts",
+    "src/_internal/utils/merge-config.ts"
   ],
   "vercel/turborepo": [
     "crates/turborepo-cache/src/signature_authentication.rs",

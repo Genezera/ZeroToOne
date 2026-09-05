@@ -8585,3 +8585,47 @@ contrato novo, 15 arquivos `.clar` seguem 100% do escopo).
 `deep-read-log.json` atualizado (`vercel/chat`: +3 entradas). Um achado
 registrado e já refutado (`false_positive`) nesta mesma rodada — sem
 transição pendente. Clone temporário removido ao final.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum dos três tocado. `migrate-to-v2.mjs` +
+`list-pending` global = 34 candidatos, 100% fora do escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP) — skip completo, nenhum
+arquivo desses dois programas lido.
+
+Leitura profunda proativa direcionada a `vercel/swr` (repo com menor
+cobertura relativa entre os assets Vercel ainda não esgotados — 7 de
+~55 arquivos `.ts` em `src/` antes desta rodada). Nenhum arquivo do
+`src/` batia em auth/session/crypto/token/login/password/admin/
+permission/access por nome — usei julgamento próprio pra escolher os
+arquivos de maior superfície plausível (serialização de chave de
+cache e merge de config, os dois pontos onde dado externo poderia
+colidir com estado interno). Lidos 4 arquivos:
+
+- `src/index/serialize.ts` e `src/infinite/serialize.ts`: wrappers
+  triviais (1 linha de lógica cada) em torno de `serialize()` já
+  auditado em rodada anterior (`src/_internal/utils/serialize.ts`).
+  Sem lógica nova, sem achado.
+- `src/_internal/utils/normalize-args.ts`: normaliza a assinatura
+  overloaded do hook `useSWR(key, fetcher?, config?)` — só
+  reordena/atribui os 3 argumentos posicionais, sem nenhum sink
+  (sem `eval`, sem acesso a propriedade dinâmica, sem I/O). Sem
+  achado.
+- `src/_internal/utils/merge-config.ts`: `mergeConfigs` chama
+  `mergeObjects` (`shared.ts:19`, `{...a, ...b}` — spread de objeto
+  literal, não merge profundo). Verifiquei especificamente
+  poluição de protótipo via chave `__proto__`: spread de objeto
+  literal copia `__proto__` como propriedade própria de dados, não
+  aciona o setter do protótipo — diferente de `Object.assign` em
+  alguns casos ou merge recursivo manual. Config de SWR também não é
+  tipicamente populada a partir de request de usuário final (é
+  config de app, não payload de API). Sem achado.
+
+`vercel/swr` agora com 11 arquivos cobertos (de 7).
+`deep-read-log.json` atualizado. `StackingDAO`: ver NOTES.md do
+programa — sem contrato novo, 15 arquivos `.clar` seguem 100% do
+escopo, `api.hiro.so` continua bloqueado pelo proxy da organização.
+Nenhum achado novo nesta rodada, nenhuma transição de estado. Clone
+temporário removido ao final.
