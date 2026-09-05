@@ -115,3 +115,113 @@ usuário forjar ação em nome de outro. Sem achado.
 `deep-read-log.json` atualizado (`mattermost/mattermost-plugin-zoom`,
 +1 entrada, repo novo). Nenhum achado novo, nenhuma transição de
 estado nesta rodada em Mattermost — resultado normal e válido.
+
+## Rodada 2026-09-05 (rotina agendada) — ACHADO real em `mattermost-plugin-gitlab`, avançado até `reproduced_local`
+
+`program-policy.json` conferido como passo zero: `Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` seguem bloqueados, nenhum repo desses
+tocado. `migrate-to-v2.mjs` + `list-pending` global = 68 (60 Auth0 by
+Okta + 8 Circle BBP), 100% fora de escopo — fila inteira pulada sem
+investigar nenhum item, como já esperado.
+
+Leitura profunda proativa: dois repos Mattermost nunca tocados por
+sweep proativo nem por achado de fila (`mattermost-plugin-gitlab`,
+`mattermost-plugin-jira` só tinha 5 achados de fila já refutados em
+rodada anterior, nunca sweep proativo) — escolhido `-plugin-gitlab`
+por ter fluxo de webhook + OAuth próprio ainda inteiramente não lido.
+Clone raso público, 3 arquivos:
+
+- **`server/webhook.go::handleWebhook` (linha 79) — ACHADO CONFIRMADO**:
+  `config.WebhookSecret != signature` autentica o webhook do GitLab
+  comparando o header `X-Gitlab-Token` com `!=` comum (curto-circuita
+  no primeiro byte diferente) em vez de `hmac.Equal`/
+  `subtle.ConstantTimeCompare` — CWE-208, timing side-channel. Mesma
+  classe de bug do achado `DetachedTokenIsValid` já investigado nesta
+  sessão em Kubernetes/kubeadm (fechado Informative por falta de
+  posição de rede), mas com um detalhe que muda a calibração: aqui não
+  existe NENHUM esquema de assinatura HMAC sobre o corpo (diferente do
+  webhook do GitHub no plugin irmão `-plugin-github`, que usa
+  `hmac.Equal` corretamente sobre `X-Hub-Signature-256`, já confirmado
+  sem achado em rodada anterior) — é comparação direta de bearer
+  secret, e o endpoint `/webhook` é registrado no router raiz
+  (`server/api.go:60`) **sem** o middleware `checkConfigured`/
+  `checkAuth` que protege `/api/v1/*`. O pré-requisito de ataque cai de
+  "posição de rede/MITM" (caso kubeadm) para "alcançar o endpoint HTTP
+  público do servidor Mattermost" — GitLab precisa conseguir entregar
+  webhooks nele, então ele já é internet-reachable por design.
+  `WebhookSecret` (`configuration.go:248-259`) é gerado via
+  `crypto/rand`, 32 chars base64, e é o ÚNICO fator de autenticação do
+  path do webhook.
+
+  **Evidência que fortalece o achado**: `WebSearch` confirmou que o
+  próprio time de segurança do Mattermost já corrigiu e recebeu um CVE
+  real (`CVE-2025-54499`, Observable Timing Discrepancy) para EXATAMENTE
+  esta classe de bug no core server ("fail to use constant-time
+  comparison for sensitive string comparisons... allows attackers to
+  exploit timing oracles to perform byte-by-byte brute force attacks...
+  on Cloud API keys and OAuth client secrets", versões 10.5.x<=10.5.10 e
+  10.11.x<=10.11.2) — isto é forte sinal de que o vendor trata esta
+  classe como real e patcheável, não teórica, o que muda a calibração
+  de risco de duplicata/rejeição em relação ao caso kubeadm.
+
+  **Duplicate-check**: `search-prior-art` via CLI falhou (GitHub API
+  HTTP 401 — mesma restrição de rede de sessões cloud anteriores
+  documentada no repo). Contornado com `mcp__github__search_issues`/
+  `search_code` diretamente (4 queries: constant-time/timing/
+  X-Gitlab-Token/hmac.Equal) — zero resultados relacionados; as 12
+  issues que batem com termos genéricos de "token" são todas sobre
+  reconexão/refresh de OAuth do usuário, nada sobre o webhook shared
+  secret. Sem ferramenta de listagem de GitHub Security Advisories
+  disponível nesta sessão para este repo — limite reconhecido, não
+  contornado. `record-duplicate-check` registrado com
+  `foundExisting=false`; sinal honesto do próprio portfólio local:
+  `portfolioDuplicateRate=1` (as 6 submissões anteriores da sessão
+  viraram duplicata/informative) — risco de resultado similar (fechado
+  sem bounty) é real e está registrado, não escondido.
+
+  **PoC de timing real executado** (mesma metodologia do achado kubeadm
+  desta sessão — benchmark Go isolado, sem rede/Docker, réplica exata
+  do primitivo `!=` de `webhook.go:79` vs. `subtle.ConstantTimeCompare`
+  como fix, `n=10` rodadas de 2.000.000 iterações via `testing.B` +
+  `benchstat`): comparação `!=` com erro no último byte do segredo é
+  **88,03% mais lenta** que com erro no primeiro byte (2,457ns vs.
+  4,619ns, **p=0,000**, estatisticamente conclusivo); `ConstantTimeCompare`
+  não mostra esse sinal (15,46ns nas duas posições, **p=0,985**,
+  não-significativo). Prova a propriedade LOCAL de vazamento de timing
+  proporcional ao prefixo correto do segredo com rigor estatístico
+  real — NÃO prova exploração remota bem-sucedida contra um servidor
+  Mattermost real pela rede (ruído de rede real não medido nesta
+  rodada, dito com honestidade).
+
+  **Estado atual: `reproduced_local`** (transições
+  `candidate->corroborated_static->reproduced_local`, ambas com
+  `filesRead`/`validations` reais, `ledgerHash` gravado). **Não**
+  avançado a `scope_verified`: `check-scope` rodado ao vivo e recusou
+  (`allowed:false`, "nenhum scope snapshot existe para este programa")
+  — infraestrutura de scope-snapshot para o programa Mattermost/Bugcrowd
+  ainda não existe neste pipeline (só Kubernetes/Vercel/Kiwi.com/OKG/
+  Circle/Block/StackingDAO/Auth0 têm bloco em
+  `capture-scope-snapshots.mjs`). Não forçado nem simulado — fica como
+  trabalho futuro explícito (mesmo padrão já usado para Kubernetes numa
+  rodada anterior: alguém precisa adicionar um bloco Mattermost real a
+  `capture-scope-snapshots.mjs` antes deste achado poder avançar).
+  Nenhum rascunho de relatório escrito ainda (correto: `scope_verified`
+  é pré-requisito do template, não pulado).
+
+  Severidade estimada com honestidade: moderada (Low/Medium), não
+  crítica — impacto real é forjar eventos GitLab (merge_request/issue/
+  push/pipeline/tag/release/deployment) processados pelos handlers do
+  plugin, resultando em notificações/mensagens spoofadas em canais/DMs
+  do Mattermost (vetor de phishing/engenharia social interna), não RCE
+  nem acesso a dados.
+
+- `server/api.go` (`initializeAPI`, linhas 49-65): só a confirmação de
+  roteamento acima (webhook fora do middleware de auth). Sem achado
+  adicional.
+- `server/configuration.go` (struct `configuration` + `generateSecret()`,
+  linhas 248-259): confirma geração criptograficamente aleatória do
+  segredo e que ele não é reutilizado em nenhum outro mecanismo de
+  auth. Sem achado adicional (faz parte da evidência do achado acima).
+
+`deep-read-log.json` atualizado (`mattermost/mattermost-plugin-gitlab`,
+repo novo, 3 arquivos). `export-queue` rodado ao final da rodada.

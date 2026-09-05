@@ -1277,5 +1277,10 @@
     "src/factory.ts (createPlaid/createPlaidHandler -- renameKeyInObject so copia chaves planas, sem risco de prototype pollution; sem achado)",
     "src/PlaidEmbeddedLink.tsx (embedded link -- token repassado direto ao window.Plaid.createEmbedded, sem dangerouslySetInnerHTML/eval; sem achado)",
     "src/react-script-hook/index.tsx (useScript -- src do <script> sempre e a constante PLAID_LINK_STABLE_URL hardcoded, nunca input do consumidor; sem achado)"
+  ],
+  "mattermost/mattermost-plugin-gitlab": [
+    "server/webhook.go (handleWebhook, linha 79 -- ACHADO: `config.WebhookSecret != signature` compara o header X-Gitlab-Token com string != comum (curto-circuita no primeiro byte diferente) em vez de hmac.Equal/subtle.ConstantTimeCompare -- CWE-208, timing side-channel. Registrado como non_constant_time_hmac_comparison, avancado ate reproduced_local com PoC de timing real (benchstat, +88% p=0.000 no `!=` vulneravel, ~sem diferenca p=0.985 no ConstantTimeCompare). Ver reasoning completo no finding.)",
+    "server/api.go (initializeAPI, linhas 49-65 -- confirma que a rota `/webhook` e registrada no router RAIZ, sem o middleware checkConfigured/checkAuth que protege `/api/v1/*` -- unico gate de autenticacao do endpoint publico e a comparacao vulneravel de webhook.go)",
+    "server/configuration.go (struct configuration + generateSecret() linhas 248-259 -- WebhookSecret e gerado via crypto/rand, 32 chars base64, usado apenas para a comparacao de webhook.go; confirma que nao ha outro fator de autenticacao no path do webhook)"
   ]
 }
