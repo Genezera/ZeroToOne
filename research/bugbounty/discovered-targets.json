@@ -1,559 +1,620 @@
 {
-  "generatedAt": "2026-09-03T20:44:23.044Z",
+  "generatedAt": "2026-09-05T05:47:17.474Z",
   "totalCandidatesInDatasets": 188,
-  "newCandidatesFound": 148,
-  "truncatedCount": 118,
-  "neverSeenRemaining": 6,
-  "programsWithAgeFound": 22,
-  "programAgeSkippedReason": null,
-  "note": "AVISO: 118 candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — priorizados por rotação (quem nunca foi checado vem primeiro, programa mais novo primeiro dentro desses, ver discovery-metadata-seen.json); 6 desses ainda nunca foram checados nenhuma vez, aparecem primeiro na próxima rodada.",
+  "authorizedCandidatesInDatasets": 111,
+  "policyBlockedCandidates": 77,
+  "policyBlockedPrograms": [
+    {
+      "program": "Auth0 by Okta",
+      "reason": "Política oficial revisada integralmente em 04/09/2026: proíbe o uso de quaisquer ferramentas/scanners automatizados e avisa que conteúdo gerado por IA sem análise humana original será rejeitado, com reincidência podendo remover o pesquisador do programa. Como este projeto é um scanner automatizado, Auth0/Okta fica fora deste pipeline; pesquisa manual separada não é autorizada por esta entrada.",
+      "candidateCount": 8
+    },
+    {
+      "program": "Basecamp",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 2
+    },
+    {
+      "program": "Binance",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Chainlink",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 2
+    },
+    {
+      "program": "Chia Network",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 6
+    },
+    {
+      "program": "Circle BBP",
+      "reason": "Instrução direta e repetida do usuário (02/09/2026): \"saia da circle bbp\" durante o pivô pra busca multi-programa, depois \"não quero nada da circle\" -- sem exceção nem para housekeeping de achados já concluídos. Não é restrição de RoE do programa; é escolha do usuário depois de esgotar o ângulo investigativo principal (compliance/denylist no CCTP, 4 chains). Reverter só mediante pedido explícito do usuário.",
+      "candidateCount": 22
+    },
+    {
+      "program": "ClickHouse",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Cloudflare Public Bug Bounty",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 2
+    },
+    {
+      "program": "Coinbase",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 2
+    },
+    {
+      "program": "Discourse",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Doppler",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Electroneum Legacy Blockchain: EOL",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Electroneum Smart Chain (ETN-SC) — EVM-Compatible Blockchain",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Exodus",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 3
+    },
+    {
+      "program": "Fireblocks MPC Managed Bug Bounty Engagement",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "HackerOne",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Matomo",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 4
+    },
+    {
+      "program": "Nextcloud",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 4
+    },
+    {
+      "program": "Node.js",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Ruby",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "SecureDrop",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 3
+    },
+    {
+      "program": "Spotify",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    },
+    {
+      "program": "Tools for Humanity",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 7
+    },
+    {
+      "program": "TRON DAO",
+      "reason": "programa sem decisão explícita de RoE no registro local",
+      "candidateCount": 1
+    }
+  ],
+  "newCandidatesFound": 72,
+  "truncatedCount": 42,
+  "neverSeenRemaining": 0,
+  "programsWithAgeFound": 0,
+  "programAgeSkippedReason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso).",
+  "note": "AVISO: 42 candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — priorizados por rotação (quem nunca foi checado vem primeiro, programa mais novo primeiro dentro desses, ver discovery-metadata-seen.json); 0 desses ainda nunca foram checados nenhuma vez, aparecem primeiro na próxima rodada.",
   "discovered": [
     {
-      "owner": "ruby",
-      "repo": "ruby",
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-ai",
       "programs": [
         {
-          "program": "Ruby",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/ruby",
-          "handle": "ruby"
-        }
-      ],
-      "newestProgramStartedAt": "2016-05-10T18:09:11.909Z",
-      "language": "Ruby",
-      "sizeKb": 398738,
-      "pushedAt": "2026-09-03T18:00:09Z",
-      "stars": 23699,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "basecamp",
-      "repo": "once-campfire",
-      "programs": [
-        {
-          "program": "Basecamp",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/basecamp",
-          "handle": "basecamp"
-        }
-      ],
-      "newestProgramStartedAt": "2015-04-03T05:06:59.053Z",
-      "language": "Ruby",
-      "sizeKb": 60044,
-      "pushedAt": "2026-09-01T19:40:57Z",
-      "stars": 4574,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "basecamp",
-      "repo": "writebook",
-      "programs": [
-        {
-          "program": "Basecamp",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/basecamp",
-          "handle": "basecamp"
-        }
-      ],
-      "newestProgramStartedAt": "2015-04-03T05:06:59.053Z",
-      "language": "Ruby",
-      "sizeKb": 12731,
-      "pushedAt": "2026-09-03T14:24:26Z",
-      "stars": 531,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "cloudflare",
-      "repo": "vinext",
-      "programs": [
-        {
-          "program": "Cloudflare Public Bug Bounty",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/cloudflare",
-          "handle": "cloudflare"
-        }
-      ],
-      "newestProgramStartedAt": "2014-04-21T18:40:25.858Z",
-      "language": "TypeScript",
-      "sizeKb": 48996,
-      "pushedAt": "2026-09-03T14:30:26Z",
-      "stars": 8737,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "cloudflare",
-      "repo": "workerd",
-      "programs": [
-        {
-          "program": "Cloudflare Public Bug Bounty",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/cloudflare",
-          "handle": "cloudflare"
-        }
-      ],
-      "newestProgramStartedAt": "2014-04-21T18:40:25.858Z",
-      "language": "C++",
-      "sizeKb": 56536,
-      "pushedAt": "2026-09-03T20:22:14Z",
-      "stars": 8677,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "coinbase",
-      "repo": "cb-mpc",
-      "programs": [
-        {
-          "program": "Coinbase",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/coinbase",
-          "handle": "coinbase"
-        }
-      ],
-      "newestProgramStartedAt": "2014-03-28T22:09:39.471Z",
-      "language": "C++",
-      "sizeKb": 16708,
-      "pushedAt": "2026-08-31T17:03:25Z",
-      "stars": 494,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "coinbase",
-      "repo": "cb-mpc-go",
-      "programs": [
-        {
-          "program": "Coinbase",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/coinbase",
-          "handle": "coinbase"
-        }
-      ],
-      "newestProgramStartedAt": "2014-03-28T22:09:39.471Z",
-      "language": "Go",
-      "sizeKb": 8957,
-      "pushedAt": "2026-04-01T19:48:56Z",
-      "stars": 3,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "slackhq",
-      "repo": "nebula",
-      "programs": [
-        {
-          "program": "Slack",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/slack",
-          "handle": "slack"
-        }
-      ],
-      "newestProgramStartedAt": "2014-02-28T18:05:03.940Z",
-      "language": "Go",
-      "sizeKb": 5257,
-      "pushedAt": "2026-09-03T19:12:35Z",
-      "stars": 18265,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "Hacker0x01",
-      "repo": "react-datepicker",
-      "programs": [
-        {
-          "program": "HackerOne",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/security",
-          "handle": "security"
-        }
-      ],
-      "newestProgramStartedAt": "2013-11-06T00:00:00.000Z",
-      "language": "TypeScript",
-      "sizeKb": 172342,
-      "pushedAt": "2026-04-02T08:36:28Z",
-      "stars": 8383,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "auth0",
-      "repo": "auth0.js",
-      "programs": [
-        {
-          "program": "Auth0 by Okta",
+          "program": "Mattermost Public Bug Bounty Engagement ",
           "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 67559,
+      "pushedAt": "2026-09-05T03:49:45Z",
+      "stars": 248,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-mscalendar",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 3614,
+      "pushedAt": "2026-09-03T09:19:19Z",
+      "stars": 23,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-msteams-meetings",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 1367,
+      "pushedAt": "2026-09-01T11:01:50Z",
+      "stars": 25,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-confluence",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 1636,
+      "pushedAt": "2026-08-28T06:07:42Z",
+      "stars": 22,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-msteams",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 9984,
+      "pushedAt": "2026-06-05T10:21:09Z",
+      "stars": 15,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "nitrojs",
+      "repo": "nitro",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 27046,
+      "pushedAt": "2026-09-05T01:54:51Z",
+      "stars": 11177,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "nuxt",
+      "repo": "nuxt",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 149597,
+      "pushedAt": "2026-09-04T22:25:43Z",
+      "stars": 60818,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "sveltejs",
+      "repo": "svelte",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
         }
       ],
       "language": "JavaScript",
-      "sizeKb": 27643,
-      "pushedAt": "2026-09-03T00:11:53Z",
-      "stars": 1058,
+      "sizeKb": 122439,
+      "pushedAt": "2026-09-03T14:34:26Z",
+      "stars": 88036,
       "archived": false,
-      "defaultBranch": "master"
+      "defaultBranch": "main"
     },
     {
-      "owner": "auth0",
-      "repo": "lock",
+      "owner": "vercel",
+      "repo": "ai",
       "programs": [
         {
-          "program": "Auth0 by Okta",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 376065,
+      "pushedAt": "2026-09-05T00:07:50Z",
+      "stars": 26582,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "vercel",
+      "repo": "async-sema",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 46,
+      "pushedAt": "2024-04-18T16:16:16Z",
+      "stars": 660,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "vercel",
+      "repo": "chat",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 15346,
+      "pushedAt": "2026-09-05T05:31:08Z",
+      "stars": 2342,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "vercel",
+      "repo": "eve",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 59109,
+      "pushedAt": "2026-09-05T04:25:10Z",
+      "stars": 4975,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "vercel",
+      "repo": "ms",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 446,
+      "pushedAt": "2026-05-20T22:24:50Z",
+      "stars": 5545,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "vercel",
+      "repo": "next.js",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
         }
       ],
       "language": "JavaScript",
-      "sizeKb": 166452,
-      "pushedAt": "2026-09-03T10:39:04Z",
-      "stars": 1142,
+      "sizeKb": 2552277,
+      "pushedAt": "2026-09-05T02:29:13Z",
+      "stars": 142095,
       "archived": false,
-      "defaultBranch": "master"
+      "defaultBranch": "canary"
     },
     {
-      "owner": "auth0",
-      "repo": "auth0-spa-js",
+      "owner": "vercel",
+      "repo": "swr",
       "programs": [
         {
-          "program": "Auth0 by Okta",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
         }
       ],
       "language": "TypeScript",
-      "sizeKb": 14748,
-      "pushedAt": "2026-09-03T14:04:15Z",
-      "stars": 1009,
+      "sizeKb": 8325,
+      "pushedAt": "2026-09-02T18:01:22Z",
+      "stars": 32476,
       "archived": false,
       "defaultBranch": "main"
     },
     {
-      "owner": "auth0",
-      "repo": "Auth0.Net",
+      "owner": "vercel",
+      "repo": "turborepo",
       "programs": [
         {
-          "program": "Auth0 by Okta",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
         }
       ],
-      "language": "C#",
-      "sizeKb": 20895,
-      "pushedAt": "2026-09-03T07:42:59Z",
-      "stars": 361,
+      "language": "Rust",
+      "sizeKb": 831748,
+      "pushedAt": "2026-09-05T03:49:40Z",
+      "stars": 31058,
       "archived": false,
-      "defaultBranch": "master"
+      "defaultBranch": "main"
     },
     {
-      "owner": "auth0",
-      "repo": "nextjs-auth0",
+      "owner": "vercel",
+      "repo": "workflow",
       "programs": [
         {
-          "program": "Auth0 by Okta",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/vercel-open-source",
+          "handle": "vercel-open-source"
         }
       ],
       "language": "TypeScript",
-      "sizeKb": 23440,
-      "pushedAt": "2026-09-03T17:14:54Z",
-      "stars": 2305,
+      "sizeKb": 92606,
+      "pushedAt": "2026-09-05T00:32:28Z",
+      "stars": 2375,
       "archived": false,
       "defaultBranch": "main"
     },
     {
-      "owner": "auth0",
-      "repo": "react-native-auth0",
+      "owner": "kubernetes",
+      "repo": "api",
       "programs": [
         {
-          "program": "Auth0 by Okta",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
-        }
-      ],
-      "language": "TypeScript",
-      "sizeKb": 14916,
-      "pushedAt": "2026-09-02T22:18:48Z",
-      "stars": 552,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "auth0",
-      "repo": "auth0-php",
-      "programs": [
-        {
-          "program": "Auth0 by Okta",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/auth0-okta",
-          "maxPayoutUsd": 50000
-        }
-      ],
-      "language": "PHP",
-      "sizeKb": 8826,
-      "pushedAt": "2026-09-02T15:02:59Z",
-      "stars": 411,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "trustwallet",
-      "repo": "wallet-core",
-      "programs": [
-        {
-          "program": "Binance",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/binance",
-          "maxPayoutUsd": 10000
-        }
-      ],
-      "language": "C++",
-      "sizeKb": 32784,
-      "pushedAt": "2026-09-02T11:37:12Z",
-      "stars": 3564,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "ClickHouse",
-      "repo": "ClickHouse",
-      "programs": [
-        {
-          "program": "ClickHouse",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/clickhouse",
-          "maxPayoutUsd": 2500
-        }
-      ],
-      "language": "C++",
-      "sizeKb": 11768239,
-      "pushedAt": "2026-09-03T20:43:06Z",
-      "stars": 49632,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "fireblocks",
-      "repo": "mpc-lib",
-      "programs": [
-        {
-          "program": "Fireblocks MPC Managed Bug Bounty Engagement",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/fireblocks-mbb-og2",
-          "maxPayoutUsd": 150000
-        }
-      ],
-      "language": "C++",
-      "sizeKb": 869,
-      "pushedAt": "2026-07-30T14:27:41Z",
-      "stars": 270,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "freedomofpress",
-      "repo": "securedrop",
-      "programs": [
-        {
-          "program": "SecureDrop",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/freedomofpress",
-          "maxPayoutUsd": 2500
-        }
-      ],
-      "language": "Python",
-      "sizeKb": 113276,
-      "pushedAt": "2026-09-03T14:52:24Z",
-      "stars": 3880,
-      "archived": false,
-      "defaultBranch": "develop"
-    },
-    {
-      "owner": "freedomofpress",
-      "repo": "securedrop-workstation",
-      "programs": [
-        {
-          "program": "SecureDrop",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/freedomofpress",
-          "maxPayoutUsd": 2500
-        }
-      ],
-      "language": "Python",
-      "sizeKb": 25088,
-      "pushedAt": "2026-09-03T19:26:38Z",
-      "stars": 181,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "freedomofpress",
-      "repo": "securedrop-client",
-      "programs": [
-        {
-          "program": "SecureDrop",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/freedomofpress",
-          "maxPayoutUsd": 2500
-        }
-      ],
-      "language": "TypeScript",
-      "sizeKb": 21323,
-      "pushedAt": "2026-09-03T19:24:41Z",
-      "stars": 59,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "electroneum",
-      "repo": "electroneum",
-      "programs": [
-        {
-          "program": "Electroneum Legacy Blockchain: EOL",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/legacy-blockchain-mbb-og",
-          "maxPayoutUsd": 12000
-        }
-      ],
-      "language": "C++",
-      "sizeKb": 265511,
-      "pushedAt": "2026-05-27T12:41:43Z",
-      "stars": 386,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-jira",
-      "programs": [
-        {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
         }
       ],
       "language": "Go",
-      "sizeKb": 8542,
-      "pushedAt": "2026-09-03T07:27:26Z",
-      "stars": 110,
+      "sizeKb": 84639,
+      "pushedAt": "2026-09-04T23:38:17Z",
+      "stars": 754,
       "archived": false,
       "defaultBranch": "master"
     },
     {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-zoom",
+      "owner": "kubernetes",
+      "repo": "apiextensions-apiserver",
       "programs": [
         {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
         }
       ],
       "language": "Go",
-      "sizeKb": 11049,
-      "pushedAt": "2026-09-03T17:18:51Z",
-      "stars": 111,
+      "sizeKb": 29403,
+      "pushedAt": "2026-09-04T23:39:32Z",
+      "stars": 258,
       "archived": false,
       "defaultBranch": "master"
     },
     {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-github",
+      "owner": "kubernetes",
+      "repo": "apiserver",
       "programs": [
         {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
         }
       ],
       "language": "Go",
-      "sizeKb": 11096,
-      "pushedAt": "2026-09-03T09:39:46Z",
-      "stars": 179,
+      "sizeKb": 30261,
+      "pushedAt": "2026-09-04T23:39:01Z",
+      "stars": 725,
       "archived": false,
       "defaultBranch": "master"
     },
     {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-gitlab",
+      "owner": "kubernetes",
+      "repo": "autoscaler",
       "programs": [
         {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
         }
       ],
-      "language": "JavaScript",
-      "sizeKb": 15534,
-      "pushedAt": "2026-09-03T09:21:49Z",
-      "stars": 153,
+      "language": "Go",
+      "sizeKb": 267906,
+      "pushedAt": "2026-09-04T22:38:23Z",
+      "stars": 8956,
       "archived": false,
       "defaultBranch": "master"
     },
     {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-calls",
+      "owner": "kubernetes",
+      "repo": "client-go",
       "programs": [
         {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
         }
       ],
-      "language": "TypeScript",
-      "sizeKb": 80200,
-      "pushedAt": "2026-09-03T20:04:56Z",
-      "stars": 147,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-playbooks",
-      "programs": [
-        {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
-        }
-      ],
-      "language": "TypeScript",
-      "sizeKb": 72303,
-      "pushedAt": "2026-09-03T12:49:27Z",
-      "stars": 97,
+      "language": "Go",
+      "sizeKb": 32320,
+      "pushedAt": "2026-09-04T23:38:25Z",
+      "stars": 9872,
       "archived": false,
       "defaultBranch": "master"
     },
     {
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-boards",
+      "owner": "kubernetes",
+      "repo": "cloud-provider-alibaba-cloud",
       "programs": [
         {
-          "program": "Mattermost Public Bug Bounty Engagement ",
-          "platform": "Bugcrowd",
-          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
-          "maxPayoutUsd": 2000
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
         }
       ],
-      "language": "TypeScript",
-      "sizeKb": 49739,
-      "pushedAt": "2026-08-27T12:48:33Z",
-      "stars": 142,
+      "language": "Go",
+      "sizeKb": 103761,
+      "pushedAt": "2026-08-27T11:23:48Z",
+      "stars": 378,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-azure",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 148741,
+      "pushedAt": "2026-09-04T06:27:26Z",
+      "stars": 294,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-gcp",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 190740,
+      "pushedAt": "2026-09-04T19:26:20Z",
+      "stars": 161,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-vsphere",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "language": "Go",
+      "sizeKb": 78815,
+      "pushedAt": "2026-09-01T08:22:21Z",
+      "stars": 276,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "community",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "language": "Jupyter Notebook",
+      "sizeKb": 99811,
+      "pushedAt": "2026-09-02T03:28:17Z",
+      "stars": 12998,
       "archived": false,
       "defaultBranch": "main"
     }

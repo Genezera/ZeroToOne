@@ -601,5 +601,102 @@ export const AUTO_PROMOTED_TARGETS = [
       "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
     ],
     "promotedAt": "2026-09-03T20:44:23.067Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-mscalendar",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 12,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-05T05:47:17.500Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-msteams-meetings",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 12,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-05T05:47:17.500Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-confluence",
+    "branch": "master",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 12,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
+    ],
+    "promotedAt": "2026-09-05T05:47:17.500Z"
+  },
+  {
+    "program": "Vercel Open Source",
+    "platform": "HackerOne",
+    "owner": "vercel",
+    "repo": "chat",
+    "branch": "main",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 4,
+    "reasons": [
+      "2342 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa",
+      "histórico real neste programa: 2/2 envio(s) voltou(aram) duplicate (100%) -- prioridade reduzida, não eliminada"
+    ],
+    "promotedAt": "2026-09-05T05:47:17.500Z"
+  },
+  {
+    "program": "Vercel Open Source",
+    "platform": "HackerOne",
+    "owner": "vercel",
+    "repo": "swr",
+    "branch": "main",
+    "maxBountyUsd": null,
+    "pathPrefixes": [],
+    "language": "js",
+    "score": 4,
+    "reasons": [
+      "32476 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
+      "atividade recente (push nos últimos 90 dias) — código em manutenção ativa",
+      "histórico real neste programa: 2/2 envio(s) voltou(aram) duplicate (100%) -- prioridade reduzida, não eliminada"
+    ],
+    "promotedAt": "2026-09-05T05:47:17.500Z"
+  },
+  {
+    "program": "Mattermost Public Bug Bounty Engagement ",
+    "platform": "Bugcrowd",
+    "owner": "mattermost",
+    "repo": "mattermost-plugin-msteams",
+    "branch": "main",
+    "maxBountyUsd": 2000,
+    "pathPrefixes": [],
+    "language": "go",
+    "score": 2,
+    "reasons": [
+      "teto de recompensa conhecido: US$2,000"
+    ],
+    "promotedAt": "2026-09-05T05:47:17.500Z"
   }
 ];
