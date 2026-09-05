@@ -8685,3 +8685,48 @@ de escopo desta sessão (nem um `git clone` foi feito contra eles). Nota:
 esta rodada coincidiu com pelo menos duas outras sessões rodando em
 paralelo sobre o mesmo push (`vercel/chat` e `vercel/swr`, commits
 `73266be` e `1712352`) -- sem sobreposição de arquivos lidos entre elas.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum dos três tocado. `migrate-to-v2.mjs` +
+`list-pending` global = 34 candidatos, 100% fora do escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP) — skip completo, nenhum
+arquivo desses dois programas lido.
+
+Leitura profunda proativa continuando em `vercel/chat`: busca por nome
+de caminho (auth/session/crypto/token/login/password/admin/permission/
+access) contra uma listagem fresca do repo (clone raso) não achou
+nenhum arquivo novo além dos 4 já lidos em rodadas anteriores. Usei
+julgamento próprio pra achar superfície de webhook/callback ainda não
+coberta por nome. Lidos 3 arquivos:
+
+- `examples/nuxt-chat/server/api/webhooks/[platform].ts` +
+  `server/lib/web-request.ts`: equivalente Nuxt/H3 da rota Next.js já
+  auditada. `toChatRequest()` só repassa o `Request` nativo do
+  `H3Event` (`event.req instanceof Request`) sem consumir/reserializar
+  o body antes de chegar no handler do adapter — a verificação HMAC
+  (que lê `request.text()` cru) recebe os bytes originais intactos, sem
+  parsing intermediário que quebraria a assinatura. App de exemplo, não
+  pacote core. Sem achado.
+- `packages/adapter-teams/src/bridge-adapter.ts` (completo): explica
+  por que o Teams é o único adapter sem `verify.ts` dedicado (ao
+  contrário de slack/twilio/discord/telegram/notion/instagram/gchat).
+  `BridgeHttpAdapter.dispatch()` só faz `JSON.parse` do body e repassa
+  `{body, headers}` (headers incluindo `Authorization`) pro handler
+  interno registrado por `App.initialize()` do pacote oficial
+  `@microsoft/teams.apps` — a verificação JWT do Bot Framework
+  (`aud`/`appId`/emissor) fica inteiramente dentro do SDK oficial da
+  Microsoft, não neste repositório. Mesmo padrão de delegação a SDK
+  terceiro oficial já visto em `vercel/ai` (OAuth do MCP via
+  `@modelcontextprotocol/sdk`). Sem achado.
+- `examples/telegram-chat/src/lib/callbacks.ts` (completo, 39 linhas):
+  `encode`/`decode` de `callback_data` de menu de demo, só
+  split/join de string por `:` sem nenhum sink perigoso. App de
+  exemplo trivial. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/chat`: +3 entradas). Nenhum
+achado novo nesta rodada, nenhuma transição de estado. `StackingDAO`:
+ver NOTES.md do programa — sem contrato novo, 15 `.clar` seguem 100%
+do escopo. Clone temporário removido ao final.
