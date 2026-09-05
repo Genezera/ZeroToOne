@@ -122,3 +122,45 @@ confiança PKI/handshake do Nebula (`slackhq/nebula`) do adendo anterior:
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3,
 agora 7 no total para `slackhq/nebula`).
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero antes de qualquer clone/leitura
+(disciplina mantida). `list-pending` global = 34 candidatos, 100% pertencentes
+a programas bloqueados (30 `Auth0 by Okta` em
+`auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs`, 4 `Circle BBP` em
+`circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol`) —
+verifiquei os `createdAt`/`foundAt` desses registros contra as datas de
+bloqueio em `program-policy.json` (Circle BBP bloqueado 02/09, achados
+`foundAt` 04/09; Auth0 bloqueado 04/09, achados `foundAt` 04/09 mesma
+janela) e confirmei que esse resíduo já tinha sido identificado e
+documentado por rodadas anteriores (ver `auth0-by-okta/NOTES.md` rodada
+#7 e `circle-bbp/NOTES.md` rodadas anteriores) — não é incidente novo
+desta rodada, apenas leftover em `candidate` intencionalmente intocado.
+Nenhum arquivo desses dois programas foi lido, clonado ou tocado nesta
+rodada (nem mesmo `get`/`list-pending` conta como pesquisa nova, só
+consulta ao estado já persistido).
+
+Leitura profunda proativa (3 arquivos), continuando `slackhq/nebula`
+pelo lado do console admin SSH (`sshd.*`, prioridade por palavra-chave
+"admin"/"access"/"password" no domínio):
+- `sshd/server.go` — autenticação do console: `IsUserAuthority` compara
+  bytes completos da CA marshaled, `UserKeyFallback` exige bater a chave
+  pública marshaled inteira (não só fingerprint) contra
+  `trustedKeys[user]`. Usa `ssh.CertChecker.Authenticate` da lib padrão,
+  que já valida principals/expiração de certificado internamente. Sem
+  achado.
+- `ssh.go` — `sshSanitizeFilePath` (usado por
+  start-cpu-profile/save-heap-profile/save-mutex-profile) tentei
+  refutar com path traversal relativo (`../../etc/passwd`) e absoluto
+  fora do sandbox: `filepath.Join` já resolve o `..` antes da checagem
+  de prefixo, e o `strings.HasPrefix(cleaned, sandbox+separador)`
+  rejeita ambos os casos testados mentalmente. Sem achado (parece
+  sanitização correta, possivelmente já endurecida em resposta a achado
+  anterior deste próprio pipeline — não investiguei o histórico de git
+  do upstream pra confirmar).
+- `sshd/command.go` — despacho dos comandos, só `flag.FlagSet` +
+  callback, sem `os/exec` em lugar nenhum. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3,
+agora 10 no total para `slackhq/nebula`).

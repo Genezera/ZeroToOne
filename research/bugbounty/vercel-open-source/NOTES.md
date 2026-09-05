@@ -7986,3 +7986,50 @@ inalterada). Ver `research/bugbounty/stackingdao/NOTES.md`.
 
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/chat`: +8 entradas).
+
+## Rodada 2026-09-05 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- confirmado `Block Open
+Source` e `Circle BBP` bloqueados, `Auth0 by Okta` também bloqueado
+(nenhum dos três tocado). `list-pending` global segue com os mesmos 34
+candidatos fora do escopo desta missão (30 "Auth0 by Okta", 4 "Circle
+BBP") -- nenhum repo desses tocado, nem para priorização.
+
+Leitura profunda proativa: `nuxt/nuxt` e `vercel/next.js` primeiro
+checados via grep de caminho (auth/session/crypto/token/login/
+password/admin/permission/access) contra clone raso -- todo arquivo
+que bateu o padrão já estava em `deep-read-log.json` de rodadas
+anteriores (framework/tooling, superfície de auth real é rasa nesses
+dois repos). Redirecionei para `vercel/ai`, que tem mais candidatos
+novos por causa dos pacotes `harness-*`/`sandbox-*` (adaptadores de
+agente/sandbox) adicionados desde a última cobertura:
+
+- `packages/sandbox-just-bash/src/just-bash-network-sandbox-session.ts`:
+  `JustBashNetworkSandboxSession` -- `getPortEndpoint`/`getPortUrl`
+  sempre lançam `HarnessCapabilityUnsupportedError`, `ports` é `[]`
+  fixo (sem namespace de rede real, sandbox in-process). Investiguei
+  `restricted()` com ceticismo (hipótese: devolve o mesmo objeto
+  castado, vazando os métodos de porta/rede pra um consumidor que
+  espera superfície restrita) -- refutado lendo
+  `just-bash-sandbox-session.ts`: `restricted()` cria uma instância
+  nova da classe base `JustBashSandboxSession`, que nunca teve
+  `getPortEndpoint`/`setNetworkPolicy` no protótipo (não é só type
+  narrowing do TS, é ausência real do método no objeto). Sem achado.
+- `packages/harness-acp/src/v1/bridge/recovered-session.ts`:
+  `createACPRecoveredSession`/`assertACPResumeCapability` -- `sessionId`
+  é opaco do protocolo ACP externo, sem decisão de autorização nem
+  cache cross-sessão; `dispose()` idempotente, `prompt`/
+  `promptWithMeta` checam `disposed` antes de emitir request. Sem
+  achado.
+- `packages/harness/src/agent/harness-agent-session.ts` (completo, 823
+  linhas): `HarnessAgentSession`, máquina de estados de
+  turno/sessão. Confirmei que `promptTurn`/`continueTurn` sempre
+  chamam `getRestrictedSandboxSession(sandboxSession)` antes de
+  repassar pro `runPrompt` -- nunca o sandbox full/network cru chega
+  no código que executa tool calls do modelo. Sem boundary de
+  auth cross-tenant neste arquivo (é biblioteca client-side para apps
+  third-party embutirem, não servidor multi-tenant da própria Vercel).
+  Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/ai`: +3 entradas, de 39 para 42).
