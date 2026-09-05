@@ -8813,3 +8813,46 @@ Nenhum achado novo, nenhuma transição de estado. `StackingDAO`: sem
 contrato novo, 15 `.clar` seguem 100% do escopo (ver NOTES.md do
 programa). Clones temporários (`turborepo`, `agent-skills`,
 `skills-repo`, `swr`) removidos ao final.
+
+## Rodada 05/09/2026 (push c8dc335 -> eeea2d0, sessão paralela seguinte)
+
+`program-policy.json` conferido como passo zero -- `Auth0 by Okta` e
+`Circle BBP` confirmados `blocked` via `check-program`.
+`migrate-to-v2.mjs` + `list-pending` = 34 candidatos, 30 em `Auth0 by
+Okta` e 4 em `Circle BBP` -- skip completo, nenhum arquivo desses dois
+programas clonado ou lido.
+
+Leitura profunda proativa em `vercel/eve` (maior bloco de arquivos
+auth/token/session ainda sem anotação de leitura no
+`deep-read-log.json` entre os dois programas liberados desta rotina).
+Clonado via sparse-checkout (só os 5 arquivos abaixo, sem baixar o
+repo inteiro):
+
+- `packages/eve/src/channel/auth/jwt-hmac.ts` (completo) --
+  `authenticateJwtHmacStrategy` usa `jose.jwtVerify` com `algorithms`
+  travado no algoritmo da strategy resolvida (sem alg-confusion),
+  audience/issuer/clockTolerance vêm da strategy, não do chamador. Sem
+  achado.
+- `packages/eve/src/channel/auth/jwt-ecdsa.ts` (completo) -- mesmo
+  padrão com chave pública (JWK/SPKI) cacheada por
+  `${algorithm}:${publicKey}`; `algorithms` também travado no
+  `jwtVerify`, impossível confundir HMAC com chave pública. Sem achado.
+- `packages/eve/src/shared/validate-authorization.ts` (completo) --
+  validação estrutural de `auth` autorado pelo desenvolvedor da
+  integração (formato de `getToken`/`startAuthorization`), não é
+  fronteira de autorização em runtime contra request de rede. Sem
+  achado.
+- `packages/eve/src/channel/auth/token-claims.ts` (completo) --
+  `matchesWildcardPattern` escapa metacaracteres regex antes de
+  substituir `*` por `.*`, ancorado com `^$`; sem ReDoS nem bypass de
+  match parcial. Sem achado.
+- `packages/eve/src/channel/forwarded-principal.ts` (completo) --
+  `resolveForwardedPrincipal` só aceita uma identidade forjada
+  (`forwardedPrincipal` do body) depois que `trustedForwarders`
+  autoriza o CHAMADOR já verificado pelo transporte, nunca a identidade
+  forjada em si; o hop é sempre carimbado com `FORWARDED_BY_ATTRIBUTE`
+  sobrescrevendo qualquer valor enviado pelo cliente. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado com os 5 arquivos acima em `vercel/eve`. Clone temporário
+(`eve`, sparse-checkout) removido ao final.
