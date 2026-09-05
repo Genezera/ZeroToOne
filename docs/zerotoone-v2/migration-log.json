@@ -1,5 +1,5 @@
 {
-  "migratedAt": "2026-09-05T05:08:49.946Z",
+  "migratedAt": "2026-09-05T05:10:32.046Z",
   "total": 793,
   "driftCorrected": 0,
   "logs": [
@@ -1047,9 +1047,6 @@
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:32::semgrep_detect_child_process",
       "steps": [
         {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
           "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -1083,9 +1080,6 @@
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:66::semgrep_detect_child_process",
       "steps": [
         {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
           "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -1097,9 +1091,6 @@
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:67::semgrep_detect_child_process",
       "steps": [
         {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
           "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -1110,9 +1101,6 @@
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:64::semgrep_detect_child_process",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
         {
           "to": "false_positive",
           "ok": true,
@@ -1884,9 +1872,6 @@
       "id": "Vercel Open Source::vercel/ai/packages/harness/src/bridge/index.ts::runBridge::timing_attack_risk",
       "steps": [
         {
-          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:08:16.415Z) restaurada da fila"
-        },
-        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -1919,9 +1904,6 @@
     {
       "id": "Vercel Open Source::vercel-labs/agent-skills/skills/vercel-optimize/lib/verify-claim.mjs::repoPaths::path_traversal_arbitrary_file_read_risk",
       "steps": [
-        {
-          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:07:57.414Z) restaurada da fila"
-        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -2087,18 +2069,6 @@
     {
       "id": "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "report restaurado da fila (research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-08-31T19:25:28.981Z)"
-        },
         {
           "to": "duplicate",
           "ok": true,
@@ -2616,9 +2586,6 @@
     {
       "id": "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
         {
           "to": "duplicate",
           "ok": true,
@@ -3269,9 +3236,6 @@
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::module.exports::command_injection_risk",
       "steps": [
         {
-          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:07:57.635Z) restaurada da fila"
-        },
-        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -3359,12 +3323,6 @@
     {
       "id": "Vercel Open Source::vercel/next.js/packages/next/src/server/image-optimizer.ts::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
-          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:07:57.865Z) restaurada da fila"
-        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -6820,15 +6778,6 @@
       "id": "OKG::okx/go-wallet-sdk/coins/helium/keypair/address.go::NewAddressable::ai_deep_read_finding",
       "steps": [
         {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_test_poc\" (2026-09-05T04:51:03.398Z) restaurada da fila"
-        },
-        {
-          "note": "validation \"go_test_poc\" (2026-09-05T04:54:21.087Z) restaurada da fila"
-        },
-        {
           "to": "reproduced_local",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -6839,21 +6788,6 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding",
       "steps": [
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_manual_poc\" (2026-09-04T18:12:50.038Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\okg-coins-helium-helium-go-ai-deep-read-finding.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-04T19:20:26.425Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T19:20:26.392Z)"
-        },
         {
           "to": "inconclusive",
           "ok": true,
@@ -6866,24 +6800,6 @@
       "id": "Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_risk",
       "steps": [
         {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_test_docker_sandboxed\" (2026-09-04T17:36:54.044Z) restaurada da fila"
-        },
-        {
-          "note": "validation \"go_test_local_no_docker_needed\" (2026-09-04T17:57:34.144Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\kubernetes-kubernetes-publishing-bot-pkg-golang-install-go-command-injection-risk.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-04T18:56:58.128Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T17:57:56.942Z)"
-        },
-        {
           "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -6894,12 +6810,6 @@
     {
       "id": "Kubernetes::kubernetes/publishing-bot/cmd/publishing-bot/config/rules.go::line:127::insecure_tls",
       "steps": [
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"manual_code_review\" (2026-09-04T17:50:20.177Z) restaurada da fila"
-        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -6923,21 +6833,6 @@
       "id": "OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding",
       "steps": [
         {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_manual_poc\" (2026-09-04T12:11:00.961Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\okg-coins-elrond-elrond-go-ai-deep-read-finding.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-04T19:20:26.742Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T19:20:26.709Z)"
-        },
-        {
           "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -6948,21 +6843,6 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_finding",
       "steps": [
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_manual_poc\" (2026-09-04T12:03:15.117Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\okg-coins-solana-base-keys-go-ai-deep-read-finding.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-04T19:20:26.968Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T19:20:26.939Z)"
-        },
         {
           "to": "inconclusive",
           "ok": true,
@@ -6975,21 +6855,6 @@
       "id": "OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding",
       "steps": [
         {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"go_manual_poc\" (2026-09-04T05:01:03.540Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (research/bugbounty/reports/okg-go-wallet-sdk-cardano-key-clamp.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-04T12:45:36.000Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T11:27:55.262Z)"
-        },
-        {
           "to": "scope_verified",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7000,21 +6865,6 @@
     {
       "id": "Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk",
       "steps": [
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"local_repro_script\" (2026-09-04T04:21:10.959Z) restaurada da fila"
-        },
-        {
-          "note": "validation \"node_test\" (2026-09-04T04:23:20.123Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (research/bugbounty/reports/vercel-workflow-predictable-hook-token.md)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-04T04:25:20.169Z)"
-        },
         {
           "to": "known_duplicate",
           "ok": true,
@@ -7059,9 +6909,6 @@
     {
       "id": "Vercel Open Source::vercel/chat/packages/adapter-discord/src/index.ts::handleWebhook::ai_deep_read_finding",
       "steps": [
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
         {
           "to": "false_positive",
           "ok": true,
@@ -8075,24 +7922,6 @@
       "id": "Kiwi.com::kiwicom/js-iam-middleware/src/authorizationDirective.ts::visitFieldDefinition::positional_argument_mismatch",
       "steps": [
         {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"argument_order_poc\" (2026-09-02T20:14:41.922Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (research/bugbounty/reports/kiwicom-js-iam-middleware-argument-mismatch.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-03T22:11:02.863Z)"
-        },
-        {
-          "note": "impactAssessment restaurado da fila (2026-09-03T22:11:02.622Z)"
-        },
-        {
           "to": "duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -8719,21 +8548,6 @@
     {
       "id": "Kubernetes::kubernetes/cluster-bootstrap/token/jws/jws.go::DetachedTokenIsValid::non_constant_time_hmac_comparison",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
-        {
-          "note": "deploymentEvidence restaurado da fila"
-        },
-        {
-          "note": "validation \"timing_benchmark\" (2026-09-02T16:36:01.544Z) restaurada da fila"
-        },
-        {
-          "note": "report restaurado da fila (research/bugbounty/reports/kubernetes-cluster-bootstrap-jws-timing-attack.md)"
-        },
-        {
-          "note": "duplicateCheck restaurado da fila (2026-09-02T16:40:45.833Z)"
-        },
         {
           "to": "duplicate",
           "ok": true,
