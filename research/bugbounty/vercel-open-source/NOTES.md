@@ -7937,3 +7937,52 @@ auth/session/token/access:
 
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/vercel`: +2 entradas; `nitrojs/nitro`: +1 entrada).
+
+## Rodada 2026-09-05 #2 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero. `list-pending` global
+segue com os mesmos 34 candidatos fora do escopo desta missão (30
+"Auth0 by Okta", 4 "Circle BBP") -- nenhum repo desses tocado.
+
+Leitura profunda proativa ficou em `vercel/chat` (as pendências de
+`vercel/vercel`/`nitrojs/nitro` da rodada anterior já tinham sido
+fechadas). Clone raso comparado contra as 23 entradas já cobertas em
+`deep-read-log.json`; escolhi os poucos arquivos de webhook/callback
+ainda sem leitura:
+
+- `packages/adapter-twilio/src/index.ts` (`handleWebhook`/
+  `handleButtonAction` completo, nunca lido antes) +
+  `packages/adapter-twilio/src/webhook/index.ts` +
+  `packages/adapter-twilio/src/callback.ts` + `cards.ts`: rastreei a
+  cadeia completa -- o payload só chega depois de
+  `verifyTwilioRequest` (HMAC-SHA1, já coberto em rodada anterior);
+  `buttonPayload` do clique do usuário passa por
+  `decodeTwilioCallbackData` (só `JSON.parse` com prefixo fixo, vira
+  `{actionId,value}` opacos) e cai no mesmo `handleActionEvent` de
+  `chat.ts` já auditado. Confirmei que `cards.ts` só re-exporta
+  `callback.ts` (hipótese de segunda implementação divergente do
+  decoder, refutada lendo o arquivo). Sem achado.
+- `packages/adapter-teams/src/webhook/continuation.ts`: só extrai
+  campos de uma `TeamsActivity` já verificada pelo Bot Framework
+  (`verify.ts`, coberto antes); `isTeamsMention` é heurística de UX
+  (@menção), não decisão de autorização. Sem achado.
+- `packages/adapter-slack/src/webhook/parse.ts` +
+  `packages/adapter-slack/src/webhook/utils.ts` (maior parser de
+  webhook do repo ainda não lido -- `classifyJsonPayload`,
+  `parseBlockActions`, `parseViewSubmission`, etc.): roda só depois do
+  HMAC-SHA256+`timingSafeEqual` de `verify.ts`; procurei
+  especificamente por poluição de protótipo via `Object.entries`/
+  spread sobre JSON controlado pelo atacante -- refutado (V8 trata
+  `__proto__` vindo de `JSON.parse` como propriedade própria comum,
+  não afeta o protótipo real) -- e por qualquer sink perigoso nos
+  valores extraídos (nenhum: tudo termina em campos tipados). Sem
+  achado.
+
+Para StackingDAO: reconfirmado que os 15 arquivos `.clar` já cobertos
+seguem sendo 100% do `scope-snapshots/stackingdao.json` (13 assets),
+sem contrato novo; `api.hiro.so` não foi tentado de novo nesta rodada
+(bloqueio de proxy documentado há dezenas de rodadas, condição
+inalterada). Ver `research/bugbounty/stackingdao/NOTES.md`.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/chat`: +8 entradas).
