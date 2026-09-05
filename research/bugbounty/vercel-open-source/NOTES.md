@@ -8776,3 +8776,40 @@ atualizado. `program-policy.json` consultado como step zero antes de
 qualquer clone/leitura, conforme regra do CLAUDE.md. Esta rodada
 coincidiu com outra sessão em paralelo sobre o mesmo push (`vercel/chat`,
 commit `6ca37b4`) -- sem sobreposição de arquivos lidos entre elas.
+
+## Rodada 05/09/2026 (push c8dc335, sessão paralela seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`. `migrate-to-v2.mjs` + `list-pending` = 34 candidatos,
+100% nesses dois últimos programas — skip completo, nenhum arquivo
+lido.
+
+Leitura profunda proativa também dirigida a `vercel-labs/skills`, em
+paralelo à rodada anterior (commit `c8dc335`, que cobriu `add.ts`,
+`update-source.ts` e `frontmatter.ts` — sem sobreposição de arquivo com
+esta rodada, que só percebeu a coincidência depois de já ter lido
+`update-source.ts`/`frontmatter.ts` de forma independente e chegado à
+mesma conclusão, agora reconciliada no `deep-read-log.json` sem entrada
+duplicada). Arquivos genuinamente novos desta rodada:
+
+- `src/agents.ts` (881 linhas, revisado por completo) — na maior parte
+  é um registro estático `agents{}` de `skillsDir`/`globalSkillsDir`
+  por agente suportado (Claude, Cursor, Amp, etc.), sem interpolar
+  input externo nos paths. `getEveSubagents` lê nomes de diretório via
+  `readdirSync` (nomes vêm do próprio filesystem local pós-extração,
+  não podem conter `/` nem ser `.`/`..`, logo sem vetor de path
+  traversal via esse retorno). Demais funções só filtram essa tabela
+  estática. Sem achado.
+- `crates/turborepo-wax/src/token/variance.rs` (`vercel/turborepo`,
+  678 linhas) — último arquivo com nome auth/token ainda não lido
+  nesse repo (33→34 no `deep-read-log.json`). Cálculo de variância de
+  comprimento invariante/variante de tokens de glob, usado só para
+  otimização do compilador do glob `wax` vendorizado — mesma família
+  de `token/mod.rs`/`token/parse.rs` já auditados, nenhuma lógica de
+  matching/autorização/path-traversal neste arquivo. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `StackingDAO`: sem
+contrato novo, 15 `.clar` seguem 100% do escopo (ver NOTES.md do
+programa). Clones temporários (`turborepo`, `agent-skills`,
+`skills-repo`, `swr`) removidos ao final.

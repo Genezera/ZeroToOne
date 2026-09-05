@@ -747,7 +747,8 @@
     "src/providers/registry.ts",
     "src/providers/wellknown.ts (completo -- WellKnownProvider: fetch de index.json arbitrario (excludedHosts so github/gitlab/huggingface), extracao de zip/tar.gz com normalizeArchivePath rejeitando absoluto/../\\0/drive-letter, digest sha256 verificado ANTES de extrair artefato v0.2.0, symlink/hardlink em tar rejeitado explicitamente. Sem achado)",
     "src/remove.ts (completo -- paths de remocao vem de getCanonicalPath/getInstallPath que usam sanitizeName ja auditado; guarda explicita contra --all + nomes especificos accidental mass-delete. Sem achado)",
-    "src/local-lock.ts (completo -- leitura/escrita de skills-lock.json local, paths resolvidos relative a cwd, sem input de rede direto. Sem achado)"
+    "src/local-lock.ts (completo -- leitura/escrita de skills-lock.json local, paths resolvidos relative a cwd, sem input de rede direto. Sem achado)",
+    "src/agents.ts (revisado por completo -- tabela agents{} eh registro estatico de skillsDir/globalSkillsDir por agente, sem interpolar input externo; getEveSubagents le nomes de diretorio via readdirSync (nomes de FS local, sem barra, sem risco de path traversal); funcoes getUniversalAgents/getNonUniversalAgents/isUniversalAgent so filtram a tabela estatica. Sem achado)"
   ],
   "vercel/ai": [
     "packages/gateway/src/gateway-realtime-auth.ts",
@@ -1037,7 +1038,8 @@
     "crates/turborepo-boundaries/src/tags.rs (validate_relation/check_package_tags -- lint de arquitetura em tempo de build de `turbo boundaries`, não fronteira de confiança em runtime: developer roda contra o próprio monorepo, sem input externo/untrusted; produz só diagnóstico de CI, nunca bloqueia execução real. Sem achado reportável)",
     "crates/turborepo-boundaries/src/imports.rs (check_import/check_file_import -- resolve import relativo e checa se caminho resolvido sai do pacote via `relation_to_path` (não `contains`, que panicaria com muitos `..`); mesmo modelo de ameaça de tags.rs (lint de dev-time sobre código do próprio usuário, não input de terceiro) -- comentários mostram hardening deliberado contra `node_modules`/paths gerados por SvelteKit. Sem achado)",
     "crates/turborepo-boundaries/bindings/Permissions.ts",
-    "packages/turbo-codemod/src/utils/is-pipeline-key-missing.ts"
+    "packages/turbo-codemod/src/utils/is-pipeline-key-missing.ts",
+    "crates/turborepo-wax/src/token/variance.rs (678 linhas -- calculo de variancia de comprimento invariante/variante de tokens de glob para otimizacao de compilacao, mesma familia de token/mod.rs e token/parse.rs ja auditados; nenhuma logica de matching/autorizacao/path-traversal aqui. Sem achado)"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",
