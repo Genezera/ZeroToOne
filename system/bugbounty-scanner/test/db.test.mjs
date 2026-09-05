@@ -312,6 +312,7 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
       attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'contas distintas',
       observableOutcome: 'dado de outra conta retornado', confidentiality: 'low', integrity: 'none', availability: 'none',
       impactScope: 'other_user', reportable: true, rationale: 'duas contas de teste reproduziram o acesso',
+      severityRating: 'medium', severityRationale: 'acesso entre contas',
     });
     recordPlatformOutcome(db, SAMPLE.id, {
       platform: 'HackerOne', externalReportId: '3994302', state: 'duplicate', originalReportId: '3439366',
@@ -407,6 +408,7 @@ test('todo evento bugbounty_* gravado no ledger carrega schemaVersion', () => {
       technicalValidity: 'confirmed', reportable: true, attackerControlledInput: true,
       attacker: 'atacante', victim: 'vítima', securityBoundary: 'fronteira', observableOutcome: 'resultado', rationale: 'motivo real',
       confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user',
+      severityRating: 'medium', severityRationale: 'acesso entre contas',
     });
     recordReport(db, SAMPLE.id, 'reports/x.md');
     recordPlatformOutcome(db, SAMPLE.id, { platform: 'HackerOne', externalReportId: '999', state: 'duplicate' });

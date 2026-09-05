@@ -327,6 +327,7 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'isolamento entre contas',
       observableOutcome: 'leitura de conta alheia', rationale: 'duas contas próprias',
       confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user', reportable: true,
+      severityRating: 'medium', severityRationale: 'acesso entre contas',
       ts: '2026-09-03T17:05:00Z',
     });
     recordPlatformOutcome(db1, 'x::professional-roundtrip', {

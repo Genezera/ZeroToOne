@@ -467,6 +467,12 @@ repositório — não contra o que "deveria" ter sido feito.
 
 ### O que a auditoria pediu e CONTINUA genuinamente pendente
 
+- **Gate de elegibilidade positiva + Medium+** — concluído em 05/09/2026:
+  `scope_verified`, o preflight, o empacotamento e a submissão reconsultam o
+  snapshot vigente do ativo e exigem `eligibleForBounty=true`; `reportable`
+  também exige severidade justificada e bloqueia Low para esta campanha.
+  Isso impede confundir “em escopo/informativo” com “elegível a recompensa”.
+
 - **Operação 24/7 de descoberta de alvos** — concluída em 05/09/2026:
   `bugbounty-target-discovery.yml` roda diariamente na nuvem em modo
   `--metadata-only`, aplica política antes de consultar o GitHub e publica

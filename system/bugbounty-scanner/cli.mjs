@@ -1,5 +1,5 @@
 import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, latestDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, getSubmission, recordSubmission, latestSubmissionForFinding, recordCodeAgeEvidence, latestCodeAgeEvidence } from './db.mjs';
-import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
+import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate, assetRefForFinding } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
 import { loadProgramPolicyStrict, getBlockReason } from './program-policy.mjs';
@@ -37,6 +37,10 @@ import { isDeepStrictEqual } from 'node:util';
 // system/bugbounty-scanner/ em vez da raiz do repo.
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.resolve(__dirname, '..', '..', 'research', 'bugbounty', 'zerotoone.db');
+
+function currentScopeGateForFinding(finding, now) {
+  return scopeGate(loadSnapshot(finding.program), assetRefForFinding(finding), now);
+}
 
 function parseArgs(argv) {
   const positional = [];
@@ -135,6 +139,7 @@ export function cmdPackageForSubmission(db, id) {
       impactAssessment: latestImpactAssessment(db, id),
       deploymentEvidence: latestDeploymentEvidence(db, id),
       validations: listValidations(db, id),
+      scopeGateResult: currentScopeGateForFinding(finding),
       programPolicy: loadProgramPolicyStrict(),
     });
     if (!readiness.ok) return { ok: false, reason: `pacote bloqueado pelo preflight: ${readiness.reason}` };
@@ -189,6 +194,7 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
             report, duplicateCheck, impactAssessment,
             deploymentEvidence: latestDeploymentEvidence(db, f.id),
             validations: listValidations(db, f.id),
+            scopeGateResult: currentScopeGateForFinding(f),
             programPolicy,
           });
           blocker = readiness.ok ? 'evidência completa -- pronto pra virar human_ready' : `NÃO enviar: ${readiness.reason}`;
@@ -202,6 +208,7 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
           duplicateCheck: latestDuplicateCheck(db, f.id),
           deploymentEvidence: latestDeploymentEvidence(db, f.id),
           validations: listValidations(db, f.id),
+          scopeGateResult: currentScopeGateForFinding(f),
           programPolicy,
         });
         blocker = readiness.ok
@@ -301,6 +308,7 @@ export function cmdGetFinding(db, id) {
     report, impactAssessment, duplicateCheck,
     deploymentEvidence: latestDeploymentEvidence(db, id),
     validations: listValidations(db, id),
+    scopeGateResult: currentScopeGateForFinding(finding),
     programPolicy: loadProgramPolicyStrict(),
   });
   return {
@@ -384,7 +392,9 @@ export function cmdSubmissionStats(db) {
   return computeStatsFromSubmissions(submissions);
 }
 
-export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy = loadProgramPolicyStrict() } = {}) {
+export function cmdSubmissionPreflight(db, id, {
+  now = Date.now(), programPolicy = loadProgramPolicyStrict(), scopeResolver = currentScopeGateForFinding,
+} = {}) {
   const finding = getFinding(db, id);
   if (!finding) throw new Error(`finding "${id}" não existe no banco`);
   const report = latestReport(db, id);
@@ -397,6 +407,7 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy
     report, impactAssessment, duplicateCheck,
     deploymentEvidence: latestDeploymentEvidence(db, id),
     validations: listValidations(db, id),
+    scopeGateResult: scopeResolver(finding, new Date(now).toISOString()),
     programPolicy, now,
   });
   return {
@@ -412,6 +423,7 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy
       report, impactAssessment, duplicateCheck,
       deploymentEvidence: latestDeploymentEvidence(db, id),
       validations: listValidations(db, id),
+      scopeGateResult: scopeResolver(finding, new Date(now).toISOString()),
     },
     localHistory: history,
     limitation: 'Buscas públicas sem correspondência não provam unicidade: reports privados permanecem invisíveis até a plataforma revelar uma relação de duplicate.',

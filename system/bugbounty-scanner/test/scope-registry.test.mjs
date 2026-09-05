@@ -5,6 +5,7 @@ import {
   isSnapshotExpired,
   assetInScope,
   scopeGate,
+  assetRefForFinding,
   TTL_DAYS_BY_SOURCE,
 } from '../scope-registry.mjs';
 
@@ -53,6 +54,13 @@ test('assetInScope acha por URL completa ou por owner/repo', () => {
   assert.equal(assetInScope(snap, 'circlefin/nao-existe'), null);
 });
 
+test('assetRefForFinding reduz caminho de arquivo a owner/repo e preserva ativo não-repositório', () => {
+  assert.equal(assetRefForFinding({ file: 'acme/api/src/auth.ts' }), 'acme/api');
+  assert.equal(assetRefForFinding({ repository: 'https://github.com/acme/api.git' }), 'acme/api');
+  assert.equal(assetRefForFinding({ file: 'dao.clar', asset: 'dao' }), 'dao');
+  assert.equal(assetRefForFinding({ file: 'packages/next/src/image.ts', asset: 'vercel/next.js' }), 'vercel/next.js');
+});
+
 test('scopeGate bloqueia quando não há snapshot', () => {
   const gate = scopeGate(null, 'circlefin/evm-gateway-contracts');
   assert.equal(gate.allowed, false);
@@ -78,6 +86,8 @@ test('scopeGate permite ativo em escopo e elegível para recompensa', () => {
   const gate = scopeGate(snap, 'circlefin/evm-gateway-contracts', '2026-08-30T00:00:00.000Z');
   assert.equal(gate.allowed, true);
   assert.equal(gate.bountyEligible, true);
+  assert.equal(gate.snapshotContentHash, snap.contentHash);
+  assert.equal(gate.snapshotExpiresAt, snap.expiresAt);
 });
 
 test('scopeGate permite submissão mas marca bountyEligible=false quando o dataset diz isso', () => {

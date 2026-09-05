@@ -30,7 +30,8 @@ deliberate human action; the automation never files a report by itself.
 4. **Review and submit** — a corroborated finding becomes a report draft
    (call chain, evidence, PoC, suggested fix), passes fail-closed impact,
    scope, non-expired program-policy, E4 end-to-end regression,
-   high-confidence deployment and prior-art gates,
+   positive bounty eligibility, Medium+ impact, high-confidence deployment
+   and prior-art gates,
    and waits for explicit human approval. Every finding's lifecycle (candidate → corroborated →
    reproduced → submitted → the program's actual decision) is tracked
    in a small state machine, backed by a tamper-evident, hash-chained

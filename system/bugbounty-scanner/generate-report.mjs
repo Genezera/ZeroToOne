@@ -22,7 +22,7 @@ import { getFinding, listValidations, latestDeploymentEvidence, latestDuplicateC
 import { duplicateCheckGate } from './novelty-risk.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { isIsolatedEndToEndValidation } from './evidence-grade.mjs';
-import { loadSnapshot } from './scope-registry.mjs';
+import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { loadProgramPolicyStrict } from './program-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -64,6 +64,7 @@ export function assembleReportContext(db, findingId) {
   const duplicateCheck = latestDuplicateCheck(db, findingId);
   const impactAssessment = latestImpactAssessment(db, findingId);
   const snapshot = loadSnapshot(finding.program);
+  const scopeGateResult = scopeGate(snapshot, assetRefForFinding(finding));
   const policyEntry = loadProgramPolicyStrict()[finding.program] || null;
   return {
     ok: true,
@@ -73,13 +74,14 @@ export function assembleReportContext(db, findingId) {
     deploymentEvidence,
     duplicateCheck,
     impactAssessment,
+    scopeGateResult,
     officialUrl: snapshot ? snapshot.officialUrl : null,
     policyEntry,
   };
 }
 
 export function renderReportDraft(ctx) {
-  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, officialUrl, policyEntry = null, now: nowMs = Date.now() } = ctx;
+  const { finding, passingValidation, deploymentEvidence, duplicateCheck, impactAssessment, scopeGateResult, officialUrl, policyEntry = null, now: nowMs = Date.now() } = ctx;
   const now = new Date(nowMs).toISOString();
   const policyChecklist = [
     policyEntry?.aiDisclosureRequired ? '- [ ] Uso de IA declarado explicitamente no relatório' : null,
@@ -133,6 +135,7 @@ export function renderReportDraft(ctx) {
         `- Fronteira de segurança: ${impactAssessment.securityBoundary}`,
         `- Resultado observado: ${impactAssessment.observableOutcome}`,
         `- C/I/A: **${impactAssessment.confidentiality}/${impactAssessment.integrity}/${impactAssessment.availability}**`,
+        `- Severidade estimada: **${impactAssessment.severityRating || 'não registrada'}**${impactAssessment.severityRationale ? ` — ${impactAssessment.severityRationale}` : ''}`,
         `- Escopo do impacto: **${impactAssessment.impactScope}**`,
         `- Gate atual: **${impactGate.ok ? 'PASS' : 'BLOCK'}** — ${impactGate.reason}`,
         '',
@@ -239,5 +242,7 @@ export function generateReport(db, findingId, { reportsDir = DEFAULT_REPORTS_DIR
   }
   if (!ctx.impactAssessment) warnings.push('sem avaliação estruturada de impacto registrada');
   else if (!reportabilityGate(ctx.impactAssessment).ok) warnings.push(`impacto não passa o gate: ${reportabilityGate(ctx.impactAssessment).reason}`);
+  if (!ctx.scopeGateResult?.allowed) warnings.push(`scope vigente não autoriza o ativo: ${ctx.scopeGateResult?.reason || 'sem resultado'}`);
+  else if (ctx.scopeGateResult.bountyEligible !== true) warnings.push('scope vigente não confirma eligibleForBounty=true');
   return { ok: true, path: reportPath, warnings };
 }

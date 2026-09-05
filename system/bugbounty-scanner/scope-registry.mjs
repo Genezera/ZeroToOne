@@ -87,6 +87,20 @@ function normalizeAssetKey(value) {
   return (value || '').toLowerCase().replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(/\/$/, '');
 }
 
+/** Resolve the stable asset identifier carried by a finding. Repository is
+ * preferred when explicitly recorded; otherwise a path such as
+ * owner/repo/src/file.ts is reduced to owner/repo. Non-repository assets
+ * (contracts/domains) retain their explicit `asset` value. */
+export function assetRefForFinding(finding = {}) {
+  const explicitRepo = finding.repository || finding.repo;
+  if (explicitRepo) return normalizeAssetKey(explicitRepo).replace(/^github\.com\//, '');
+  if (finding.asset) return normalizeAssetKey(finding.asset).replace(/^github\.com\//, '');
+  const file = normalizeAssetKey(finding.file).replace(/^github\.com\//, '');
+  const parts = file.split('/').filter(Boolean);
+  if (parts.length >= 3) return `${parts[0]}/${parts[1]}`;
+  return finding.file || null;
+}
+
 /**
  * Confere se um ativo (ex.: "circlefin/evm-gateway-contracts" ou a URL
  * completa do repo) está listado no snapshot, e devolve a entrada com as
@@ -122,16 +136,23 @@ export function scopeGate(snapshot, assetRef, now = new Date().toISOString()) {
   if (!asset) {
     return { allowed: false, reason: `ativo "${assetRef}" não encontrado no snapshot de escopo do programa` };
   }
+  const evidence = {
+    snapshotCapturedAt: snapshot.capturedAt,
+    snapshotExpiresAt: snapshot.expiresAt,
+    snapshotSourceType: snapshot.sourceType,
+    snapshotContentHash: snapshot.contentHash,
+    officialUrl: snapshot.officialUrl,
+  };
   if (asset.eligibleForSubmission === false) {
-    return { allowed: false, reason: `ativo "${assetRef}" explicitamente NÃO elegível para submissão neste snapshot` };
+    return { allowed: false, reason: `ativo "${assetRef}" explicitamente NÃO elegível para submissão neste snapshot`, asset, ...evidence };
   }
   if (asset.eligibleForBounty === false) {
-    return { allowed: true, reason: 'ativo em escopo mas marcado não-elegível para recompensa (pode ainda ser elegível para submissão informativa)', asset, bountyEligible: false };
+    return { allowed: true, reason: 'ativo em escopo mas marcado não-elegível para recompensa (pode ainda ser elegível para submissão informativa)', asset, bountyEligible: false, ...evidence };
   }
   if (asset.eligibleForBounty === null || asset.eligibleForBounty === undefined) {
-    return { allowed: true, reason: 'ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready', asset, bountyEligible: null };
+    return { allowed: true, reason: 'ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready', asset, bountyEligible: null, ...evidence };
   }
-  return { allowed: true, reason: 'ativo em escopo e elegível', asset, bountyEligible: true };
+  return { allowed: true, reason: 'ativo em escopo e elegível', asset, bountyEligible: true, ...evidence };
 }
 
 function slugFor(program) {

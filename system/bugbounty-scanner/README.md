@@ -62,7 +62,12 @@ Antes de `human_ready` e novamente antes de `submitted`, a máquina de
 estados falha fechado se não houver:
 
 - avaliação de impacto estruturada com entrada comprovadamente controlada
-  pelo atacante, vítima, fronteira de segurança, resultado observável e C/I/A;
+  pelo atacante, vítima, fronteira de segurança, resultado observável, C/I/A,
+  severidade estimada Medium+ e racional explícito (Low é documentado, mas
+  não entra na fila de envio desta campanha);
+- nova consulta ao scope snapshot vigente com `eligibleForBounty=true`
+  explícito para o ativo exato; ativo apenas informativo ou com elegibilidade
+  desconhecida fica bloqueado;
 - checagem de anterioridade com issues/PRs, commits, advisories e Hacktivity ou busca
   web, pelo menos três formulações distintas, `foundExisting=false`, menos
   de 24 horas e risco no máximo 25/100;
@@ -141,7 +146,7 @@ Os exemplos abaixo usam JSON ilustrativo; evidência deve vir da investigação
 real:
 
 ```powershell
-node system/bugbounty-scanner/cli.mjs record-impact-assessment "FINDING_ID" --patch='{"technicalValidity":"confirmed","attackerControlledInput":true,"attacker":"usuário remoto","victim":"outro usuário","securityBoundary":"isolamento entre contas","observableOutcome":"leitura de dado alheio","confidentiality":"low","integrity":"none","availability":"none","impactScope":"other_user","reportable":true,"rationale":"reproduzido com duas contas próprias"}'
+node system/bugbounty-scanner/cli.mjs record-impact-assessment "FINDING_ID" --patch='{"technicalValidity":"confirmed","attackerControlledInput":true,"attacker":"usuário remoto","victim":"outro usuário","securityBoundary":"isolamento entre contas","observableOutcome":"leitura de dado alheio","confidentiality":"low","integrity":"none","availability":"none","impactScope":"other_user","reportable":true,"severityRating":"medium","severityRationale":"violação de autorização entre contas","rationale":"reproduzido com duas contas próprias"}'
 
 node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patch='{"methods":["github_issues","github_commits","github_advisories","hacktivity"],"queries":["função + efeito","source + sink + controle ausente","commit + regressão + componente"],"results":[],"foundExisting":false,"signals":{"codeAgeDays":2,"programAgeDays":120,"repoStars":400,"obviousness":"medium"},"noveltyProof":{"kind":"verified_regression","introducedCommit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","parentCommit":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","introducedAt":"2026-09-01T12:00:00Z","baseline":{"ref":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","result":"not_vulnerable","command":"node poc.mjs","observedOutcome":"controle não reproduz"},"candidate":{"ref":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","result":"vulnerable","command":"node poc.mjs","observedOutcome":"exploit reproduz"}}}'
 

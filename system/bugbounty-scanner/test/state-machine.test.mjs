@@ -25,7 +25,9 @@ const GOOD_IMPACT = {
   securityBoundary: 'autorização entre contas', observableOutcome: 'leitura de dado de outra conta',
   confidentiality: 'low', integrity: 'none', availability: 'none',
   impactScope: 'other_user', reportable: true, rationale: 'IDOR reproduzido contra duas contas de teste',
+  severityRating: 'medium', severityRationale: 'violação de autorização entre contas',
 };
+const GOOD_SCOPE = { allowed: true, reason: 'ativo elegível', bountyEligible: true };
 const GOOD_DUPLICATE_CHECK = {
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR'],
@@ -51,6 +53,7 @@ function readyContext(overrides = {}) {
     duplicateCheck: GOOD_DUPLICATE_CHECK,
     deploymentEvidence: GOOD_DEPLOYMENT,
     validations: [GOOD_E4_VALIDATION],
+    scopeGateResult: GOOD_SCOPE,
     ...overrides,
   };
 }
@@ -116,26 +119,32 @@ test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E de
   const f = finding('reproduced_local');
   assert.equal(transition(f, 'scope_verified', {}).ok, false);
   assert.equal(transition(f, 'scope_verified', { scopeGateResult: { allowed: false, reason: 'expirado' } }).ok, false);
-  const semDeploy = transition(f, 'scope_verified', { scopeGateResult: { allowed: true, reason: 'ok' } });
+  const semDeploy = transition(f, 'scope_verified', { scopeGateResult: GOOD_SCOPE });
   assert.equal(semDeploy.ok, false);
   assert.match(semDeploy.reason, /DeploymentEvidence/);
   const naoVerificado = transition(f, 'scope_verified', {
-    scopeGateResult: { allowed: true, reason: 'ok' },
+    scopeGateResult: GOOD_SCOPE,
     deploymentEvidence: { confidence: 'unverified', notes: 'branch master, sem confirmação de deploy' },
   });
   assert.equal(naoVerificado.ok, false, 'confidence="unverified" documenta o gap mas não deveria bastar pra scope_verified');
   assert.match(naoVerificado.reason, /vínculo real/);
   const comDeploy = transition(f, 'scope_verified', {
-    scopeGateResult: { allowed: true, reason: 'ok' },
+    scopeGateResult: GOOD_SCOPE,
     deploymentEvidence: { confidence: 'low', notes: 'endereço confirmado via explorer' },
   });
   assert.equal(comDeploy.ok, false);
   assert.match(comDeploy.reason, /confidence="high"/);
   const highDeploy = transition(f, 'scope_verified', {
-    scopeGateResult: { allowed: true, reason: 'ok' },
+    scopeGateResult: GOOD_SCOPE,
     deploymentEvidence: GOOD_DEPLOYMENT,
   });
   assert.equal(highDeploy.ok, true);
+  const noBounty = transition(f, 'scope_verified', {
+    scopeGateResult: { allowed: true, reason: 'apenas informativo', bountyEligible: false },
+    deploymentEvidence: GOOD_DEPLOYMENT,
+  });
+  assert.equal(noBounty.ok, false);
+  assert.match(noBounty.reason, /eligibleForBounty=true/);
 });
 
 test('scope_verified -> human_ready exige rascunho de relatório existente', () => {

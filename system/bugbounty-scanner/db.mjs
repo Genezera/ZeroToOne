@@ -8,6 +8,7 @@ import { loadProgramPolicyStrict } from './program-policy.mjs';
 import { deriveSemanticFingerprint } from './semantic-fingerprint.mjs';
 import { validateImpactAssessment } from './impact-assessment.mjs';
 import { investigationIdFor } from './investigation-id.mjs';
+import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
 
 // Estado operacional local (SQLite/WAL) — substitui queue.jsonl como
 // fonte de verdade para leitura/escrita concorrente (seção 6.5 da
@@ -375,6 +376,7 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
   // chamador não consegue contornar o gate omitindo/forjando contexto, e um
   // finding human_ready antigo é rechecado no momento de submeter.
   const finalSubmissionGate = toState === 'human_ready' || toState === 'submitted';
+  const scopeRequired = toState === 'scope_verified' || finalSubmissionGate;
   const storedDeploymentEvidence = latestDeploymentEvidence(db, findingId);
   const storedValidations = listValidations(db, findingId);
   const fullContext = {
@@ -390,6 +392,9 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
     validations: finalSubmissionGate
       ? storedValidations
       : (context.validations || storedValidations),
+    scopeGateResult: scopeRequired
+      ? scopeGate(loadSnapshot(finding.program), assetRefForFinding(finding))
+      : context.scopeGateResult,
     programPolicy: loadProgramPolicyStrict(),
   };
   const result = smTransition(finding, toState, fullContext);
@@ -606,6 +611,7 @@ export function recordImpactAssessment(db, findingId, assessment) {
     confidentiality: payload.confidentiality,
     integrity: payload.integrity,
     availability: payload.availability,
+    severityRating: payload.severityRating || null,
     ts,
   });
   return { findingId, correlationId: investigationIdFor(findingId), ...payload, ts, ledgerHash: ledgerEntry.hash };

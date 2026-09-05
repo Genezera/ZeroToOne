@@ -38,7 +38,7 @@ const SAMPLE = {
   id: 'Circle BBP::src/Vault.sol::withdraw::reentrancy_risk',
   program: 'Circle BBP',
   platform: 'HackerOne',
-  asset: 'circlefin/vault',
+  asset: 'circlefin/evm-gateway-contracts',
   type: 'reentrancy_risk',
   language: 'solidity',
   file: 'src/Vault.sol',
@@ -197,7 +197,7 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
       evidence: { provenance: 'regression-sandbox', noveltyProof: STRICT_NOVELTY.noveltyProof },
     });
     recordDeploymentEvidence(db, SAMPLE.id, {
-      repo: 'circlefin/vault', commit: INTRODUCED,
+      repo: 'circlefin/evm-gateway-contracts', commit: INTRODUCED,
       packageOrContract: 'Vault@mainnet', confidence: 'high',
     });
     recordDuplicateCheck(db, SAMPLE.id, STRICT_NOVELTY);
@@ -206,6 +206,7 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
       attacker: 'usuário remoto', victim: 'outros depositantes', securityBoundary: 'saldo por conta',
       observableOutcome: 'saque repetido no teste', rationale: 'PoC local com duas contas',
       confidentiality: 'none', integrity: 'high', availability: 'none', impactScope: 'other_user', reportable: true,
+      severityRating: 'high', severityRationale: 'alteração financeira entre contas',
     });
 
     const result = generateReport(db, SAMPLE.id, { reportsDir, now: Date.parse('2026-09-03T18:00:00Z') });

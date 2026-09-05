@@ -48,6 +48,12 @@ export function submissionReadinessGate(finding, ctx = {}) {
   if (blockReason) return fail(`programa "${finding.program}" está bloqueado para envio: ${blockReason}`);
   if (!ctx.report || !ctx.report.path) return fail('nenhum rascunho de relatório foi gerado ainda');
 
+  if (!ctx.scopeGateResult) return fail('preflight final exige nova consulta ao scope snapshot vigente');
+  if (!ctx.scopeGateResult.allowed) return fail(`scope gate final recusou: ${ctx.scopeGateResult.reason}`);
+  if (ctx.scopeGateResult.bountyEligible !== true) {
+    return fail('ativo não tem eligibleForBounty=true explícito no scope snapshot vigente');
+  }
+
   const impact = reportabilityGate(ctx.impactAssessment);
   if (!impact.ok) return fail(impact.reason);
 
@@ -121,6 +127,9 @@ const PRECONDITIONS = {
   'reproduced_local->scope_verified': (f, ctx = {}) => {
     if (!ctx.scopeGateResult) return fail('nenhum scope snapshot foi consultado para este ativo');
     if (!ctx.scopeGateResult.allowed) return fail(`scope gate recusou: ${ctx.scopeGateResult.reason}`);
+    if (ctx.scopeGateResult.bountyEligible !== true) {
+      return fail('scope_verified exige eligibleForBounty=true explícito; escopo informativo ou elegibilidade desconhecida não basta');
+    }
     if (!ctx.deploymentEvidence) {
       return fail('falta DeploymentEvidence (mesmo que confidence="unverified") — precisa declarar explicitamente o que se sabe/não se sabe sobre repo→release→deploy, não pular a etapa em silêncio');
     }

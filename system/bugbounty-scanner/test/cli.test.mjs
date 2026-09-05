@@ -295,6 +295,7 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
       attacker: 'usuário remoto', victim: 'outro usuário', securityBoundary: 'isolamento entre contas',
       observableOutcome: 'leitura de dado da vítima', rationale: 'duas contas próprias',
       confidentiality: 'low', integrity: 'none', availability: 'none', impactScope: 'other_user', reportable: true,
+      severityRating: 'medium', severityRationale: 'violação de autorização entre duas contas',
     });
     recordValidation(db, finding.id, {
       type: 'isolated_regression', result: 'pass', command: 'node poc.mjs', rawOutput: 'exploit reproduzido',
@@ -310,7 +311,10 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
       queries: ['auth function IDOR', 'missing ownership check', 'commit regression IDOR'], foundExisting: false,
       ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 }, noveltyProof: REGRESSION_PROOF,
     });
-    const ready = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime(), programPolicy: TEST_PROGRAM_POLICY });
+    const ready = cmdSubmissionPreflight(db, finding.id, {
+      now: new Date('2026-09-03T18:00:00Z').getTime(), programPolicy: TEST_PROGRAM_POLICY,
+      scopeResolver: () => ({ allowed: true, reason: 'fixture elegível', bountyEligible: true }),
+    });
     assert.equal(ready.ready, true, ready.reason);
     // Lacuna #1 da revisão de 03/09/2026: dimensões ortogonais visíveis
     // sem juntar state+impactAssessment+duplicateCheck manualmente.
@@ -327,7 +331,10 @@ test('submission-preflight com relatório legado, mas sem impacto/duplicateCheck
     const finding = { ...SAMPLE, id: 'p::legacy::f::x', program: 'P', state: 'scope_verified' };
     upsertFinding(db, finding);
     recordReport(db, finding.id, 'reports/legacy.md');
-    const result = cmdSubmissionPreflight(db, finding.id, { programPolicy: TEST_PROGRAM_POLICY });
+    const result = cmdSubmissionPreflight(db, finding.id, {
+      programPolicy: TEST_PROGRAM_POLICY,
+      scopeResolver: () => ({ allowed: true, reason: 'fixture elegível', bountyEligible: true }),
+    });
     assert.equal(result.ready, false);
     assert.match(result.reason, /impactAssessment incompleto/);
     closeDb(db);
