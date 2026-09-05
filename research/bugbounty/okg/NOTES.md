@@ -683,3 +683,31 @@ O gate alternativo foi removido e os três rascunhos agora dizem **BLOCK**.
 Os estados `human_ready` permanecem como história append-only, mas o
 preflight atual recusa submissão enquanto não houver regressão recente
 verificada.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud)
+
+Passo 0 confirmado antes de qualquer clone: `program-policy.json` lido,
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados, 100%
+dos 34 candidatos globais da fila pertencem a esses programas — nenhum
+tocado.
+
+Achado do `cardano key clamp` (`scope_verified`, rascunho já em disco
+desde rodada anterior): notei que `cli.mjs get` mostrava `report: None`
+apesar do arquivo `okg-go-wallet-sdk-cardano-key-clamp.md` já existir em
+`reports/` — o `record-report` de uma sessão anterior aparentemente não
+persistiu esse campo (mesmo padrão de lacuna já visto no achado
+`command_injection_risk` do Vercel). Rodei `record-report` novamente
+apontando pro mesmo arquivo (ledger confirma), depois tentei
+`transition ... human_ready` com o contexto mínimo (`report.path`) —
+recusado, motivo exatamente igual ao já documentado na rodada #19:
+`noveltyStatus=regression` exigido pelo gate anti-duplicate, e este é um
+bug estrutural antigo (clamp errado desde o commit único que criou o
+arquivo, 09/01/2026 — sem regressão recente rastreável). Nenhuma
+tentativa de contornar o gate. Achado fica permanentemente capado em
+`scope_verified` até o usuário decidir revisar a política de
+"regression-only" para bugs antigos genuínos — comportamento correto da
+máquina de estados, documentado, não um bug do pipeline.
+
+Nenhum achado novo neste programa nesta rodada (leitura profunda
+proativa desta rodada foi em `plaid/react-plaid-link`, ver NOTES.md do
+Plaid).

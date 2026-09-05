@@ -1257,5 +1257,11 @@
   ],
   "mattermost/mattermost-plugin-zoom": [
     "server/zoom/oauth.go (OAuthClient.GetUser/CreateMeeting/getUserViaOAuth -- refresh de token OAuth2 por tokenSource.Token(), token novo persistido no KV store (per-user ou super-user conforme isAccountLevel) apenas quando RefreshToken muda; CreateMeeting/GetUser usam sempre o proprio user.Email do usuario Mattermost autenticado que chamou o fluxo, nao ha input de terceiro controlando de quem e o email/ID usado na URL da API Zoom. Sem achado)"
+  ],
+  "plaid/react-plaid-link": [
+    "src/usePlaidLink.ts (hook central -- so passa token/config direto pro window.Plaid.create do script oficial cdn.plaid.com; sem achado)",
+    "src/factory.ts (createPlaid/createPlaidHandler -- renameKeyInObject so copia chaves planas, sem risco de prototype pollution; sem achado)",
+    "src/PlaidEmbeddedLink.tsx (embedded link -- token repassado direto ao window.Plaid.createEmbedded, sem dangerouslySetInnerHTML/eval; sem achado)",
+    "src/react-script-hook/index.tsx (useScript -- src do <script> sempre e a constante PLAID_LINK_STABLE_URL hardcoded, nunca input do consumidor; sem achado)"
   ]
 }

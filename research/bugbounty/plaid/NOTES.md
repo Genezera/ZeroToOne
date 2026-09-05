@@ -1,5 +1,30 @@
 # Plaid (HackerOne) — notas de pesquisa
 
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud)
+
+Passo 0 confirmado (`program-policy.json` checado antes de qualquer
+clone): `Block Open Source`/`Circle BBP`/`Auth0 by Okta` bloqueados,
+nenhum repo desses tocado. `migrate-to-v2.mjs` + `list-pending`
+global = 34 candidatos, 100% em programas bloqueados (30 Auth0 by
+Okta, 4 Circle BBP) — nenhum tocado.
+
+Leitura profunda proativa: `plaid/react-plaid-link` (ativo em
+`STATUS.md`, nunca lido antes — 0 entradas em `deep-read-log.json`),
+clone raso público. Priorizei os arquivos que de fato lidam com o
+token OAuth/link (`usePlaidLink.ts`, `factory.ts`,
+`PlaidEmbeddedLink.tsx`) e o hook de carregamento de script
+(`react-script-hook/index.tsx`). Ceticismo genuíno, refutação
+tentada: o wrapper é fino — todo o handling real de token/iframe/
+postMessage vive no script proprietário da Plaid
+(`cdn.plaid.com/link/v2/stable/link-initialize.js`, fora deste
+repositório open-source e fora do meu escopo de leitura). Dentro
+deste repo: `src` do `<script>` é sempre a constante
+`PLAID_LINK_STABLE_URL` hardcoded (nunca input do consumidor/rede);
+`renameKeyInObject` só copia chaves planas fixas (`publicKey`->`key`),
+sem risco de prototype pollution; nenhum `dangerouslySetInnerHTML`/
+`eval`/`Function()`. Nenhum achado — 4 arquivos fechados em
+`deep-read-log.json`.
+
 ## Rodada 2026-09-03 (agente de nuvem) — primeira rodada, 48 candidatos refutados
 
 Programa novo, descoberto pela rotação de discovery em 02/09/2026
