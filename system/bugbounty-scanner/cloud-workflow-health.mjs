@@ -43,12 +43,13 @@ function runTime(run) {
 /** Interpreta o histórico real, não só a presença do YAML. Uma execução em
  * andamento é saudável somente quando o último terminal foi sucesso e ainda
  * está fresco; falha terminal ou silêncio além da tolerância falham fechado. */
-export function assessWorkflowRuns(expectation, runs = [], { now = Date.now() } = {}) {
+export function assessWorkflowRuns(expectation, runs = [], { now = Date.now(), workflowState = 'active' } = {}) {
   const ordered = [...runs].sort((a, b) => runTime(b) - runTime(a));
   const active = ordered.find((run) => ['queued', 'in_progress', 'waiting', 'requested', 'pending'].includes(run.status)) || null;
   const latestTerminal = ordered.find((run) => run.status === 'completed') || null;
   const latestSuccess = ordered.find((run) => run.status === 'completed' && run.conclusion === 'success') || null;
   const reasons = [];
+  if (workflowState !== 'active') reasons.push(`workflow está ${workflowState || 'sem estado'}, não active`);
   if (!latestTerminal) reasons.push('nenhuma execução terminal observada');
   else if (latestTerminal.conclusion !== 'success') reasons.push(`última execução terminou como ${latestTerminal.conclusion || 'sem conclusão'}`);
   if (!latestSuccess) reasons.push('nenhum sucesso observado');
@@ -59,6 +60,7 @@ export function assessWorkflowRuns(expectation, runs = [], { now = Date.now() } 
   return {
     file: expectation.file,
     label: expectation.label,
+    workflowState,
     ok: reasons.length === 0,
     status: reasons.length === 0 ? (active ? 'running' : 'healthy') : 'unhealthy',
     reasons,
@@ -87,18 +89,22 @@ export async function checkCloudWorkflowHealth({
   now = Date.now(),
 } = {}) {
   const checks = await Promise.all(expectations.map(async (expectation) => {
-    const url = `https://api.github.com/repos/${repository}/actions/workflows/${encodeURIComponent(expectation.file)}/runs?per_page=10`;
+    const workflowUrl = `https://api.github.com/repos/${repository}/actions/workflows/${encodeURIComponent(expectation.file)}`;
+    const runsUrl = `${workflowUrl}/runs?per_page=10`;
     try {
-      const response = await fetchImpl(url, {
-        headers: githubHeaders({ Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }),
-      });
-      if (!response.ok) throw new Error(`GitHub ${response.status}`);
-      const body = await response.json();
-      return assessWorkflowRuns(expectation, body.workflow_runs || [], { now });
+      const request = { headers: githubHeaders({ Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }) };
+      const [workflowResponse, runsResponse] = await Promise.all([
+        fetchImpl(workflowUrl, request),
+        fetchImpl(runsUrl, request),
+      ]);
+      if (!workflowResponse.ok) throw new Error(`GitHub workflow metadata ${workflowResponse.status}`);
+      if (!runsResponse.ok) throw new Error(`GitHub workflow runs ${runsResponse.status}`);
+      const [workflow, runsBody] = await Promise.all([workflowResponse.json(), runsResponse.json()]);
+      return assessWorkflowRuns(expectation, runsBody.workflow_runs || [], { now, workflowState: workflow.state });
     } catch (error) {
       return {
         file: expectation.file, label: expectation.label, ok: false,
-        status: 'unreachable', reasons: [error.message], latestRun: null, latestSuccess: null,
+        workflowState: null, status: 'unreachable', reasons: [error.message], latestRun: null, latestSuccess: null,
       };
     }
   }));

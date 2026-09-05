@@ -87,6 +87,25 @@ function normalizeAssetKey(value) {
   return (value || '').toLowerCase().replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(/\/$/, '');
 }
 
+function repositoryFromFindingId(finding = {}) {
+  const location = normalizeAssetKey(String(finding.id || '').split('::')[1]);
+  if (!location) return null;
+
+  // Scanner IDs use Program::owner/repo/path/to/file::symbol::kind.  Older
+  // records sometimes retained only path/to/file in `asset` and `file`.
+  // Recover owner/repo only when the recorded relative path is an exact
+  // suffix and the remaining prefix is exactly two segments.  This avoids
+  // guessing that an arbitrary path such as packages/next/src/image.ts is a
+  // repository named packages/next.
+  for (const value of [finding.file, finding.asset]) {
+    const suffix = normalizeAssetKey(value).replace(/^github\.com\//, '');
+    if (!suffix || location === suffix || !location.endsWith(`/${suffix}`)) continue;
+    const prefix = location.slice(0, -(suffix.length + 1));
+    if (prefix.split('/').filter(Boolean).length === 2) return prefix;
+  }
+  return null;
+}
+
 /** Resolve the stable asset identifier carried by a finding. Repository is
  * preferred when explicitly recorded; otherwise a path such as
  * owner/repo/src/file.ts is reduced to owner/repo. Non-repository assets
@@ -94,6 +113,8 @@ function normalizeAssetKey(value) {
 export function assetRefForFinding(finding = {}) {
   const explicitRepo = finding.repository || finding.repo;
   if (explicitRepo) return normalizeAssetKey(explicitRepo).replace(/^github\.com\//, '');
+  const repositoryFromId = repositoryFromFindingId(finding);
+  if (repositoryFromId) return repositoryFromId;
   if (finding.asset) return normalizeAssetKey(finding.asset).replace(/^github\.com\//, '');
   const file = normalizeAssetKey(finding.file).replace(/^github\.com\//, '');
   const parts = file.split('/').filter(Boolean);

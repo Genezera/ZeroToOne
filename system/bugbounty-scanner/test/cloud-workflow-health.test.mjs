@@ -40,11 +40,21 @@ test('assessWorkflowRuns falha fechado para último terminal falho ou sucesso ve
   assert.match(stale.reasons.join(' '), /excedeu/);
 });
 
+test('assessWorkflowRuns falha imediatamente quando o workflow foi desativado', () => {
+  const result = assessWorkflowRuns(expectation, [
+    { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:55:00Z' },
+  ], { now: Date.parse('2026-09-05T12:00:00Z'), workflowState: 'disabled_manually' });
+  assert.equal(result.ok, false);
+  assert.equal(result.workflowState, 'disabled_manually');
+  assert.match(result.reasons.join(' '), /não active/);
+});
+
 test('checkCloudWorkflowHealth consulta cada workflow e agrega indisponibilidade', async () => {
   const seen = [];
   const fetchImpl = async (url) => {
     seen.push(url);
     if (url.includes('bad.yml')) return { ok: false, status: 503, json: async () => ({}) };
+    if (!url.includes('/runs?')) return { ok: true, json: async () => ({ state: 'active' }) };
     return {
       ok: true,
       json: async () => ({ workflow_runs: [
@@ -56,8 +66,9 @@ test('checkCloudWorkflowHealth consulta cada workflow e agrega indisponibilidade
     repository: 'owner/repo', fetchImpl, now: Date.parse('2026-09-05T12:00:00Z'),
     expectations: [expectation, { ...expectation, file: 'bad.yml', label: 'bad' }],
   });
-  assert.equal(seen.length, 2);
+  assert.equal(seen.length, 4);
   assert.equal(result.ok, false);
   assert.equal(result.checks[0].ok, true);
+  assert.equal(result.checks[0].workflowState, 'active');
   assert.equal(result.checks[1].status, 'unreachable');
 });

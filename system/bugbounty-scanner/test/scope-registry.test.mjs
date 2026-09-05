@@ -61,6 +61,23 @@ test('assetRefForFinding reduz caminho de arquivo a owner/repo e preserva ativo 
   assert.equal(assetRefForFinding({ file: 'packages/next/src/image.ts', asset: 'vercel/next.js' }), 'vercel/next.js');
 });
 
+test('assetRefForFinding recupera owner/repo do ID quando asset e file são caminhos relativos', () => {
+  const finding = {
+    id: 'OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding',
+    asset: 'coins/cardano/crypto/key.go',
+    file: 'coins/cardano/crypto/key.go',
+  };
+  assert.equal(assetRefForFinding(finding), 'okx/go-wallet-sdk');
+});
+
+test('assetRefForFinding não inventa repositório quando o ID contém apenas o caminho relativo', () => {
+  assert.equal(assetRefForFinding({
+    id: 'Circle BBP::src/Vault.sol::withdraw::static_finding',
+    asset: 'vault',
+    file: 'src/Vault.sol',
+  }), 'vault');
+});
+
 test('scopeGate bloqueia quando não há snapshot', () => {
   const gate = scopeGate(null, 'circlefin/evm-gateway-contracts');
   assert.equal(gate.allowed, false);
