@@ -932,7 +932,11 @@
     "packages/vercel-flags-core/src/utils/usage/flags-config-read.ts + utils/request-context.ts (completo -- FlagsConfigReadEvent so extrai x-vercel-id e host de um allowlist explicito de 2 chaves do objeto headers do request-context global, nunca repassa o objeto headers inteiro nem authorization/cookie pro payload de telemetria enviado ao ingest endpoint. Sem achado)",
     "packages/flags/src/spec-extension/adapters/headers.ts",
     "packages/vercel-flags-core/src/controller/polling-source.ts",
-    "packages/vercel-flags-core/src/controller-fns.ts"
+    "packages/vercel-flags-core/src/controller-fns.ts",
+    "packages/flags/src/next/precompute.ts",
+    "packages/vercel-flags-core/src/evaluate.ts",
+    "packages/flags/src/sveltekit/precompute.ts",
+    "packages/flags/src/sveltekit/env.ts"
   ],
   "vercel/ms": [
     "src/index.ts"

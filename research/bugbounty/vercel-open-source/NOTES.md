@@ -8464,3 +8464,67 @@ contrato novo, `api.hiro.so` retestado e segue bloqueado, 15 arquivos
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/workflow`: +3 entradas, de 35 para 38). Clone
 temporário removido ao final.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud)
+
+`list-pending` global = 34, mas todos os 34 candidatos são de programas
+bloqueados (`Auth0 by Okta`: 30, `Circle BBP`: 4) — confirmado via
+`cli.mjs check-program` antes de tocar qualquer arquivo desses repos,
+conforme regra de `CLAUDE.md`. Nenhum candidato tocado.
+
+Revisitei o único `scope_verified` do sistema inteiro (`OKG::okx/go-wallet-sdk`,
+não é deste programa) apenas para tentar completar o `impactAssessment`
+que faltava (`severityRating`/`severityRationale`) — a transição pra
+`human_ready` foi corretamente recusada pelo state-machine por esse
+motivo. Ao ler o `reasoning` completo do achado, a rodada anterior já
+tinha decidido explicitamente **não** avançar esse achado por indício
+forte (não confirmado) de que a OKX já tem conhecimento prévio do bug
+(anúncio público de "upgrade de endereços derivados" 6 dias após o
+commit que introduziu o defeito) — avançar agora preencheria o campo só
+pra contornar o motivo real de ter ficado parado. Não fiz isso; deixei
+o achado como estava (`scope_verified`, sem mudança). Isso não é
+carelessness — é reconhecer que a recusa do CLI aqui era um proxy pra
+uma decisão humana pendente, não um obstáculo mecânico a resolver.
+
+Leitura profunda proativa direcionada a `vercel/flags` (dessa vez fora
+do `world-*`/hooks já esgotados em `vercel/workflow`): clone raso
+público, comparado contra `deep-read-log.json` (22 arquivos já lidos,
+incluindo os arquivos de auth/crypto/cookies do pacote). Lidos 4
+arquivos ainda não cobertos, com foco no mecanismo de serialização de
+overrides usado por middlewares (superfície de confiança: um valor que
+sai do servidor, passa pelo cliente/URL e volta a ser decodificado):
+
+- `packages/flags/src/next/precompute.ts` (completo) — `serialize`/
+  `deserialize`/`getPrecomputed`/`generatePermutations` delegam toda a
+  criptografia pra `lib/serialization.ts` (já lido em rodada anterior)
+  e exigem `FLAGS_SECRET` sempre (erro explícito se ausente, nunca um
+  default silencioso). Sem achado.
+- `packages/vercel-flags-core/src/evaluate.ts` (completo, 791 linhas) —
+  motor de avaliação (`evaluate`/`bulkEvaluate`/`resolveOutcome`/
+  `matchConditions`/`matchSegment`). Verifiquei especificamente risco de
+  ReDoS em `Comparator.REGEX`/`NOT_REGEX`: o padrão da regex vem de
+  `params.definition` (dados de configuração do flag, autorados por
+  quem administra os flags, não por request de usuário final) e é
+  cacheado por identidade de objeto (`compiledRegexCache`); só a string
+  testada (`lhs`, potencialmente derivada de atributos de request) é
+  limitada a `MAX_REGEX_INPUT_LENGTH=10_000` — superfície de ataque
+  exigiria um admin malicioso publicar um padrão catastrófico, fora do
+  modelo de ameaça de bug bounty (não é input de atacante externo). Sem
+  achado.
+- `packages/flags/src/sveltekit/precompute.ts` (completo) — versão
+  SvelteKit do mesmo mecanismo acima, `secret` é sempre parâmetro
+  explícito (não lê env var como fallback direto na função, ao contrário
+  da versão Next.js) — na verdade reduz superfície de erro de
+  configuração. Sem achado.
+- `packages/flags/src/sveltekit/env.ts` (completo, 28 linhas) —
+  `tryGetSecret` tenta `process.env.FLAGS_SECRET` primeiro, depois
+  `$env/static/private` (import dinâmico específico do SvelteKit,
+  envolvido em try/catch pra não quebrar fora desse runtime). Lança erro
+  explícito se nenhum secret for encontrado — nunca segue sem secret.
+  Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `vercel/flags` agora
+com 26 arquivos cobertos (de 22). `Block Open Source`/`Circle BBP`
+seguem fora de escopo desta sessão por política local
+(`program-policy.json`, checado como passo zero). Clone temporário
+removido ao final.
