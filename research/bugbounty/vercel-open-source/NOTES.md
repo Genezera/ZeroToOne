@@ -8629,3 +8629,59 @@ programa — sem contrato novo, 15 arquivos `.clar` seguem 100% do
 escopo, `api.hiro.so` continua bloqueado pelo proxy da organização.
 Nenhum achado novo nesta rodada, nenhuma transição de estado. Clone
 temporário removido ao final.
+
+---
+
+## Rodada 2026-09-05 (cloud, disparada por push no ZeroToOne)
+
+Passo 0 (`migrate-to-v2.mjs`) reconstruiu o estado local a partir do
+`queue.jsonl`: 799 findings, 34 em `candidate` -- todos em programas
+bloqueados por `program-policy.json` (30 `Auth0 by Okta`, 4
+`Circle BBP`), checados **antes** de qualquer leitura de repositório.
+Nenhum candidato acionável na fila para os programas liberados desta
+sessão (`StackingDAO`, `Vercel Open Source`).
+
+Leitura profunda proativa: clonado `vercel/vercel` (shallow,
+sparse-checkout) e comparado a lista de arquivos com nome
+auth/session/token/crypto/permission/access/password/login/secret
+contra `deep-read-log.json` (79 candidatos por nome, a maioria já
+coberta em rodadas anteriores -- ver seção `vercel/vercel` do log).
+Restaram 5 arquivos genuinamente não lidos; 3 escolhidos (limite da
+rodada), priorizando os que pareciam mais diretamente ligados a
+autenticação:
+
+- `examples/hydrogen-2/app/routes/account_.login.tsx` (completo) --
+  template de exemplo Shopify Hydrogen/Oxygen incluído em `examples/`.
+  `action()` repassa email/password direto pra mutation GraphQL
+  `customerAccessTokenCreate` do backend real da Shopify; a sessão só
+  grava `customerAccessToken` depois que a resposta da Shopify já
+  confirma um token válido. Nenhuma decisão de autenticação acontece
+  neste arquivo -- é puramente uma UI de formulário sobre a API da
+  Shopify, fora da fronteira de confiança da própria Vercel. Sem
+  achado.
+- `examples/hydrogen-2/app/routes/account_.activate.$id.$activationToken.tsx`
+  (completo) -- mesmo padrão: `id`/`activationToken` de `params` vão
+  direto pra mutation `customerActivate` da Shopify; validação real do
+  token acontece no backend da Shopify, não neste arquivo de exemplo.
+  Sem achado.
+- `python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/datastructures/auth.py`
+  (completo) -- código vendored verbatim do projeto Werkzeug/Pallets
+  upstream (`Authorization`/`WWWAuthenticate`), só parsing/serialização
+  de header RFC7235 (Basic base64, Bearer token, Digest params);
+  nenhuma comparação de segredo nem decisão de autorização acontece
+  aqui. Sem sinal de modificação local divergente do upstream
+  conhecido. Sem achado.
+
+Os 2 arquivos restantes do diff (`examples/eleventy/feed/htaccess.njk`,
+template estático de exemplo) e `account_.reset.$id.$resetToken.tsx`
+(mesmo padrão dos dois activate/login acima) ficaram de fora do limite
+de 3 desta rodada -- candidatos naturais pra próxima, embora o padrão
+já observado nos dois arquivos irmãos torne pouco provável achado ali.
+
+Nenhum achado novo, nenhuma transição de estado. `program-policy.json`
+seguiu como step zero antes de qualquer clone/leitura, conforme regra
+do CLAUDE.md; `Block Open Source`/`Circle BBP` seguem inteiramente fora
+de escopo desta sessão (nem um `git clone` foi feito contra eles). Nota:
+esta rodada coincidiu com pelo menos duas outras sessões rodando em
+paralelo sobre o mesmo push (`vercel/chat` e `vercel/swr`, commits
+`73266be` e `1712352`) -- sem sobreposição de arquivos lidos entre elas.
