@@ -8342,3 +8342,71 @@ recusando (`connect_rejected`), condição inalterada. Ver
 para 22, cobrindo tanto `key.js` da rodada paralela quanto
 `renderer.js` desta rodada). Clone temporário removido ao final.
 Nenhuma transição de estado além do achado já refutado acima.
+
+## Rodada 2026-09-05 #9 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados, nenhum dos três
+tocado. `migrate-to-v2.mjs` + `list-pending` global = 34, 100% fora do
+escopo desta missão (30 Auth0 by Okta, 4 Circle BBP) -- nenhum repo
+tocado, nem para priorização.
+
+`list-deep-read-candidates.mjs` rodou com `GITHUB_TOKEN` propositalmente
+não-exportado nesta chamada (a variável de ambiente deste container
+carrega um placeholder `proxy-injected` da injeção de auth do proxy,
+válido só contra `api.github.com`; mandado como `Authorization: Bearer`
+pro `raw.githubusercontent.com` também, ele derruba o request anônimo
+público com 404 em vez de servir o JSON -- reproduzido isolado com um
+teste de `fetch` direto antes de mexer em qualquer coisa. Rodar sem
+essa var restaura o comportamento anônimo esperado; não editei
+`github-auth.mjs` nem `list-deep-read-candidates.mjs`, só contornei via
+`env -u GITHUB_TOKEN` nesta invocação -- registrando aqui caso apareça
+de novo em rodada futura). Saída: `vercel/flags` (7% coberto),
+`vercel/chat` (8%) e `vercel/eve` (4%, 79 arquivos já lidos) como
+candidatos "clean" (sem popularidade/duplicata) de menor cobertura
+dentre os repos deste programa; escolhi `vercel/eve` por ter a maior
+superfície ainda não tocada em termos absolutos.
+
+Clone raso de `vercel/eve`, grep por nome de caminho
+auth/session/crypto/token/login/password/admin/permission/access/secret/credential/oauth/jwt/key
+(excluindo test/fixtures/dist/node_modules/docs/examples), diff contra
+`deep-read-log.json` (a cobertura de auth já é bem densa nesse repo --
+dezenas de arquivos em `packages/eve/src/channel/auth/`,
+`.../runtime/connections/`, `.../execution/` já lidos em rodadas
+anteriores, incluindo o achado `predictable_hook_token_seed_risk` já
+fechado como `known_duplicate`). 3 arquivos novos genuinamente não
+cobertos ainda:
+
+- `packages/eve/src/execution/sandbox/bindings/docker-session.ts`:
+  implementação real de `spawn`/`readFile`/`writeFile`/`removePath` do
+  sandbox via `docker exec`. Comando do agente é embutido num wrapper
+  bash via `shellQuote` (aspas simples POSIX com escape correto de `'`
+  embutido -- conferido lendo `shell-quote.ts` também, 14 linhas,
+  implementação padrão e correta); env vars vão via array `-e
+  key=value` pro CLI do docker, não por string de shell (sem injeção).
+  O comando em si já é deliberadamente arbitrário por design (é o
+  sandbox executando o que o agente pediu) -- quoting quebrado aqui
+  não abriria escalação nova, só afetaria a própria árvore de processo
+  do spawn (mecanismo de kill via pid-file, escopado por-spawn, sem
+  alcance cross-tenant visível neste arquivo isolado). Sem achado.
+- `apps/frameworks/next/app/auth/[...all]/route.ts` +
+  `apps/frameworks/next/lib/auth.ts`: app de EXEMPLO do framework (não
+  infra de produção Vercel) usando `@auth/core` com provider Vercel
+  OIDC (checks pkce/state/nonce presentes) e Slack via
+  `@vercel/connect`; `trustHost:true` é o padrão documentado do Auth.js
+  pra deploy edge/serverless (não bypass de Host header introduzido
+  aqui); secret vem de env var, sem hardcode; callbacks jwt/session só
+  repassam dado de conta OAuth pro token. Sem achado.
+
+Nota operacional: `origin/master` já estava um commit à frente ao
+tentar `git push` desta rodada (rodada `#8` paralela --
+`sveltejs/svelte::renderer.js`, CSP nonce refutado). `git reset --hard
+origin/master` + `migrate-to-v2.mjs` antes de reaplicar as edições
+desta rodada, sem sobrescrever nada.
+
+Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md` (sem
+contrato novo, 15 arquivos `.clar` seguem 100% do escopo).
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/eve`: +3 entradas). Clone temporário removido ao
+final.

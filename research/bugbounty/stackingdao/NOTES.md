@@ -1405,3 +1405,25 @@ Leitura profunda proativa desta rodada direcionada a `sveltejs/svelte`
 (ver NOTES.md de Vercel Open Source -- 1 arquivo novo, achado inicial
 levantado e já refutado como false_positive nesta mesma rodada).
 Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-05 #9 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero (`Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` bloqueados, nenhum tocado). `list-pending`
+global segue com os mesmos 34 candidatos fora do escopo desta missão
+(30 Auth0 by Okta, 4 Circle BBP), skip completo. `api.hiro.so` não
+retestado nesta rodada (mesmo bloqueio de proxy já reconfirmado na
+rodada #8, condição inalterada). Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`,
+sem contrato novo.
+
+Nota operacional: mesmo padrão da #8 -- ao tentar `git push` desta
+rodada, `origin/master` já estava um commit à frente (rodada `#8`
+paralela, `sveltejs/svelte::renderer.js`). Fiz `git reset --hard
+origin/master` + `migrate-to-v2.mjs` pra sincronizar antes de
+reaplicar as edições desta rodada (não sobrescrevi nada da rodada
+paralela).
+
+Leitura profunda proativa desta rodada direcionada a `vercel/eve` (ver
+NOTES.md de Vercel Open Source -- 3 arquivos novos, sem achado).
+Nenhuma transição de estado neste programa.
