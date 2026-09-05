@@ -87,13 +87,16 @@ terceiro).
 
 ## Ativo 4 — dados sensíveis em histórico permanente do Git
 
-Hoje o sistema não versiona segredo/PII conhecido (achados de
-`hardcoded_secret` vão para a fila como texto do próprio código-fonte
-público do alvo, não credencial própria do ZeroToOne). Mas não existe
-nenhum mecanismo de redaction automática antes de commitar — se um futuro
-achado de PoC web/mobile capturar cookie de sessão, header de auth ou
-resposta de API com dado real, isso iria para o histórico permanente do
-Git sem filtro.
+Em 2026-09-05 foi adicionada uma proteção em `commitAndPush`: inspeciona
+adições textuais staged e bloqueia padrões de credenciais, cookies e URLs
+assinadas, valores sensíveis conhecidos no ambiente e arquivos que não
+consegue inspecionar. Diagnósticos não incluem o valor detectado. O detector
+`hardcoded_secret` também passou a omitir valor e contexto antes da fila.
+
+Isso não demonstra ausência de segredo/PII no histórico já existente.
+Formatos desconhecidos, ofuscação e commits manuais fora do runner continuam
+exigindo revisão. Binários e pacotes são retidos para inspeção humana, sem
+alegação de que seus conteúdos tenham sido escaneados.
 
 ## Atualização real (Fase 3, 2026-08-30): o ambiente de nuvem já bloqueia boa parte disso sozinho
 
@@ -144,5 +147,6 @@ ambas precisam entrar na próxima atualização do prompt/README.
    ver atualização acima).
 5. **Média — checkpoint externo assinado** para o ledger, para que a
    integridade não dependa só do próprio arquivo.
-6. **Baixa, mas necessária antes de qualquer PoC web/API** — redaction
-   automática de segredo/PII em qualquer artefato indo para o Git.
+6. **Parcialmente implementado em 2026-09-05** — proteção contra publicação
+   automática de credenciais e omissão de valores em `hardcoded_secret`.
+   Revisão de PII, binários e histórico preexistente ainda é necessária.

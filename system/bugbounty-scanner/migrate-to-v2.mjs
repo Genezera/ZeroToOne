@@ -105,6 +105,13 @@ function restoreSatelliteData(db, findingId, entry) {
       && current.foundExisting === entry.duplicateCheck.foundExisting
       && current.noveltyStatus === (entry.duplicateCheck.noveltyStatus || null)
       && current.riskScore === (entry.duplicateCheck.riskScore ?? null)
+      && current.riskLevel === (entry.duplicateCheck.riskLevel || null)
+      && current.foundExistingRef === (entry.duplicateCheck.foundExistingRef || null)
+      && current.notes === (entry.duplicateCheck.notes || null)
+      && JSON.stringify(current.methods) === JSON.stringify(entry.duplicateCheck.methods)
+      && JSON.stringify(current.queries) === JSON.stringify(entry.duplicateCheck.queries || (entry.duplicateCheck.query ? [entry.duplicateCheck.query] : []))
+      && JSON.stringify(current.results || []) === JSON.stringify(entry.duplicateCheck.results || [])
+      && JSON.stringify(current.evidence || []) === JSON.stringify(entry.duplicateCheck.evidence || [])
       && JSON.stringify(current.signals || {}) === JSON.stringify(entry.duplicateCheck.signals || {})
       && JSON.stringify(current.noveltyProof || null) === JSON.stringify(entry.duplicateCheck.noveltyProof || null);
     if (!same) {

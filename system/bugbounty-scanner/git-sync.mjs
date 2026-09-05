@@ -13,6 +13,7 @@
 // empurrasse algo por perto do horário fixo da tarefa.
 
 import { execFileSync } from 'node:child_process';
+import { inspectStagedPublication } from './publication-secret-gate.mjs';
 
 function git(repoRoot, args) {
   return execFileSync('git', args, { cwd: repoRoot, stdio: 'pipe', encoding: 'utf8' }).trim();
@@ -63,6 +64,12 @@ export function commitAndPush(repoRoot, message, log = () => {}) {
     git(repoRoot, ['add', '-A']);
     const status = git(repoRoot, ['status', '--porcelain']);
     if (!status) return { ok: true, committed: false };
+    const publication = inspectStagedPublication(repoRoot);
+    if (!publication.ok) {
+      log(`ERRO: ${publication.reason}; ${publication.findings.length} ocorrência(s). Nenhum valor sensível é incluído neste diagnóstico.`);
+      return { ok: false, committed: false, blockedBy: 'publication-secret-gate',
+        reason: publication.reason, publication };
+    }
     git(repoRoot, ['commit', '-m', message]);
   } catch (err) {
     return { ok: false, committed: false, reason: `commit falhou: ${err.message.split('\n')[0]}` };

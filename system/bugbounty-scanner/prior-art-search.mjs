@@ -23,6 +23,8 @@ export function validatePriorArtConfig(input) {
 
 async function githubJson(url, { fetchImpl }) {
   const response = await fetchImpl(url, {
+    redirect: 'error',
+    signal: AbortSignal.timeout(20000),
     headers: githubHeaders({
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
@@ -32,12 +34,103 @@ async function githubJson(url, { fetchImpl }) {
     const remaining = response.headers?.get?.('x-ratelimit-remaining');
     throw new Error(`GitHub API HTTP ${response.status}${remaining === '0' ? ' (rate limit esgotado)' : ''}`);
   }
-  return response.json();
+  const nextLinks = [...String(response.headers?.get?.('link') || '').matchAll(/<([^>]+)>\s*;\s*rel="next"/g)];
+  if (nextLinks.length > 1) throw new Error('GitHub retornou paginação ambígua');
+  return { data: await response.json(), next: nextLinks[0]?.[1] || null };
 }
 
-function searchUrl(endpoint, repository, query) {
-  const params = new URLSearchParams({ q: `repo:${repository} ${query}`, per_page: '10' });
+function searchUrl(endpoint, repository, query, page, pageSize) {
+  const params = new URLSearchParams({ q: `repo:${repository} ${query}`, per_page: String(pageSize), page: String(page) });
   return `https://api.github.com/search/${endpoint}?${params}`;
+}
+
+function paginationLimits(pageSize, maxPages) {
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100
+      || !Number.isInteger(maxPages) || maxPages < 1 || maxPages > 100) {
+    throw new Error('pageSize e maxPages precisam ser inteiros entre 1 e 100');
+  }
+}
+
+// GitHub search exposes at most 1,000 results and may return HTTP 200 with
+// incomplete_results=true. Neither case constitutes a completed search.
+export async function searchAllGithubResults(endpoint, repository, query, {
+  fetchImpl = fetch, pageSize = 100, maxPages = 10,
+} = {}) {
+  paginationLimits(pageSize, maxPages);
+  if (!['issues', 'commits'].includes(endpoint)) throw new Error('endpoint de busca inválido');
+  const items = [];
+  const ids = new Set();
+  const apiUrls = [];
+  let totalCount = null;
+  for (let page = 1; page <= maxPages; page++) {
+    const url = searchUrl(endpoint, repository, query, page, pageSize);
+    const { data, next } = await githubJson(url, { fetchImpl });
+    apiUrls.push(url);
+    if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(data.total_count) || data.total_count < 0
+        || typeof data.incomplete_results !== 'boolean') {
+      throw new Error(`GitHub ${endpoint}: resposta inválida; cobertura não comprovada`);
+    }
+    if (data.incomplete_results) throw new Error(`GitHub ${endpoint}: incomplete_results=true; refaça/refine a busca`);
+    if (data.total_count > Math.min(1000, pageSize * maxPages)) {
+      throw new Error(`GitHub ${endpoint}: limite de paginação excedido; refine a consulta`);
+    }
+    if (totalCount !== null && data.total_count !== totalCount) {
+      throw new Error(`GitHub ${endpoint}: total mudou durante a paginação; refaça a busca`);
+    }
+    totalCount = data.total_count;
+    for (const item of data.items) {
+      const id = endpoint === 'commits' ? item?.sha : item?.number;
+      if (!id || !item.html_url || ids.has(id)) {
+        throw new Error(`GitHub ${endpoint}: resultado sem identidade ou repetido; cobertura não comprovada`);
+      }
+      ids.add(id);
+      items.push(item);
+    }
+    if (items.length === totalCount && !next) {
+      return { items, evidence: { source: `github_${endpoint}`, query, apiUrl: apiUrls[0], apiUrls,
+        pagesScanned: page, totalCount, retrievedCount: items.length, complete: true } };
+    }
+    if (data.items.length < pageSize || items.length >= totalCount) {
+      throw new Error(`GitHub ${endpoint}: paginação inconsistente; cobertura não comprovada`);
+    }
+  }
+  throw new Error(`GitHub ${endpoint}: paginação incompleta; refine a consulta`);
+}
+
+export async function listAllRepositoryAdvisories(repository, {
+  fetchImpl = fetch, pageSize = 100, maxPages = 10,
+} = {}) {
+  paginationLimits(pageSize, maxPages);
+  const first = new URL(`https://api.github.com/repos/${repository}/security-advisories?state=published&per_page=${pageSize}`);
+  let next = first.href;
+  const apiUrls = [];
+  const items = [];
+  const ids = new Set();
+  while (next) {
+    // Repository advisories use cursor pagination. Never send credentials to
+    // a host/path supplied by an unexpected Link header or a redirect.
+    const url = new URL(next);
+    if (url.origin !== first.origin || url.pathname !== first.pathname || url.username || url.password || url.hash
+        || url.searchParams.get('state') !== 'published' || url.searchParams.get('per_page') !== String(pageSize)) {
+      throw new Error('GitHub advisories: link de paginação fora do endpoint público esperado');
+    }
+    if (apiUrls.includes(url.href) || apiUrls.length >= maxPages) {
+      throw new Error('GitHub advisories: paginação repetida ou limite excedido; cobertura incompleta');
+    }
+    const page = await githubJson(url.href, { fetchImpl });
+    if (!Array.isArray(page.data)) throw new Error('GitHub advisories: resposta inválida');
+    apiUrls.push(url.href);
+    for (const item of page.data) {
+      if (!item?.ghsa_id || ids.has(item.ghsa_id) || item.state !== 'published') {
+        throw new Error('GitHub advisories: resultado inválido/repetido; cobertura não comprovada');
+      }
+      ids.add(item.ghsa_id);
+      items.push(item);
+    }
+    next = page.next;
+  }
+  return { items, evidence: { source: 'github_advisories', apiUrl: first.href, apiUrls,
+    pagesScanned: apiUrls.length, totalCount: items.length, retrievedCount: items.length, complete: true } };
 }
 
 function normalizedTerms(value) {
@@ -131,22 +224,19 @@ export async function searchPublicPriorArt(input, {
   const commitResults = [];
   const evidence = [];
   for (const query of queries) {
-    const issuesUrl = searchUrl('issues', repository, query);
-    const commitsUrl = searchUrl('commits', repository, query);
     const [issues, commits] = await Promise.all([
-      githubJson(issuesUrl, { fetchImpl }),
-      githubJson(commitsUrl, { fetchImpl }),
+      searchAllGithubResults('issues', repository, query, { fetchImpl }),
+      searchAllGithubResults('commits', repository, query, { fetchImpl }),
     ]);
-    evidence.push({ source: 'github_issues', query, apiUrl: issuesUrl, totalCount: issues.total_count || 0 });
-    evidence.push({ source: 'github_commits', query, apiUrl: commitsUrl, totalCount: commits.total_count || 0 });
-    for (const item of issues.items || []) {
+    evidence.push(issues.evidence, commits.evidence);
+    for (const item of issues.items) {
       issueResults.push({
         source: 'github_issues', query, candidate: true, disposition: 'unreviewed',
         kind: item.pull_request ? 'pull_request' : 'issue', number: item.number,
         title: item.title, state: item.state, url: item.html_url,
       });
     }
-    for (const item of commits.items || []) {
+    for (const item of commits.items) {
       commitResults.push({
         source: 'github_commits', query, candidate: true, disposition: 'unreviewed',
         sha: item.sha, title: String(item.commit?.message || '').split(/\r?\n/)[0], url: item.html_url,
@@ -154,10 +244,9 @@ export async function searchPublicPriorArt(input, {
     }
   }
 
-  const advisoriesUrl = `https://api.github.com/repos/${repository}/security-advisories?state=published&per_page=100`;
-  const advisories = await githubJson(advisoriesUrl, { fetchImpl });
-  evidence.push({ source: 'github_advisories', apiUrl: advisoriesUrl, totalCount: advisories.length });
-  const advisoryResults = advisories.filter((item) => advisoryMatchesQueries(item, queries)).map((item) => ({
+  const advisories = await listAllRepositoryAdvisories(repository, { fetchImpl });
+  evidence.push(advisories.evidence);
+  const advisoryResults = advisories.items.filter((item) => advisoryMatchesQueries(item, queries)).map((item) => ({
     source: 'github_advisories', candidate: true, disposition: 'unreviewed',
     ghsaId: item.ghsa_id, cveId: item.cve_id || null, title: item.summary,
     state: item.state, url: item.html_url,

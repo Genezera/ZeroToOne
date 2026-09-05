@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { pullLatest, commitAndPush } from '../git-sync.mjs';
+import { inspectStagedPublication } from '../publication-secret-gate.mjs';
 
 function sh(cmd, cwd) {
   return execSync(cmd, { cwd, stdio: 'pipe' }).toString();
@@ -64,6 +65,57 @@ test('commitAndPush: commit real, push real, sem divergência', () => {
   } finally {
     cleanup(root);
   }
+});
+
+test('commitAndPush bloqueia credencial antes de criar commit ou modificar o remote', () => {
+  const { root, cloneADir, originDir } = initRepoWithRemote();
+  try {
+    const before = sh('git rev-parse HEAD', cloneADir);
+    const remoteBefore = sh('git rev-parse HEAD', originDir);
+    const secret = 'gh' + 'p_' + 'A'.repeat(36);
+    writeFileSync(path.join(cloneADir, 'report with spaces.md'), `captured value: ${secret}\n`);
+    const logs = [];
+    const result = commitAndPush(cloneADir, 'must not publish', (message) => logs.push(message));
+    assert.equal(result.ok, false);
+    assert.equal(result.committed, false);
+    assert.equal(result.blockedBy, 'publication-secret-gate');
+    assert.ok(result.publication.findings.some((hit) => hit.path === 'report with spaces.md' && hit.line === 1));
+    assert.equal(JSON.stringify([result, logs]).includes(secret), false);
+    assert.equal(sh('git rev-parse HEAD', cloneADir), before);
+    assert.equal(sh('git rev-parse HEAD', originDir), remoteBefore);
+    assert.equal(existsSync(path.join(cloneADir, 'report with spaces.md')), true, 'conteúdo local preservado');
+  } finally { cleanup(root); }
+});
+
+test('publicação inspeciona o índice mesmo se a cópia de trabalho tiver sido sanitizada', () => {
+  const { root, cloneADir } = initRepoWithRemote();
+  try {
+    const secret = 'gh' + 'p_' + 'B'.repeat(36);
+    const file = path.join(cloneADir, 'evidence.md');
+    writeFileSync(file, secret);
+    sh('git add evidence.md', cloneADir);
+    writeFileSync(file, '[REDACTED]');
+    assert.equal(inspectStagedPublication(cloneADir).ok, false);
+    sh('git add evidence.md', cloneADir);
+    assert.equal(inspectStagedPublication(cloneADir).ok, true);
+  } finally { cleanup(root); }
+});
+
+test('commit automático retém arquivos compactados e binários para revisão', () => {
+  const { root, cloneADir } = initRepoWithRemote();
+  try {
+    writeFileSync(path.join(cloneADir, 'capture.bin'), Buffer.from([0, 1, 2]));
+    writeFileSync(path.join(cloneADir, 'poc.zip'), 'opaque archive');
+    const result = commitAndPush(cloneADir, 'must not publish');
+    assert.equal(result.ok, false);
+    assert.equal(result.committed, false);
+    assert.deepEqual(result.publication.findings.map((hit) => hit.detector).sort(), ['archive_requires_review', 'binary_requires_review']);
+  } finally { cleanup(root); }
+});
+
+test('publicação bloqueia se a inspeção git não puder ser concluída', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'zto-no-git-test-'));
+  try { assert.equal(inspectStagedPublication(root).ok, false); } finally { cleanup(root); }
 });
 
 test('commitAndPush: recupera de push rejeitado puxando e tentando de novo (cenário real de corrida com a nuvem)', () => {

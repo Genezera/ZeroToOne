@@ -76,6 +76,7 @@ export function submissionReadinessGate(finding, ctx = {}) {
 
   const duplicate = duplicateCheckGate(ctx.duplicateCheck, {
     now: ctx.now ? new Date(ctx.now).getTime() : Date.now(),
+    repository: repositoryKey(deployment.repo),
   });
   if (!duplicate.ok) return fail(duplicate.reason);
   const changeContext = finding.changeContext || finding.raw?.changeContext || null;

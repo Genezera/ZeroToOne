@@ -8,6 +8,7 @@ import {
   recordDuplicateCheck, recordImpactAssessment, latestReport, closeDb,
 } from '../db.mjs';
 import { assembleReportContext, renderReportDraft, generateReport, reportSlugFor } from '../generate-report.mjs';
+import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-report-test-'));
@@ -53,6 +54,7 @@ const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const STRICT_NOVELTY = {
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['withdraw reentrancy', 'external call before state update', 'commit regression withdraw'],
+  evidence: publicSearchEvidence(['withdraw reentrancy', 'external call before state update', 'commit regression withdraw']),
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20, riskLevel: 'low',
   signals: { priorDuplicateSubmissions: 0 },
   noveltyProof: {

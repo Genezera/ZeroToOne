@@ -2,6 +2,8 @@
 // voltarem como duplicate. Reports privados continuam invisíveis; portanto
 // "não achei nada em busca pública" não é evidência suficiente para enviar.
 // O gate só libera uma regressão recente demonstrada entre dois refs.
+import { priorArtCoverageGate } from './prior-art-coverage.mjs';
+
 export const DUPLICATE_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const MAX_RISK_FOR_SUBMISSION = 25;
 // A week was still enough time for a popular public repository to collect a
@@ -130,7 +132,7 @@ export function verifiedRegressionGate(proof, {
   return { ok: true, reason: `regressão verificada no commit ${proof.introducedCommit.slice(0, 12)} contra o parent ${proof.parentCommit.slice(0, 12)}` };
 }
 
-export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS } = {}) {
+export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS, repository = null } = {}) {
   if (!check || typeof check !== 'object' || Array.isArray(check)) check = {};
   if (!Array.isArray(check.methods) || check.methods.length === 0) {
     return { ok: false, reason: 'duplicateCheck sem métodos rastreáveis' };
@@ -170,5 +172,7 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   }
   const regression = verifiedRegressionGate(check.noveltyProof, { now });
   if (!regression.ok) return regression;
+  const coverage = priorArtCoverageGate(check, { repository });
+  if (!coverage.ok) return coverage;
   return { ok: true, reason: `${regression.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
 }

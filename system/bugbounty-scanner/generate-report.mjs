@@ -125,6 +125,7 @@ export function renderReportDraft(ctx) {
         `- Data: ${duplicateCheck.ts}`,
         `- Fontes: ${duplicateCheck.methods.join(', ')}`,
         `- Consultas: ${(duplicateCheck.queries || [duplicateCheck.query]).filter(Boolean).map((q) => `\`${q}\``).join('; ') || '{{não registradas}}'}`,
+        `- Evidências de busca preservadas: ${(duplicateCheck.evidence || []).length} registro(s); cobertura paginada exigida pelo gate`,
         `- Correspondência pública encontrada: **${duplicateCheck.foundExisting ? 'sim' : 'não'}**${duplicateCheck.foundExistingRef ? ` — ${duplicateCheck.foundExistingRef}` : ''}`,
         `- Classificação de novidade: **${duplicateCheck.noveltyStatus || 'não calculada'}**; risco estimado: **${duplicateCheck.riskScore ?? 'não calculado'}/100**`,
         duplicateCheck.noveltyProof?.kind === 'verified_longstanding_exposure'

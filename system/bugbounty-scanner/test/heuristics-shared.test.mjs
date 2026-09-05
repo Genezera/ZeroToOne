@@ -3,10 +3,14 @@ import assert from 'node:assert/strict';
 import { findHardcodedSecrets } from '../heuristics-shared.mjs';
 
 test('findHardcodedSecrets acha valor literal atribuído a campo de segredo', () => {
-  const src = `const apiKey = "sk_live_9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c";`;
+  const synthetic = 'sk_' + 'live_' + '9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c';
+  const adjacent = 'adjacent-sensitive-context';
+  const src = `const other = "${adjacent}"; const apiKey = "${synthetic}";`;
   const findings = findHardcodedSecrets(src, 'x.js');
   assert.equal(findings.length, 1);
   assert.equal(findings[0].type, 'hardcoded_secret');
+  assert.equal(JSON.stringify(findings).includes(synthetic), false);
+  assert.equal(JSON.stringify(findings).includes(adjacent), false);
 });
 
 test('findHardcodedSecrets ignora placeholders óbvios', () => {

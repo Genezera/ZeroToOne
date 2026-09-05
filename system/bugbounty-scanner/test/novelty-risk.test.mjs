@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { assessNoveltyRisk, duplicateCheckGate, verifiedRegressionGate } from '../novelty-risk.mjs';
+import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
 
 const NOW = new Date('2026-09-03T18:00:00Z').getTime();
 const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -14,6 +15,7 @@ const PROOF = {
 const CLEAN = {
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['function root cause', 'source sink missing guard', 'commit regression vulnerability'],
+  evidence: publicSearchEvidence(['function root cause', 'source sink missing guard', 'commit regression vulnerability']),
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
   signals: { priorDuplicateSubmissions: 0 }, noveltyProof: PROOF,
   ts: '2026-09-03T17:00:00Z',
@@ -59,6 +61,16 @@ test('prova de regressão compara o parent seguro com o commit vulnerável usand
   assert.equal(verifiedRegressionGate({ ...PROOF, baseline: { ...PROOF.baseline, result: 'vulnerable' } }, { now: NOW }).ok, false);
   assert.equal(verifiedRegressionGate({ ...PROOF, candidate: { ...PROOF.candidate, command: 'node outro.mjs' } }, { now: NOW }).ok, false);
   assert.match(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-08-26T00:00:00Z' }, { now: NOW }).reason, /máximo 48 horas/);
+});
+
+test('gate final bloqueia cobertura ausente, parcial, contraditória ou de outro repositório', () => {
+  for (const evidence of [undefined, [], CLEAN.evidence.slice(1), CLEAN.evidence.map((item) => ({ ...item, complete: false })),
+    CLEAN.evidence.map((item) => ({ ...item, totalCount: 11, retrievedCount: 10 })),
+    [...CLEAN.evidence, CLEAN.evidence[0]]]) {
+    assert.equal(duplicateCheckGate({ ...CLEAN, evidence }, { now: NOW }).ok, false);
+  }
+  assert.equal(duplicateCheckGate(CLEAN, { now: NOW, repository: 'other/api' }).ok, false);
+  assert.equal(duplicateCheckGate(CLEAN, { now: NOW, repository: 'acme/api' }).ok, true);
 });
 
 test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar', () => {

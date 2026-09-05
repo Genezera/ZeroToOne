@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { transition, validTransitionsFrom, isTerminal, STATES, deriveStatesFromLedger } from '../state-machine.mjs';
+import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
 
 function finding(state, overrides = {}) {
   return { id: 'x', program: 'Test Program', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
@@ -31,6 +32,7 @@ const GOOD_SCOPE = { allowed: true, reason: 'ativo elegível', bountyEligible: t
 const GOOD_DUPLICATE_CHECK = {
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR'],
+  evidence: publicSearchEvidence(['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR']),
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
   signals: { priorDuplicateSubmissions: 0 }, noveltyProof: REGRESSION_PROOF,
   ts: '2026-09-03T17:00:00Z',
@@ -261,6 +263,7 @@ test('finding originado pelo monitor exige prova e deploy do mesmo delta', () =>
   assert.match(wrongCommit.reason, /mesmo commit que originou/);
   const wrongRepo = transition(monitored, 'human_ready', readyContext({
     deploymentEvidence: { ...GOOD_DEPLOYMENT, repo: 'other/api' },
+    duplicateCheck: { ...GOOD_DUPLICATE_CHECK, evidence: publicSearchEvidence(GOOD_DUPLICATE_CHECK.queries, 'other/api') },
   }));
   assert.equal(wrongRepo.ok, false);
   assert.match(wrongRepo.reason, /mesmo repositório/);

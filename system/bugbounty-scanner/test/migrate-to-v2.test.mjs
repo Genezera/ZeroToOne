@@ -317,6 +317,7 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
     recordDuplicateCheck(db1, 'x::professional-roundtrip', {
       methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['account findById IDOR', 'missing owner check'], results: [],
+      evidence: [{ source: 'github_issues', query: 'account findById IDOR', pagesScanned: 2, complete: true }],
       foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
       signals: { priorDuplicateSubmissions: 0, codeAgeDays: 2 },
       noveltyProof: { kind: 'verified_regression', introducedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
@@ -343,11 +344,18 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       migrateEntry(db2, exported, { scopeSnapshots: {} });
       assert.equal(getFinding(db2, exported.id).semanticFingerprint, exported.semanticFingerprint);
       assert.equal(latestDuplicateCheck(db2, exported.id).riskScore, 25);
+      assert.deepEqual(latestDuplicateCheck(db2, exported.id).evidence, exported.duplicateCheck.evidence);
       assert.equal(latestDuplicateCheck(db2, exported.id).signals.codeAgeDays, 2);
       assert.equal(latestDuplicateCheck(db2, exported.id).noveltyProof.kind, 'verified_regression');
       assert.equal(latestImpactAssessment(db2, exported.id).impactScope, 'other_user');
       assert.equal(listSubmissions(db2).length, 1);
       assert.equal(listSubmissions(db2)[0].originalReportId, '100');
+      const updated = structuredClone(exported);
+      updated.duplicateCheck.evidence[0].pagesScanned = 3;
+      updated.duplicateCheck.results = [{ source: 'github_issues', candidate: true, disposition: 'unreviewed', url: 'https://github.com/acme/api/issues/2' }];
+      migrateEntry(db2, updated, { scopeSnapshots: {} });
+      assert.deepEqual(latestDuplicateCheck(db2, exported.id).evidence, updated.duplicateCheck.evidence);
+      assert.deepEqual(latestDuplicateCheck(db2, exported.id).results, updated.duplicateCheck.results);
       closeDb(db2);
     });
   });

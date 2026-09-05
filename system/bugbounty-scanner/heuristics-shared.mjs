@@ -9,12 +9,6 @@ function lineAt(source, index) {
   return source.slice(0, index).split('\n').length;
 }
 
-function contextSnippet(source, index, radius = 60) {
-  const start = Math.max(0, index - radius);
-  const end = Math.min(source.length, index + radius);
-  return source.slice(start, end).replace(/\s+/g, ' ').trim();
-}
-
 const PLACEHOLDER = /^(x{3,}|0{3,}|1{3,}|todo|changeme|example|sample|test|fake|dummy|insert[_-]?key|replace[_-]?me|<[^>]+>|\$\{[^}]+\})$/i;
 const PLACEHOLDER_PREFIX = /^your[_-]?(api[_-]?key|token|secret|password)/i;
 
@@ -34,7 +28,7 @@ export function findHardcodedSecrets(source, filename) {
       file: filename,
       function: `line:${lineAt(source, match.index)}`,
       severity: 'a_investigar',
-      note: `Valor literal atribuído a um campo chamado "${match[1]}" — pode ser segredo real vazado ou só valor de teste/exemplo (confirmar manualmente). Contexto: "${contextSnippet(source, match.index)}"`,
+      note: `Valor literal atribuído a um campo chamado "${match[1]}" — pode ser segredo real vazado ou só valor de teste/exemplo (confirmar manualmente no arquivo e linha indicados). Valor e contexto omitidos para não republicar possíveis credenciais.`,
     });
   }
   return findings;

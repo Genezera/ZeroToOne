@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
 import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -309,6 +310,7 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
     cmdRecordDuplicateCheck(db, finding.id, {
       methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['auth function IDOR', 'missing ownership check', 'commit regression IDOR'], foundExisting: false,
+      evidence: publicSearchEvidence(['auth function IDOR', 'missing ownership check', 'commit regression IDOR']),
       ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 }, noveltyProof: REGRESSION_PROOF,
     });
     const ready = cmdSubmissionPreflight(db, finding.id, {

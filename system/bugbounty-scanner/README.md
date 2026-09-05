@@ -261,6 +261,20 @@ resultado parcial em “limpo”. Cada hit fica `candidate=true` e
 `disposition=unreviewed`, o que bloqueia o gate até revisão humana explícita
 como `ruled_out`.
 
+Issues e commits são paginados até o total declarado pela API (máximo de
+1.000 resultados por consulta); advisories seguem o cursor `Link` do GitHub
+(até dez páginas). `incomplete_results=true`, total alterado, página
+repetida, limite excedido ou falha HTTP abortam a busca e exigem nova
+consulta mais específica. Os registros `evidence` incluem URLs, número de
+páginas e contagens e sobrevivem ao banco, ledger, export e hidratação.
+Copie também `evidence` do draft ao usar `record-duplicate-check`.
+O gate bloqueia registros antigos sem essa cobertura e evidência de outro
+repositório. Essa checagem é estrutural: não autentica um JSON fornecido
+manualmente nem garante que os termos escolhidos encontrem todo report.
+
+Referências: [Search API](https://docs.github.com/en/rest/search) e
+[Repository security advisories](https://docs.github.com/en/rest/security-advisories/repository-advisories).
+
 ```json
 {
   "repository": "owner/repo",
@@ -1341,6 +1355,26 @@ também falhar, pra nunca deixar o repositório num estado quebrado pra
 próxima execução). 5 testes reais (`test/git-sync.test.mjs`) — incluindo
 o cenário exato da corrida real (dois clones de um bare repo, um
 empurra primeiro, o outro recupera) rodando `git` de verdade, não mock.
+
+## Proteção de publicação automática (2026-09-05)
+
+`commitAndPush` inspeciona o conteúdo staged antes de criar o commit.
+Credenciais reconhecidas por formato, valores configurados no ambiente,
+headers de autenticação/cookies e URLs assinadas bloqueiam a publicação.
+Os diagnósticos mostram somente caminho, linha e detector. Arquivos
+binários, compactados e outros formatos não inspecionáveis também ficam
+retidos. Em caso de bloqueio, os arquivos e o índice são preservados para
+revisão local; o runner informa falha e não faz commit/push.
+
+Para checar manualmente o índice: `node system/bugbounty-scanner/publication-secret-gate.mjs`.
+Achados `hardcoded_secret` preservam arquivo, linha e nome do campo, mas
+omitem o valor e o contexto adjacente antes de entrar na fila compartilhada.
+
+Limites: detecção heurística, sem garantia de cobrir toda PII, texto
+ofuscado ou segredo desconhecido. O gate cobre adições textuais dos runners
+que usam `commitAndPush`, não faz auditoria retroativa do histórico e não é
+um hook obrigatório para commits manuais. Um pacote binário requer revisão
+humana do conteúdo antes de qualquer publicação manual.
 
 ## Slither contra os alvos Solidity — gratuito, 100% local (2026-09-01)
 

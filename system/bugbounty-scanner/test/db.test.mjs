@@ -318,6 +318,7 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
     recordDuplicateCheck(db, SAMPLE.id, {
       methods: ['github_issues', 'github_commits', 'github_advisories', 'web_search'],
       queries: ['file function', 'source sink'], results: [], foundExisting: false,
+      evidence: [{ source: 'github_issues', pagesScanned: 2, complete: true, apiUrls: ['https://api.github.com/search/issues?page=1', 'https://api.github.com/search/issues?page=2'] }],
       noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
       signals: { priorDuplicateSubmissions: 0 },
       noveltyProof: { kind: 'verified_regression', introducedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
@@ -340,6 +341,8 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
     const [line] = exportFindingsToQueueLines(db).map(JSON.parse);
     assert.equal(line.duplicateCheck.noveltyStatus, 'private_unknown');
     assert.equal(line.duplicateCheck.riskScore, 25);
+    assert.equal(line.duplicateCheck.evidence[0].pagesScanned, 2);
+    assert.equal(line.duplicateCheck.evidence[0].apiUrls.length, 2);
     assert.equal(line.duplicateCheck.signals.priorDuplicateSubmissions, 0);
     assert.equal(line.duplicateCheck.noveltyProof.kind, 'verified_regression');
     assert.equal(line.impactAssessment.impactScope, 'other_user');
