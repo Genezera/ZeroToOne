@@ -281,3 +281,54 @@ rodada, não forçado.
 Nenhum achado novo digno de relatório nesta rodada (os 4 da fila
 refutados, os 3 do sweep proativo sem achado) — resultado normal e
 válido. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 Auth0
+by Okta, 4 Circle BBP), skip completo, nenhum arquivo desses dois
+programas lido.
+
+Leitura profunda proativa (delegada a subagente) direcionada a
+`mattermost-plugin-zoom` (repo do log já tocado por achados de fila em
+rodada anterior, mas nunca por sweep proativo de arquivo completo).
+4 arquivos novos lidos: `server/webhook.go`, `server/zoom/webhook.go`,
+`server/http.go`, `server/configuration.go`.
+
+Achado novo: `verifyZoomWebhookSignature` (`server/webhook.go:589`)
+compara a assinatura HMAC-SHA256 do webhook do Zoom com
+`computedSignature != providedSignature` (comparação de string comum)
+em vez de `hmac.Equal`/`subtle.ConstantTimeCompare` — mesma classe
+CWE-208 já confirmada 2x nesta sessão (kubeadm `DetachedTokenIsValid`,
+e o irmão direto `mattermost-plugin-gitlab::handleWebhook`). Diferença
+importante que reduz a severidade bem abaixo do irmão gitlab: a rota
+`/webhook` exige primeiro passar por `verifyMattermostWebhookSecret`
+(comparação segura, `subtle.ConstantTimeCompare`, sobre um segredo
+`WebhookSecret` obrigatório e não-vazio) — só depois desse gate seguro
+é que o código chega na comparação insegura de um segundo segredo
+independente (`ZoomWebhookSecret`). Ao contrário do caso gitlab (onde
+a comparação vulnerável era o único gate), aqui um atacante precisaria
+já conhecer o `WebhookSecret` só pra alcançar o oráculo de timing do
+Zoom — superfície de ataque prática muito reduzida. Rastreei também o
+impacto teórico (spoofing de eventos Zoom → posts falsos; download de
+arquivo de gravação via `downloadZoomFile`, mas `isZoomDownloadURL` já
+restringe corretamente o host, sem SSRF aberto). Severidade estimada
+baixa/informativa. Registrado, `filesRead` completo salvo, avançado
+para `corroborated_static` (aceito pelo CLI). `check-scope` rodado ao
+vivo: recusa (`allowed:false`, "nenhum scope snapshot existe para este
+programa") — mesmo gap de infraestrutura já documentado para o achado
+gitlab, não forçado. Tipo `non_constant_time_hmac_comparison` não é
+Solidity, então não há validador de PoC disponível no sistema hoje —
+limitação real, `corroborated_static` é o teto possível nesta rodada,
+consistente com a regra do pipeline.
+
+Um registro duplicado por erro de digitação no path (criado a meio da
+investigação, faltando o prefixo `mattermost/`) foi identificado e
+transicionado para `false_positive` com nota explicando o erro e
+apontando para o id correto — mantém o histórico limpo sem inventar
+um "achado" onde só havia um typo.
+
+`deep-read-log.json` atualizado (+4 entradas em
+`mattermost/mattermost-plugin-zoom`). Clones temporários removidos.
+`export-queue` rodado ao final da rodada.
