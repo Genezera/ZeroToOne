@@ -963,7 +963,10 @@
     "packages/next/src/server/app-render/dynamic-access-async-storage-instance.ts + dynamic-access-async-storage.external.ts (so wiring de AsyncLocalStorage pra abortController de dynamic access, sem logica propria, sem achado)",
     "packages/next/src/telemetry/events/session-stopped.ts (payload de telemetria CLI -- versoes/duracao/flags, nenhum PII ou segredo, sem achado)",
     "packages/next/src/server/app-render/get-script-nonce-from-header.tsx (getScriptNonceFromHeader -- so extrai o nonce de um header CSP local via regex, procurando script-src depois default-src; fonte do header e o proprio response da aplicacao, nao input de terceiro; fail-open documentado (retorna undefined em nonce malformado/ausente, request continua sem nonce em vez de falhar) -- comportamento seguro por padrao, sem achado)",
-    "packages/next/src/client/components/styles/access-error-styles.ts (so objeto CSS-in-JS estatico p/ paginas de erro 401/403/404, sem logica, sem achado)"
+    "packages/next/src/client/components/styles/access-error-styles.ts (so objeto CSS-in-JS estatico p/ paginas de erro 401/403/404, sem logica, sem achado)",
+    "packages/next/src/compiled/jsonwebtoken/index.js (leitura direta do bundle vendored -- confirma achado de rodada anterior sobre try-get-preview-data.ts/api-resolver.ts: verify.js so aceita alg none quando secretOrPublicKey.type nao e secret E algorithms nao especificado E assinatura vazia -- aqui a chave e sempre string/Buffer (type=secret), entao default vira HS256/384/512 apenas, batendo com o HS256 fixo do sign(). Sem achado, apenas confirmacao mais rigorosa)",
+    "scripts/release-github-auth.js (script de release/CI, so roda com credenciais proprias da Vercel; token vem de env var, execa com args em array (sem shell:true) -- sem injecao de comando, sem superficie de ataque externa. Sem achado)",
+    "turbopack test fixtures com nome auth/session/secret/token no path (auth0.js, firebase-admin.js, auth1.js/auth2.js, Tokenizer.js, secret.txt x2, emptied_cells_session_dependent.rs) -- checados, todos fixtures triviais de teste do bundler (circular import, dependency tracing, snapshot de transform), sem logica de auth real. Sem achado)"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",

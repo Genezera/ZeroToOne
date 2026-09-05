@@ -8033,3 +8033,53 @@ agente/sandbox) adicionados desde a última cobertura:
 
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/ai`: +3 entradas, de 39 para 42).
+
+## Rodada 2026-09-05 #4 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero via `check-program` --
+`Block Open Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados.
+`migrate-to-v2.mjs` + `list-pending` global = 34 candidatos, 100% dos
+dois programas bloqueados (30 Auth0 by Okta, 4 Circle BBP) -- nenhum
+repo desses tocado (nem clone, nem leitura, nem grep de nome de
+arquivo).
+
+Leitura profunda proativa em `vercel/next.js`: a rodada anterior (#3,
+mesmo push) já tinha checado esse repo via grep de *nome de arquivo*
+contra padrão auth/session/token/etc. e concluído que não havia
+candidato novo -- mas esse método tem um ponto cego: não pega arquivos
+cujo *conteúdo* usa uma lib sensível sem ter uma dessas palavras no
+próprio nome do arquivo. Busquei de outro ângulo: `grep -rn
+"jsonwebtoken"` em todo `packages/next/src` (não só nome de arquivo) e
+achei 3 call sites -- `api-resolver.ts`/`try-get-preview-data.ts` (já
+cobertos, confirmam a mesma conclusão de rodada bem anterior sobre
+`jsonwebtoken.verify()` sem `algorithms` explícito no preview-mode) e,
+o achado incremental de fato, o próprio bundle vendored nunca lido
+diretamente: `packages/next/src/compiled/jsonwebtoken/index.js`. Li a
+lógica de default de algoritmo no `verify.js` minificado: quando
+`options.algorithms` não é passado, `if(s.type==="secret"){t.algorithms=
+["HS256","HS384","HS512"]}` (chave string/Buffer = tipo "secret") --
+"none" só é aceito se a assinatura do token vier vazia E `algorithms`
+não especificado, o que essa branch já filtra. Bate exatamente com o
+`HS256` fixo que `setPreviewData` usa pra assinar (`api-resolver.ts`
+L187-196). Confirmação mais rigorosa (leitura direta do código-fonte
+da lib, não só inferência de versão) do mesmo resultado já registrado:
+sem bypass de algoritmo. Também lidos `scripts/release-github-auth.js`
+(token de release vem de env var `RELEASE_GITHUB_TOKEN`, `execa` com
+args em array sem `shell:true` -- sem injeção, e sem superfície de
+ataque externa por rodar só em CI da própria Vercel) e um lote de
+fixtures de teste do Turbopack com nome auth/session/secret/token no
+path (`auth0.js`, `firebase-admin.js`, `auth1.js`/`auth2.js`,
+`Tokenizer.js`, dois `secret.txt`,
+`emptied_cells_session_dependent.rs`) -- todos fixtures triviais
+(circular import, dependency tracing, snapshot de transform), sem
+lógica de auth real.
+
+Para StackingDAO: `api.hiro.so` reconfirmado bloqueado (`CONNECT
+tunnel failed, response 403`), os 15 contratos `.clar` seguem 100% dos
+13 assets do escopo oficial, sem contrato novo. Ver
+`research/bugbounty/stackingdao/NOTES.md`.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/next.js`: +3 entradas, de 36 para 39). Clones
+temporários (`/tmp/vercel-scan`, `/tmp/nextjs-scan`) removidos ao
+final.
