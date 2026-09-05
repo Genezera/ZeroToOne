@@ -1333,3 +1333,16 @@ rodadas, condição inalterada). Sem arquivo novo para ler neste
 programa -- leitura profunda proativa direcionada a `vercel/workflow`
 (hipótese de IDOR em `fetchHookToken`, refutada; ver NOTES.md de
 Vercel Open Source). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-05 #5 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero. Mesmos 34 candidatos
+globais pendentes (30 Auth0 by Okta, 4 Circle BBP), ambos bloqueados —
+nenhum repo tocado. `api.hiro.so` não retentado nesta rodada (condição
+de bloqueio de proxy documentada há dezenas de rodadas consecutivas,
+sem sinal de mudança). Os 15 contratos `.clar` já lidos seguem
+cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`,
+sem contrato novo. Leitura profunda proativa desta rodada direcionada
+a `vercel/vercel` (ver NOTES.md de Vercel Open Source — 3 arquivos
+novos, todos triviais, sem achado). Nenhuma transição de estado neste
+programa.
