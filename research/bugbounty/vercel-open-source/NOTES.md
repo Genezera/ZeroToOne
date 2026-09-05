@@ -8856,3 +8856,46 @@ repo inteiro):
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado com os 5 arquivos acima em `vercel/eve`. Clone temporário
 (`eve`, sparse-checkout) removido ao final.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, push 3a99b89->802c957, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum dos três tocado. `migrate-to-v2.mjs` +
+`list-pending` global = 34 candidatos, 100% fora do escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP) — skip completo, nenhum
+arquivo desses dois programas clonado ou lido.
+
+Leitura profunda proativa fechando os 2 arquivos deixados como
+"candidato natural pra próxima" na rodada anterior sobre
+`vercel/vercel` (sparse-checkout, só os 2 arquivos):
+
+- `examples/hydrogen-2/app/routes/account_.reset.$id.$resetToken.tsx`
+  (completo) — mesmo padrão dos irmãos `account_.login.tsx`/
+  `account_.activate...tsx` já auditados: `id`/`resetToken` de
+  `params` vão direto pra mutation `customerReset` da Shopify;
+  validação real do token acontece no backend da Shopify, não neste
+  arquivo de exemplo; `session.set('customerAccessToken', ...)` só
+  depois de resposta válida. Sem achado.
+- `examples/eleventy/feed/htaccess.njk` (completo, 6 linhas) —
+  template estático Apache (`DirectoryIndex`), sem input externo. Sem
+  achado.
+
+Com isso, todo o diff que motivou a rodada de `examples/hydrogen-2`/
+`examples/eleventy` está coberto. Terceiro arquivo da rodada, em
+`vercel/flags` (único arquivo com nome auth/crypto/token ainda não
+lido nesse repo, contra listagem fresca via clone raso):
+
+- `packages/flags/src/lib/crypto.test.ts` (completo, 78 linhas) —
+  suíte de teste confirma por execução o que a auditoria anterior de
+  `crypto.ts` já documentou por leitura: decrypt com secret errado
+  retorna `undefined` (nunca lança nem vaza claim), e um payload de
+  `encryptFlagDefinitions` não passa em `verifyAccessProof` (separação
+  de claim de propósito `pur` entre os dois usos do JWE). Confirma a
+  auditoria anterior, sem achado novo.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/vercel`: +2, `vercel/flags`: +1). `StackingDAO`:
+sem contrato novo, 15 `.clar` seguem 100% do escopo (ver NOTES.md do
+programa). Clones temporários (sparse-checkout de `vercel/vercel` e
+clone raso de `vercel/flags`) removidos ao final.

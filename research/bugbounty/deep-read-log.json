@@ -951,7 +951,8 @@
     "packages/flags/src/next/precompute.ts",
     "packages/vercel-flags-core/src/evaluate.ts",
     "packages/flags/src/sveltekit/precompute.ts",
-    "packages/flags/src/sveltekit/env.ts"
+    "packages/flags/src/sveltekit/env.ts",
+    "packages/flags/src/lib/crypto.test.ts (completo, 78 linhas -- confirma por teste que decrypt com secret errado retorna undefined e que encryptFlagDefinitions nao verifica como access proof (separacao de claim de proposito ja documentada em crypto.ts). Sem achado, confirma auditoria anterior)"
   ],
   "vercel/ms": [
     "src/index.ts"
@@ -1161,7 +1162,9 @@
     "packages/cli/evals/evals/login-whoami/EVAL.ts (mesmo padrao do EVAL.ts anterior -- so asserta comportamento do agente avaliado via commands/output gravados, sem logica de auth do CLI em si. Sem achado)",
     "examples/hydrogen-2/app/routes/account_.login.tsx (action() -- email/password vao direto pra customerAccessTokenCreate GraphQL mutation do backend real da Shopify; session.set('customerAccessToken', ...) so acontece DEPOIS de customerAccessTokenCreate.customerAccessToken.accessToken vir preenchido na resposta -- nenhuma decisao de autenticacao e feita neste arquivo, e so uma UI de formulario sobre a API da Shopify. Sem achado)",
     "examples/hydrogen-2/app/routes/account_.activate.$id.$activationToken.tsx (action() -- mesmo padrao: id/activationToken de params vao direto pra customerActivate mutation da Shopify, validacao real do token acontece no backend da Shopify, nao neste arquivo; session so seta customerAccessToken apos resposta valida. Sem achado)",
-    "python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/datastructures/auth.py (Authorization/WWWAuthenticate -- vendored verbatim do projeto Werkzeug/Pallets upstream, so parsing/serializacao de header RFC7235 (Basic base64, Bearer token, Digest params), nenhuma decisao de autorizacao/comparacao de segredo acontece aqui; comparado de memoria com a implementacao upstream conhecida, sem sinal de patch/modificacao local que introduzisse divergencia. Sem achado)"
+    "python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/datastructures/auth.py (Authorization/WWWAuthenticate -- vendored verbatim do projeto Werkzeug/Pallets upstream, so parsing/serializacao de header RFC7235 (Basic base64, Bearer token, Digest params), nenhuma decisao de autorizacao/comparacao de segredo acontece aqui; comparado de memoria com a implementacao upstream conhecida, sem sinal de patch/modificacao local que introduzisse divergencia. Sem achado)",
+    "examples/hydrogen-2/app/routes/account_.reset.$id.$resetToken.tsx (completo -- mesmo padrao dos irmaos login/activate: id/resetToken de params vao direto pra customerReset mutation da Shopify, validacao real do token no backend Shopify, nao neste arquivo; session so seta customerAccessToken apos resposta valida. Sem achado)",
+    "examples/eleventy/feed/htaccess.njk (completo, 6 linhas -- template estatico Apache DirectoryIndex, sem input externo. Sem achado)"
   ],
   "vercel/workflow": [
     "packages/core/src/runtime/step-ownership.ts (isStepOwnershipActive/stepLeaseRemainingSeconds/backstopIdempotencyKey/hasPendingStepOwnedByMessage -- ownership de mensagem de fila entre workers internos, nao fronteira de autorizacao de usuario; sem achado)",

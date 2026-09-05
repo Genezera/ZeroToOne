@@ -1493,3 +1493,20 @@ Leitura profunda proativa desta rodada direcionada a `vercel/chat` (ver
 NOTES.md de Vercel Open Source — 3 arquivos novos: rota Nuxt de
 webhook, `bridge-adapter.ts` do Teams, callback encoder de exemplo do
 Telegram; sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, push 3a99b89->802c957, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum tocado. `list-pending` global = 34, 100% fora
+do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP), skip
+completo. `api.hiro.so` não retestado nesta rodada (mesmo bloqueio de
+proxy já reconfirmado em rodadas recentes, condição inalterada). Os 15
+contratos `.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/vercel`
+(2 arquivos, fechando o diff pendente de `examples/hydrogen-2`/
+`examples/eleventy`) e `vercel/flags` (1 arquivo, `crypto.test.ts`) —
+ver NOTES.md de Vercel Open Source. Sem achado. Nenhuma transição de
+estado neste programa.
