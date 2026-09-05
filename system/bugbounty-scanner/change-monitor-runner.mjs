@@ -22,9 +22,14 @@ function loadJson(filePath, fallback) {
   try { return JSON.parse(readFileSync(filePath, 'utf8')); } catch { return fallback; }
 }
 
-function defaultScan() {
+function defaultScan(changes = []) {
   return spawnSync(process.execPath, [path.join(__dirname, 'scan-runner.mjs')], {
-    cwd: REPO_ROOT, env: process.env, encoding: 'utf8', windowsHide: true,
+    cwd: REPO_ROOT,
+    env: {
+      ...process.env,
+      ZERO2ONE_CHANGED_REPOSITORIES: JSON.stringify(changes.map((change) => change.repository)),
+    },
+    encoding: 'utf8', windowsHide: true,
     timeout: 90 * 60 * 1000, maxBuffer: 16 * 1024 * 1024,
   });
 }
@@ -58,22 +63,28 @@ export async function runChangeMonitor({
   }
 
   if (result.changes.length > 0) {
-    const scanResult = scan();
+    const scanResult = scan(result.changes);
     if (scanResult.status !== 0 || scanResult.error) {
       const output = [scanResult.stdout, scanResult.stderr, scanResult.error?.message].filter(Boolean).join('\n').slice(-4000);
       throw new Error(`scan orientado a mudança falhou; cursor não avançou: ${output}`);
     }
   }
 
-  mkdirSync(path.dirname(statePath), { recursive: true });
-  writeFileSync(statePath, `${JSON.stringify(result.nextState, null, 2)}\n`, 'utf8');
+  if (result.stateChanged) {
+    mkdirSync(path.dirname(statePath), { recursive: true });
+    writeFileSync(statePath, `${JSON.stringify(result.nextState, null, 2)}\n`, 'utf8');
+  }
   if (result.changes.length > 0) {
     mkdirSync(path.dirname(eventsPath), { recursive: true });
     for (const change of result.changes) appendFileSync(eventsPath, `${JSON.stringify(change)}\n`, 'utf8');
   }
   const message = result.changes.length > 0
     ? `Change monitor: ${result.changes.length} mudança(s) rastreada(s) e escaneada(s)`
-    : result.baseline ? `Change monitor: baseline de ${result.checked} repositório(s)` : null;
+    : result.baseline
+      ? `Change monitor: baseline de ${result.checked} repositório(s)`
+      : result.stateChanged
+        ? `Change monitor: baseline atualizado (+${result.addedRepositories.length}/-${result.removedRepositories.length} repositório(s))`
+        : null;
   if (message) {
     const published = publish(REPO_ROOT, message, log);
     if (!published.ok) throw new Error(`change monitor não publicou estado: ${published.reason}`);

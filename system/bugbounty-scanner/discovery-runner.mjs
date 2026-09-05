@@ -25,7 +25,7 @@ import { runSemgrepAgainstTarget, toQueueFindings as semgrepToQueueFindings } fr
 import { runCodeqlAgainstTarget, toQueueFindings as codeqlToQueueFindings } from './codeql-runner.mjs';
 import { recordRotationResult, selectTargetsForRotation } from './analysis-rotation.mjs';
 import { openDb, upsertFinding, closeDb, listSubmissions, listFindings, exportFindingsToQueueJsonl } from './db.mjs';
-import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
+import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, isDuplicateSaturatedProgram } from './outcome-intelligence.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
 
 // TARGETS (Clarity/StackingDAO, targets.mjs) fica de fora de propósito:
@@ -167,10 +167,12 @@ export async function runDiscovery({ metadataOnly = false } = {}) {
   // verdade usadas dali em diante (Slither/OSV/Semgrep + resumo), nunca
   // os imports estáticos JS_TARGETS/GO_TARGETS/JVM_TARGETS/SOLIDITY_TARGETS,
   // que ficam presos ao estado de ANTES da promoção desta mesma rodada.
-  const freshGoTargets = filterBannedTargets(mergedAutoPromoted.filter((t) => t.language === 'go'), programPolicy);
-  const freshJsTargets = filterBannedTargets([...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')], programPolicy);
-  const freshJvmTargets = filterBannedTargets([...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')], programPolicy);
-  const freshSolidityTargets = filterBannedTargets([...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')], programPolicy);
+  const heavyEligible = (targets) => filterBannedTargets(targets, programPolicy)
+    .filter((target) => !isDuplicateSaturatedProgram(target.program, duplicateHistoryByProgram));
+  const freshGoTargets = heavyEligible(mergedAutoPromoted.filter((t) => t.language === 'go'));
+  const freshJsTargets = heavyEligible([...JS_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'js')]);
+  const freshJvmTargets = heavyEligible([...JVM_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'jvm')]);
+  const freshSolidityTargets = heavyEligible([...SOLIDITY_TARGETS_MANUAL, ...mergedAutoPromoted.filter((t) => t.language === 'solidity')]);
   writeFileSync(
     PROMOTION_LOG_PATH,
     JSON.stringify(

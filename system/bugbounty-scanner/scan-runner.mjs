@@ -29,11 +29,12 @@ import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
 import { runDependencyScan } from './dep-scanner.mjs';
 import { appendEntry, readLedger } from '../ledger/ledger.mjs';
-import { openDb, upsertFinding, closeDb, stateCounts } from './db.mjs';
+import { openDb, upsertFinding, closeDb, stateCounts, listFindings, listSubmissions } from './db.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runTelegramDigest } from './telegram-digest.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
+import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, isDuplicateSaturatedProgram } from './outcome-intelligence.mjs';
 import { filterBannedTargets, loadProgramPolicyStrict } from './program-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -186,6 +187,53 @@ function loadQuarantineOverrides() {
   }
 }
 
+function targetRepositoryKey(target = {}) {
+  return target.owner && target.repo ? `${target.owner}/${target.repo}`.toLowerCase() : null;
+}
+
+export function parseChangedRepositories(value) {
+  if (value == null || value === '') return null;
+  let parsed;
+  try { parsed = JSON.parse(value); } catch (error) {
+    throw new Error(`ZERO2ONE_CHANGED_REPOSITORIES inválido: ${error.message}`);
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('ZERO2ONE_CHANGED_REPOSITORIES precisa ser array JSON não-vazio');
+  }
+  const keys = parsed.map((item) => String(item || '').toLowerCase());
+  if (keys.some((item) => !/^[a-z0-9_.-]+\/[a-z0-9_.-]+$/.test(item))) {
+    throw new Error('ZERO2ONE_CHANGED_REPOSITORIES contém owner/repo inválido');
+  }
+  return new Set(keys);
+}
+
+/** Routine scans skip duplicate-saturated programs; a change-triggered scan
+ * selects exactly the changed repositories and intentionally bypasses that
+ * efficiency filter so a fresh regression can still be found. */
+export function selectTargetsForRun(configuredTargetLists, programPolicy, duplicateHistoryByProgram, changedRepositories = null) {
+  const policyAllowed = Object.fromEntries(Object.entries(configuredTargetLists)
+    .map(([language, targets]) => [language, filterBannedTargets(targets, programPolicy)]));
+  const policyBlocked = Object.values(configuredTargetLists).reduce((sum, targets) => sum + targets.length, 0)
+    - Object.values(policyAllowed).reduce((sum, targets) => sum + targets.length, 0);
+  let duplicateRiskSkipped = 0;
+  let deltaFiltered = 0;
+  const targetLists = Object.fromEntries(Object.entries(policyAllowed).map(([language, targets]) => {
+    const selected = targets.filter((target) => {
+      if (changedRepositories) {
+        const key = targetRepositoryKey(target);
+        const keep = !!key && changedRepositories.has(key);
+        if (!keep) deltaFiltered += 1;
+        return keep;
+      }
+      const keep = !isDuplicateSaturatedProgram(target.program, duplicateHistoryByProgram);
+      if (!keep) duplicateRiskSkipped += 1;
+      return keep;
+    });
+    return [language, selected];
+  }));
+  return { targetLists, policyBlocked, duplicateRiskSkipped, deltaFiltered };
+}
+
 export async function runScan() {
   // Puxa o trabalho da sessão de nuvem ANTES de escanear -- sem isso,
   // a tarefa agendada podia escanear em cima de estado desatualizado
@@ -203,12 +251,25 @@ export async function runScan() {
     clarity: TARGETS, js: JS_TARGETS, go: GO_TARGETS,
     jvm: JVM_TARGETS, swift: SWIFT_TARGETS, solidity: SOLIDITY_TARGETS,
   };
-  const targetLists = Object.fromEntries(Object.entries(configuredTargetLists)
-    .map(([language, targets]) => [language, filterBannedTargets(targets, programPolicy)]));
-  const blockedTargetCount = Object.values(configuredTargetLists).reduce((sum, targets) => sum + targets.length, 0)
-    - Object.values(targetLists).reduce((sum, targets) => sum + targets.length, 0);
+  let duplicateHistoryByProgram = {};
+  {
+    const historyDb = openDb(DB_PATH);
+    try {
+      const submissions = enrichSubmissionsWithFindings(listSubmissions(historyDb), listFindings(historyDb));
+      duplicateHistoryByProgram = computeStatsFromSubmissions(submissions).byProgram;
+    } finally { closeDb(historyDb); }
+  }
+  const changedRepositories = parseChangedRepositories(process.env.ZERO2ONE_CHANGED_REPOSITORIES);
+  const selection = selectTargetsForRun(configuredTargetLists, programPolicy, duplicateHistoryByProgram, changedRepositories);
+  const { targetLists } = selection;
+  const blockedTargetCount = selection.policyBlocked;
   if (blockedTargetCount > 0) {
     log(`Política fail-closed: ${blockedTargetCount} alvo(s) não serão lidos nesta rodada (programa bloqueado, RoE pendente ou sem decisão explícita).`);
+  }
+  if (changedRepositories) {
+    log(`Modo delta: ${changedRepositories.size} repositório(s) alterado(s); ${selection.deltaFiltered} alvo(s) estável(is) excluído(s) desta rodada.`);
+  } else if (selection.duplicateRiskSkipped > 0) {
+    log(`Modo anti-duplicate: ${selection.duplicateRiskSkipped} alvo(s) de programa com histórico saturado ficaram monitor-only; só serão escaneados após commit novo.`);
   }
   const seen = loadSeen();
   const newFindings = [];

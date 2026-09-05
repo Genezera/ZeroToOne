@@ -8,6 +8,18 @@ export function programKey(value) {
   return String(value || 'unknown').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
+/** Programs with a repeated, overwhelmingly duplicate outcome are poor
+ * candidates for historical/routine scanning. They remain monitored for new
+ * commits so a fresh regression can still enter the strict novelty path. */
+export function isDuplicateSaturatedProgram(program, historyByProgram = {}, {
+  minSubmissions = 2, minDuplicateRate = 0.8,
+} = {}) {
+  const stats = historyByProgram[programKey(program)];
+  return !!stats
+    && Number(stats.submissions) >= minSubmissions
+    && Number(stats.duplicateRate) >= minDuplicateRate;
+}
+
 /** Junta entidades de submissão com os findings locais que deram origem ao
  * report. A tabela de submissões continua normalizada; este view é que leva
  * repositório, fraqueza e fingerprint para o motor de aprendizado. */

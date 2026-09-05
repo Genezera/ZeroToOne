@@ -5,6 +5,26 @@ Rastreia o progresso do plano descrito em
 mestre, recebido do usuário em 29/08/2026). Atualizado ao final de cada
 fase concluída.
 
+## Estado operacional consolidado — 2026-09-05
+
+O sistema opera com descoberta diária, scan de segurança a cada 6 horas,
+sincronização de outcomes da HackerOne a cada hora e monitor de HEAD a cada
+15 minutos. O monitor é agora o caminho prioritário de novidade: ele passa ao
+scanner somente os repositórios realmente alterados e só confirma o cursor
+depois que a inspeção delta termina com sucesso. Rodadas sem mudança não
+reescrevem timestamps nem geram commits; entrada ou remoção de alvo atualiza o
+baseline explicitamente.
+
+O histórico real também controla custo e risco: programas com pelo menos duas
+submissões e taxa de duplicate de 80% ou mais ficam `monitor-only` nas
+varreduras históricas. Eles continuam sendo observados e um commit novo os
+reabilita para a inspeção delta, de modo que a economia não cria um ponto cego
+para regressões recentes. Isso complementa — não substitui — os gates finais:
+regressão comprovada em até 48 horas, E4 end-to-end, deployment high no mesmo
+commit, ativo explicitamente bounty-eligible, impacto Medium+ e aprovação
+humana. Reports privados seguem invisíveis; portanto nenhuma implementação
+pode garantir risco zero de duplicate.
+
 ## Fase 0 — Auditoria do repositório e baseline
 
 **Status: concluída em 2026-08-29.**

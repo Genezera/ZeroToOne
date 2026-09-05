@@ -65,7 +65,7 @@ export async function pollRepositoryChanges(repositories, previousState = {}, {
 } = {}) {
   const observedAt = now().toISOString();
   const priorRepos = previousState.repos || {};
-  const nextRepos = { ...priorRepos };
+  const nextRepos = {};
   const changes = [];
   const failures = [];
   let cursor = 0;
@@ -77,7 +77,9 @@ export async function pollRepositoryChanges(repositories, previousState = {}, {
       try {
         const head = await fetchHead(target);
         const previous = priorRepos[key] || null;
-        nextRepos[key] = { ...head, observedAt, programs: target.programs, languages: target.languages };
+        nextRepos[key] = previous?.sha === head.sha
+          ? { ...previous, programs: target.programs, languages: target.languages }
+          : { ...head, observedAt, programs: target.programs, languages: target.languages };
         if (previous?.sha && previous.sha !== head.sha) {
           changes.push({
             repository: key,
@@ -101,16 +103,25 @@ export async function pollRepositoryChanges(repositories, previousState = {}, {
   }
 
   await Promise.all(Array.from({ length: Math.max(1, Math.min(concurrency, repositories.length || 1)) }, () => worker()));
+  const currentKeys = new Set(repositories.map(repoKey));
+  const addedRepositories = repositories.map(repoKey).filter((key) => !priorRepos[key]).sort();
+  const removedRepositories = Object.keys(priorRepos).filter((key) => !currentKeys.has(key)).sort();
+  const orderedNextRepos = Object.fromEntries(Object.entries(nextRepos).sort(([a], [b]) => a.localeCompare(b)));
+  const orderedPriorRepos = Object.fromEntries(Object.entries(priorRepos).sort(([a], [b]) => a.localeCompare(b)));
+  const stateChanged = JSON.stringify(orderedNextRepos) !== JSON.stringify(orderedPriorRepos);
   return {
     ok: failures.length === 0,
     baseline: Object.keys(priorRepos).length === 0,
     checked: repositories.length,
     changes: changes.sort((a, b) => a.repository.localeCompare(b.repository)),
+    addedRepositories,
+    removedRepositories,
+    stateChanged,
     failures,
     nextState: {
       schemaVersion: CHANGE_MONITOR_SCHEMA_VERSION,
-      checkedAt: observedAt,
-      repos: nextRepos,
+      checkedAt: stateChanged ? observedAt : (previousState.checkedAt || observedAt),
+      repos: orderedNextRepos,
     },
   };
 }

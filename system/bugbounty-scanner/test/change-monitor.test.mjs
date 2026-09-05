@@ -36,6 +36,9 @@ test('pollRepositoryChanges cria baseline sem chamar mudança de vulnerabilidade
   assert.equal(result.ok, true);
   assert.equal(result.baseline, true);
   assert.equal(result.changes.length, 0);
+  assert.equal(result.stateChanged, true);
+  assert.deepEqual(result.addedRepositories, ['acme/api']);
+  assert.deepEqual(result.removedRepositories, []);
   assert.equal(result.nextState.repos['acme/api'].sha, A);
 });
 
@@ -50,6 +53,46 @@ test('pollRepositoryChanges registra delta direto com parent e instante de detec
   assert.equal(result.changes[0].directSingleCommit, true);
   assert.equal(result.changes[0].parentCommit, A);
   assert.equal(result.changes[0].introducedCommit, B);
+  assert.equal(result.stateChanged, true);
+});
+
+test('pollRepositoryChanges mantém estado byte-estável quando o head não mudou', async () => {
+  const repos = [{ owner: 'acme', repo: 'api', programs: ['P'], languages: ['js'] }];
+  const previous = {
+    schemaVersion: 1,
+    checkedAt: '2026-09-04T11:00:00.000Z',
+    repos: {
+      'acme/api': {
+        sha: A, parentSha: B, branch: 'main', observedAt: '2026-09-04T11:00:00.000Z',
+        programs: ['P'], languages: ['js'],
+      },
+    },
+  };
+  const result = await pollRepositoryChanges(repos, previous, {
+    fetchHead: async () => ({ sha: A, parentSha: B, branch: 'main', committedAt: '2026-09-04T10:00:00Z' }),
+    now: () => new Date('2026-09-04T12:01:00Z'),
+  });
+  assert.equal(result.stateChanged, false);
+  assert.deepEqual(result.addedRepositories, []);
+  assert.deepEqual(result.removedRepositories, []);
+  assert.deepEqual(result.nextState, previous);
+});
+
+test('pollRepositoryChanges registra expansão e remoção do baseline sem inventar delta', async () => {
+  const repos = [{ owner: 'new', repo: 'repo', programs: ['P'], languages: ['go'] }];
+  const previous = {
+    schemaVersion: 1,
+    checkedAt: '2026-09-04T11:00:00.000Z',
+    repos: { 'old/repo': { sha: A, programs: ['P'], languages: ['js'] } },
+  };
+  const result = await pollRepositoryChanges(repos, previous, {
+    fetchHead: async () => ({ sha: B, parentSha: A, branch: 'main', committedAt: '2026-09-04T12:00:00Z' }),
+    now: () => new Date('2026-09-04T12:01:00Z'),
+  });
+  assert.equal(result.stateChanged, true);
+  assert.deepEqual(result.addedRepositories, ['new/repo']);
+  assert.deepEqual(result.removedRepositories, ['old/repo']);
+  assert.equal(result.changes.length, 0);
 });
 
 test('runner só avança cursor depois que scan orientado à mudança passa', async () => {
@@ -61,6 +104,7 @@ test('runner só avança cursor depois que scan orientado à mudança passa', as
   const poll = async () => ({
     ok: true, baseline: false, checked: 1, failures: [],
     changes: [{ repository: 'acme/api', previousSha: A, introducedCommit: B }],
+    addedRepositories: [], removedRepositories: [], stateChanged: true,
     nextState: { schemaVersion: 1, repos: { 'acme/api': { sha: B } } },
   });
   const base = {
@@ -73,10 +117,47 @@ test('runner só avança cursor depois que scan orientado à mudança passa', as
     await assert.rejects(() => runChangeMonitor({ ...base, scan: () => ({ status: 1, stderr: 'falhou' }) }), /cursor não avançou/);
     assert.equal(JSON.parse(readFileSync(statePath, 'utf8')).repos['acme/api'].sha, A);
 
-    const result = await runChangeMonitor({ ...base, scan: () => ({ status: 0, stdout: 'ok' }) });
+    let scannedChanges = null;
+    const result = await runChangeMonitor({ ...base, scan: (changes) => {
+      scannedChanges = changes;
+      return { status: 0, stdout: 'ok' };
+    } });
     assert.equal(result.scanTriggered, true);
+    assert.equal(scannedChanges[0].repository, 'acme/api');
     assert.equal(JSON.parse(readFileSync(statePath, 'utf8')).repos['acme/api'].sha, B);
     assert.equal(JSON.parse(readFileSync(eventsPath, 'utf8').trim()).introducedCommit, B);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('runner sem mudança não reescreve nem publica o estado', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'zto-change-monitor-stable-'));
+  const statePath = path.join(dir, 'state.json');
+  const eventsPath = path.join(dir, 'events.jsonl');
+  const previousText = `${JSON.stringify({ schemaVersion: 1, checkedAt: '2026-09-04T11:00:00.000Z', repos: { 'acme/api': { sha: A } } }, null, 2)}\n`;
+  writeFileSync(statePath, previousText, 'utf8');
+  let publishes = 0;
+  let scans = 0;
+  try {
+    const result = await runChangeMonitor({
+      statePath, eventsPath,
+      policy: { P: { roeReviewed: true, reviewedAt: '2026-09-01', nextReviewAt: '2099-01-01' } },
+      targetLists: { js: [{ owner: 'acme', repo: 'api', program: 'P', language: 'js' }] },
+      pull: () => ({ ok: true }),
+      publish: () => { publishes += 1; return { ok: true }; },
+      scan: () => { scans += 1; return { status: 0 }; },
+      poll: async () => ({
+        ok: true, baseline: false, checked: 1, failures: [], changes: [],
+        addedRepositories: [], removedRepositories: [], stateChanged: false,
+        nextState: JSON.parse(previousText),
+      }),
+      log: () => {},
+    });
+    assert.equal(result.scanTriggered, false);
+    assert.equal(scans, 0);
+    assert.equal(publishes, 0);
+    assert.equal(readFileSync(statePath, 'utf8'), previousText);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

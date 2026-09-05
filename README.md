@@ -19,8 +19,11 @@ deliberate human action; the automation never files a report by itself.
    established third-party tools (Slither for Solidity, OSV-Scanner
    for known-vulnerable dependencies, Semgrep for common weakness
    patterns, and buildless CodeQL for JS/TS). A lightweight monitor
-   checks allowed repositories every 15 minutes and triggers this scan
-   when it observes a new HEAD. Raw findings are noisy by design at this stage.
+   checks allowed repositories every 15 minutes and triggers a delta scan
+   of exactly the repositories whose HEAD changed. Programs with at least
+   two submissions and an 80%+ duplicate rate are excluded from routine
+   historical scans, but remain monitored and are re-enabled automatically
+   for a fresh commit. Raw findings are noisy by design at this stage.
 3. **Corroborate** — every candidate finding gets a manual code-reading
    pass tracing the actual call chain end to end, then, wherever
    feasible, a real, executed proof of concept — a local reproduction,

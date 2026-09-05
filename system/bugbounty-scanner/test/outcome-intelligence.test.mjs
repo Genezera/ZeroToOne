@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   distinctSubmissionsFromFindings, enrichSubmissionsWithFindings,
   duplicateHistoryForFinding, computeStatsFromSubmissions,
+  isDuplicateSaturatedProgram,
 } from '../outcome-intelligence.mjs';
 
 test('vários findings ligados ao mesmo report contam como uma submissão', () => {
@@ -38,5 +39,17 @@ test('view enriquecido ensina risco por report distinto, não por detector', () 
   // mesmo princípio de "por report, não por detector" do nome do teste.
   assert.equal(stats.byWeakness['ssrf'].submissions, 1);
   assert.equal(stats.byWeakness['ssrf'].duplicate, 1);
+});
+
+test('programa só satura depois de amostra mínima e taxa alta de duplicates', () => {
+  const history = {
+    'kiwi-com': { submissions: 6, duplicate: 6, duplicateRate: 1 },
+    novo: { submissions: 1, duplicate: 1, duplicateRate: 1 },
+    misto: { submissions: 5, duplicate: 3, duplicateRate: 0.6 },
+  };
+  assert.equal(isDuplicateSaturatedProgram('Kiwi.com', history), true);
+  assert.equal(isDuplicateSaturatedProgram('Novo', history), false);
+  assert.equal(isDuplicateSaturatedProgram('Misto', history), false);
+  assert.equal(isDuplicateSaturatedProgram('Desconhecido', history), false);
 });
 

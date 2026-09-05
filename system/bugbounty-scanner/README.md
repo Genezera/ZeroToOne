@@ -7,7 +7,10 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
 ## Estado operacional atual — 04/09/2026
 
 - GitHub Actions monitora o HEAD dos repositórios permitidos a cada 15
-  minutos e dispara a varredura imediatamente quando observa mudança. A
+  minutos e dispara a varredura delta somente dos repositórios cujo HEAD
+  mudou. Programa com ao menos 2 submissões e taxa de duplicate >=80% fica
+  fora da varredura histórica rotineira (`monitor-only`), mas continua no
+  monitor e é reabilitado automaticamente quando recebe commit novo. A
   descoberta/promoção de novos alvos roda diariamente na nuvem em modo
   `--metadata-only`, sem executar código de terceiros; a varredura de
   segurança continua a cada 6 horas como rede de proteção e a sincronização
@@ -117,9 +120,11 @@ tinham sido implementados quando a lista foi fechada; os 4 que faltavam:
   honesto sobre não ser blame da linha exata — ver limitação no próprio
   retorno). `promoteTargets`/`scoreCandidate` agora aceitam
   `duplicateHistoryByProgram` (dado real de `outcome-intelligence.mjs`) e
-  penalizam repo de programa com histórico ruim de duplicate — não
-  bloqueiam, reduzem prioridade. `discovery-runner.mjs` já calcula isso do
-  banco real antes de cada rodada de promoção.
+  penalizam repo de programa com histórico ruim de duplicate. Na fase pesada,
+  programas com ao menos 2 submissões e taxa de duplicate >=80% ficam
+  `monitor-only`: não consomem a varredura histórica rotineira, continuam no
+  monitor de HEAD e voltam ao scanner somente no delta de um commit novo.
+  `discovery-runner.mjs` e `scan-runner.mjs` calculam isso do banco real.
 - **Dimensões ortogonais** (`finding-dimensions.mjs`): `technicalValidity`,
   `securityImpact`, `novelty`, `submissionState` computados por cima de
   `state`+`impactAssessment`+`duplicateCheck`, sem substituir a máquina de
@@ -405,12 +410,19 @@ seguros; nas outras 4 linguagens, roda contra o código real de
 ### Operação contínua, recuperação e observabilidade
 
 O workflow `bugbounty-change-monitor.yml` consulta somente metadados de HEAD
-dos repositórios permitidos a cada 15 minutos. Um HEAD novo dispara
-`scan-runner.mjs`; o cursor só avança depois que esse scan termina com
+dos repositórios permitidos a cada 15 minutos. Um HEAD novo passa a lista
+exata de `owner/repo` para `scan-runner.mjs`; alvos estáveis não são
+reprocessados e a seleção delta ignora o filtro `monitor-only` para não perder
+uma regressão fresca. O cursor só avança depois que esse scan termina com
 sucesso, portanto falha ou timeout é tentado novamente na próxima rodada.
 Cada delta fica em `research/bugbounty/change-events.jsonl` com SHA anterior,
 commit novo, parent, data e indicação de mudança direta. O evento é sinal de
 prioridade temporal, nunca uma alegação de vulnerabilidade.
+
+Rodadas sem alteração são byte-estáveis: não atualizam timestamps, não deixam
+o checkout sujo e não criam commit vazio. Inclusão ou remoção de alvo atualiza
+e publica o baseline, mas não é tratada como vulnerabilidade nem como mudança
+de código pré-existente.
 
 `install-service-tasks.ps1` instala duas tarefas independentes no Windows:
 
