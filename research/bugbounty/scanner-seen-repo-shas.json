@@ -3062,7 +3062,7 @@
     "pkg/runtime/codec.go": "654835b3edd439f9b518da494220873036d3027a",
     "pkg/runtime/codec_check.go": "e884007766be25e0a37508c6b4d5dbd31f220bc3",
     "pkg/runtime/conversion.go": "7cef382de2387d4fca0ae1dffc59de7158054b83",
-    "pkg/runtime/converter.go": "5aa118f58fad241d606023998a3b5ecb9770ba6e",
+    "pkg/runtime/converter.go": "365fae065438a064f29a9b8a8c228bd46bc3f16a",
     "pkg/runtime/doc.go": "fd012dbc7973a2979153063baf444e240466bb85",
     "pkg/runtime/embedded.go": "7251e65f6e076d10a0e350abfcb01e00003c190b",
     "pkg/runtime/error.go": "7dfa45762fafc4b5a43858822e639edbb763094d",
@@ -3150,33 +3150,33 @@
     "pkg/util/intstr/zz_generated.model_name.go": "b2d6e0ae3c8770bd2656289222a44e53ba8d54b4",
     "pkg/util/json/json.go": "55dba361c36259facff29a3f50f3f987137e7ace",
     "pkg/util/jsonmergepatch/patch.go": "786c16e27aaec8efb2f46228c8994064f5661816",
-    "pkg/util/managedfields/extract.go": "ff7dda1a50187fe05d16f0075c90cf846cda6346",
-    "pkg/util/managedfields/fieldmanager.go": "b1e621f3908104cd326f4b89a220463312b65761",
-    "pkg/util/managedfields/gvkparser.go": "89e447054807cd1578ecb575fae356a81d9e04e7",
+    "pkg/util/managedfields/extract.go": "ecca75c2e710046b7a6a004cafa1b466242149bb",
+    "pkg/util/managedfields/fieldmanager.go": "0189a153d9d93664d859c96d7c63c128b9381bdd",
+    "pkg/util/managedfields/gvkparser.go": "7a5f89ff25a89b5bd686eacbf74fb44084405d8c",
     "pkg/util/managedfields/internal/atmostevery.go": "b75ef7416e7b2ed88b0c731d56cb2dd635677426",
     "pkg/util/managedfields/internal/buildmanagerinfo.go": "fa342ca1351f2ba43275072f39d9a9f6ebeaf21c",
-    "pkg/util/managedfields/internal/capmanagers.go": "a9530ff2b488ad2dc4717443cc680ec55b9fd594",
-    "pkg/util/managedfields/internal/conflict.go": "1f07b004de3221fa5ab1bc3e2fb1e341bd52b1e5",
-    "pkg/util/managedfields/internal/fieldmanager.go": "2e2db65561dee4084db8416c2392ba07a78521c4",
-    "pkg/util/managedfields/internal/fields.go": "549412b41db3a377755d01b9072359c93873049b",
+    "pkg/util/managedfields/internal/capmanagers.go": "bf5333406ad6ef9b49cfe9092804d81d693e18db",
+    "pkg/util/managedfields/internal/conflict.go": "8af4ffe3d5a237b528633201e0da92bd140fb501",
+    "pkg/util/managedfields/internal/fieldmanager.go": "74e0af045156436187ba73744799ed189b2355a8",
+    "pkg/util/managedfields/internal/fields.go": "a48a75f06cec76b724d16c991d9a8857c3e2a304",
     "pkg/util/managedfields/internal/lastapplied.go": "b00b6b8298aa032b2d19f3b6cd0319946761ca57",
-    "pkg/util/managedfields/internal/lastappliedmanager.go": "d58a1108dc3d2dc763d028aeb45ad2b7619dc8a3",
+    "pkg/util/managedfields/internal/lastappliedmanager.go": "ef2b02252a64828f434d9c6f708d1dbf46240167",
     "pkg/util/managedfields/internal/lastappliedupdater.go": "06e6c5d8ce5f4e04a441543e9eae0091e6949ff1",
-    "pkg/util/managedfields/internal/managedfields.go": "bba2014e2004ca8c28c40bcee12946815d40465e",
-    "pkg/util/managedfields/internal/managedfieldsupdater.go": "66215d87a1b425e5104fdd09d37e55e4360c998a",
-    "pkg/util/managedfields/internal/manager.go": "78830d0cf5372fb5e0b1a4057bf0718099efa2ca",
-    "pkg/util/managedfields/internal/pathelement.go": "1b5dddfd701d8162591a28515d06fef89d70312e",
-    "pkg/util/managedfields/internal/runtimetypeconverter.go": "366ff733638073a08189fef0125c6345a5dcb9c4",
+    "pkg/util/managedfields/internal/managedfields.go": "195fe4428711770f577f0c87c53e0f241fa8bfd1",
+    "pkg/util/managedfields/internal/managedfieldsupdater.go": "4610b4ac77785dd94e31144ee1ed3a7e64875a39",
+    "pkg/util/managedfields/internal/manager.go": "9c95db2a6bdc960ae2e5c43d6a0eb8b44ab7bdad",
+    "pkg/util/managedfields/internal/pathelement.go": "24ab92ad8b0a2acb25e3a3c8d525e9ffa4fe0350",
+    "pkg/util/managedfields/internal/runtimetypeconverter.go": "9afb9b0e410bdeb75654db169c1fe13fb44bd055",
     "pkg/util/managedfields/internal/skipnonapplied.go": "15357a34d87c9c8fc096570d9f8b6e4a57f61eb8",
-    "pkg/util/managedfields/internal/stripmeta.go": "8a2b7e4e63a687fa48474a6a3c29c8199d08bf74",
-    "pkg/util/managedfields/internal/structuredmerge.go": "8e9a270108414fd87805851aff669c590b9673bf",
+    "pkg/util/managedfields/internal/stripmeta.go": "5f0c882cf860c0d755500b9a9b9d0cd5d801e24b",
+    "pkg/util/managedfields/internal/structuredmerge.go": "8b9ea144c312a9da15eb0ee13ddac43be0bff911",
     "pkg/util/managedfields/internal/testing/testfieldmanager.go": "07558232abd4d432edc2c3c53d3b3218b0b1f964",
-    "pkg/util/managedfields/internal/typeconverter.go": "40cc90da7863ccbaed6c90d7f49a935ea0b447cb",
+    "pkg/util/managedfields/internal/typeconverter.go": "3e580fd14b2c9e6fc5a3e6b6f35c837ab172e521",
     "pkg/util/managedfields/internal/versioncheck.go": "ee1e2bca7017ec73546d9b0654e086f3607d8045",
-    "pkg/util/managedfields/internal/versionconverter.go": "917bdcd75f3b4b9ca1322f1b95f44ebd79fa1852",
+    "pkg/util/managedfields/internal/versionconverter.go": "5cb596c291d25594a56b468c48f95b98fb0b6aac",
     "pkg/util/managedfields/managedfieldstest/testfieldmanager.go": "afa7b06df99299aba00313d7f1a07992a334a14e",
-    "pkg/util/managedfields/scalehandler.go": "ca96ca9834c46a05e5167dd71b0bffd4603d6eec",
-    "pkg/util/managedfields/typeconverter.go": "e706ac8221225c65927e5caa0e68f1281d2cb390",
+    "pkg/util/managedfields/scalehandler.go": "772a00928818e6a0ae18eb1c89d044dfa824948d",
+    "pkg/util/managedfields/typeconverter.go": "c07aa5b0bbce4f3eaed8bafcd5020338b61bb58b",
     "pkg/util/mergepatch/errors.go": "16501d5afe9c6d4c4d451b94fd9d9601e795d2e6",
     "pkg/util/mergepatch/util.go": "46e3bb75ddc5b889496e58f62f6fe5ef0d80fa20",
     "pkg/util/naming/from_stack.go": "d69bf32caa8b5a6cdf97e3d2b0882b66190a5002",
@@ -3245,7 +3245,7 @@
     "third_party/forked/golang/json/fields.go": "5b8514b3fab28774893185d581eb6560fab8c6f2",
     "third_party/forked/golang/netutil/addr.go": "bd26f427e3f669b8212593937ae8056651d20a62",
     "third_party/forked/golang/reflect/deep_equal.go": "58a23b00bb05790387738c06766e61bc88c7f0c7",
-    "go.mod": "c620528af77e2cb4420fb4762d2b80938141618f"
+    "go.mod": "3faa815b7a39253ea77f9cce44995ea268f1f01a"
   },
   "okx/go-wallet-sdk": {
     "coins/aptos/aptos.go": "425f446622b473997e549059133f22531c09acd7",
@@ -4337,7 +4337,7 @@
     "pkg/resource/scheme.go": "858a46202c03eb183cf0aab4fc8602203bba7691",
     "pkg/resource/selector.go": "2a283d4e060dd788a5d16fc7e058bbb6b8626af6",
     "pkg/resource/visitor.go": "fb37db367c086ce031e964641bf91dbedc348f4d",
-    "go.mod": "f8d6bde3af1da2c9b09875dbf7de1040c7f180f5"
+    "go.mod": "6d35891e9bacbf91275d516b73472fe4d16cedc5"
   },
   "kubernetes/cloud-provider": {
     "api/retry_error.go": "ac0e5e6e728f6f2b56cfe5466579c18c69e691d9",
@@ -4427,7 +4427,7 @@
     "volume/errors/errors.go": "2e5adb1769d5c59afbde6c8422a59855db49ecd2",
     "volume/helpers/rounding.go": "101815738032743432f97ad79701f18bb43d41dd",
     "volume/helpers/zones.go": "ff3a392846f1e391be7bdebc1a3f02f3a2bc8cd8",
-    "go.mod": "d0294d8d242ccdc554dfeab18e154b8e9102867d"
+    "go.mod": "915ae596204fdc4576ca4378d4c742eda9938252"
   },
   "kubernetes/cloud-provider-aws": {
     "cmd/aws-cloud-controller-manager/main.go": "16c3174184177214b0e1de47ccaaf9dbdcc7e950",
@@ -4604,7 +4604,7 @@
     "cmd/applyconfiguration-gen/generators/openapi.go": "c67325b2f8e5fd3072d6854a4e91547dd94c4064",
     "cmd/applyconfiguration-gen/generators/refgraph.go": "8b46755298c3bb6f6491b64649513f6d4acfa34b",
     "cmd/applyconfiguration-gen/generators/targets.go": "73c3f2cb27cefbd2ad9c1b2d20b1af3c8a9e96ca",
-    "cmd/applyconfiguration-gen/generators/types.go": "2f9fc783c4ec5356c9d6cdc1c4678877e7732a71",
+    "cmd/applyconfiguration-gen/generators/types.go": "51d5d93a2b161b9e9b38db097993c7a9c838b4eb",
     "cmd/applyconfiguration-gen/generators/util.go": "d8db28fa14f99ae7f7a603409e6f3ece62e1d775",
     "cmd/applyconfiguration-gen/main.go": "f6b03f8877b18dea6bd626b4d5ca1815fb69ccb8",
     "cmd/client-gen/args/args.go": "9ea1d0bf3640d4c8246bcf0fe3054033392c767e",
@@ -4723,7 +4723,7 @@
     "cmd/register-gen/output_tests/simpletype/v1/zz_generated.register.go": "f4fdd30b6a4088eec30a15397356681a00b38501",
     "cmd/validation-gen/lint.go": "63e54e755e98ac56dbb4e45aee520dfe6e584ef5",
     "cmd/validation-gen/lint_rules.go": "5969e130502cff4772f9fa0e4bbc08952d32509c",
-    "cmd/validation-gen/main.go": "4385d38381ae818d0b1aacc292c1c99c99a85145",
+    "cmd/validation-gen/main.go": "4810927364b4721ce5fa46a4629074575505f906",
     "cmd/validation-gen/output_tests/_codegenignore/other/doc.go": "6e0cb7b4b5751699feb6862bd357742b27ac898d",
     "cmd/validation-gen/output_tests/all_types_match/trivial/doc.go": "13a64d2919306eae229782b9399cdb327f83fd9d",
     "cmd/validation-gen/output_tests/all_types_match/trivial/zz_generated.validations.go": "7fa85b58072082565cf4ba46b93c79425387487d",
@@ -5046,8 +5046,8 @@
     "cmd/validation-gen/validation.go": "21a5308bcaa8b017b2e5a407a5617f16e8003479",
     "cmd/validation-gen/validators/common.go": "d19317e5641de92991b927f0fadc2bf30387f6ad",
     "cmd/validation-gen/validators/customvalidation.go": "f403196820c0705a201cbc357c5155c17b4a524f",
-    "examples/go.mod": "1a7374b52086661f585c41cdd18dd25f1077efc6",
-    "go.mod": "b387a7f6b490edc12aa203fda363fe29c945b843",
+    "examples/go.mod": "e953faceaef2ba4e211702970918701283d34e05",
+    "go.mod": "527a435f4196dedea3a402d1cbc040f2925b32d5",
     "cmd/validation-gen/validators/each.go": "75709c87d33fb008e378eaa62db2a41b1f2ebdf6",
     "cmd/validation-gen/validators/format.go": "4994c4d9ee4562075d3ec4af49f7568bc3f295af",
     "cmd/validation-gen/validators/immutable.go": "e98669f9feeed06f75b2ef805f38eb66986978a8",
@@ -5397,7 +5397,22 @@
     "cmd/validation-gen/output_tests/ratcheting/deep_equal_func/doc.go": "9a994e021111e7908ca0ed0a81c0befded976219",
     "cmd/validation-gen/output_tests/ratcheting/deep_equal_func/zz_generated.validations.go": "0271be8cc67d1f9b02981e436fab4fce75604571",
     "cmd/validation-gen/output_tests/ratcheting/deep_equal_func_cross_pkg/doc.go": "ae6d7d57bfec2416b157d48bb07e10b1b2544fff",
-    "cmd/validation-gen/output_tests/ratcheting/deep_equal_func_cross_pkg/zz_generated.validations.go": "548684d5474058c3f8f42c3d9b824d138b752fe5"
+    "cmd/validation-gen/output_tests/ratcheting/deep_equal_func_cross_pkg/zz_generated.validations.go": "548684d5474058c3f8f42c3d9b824d138b752fe5",
+    "cmd/validation-gen/args/args.go": "899c72753d821788b2ae997b4763982f0bd63c24",
+    "cmd/validation-gen/examples/custom-prefix/main.go": "a8574c3c031466daa9da006ec890cb225e6a0753",
+    "cmd/validation-gen/examples/custom-prefix/output_tests/builtins/doc.go": "d4c5cf5ef6eff06ad5d4926550e42c0c90c2dac8",
+    "cmd/validation-gen/examples/custom-prefix/output_tests/builtins/zz_generated.validations.go": "ba44fbd683c3dcb28e77721a0c85d7ab77416ded",
+    "cmd/validation-gen/examples/custom-prefix/output_tests/generate.go": "9cce1e7b1fa61316923bafb99b7867368d033ee6",
+    "cmd/validation-gen/examples/custom-prefix/output_tests/startswith/doc.go": "15073db054dc19492fb33b266b3e447c857874af",
+    "cmd/validation-gen/examples/custom-prefix/output_tests/startswith/zz_generated.validations.go": "7fe681bb7680b2a73eb720941cd0b0d673cc0240",
+    "cmd/validation-gen/examples/custom-prefix/tags/startswith.go": "d772943543ffd852d375b210b043efbe96c94462",
+    "cmd/validation-gen/examples/custom-prefix/validate/startswith.go": "21a5133ef54a2260949df224983d0d171e46880d",
+    "cmd/validation-gen/generators/docs.go": "1a8f295529eafe277f2ade13b89a0cfe4a736188",
+    "cmd/validation-gen/generators/lint.go": "e5c5cf4453ea46ed7f753c5202752b8f4b31e5df",
+    "cmd/validation-gen/generators/lint_rules.go": "2d708759140aa4a91e2909be59b0c95e08b09e0e",
+    "cmd/validation-gen/generators/targets.go": "625496c9f799bc8f9ff5134b8083da4adff6d742",
+    "cmd/validation-gen/generators/test_targets.go": "72760650408e0de946827ab96a294ba9c9f92d3a",
+    "cmd/validation-gen/generators/validation.go": "4545da425563342df64a63c47d2d5649d139dc00"
   },
   "kubernetes/component-base": {
     "cli/flag/ciphersuites_flag.go": "11adc26831f0fbf807f6de4c9504c47cc282d4cd",
@@ -5535,7 +5550,7 @@
     "version/version.go": "c71ccf1969e83d15bfcd4bacd5d482c3d3f73e58",
     "zpages/features/doc.go": "b2fa2809ae67613d4f0b0380a929cef279d13dcc",
     "zpages/features/kube_features.go": "91b45dfeed198d5600426d1986df58be938c2624",
-    "go.mod": "2a8d718fe77902ac43e25e48b16529f8a1ae8832"
+    "go.mod": "aaeb39d7274c6bdfb56de852b4f896171a3b8b9b"
   },
   "kubernetes/cri-api": {
     "doc.go": "0a925ff2e7efac3efd908946e3d2b703616825c5",
@@ -5606,7 +5621,7 @@
     "token/util/helpers.go": "31379c5d6868bac58859d65b55cf83ce56a26167",
     "util/secrets/secrets.go": "73894ee0d24800b791878cdc04e390a43a201174",
     "util/tokens/tokens.go": "bedeaceb382ae624a4b0eca2cae8aac47c31a8cc",
-    "go.mod": "a0541dc4828ee11c7481ebb4b5cc8a41c125250e"
+    "go.mod": "b52d96f4c67db3f79d6ca57acbcbd747f2979174"
   },
   "kubernetes/csi-translation-lib": {
     "plugins/aws_ebs.go": "148cb1d3155fba4702c26573817a0b059591b83c",
@@ -5619,7 +5634,7 @@
     "plugins/portworx.go": "918002c7bc5c706a1184898d02b406ac446a069d",
     "plugins/vsphere_volume.go": "ecee6ae8b5c4a58027aaade078e0401a2f995419",
     "translate.go": "c3c5ed451b9662a48c791d6b9f8e91d2ad871ca7",
-    "go.mod": "37ba99e3f01a39ac39e78b75bfac7f18dd7bb453"
+    "go.mod": "dd463ac077dcdccc8aa14d26069b73f00c860b70"
   },
   "kubernetes/gengo": {
     "args/args.go": "48fe806cd9e6fffc7e8ee4c6bc7446c50d1e9d75",
@@ -6968,7 +6983,7 @@
     "config/v1alpha1/zz_generated.deepcopy.go": "c7e1108c10555444164846330ecdae0be14323ff",
     "config/v1alpha1/zz_generated.model_name.go": "f7e9275489f7f2ecd33da17d8d3b129e10609ad2",
     "doc.go": "bb493daed8ddd705fc6e87d014cb3e3042494f60",
-    "go.mod": "9c11aa907ba11d53d9bbf906a37a0d7c3c86592c"
+    "go.mod": "974a615d2ba82e39e17fa515a13bfeba0ef5a3ec"
   },
   "kubernetes/kube-openapi": {
     "cmd/openapi-gen/args/args.go": "cc24e6cdef2e6baba0a7af316bc61376237498ce",
@@ -7135,7 +7150,7 @@
     "config/v1alpha1/zz_generated.deepcopy.go": "ebd5349ae5277228fd94bee731eb65c66e33ed4a",
     "config/v1alpha1/zz_generated.model_name.go": "81f3b104234e199ed39a5a4eb68b2ce89a689f99",
     "doc.go": "cab4dc288891d16ad128c218cdf07432156c0a4b",
-    "go.mod": "329a70605e06092efc9db1f86953962de27cdb24"
+    "go.mod": "ad73005fd069304e0d2da0c7234730ef03ba9fa7"
   },
   "kubernetes/kube-scheduler": {
     "config/v1/doc.go": "08f9a7ecd71851431bdbaf5ed2014fc7a505879b",
@@ -7157,7 +7172,7 @@
     "framework/listers.go": "cc33e5fe1a13b4f5b5920513c16839e7ed5762ad",
     "framework/signers.go": "3812e7ef410040a8ee2015cb530be00ead6e2dfd",
     "framework/types.go": "e84ef6a5d4e16e99a2a92a8ab830e158c3665057",
-    "go.mod": "a0764e171f91b2988b74289ddfabc3e7ad374d14"
+    "go.mod": "4f9409df7cade1acca118424933e543aef0121ec"
   },
   "kubernetes/kubeadm": {
     "kinder/ci/tools/update-workflows/cmd/main.go": "15caad976ddd0d133b69a2f96c8a6633e9065764",
@@ -7329,7 +7344,7 @@
     "pkg/apis/stats/v1alpha1/types.go": "4e0a0396afa22fae816519ecdfd76ac27317e269",
     "pkg/apis/well_known_labels.go": "96890b553f7e838e3d14bcaa233b96859bb82d11",
     "pkg/types/labels.go": "79f80b1e62b2235a6cbde80661f493b3ec80ba51",
-    "go.mod": "540c5e86186642d38ea4348295c34d35fc4d8f16"
+    "go.mod": "46c05a4aa54793315dec959227e0affd93a751b5"
   },
   "kubernetes/metrics": {
     "doc.go": "17911b6bc6cf83db86fc9aef2073c26d1881fad0",
@@ -7420,7 +7435,7 @@
     "pkg/client/external_metrics/client.go": "d18d9e1247800e7c896e216c0384db47c7b622bc",
     "pkg/client/external_metrics/fake/fake_client.go": "ee640564cf495f39f2dbdafbea3fde753b5f718d",
     "pkg/client/external_metrics/interfaces.go": "d98c161aaf4951d49824688b71920ecd7025b93e",
-    "go.mod": "55404faa8596162fc335928b1663e64e3eab5e25"
+    "go.mod": "65ef0aa946d4ba4acb9cc88fdd9cebbae814c348"
   },
   "kubernetes/org": {
     "cmd/helpers/helper.go": "489f844a2f409cd7cac9a76196520fba0a65e10c",
@@ -7436,7 +7451,7 @@
     "cmd/kubectl-ns.go": "94dfdfbc87fd956f2069525052b2fe412dc928ee",
     "doc.go": "53037b23a24cf95492b4700d6b04ab71602fea3c",
     "pkg/cmd/ns.go": "af6c97aa2d9ea823adbfbe2ca24e376001d4a01a",
-    "go.mod": "659ef1fb08e8c5b8761923a13a91012be033ea5e"
+    "go.mod": "90befb7e5897064af43d9089b283e1cc2c30c2f0"
   },
   "kubernetes/sample-controller": {
     "controller.go": "dd6ac9a203303e40bc9d413d0a7e9f9bca21c275",
@@ -7447,7 +7462,7 @@
     "pkg/apis/samplecontroller/v1alpha1/zz_generated.deepcopy.go": "26194609eff490fd3806e9f9bbdbe5570c92dc84",
     "pkg/apis/samplecontroller/v1alpha1/zz_generated.model_name.go": "22bd94b68e3379baa502e7c053f585b2a2ffd131",
     "pkg/apis/samplecontroller/v1alpha1/zz_generated.register.go": "146e82ea17393fc72a71364d948a60d6de04d487",
-    "pkg/generated/applyconfiguration/internal/internal.go": "d76c7eefb1bc4f97b5d64af99aae80aa77b12ee7",
+    "pkg/generated/applyconfiguration/internal/internal.go": "eb33fb3e1375fee099cdb7bcc475ca4f5ea85f75",
     "pkg/generated/applyconfiguration/samplecontroller/v1alpha1/foo.go": "a8c21135f262f634cfd37e92db5f9dbc31f06f25",
     "pkg/generated/applyconfiguration/samplecontroller/v1alpha1/foospec.go": "91a1410517f64338e20099759cc7b0cf5db4b5de",
     "pkg/generated/applyconfiguration/samplecontroller/v1alpha1/foostatus.go": "f170c8147fb1008045708b4fb939ca6ebbe0ab5d",
@@ -7478,7 +7493,7 @@
     "pkg/signals/signal.go": "2a5b462a1b8252e2fb7565d0bb0acfd358903631",
     "pkg/signals/signal_posix.go": "2b24faa4280e34cab3dbc21261e4893c4417f620",
     "pkg/signals/signal_windows.go": "4907d573fe00b0a50b7d950e3974e7c1460b2cd4",
-    "go.mod": "7e780ac8e74e2ba1e901c2fc40d5b0adda49e1aa"
+    "go.mod": "af78f5d4688e494ac3026a6f39f67e59b5c11b03"
   },
   "kubernetes/publishing-bot": {
     "cmd/collapsed-kube-commit-mapper/main.go": "fc45a7f5c4387183a01a39659ad23ae218817d13",

@@ -169,18 +169,18 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
     <div class="brand-eyebrow">ZeroToOne · Bug Bounty</div>
     <div class="brand">Centro de Sinais</div>
     <ul class="nav"><li><a href="#index" data-nav="index" aria-current="page"><span class="nav-icon">◎</span>Visão geral</a></li><li><a href="#targets" data-nav="targets"><span class="nav-icon">▤</span>Alvos</a></li><li><a href="#queue" data-nav="queue"><span class="nav-icon">≡</span>Fila completa</a></li><li><a href="#activity" data-nav="activity"><span class="nav-icon">↯</span>Atividade ao vivo</a></li><li><a href="#signals" data-nav="signals"><span class="nav-icon">◈</span>Sinais</a></li><li><a href="#stats" data-nav="stats"><span class="nav-icon">▲</span>Estatística</a></li></ul>
-    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-09-04 21:13 UTC</div>
+    <div class="sidebar-foot"><span class="pulse-dot"></span>Última rodada<br>2026-09-05 04:32 UTC</div>
   </aside>
   <main class="main">
     <section class="page" id="page-index" data-page="index">
     <h1>Visão geral</h1>
-    <div class="page-sub">13 contrato(s) Clarity, 0 arquivo(s) de código e 0 manifesto(s) de dependência checados na última rodada, 0 erro(s) de busca.</div>
+    <div class="page-sub">13 contrato(s) Clarity, 38 arquivo(s) de código e 15 manifesto(s) de dependência checados na última rodada, 0 erro(s) de busca.</div>
     
     <div class="tiles">
       <div class="tile" style="--i:0"><div class="tile-value" data-countup="40">0</div><div class="tile-label">Alvos ativos</div></div>
       <div class="tile" style="--i:1"><div class="tile-value" data-countup="8">0</div><div class="tile-label">Programas</div></div>
       <div class="tile" style="--i:2"><div class="tile-value" data-countup="4">0</div><div class="tile-label">Linguagens</div></div>
-      <div class="tile" style="--i:3"><div class="tile-value" data-countup="38">0</div><div class="tile-label">Rodadas registradas</div></div>
+      <div class="tile" style="--i:3"><div class="tile-value" data-countup="39">0</div><div class="tile-label">Rodadas registradas</div></div>
       <div class="tile" style="--i:4"><div class="tile-value" data-countup="34">0</div><div class="tile-label">Sinais pendentes</div></div>
       <div class="tile" style="--i:5"><div class="tile-value" data-countup="757">0</div><div class="tile-label">Já revisados</div></div>
     </div>
@@ -366,36 +366,36 @@ footer.page-footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid 
       <div class="panel-sub"><a href="#activity">Ver o histórico completo →</a></div>
       <div class="timeline">
     <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-09-05 04:32 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 38 arquivo(s) de código, 15 manifesto(s) checados (JS/TS: 0, Go: 38, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="scan">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 5 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="verdict">
+    <div class="timeline-item" style="--i:2" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">Block Open Source (kotlin) — Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` …</div>
     </div>
-    <div class="timeline-item" style="--i:2" data-kind="verdict">
+    <div class="timeline-item" style="--i:3" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">OKG (Go) — Panic (nao erro tratavel) em duas funcoes publicas de topo do SDK, coins/helium/helium.go (commit 12fec6b0616347265efcc23bfc240c155da710eb, clonado 2026-09-04): Sign(private string, ...) linha 9 e NewAddress(private stri…</div>
     </div>
-    <div class="timeline-item" style="--i:3" data-kind="verdict">
+    <div class="timeline-item" style="--i:4" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: command_injection_risk <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Leitura profunda real (clone raso público, commit 0d28d64800e40abb56d6579adfd13cd35447835f) em kubernetes/publishing-bot, nunca lido antes (confirmado via deep-read-log.json).
 
 CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
     </div>
-    <div class="timeline-item" style="--i:4" data-kind="verdict">
-      <div class="timeline-time">2026-09-04 21:13 UTC</div>
-      <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
-      <div class="timeline-body">OKG (Go) — coins/elrond/elrond.go, func Transfer(args ArgCreateTransaction, privateKeyHex string) (string, error): `pk, _ := hex.DecodeString(privateKeyHex); privateKey := ed25519.NewKeyFromSeed(pk)`. Duas omissoes empilhadas: (1) …</div>
-    </div>
     <div class="timeline-item" style="--i:5" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
-      <div class="timeline-body">OKG (Go) — coins/solana/base/keys.go, func PrivateKeyFromBase58(privkey string) (PrivateKey, error): `res := base58.Decode(privkey); return res, nil` -- decodifica com crypto/base58/base58.go:Decode() (implementacao vendored btcsui…</div>
+      <div class="timeline-body">OKG (Go) — coins/elrond/elrond.go, func Transfer(args ArgCreateTransaction, privateKeyHex string) (string, error): `pk, _ := hex.DecodeString(privateKeyHex); privateKey := ed25519.NewKeyFromSeed(pk)`. Duas omissoes empilhadas: (1) …</div>
     </div></div>
     </div>
     <div class="panel">
@@ -14166,205 +14166,205 @@ Decisão: NÃO avançar para relatório. Padrão de código real e inconsistente
 <section class="page" id="page-activity" data-page="activity">
     <h1>Atividade ao vivo</h1>
     <div class="page-sub">Toda rodada de varredura e todo veredito registrado no ledger encadeado por hash (research/ledger.research.jsonl) — histórico auditável, nunca sobrescrito.</div>
-    <div class="panel"><div class="panel-sub">Mostrando as 80 mais recentes de 1761 entradas totais no ledger.</div><div class="timeline">
+    <div class="panel"><div class="panel-sub">Mostrando as 80 mais recentes de 1762 entradas totais no ledger.</div><div class="timeline">
     <div class="timeline-item" style="--i:0" data-kind="scan">
+      <div class="timeline-time">2026-09-05 04:32 UTC</div>
+      <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 0 veredito(s) atualizado(s)</div>
+      <div class="timeline-body">13 contrato(s) Clarity, 38 arquivo(s) de código, 15 manifesto(s) checados (JS/TS: 0, Go: 38, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
+    </div>
+    <div class="timeline-item" style="--i:1" data-kind="scan">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Rodada do scanner — 0 achado(s) novo(s), 5 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 0 arquivo(s) de código, 0 manifesto(s) checados (JS/TS: 0, Go: 0, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:1" data-kind="verdict">
+    <div class="timeline-item" style="--i:2" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">Block Open Source (kotlin) — Confirmei a cadeia completa, sem executar nenhum código (só leitura estática, clone raso público de square/wire e square/okio): (1) ProtoParser.kt:117-129 (`readDeclaration`) faz `imports.add(reader.readQuotedString())` …</div>
     </div>
-    <div class="timeline-item" style="--i:2" data-kind="verdict">
+    <div class="timeline-item" style="--i:3" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">OKG (Go) — Panic (nao erro tratavel) em duas funcoes publicas de topo do SDK, coins/helium/helium.go (commit 12fec6b0616347265efcc23bfc240c155da710eb, clonado 2026-09-04): Sign(private string, ...) linha 9 e NewAddress(private stri…</div>
     </div>
-    <div class="timeline-item" style="--i:3" data-kind="verdict">
+    <div class="timeline-item" style="--i:4" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: command_injection_risk <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Leitura profunda real (clone raso público, commit 0d28d64800e40abb56d6579adfd13cd35447835f) em kubernetes/publishing-bot, nunca lido antes (confirmado via deep-read-log.json).
 
 CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
     </div>
-    <div class="timeline-item" style="--i:4" data-kind="verdict">
+    <div class="timeline-item" style="--i:5" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">OKG (Go) — coins/elrond/elrond.go, func Transfer(args ArgCreateTransaction, privateKeyHex string) (string, error): `pk, _ := hex.DecodeString(privateKeyHex); privateKey := ed25519.NewKeyFromSeed(pk)`. Duas omissoes empilhadas: (1) …</div>
     </div>
-    <div class="timeline-item" style="--i:5" data-kind="verdict">
+    <div class="timeline-item" style="--i:6" data-kind="verdict">
       <div class="timeline-time">2026-09-04 21:13 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-muted">inconclusivo</span></div>
       <div class="timeline-body">OKG (Go) — coins/solana/base/keys.go, func PrivateKeyFromBase58(privkey string) (PrivateKey, error): `res := base58.Decode(privkey); return res, nil` -- decodifica com crypto/base58/base58.go:Decode() (implementacao vendored btcsui…</div>
     </div>
-    <div class="timeline-item" style="--i:6" data-kind="transition">
+    <div class="timeline-item" style="--i:7" data-kind="transition">
       <div class="timeline-time">2026-09-04 21:01 UTC</div>
       <div class="timeline-title">Transição: human_ready → inconclusive — methodology-correction</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_findi<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:7" data-kind="transition">
+    <div class="timeline-item" style="--i:8" data-kind="transition">
       <div class="timeline-time">2026-09-04 21:01 UTC</div>
       <div class="timeline-title">Transição: human_ready → inconclusive — methodology-correction</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:8" data-kind="transition">
+    <div class="timeline-item" style="--i:9" data-kind="transition">
       <div class="timeline-time">2026-09-04 21:01 UTC</div>
       <div class="timeline-title">Transição: human_ready → inconclusive — methodology-correction</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_r<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:9" data-kind="transition">
+    <div class="timeline-item" style="--i:10" data-kind="transition">
       <div class="timeline-time">2026-09-04 21:01 UTC</div>
       <div class="timeline-title">Transição: human_ready → inconclusive — methodology-correction</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:10" data-kind="transition">
+    <div class="timeline-item" style="--i:11" data-kind="transition">
       <div class="timeline-time">2026-09-04 21:01 UTC</div>
       <div class="timeline-title">Transição: human_ready → inconclusive — methodology-correction</div>
       <div class="timeline-body">Block Open Source::wire-schema/src/commonMain/kotlin/com/squareup/wire/schema/Root.kt::Dir<br>marcado inconclusivo com justificativa — nunca &quot;confirmado&quot; por otimismo</div>
     </div>
-    <div class="timeline-item" style="--i:11" data-kind="scan">
+    <div class="timeline-item" style="--i:12" data-kind="scan">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Rodada do scanner — 2 achado(s) novo(s), 12 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 17 arquivo(s) de código, 19 manifesto(s) checados (JS/TS: 8, Go: 9, Kotlin/Java: 0, Swift/ObjC: 0, solidity: 0). </div>
     </div>
-    <div class="timeline-item" style="--i:12" data-kind="verdict">
+    <div class="timeline-item" style="--i:13" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Vercel Open Source (typescript) — Investigação real (03/09/2026), continuação da nota da rodada anterior. CONFIRMADO por leitura direta do código real (index.ts linha 369): gatewayToken !== botToken, sem timing-safe. Deploy real confirmado: pacote npm @c…</div>
     </div>
-    <div class="timeline-item" style="--i:13" data-kind="verdict">
+    <div class="timeline-item" style="--i:14" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Vercel Open Source (TypeScript) — ATUALIZAÇÃO (checagem de duplicata, rodada 2026-09-04): busca de duplicata (github_issues + github_advisories + web_search, 3+ queries distintas) encontrou PR #3444 e PR #3497 (vercel/workflow, mergeados, #3444 fechado c…</div>
     </div>
-    <div class="timeline-item" style="--i:14" data-kind="verdict">
+    <div class="timeline-item" style="--i:15" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">OKG (Go) — Leitura profunda proativa (fora da fila, arquivo nunca lido antes -- confirmado via deep-read-log.json) em okx/go-wallet-sdk, clone raso publico via `git clone --depth 1 https://github.com/okx/go-wallet-sdk.git` (commit …</div>
     </div>
-    <div class="timeline-item" style="--i:15" data-kind="verdict">
+    <div class="timeline-item" style="--i:16" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: path_traversal_risk <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — REFUTADO. cacheDir (gomod.go:156) = fmt.Sprintf(&quot;%s/pkg/mod/cache/download/%s/@v&quot;, GOPATH, depPkg). Rastreei a origem de depPkg: vem de fullPackageName(depPath) (gomod.go:278-299), que calcula filepath.Abs(dir) e EXIGE e…</div>
     </div>
-    <div class="timeline-item" style="--i:16" data-kind="verdict">
+    <div class="timeline-item" style="--i:17" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: insecure_tls <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Kubernetes (Go) — Confirmado: readFromURL (rules.go:125-141) usa http.Client com tls.Config{InsecureSkipVerify:true} — desativa TOTALMENTE a verificação de certificado do servidor. Rastreei a cadeia de chamada completa: LoadRules(ruleFile…</div>
     </div>
-    <div class="timeline-item" style="--i:17" data-kind="verdict">
+    <div class="timeline-item" style="--i:18" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: command_injection_risk <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Kubernetes (Go) — Leitura profunda real (clone raso público, commit 0d28d64800e40abb56d6579adfd13cd35447835f) em kubernetes/publishing-bot, nunca lido antes (confirmado via deep-read-log.json).
 
 CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
     </div>
-    <div class="timeline-item" style="--i:18" data-kind="verdict">
+    <div class="timeline-item" style="--i:19" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Mattermost Public Bug Bounty Engagement  (JS/TS) — Dependência yaml@1.10.2 (npm) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-48c2-rrv3-qjmp — yaml is vulnerable to Stack Overflow via deeply nested YAML collections.</div>
     </div>
-    <div class="timeline-item" style="--i:19" data-kind="verdict">
+    <div class="timeline-item" style="--i:20" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Mattermost Public Bug Bounty Engagement  (JS/TS) — Dependência ajv@8.17.1 (npm) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-2g4f-4pwh-qvx6 — ajv has ReDoS when using `$data` option.</div>
     </div>
-    <div class="timeline-item" style="--i:20" data-kind="verdict">
+    <div class="timeline-item" style="--i:21" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Mattermost Public Bug Bounty Engagement  (JS/TS) — Dependência ajv@6.12.6 (npm) tem vulnerabilidade PUBLICADA e CONHECIDA: GHSA-2g4f-4pwh-qvx6 — ajv has ReDoS when using `$data` option.</div>
     </div>
-    <div class="timeline-item" style="--i:21" data-kind="verdict">
+    <div class="timeline-item" style="--i:22" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">OKG (Go) — Panic (nao erro tratavel) em duas funcoes publicas de topo do SDK, coins/helium/helium.go (commit 12fec6b0616347265efcc23bfc240c155da710eb, clonado 2026-09-04): Sign(private string, ...) linha 9 e NewAddress(private stri…</div>
     </div>
-    <div class="timeline-item" style="--i:22" data-kind="verdict">
+    <div class="timeline-item" style="--i:23" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">OKG (Go) — coins/elrond/elrond.go, func Transfer(args ArgCreateTransaction, privateKeyHex string) (string, error): `pk, _ := hex.DecodeString(privateKeyHex); privateKey := ed25519.NewKeyFromSeed(pk)`. Duas omissoes empilhadas: (1) …</div>
     </div>
-    <div class="timeline-item" style="--i:23" data-kind="verdict">
+    <div class="timeline-item" style="--i:24" data-kind="verdict">
       <div class="timeline-time">2026-09-04 20:48 UTC</div>
       <div class="timeline-title">Veredito: ai_deep_read_finding <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">OKG (Go) — coins/solana/base/keys.go, func PrivateKeyFromBase58(privkey string) (PrivateKey, error): `res := base58.Decode(privkey); return res, nil` -- decodifica com crypto/base58/base58.go:Decode() (implementacao vendored btcsui…</div>
     </div>
-    <div class="timeline-item" style="--i:24" data-kind="transition">
+    <div class="timeline-item" style="--i:25" data-kind="transition">
       <div class="timeline-time">2026-09-04 19:20 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — claude-code-local</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_findi<br>rascunho pronto em E:\ZeroToOne\research\bugbounty\reports\okg-coins-solana-base-keys-go-ai-deep-read-finding.md; impacto reportável confirmado (other_user); exposição pública de longa data verificada -- commit 021275dbe7bf tem 1142 dias, ainda ancestral da branch padrão; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=15/100; aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:25" data-kind="transition">
+    <div class="timeline-item" style="--i:26" data-kind="transition">
       <div class="timeline-time">2026-09-04 19:20 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — claude-code-local</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_findi<br>escopo válido (ativo em escopo e elegível (check-scope real: SOURCE_CODE, eligibleForBounty=true, eligibleForSubmission=true, maxSeverity=critical)) + vínculo de deploy confirmado (confidence=low)</div>
     </div>
-    <div class="timeline-item" style="--i:26" data-kind="transition">
+    <div class="timeline-item" style="--i:27" data-kind="transition">
       <div class="timeline-time">2026-09-04 19:20 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — claude-code-local</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding<br>rascunho pronto em E:\ZeroToOne\research\bugbounty\reports\okg-coins-elrond-elrond-go-ai-deep-read-finding.md; impacto reportável confirmado (other_user); exposição pública de longa data verificada -- commit e122a38d828c tem 1036 dias, ainda ancestral da branch padrão; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=15/100; aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:27" data-kind="transition">
+    <div class="timeline-item" style="--i:28" data-kind="transition">
       <div class="timeline-time">2026-09-04 19:20 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — claude-code-local</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding<br>escopo válido (ativo em escopo e elegível (check-scope real: SOURCE_CODE, eligibleForBounty=true, eligibleForSubmission=true, maxSeverity=critical)) + vínculo de deploy confirmado (confidence=low)</div>
     </div>
-    <div class="timeline-item" style="--i:28" data-kind="transition">
+    <div class="timeline-item" style="--i:29" data-kind="transition">
       <div class="timeline-time">2026-09-04 19:20 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — claude-code-local</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding<br>rascunho pronto em E:\ZeroToOne\research\bugbounty\reports\okg-coins-helium-helium-go-ai-deep-read-finding.md; impacto reportável confirmado (other_user); exposição pública de longa data verificada -- commit 5cd6c132d638 tem 1032 dias, ainda ancestral da branch padrão; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=15/100; aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:29" data-kind="transition">
+    <div class="timeline-item" style="--i:30" data-kind="transition">
       <div class="timeline-time">2026-09-04 19:20 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — claude-code-local</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding<br>escopo válido (ativo em escopo e elegível (check-scope real: SOURCE_CODE, eligibleForBounty=true, eligibleForSubmission=true, maxSeverity=critical)) + vínculo de deploy confirmado (confidence=low)</div>
     </div>
-    <div class="timeline-item" style="--i:30" data-kind="transition">
+    <div class="timeline-item" style="--i:31" data-kind="transition">
       <div class="timeline-time">2026-09-04 18:56 UTC</div>
       <div class="timeline-title">Transição: scope_verified → human_ready — claude-code-local</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_r<br>rascunho pronto em E:\ZeroToOne\research\bugbounty\reports\kubernetes-kubernetes-publishing-bot-pkg-golang-install-go-command-injection-risk.md; impacto reportável confirmado (other_user); exposição pública de longa data verificada -- commit edcff13f8546 tem 3125 dias, ainda ancestral da branch padrão; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=15/100; aguardando revisão humana</div>
     </div>
-    <div class="timeline-item" style="--i:31" data-kind="transition">
+    <div class="timeline-item" style="--i:32" data-kind="transition">
       <div class="timeline-time">2026-09-04 18:12 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — cloud-agent</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding<br>reprodução determinística local com sucesso (go_manual_poc, sem timestamp)</div>
     </div>
-    <div class="timeline-item" style="--i:32" data-kind="transition">
+    <div class="timeline-item" style="--i:33" data-kind="transition">
       <div class="timeline-time">2026-09-04 18:12 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:33" data-kind="transition">
+    <div class="timeline-item" style="--i:34" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:53 UTC</div>
       <div class="timeline-title">Transição: reproduced_local → scope_verified — claude-code-local</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_r<br>escopo válido (ativo em escopo e elegível (check-scope real: SOURCE_CODE, eligibleForBounty=true, eligibleForSubmission=true, maxSeverity=critical)) + vínculo de deploy confirmado (confidence=high)</div>
     </div>
-    <div class="timeline-item" style="--i:34" data-kind="transition">
+    <div class="timeline-item" style="--i:35" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:50 UTC</div>
       <div class="timeline-title">Transição: candidate → false_positive — cloud-agent</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/cmd/sync-tags/gomod.go::line:218::path_traversal_ris<br>refutado com justificativa — ceticismo pode vencer a qualquer altura da investigação</div>
     </div>
-    <div class="timeline-item" style="--i:35" data-kind="transition">
+    <div class="timeline-item" style="--i:36" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:49 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/cmd/publishing-bot/config/rules.go::line:127::insecu<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:36" data-kind="transition">
+    <div class="timeline-item" style="--i:37" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:36 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — claude-code-local</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_r<br>reprodução determinística local com sucesso (go_test_docker_sandboxed, 2026-09-04T17:36:54.087Z)</div>
     </div>
-    <div class="timeline-item" style="--i:37" data-kind="transition">
+    <div class="timeline-item" style="--i:38" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:36 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — claude-code-local</div>
       <div class="timeline-body">Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_r<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
-    </div>
-    <div class="timeline-item" style="--i:38" data-kind="transition">
-      <div class="timeline-time">2026-09-04 17:14 UTC</div>
-      <div class="timeline-title">Transição: candidate → known_duplicate — auto-triage-known-cve</div>
-      <div class="timeline-body">Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package<br>comportamento real, mas já divulgado publicamente em &quot;Vulnerabilidade de dependência já publicada (GHSA-2G4F-4PWH-QVX6)&quot; (advisory) — não é novo, não é elegível para recompensa</div>
     </div>
     <div class="timeline-item" style="--i:39" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:14 UTC</div>
@@ -14374,157 +14374,157 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
     <div class="timeline-item" style="--i:40" data-kind="transition">
       <div class="timeline-time">2026-09-04 17:14 UTC</div>
       <div class="timeline-title">Transição: candidate → known_duplicate — auto-triage-known-cve</div>
-      <div class="timeline-body">Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package<br>comportamento real, mas já divulgado publicamente em &quot;Vulnerabilidade de dependência já publicada (GHSA-48C2-RRV3-QJMP)&quot; (advisory) — não é novo, não é elegível para recompensa</div>
+      <div class="timeline-body">Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package<br>comportamento real, mas já divulgado publicamente em &quot;Vulnerabilidade de dependência já publicada (GHSA-2G4F-4PWH-QVX6)&quot; (advisory) — não é novo, não é elegível para recompensa</div>
     </div>
     <div class="timeline-item" style="--i:41" data-kind="transition">
+      <div class="timeline-time">2026-09-04 17:14 UTC</div>
+      <div class="timeline-title">Transição: candidate → known_duplicate — auto-triage-known-cve</div>
+      <div class="timeline-body">Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package<br>comportamento real, mas já divulgado publicamente em &quot;Vulnerabilidade de dependência já publicada (GHSA-48C2-RRV3-QJMP)&quot; (advisory) — não é novo, não é elegível para recompensa</div>
+    </div>
+    <div class="timeline-item" style="--i:42" data-kind="transition">
       <div class="timeline-time">2026-09-04 12:45 UTC</div>
       <div class="timeline-title">Transição: scope_verified → known_duplicate — cloud-agent</div>
       <div class="timeline-body">Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionIn<br>comportamento real, mas já divulgado publicamente em &quot;docs(core): describe webhook token generation accurately&quot; (changelog) — não é novo, não é elegível para recompensa</div>
     </div>
-    <div class="timeline-item" style="--i:42" data-kind="transition">
+    <div class="timeline-item" style="--i:43" data-kind="transition">
       <div class="timeline-time">2026-09-04 12:11 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — cloud-agent</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding<br>reprodução determinística local com sucesso (go_manual_poc, sem timestamp)</div>
     </div>
-    <div class="timeline-item" style="--i:43" data-kind="transition">
+    <div class="timeline-item" style="--i:44" data-kind="transition">
       <div class="timeline-time">2026-09-04 12:11 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:44" data-kind="transition">
+    <div class="timeline-item" style="--i:45" data-kind="transition">
       <div class="timeline-time">2026-09-04 12:03 UTC</div>
       <div class="timeline-title">Transição: corroborated_static → reproduced_local — cloud-agent</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_findi<br>reprodução determinística local com sucesso (go_manual_poc, sem timestamp)</div>
     </div>
-    <div class="timeline-item" style="--i:45" data-kind="transition">
+    <div class="timeline-item" style="--i:46" data-kind="transition">
       <div class="timeline-time">2026-09-04 12:03 UTC</div>
       <div class="timeline-title">Transição: candidate → corroborated_static — cloud-agent</div>
       <div class="timeline-body">OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_findi<br>source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)</div>
     </div>
-    <div class="timeline-item" style="--i:46" data-kind="scan">
+    <div class="timeline-item" style="--i:47" data-kind="scan">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Rodada do scanner — 43 achado(s) novo(s), 606 veredito(s) atualizado(s)</div>
       <div class="timeline-body">13 contrato(s) Clarity, 1777 arquivo(s) de código, 35 manifesto(s) checados (JS/TS: 292, Go: 980, Kotlin/Java: 496, Swift/ObjC: 0, solidity: 9). 4 erro(s) de busca.</div>
     </div>
-    <div class="timeline-item" style="--i:47" data-kind="verdict">
+    <div class="timeline-item" style="--i:48" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: weak_crypto_risk <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">OKG (Go) — Investigação real (03/09/2026): RC4 em buildCommitTx() (linha 99) cifra inscriptionData.ContentType+Body -- que é o PRÓPRIO payload da inscrição SRC-20 gravado on-chain pra qualquer indexer público ler (é literalmente o …</div>
     </div>
-    <div class="timeline-item" style="--i:48" data-kind="verdict">
+    <div class="timeline-item" style="--i:49" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: semgrep_use_of_sha1 <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Investigação real (03/09/2026): SHA1 em buildTargetGroupName() (linha 689-701) é usado só pra gerar um identificador curto e determinístico (hash de clusterID+namespace+serviceName+portas+protocolo+healthcheck) que vira …</div>
     </div>
-    <div class="timeline-item" style="--i:49" data-kind="verdict">
+    <div class="timeline-item" style="--i:50" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: semgrep_use_tls <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Investigação real (03/09/2026): InitOpenStackProvider() serve /metrics (endpoint Prometheus) via http.ListenAndServe sem TLS (linha 163) -- padrão universal e intencional em todo o ecossistema Kubernetes/cloud-native (mé…</div>
     </div>
-    <div class="timeline-item" style="--i:50" data-kind="verdict">
+    <div class="timeline-item" style="--i:51" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: semgrep_grpc_server_insecure_connection <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Investigação real (03/09/2026): server.go::Run() faz net.Listen(netProtocol, socketpath) (linha 70) -- é um SOCKET UNIX (arquitetura padrão de plugin KMS do Kubernetes: apiserver fala com o plugin via socket local, não r…</div>
     </div>
-    <div class="timeline-item" style="--i:51" data-kind="verdict">
+    <div class="timeline-item" style="--i:52" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: insecure_tls <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Kubernetes (Go) — Investigação real (03/09/2026): plugin_endpoint.go::Check() (magnum-auto-healer) monta http.Client com tls.Config{InsecureSkipVerify:true} (linha 144) pra checar saúde de um nó via HTTPS no IP interno do nó. A resposta d…</div>
     </div>
-    <div class="timeline-item" style="--i:52" data-kind="verdict">
+    <div class="timeline-item" style="--i:53" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Direct dependency (uncommon but real -- cloud-provider plugins sometimes need this for shared internal types). Confirmed live which subpackages are actually imported across the whole repo (excluding tests): only k8s.io/k…</div>
     </div>
-    <div class="timeline-item" style="--i:53" data-kind="verdict">
+    <div class="timeline-item" style="--i:54" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Direct dependency, genuinely called -- but only pkcs12.LegacyRC2.WithRand(rand.Reader).Encode(...) (pkg/ingress/controller/controller.go:698), building a PKCS#12 bundle to upload to OpenStack Barbican. The advisory (GHSA…</div>
     </div>
-    <div class="timeline-item" style="--i:54" data-kind="verdict">
+    <div class="timeline-item" style="--i:55" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in cloud-provider-openstack go.mod (verified live). Transitive only -- this repo has no CEL expression evaluation of its own.</div>
     </div>
-    <div class="timeline-item" style="--i:55" data-kind="verdict">
+    <div class="timeline-item" style="--i:56" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in cloud-provider-openstack go.mod (verified live). Transitive only.</div>
     </div>
-    <div class="timeline-item" style="--i:56" data-kind="verdict">
+    <div class="timeline-item" style="--i:57" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in cloud-provider-openstack go.mod (verified live) -- one of ~9 go.opentelemetry.io/* indirect deps in this go.mod, all transitive tracing/metrics plumbing pulled in by something else, not directly imp…</div>
     </div>
-    <div class="timeline-item" style="--i:57" data-kind="verdict">
+    <div class="timeline-item" style="--i:58" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in cloud-provider-openstack go.mod (verified live). Same transitive-dependency pattern already confirmed false positive for kubernetes/cluster-bootstrap earlier this session -- pulled in by something e…</div>
     </div>
-    <div class="timeline-item" style="--i:58" data-kind="verdict">
+    <div class="timeline-item" style="--i:59" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in cloud-provider-openstack go.mod (verified live). Transitive only, no code-level import in this repo own source (only test/e2e framework and pkg/features import from k8s.io/kubernetes; nothing in thi…</div>
     </div>
-    <div class="timeline-item" style="--i:59" data-kind="verdict">
+    <div class="timeline-item" style="--i:60" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Same finding, same false-positive mechanism already confirmed for kubernetes/cluster-bootstrap earlier this session: GHSA-33c5-9fx5-fvjm / GO-2024-2748 is a 2019-era kube-apiserver proxy-upgrade-request bug fixed at apim…</div>
     </div>
-    <div class="timeline-item" style="--i:60" data-kind="verdict">
+    <div class="timeline-item" style="--i:61" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Same OSV pseudo-version semver-sort artifact already documented for cluster-bootstrap apimachinery finding: the 4 advisories flagged (GHSA-8cfg-vx93-jvxw, GHSA-jmrx-5g74-6v2f, GO-2021-0064, GO-2021-0065 -- credential dis…</div>
     </div>
-    <div class="timeline-item" style="--i:61" data-kind="verdict">
+    <div class="timeline-item" style="--i:62" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Two independent reasons this is a false positive. (1) Stale scan data: current cluster-bootstrap go.mod (v0.37.0, verified live) pins a clean tagged k8s.io/apimachinery v0.37.0 -- not the pseudo-version this finding was …</div>
     </div>
-    <div class="timeline-item" style="--i:62" data-kind="verdict">
+    <div class="timeline-item" style="--i:63" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — golang.org/x/crypto is marked // indirect in cluster-bootstrap go.mod (v0.37.0) -- not imported by any of the repo own 10 source files (doc.go, token/api, token/jws, token/util, util/secrets, util/tokens -- all JWS/HMAC/…</div>
     </div>
-    <div class="timeline-item" style="--i:63" data-kind="verdict">
+    <div class="timeline-item" style="--i:64" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: non_constant_time_hmac_comparison <span class="chip chip-info">confirmado</span></div>
       <div class="timeline-body">Kubernetes (Go) — DetachedTokenIsValid (token/jws/jws.go) verifica a assinatura JWS (HS256, HMAC-SHA256, algoritmo simetrico) de um bootstrap token comparando com == (comparacao de string comum, curto-circuita no primeiro byte diferente) …</div>
     </div>
-    <div class="timeline-item" style="--i:64" data-kind="verdict">
+    <div class="timeline-item" style="--i:65" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in go.mod (verified live), and confirmed zero grpc.NewServer() call sites anywhere in the repo (excluding tests) -- not just unreachable via a local socket like the openstack/cri-api cases, this repo d…</div>
     </div>
-    <div class="timeline-item" style="--i:65" data-kind="verdict">
+    <div class="timeline-item" style="--i:66" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Direct dependency, and genuinely used: real grpc.NewServer() call sites exist (pkg/csi/cinder/server.go, pkg/csi/manila/driver.go, pkg/kms/server/server.go). But all three follow the standard CSI-driver/KMS-plugin contra…</div>
     </div>
-    <div class="timeline-item" style="--i:66" data-kind="verdict">
+    <div class="timeline-item" style="--i:67" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — Marked // indirect in go.mod (verified live), and confirmed zero grpc.NewServer() call sites anywhere in the repo (excluding tests) -- component-base is shared utility code (flags/logs/metrics/feature-gates) for other Ku…</div>
     </div>
-    <div class="timeline-item" style="--i:67" data-kind="verdict">
+    <div class="timeline-item" style="--i:68" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: known_vulnerable_dependency <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Kubernetes (Go) — cri-api is generated gRPC service-definition bindings (protoc-generated stubs), not a running server -- it has no grpc.NewServer() call of its own, it is imported BY kubelet and by CRI implementations (containerd, CRI-O,…</div>
     </div>
-    <div class="timeline-item" style="--i:68" data-kind="verdict">
+    <div class="timeline-item" style="--i:69" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: semgrep_defaulthttpclient_is_deprecated <span class="chip chip-good">falso positivo</span></div>
       <div class="timeline-body">Auth0 by Okta (Kotlin/Java) — Name-collision false positive. The Semgrep rule (java.lang.security.audit.crypto.ssl.defaulthttpclient-is-deprecated) targets the deprecated org.apache.http.impl.client.DefaultHttpClient (Apache HttpComponents, genuinely…</div>
     </div>
-    <div class="timeline-item" style="--i:69" data-kind="verdict">
-      <div class="timeline-time">2026-09-04 09:25 UTC</div>
-      <div class="timeline-title">Veredito: semgrep_use_of_unsafe_block <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Kubernetes (Go) — Same as the other 49 kubelet semgrep_use_of_unsafe_block findings: zz_generated.conversion.go, conversion-gen generated code, standard heavily-audited type-punning idiom, not hand-written logic.</div>
-    </div>
     <div class="timeline-item" style="--i:70" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
       <div class="timeline-title">Veredito: semgrep_use_of_unsafe_block <span class="chip chip-good">falso positivo</span></div>
-      <div class="timeline-body">Kubernetes (Go) — All 16 files backing these 50 findings are protoc-generated (.pb.go) or conversion-gen-generated (zz_generated.conversion.go) -- same systemic false-positive pattern already confirmed twice this session (kubernetes/apima…</div>
+      <div class="timeline-body">Kubernetes (Go) — Same as the other 49 kubelet semgrep_use_of_unsafe_block findings: zz_generated.conversion.go, conversion-gen generated code, standard heavily-audited type-punning idiom, not hand-written logic.</div>
     </div>
     <div class="timeline-item" style="--i:71" data-kind="verdict">
       <div class="timeline-time">2026-09-04 09:25 UTC</div>
@@ -14627,7 +14627,7 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div><h2 style="margin-top:22px">Achados travados por política</h2><div class="panel-sub">Investigação real, tecnicamente válida, mas que a state machine nunca deixa passar de human_ready por causa do programa.</div><div class="card-grid">
       <div class="card" style="--i:0">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.</div>
+        <div class="card-title">circlefin/evm-cctp-contracts/lib/openzeppelin-contracts/cont</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:1">
@@ -14637,7 +14637,7 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:2">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cctp-contracts/lib/openzeppelin-contracts/cont</div>
+        <div class="card-title">circlefin/evm-cctp-contracts/src/v2/Create2Factory.sol::depl</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:3">
@@ -14647,7 +14647,7 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:4">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cctp-contracts/src/v2/Create2Factory.sol::depl</div>
+        <div class="card-title">circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:5">
@@ -14692,17 +14692,17 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:13">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol</div>
-        <div class="card-meta">estado: Corroborado (estático) · grau E2</div>
+        <div class="card-title">circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/c</div>
+        <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:14">
         <div class="card-eyebrow">Circle BBP</div>
         <div class="card-title">circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol</div>
-        <div class="card-meta">estado: Falso positivo · grau E0</div>
+        <div class="card-meta">estado: Corroborado (estático) · grau E2</div>
       </div>
       <div class="card" style="--i:15">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/c</div>
+        <div class="card-title">circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:16">
@@ -14717,37 +14717,37 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:18">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_pu</div>
+        <div class="card-title">circlefin/evm-cpn-contracts/src/utils/Rescuable.sol::rescueN</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:19">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol</div>
+        <div class="card-title">circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_pu</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:20">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cpn-contracts/src/utils/Rescuable.sol::rescueN</div>
+        <div class="card-title">circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:21">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cpn-contracts/src/PaymentSettlement.sol::_pull</div>
+        <div class="card-title">circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:22">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol</div>
+        <div class="card-title">circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contr</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:23">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_re</div>
+        <div class="card-title">circlefin/evm-cpn-contracts/src/PaymentSettlement.sol::_pull</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:24">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contr</div>
+        <div class="card-title">circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_re</div>
         <div class="card-meta">estado: Falso positivo · grau E0</div>
       </div>
       <div class="card" style="--i:25">
@@ -14807,12 +14807,12 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:36">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWal</div>
+        <div class="card-title">circlefin/evm-xreserve-contracts/src/lib/NoValidationAttesta</div>
         <div class="card-meta">estado: Falso positivo · grau E2</div>
       </div>
       <div class="card" style="--i:37">
         <div class="card-eyebrow">Circle BBP</div>
-        <div class="card-title">circlefin/evm-xreserve-contracts/src/lib/NoValidationAttesta</div>
+        <div class="card-title">circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWal</div>
         <div class="card-meta">estado: Falso positivo · grau E2</div>
       </div>
       <div class="card" style="--i:38">
@@ -14927,12 +14927,12 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:60">
         <div class="card-eyebrow">Auth0 by Okta</div>
-        <div class="card-title">auth0/react-native-auth0/yarn.lock::image-size@1.2.1::known_</div>
+        <div class="card-title">auth0/auth0-spa-js/package-lock.json::trim-newlines@1.0.0::k</div>
         <div class="card-meta">estado: Duplicata conhecida · grau E0</div>
       </div>
       <div class="card" style="--i:61">
         <div class="card-eyebrow">Auth0 by Okta</div>
-        <div class="card-title">auth0/auth0-spa-js/package-lock.json::trim-newlines@1.0.0::k</div>
+        <div class="card-title">auth0/react-native-auth0/yarn.lock::image-size@1.2.1::known_</div>
         <div class="card-meta">estado: Duplicata conhecida · grau E0</div>
       </div>
       <div class="card" style="--i:62">
@@ -14952,12 +14952,12 @@ CADEIA CONFIRMADA (2 arquivos, causa raiz ú…</div>
       </div>
       <div class="card" style="--i:65">
         <div class="card-eyebrow">Auth0 by Okta</div>
-        <div class="card-title">auth0/auth0-spa-js/package-lock.json::serialize-javascript@4</div>
+        <div class="card-title">auth0/auth0-spa-js/package-lock.json::js-yaml@3.14.2::known_</div>
         <div class="card-meta">estado: Duplicata conhecida · grau E0</div>
       </div>
       <div class="card" style="--i:66">
         <div class="card-eyebrow">Auth0 by Okta</div>
-        <div class="card-title">auth0/auth0-spa-js/package-lock.json::js-yaml@3.14.2::known_</div>
+        <div class="card-title">auth0/auth0-spa-js/package-lock.json::serialize-javascript@4</div>
         <div class="card-meta">estado: Duplicata conhecida · grau E0</div>
       </div>
       <div class="card" style="--i:67">
