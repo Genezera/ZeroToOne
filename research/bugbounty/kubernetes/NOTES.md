@@ -990,3 +990,37 @@ por julgamento próprio nos restantes de `pkg/identity/keystone/`
 
 `deep-read-log.json` atualizado (`kubernetes/cloud-provider-openstack`,
 +3 entradas). `export-queue` rodado, commit/push ao final da rodada.
+
+## Rodada 2026-09-05 (push trigger)
+
+Fila (`list-pending`) só tinha 34 candidatos, todos em programas
+bloqueados (Auth0 by Okta: 30, Circle BBP: 4) -- confirmado via
+`check-program` antes de tocar em qualquer um, nenhum lido/investigado
+por não estar em `program-policy.json` como liberado.
+
+Leitura profunda proativa em `kubernetes/kube-aggregator` (repo novo,
+ainda não tinha entrada em `deep-read-log.json`), priorizando o path
+histórico de segurança do agregador (proxy de requests autenticados
+para APIServices registrados, o mesmo componente do CVE-2018-1002105):
+
+- `pkg/apiserver/handler_proxy.go` -- confirma que a identidade
+  propagada ao backend (`transport.NewAuthProxyRoundTripper`/
+  `SetAuthProxyHeaders`) vem de `genericapirequest.UserFrom(ctx)`,
+  autenticado pelo apiserver principal antes da requisição chegar
+  aqui, não de qualquer header controlável pelo client; caminho de
+  upgrade (websocket/exec) usa a mesma fonte de identidade por rota
+  separada. Código pós-fix do CVE citado, alinhado com o
+  `k8s.io/apiserver` upstream. Sem achado.
+- `pkg/apiserver/resolvers.go` -- os 3 resolvers (`cluster`/
+  `endpoint`/`loopback`) só repassam pra `k8s.io/apiserver/pkg/util/
+  proxy` (fora deste repo) ou comparam namespace/name/port contra
+  literais fixos; sem lógica própria de parsing. Sem achado.
+- `pkg/controllers/autoregister/autoregister_controller.go` -- reconciliação
+  `desired`/`curr` de APIServices; `desired` só é populado por chamada
+  direta de código do próprio processo apiserver (`AddAPIServiceToSync*`),
+  não por request de rede; `Delete` usa `UIDPreconditions` contra race.
+  Sem achado.
+
+Nenhum achado novo nesta rodada -- resultado normal. `deep-read-log.json`
+atualizado (`kubernetes/kube-aggregator`, +3 entradas). `export-queue`
+rodado, commit/push ao final da rodada.
