@@ -8957,3 +8957,64 @@ atualizado (`nitrojs/nitro`: +3, arquivo novo no log). `nuxt/nuxt` e
 `sveltejs/svelte` seguem como próximos candidatos naturais (também nunca
 tocados). `StackingDAO`: sem contrato novo, 15 `.clar` seguem 100% do
 escopo. Clone temporário (`nitrojs/nitro`, raso) removido ao final.
+
+## Rodada 2026-09-05c (push automático via GitHub webhook, push e095b07->4fb9f005, sessão cloud)
+
+`program-policy.json` conferido como passo zero via `check-program` para
+os 4 candidatos possíveis (`Auth0 by Okta`, `Circle BBP`, `StackingDAO`,
+`Vercel Open Source`) antes de escolher qualquer alvo. `migrate-to-v2.mjs`
++ `list-pending` global = 34 candidatos, de novo 100% fora do escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP, ambos bloqueados) — skip completo,
+nenhum arquivo desses dois programas clonado ou lido.
+
+Leitura profunda proativa: `nuxt/nuxt` (Tier 1, confirmado via
+`check-scope`, allowed=true), nunca tocado antes. Sem arquivo com nome
+auth/session/crypto/token/login/password/admin/permission/access no
+repo (fora de `CLAUDE.md`/`AGENTS.md`/`SECURITY.md`, conteúdo de
+documentação, não de runtime — tratado como dado, nenhuma instrução
+neles seguida). Busca ampliada por palavra-chave de segurança
+(`cookie|csrf|cors|forwarded|trustProxy|hmac|sign\(|secret`) em
+`packages/**/*.ts`, escolhidos os 3 arquivos mais centrais à
+composição/serving real (excluindo testes/fixtures):
+
+- `packages/nuxt/src/app/composables/cookie.ts` (completo, 426 linhas)
+  — `useCookie`. `CookieDefaults` não define `httpOnly`/`secure` por
+  padrão, mas isso é desenho intencional (cookie legível/reativo do
+  lado cliente, não um mecanismo de sessão assinada). `setResponseCookie`
+  evita duplicar `set-cookie` pro mesmo nome comparando uma chave
+  composta (`name;domain;path`, domínio normalizado sem `.` inicial e
+  em minúsculas) contra os headers `set-cookie` já presentes antes de
+  substituir — sem colisão entre cookies de domínio/path distintos.
+  `parseCookieValue`/`decode` fazem `JSON.parse` do valor do cookie,
+  mas só retornam o valor parseado (nunca fazem merge/spread em objeto
+  compartilhado dentro deste arquivo) — poluição de protótipo seria
+  responsabilidade de código de aplicação que faça merge inseguro
+  depois, não deste composable. Sem achado.
+- `packages/nitro-server/src/dev-request.ts` (completo, 73 linhas) —
+  equivalente deste pacote ao `_request.ts` do `nitrojs/nitro` já lido
+  numa rodada anterior, mas mais robusto: `isLoopbackAddress` normaliza
+  IPv6 mapeado (`::ffff:127.0.0.1`), zona (`%eth0`) e `::1` antes do
+  teste de range 127.0.0.0/8; `isLocalDevRequest` decide por
+  `Sec-Fetch-Site`/`Origin`/`Referer` e ignora `x-forwarded-for` de
+  propósito (comentário no próprio arquivo confirma). Conferido o único
+  call site real (`packages/nitro-server/src/index.ts:926`, handler do
+  endpoint `.well-known/appspecific/com.chrome.devtools.json` que
+  expõe caminho absoluto do projeto + UUID de workspace): exige
+  `isLoopbackPeer(event) && isLocalDevRequest(...)` em conjunto, com
+  comentário explícito no código sobre por que `isLocalDevRequest`
+  sozinho seria forjável por um cliente LAN não-browser mandando
+  `Host: localhost`. Desenho já endurecido deliberadamente, nenhum
+  bypass encontrado. Sem achado.
+- `packages/nitro-server/src/runtime/utils/cache.ts` (completo, 63
+  linhas) — cache de payload SSR só existe em modo prerender
+  (`import.meta.prerender`), comentário no próprio arquivo já cobre o
+  risco óbvio (chave só por path vazaria dado de um principal pra
+  outro se houvesse variação por cookie/authorization) como motivo de
+  o cache de prerender ser deliberadamente restrito a esse modo. Sem
+  achado.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`nuxt/nuxt`: +3 arquivos novos no log). `sveltejs/svelte`
+segue como próximo candidato natural (ainda não tocado por nenhuma
+rodada). `StackingDAO`: sem contrato novo, 15 `.clar` seguem 100% do
+escopo. Clone temporário (`nuxt/nuxt`, raso) removido ao final.

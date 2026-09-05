@@ -6755,3 +6755,13 @@ rodada. Os mesmos 4 candidatos `unchecked_call_return` em
 (`Mints.sol::_mint`) seguem herdados de rodadas passadas, sem ação.
 Leitura profunda proativa desta rodada ficou em
 `kiwicom/k8s-vault-operator` (ver NOTES.md de Kiwi.com).
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, push e095b07->4fb9f005, sessão cloud)
+
+`program-policy.json` checado como passo zero via `check-program`:
+`blocked` confirmado (escolha do usuário, sem exceção). `list-pending`
+trouxe 4 candidatos deste programa (herdados de rodadas passadas,
+`004_UpgradeGatewayWallet.sol` `unchecked_call_return`) — não lidos,
+não tocados, nenhuma ação nesta rodada. Leitura profunda proativa desta
+rodada ficou em `nuxt/nuxt` (ver NOTES.md de Vercel Open Source), fora
+do escopo deste programa.

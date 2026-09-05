@@ -2852,3 +2852,12 @@ Source).
 `afterpay/*`/`cashapp/*`/`square/wire` foi clonado, lido ou tocado
 nesta rodada. Leitura profunda proativa desta rodada ficou em
 `kiwicom/k8s-vault-operator` (ver NOTES.md de Kiwi.com).
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, push e095b07->4fb9f005, sessão cloud)
+
+`program-policy.json` checado como passo zero via `check-program`:
+`aiResearchBanned` confirmado, sem exceção. Nenhum repo
+`afterpay/*`/`cashapp/*`/`square/wire` foi clonado, lido ou tocado
+nesta rodada. Leitura profunda proativa desta rodada ficou em
+`nuxt/nuxt` (ver NOTES.md de Vercel Open Source), fora do escopo deste
+programa.

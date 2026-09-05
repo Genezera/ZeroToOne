@@ -638,7 +638,9 @@
     "packages/nitro-server/src/vite.ts (createSentinels -- randomBytes(8) só gera tag opaca embutida em nome de especificador de módulo virtual do dev server, usada pra achar/substituir string no bundle, não é segredo nem token de sessão. Sem achado)",
     "packages/nuxt/src/app/composables/asyncData.ts (createHash local -- hash de debug (import.meta.dev only) comparando handler/deps entre re-renders pra warning de dev tooling, não hash criptográfico de segurança. Sem achado)",
     "packages/nuxt/src/head/module.ts (createHash('sha256') sobre código IIFE constante conhecido em build-time só pra nome de arquivo com cache-busting determinístico, sem segredo. Sem achado)",
-    "packages/rspack/src/impl.ts (getVueLoaderHash -- createHash('sha256') sobre conteúdo de módulo Vue só pra fingerprint de cache-key do loader, não é primitiva de autenticação. Sem achado)"
+    "packages/rspack/src/impl.ts (getVueLoaderHash -- createHash('sha256') sobre conteúdo de módulo Vue só pra fingerprint de cache-key do loader, não é primitiva de autenticação. Sem achado)",
+    "packages/nitro-server/src/dev-request.ts",
+    "packages/nitro-server/src/runtime/utils/cache.ts"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
