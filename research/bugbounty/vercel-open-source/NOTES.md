@@ -8083,3 +8083,41 @@ Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/next.js`: +3 entradas, de 36 para 39). Clones
 temporários (`/tmp/vercel-scan`, `/tmp/nextjs-scan`) removidos ao
 final.
+
+## Rodada 2026-09-05 #5 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` seguem bloqueados; nenhum dos três
+tocado. `list-pending` global segue com os mesmos 34 candidatos fora
+do escopo desta missão (30 "Auth0 by Okta", 4 "Circle BBP") -- nenhum
+repo desses tocado, nem para priorização.
+
+Leitura profunda proativa: clone raso de `vercel/vercel` (maior
+repositório em escopo), `find` por caminho `.ts`/`.js` batendo
+auth/session/crypto/token/login/password/admin/permission/access/secret
+(excluindo `test`/`.d.ts`/fixtures/`__snapshots__`), diff contra os
+108 arquivos já em `deep-read-log.json` para este repo -- restaram
+apenas 3 arquivos novos:
+
+- `examples/sanity-v2/schemas/author.js`: schema estático do Sanity
+  CMS de um exemplo de blog, só campos name/slug/image/bio. Sem lógica
+  de runtime, sem achado.
+- `packages/cli/evals/evals/login-not-logged-in/EVAL.ts` +
+  `packages/cli/evals/evals/login-whoami/EVAL.ts`: fixtures de teste
+  do harness de avaliação de AGENTES de IA (não do CLI da Vercel em
+  si) -- só asseram que o agente avaliado rodou `whoami`/`login` e
+  comparam saídas gravadas em `results.json`. Nenhuma lógica de
+  autenticação do produto nestes arquivos. Sem achado.
+
+Repositório `vercel/vercel` agora está com cobertura completa do
+grep de nome de caminho sensível (111 arquivos, nenhum resíduo).
+
+Para StackingDAO: sem contrato novo, os 15 arquivos `.clar` seguem
+100% dos 13 assets do escopo oficial (`api.hiro.so` não retentado
+nesta rodada -- condição de bloqueio de rede documentada há dezenas de
+rodadas, sem sinal de mudança). Ver
+`research/bugbounty/stackingdao/NOTES.md`.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/vercel`: +3 entradas, de 109 para 112). Clone
+temporário removido ao final.
