@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-05T06:07:26.891Z",
+  "checkedAt": "2026-09-05T18:18:48.334Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -108,13 +108,13 @@
       ]
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "c4c5669668425ed3d6d6252103ffce73cabf9bb8",
+      "sha": "d320f8a4a86a197d310570b363136ef2a00772a1",
       "branch": "master",
-      "parentSha": "9c52b05bfd451f255f4fd1f2f122388c7e40ae00",
-      "committedAt": "2026-09-04T16:54:20Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/c4c5669668425ed3d6d6252103ffce73cabf9bb8",
-      "title": "NO-ISSUE: Bump go.opentelemetry.io/otel to v1.44.0 in master (#3174)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "16c3b98d5c51afc0144e9e5f3a1c3dd0115f1342",
+      "committedAt": "2026-09-05T16:00:22Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/d320f8a4a86a197d310570b363136ef2a00772a1",
+      "title": "Bump software.sslmate.com/src/go-pkcs12 from 0.7.1 to 0.7.2 (#3161)",
+      "observedAt": "2026-09-05T18:18:48.334Z",
       "programs": [
         "Kubernetes"
       ],
