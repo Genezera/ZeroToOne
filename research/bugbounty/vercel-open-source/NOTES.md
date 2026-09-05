@@ -8124,6 +8124,31 @@ atualizado (`vercel/workflow`: +4 entradas, de 31 para 35).
 
 ## Rodada 2026-09-05 #5 (push automático via GitHub webhook, sessão cloud)
 
+`program-policy.json` checado como passo zero: `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`) confirmados — nenhum repo desses três tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 34, 100% de programas
+fora de escopo (30 Auth0 by Okta, 4 Circle BBP).
+
+Os 8 achados `corroborated_static` já existentes deste programa
+(`runBridge` timing_attack_risk, `verify-claim.mjs` path_traversal,
+`update-remix-run-dev.js` command_injection — todos sem evidência
+nova —, `image-optimizer.ts` SSRF — já com `platformOutcome: duplicate`
+do report #3943945, fora do fluxo de avanço —, e os 3
+`semgrep_detect_child_process` de `mcp.ts`, deliberadamente
+estacionados por risco de duplicata) foram revisados: nenhuma
+evidência nova que justificasse reabrir investigação ou tentar
+transição de estado, consistente com dezenas de rodadas anteriores;
+não tocados.
+
+Leitura profunda proativa desta rodada ficou em
+`kiwicom/k8s-vault-operator` (ver NOTES.md de Kiwi.com) — repos Vercel
+Open Source seguem com a superfície auth/session/crypto/token
+essencialmente esgotada nas rodadas anteriores. Nenhum achado novo,
+nenhuma transição de estado.
+
+## Rodada 2026-09-05 #6 (push automático via GitHub webhook, sessão cloud)
+
 `program-policy.json` checado como passo zero -- `Block Open Source`,
 `Circle BBP` e `Auth0 by Okta` seguem bloqueados; nenhum dos três
 tocado. `list-pending` global segue com os mesmos 34 candidatos fora

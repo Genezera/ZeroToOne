@@ -2844,3 +2844,11 @@ entrar em vigor, permanece intocado nesta rodada; nenhuma nova leitura
 de repositório). Leitura profunda proativa desta rodada ficou
 inteiramente em `sveltejs/svelte` (ver NOTES.md de Vercel Open
 Source).
+
+## Rodada 2026-09-05 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero via `check-program`:
+`aiResearchBanned`/`blocked` confirmados, sem exceção. Nenhum repo
+`afterpay/*`/`cashapp/*`/`square/wire` foi clonado, lido ou tocado
+nesta rodada. Leitura profunda proativa desta rodada ficou em
+`kiwicom/k8s-vault-operator` (ver NOTES.md de Kiwi.com).

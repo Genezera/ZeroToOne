@@ -6745,3 +6745,13 @@ candidatos `unchecked_call_return` em `004_UpgradeGatewayWallet.sol`
 seguem herdados de rodadas passadas, sem ação. Leitura profunda
 proativa desta rodada ficou em `slackhq/nebula` (ver NOTES.md de
 Slack). Achado travado em `corroborated_static` segue intocado.
+
+## Rodada 2026-09-05 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado (`blocked: true` continua vigente, sem
+exceção). Nenhum repo `circlefin/*` foi clonado, lido ou tocado nesta
+rodada. Os mesmos 4 candidatos `unchecked_call_return` em
+`004_UpgradeGatewayWallet.sol` e o achado em `corroborated_static`
+(`Mints.sol::_mint`) seguem herdados de rodadas passadas, sem ação.
+Leitura profunda proativa desta rodada ficou em
+`kiwicom/k8s-vault-operator` (ver NOTES.md de Kiwi.com).

@@ -486,3 +486,48 @@ esse tipo de sweep até que publique código fonte real.
 `deep-read-log.json` atualizado (`kiwicom/k8s-vault-operator`, +2
 entradas, repo novo). Nenhum achado novo, nenhuma transição de estado
 nesta rodada em Kiwi.com — resultado normal e válido.
+
+## Rodada 2026-09-05 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`check-program`
+confirmou `Block Open Source`/`Circle BBP`/`Auth0 by Okta` bloqueados;
+nenhum repo desses três tocado). `migrate-to-v2.mjs` + `list-pending`
+global = 34, 100% fora de escopo (30 Auth0 by Okta, 4 Circle BBP).
+Nenhum candidato pendente em Kiwi.com.
+
+Leitura profunda proativa continuou `kiwicom/k8s-vault-operator` (clone
+raso público, descartado ao final do scratchpad), completando os 3
+arquivos restantes de `pkg/vault/` ainda não lidos:
+
+- `pkg/vault/vault.go` (`Reader.ReadData`/`getAbsolutePaths`/
+  `getPathsRecursive`/`createVaultData`) — `Spec.Addr`/`Spec.Paths`
+  vêm da CRD `VaultSecret` (config de quem tem permissão de criar o
+  CR no namespace, não de terceiro anônimo); indexação
+  `path.Path[0]`/`path.Path[len(path.Path)-1]` sem checar string
+  vazia panicaria com `Path: ""`, mas seria auto-infligido via a
+  própria config do CR (mesma classe "robustez, não segurança" já
+  descartada nas leituras anteriores deste programa, não um achado
+  novo). Sem achado.
+- `pkg/vault/k8s_secret.go` (`secretsAsEnv`/`secretsAsFile`/
+  `buildVaultUIURL`/`NewSecret`) — `validateEnvKey` usa allowlist de
+  charset antes de expor uma chave como variável de ambiente;
+  `sha1` só trunca nome de owner >63 chars (não é uso criptográfico
+  sensível — anotado `//nolint:gosec` no próprio código);
+  `buildVaultUIURL` usa `url.PathEscape` corretamente ao montar a URL
+  de UI a partir de `Spec.Addr`/`Path` (CRD). Sem achado.
+- `pkg/vault/path_reader.go` (`PathReader.Read`) — delega toda leitura
+  para o SDK oficial `hashicorp/vault/api` (`kvPreflightVersionRequest`/
+  `kvReadRequest`); path vem de `VaultSecret.Spec` já coberto acima,
+  sem concatenação de HTTP cru nem sink de injeção próprio. Sem
+  achado.
+
+Com isso, todos os arquivos `.go` não-vendored/não-teste do repositório
+(`controllers/`, `api/v1/`, `cmd/`, `pkg/vault/`, `pkg/metrics/`) estão
+cobertos pelo `deep-read-log.json` — repositório tratado como
+essencialmente esgotado para este tipo de sweep, próxima rodada deve
+priorizar outro repo pouco explorado (ex.: `mattermost/mattermost-plugin-github`,
+`plaid/plaid-ruby`, `kubernetes/apimachinery`/`cli-runtime`/
+`cloud-provider-aws`, todos com 1-4 arquivos lidos até agora).
+`deep-read-log.json` atualizado (+3 em `kiwicom/k8s-vault-operator`).
+Nenhum achado novo, nenhuma transição de estado nesta rodada em
+Kiwi.com — resultado normal e válido.
