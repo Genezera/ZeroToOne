@@ -700,7 +700,8 @@
     "packages/svelte/src/internal/server/hydratable.js (serializacao de dados p/ hydration via devalue.uneval, com comentario explicito no codigo sobre evitar interpretar caracteres de replacement em valor potencialmente controlado por usuario ao resolver promise -- padrao defensivo, nao vulneravel. Sem achado)",
     "packages/svelte/src/compiler/preprocess/decode_sourcemap.js (decode_map/decoded_sourcemap_from_generator -- so transforma dado de sourcemap fornecido pelo proprio dev em compile-time via JSON.parse/desestruturacao, sem leitura de filesystem por path externo nem sink de execucao. Sem achado)",
     "packages/svelte/src/internal/client/dom/elements/custom-element.js (SvelteElement/create_custom_element -- reflexao de props<->atributos de custom element no browser; JSON.parse/JSON.stringify em get_custom_element_value so (de)serializa Object/Array, sem eval nem innerHTML; setAttribute/removeAttribute via API nativa do DOM, auto-escapada. Sem achado)",
-    "packages/svelte/src/internal/client/dom/elements/bindings/input.js (bind_value/bind_group/bind_checked/bind_files -- two-way binding de <input>, so le/escreve .value/.checked/.files via propriedades nativas do DOM, nenhuma concatenacao de HTML nem innerHTML. Sem achado)"
+    "packages/svelte/src/internal/client/dom/elements/bindings/input.js (bind_value/bind_group/bind_checked/bind_files -- two-way binding de <input>, so le/escreve .value/.checked/.files via propriedades nativas do DOM, nenhuma concatenacao de HTML nem innerHTML. Sem achado)",
+    "packages/svelte/src/internal/client/dom/blocks/key.js"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",
@@ -1013,7 +1014,9 @@
     "crates/turborepo-wax/src/token/parse.rs (parser nom do glob wax -- literal()/separator()/wildcard()/class()/alternative(), \"..\" tratado como literal comum sem tratamento especial de path traversal aqui; matching/enforcement de boundaries fica em outro arquivo não lido nesta rodada -- sem achado)",
     "crates/turborepo-boundaries/src/config.rs (schema serde/deserializable de BoundariesConfig/Rule/Permissions -- só estrutura de dados (allow/deny de tags), nenhuma lógica de enforcement aqui; sem achado)",
     "crates/turborepo-boundaries/src/tags.rs (validate_relation/check_package_tags -- lint de arquitetura em tempo de build de `turbo boundaries`, não fronteira de confiança em runtime: developer roda contra o próprio monorepo, sem input externo/untrusted; produz só diagnóstico de CI, nunca bloqueia execução real. Sem achado reportável)",
-    "crates/turborepo-boundaries/src/imports.rs (check_import/check_file_import -- resolve import relativo e checa se caminho resolvido sai do pacote via `relation_to_path` (não `contains`, que panicaria com muitos `..`); mesmo modelo de ameaça de tags.rs (lint de dev-time sobre código do próprio usuário, não input de terceiro) -- comentários mostram hardening deliberado contra `node_modules`/paths gerados por SvelteKit. Sem achado)"
+    "crates/turborepo-boundaries/src/imports.rs (check_import/check_file_import -- resolve import relativo e checa se caminho resolvido sai do pacote via `relation_to_path` (não `contains`, que panicaria com muitos `..`); mesmo modelo de ameaça de tags.rs (lint de dev-time sobre código do próprio usuário, não input de terceiro) -- comentários mostram hardening deliberado contra `node_modules`/paths gerados por SvelteKit. Sem achado)",
+    "crates/turborepo-boundaries/bindings/Permissions.ts",
+    "packages/turbo-codemod/src/utils/is-pipeline-key-missing.ts"
   ],
   "vercel/vercel": [
     "packages/cli/src/util/config/files.ts",

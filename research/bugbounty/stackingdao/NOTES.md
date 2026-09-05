@@ -1365,3 +1365,18 @@ profunda proativa desta rodada direcionada a `nitrojs/nitro` e
 `nuxt/nuxt` (ver NOTES.md de Vercel Open Source -- 5 arquivos
 checados, todos hash/randomBytes triviais de cache-busting/dev
 tooling, sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-05 #7 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero (`Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` bloqueados, nenhum tocado). `list-pending`
+global segue com os mesmos 34 candidatos fora do escopo desta missão
+(30 Auth0 by Okta, 4 Circle BBP). `api.hiro.so` retestado nesta rodada
+(`curl -v`): mesmo bloqueio de proxy (`CONNECT tunnel failed, response
+403`), condição inalterada há dezenas de rodadas consecutivas -- os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar. Os 15 contratos
+`.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo. Leitura profunda
+proativa desta rodada direcionada a `vercel/turborepo` e
+`sveltejs/svelte` (2 arquivos triviais cada, sem achado; ver NOTES.md
+de Vercel Open Source). Nenhuma transição de estado neste programa.

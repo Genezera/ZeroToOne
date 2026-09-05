@@ -8229,3 +8229,48 @@ dezenas de rodadas). Ver `research/bugbounty/stackingdao/NOTES.md`.
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`nuxt/nuxt`: +5 entradas). Clones temporários
 (`nitrojs/nitro`, `nuxt/nuxt`) removidos ao final.
+
+## Rodada 2026-09-05 #7 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`) confirmados, nenhum dos três tocado. `migrate-to-v2.mjs` +
+`list-pending` global = 34, 100% fora do escopo desta missão (30
+"Auth0 by Okta", 4 "Circle BBP") -- nenhum repo tocado, nem para
+priorização. Também notei que existe 1 achado em `scope_verified`
+global (`OKG::okx/go-wallet-sdk/.../key.go`, programa fora dos 4 desta
+missão) -- já com decisão explícita registrada em rodadas anteriores
+(não avançar human_ready: duplicateCheck recusaria por não ser
+regressão recente, e indício forte de que a OKX já mitigou em
+produção sem tocar o repo público) -- não reaberto, não tocado, apenas
+confirmado que nada mudou.
+
+Leitura profunda proativa: clone raso de `vercel/turborepo`,
+`nuxt/nuxt`, `sveltejs/svelte`, `nitrojs/nitro`, `vercel-labs/agent-skills`
+e `vercel-labs/skills`, grep por nome de caminho
+auth/session/token/login/password/admin/permission/access/secret/crypto/credential/oauth/jwt/key
+(excluindo test/fixtures/dist/node_modules/docs), diff contra
+`deep-read-log.json` (já atualizado nesta mesma rodada de push com os
+5 arquivos novos de `nuxt/nuxt` da sessão paralela anterior). Únicos
+"novos" batendo o filtro (todos falsos positivos de keyword "key"):
+
+- `vercel/turborepo::crates/turborepo-boundaries/bindings/Permissions.ts`:
+  binding TypeScript AUTO-GERADO (`ts-rs`) a partir de struct Rust --
+  só declara o formato `{ allow?: string[], deny?: string[] }` de tags
+  de boundaries do monorepo, zero lógica em runtime. Sem achado.
+- `vercel/turborepo::packages/turbo-codemod/src/utils/is-pipeline-key-missing.ts`:
+  utilitário de codemod que checa se a chave `"pipeline"` (nome de
+  campo de config JSON, não chave criptográfica) existe num schema de
+  config v1, pra evitar rodar codemod duas vezes. Sem achado.
+- `sveltejs/svelte::packages/svelte/src/internal/client/dom/blocks/key.js`:
+  implementação do bloco reativo `{#key}` do Svelte (template
+  reconciliation por identidade, não segurança). Sem achado.
+
+`nitrojs/nitro`, `vercel-labs/agent-skills` e `vercel-labs/skills` sem
+nenhum arquivo novo batendo o filtro -- superfície já esgotada. Para
+StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md` (sem
+contrato novo, 15 arquivos `.clar` seguem 100% do escopo).
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/turborepo`: 31->33, `sveltejs/svelte`: 20->21).
+Clones temporários removidos ao final.
