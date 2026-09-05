@@ -47,6 +47,7 @@ test('reportable sem severidade justificada falha fechado', () => {
   const result = reportabilityGate(malformed);
   assert.equal(result.ok, false);
   assert.match(result.reason, /severityRating/);
+  assert.equal(validateImpactAssessment(malformed, { allowLegacyUnassessed: true }).ok, true);
 });
 
 test('campo obrigatório ausente falha fechado', () => {

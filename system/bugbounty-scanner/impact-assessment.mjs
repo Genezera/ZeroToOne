@@ -8,7 +8,7 @@ function nonEmpty(value) {
 /** Validate facts needed to distinguish a real code defect from a reportable
  * security boundary violation. Non-reportable assessments are valid records;
  * this function reports malformed/missing evidence separately. */
-export function validateImpactAssessment(assessment = {}) {
+export function validateImpactAssessment(assessment = {}, { allowLegacyUnassessed = false } = {}) {
   if (!assessment || typeof assessment !== 'object' || Array.isArray(assessment)) assessment = {};
   const errors = [];
   if (!['confirmed', 'refuted', 'inconclusive'].includes(assessment.technicalValidity)) {
@@ -28,10 +28,10 @@ export function validateImpactAssessment(assessment = {}) {
   }
   if (typeof assessment.reportable !== 'boolean') errors.push('reportable precisa ser boolean explícito');
   if (assessment.reportable === true) {
-    if (!SEVERITY_RATINGS.has(assessment.severityRating)) {
+    if (!allowLegacyUnassessed && !SEVERITY_RATINGS.has(assessment.severityRating)) {
       errors.push('severityRating precisa ser low|medium|high|critical quando reportable=true');
     }
-    if (!nonEmpty(assessment.severityRationale)) {
+    if (!allowLegacyUnassessed && !nonEmpty(assessment.severityRationale)) {
       errors.push('severityRationale precisa justificar a severidade quando reportable=true');
     }
   } else {

@@ -120,7 +120,11 @@ function restoreSatelliteData(db, findingId, entry) {
       && current.reportable === entry.impactAssessment.reportable
       && current.impactScope === entry.impactAssessment.impactScope;
     if (!same) {
-      recordImpactAssessment(db, findingId, entry.impactAssessment);
+      // Historical queue entries predate the mandatory Medium+ fields. Keep
+      // the facts intact during hydration, but do not invent a rating: the
+      // current reportability gate will reject the legacy record until a new
+      // assessment with severityRating/severityRationale is recorded.
+      recordImpactAssessment(db, findingId, entry.impactAssessment, { allowLegacyUnassessed: true });
       notes.push(`impactAssessment restaurado da fila (${entry.impactAssessment.ts || 'sem timestamp original'})`);
     }
   }

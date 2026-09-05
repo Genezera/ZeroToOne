@@ -594,9 +594,9 @@ export function latestDuplicateCheck(db, findingId) {
   };
 }
 
-export function recordImpactAssessment(db, findingId, assessment) {
+export function recordImpactAssessment(db, findingId, assessment, { allowLegacyUnassessed = false } = {}) {
   const { ts: suppliedTs, ledgerHash: _ignoredLedgerHash, ...payload } = assessment;
-  const validation = validateImpactAssessment(payload);
+  const validation = validateImpactAssessment(payload, { allowLegacyUnassessed });
   if (!validation.ok) throw new Error(`impact assessment inválido: ${validation.errors.join('; ')}`);
   const ts = suppliedTs || new Date().toISOString();
   db.prepare(`
