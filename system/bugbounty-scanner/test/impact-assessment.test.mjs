@@ -25,6 +25,12 @@ test('defeito técnico sem impacto de segurança fica registrado mas não passa'
   assert.equal(reportabilityGate(functionalOnly).ok, false);
 });
 
+test('reportable=true nunca contorna ausência de entrada controlada pelo atacante', () => {
+  const result = reportabilityGate({ ...REPORTABLE, attackerControlledInput: false, reportable: true });
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /entrada controlada pelo atacante/);
+});
+
 test('campo obrigatório ausente falha fechado', () => {
   const malformed = { ...REPORTABLE };
   delete malformed.attackerControlledInput;

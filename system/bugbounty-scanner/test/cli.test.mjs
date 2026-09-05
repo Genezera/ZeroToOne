@@ -47,9 +47,13 @@ const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const REGRESSION_PROOF = {
   kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
-  introducedAt: '2026-09-01T12:00:00Z',
+  introducedAt: '2026-09-02T12:00:00Z',
   baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
   candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+  execution: {
+    validationScope: 'end_to_end', containerImageId: 'sha256:test-image',
+    isolation: 'docker:no-network,read-only-root,cap-drop-all',
+  },
 };
 const TEST_PROGRAM_POLICY = {
   'Circle BBP': { roeReviewed: true, reviewedAt: '2026-09-03', nextReviewAt: '2099-12-31' },
@@ -187,7 +191,7 @@ test('duplicate outcome anterior alimenta automaticamente risco e estatística p
     });
 
     const check = cmdRecordDuplicateCheck(db, newFinding.id, {
-      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['function root cause', 'source sink'], foundExisting: false,
       signals: { codeAgeDays: 30, priorDuplicateSubmissions: 0 }, ts: '2026-09-03T17:00:00Z',
     });
@@ -209,7 +213,7 @@ test('record-duplicate-check recusa noveltyProof de regressão sem atestado idê
     const finding = { ...SAMPLE, id: 'p::forged::fn::idor', program: 'P' };
     upsertFinding(db, finding);
     const check = cmdRecordDuplicateCheck(db, finding.id, {
-      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['q1 root cause', 'q2 source sink', 'q3 commit regression'],
       foundExisting: false,
       ts: '2026-09-03T17:00:00Z',
@@ -296,8 +300,13 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
       type: 'isolated_regression', result: 'pass', command: 'node poc.mjs', rawOutput: 'exploit reproduzido',
       evidence: { provenance: 'regression-sandbox', noveltyProof: REGRESSION_PROOF },
     });
+    recordDeploymentEvidence(db, finding.id, {
+      repo: 'acme/api', commit: INTRODUCED,
+      packageOrContract: '@acme/api@1.2.3', confidence: 'high',
+      notes: 'release pública ligada ao commit introdutor',
+    });
     cmdRecordDuplicateCheck(db, finding.id, {
-      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['auth function IDOR', 'missing ownership check', 'commit regression IDOR'], foundExisting: false,
       ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 }, noveltyProof: REGRESSION_PROOF,
     });

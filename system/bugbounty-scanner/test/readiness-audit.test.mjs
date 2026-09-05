@@ -36,6 +36,7 @@ test('readiness audit consolida invariantes e mantém reports privados como limi
   const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-scan.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-report-sync.yml'), workflow, 'utf8');
+  writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-change-monitor.yml'), workflow, 'utf8');
   const result = runReadinessAudit({
     repoRoot: root,
     doctor: () => ({ ok: true, tools: { node: {} }, failedTools: [], missingIntegrations: [] }),
@@ -66,6 +67,7 @@ test('readiness audit bloqueia uma liberação de pesquisa com revisão de RoE e
   const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-scan.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-report-sync.yml'), workflow, 'utf8');
+  writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-change-monitor.yml'), workflow, 'utf8');
   const result = runReadinessAudit({
     repoRoot: root,
     doctor: () => ({ ok: true, tools: { node: {} }, failedTools: [], missingIntegrations: [] }),

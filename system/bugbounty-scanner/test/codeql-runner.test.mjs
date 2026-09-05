@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findCodeqlExecutable, parseCodeqlSarif, runCodeqlOnRepo, toQueueFindings } from '../codeql-runner.mjs';
@@ -33,8 +35,14 @@ test('toQueueFindings usa identidade determinística e mantém provenance', () =
 
 test('integração CodeQL buildless encontra fluxo HTTP para command injection', { timeout: 180_000 }, () => {
   const fixture = path.join(__dirname, 'fixtures', 'codeql-js');
-  const result = runCodeqlOnRepo(fixture, { codeql: findCodeqlExecutable(), cacheDir: path.join(process.env.TEMP || 'C:/Temp', 'zto-codeql-test') });
-  assert.equal(result.ok, true, result.reason);
-  assert.ok(result.rawResultCount > 0);
-  assert.ok(result.findings.some((finding) => /command.*injection/i.test(`${finding.ruleId} ${finding.message}`)));
+  const cacheDir = mkdtempSync(path.join(tmpdir(), 'zto-codeql-test-'));
+  try {
+    const result = runCodeqlOnRepo(fixture, { codeql: findCodeqlExecutable(), cacheDir });
+    assert.equal(result.ok, true, result.reason);
+    assert.ok(result.rawResultCount > 0);
+    assert.ok(result.findings.some((finding) => /command.*injection/i.test(`${finding.ruleId} ${finding.message}`)));
+  } finally {
+    try { rmSync(cacheDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); }
+    catch { /* CodeQL/antivírus pode soltar o handle alguns ms depois */ }
+  }
 });

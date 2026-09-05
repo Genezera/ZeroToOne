@@ -14,6 +14,7 @@
 import { getBlockReason } from './program-policy.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { duplicateCheckGate } from './novelty-risk.mjs';
+import { isIsolatedEndToEndValidation } from './evidence-grade.mjs';
 
 export const STATES = [
   'candidate',
@@ -50,10 +51,30 @@ export function submissionReadinessGate(finding, ctx = {}) {
   const impact = reportabilityGate(ctx.impactAssessment);
   if (!impact.ok) return fail(impact.reason);
 
+  const deployment = ctx.deploymentEvidence;
+  if (!deployment || deployment.confidence !== 'high') {
+    return fail('envio exige DeploymentEvidence com confidence="high"');
+  }
+  if (!deployment.repo || !deployment.commit_sha) {
+    return fail('DeploymentEvidence high precisa registrar repo e commit_sha imutável');
+  }
+  if (!deployment.package_or_contract && !deployment.deployed_address) {
+    return fail('DeploymentEvidence high precisa identificar package_or_contract ou deployed_address afetado');
+  }
+
   const duplicate = duplicateCheckGate(ctx.duplicateCheck, {
     now: ctx.now ? new Date(ctx.now).getTime() : Date.now(),
   });
   if (!duplicate.ok) return fail(duplicate.reason);
+  if (deployment.commit_sha.toLowerCase() !== ctx.duplicateCheck.noveltyProof.introducedCommit.toLowerCase()) {
+    return fail('DeploymentEvidence.commit_sha precisa ser o mesmo commit introdutor comprovado no noveltyProof');
+  }
+  const e4 = (ctx.validations || []).some((validation) => isIsolatedEndToEndValidation(validation, {
+    expectedNoveltyProof: ctx.duplicateCheck.noveltyProof,
+  }));
+  if (!e4) {
+    return fail('envio exige validação E4 end-to-end do mesmo noveltyProof, registrada pelo regression-sandbox');
+  }
   return ok(`${impact.reason}; ${duplicate.reason}`);
 }
 
@@ -103,8 +124,8 @@ const PRECONDITIONS = {
     if (!ctx.deploymentEvidence) {
       return fail('falta DeploymentEvidence (mesmo que confidence="unverified") — precisa declarar explicitamente o que se sabe/não se sabe sobre repo→release→deploy, não pular a etapa em silêncio');
     }
-    if (ctx.deploymentEvidence.confidence === 'unverified') {
-      return fail('DeploymentEvidence existe mas confidence="unverified" — declarar o gap não é o mesmo que fechá-lo; precisa de vínculo real (commit↔release↔deploy) com confidence >= "low" antes de scope_verified');
+    if (ctx.deploymentEvidence.confidence !== 'high') {
+      return fail(`DeploymentEvidence existe mas confidence="${ctx.deploymentEvidence.confidence || 'ausente'}" — modo profissional exige vínculo real commit↔release↔deploy com confidence="high" antes de scope_verified`);
     }
     return ok(`escopo válido (${ctx.scopeGateResult.reason}) + vínculo de deploy confirmado (confidence=${ctx.deploymentEvidence.confidence})`);
   },

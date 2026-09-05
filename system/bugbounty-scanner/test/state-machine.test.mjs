@@ -11,9 +11,13 @@ const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const REGRESSION_PROOF = {
   kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
-  introducedAt: '2026-09-01T12:00:00Z',
+  introducedAt: '2026-09-02T12:00:00Z',
   baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
   candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+  execution: {
+    validationScope: 'end_to_end', containerImageId: 'sha256:test-image',
+    isolation: 'docker:no-network,read-only-root,cap-drop-all',
+  },
 };
 const GOOD_IMPACT = {
   technicalValidity: 'confirmed', attackerControlledInput: true,
@@ -23,11 +27,19 @@ const GOOD_IMPACT = {
   impactScope: 'other_user', reportable: true, rationale: 'IDOR reproduzido contra duas contas de teste',
 };
 const GOOD_DUPLICATE_CHECK = {
-  methods: ['github_issues', 'github_advisories', 'hacktivity'],
+  methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR'],
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
   signals: { priorDuplicateSubmissions: 0 }, noveltyProof: REGRESSION_PROOF,
   ts: '2026-09-03T17:00:00Z',
+};
+const GOOD_E4_VALIDATION = {
+  type: 'isolated_regression', result: 'pass',
+  evidence: { provenance: 'regression-sandbox', noveltyProof: REGRESSION_PROOF },
+};
+const GOOD_DEPLOYMENT = {
+  confidence: 'high', repo: 'acme/api', commit_sha: INTRODUCED,
+  package_or_contract: '@acme/api@1.2.3',
 };
 
 function readyContext(overrides = {}) {
@@ -37,6 +49,8 @@ function readyContext(overrides = {}) {
     report: { path: 'reports/x.md' },
     impactAssessment: GOOD_IMPACT,
     duplicateCheck: GOOD_DUPLICATE_CHECK,
+    deploymentEvidence: GOOD_DEPLOYMENT,
+    validations: [GOOD_E4_VALIDATION],
     ...overrides,
   };
 }
@@ -98,7 +112,7 @@ test('corroborated_static -> reproduced_local exige validação com result=pass,
   assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'foundry_poc', result: 'pass', ts: '2026-08-30' }] }).ok, true);
 });
 
-test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E deploymentEvidence declarado', () => {
+test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E deploymentEvidence high', () => {
   const f = finding('reproduced_local');
   assert.equal(transition(f, 'scope_verified', {}).ok, false);
   assert.equal(transition(f, 'scope_verified', { scopeGateResult: { allowed: false, reason: 'expirado' } }).ok, false);
@@ -115,7 +129,13 @@ test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E de
     scopeGateResult: { allowed: true, reason: 'ok' },
     deploymentEvidence: { confidence: 'low', notes: 'endereço confirmado via explorer' },
   });
-  assert.equal(comDeploy.ok, true);
+  assert.equal(comDeploy.ok, false);
+  assert.match(comDeploy.reason, /confidence="high"/);
+  const highDeploy = transition(f, 'scope_verified', {
+    scopeGateResult: { allowed: true, reason: 'ok' },
+    deploymentEvidence: GOOD_DEPLOYMENT,
+  });
+  assert.equal(highDeploy.ok, true);
 });
 
 test('scope_verified -> human_ready exige rascunho de relatório existente', () => {
@@ -183,6 +203,30 @@ test('scope_verified -> human_ready exige impacto reportável além da própria 
   assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: undefined })).ok, false);
   assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: { ...GOOD_IMPACT, reportable: false } })).ok, false);
   assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: { ...GOOD_IMPACT, impactScope: 'self_request_only' } })).ok, false);
+  assert.equal(transition(f, 'human_ready', readyContext({ impactAssessment: { ...GOOD_IMPACT, attackerControlledInput: false } })).ok, false);
+});
+
+test('scope_verified -> human_ready exige E4 end-to-end e deployment do mesmo commit', () => {
+  const f = finding('scope_verified');
+  const noE4 = transition(f, 'human_ready', readyContext({ validations: [] }));
+  assert.equal(noE4.ok, false);
+  assert.match(noE4.reason, /E4 end-to-end/);
+
+  const componentOnly = transition(f, 'human_ready', readyContext({
+    validations: [{
+      ...GOOD_E4_VALIDATION,
+      evidence: { provenance: 'regression-sandbox', noveltyProof: {
+        ...REGRESSION_PROOF, execution: { ...REGRESSION_PROOF.execution, validationScope: 'component' },
+      } },
+    }],
+  }));
+  assert.equal(componentOnly.ok, false);
+
+  const mismatchedDeploy = transition(f, 'human_ready', readyContext({
+    deploymentEvidence: { ...GOOD_DEPLOYMENT, commit_sha: 'c'.repeat(40) },
+  }));
+  assert.equal(mismatchedDeploy.ok, false);
+  assert.match(mismatchedDeploy.reason, /mesmo commit introdutor/);
 });
 
 test('human_ready -> submitted exige humanApproval com actor humano (nunca agente/IA)', () => {

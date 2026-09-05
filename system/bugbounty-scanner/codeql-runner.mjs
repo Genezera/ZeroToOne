@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { isNonProductionPath } from './path-noise-filter.mjs';
 
@@ -75,25 +75,35 @@ export function runCodeqlOnRepo(repoDir, {
   suite = DEFAULT_SUITE, minSecuritySeverity = 7,
 } = {}) {
   const safeName = path.basename(repoDir).replace(/[^a-z0-9_.-]/gi, '_');
-  const databaseDir = path.join(cacheDir, 'databases', safeName);
-  const outputDir = path.join(cacheDir, 'results');
-  const outputPath = path.join(outputDir, `${safeName}.sarif`);
-  mkdirSync(path.dirname(databaseDir), { recursive: true });
-  mkdirSync(outputDir, { recursive: true });
-  if (existsSync(databaseDir)) rmSync(databaseDir, { recursive: true, force: true });
+  const runsDir = path.join(cacheDir, 'runs');
+  mkdirSync(runsDir, { recursive: true });
+  // A fixed database path made two concurrent test/manual runs delete each
+  // other's live CodeQL database on Windows. Each analysis is disposable,
+  // so isolate it in a unique run directory and clean it best-effort.
+  const runDir = mkdtempSync(path.join(runsDir, `${safeName}-`));
+  const databaseDir = path.join(runDir, 'database');
+  const outputPath = path.join(runDir, 'result.sarif');
+  let outcome;
   try {
     command(codeql, ['database', 'create', databaseDir, '--language=javascript', `--source-root=${repoDir}`, '--overwrite', '--threads=0'], { cwd: repoDir });
     command(codeql, ['database', 'analyze', databaseDir, suite, '--format=sarif-latest', `--output=${outputPath}`, '--threads=0', '--rerun'], { cwd: repoDir });
+    if (!existsSync(outputPath)) {
+      outcome = { ok: false, reason: 'CodeQL não gerou SARIF' };
+    } else {
+      const sarif = JSON.parse(readFileSync(outputPath, 'utf8'));
+      outcome = {
+        ok: true,
+        findings: parseCodeqlSarif(sarif, { repoDir, minSecuritySeverity }),
+        rawResultCount: (sarif.runs || []).reduce((sum, run) => sum + (run.results || []).length, 0),
+      };
+    }
   } catch (error) {
-    return { ok: false, reason: error.message.split('\n').slice(0, 4).join(' | ') };
+    outcome = { ok: false, reason: error.message.split('\n').slice(0, 4).join(' | ') };
+  } finally {
+    try { rmSync(runDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); }
+    catch { /* diretório único evita colisão; limpeza residual é best-effort */ }
   }
-  if (!existsSync(outputPath)) return { ok: false, reason: 'CodeQL não gerou SARIF' };
-  const sarif = JSON.parse(readFileSync(outputPath, 'utf8'));
-  return {
-    ok: true,
-    findings: parseCodeqlSarif(sarif, { repoDir, minSecuritySeverity }),
-    rawResultCount: (sarif.runs || []).reduce((sum, run) => sum + (run.results || []).length, 0),
-  };
+  return outcome;
 }
 
 export function runCodeqlAgainstTarget(target, opts = {}) {

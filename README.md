@@ -18,7 +18,9 @@ deliberate human action; the automation never files a report by itself.
    heuristic detectors (JS/TS, Go, JVM, Solidity, Swift) plus
    established third-party tools (Slither for Solidity, OSV-Scanner
    for known-vulnerable dependencies, Semgrep for common weakness
-   patterns). Raw findings are noisy by design at this stage.
+   patterns, and buildless CodeQL for JS/TS). A lightweight monitor
+   checks allowed repositories every 15 minutes and triggers this scan
+   when it observes a new HEAD. Raw findings are noisy by design at this stage.
 3. **Corroborate** — every candidate finding gets a manual code-reading
    pass tracing the actual call chain end to end, then, wherever
    feasible, a real, executed proof of concept — a local reproduction,
@@ -27,7 +29,8 @@ deliberate human action; the automation never files a report by itself.
    this step are marked false positive rather than shipped.
 4. **Review and submit** — a corroborated finding becomes a report draft
    (call chain, evidence, PoC, suggested fix), passes fail-closed impact,
-   scope, non-expired program-policy, regression and prior-art gates,
+   scope, non-expired program-policy, E4 end-to-end regression,
+   high-confidence deployment and prior-art gates,
    and waits for explicit human approval. Every finding's lifecycle (candidate → corroborated →
    reproduced → submitted → the program's actual decision) is tracked
    in a small state machine, backed by a tamper-evident, hash-chained
@@ -35,7 +38,8 @@ deliberate human action; the automation never files a report by itself.
    after the fact.
 
 It runs in complementary roles: scheduled cloud workflows own the
-six-hour static scan and hourly HackerOne outcome sync, while the local
+15-minute change monitor, six-hour safety scan and hourly HackerOne
+outcome sync, while the local
 Windows service owns heavier discovery, diagnostics and watchdog duties.
 Both exchange the same version-controlled `queue.jsonl`, submissions and
 ledger; fail-closed Git preflight prevents a stale or dirty worker from

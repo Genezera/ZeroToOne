@@ -6,8 +6,11 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
 
 ## Estado operacional atual — 04/09/2026
 
-- GitHub Actions executa a varredura barata a cada 6 horas e sincroniza
-  outcomes da HackerOne a cada hora. Ambos usam o mesmo grupo de concorrência,
+- GitHub Actions monitora o HEAD dos repositórios permitidos a cada 15
+  minutos e dispara a varredura imediatamente quando observa mudança. A
+  varredura de segurança continua a cada 6 horas como rede de proteção e a
+  sincronização de outcomes da HackerOne roda a cada hora. Os três workflows
+  usam o mesmo grupo de concorrência,
   permissões mínimas explícitas e actions pinadas por SHA.
 - O serviço Windows coordena descoberta pesada, diagnóstico, heartbeat,
   backoff e watchdog. Com `ZERO2ONE_CLOUD_PRIMARY=1`, scan e sync ficam
@@ -56,15 +59,19 @@ misturadas:
 Antes de `human_ready` e novamente antes de `submitted`, a máquina de
 estados falha fechado se não houver:
 
-- avaliação de impacto estruturada com atacante, vítima, fronteira de
-  segurança, resultado observável e C/I/A;
-- checagem de anterioridade com issues/PRs, advisories e Hacktivity ou busca
+- avaliação de impacto estruturada com entrada comprovadamente controlada
+  pelo atacante, vítima, fronteira de segurança, resultado observável e C/I/A;
+- checagem de anterioridade com issues/PRs, commits, advisories e Hacktivity ou busca
   web, pelo menos três formulações distintas, `foundExisting=false`, menos
   de 24 horas e risco no máximo 25/100;
 - `noveltyStatus=regression` acompanhado de `noveltyProof`: SHA completo do
-  commit introdutor e de seu parent, data de introdução de no máximo 7 dias,
+  commit introdutor e de seu parent, data de introdução de no máximo 48 horas,
   mesmo comando executado nos dois refs, parent com resultado
   `not_vulnerable` e commit com resultado `vulnerable`;
+- validação E4 `end_to_end` emitida pelo regression sandbox para o mesmo
+  `noveltyProof`, e `DeploymentEvidence confidence=high` identificando repo,
+  commit imutável e package/contrato/endereço afetado; o commit de deployment
+  precisa ser exatamente o commit introdutor comprovado;
 - zero submissões anteriores com outcome `duplicate` no mesmo programa ou
   repositório, calculado do histórico local e impossível de sobrescrever pelo
   JSON fornecido ao CLI;
@@ -134,7 +141,7 @@ real:
 ```powershell
 node system/bugbounty-scanner/cli.mjs record-impact-assessment "FINDING_ID" --patch='{"technicalValidity":"confirmed","attackerControlledInput":true,"attacker":"usuário remoto","victim":"outro usuário","securityBoundary":"isolamento entre contas","observableOutcome":"leitura de dado alheio","confidentiality":"low","integrity":"none","availability":"none","impactScope":"other_user","reportable":true,"rationale":"reproduzido com duas contas próprias"}'
 
-node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patch='{"methods":["github_issues","github_advisories","hacktivity"],"queries":["função + efeito","source + sink + controle ausente","commit + regressão + componente"],"results":[],"foundExisting":false,"signals":{"codeAgeDays":2,"programAgeDays":120,"repoStars":400,"obviousness":"medium"},"noveltyProof":{"kind":"verified_regression","introducedCommit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","parentCommit":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","introducedAt":"2026-09-01T12:00:00Z","baseline":{"ref":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","result":"not_vulnerable","command":"node poc.mjs","observedOutcome":"controle não reproduz"},"candidate":{"ref":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","result":"vulnerable","command":"node poc.mjs","observedOutcome":"exploit reproduz"}}}'
+node system/bugbounty-scanner/cli.mjs record-duplicate-check "FINDING_ID" --patch='{"methods":["github_issues","github_commits","github_advisories","hacktivity"],"queries":["função + efeito","source + sink + controle ausente","commit + regressão + componente"],"results":[],"foundExisting":false,"signals":{"codeAgeDays":2,"programAgeDays":120,"repoStars":400,"obviousness":"medium"},"noveltyProof":{"kind":"verified_regression","introducedCommit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","parentCommit":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","introducedAt":"2026-09-01T12:00:00Z","baseline":{"ref":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","result":"not_vulnerable","command":"node poc.mjs","observedOutcome":"controle não reproduz"},"candidate":{"ref":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","result":"vulnerable","command":"node poc.mjs","observedOutcome":"exploit reproduz"}}}'
 
 node system/bugbounty-scanner/cli.mjs submission-preflight "FINDING_ID"
 node system/bugbounty-scanner/cli.mjs submission-stats
@@ -390,6 +397,14 @@ seguros; nas outras 4 linguagens, roda contra o código real de
 
 ### Operação contínua, recuperação e observabilidade
 
+O workflow `bugbounty-change-monitor.yml` consulta somente metadados de HEAD
+dos repositórios permitidos a cada 15 minutos. Um HEAD novo dispara
+`scan-runner.mjs`; o cursor só avança depois que esse scan termina com
+sucesso, portanto falha ou timeout é tentado novamente na próxima rodada.
+Cada delta fica em `research/bugbounty/change-events.jsonl` com SHA anterior,
+commit novo, parent, data e indicação de mudança direta. O evento é sinal de
+prioridade temporal, nunca uma alegação de vulnerabilidade.
+
 `install-service-tasks.ps1` instala duas tarefas independentes no Windows:
 
 - `ZeroToOne_BugBountyService`, ciclo a cada 5 minutos: sincroniza outcomes
@@ -406,6 +421,10 @@ tarefas reiniciam até três vezes, recuperam execução perdida, aceitam
 bateria, podem acordar o computador e são disparadas novamente no logon.
 Os logs giram em 10 MiB (`.log` e `.log.1`). As tarefas diárias antigas são
 apenas desabilitadas para evitar execução dupla, não apagadas. Estado atual:
+
+Inicialização usa `scheduleAnchorAt`; `lastSuccessAt` só é preenchido depois
+de uma execução real. Estados antigos são migrados automaticamente para não
+confundir "instalado" com "job executado com sucesso".
 
 ```powershell
 node system/bugbounty-scanner/cli.mjs runtime-status

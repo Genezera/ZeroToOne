@@ -4,7 +4,9 @@
 // O gate só libera uma regressão recente demonstrada entre dois refs.
 export const DUPLICATE_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const MAX_RISK_FOR_SUBMISSION = 25;
-export const MAX_VERIFIED_REGRESSION_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+// A week was still enough time for a popular public repository to collect a
+// private report first. Strict mode keeps the race window to two days.
+export const MAX_VERIFIED_REGRESSION_AGE_MS = 48 * 60 * 60 * 1000;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -103,7 +105,7 @@ export function verifiedRegressionGate(proof, {
   const age = now - introducedAt;
   if (age < -5 * 60 * 1000) return { ok: false, reason: 'commit introdutor está no futuro' };
   if (age > maxAgeMs) {
-    return { ok: false, reason: `regressão tem ${Math.floor(age / 86400000)} dias; máximo ${Math.floor(maxAgeMs / 86400000)}` };
+    return { ok: false, reason: `regressão tem ${Math.floor(age / 3600000)} horas; máximo ${Math.floor(maxAgeMs / 3600000)} horas` };
   }
 
   const baseline = proof.baseline;
@@ -135,6 +137,7 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   }
   const methods = new Set(check.methods);
   if (!methods.has('github_issues')) return { ok: false, reason: 'duplicateCheck precisa incluir github_issues (issues e PRs)' };
+  if (!methods.has('github_commits')) return { ok: false, reason: 'duplicateCheck precisa incluir github_commits (correções e regressões relacionadas)' };
   if (!methods.has('github_advisories')) return { ok: false, reason: 'duplicateCheck precisa incluir github_advisories' };
   if (!methods.has('hacktivity') && !methods.has('web_search')) {
     return { ok: false, reason: 'duplicateCheck precisa incluir hacktivity ou web_search além das fontes do repositório' };

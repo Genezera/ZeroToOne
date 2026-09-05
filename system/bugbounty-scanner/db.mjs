@@ -374,11 +374,22 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
   // Evidências de prontidão são carregadas do banco por padrão. Assim um
   // chamador não consegue contornar o gate omitindo/forjando contexto, e um
   // finding human_ready antigo é rechecado no momento de submeter.
+  const finalSubmissionGate = toState === 'human_ready' || toState === 'submitted';
+  const storedDeploymentEvidence = latestDeploymentEvidence(db, findingId);
+  const storedValidations = listValidations(db, findingId);
   const fullContext = {
     ...context,
     report: latestReport(db, findingId),
     duplicateCheck: latestDuplicateCheck(db, findingId),
     impactAssessment: latestImpactAssessment(db, findingId),
+    // Final readiness can only consume persisted evidence. Earlier migration
+    // transitions retain their legacy context compatibility.
+    deploymentEvidence: finalSubmissionGate
+      ? storedDeploymentEvidence
+      : (context.deploymentEvidence || storedDeploymentEvidence),
+    validations: finalSubmissionGate
+      ? storedValidations
+      : (context.validations || storedValidations),
     programPolicy: loadProgramPolicyStrict(),
   };
   const result = smTransition(finding, toState, fullContext);

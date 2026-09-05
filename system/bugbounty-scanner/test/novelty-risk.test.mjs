@@ -7,12 +7,12 @@ const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const PROOF = {
   kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
-  introducedAt: '2026-09-01T12:00:00Z',
+  introducedAt: '2026-09-02T12:00:00Z',
   baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
   candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
 };
 const CLEAN = {
-  methods: ['github_issues', 'github_advisories', 'hacktivity'],
+  methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['function root cause', 'source sink missing guard', 'commit regression vulnerability'],
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
   signals: { priorDuplicateSubmissions: 0 }, noveltyProof: PROOF,
@@ -58,7 +58,7 @@ test('prova de regressão compara o parent seguro com o commit vulnerável usand
   assert.equal(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-01-01T00:00:00Z' }, { now: NOW }).ok, false);
   assert.equal(verifiedRegressionGate({ ...PROOF, baseline: { ...PROOF.baseline, result: 'vulnerable' } }, { now: NOW }).ok, false);
   assert.equal(verifiedRegressionGate({ ...PROOF, candidate: { ...PROOF.candidate, command: 'node outro.mjs' } }, { now: NOW }).ok, false);
-  assert.match(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-08-26T00:00:00Z' }, { now: NOW }).reason, /máximo 7/);
+  assert.match(verifiedRegressionGate({ ...PROOF, introducedAt: '2026-08-26T00:00:00Z' }, { now: NOW }).reason, /máximo 48 horas/);
 });
 
 test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar', () => {

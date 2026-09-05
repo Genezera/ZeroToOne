@@ -1,4 +1,4 @@
-import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, getSubmission, recordSubmission, latestSubmissionForFinding, recordCodeAgeEvidence, latestCodeAgeEvidence } from './db.mjs';
+import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, latestDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, getSubmission, recordSubmission, latestSubmissionForFinding, recordCodeAgeEvidence, latestCodeAgeEvidence } from './db.mjs';
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate } from './scope-registry.mjs';
 import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
@@ -7,8 +7,7 @@ import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-
 import { isTerminal, submissionReadinessGate } from './state-machine.mjs';
 import { generateReport } from './generate-report.mjs';
 import { packageFinding } from './package-for-submission.mjs';
-import { assessNoveltyRisk, duplicateCheckGate } from './novelty-risk.mjs';
-import { reportabilityGate } from './impact-assessment.mjs';
+import { assessNoveltyRisk } from './novelty-risk.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, duplicateHistoryForFinding } from './outcome-intelligence.mjs';
 import { codeAgeSignal } from './code-age.mjs';
 import { knownIssueSourceForVulnerableDependency } from './advisory-triage.mjs';
@@ -134,6 +133,8 @@ export function cmdPackageForSubmission(db, id) {
       report,
       duplicateCheck: latestDuplicateCheck(db, id),
       impactAssessment: latestImpactAssessment(db, id),
+      deploymentEvidence: latestDeploymentEvidence(db, id),
+      validations: listValidations(db, id),
       programPolicy: loadProgramPolicyStrict(),
     });
     if (!readiness.ok) return { ok: false, reason: `pacote bloqueado pelo preflight: ${readiness.reason}` };
@@ -186,6 +187,8 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
         else {
           const readiness = submissionReadinessGate(f, {
             report, duplicateCheck, impactAssessment,
+            deploymentEvidence: latestDeploymentEvidence(db, f.id),
+            validations: listValidations(db, f.id),
             programPolicy,
           });
           blocker = readiness.ok ? 'evidência completa -- pronto pra virar human_ready' : `NÃO enviar: ${readiness.reason}`;
@@ -193,11 +196,17 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
         break;
       }
       case 'human_ready': {
-        const impact = reportabilityGate(latestImpactAssessment(db, f.id));
-        const duplicate = duplicateCheckGate(latestDuplicateCheck(db, f.id));
-        blocker = impact.ok && duplicate.ok
-          ? 'aguardando decisão humana de enviar; impacto e novidade revalidados'
-          : `NÃO enviar até revalidar: ${!impact.ok ? impact.reason : duplicate.reason}`;
+        const readiness = submissionReadinessGate(f, {
+          report: latestReport(db, f.id),
+          impactAssessment: latestImpactAssessment(db, f.id),
+          duplicateCheck: latestDuplicateCheck(db, f.id),
+          deploymentEvidence: latestDeploymentEvidence(db, f.id),
+          validations: listValidations(db, f.id),
+          programPolicy,
+        });
+        blocker = readiness.ok
+          ? 'aguardando decisão humana de enviar; impacto, E4, deploy e novidade revalidados'
+          : `NÃO enviar até revalidar: ${readiness.reason}`;
         break;
       }
       case 'inconclusive':
@@ -290,6 +299,8 @@ export function cmdGetFinding(db, id) {
   const submission = latestSubmissionForFinding(db, id);
   const submissionReadiness = submissionReadinessGate(finding, {
     report, impactAssessment, duplicateCheck,
+    deploymentEvidence: latestDeploymentEvidence(db, id),
+    validations: listValidations(db, id),
     programPolicy: loadProgramPolicyStrict(),
   });
   return {
@@ -384,6 +395,8 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy
   const history = duplicateHistoryForFinding(finding, submissions);
   const readiness = submissionReadinessGate(finding, {
     report, impactAssessment, duplicateCheck,
+    deploymentEvidence: latestDeploymentEvidence(db, id),
+    validations: listValidations(db, id),
     programPolicy, now,
   });
   return {
@@ -395,7 +408,11 @@ export function cmdSubmissionPreflight(db, id, { now = Date.now(), programPolicy
     }),
     ready: readiness.ok,
     reason: readiness.reason,
-    evidence: { report, impactAssessment, duplicateCheck },
+    evidence: {
+      report, impactAssessment, duplicateCheck,
+      deploymentEvidence: latestDeploymentEvidence(db, id),
+      validations: listValidations(db, id),
+    },
     localHistory: history,
     limitation: 'Buscas públicas sem correspondência não provam unicidade: reports privados permanecem invisíveis até a plataforma revelar uma relação de duplicate.',
   };

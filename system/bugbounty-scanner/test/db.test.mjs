@@ -301,7 +301,7 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
     const db = openDb(dbPath);
     upsertFinding(db, SAMPLE);
     recordDuplicateCheck(db, SAMPLE.id, {
-      methods: ['github_issues', 'github_advisories', 'web_search'],
+      methods: ['github_issues', 'github_commits', 'github_advisories', 'web_search'],
       queries: ['file function', 'source sink'], results: [], foundExisting: false,
       noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
       signals: { priorDuplicateSubmissions: 0 },

@@ -467,13 +467,12 @@ repositório — não contra o que "deveria" ter sido feito.
 
 ### O que a auditoria pediu e CONTINUA genuinamente pendente
 
-- **6.4 Sandbox de execução isolado de verdade** (container efêmero,
-  usuário sem privilégio, rede bloqueada por padrão com allowlist de
-  egress, limites de CPU/RAM/disco) — não construído. Mitigação parcial
-  existente (regra explícita contra tratar conteúdo do alvo como
-  instrução, `.db` nunca compartilhado entre ambientes) não substitui
-  isolamento real de processo/rede. Seção "Bloqueios externos
-  conhecidos" já documentava isso; segue igual.
+- **6.4 Sandbox de execução isolado** — construído para a prova de regressão:
+  container efêmero, usuário sem privilégio, rede bloqueada, root filesystem
+  read-only, capabilities removidas e limites de CPU/RAM/PIDs. Continua
+  pendente generalizar o mesmo isolamento para builds CodeQL Go/JVM e para
+  qualquer futuro validador web/API/mobile; o scanner textual não executa
+  código do alvo.
 - **6.6 Checkpoints assinados/ancorados externamente** pro ledger — a
   cadeia hash existe e é verificada, mas continua *tamper-evident*
   reescrevendo o arquivo inteiro, não *tamper-proof*. Não implementado.
@@ -481,9 +480,9 @@ repositório — não contra o que "deveria" ter sido feito.
   31/08/2026), OSV-Scanner (JS/Go/JVM, 01/09/2026) e Semgrep já
   construídos e integrados a `discovery-runner.mjs` (cadência semanal);
   ver seções datadas abaixo pra narrativa completa de cada um. CodeQL
-  continua de fora — ver avaliação de proporcionalidade logo adiante
-  (baixo valor pra este projeto / alto custo de licença pra repositório
-  de terceiro). Fluxo interprocedural/call-graph real além do que
+  JS/TS buildless também está integrado em rotação desde 04/09/2026, sem
+  executar scripts do alvo. Builds CodeQL Go/JVM continuam fora até terem
+  isolamento descartável equivalente. Fluxo interprocedural/call-graph real além do que
   `heuristics-js-ast.mjs` já faz (AST intraprocedural em JS/TS) continua
   não construído — os três adapters novos consomem a saída JSON própria
   de cada ferramenta, não um formato SARIF unificado.
@@ -496,8 +495,8 @@ repositório — não contra o que "deveria" ter sido feito.
   não iniciada. Ver avaliação de proporcionalidade abaixo.
 - **Calibrador real (6.9 confiança multidimensional / seção "Calibrator"
   da arquitetura-alvo)** — usar resultado real de plataforma pra ajustar
-  peso de heurística/severidade prevista. Ainda não dá: só 2 outcomes
-  reais existem até agora (ambos `duplicate`), amostra insuficiente pra
+  peso de heurística/severidade prevista. Ainda não dá: só 6 outcomes
+  reais existem até agora (todos `duplicate`), amostra insuficiente pra
   calibrar qualquer coisa com significado estatístico.
 - **SBOM/VEX (seção H)** — `dep-scanner.mjs` cruza manifest contra
   OSV.dev, mas não produz CycloneDX nem registra estado VEX explícito
@@ -520,17 +519,10 @@ outros nesse contexto real:
   vivo nesta sessão (02/09/2026): `osv-scanner.exe` responde
   `version: 2.5.1` e `py -m slither --version` responde `0.11.6` neste
   mesmo ambiente Windows.
-- **Alto valor, custo alto**: sandbox de execução isolado de verdade
-  (6.4) — genuinamente importante se o volume de repositórios
-  analisados crescer, mas hoje o "sandbox" real é: Windows local só
-  lê/computa heurística de texto (nunca executa código do alvo), e a
-  sessão de nuvem já opera com regra explícita contra tratar conteúdo
-  do alvo como instrução. O risco residual é real mas o custo de
-  construir isolamento de container de verdade não compensa ainda no
-  volume atual.
-- **Baixo valor pra este projeto específico, alto custo**: CodeQL
-  (complexidade de licença pra repositório de terceiro, seção 6.7 da
-  própria auditoria já reconhece isso), Fase 4 inteira (web/API/mobile)
+- **Alto valor, parcialmente concluído**: sandbox de execução isolado
+  (6.4) — concluído para regressão E4; generalização para builds CodeQL
+  Go/JVM e validadores dinâmicos continua pendente.
+- **Baixo valor pra este projeto específico, alto custo**: Fase 4 inteira (web/API/mobile)
   — os 4 programas ativos hoje (Circle BBP, Vercel, OKG, StackingDAO)
   são 100% SAST-de-repositório-público; nenhum deles tem uma superfície
   web/API/mobile dentro do escopo real de bounty que justifique

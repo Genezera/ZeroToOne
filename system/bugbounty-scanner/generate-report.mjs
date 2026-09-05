@@ -21,6 +21,7 @@ import path from 'node:path';
 import { getFinding, listValidations, latestDeploymentEvidence, latestDuplicateCheck, latestImpactAssessment, recordReport } from './db.mjs';
 import { duplicateCheckGate } from './novelty-risk.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
+import { isIsolatedEndToEndValidation } from './evidence-grade.mjs';
 import { loadSnapshot } from './scope-registry.mjs';
 import { loadProgramPolicyStrict } from './program-policy.mjs';
 
@@ -52,7 +53,8 @@ export function assembleReportContext(db, findingId) {
     };
   }
   const validations = listValidations(db, findingId);
-  const rawPassingValidation = [...validations].reverse().find((v) => v.result === 'pass') || null;
+  const rawPassingValidation = [...validations].reverse().find((v) => isIsolatedEndToEndValidation(v))
+    || [...validations].reverse().find((v) => v.result === 'pass') || null;
   // listValidations devolve linha crua do SQLite (raw_output, snake_case)
   // -- normaliza aqui pra renderReportDraft nunca precisar saber disso.
   const passingValidation = rawPassingValidation
@@ -66,6 +68,7 @@ export function assembleReportContext(db, findingId) {
   return {
     ok: true,
     finding,
+    validations,
     passingValidation,
     deploymentEvidence,
     duplicateCheck,
@@ -220,6 +223,15 @@ export function generateReport(db, findingId, { reportsDir = DEFAULT_REPORTS_DIR
   recordReport(db, findingId, reportPath);
   const warnings = [];
   if (!ctx.passingValidation) warnings.push('sem validação PoC com result="pass" registrada');
+  const matchingE4 = (ctx.validations || []).some((validation) => isIsolatedEndToEndValidation(validation, {
+    expectedNoveltyProof: ctx.duplicateCheck?.noveltyProof || null,
+  }));
+  if (!matchingE4) warnings.push('sem validação E4 end-to-end do noveltyProof atual');
+  if (ctx.deploymentEvidence?.confidence !== 'high') warnings.push('deploymentEvidence não tem confidence="high"');
+  else if (!ctx.deploymentEvidence.repo || !ctx.deploymentEvidence.commit_sha
+    || (!ctx.deploymentEvidence.package_or_contract && !ctx.deploymentEvidence.deployed_address)) {
+    warnings.push('deploymentEvidence high não identifica repo, commit imutável e artefato/endereço afetado');
+  }
   if (!ctx.duplicateCheck) warnings.push('sem checagem de duplicata registrada ainda (obrigatória antes de human_ready)');
   else {
     const duplicateGate = duplicateCheckGate(ctx.duplicateCheck, { now });

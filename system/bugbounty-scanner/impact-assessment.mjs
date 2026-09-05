@@ -36,6 +36,9 @@ export function reportabilityGate(assessment = {}) {
   if (assessment.technicalValidity !== 'confirmed') {
     return { ok: false, reason: `validade técnica não confirmada (${assessment.technicalValidity})` };
   }
+  if (assessment.attackerControlledInput !== true) {
+    return { ok: false, reason: 'não foi comprovada entrada controlada pelo atacante' };
+  }
   if (!assessment.reportable) return { ok: false, reason: 'impactAssessment marcou o achado como não-reportável' };
   if (assessment.impactScope === 'self_request_only') {
     return { ok: false, reason: 'impacto limitado à própria requisição não demonstra efeito de segurança contra outra vítima/sistema' };

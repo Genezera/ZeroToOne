@@ -51,15 +51,19 @@ const SAMPLE = {
 const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const STRICT_NOVELTY = {
-  methods: ['github_issues', 'github_advisories', 'hacktivity'],
+  methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['withdraw reentrancy', 'external call before state update', 'commit regression withdraw'],
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20, riskLevel: 'low',
   signals: { priorDuplicateSubmissions: 0 },
   noveltyProof: {
     kind: 'verified_regression', introducedCommit: INTRODUCED, parentCommit: PARENT,
-    introducedAt: '2026-09-01T12:00:00Z',
+    introducedAt: '2026-09-02T12:00:00Z',
     baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
     candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
+    execution: {
+      validationScope: 'end_to_end', containerImageId: 'sha256:test-image',
+      isolation: 'docker:no-network,read-only-root,cap-drop-all',
+    },
   },
   ts: '2026-09-03T17:00:00Z',
 };
@@ -134,7 +138,7 @@ test('renderReportDraft rotula longa exposição como idade, não como prova de 
     upsertFinding(db, { ...SAMPLE, state: 'scope_verified' });
     recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/vault', confidence: 'low' });
     recordDuplicateCheck(db, SAMPLE.id, {
-      methods: ['github_issues', 'github_advisories', 'web_search'],
+      methods: ['github_issues', 'github_commits', 'github_advisories', 'web_search'],
       queries: ['a', 'b', 'c'], foundExisting: false,
       noveltyStatus: 'longstanding_exposure',
       noveltyProof: {
@@ -188,8 +192,14 @@ test('generateReport escreve o arquivo em disco e registra via recordReport', ()
   withTempEnv((dbPath, reportsDir) => {
     const db = openDb(dbPath);
     upsertFinding(db, { ...SAMPLE, state: 'scope_verified' });
-    recordValidation(db, SAMPLE.id, { type: 'foundry_poc', result: 'pass', rawOutput: 'PASS' });
-    recordDeploymentEvidence(db, SAMPLE.id, { repo: 'circlefin/vault', confidence: 'high' });
+    recordValidation(db, SAMPLE.id, {
+      type: 'isolated_regression', result: 'pass', command: 'node poc.mjs', rawOutput: 'PASS',
+      evidence: { provenance: 'regression-sandbox', noveltyProof: STRICT_NOVELTY.noveltyProof },
+    });
+    recordDeploymentEvidence(db, SAMPLE.id, {
+      repo: 'circlefin/vault', commit: INTRODUCED,
+      packageOrContract: 'Vault@mainnet', confidence: 'high',
+    });
     recordDuplicateCheck(db, SAMPLE.id, STRICT_NOVELTY);
     recordImpactAssessment(db, SAMPLE.id, {
       technicalValidity: 'confirmed', attackerControlledInput: true,

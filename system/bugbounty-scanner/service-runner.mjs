@@ -70,7 +70,8 @@ function primeState(state, nowIso) {
     state.jobs[job.name] = {
       ...(state.jobs[job.name] || {}),
       running: false,
-      lastSuccessAt: state.jobs[job.name]?.lastSuccessAt || nowIso,
+      lastSuccessAt: state.jobs[job.name]?.lastSuccessAt || null,
+      scheduleAnchorAt: state.jobs[job.name]?.scheduleAnchorAt || nowIso,
       consecutiveFailures: state.jobs[job.name]?.consecutiveFailures || 0,
     };
   }

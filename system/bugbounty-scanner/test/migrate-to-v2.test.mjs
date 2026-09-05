@@ -315,7 +315,7 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       source: 'req.params.accountId', sink: 'db.account.findById', missingControl: 'owner check',
     }, { scopeSnapshots: {} });
     recordDuplicateCheck(db1, 'x::professional-roundtrip', {
-      methods: ['github_issues', 'github_advisories', 'hacktivity'],
+      methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['account findById IDOR', 'missing owner check'], results: [],
       foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
       signals: { priorDuplicateSubmissions: 0, codeAgeDays: 2 },

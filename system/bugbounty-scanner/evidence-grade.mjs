@@ -44,6 +44,32 @@ export function computeEvidenceGrade({ state, filesReadCount = 0, hasPassingVali
   return 'E0';
 }
 
+/** Submission-grade E4 evidence must come from the reserved regression
+ * executor and carry the complete isolated end-to-end contract. When an
+ * expected proof is supplied, it must be the exact proof used by the
+ * duplicate gate, not an unrelated passing sandbox run. */
+export function isIsolatedEndToEndValidation(validation, { expectedNoveltyProof = null } = {}) {
+  const proof = validation?.evidence?.noveltyProof;
+  const execution = proof?.execution;
+  if (!(validation?.result === 'pass'
+    && validation?.type === 'isolated_regression'
+    && validation?.evidence?.provenance === 'regression-sandbox'
+    && execution?.validationScope === 'end_to_end'
+    && typeof execution?.containerImageId === 'string'
+    && execution.containerImageId.length > 0
+    && String(execution?.isolation || '').includes('no-network')
+    && proof?.baseline?.result === 'not_vulnerable'
+    && proof?.candidate?.result === 'vulnerable')) return false;
+
+  if (!expectedNoveltyProof) return true;
+  return proof.introducedCommit === expectedNoveltyProof.introducedCommit
+    && proof.parentCommit === expectedNoveltyProof.parentCommit
+    && proof.baseline?.ref === expectedNoveltyProof.baseline?.ref
+    && proof.candidate?.ref === expectedNoveltyProof.candidate?.ref
+    && proof.baseline?.command === expectedNoveltyProof.baseline?.command
+    && proof.candidate?.command === expectedNoveltyProof.candidate?.command;
+}
+
 export function explainGrade(grade) {
   const explanations = {
     E0: 'Só padrão textual — nenhum arquivo real lido ainda.',
@@ -63,17 +89,7 @@ export function getEvidenceGrade(db, findingId, { getFinding, listValidations, l
   if (!finding) return null;
   const validations = listValidations(db, findingId) || [];
   const hasPassingValidation = validations.some((v) => v.result === 'pass');
-  const hasIsolatedEndToEndValidation = validations.some((validation) => {
-    const execution = validation.evidence?.noveltyProof?.execution;
-    return validation.result === 'pass'
-      && validation.evidence?.provenance === 'regression-sandbox'
-      && execution?.validationScope === 'end_to_end'
-      && typeof execution?.containerImageId === 'string'
-      && execution.containerImageId.length > 0
-      && String(execution?.isolation || '').includes('no-network')
-      && validation.evidence?.noveltyProof?.baseline?.result === 'not_vulnerable'
-      && validation.evidence?.noveltyProof?.candidate?.result === 'vulnerable';
-  });
+  const hasIsolatedEndToEndValidation = validations.some((validation) => isIsolatedEndToEndValidation(validation));
   const outcome = latestPlatformOutcome(db, findingId);
   return computeEvidenceGrade({
     state: finding.state,

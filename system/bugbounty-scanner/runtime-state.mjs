@@ -4,7 +4,7 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 
-export const RUNTIME_SCHEMA_VERSION = 1;
+export const RUNTIME_SCHEMA_VERSION = 2;
 
 function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -44,11 +44,21 @@ export function loadRuntimeState(statePath, { now = new Date().toISOString() } =
   try {
     const parsed = JSON.parse(readFileSync(statePath, 'utf8'));
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return emptyRuntimeState(now);
+    const jobs = parsed.jobs && typeof parsed.jobs === 'object' ? parsed.jobs : {};
+    if ((Number(parsed.schemaVersion) || 1) < 2) {
+      for (const job of Object.values(jobs)) {
+        if (job?.lastSuccessAt && !job.lastFinishedAt) {
+          job.scheduleAnchorAt = job.scheduleAnchorAt || job.lastSuccessAt;
+          job.lastSuccessAt = null;
+        }
+      }
+    }
     return {
       ...emptyRuntimeState(now),
       ...parsed,
+      schemaVersion: RUNTIME_SCHEMA_VERSION,
       service: { ...emptyRuntimeState(now).service, ...(parsed.service || {}) },
-      jobs: parsed.jobs && typeof parsed.jobs === 'object' ? parsed.jobs : {},
+      jobs,
     };
   } catch {
     return emptyRuntimeState(now);
@@ -69,7 +79,9 @@ export function isJobDue(job = {}, intervalMs, now = Date.now()) {
   if (job.running) return false;
   const retryAt = new Date(job.nextEligibleAt || 0).getTime();
   if (Number.isFinite(retryAt) && retryAt > now) return false;
-  const last = new Date(job.lastSuccessAt || 0).getTime();
+  // scheduleAnchorAt delays the first heavy run without pretending that it
+  // already succeeded. lastSuccessAt is now reserved for real executions.
+  const last = new Date(job.lastSuccessAt || job.scheduleAnchorAt || 0).getTime();
   return !Number.isFinite(last) || now - last >= intervalMs;
 }
 

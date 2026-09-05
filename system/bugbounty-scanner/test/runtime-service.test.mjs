@@ -28,6 +28,21 @@ test('runtime state usa round-trip atômico e recupera JSON inválido sem lança
   });
 });
 
+test('runtime v1 migra sucesso sintético de inicialização para scheduleAnchorAt', async () => {
+  await withTempDir((dir) => {
+    const statePath = path.join(dir, 'state.json');
+    writeFileSync(statePath, JSON.stringify({
+      schemaVersion: 1,
+      service: { status: 'healthy', lastHeartbeatAt: '2026-09-03T12:00:00Z' },
+      jobs: { discovery: { lastSuccessAt: '2026-09-03T12:00:00Z', consecutiveFailures: 0 } },
+    }), 'utf8');
+    const state = loadRuntimeState(statePath);
+    assert.equal(state.schemaVersion, 2);
+    assert.equal(state.jobs.discovery.lastSuccessAt, null);
+    assert.equal(state.jobs.discovery.scheduleAnchorAt, '2026-09-03T12:00:00Z');
+  });
+});
+
 test('telemetria de runtime fica em JSONL local independente do ledger de pesquisa', async () => {
   await withTempDir((dir) => {
     const eventPath = path.join(dir, 'logs', 'runtime-events.jsonl');
@@ -91,6 +106,7 @@ test('due/backoff e health são fail-closed, mas job pesado ativo não gera fals
   const now = Date.parse('2026-09-03T12:00:00Z');
   assert.equal(isJobDue({}, 60_000, now), true);
   assert.equal(isJobDue({ lastSuccessAt: '2026-09-03T11:59:30Z' }, 60_000, now), false);
+  assert.equal(isJobDue({ lastSuccessAt: null, scheduleAnchorAt: '2026-09-03T11:59:30Z' }, 60_000, now), false);
   assert.equal(backoffMs(1), 5 * 60_000);
   assert.equal(backoffMs(4), 40 * 60_000);
   const stale = emptyRuntimeState('2026-09-03T00:00:00Z');
@@ -128,7 +144,8 @@ test('service inicializa sem disparar carga e depois roda leves + no máximo um 
       assert.deepEqual(ran, ['sync_reports', 'doctor', 'scan']);
       assert.equal(result.ok, true);
       assert.equal(events.length, 3);
-      assert.equal(result.state.jobs.discovery.lastSuccessAt, '2026-09-03T12:00:00.000Z');
+      assert.equal(result.state.jobs.discovery.lastSuccessAt, null, 'inicialização não pode fingir execução bem-sucedida');
+      assert.equal(result.state.jobs.discovery.scheduleAnchorAt, '2026-09-03T12:00:00.000Z');
     } finally {
       if (originalUser === undefined) delete process.env.HACKERONE_USERNAME; else process.env.HACKERONE_USERNAME = originalUser;
       if (originalToken === undefined) delete process.env.HACKERONE_API_TOKEN; else process.env.HACKERONE_API_TOKEN = originalToken;
