@@ -7896,3 +7896,44 @@ arquivos; `vercel/flags`: +3 arquivos). Para StackingDAO: ver
 rede de dezenas de rodadas consecutivas; 15 contratos Clarity seguem
 100% cobertos, sem mudança). Nenhum achado novo, nenhuma transição de
 estado nesta rodada.
+
+Rodada seguinte (esta): antes de qualquer leitura, os 34 candidatos de
+`list-pending` (30 de "Auth0 by Okta", 4 de "Circle BBP") foram
+pulados por bloqueio de política já registrado em
+`program-policy.json` (`aiResearchBanned` e `blocked` respectivamente)
+-- nenhum arquivo desses repos foi tocado. Leitura profunda proativa
+ficou restrita a `vercel/vercel` e `nitrojs/nitro` (StackingDAO
+seguiu 100% coberto, sem lacuna nova; ver NOTES.md do programa).
+
+Cliquei em três arquivos ainda não cobertos, priorizando padrão
+auth/session/token/access:
+
+- `packages/cli/src/commands/connex/update.ts` (vercel/vercel):
+  único comando de `vercel connect` que não usa `sanitizeForTerminal`
+  ao exibir o identificador do conector no sucesso; investiguei o
+  motivo cruzando com todos os outros comandos de `connex/*` que usam
+  a função (`list.ts`, `attach.ts`, `detach.ts`, `remove.ts`,
+  `revoke-tokens.ts`) -- a diferença é proposital: `update.ts` exibe
+  `id`/`uid` (gerado/validado pelo backend), não `name` (string livre
+  de outro membro do time). Sem achado.
+- `packages/cli/src/util/extension/proxy.ts` +
+  `packages/cli/src/util/extension/exec.ts` (vercel/vercel): servidor
+  HTTP local que repassa chamadas à API da Vercel com o Bearer token
+  do usuário injetado, exposto a processos-extensão via env var.
+  Confirmei bind explícito em `127.0.0.1` com porta aleatória
+  (`listen(proxy, {port:0, host:'127.0.0.1'})`) -- sem exposição de
+  rede, e sem elevação de privilégio real já que qualquer processo
+  local do mesmo usuário já pode ler o token direto do
+  `credentials-store.ts` (lido em rodada anterior). Sem achado.
+- `src/presets/netlify/runtime/netlify.ts` +
+  `src/presets/cloudflare/runtime/_module-handler.ts` (nitrojs/nitro):
+  mesma classe de trust-boundary já registrada para
+  `azure-swa.ts` em rodada anterior -- ambos fazem
+  `req.ip ??= headers.get(<header-da-plataforma>)`
+  (`x-nf-client-connection-ip` / `cf-connecting-ip`), headers
+  documentadamente sobrescritos pelo edge de cada plataforma antes de
+  chegar na function, portanto não spoofáveis pelo cliente quando o
+  tráfego passa pelo edge real. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/vercel`: +2 entradas; `nitrojs/nitro`: +1 entrada).

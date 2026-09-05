@@ -1291,3 +1291,19 @@ Leitura profunda proativa desta rodada direcionada a
 Source). Sem arquivo novo candidato em StackingDAO, os 15 contratos
 Clarity seguem 100% cobertos. Nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-05 (leitura profunda proativa, sessão cloud)
+
+`program-policy.json` conferido como passo zero. Os mesmos 34
+candidatos pendentes (30 Auth0 by Okta, 4 Circle BBP) foram pulados
+por bloqueio de política, nenhum repo desses tocado. Comparei os 13
+assets do `scope-snapshots/stackingdao.json` contra os 15 arquivos
+`.clar` já em `deep-read-log.json` -- todos os 13 assets do escopo
+oficial (dao, stx-reserve-v2, stbtc-reserve, ststx-token, stbtc-token,
+signer-admin-v1, data-stx-v2, data-stbtc-v1,
+stacking-dao-core-btc-v3, stacking-dao-core-ststxbtc-v1, stacker-1/2/3)
+seguem cobertos, mais stacker-4/5 já lidos em rodada anterior. Sem
+arquivo novo para ler neste programa -- leitura profunda proativa
+desta rodada foi direcionada a `vercel/vercel` e `nitrojs/nitro` (ver
+NOTES.md de Vercel Open Source). Nenhuma transição de estado neste
+programa.
