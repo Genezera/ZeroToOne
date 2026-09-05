@@ -225,3 +225,59 @@ Clone raso público, 3 arquivos:
 
 `deep-read-log.json` atualizado (`mattermost/mattermost-plugin-gitlab`,
 repo novo, 3 arquivos). `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-05 #2 (push automático via GitHub webhook, rotina agendada)
+
+`program-policy.json` checado como passo zero: `Circle BBP`/`Auth0 by
+Okta` seguem bloqueados via `check-program`, nenhum repo desses dois
+tocado (`Block Open Source` não apareceu na fila desta rodada).
+`migrate-to-v2.mjs` + `list-pending` global = 38 (30 Auth0 by Okta + 4
+Circle BBP bloqueados, 4 Mattermost liberados).
+
+`list-pending` trouxe 4 achados novos em
+`mattermost/mattermost-plugin-msteams` (clone raso público):
+
+- 2x `sql_injection_risk` (`server/store/sqlstore/utils.go:11,19` —
+  `createTable`/`tableExist`, SQL montado via `fmt.Sprintf`): rastreado
+  os call sites reais — `createTable` só é chamado em `helper_test.go`
+  (linhas 100-106), sempre com literais hardcoded, nunca em produção;
+  `tableExist` só é chamado em `data_migrations.go:31` com
+  `whitelistedUsersLegacyTableName`, constante hardcoded em `store.go:38`
+  (marcada `LEGACY-UNUSED` no próprio código). Nenhuma fonte
+  controlável por atacante alcança o parâmetro `tableName`/`columnList`
+  em nenhum dos dois casos — falso positivo, mesmo padrão já visto em
+  `-plugin-jira`.
+- 2x `insecure_tls` (`server/msteams/client_mock.go:25,41` —
+  `InsecureSkipVerify: true`): o arquivo inteiro tem
+  `//go:build msteamsMock` (linha 4) — só compila com essa build tag
+  explícita. O build de produção (sem a tag, `!msteamsMock`) usa
+  `client_nomock.go`, que chama `http.DefaultClient`/
+  `khttp.GetDefaultClient` sem nenhum bypass de TLS. O client
+  inseguro aponta pra `mockserver:1080` (endpoint de teste local) —
+  infraestrutura de mock, nunca alcança produção. Falso positivo.
+
+Todos os 4 refutados como `false_positive` com reasoning individual e
+`filesRead` salvos em cada finding (cadeia de chamada completa
+rastreada em cada caso: call sites reais, build tags, constante vs.
+input externo).
+
+Leitura profunda proativa: 3 arquivos ainda não lidos em
+`mattermost-plugin-msteams` (repo já tocado por achados de fila nesta
+mesma rodada, mas nunca por sweep proativo), priorizados por
+crypto/auth no caminho — `server/store/sqlstore/crypt.go` (AES-256-GCM
+para criptografar token armazenado — nonce aleatório por chamada,
+chave de 32 bytes com alta entropia via `crypto/rand`, sem achado),
+`server/connect.go` (lógica de convite/allowlist de conexão MS
+Teams↔Mattermost, sem achado) e `server/credentials.go` (job interno
+de monitoramento de credencial do Azure App, sem input externo, sem
+achado). `deep-read-log.json` atualizado (+1 repo, 3 entradas).
+
+Achado `mattermost-plugin-gitlab` (webhook timing) segue em
+`reproduced_local`: `check-scope` conferido novamente ao vivo, ainda
+recusa (`allowed:false`, "nenhum scope snapshot existe para este
+programa") — gap de infraestrutura conhecido, não é novidade desta
+rodada, não forçado.
+
+Nenhum achado novo digno de relatório nesta rodada (os 4 da fila
+refutados, os 3 do sweep proativo sem achado) — resultado normal e
+válido. `export-queue` rodado ao final da rodada.
