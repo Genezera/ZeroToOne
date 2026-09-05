@@ -1346,3 +1346,22 @@ sem contrato novo. Leitura profunda proativa desta rodada direcionada
 a `vercel/vercel` (ver NOTES.md de Vercel Open Source — 3 arquivos
 novos, todos triviais, sem achado). Nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-05 #6 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero -- `Block Open
+Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados; nenhum dos
+três tocado (nem `git clone`, nem leitura de arquivo). `list-pending`
+global segue com os mesmos 34 candidatos fora do escopo desta missão
+(30 "Auth0 by Okta", 4 "Circle BBP") -- confirmado via
+`check-program` que ambos os programas com candidatos pendentes estão
+bloqueados, então nenhum foi investigado nesta rodada (skip completo,
+sem leitura de repo-alvo bloqueado). `api.hiro.so` não retestado
+(mesmo bloqueio de proxy documentado há dezenas de rodadas
+consecutivas, sem sinal de mudança). Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo. Leitura
+profunda proativa desta rodada direcionada a `nitrojs/nitro` e
+`nuxt/nuxt` (ver NOTES.md de Vercel Open Source -- 5 arquivos
+checados, todos hash/randomBytes triviais de cache-busting/dev
+tooling, sem achado). Nenhuma transição de estado neste programa.

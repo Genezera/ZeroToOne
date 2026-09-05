@@ -8184,3 +8184,48 @@ rodadas, sem sinal de mudança). Ver
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/vercel`: +3 entradas, de 109 para 112). Clone
 temporário removido ao final.
+
+## Rodada 2026-09-05 #7 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`, política revisada em 04/09 proibindo qualquer ferramenta
+de IA) confirmados bloqueados via `check-program`; nenhum repo desses
+três tocado, nem para priorização. `migrate-to-v2.mjs` +
+`list-pending` global = 34 candidatos, 100% de programas fora de
+escopo (30 Auth0 by Okta, 4 Circle BBP) -- skip completo, sem leitura
+de repo-alvo bloqueado.
+
+Os 8 achados `corroborated_static` já existentes deste programa
+(`runBridge` timing_attack_risk, `verify-claim.mjs` path_traversal,
+`update-remix-run-dev.js` command_injection, `image-optimizer.ts` SSRF
+-- já `platformOutcome: duplicate` do report #3943945 --, e os 3
+`semgrep_detect_child_process` de `mcp.ts`) revisados: nenhuma
+evidência nova, não tocados.
+
+Leitura profunda proativa: clone raso de `nitrojs/nitro` e
+`nuxt/nuxt` (dois dos três repos tier-1 do escopo -- junto com
+`sveltejs/svelte` -- ainda sem cobertura completa registrada em
+`deep-read-log.json`). `find` por nome de caminho
+auth/session/crypto/token/login/password/admin/permission/access:
+`nitrojs/nitro` não trouxe arquivo novo (único match,
+`examples/middleware/server/middleware/auth.ts`, já coberto em rodada
+anterior); `nuxt/nuxt` também zero arquivo novo por nome de caminho.
+Ampliei a busca por conteúdo (`timingSafeEqual`, `createHmac`,
+`createHash`, `randomBytes`, `jwt`, `verifySignature`) em ambos os
+repos, o que trouxe 5 arquivos novos em `nuxt/nuxt`:
+`packages/kit/src/template.ts`, `packages/nitro-server/src/vite.ts`,
+`packages/nuxt/src/app/composables/asyncData.ts`,
+`packages/nuxt/src/head/module.ts`, `packages/rspack/src/impl.ts`.
+Todos usam `createHash`/`randomBytes` só para fingerprint de
+cache-key/nome de arquivo determinístico ou tag opaca de módulo
+virtual de build -- nenhum compara segredo, token de sessão ou
+credencial. Sem achado.
+
+Para StackingDAO: os 15 arquivos `.clar` seguem 100% dos 13 assets do
+escopo oficial, `api.hiro.so` não retestado (mesmo bloqueio de rede de
+dezenas de rodadas). Ver `research/bugbounty/stackingdao/NOTES.md`.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`nuxt/nuxt`: +5 entradas). Clones temporários
+(`nitrojs/nitro`, `nuxt/nuxt`) removidos ao final.
