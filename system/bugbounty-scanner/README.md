@@ -4,7 +4,7 @@ Dois estágios, custo bem diferente, ligados por um repositório GitHub
 compartilhado (`https://github.com/Genezera/ZeroToOne`, privado). O
 Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
 
-## Estado operacional atual — 04/09/2026
+## Estado operacional atual — 05/09/2026
 
 - GitHub Actions monitora o HEAD dos repositórios permitidos a cada 15
   minutos e dispara a varredura delta somente dos repositórios cujo HEAD
@@ -16,15 +16,11 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   segurança continua a cada 6 horas como rede de proteção e a sincronização
   de outcomes da HackerOne roda a cada hora. Os quatro workflows usam o mesmo grupo de concorrência,
   permissões mínimas explícitas e actions pinadas por SHA.
-- O serviço Windows coordena os analisadores pesados da descoberta,
-  diagnóstico, heartbeat,
-  backoff e watchdog. A cada 30 minutos, `cloud_health` consulta os outcomes
-  reais das quatro automações no GitHub Actions; falha terminal ou silêncio
-  além da tolerância entra no mesmo backoff/alerta de recuperação do serviço.
-  Com `ZERO2ONE_CLOUD_PRIMARY=1`, scan e sync ficam
-  delegados aos workflows para evitar dois writers concorrentes. O SQLite é uma materialized view local:
-  cada job o hidrata de `queue.jsonl`/`submissions.jsonl`/ledger sem emitir
-  eventos duplicados antes de trabalhar.
+- GitHub Actions é o runtime primário versionado. O Windows fica em modo
+  `manual_only`: não há tarefa, serviço, gatilho de logon/boot ou dependência
+  de heartbeat local. O SQLite é uma materialized view local; `mission-control`
+  e cada job o hidratam de `queue.jsonl`/`submissions.jsonl`/ledger sem emitir
+  eventos duplicados nem reescrever os arquivos compartilhados.
 - A descoberta pesada integra Slither, OSV-Scanner, Semgrep e CodeQL. O CodeQL
   roda JS/TS buildless, sem executar scripts do repositório analisado, em
   rotação persistente; builds de Go/JVM continuam fora do CodeQL até terem
@@ -179,7 +175,7 @@ informado):
 ```
 
 ```powershell
-node system/bugbounty-scanner/cli.mjs search-prior-art --config="prior-art.json"
+node system/bugbounty-scanner/cli.mjs search-prior-art --config="prior-art.json" --finding-id="FINDING_ID"
 node system/bugbounty-scanner/cli.mjs audit-system
 ```
 
@@ -266,11 +262,18 @@ Issues e commits são paginados até o total declarado pela API (máximo de
 (até dez páginas). `incomplete_results=true`, total alterado, página
 repetida, limite excedido ou falha HTTP abortam a busca e exigem nova
 consulta mais específica. Os registros `evidence` incluem URLs, número de
-páginas e contagens e sobrevivem ao banco, ledger, export e hidratação.
-Copie também `evidence` do draft ao usar `record-duplicate-check`.
-O gate bloqueia registros antigos sem essa cobertura e evidência de outro
-repositório. Essa checagem é estrutural: não autentica um JSON fornecido
-manualmente nem garante que os termos escolhidos encontrem todo report.
+páginas e contagens e sobrevivem ao banco, ledger, export e hidratação. Use
+obrigatoriamente `--finding-id`: o executor grava uma validation reservada e
+um digest SHA-256 do repositório, timestamp, queries, paginação e hits.
+`record-duplicate-check` só aceita o conteúdo que corresponde à execução.
+A revisão humana pode acrescentar `disposition=ruled_out`, revisor e
+justificativa; remover um hit, trocar URL/título/query, renovar timestamp ou
+alterar cobertura invalida o atestado. `record-validation` não pode fabricar
+esse tipo/provenance reservado.
+
+Esse vínculo comprova que o executor fez aquelas consultas e preserva o
+resultado observado; não prova que os termos escolhidos encontram todo
+report nem torna reports privados visíveis.
 
 Referências: [Search API](https://docs.github.com/en/rest/search) e
 [Repository security advisories](https://docs.github.com/en/rest/security-advisories/repository-advisories).
@@ -287,10 +290,11 @@ Referências: [Search API](https://docs.github.com/en/rest/search) e
 ```
 
 ```powershell
-node system/bugbounty-scanner/cli.mjs search-prior-art --config="caminho\prior-art.json"
+node system/bugbounty-scanner/cli.mjs search-prior-art --config="caminho\prior-art.json" --finding-id="FINDING_ID"
 ```
 
-A saída é só um `duplicateCheckDraft`: Hacktivity ou uma busca web
+A saída inclui um `duplicateCheckDraft` vinculado à validation do finding:
+Hacktivity ou uma busca web
 independente continua obrigatória porque não há API pública que exponha
 reports privados de terceiros. Mesmo quando todas as fontes públicas vêm
 limpas, o status continua `private_unknown` até a prova de regressão ser

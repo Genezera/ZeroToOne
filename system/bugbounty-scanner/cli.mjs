@@ -21,6 +21,7 @@ import { runToolchainDoctor } from './toolchain-doctor.mjs';
 import { runReadinessAudit } from './readiness-audit.mjs';
 import { runMissionControl } from './mission-control.mjs';
 import { loadPriorArtConfig, searchPublicPriorArt } from './prior-art-search.mjs';
+import { createPriorArtSearchAttestation, verifyPriorArtSearchAttestation } from './prior-art-attestation.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
@@ -107,10 +108,38 @@ export function cmdTransition(db, id, toState, actor, context, {
 }
 
 export function cmdRecordValidation(db, id, { type, result, command, output, evidence = null }) {
-  if (type === 'isolated_regression' || evidence?.provenance === 'regression-sandbox') {
-    throw new Error('isolated_regression/regression-sandbox é evidência reservada; use verify-regression --config=... --finding-id=... para executá-la e registrá-la');
+  if (type === 'isolated_regression' || evidence?.provenance === 'regression-sandbox'
+      || type === 'prior_art_search' || evidence?.provenance === 'prior-art-search') {
+    throw new Error('evidência reservada de executor; use verify-regression ou search-prior-art --finding-id=... para executar e registrar a evidência');
   }
   return recordValidation(db, id, { type, result, command, rawOutput: output, evidence });
+}
+
+export async function cmdSearchPriorArt(db, id, config, {
+  search = searchPublicPriorArt,
+  now = () => new Date(),
+} = {}) {
+  const finding = getFinding(db, id);
+  if (!finding) throw new Error(`finding "${id}" não existe no banco`);
+  const result = await search(config);
+  const findingRepository = String(assetRefForFinding(finding) || '').toLowerCase();
+  if (!findingRepository || result.repository.toLowerCase() !== findingRepository) {
+    throw new Error(`repository pesquisado (${result.repository}) não corresponde ao finding (${findingRepository || 'ausente'})`);
+  }
+  const validationTs = now().toISOString();
+  const searchAttestation = createPriorArtSearchAttestation(result, { validationTs });
+  const validation = recordValidation(db, id, {
+    type: 'prior_art_search', result: 'pass',
+    command: `search-prior-art ${result.repository}`,
+    evidence: { provenance: 'prior-art-search', attestation: searchAttestation },
+    ts: validationTs,
+  });
+  return {
+    ...result,
+    duplicateCheckDraft: { ...result.duplicateCheckDraft, searchAttestation },
+    searchAttestation,
+    validation,
+  };
 }
 
 export function cmdRecordDeploymentEvidence(db, id, patch) {
@@ -248,6 +277,22 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
       )) || null
     : null;
   const attestedNoveltyProof = regressionAttestation ? requestedProof : null;
+  const priorArtValidation = [...listValidations(db, id)].reverse().find((validation) => (
+    validation.type === 'prior_art_search'
+    && validation.result === 'pass'
+    && validation.evidence?.provenance === 'prior-art-search'
+    && validation.evidence?.attestation
+  )) || null;
+  const requestedSearchAttestation = priorArtValidation?.evidence?.attestation || null;
+  const candidateSearchCheck = requestedSearchAttestation ? {
+    ...patch,
+    ts: requestedSearchAttestation.checkedAt,
+    searchAttestation: requestedSearchAttestation,
+  } : patch;
+  const searchAttestationResult = verifyPriorArtSearchAttestation(candidateSearchCheck, {
+    repository: assetRefForFinding(finding),
+  });
+  const attestedSearch = searchAttestationResult.ok ? requestedSearchAttestation : null;
   const signals = {
     ...(patch.signals || {}),
     // Estes quatro valores vêm de fontes locais auditáveis e são aplicados
@@ -272,6 +317,8 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   return recordDuplicateCheck(db, id, {
     ...patch,
     noveltyProof: attestedNoveltyProof,
+    searchAttestation: attestedSearch,
+    ts: attestedSearch?.checkedAt || patch.ts,
     ...risk,
     signals,
     results: [
@@ -282,6 +329,12 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
         disposition: regressionAttestation ? 'verified' : 'missing_or_mismatched',
         validationTs: regressionAttestation?.ts || null,
       }] : []),
+      {
+        source: 'prior_art_search_attestation',
+        disposition: attestedSearch ? 'verified' : 'missing_or_mismatched',
+        validationTs: priorArtValidation?.ts || null,
+        reason: searchAttestationResult.reason,
+      },
       { source: 'local_portfolio', submissions: portfolio.totalSubmissions, duplicateRate: portfolio.duplicateRate },
     ],
   });
@@ -705,7 +758,15 @@ async function main() {
     return;
   }
   if (command === 'search-prior-art') {
-    printJson(await searchPublicPriorArt(loadPriorArtConfig(flags.config)));
+    const config = loadPriorArtConfig(flags.config);
+    if (!flags['finding-id']) {
+      const result = await searchPublicPriorArt(config);
+      printJson({ ...result, binding: 'unbound; use --finding-id=<id> para registrar uma atestação utilizável pelo gate' });
+      return;
+    }
+    const searchDb = openDb(DB_PATH);
+    try { printJson(await cmdSearchPriorArt(searchDb, flags['finding-id'], config)); }
+    finally { closeDb(searchDb); }
     return;
   }
 

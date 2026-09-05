@@ -3,6 +3,7 @@
 // "não achei nada em busca pública" não é evidência suficiente para enviar.
 // O gate só libera uma regressão recente demonstrada entre dois refs.
 import { priorArtCoverageGate } from './prior-art-coverage.mjs';
+import { verifyPriorArtSearchAttestation } from './prior-art-attestation.mjs';
 
 export const DUPLICATE_CHECK_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const MAX_RISK_FOR_SUBMISSION = 25;
@@ -172,7 +173,9 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   }
   const regression = verifiedRegressionGate(check.noveltyProof, { now });
   if (!regression.ok) return regression;
+  const attestation = verifyPriorArtSearchAttestation(check, { repository });
+  if (!attestation.ok) return attestation;
   const coverage = priorArtCoverageGate(check, { repository });
   if (!coverage.ok) return coverage;
-  return { ok: true, reason: `${regression.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
+  return { ok: true, reason: `${regression.reason}; ${attestation.reason}; fontes públicas sem correspondência nas últimas 24h; privado permanece desconhecido; risco=${check.riskScore}/100` };
 }

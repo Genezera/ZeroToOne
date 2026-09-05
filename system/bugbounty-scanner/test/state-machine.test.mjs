@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { transition, validTransitionsFrom, isTerminal, STATES, deriveStatesFromLedger } from '../state-machine.mjs';
-import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
+import { publicSearchEvidence, withPriorArtAttestation } from './fixtures/prior-art-evidence.mjs';
 
 function finding(state, overrides = {}) {
   return { id: 'x', program: 'Test Program', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
@@ -29,14 +29,14 @@ const GOOD_IMPACT = {
   severityRating: 'medium', severityRationale: 'violação de autorização entre contas',
 };
 const GOOD_SCOPE = { allowed: true, reason: 'ativo elegível', bountyEligible: true };
-const GOOD_DUPLICATE_CHECK = {
+const GOOD_DUPLICATE_CHECK = withPriorArtAttestation({
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR'],
   evidence: publicSearchEvidence(['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR']),
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
   signals: { priorDuplicateSubmissions: 0 }, noveltyProof: REGRESSION_PROOF,
   ts: '2026-09-03T17:00:00Z',
-};
+});
 const GOOD_E4_VALIDATION = {
   type: 'isolated_regression', result: 'pass',
   evidence: { provenance: 'regression-sandbox', noveltyProof: REGRESSION_PROOF },

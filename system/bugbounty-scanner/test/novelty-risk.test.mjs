@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { assessNoveltyRisk, duplicateCheckGate, verifiedRegressionGate } from '../novelty-risk.mjs';
-import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
+import { publicSearchEvidence, withPriorArtAttestation } from './fixtures/prior-art-evidence.mjs';
 
 const NOW = new Date('2026-09-03T18:00:00Z').getTime();
 const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
@@ -12,14 +12,14 @@ const PROOF = {
   baseline: { ref: PARENT, result: 'not_vulnerable', command: 'node poc.mjs', observedOutcome: 'controle recusado' },
   candidate: { ref: INTRODUCED, result: 'vulnerable', command: 'node poc.mjs', observedOutcome: 'exploit reproduzido' },
 };
-const CLEAN = {
+const CLEAN = withPriorArtAttestation({
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['function root cause', 'source sink missing guard', 'commit regression vulnerability'],
   evidence: publicSearchEvidence(['function root cause', 'source sink missing guard', 'commit regression vulnerability']),
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
   signals: { priorDuplicateSubmissions: 0 }, noveltyProof: PROOF,
   ts: '2026-09-03T17:00:00Z',
-};
+});
 
 test('match público domina qualquer outro sinal e bloqueia', () => {
   const risk = assessNoveltyRisk({ foundPublicMatch: true, regressionAfterVerifiedFix: true });
@@ -71,6 +71,17 @@ test('gate final bloqueia cobertura ausente, parcial, contraditória ou de outro
   }
   assert.equal(duplicateCheckGate(CLEAN, { now: NOW, repository: 'other/api' }).ok, false);
   assert.equal(duplicateCheckGate(CLEAN, { now: NOW, repository: 'acme/api' }).ok, true);
+});
+
+test('gate final bloqueia prior-art sem atestação ou com hit/evidência alterados depois da execução', () => {
+  assert.equal(duplicateCheckGate({ ...CLEAN, searchAttestation: null }, { now: NOW, repository: 'acme/api' }).ok, false);
+  const changedEvidence = structuredClone(CLEAN);
+  changedEvidence.evidence[0].retrievedCount = 1;
+  changedEvidence.evidence[0].totalCount = 1;
+  assert.equal(duplicateCheckGate(changedEvidence, { now: NOW, repository: 'acme/api' }).ok, false);
+  const addedHit = structuredClone(CLEAN);
+  addedHit.results = [{ source: 'github_issues', candidate: true, disposition: 'ruled_out', url: 'https://github.com/acme/api/issues/7' }];
+  assert.equal(duplicateCheckGate(addedHit, { now: NOW, repository: 'acme/api' }).ok, false);
 });
 
 test('duplicateCheck null de dado legado bloqueia com motivo em vez de lançar', () => {

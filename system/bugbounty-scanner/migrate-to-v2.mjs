@@ -113,7 +113,8 @@ function restoreSatelliteData(db, findingId, entry) {
       && JSON.stringify(current.results || []) === JSON.stringify(entry.duplicateCheck.results || [])
       && JSON.stringify(current.evidence || []) === JSON.stringify(entry.duplicateCheck.evidence || [])
       && JSON.stringify(current.signals || {}) === JSON.stringify(entry.duplicateCheck.signals || {})
-      && JSON.stringify(current.noveltyProof || null) === JSON.stringify(entry.duplicateCheck.noveltyProof || null);
+      && JSON.stringify(current.noveltyProof || null) === JSON.stringify(entry.duplicateCheck.noveltyProof || null)
+      && JSON.stringify(current.searchAttestation || null) === JSON.stringify(entry.duplicateCheck.searchAttestation || null);
     if (!same) {
       recordDuplicateCheck(db, findingId, entry.duplicateCheck);
       notes.push(`duplicateCheck restaurado da fila (${entry.duplicateCheck.ts || 'sem timestamp original'})`);

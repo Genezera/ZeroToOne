@@ -336,6 +336,11 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
       noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
       signals: { priorDuplicateSubmissions: 0 },
       noveltyProof: { kind: 'verified_regression', introducedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+      searchAttestation: {
+        schemaVersion: 1, kind: 'executed_prior_art_search', executor: 'zerotoone.prior-art-search/v1',
+        repository: 'program/file.sol', checkedAt: '2026-09-05T12:00:00Z', validationTs: '2026-09-05T12:00:01Z',
+        digest: `sha256:${'a'.repeat(64)}`,
+      },
     });
     recordImpactAssessment(db, SAMPLE.id, {
       technicalValidity: 'confirmed', attackerControlledInput: true,
@@ -359,6 +364,7 @@ test('duplicateCheck e impactAssessment sobrevivem no export; submissão conta u
     assert.equal(line.duplicateCheck.evidence[0].apiUrls.length, 2);
     assert.equal(line.duplicateCheck.signals.priorDuplicateSubmissions, 0);
     assert.equal(line.duplicateCheck.noveltyProof.kind, 'verified_regression');
+    assert.match(line.duplicateCheck.searchAttestation.digest, /^sha256:/);
     assert.equal(line.impactAssessment.impactScope, 'other_user');
     assert.equal(line.submission.externalReportId, '3994302');
     assert.equal(line.submission.originalReportId, '3439366');

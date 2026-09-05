@@ -153,6 +153,7 @@ CREATE TABLE IF NOT EXISTS duplicate_checks (
   evidence_json TEXT,
   signals_json TEXT,
   novelty_proof_json TEXT,
+  search_attestation_json TEXT,
   found_existing INTEGER NOT NULL DEFAULT 0,
   found_existing_ref TEXT,
   novelty_status TEXT,
@@ -257,6 +258,7 @@ export function openDb(dbPath) {
     ['duplicate_checks', 'evidence_json', 'TEXT'],
     ['duplicate_checks', 'signals_json', 'TEXT'],
     ['duplicate_checks', 'novelty_proof_json', 'TEXT'],
+    ['duplicate_checks', 'search_attestation_json', 'TEXT'],
     ['duplicate_checks', 'novelty_status', 'TEXT'],
     ['duplicate_checks', 'risk_score', 'REAL'],
     ['duplicate_checks', 'risk_level', 'TEXT'],
@@ -472,6 +474,9 @@ export function recordValidation(db, findingId, { type, command, result, rawOutp
       containerImage: execution?.containerImage || null,
       containerImageId: execution?.containerImageId || null,
       isolation: execution?.isolation || null,
+      priorArtDigest: evidence.attestation?.digest || null,
+      priorArtRepository: evidence.attestation?.repository || null,
+      priorArtCheckedAt: evidence.attestation?.checkedAt || null,
     } : null,
     ts,
   });
@@ -548,7 +553,7 @@ export function latestCodeAgeEvidence(db, findingId) {
 }
 
 export function recordDuplicateCheck(db, findingId, {
-  methods, query, queries, results, evidence, signals, noveltyProof, foundExisting, foundExistingRef,
+  methods, query, queries, results, evidence, signals, noveltyProof, searchAttestation, foundExisting, foundExistingRef,
   noveltyStatus, riskScore, riskLevel, notes, ts: suppliedTs,
 }) {
   if (!Array.isArray(methods) || methods.length === 0) {
@@ -559,14 +564,14 @@ export function recordDuplicateCheck(db, findingId, {
   const ts = suppliedTs || new Date().toISOString();
   db.prepare(`
     INSERT INTO duplicate_checks (
-      finding_id, methods_json, query, queries_json, results_json, evidence_json, signals_json, novelty_proof_json,
+      finding_id, methods_json, query, queries_json, results_json, evidence_json, signals_json, novelty_proof_json, search_attestation_json,
       found_existing, found_existing_ref, novelty_status, risk_score,
       risk_level, notes, ts
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     findingId, JSON.stringify(methods), query || normalizedQueries[0] || null,
     JSON.stringify(normalizedQueries), JSON.stringify(results || []), JSON.stringify(evidence || []),
-    JSON.stringify(signals || {}), JSON.stringify(noveltyProof || null),
+    JSON.stringify(signals || {}), JSON.stringify(noveltyProof || null), JSON.stringify(searchAttestation || null),
     foundExisting ? 1 : 0, foundExistingRef || null, noveltyStatus || null,
     Number.isFinite(riskScore) ? riskScore : null, riskLevel || null,
     notes || null, ts,
@@ -574,13 +579,13 @@ export function recordDuplicateCheck(db, findingId, {
   const ledgerEntry = appendFindingLedger(findingId, {
     type: 'bugbounty_duplicate_check', methods, queries: normalizedQueries, evidence: evidence || [],
     foundExisting: !!foundExisting, noveltyStatus: noveltyStatus || null,
-    riskScore: Number.isFinite(riskScore) ? riskScore : null,
+    riskScore: Number.isFinite(riskScore) ? riskScore : null, searchAttestation: searchAttestation || null,
     signals: signals || {}, noveltyProof: noveltyProof || null, ts,
   });
   return {
     findingId, correlationId: investigationIdFor(findingId), methods, query: query || normalizedQueries[0] || null,
     queries: normalizedQueries, results: results || [], evidence: evidence || [], signals: signals || {},
-    noveltyProof: noveltyProof || null, foundExisting: !!foundExisting,
+    noveltyProof: noveltyProof || null, searchAttestation: searchAttestation || null, foundExisting: !!foundExisting,
     foundExistingRef: foundExistingRef || null, noveltyStatus: noveltyStatus || null,
     riskScore: Number.isFinite(riskScore) ? riskScore : null,
     riskLevel: riskLevel || null, notes: notes || null, ts,
@@ -600,6 +605,7 @@ export function latestDuplicateCheck(db, findingId) {
     evidence: row.evidence_json ? JSON.parse(row.evidence_json) : [],
     signals: row.signals_json ? JSON.parse(row.signals_json) : {},
     noveltyProof: row.novelty_proof_json ? JSON.parse(row.novelty_proof_json) : null,
+    searchAttestation: row.search_attestation_json ? JSON.parse(row.search_attestation_json) : null,
     foundExisting: !!row.found_existing,
     foundExistingRef: row.found_existing_ref,
     noveltyStatus: row.novelty_status,

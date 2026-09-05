@@ -1,3 +1,5 @@
+import { createPriorArtSearchAttestation } from '../../prior-art-attestation.mjs';
+
 // Synthetic coverage metadata; only for gate tests, never production evidence.
 export function publicSearchEvidence(queries, repository = 'acme/api') {
   const evidence = queries.flatMap((query) => ['issues', 'commits'].map((endpoint) => ({
@@ -6,4 +8,16 @@ export function publicSearchEvidence(queries, repository = 'acme/api') {
   })));
   evidence.push({ source: 'github_advisories', apiUrl: `https://api.github.com/repos/${repository}/security-advisories?state=published&per_page=100` });
   return evidence.map((item) => ({ ...item, apiUrls: [item.apiUrl], complete: true, pagesScanned: 1, totalCount: 0, retrievedCount: 0 }));
+}
+
+export function withPriorArtAttestation(check, repository = 'acme/api') {
+  const validationTs = check.ts;
+  return {
+    ...check,
+    searchAttestation: createPriorArtSearchAttestation({
+      repository,
+      checkedAt: check.ts,
+      duplicateCheckDraft: check,
+    }, { validationTs }),
+  };
 }

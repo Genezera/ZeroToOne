@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
+import { publicSearchEvidence, withPriorArtAttestation } from './fixtures/prior-art-evidence.mjs';
 import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -10,7 +10,7 @@ import {
   cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
   cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
   cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight, cmdGetFinding, cmdRankFinding,
-  cmdAutoTriageKnownCve, cmdPackageForSubmission,
+  cmdAutoTriageKnownCve, cmdPackageForSubmission, cmdSearchPriorArt,
 } from '../cli.mjs';
 
 function withTempEnv(fn) {
@@ -148,12 +148,57 @@ test('cmdRecordValidation não permite fabricar o tipo/provenance reservado do e
     );
     assert.throws(
       () => cmdRecordValidation(db, SAMPLE.id, {
+        type: 'prior_art_search', result: 'pass', output: 'inventado',
+      }),
+      /evidência reservada/,
+    );
+    assert.throws(
+      () => cmdRecordValidation(db, SAMPLE.id, {
         type: 'manual', result: 'pass', output: 'inventado', evidence: { provenance: 'regression-sandbox' },
       }),
       /evidência reservada/,
     );
     closeDb(db);
   });
+});
+
+test('cmdSearchPriorArt vincula a execução real ao finding e record-duplicate-check rejeita adulteração', async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'zto-cli-prior-art-'));
+  const previousLedgerDir = process.env.ZERO2ONE_LEDGER_DIR;
+  process.env.ZERO2ONE_LEDGER_DIR = path.join(dir, 'ledger');
+  const db = openDb(path.join(dir, 'test.db'));
+  try {
+    const finding = { ...SAMPLE, id: 'p::acme/api/x.ts::f::idor', program: 'P', asset: 'acme/api', file: 'acme/api/x.ts' };
+    upsertFinding(db, finding);
+    const queries = ['root cause one', 'source sink two', 'missing control three'];
+    const searched = await cmdSearchPriorArt(db, finding.id, { repository: 'acme/api', queries }, {
+      now: () => new Date('2026-09-05T12:00:30Z'),
+      search: async () => ({
+        ok: true, repository: 'acme/api', checkedAt: '2026-09-05T12:00:00Z',
+        duplicateCheckDraft: {
+          methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
+          queries, evidence: publicSearchEvidence(queries), results: [],
+          foundExisting: false, noveltyStatus: 'private_unknown', ts: '2026-09-05T12:00:00Z',
+        },
+      }),
+    });
+    assert.equal(searched.validation.type, 'prior_art_search');
+    assert.match(searched.searchAttestation.digest, /^sha256:[a-f0-9]{64}$/);
+    const recorded = cmdRecordDuplicateCheck(db, finding.id, searched.duplicateCheckDraft);
+    assert.equal(recorded.searchAttestation.digest, searched.searchAttestation.digest);
+    assert.equal(recorded.results.find((item) => item.source === 'prior_art_search_attestation').disposition, 'verified');
+
+    const altered = structuredClone(searched.duplicateCheckDraft);
+    altered.queries[0] = 'query adulterada';
+    const rejected = cmdRecordDuplicateCheck(db, finding.id, altered);
+    assert.equal(rejected.searchAttestation, null);
+    assert.equal(rejected.results.find((item) => item.source === 'prior_art_search_attestation').disposition, 'missing_or_mismatched');
+  } finally {
+    closeDb(db);
+    if (previousLedgerDir === undefined) delete process.env.ZERO2ONE_LEDGER_DIR;
+    else process.env.ZERO2ONE_LEDGER_DIR = previousLedgerDir;
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('policy bloqueia toda progressão de pesquisa no CLI, mas preserva encerramento cético', () => {
@@ -284,7 +329,7 @@ test('cmdAutoTriageKnownCve fecha known_vulnerable_dependency com GHSA como know
 test('submission-preflight é fail-closed e explica a limitação de reports privados', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
-    const finding = { ...SAMPLE, id: 'p::acme/api/auth.ts::f::idor', program: 'P', file: 'acme/api/auth.ts', state: 'scope_verified' };
+    const finding = { ...SAMPLE, id: 'p::acme/api/auth.ts::f::idor', program: 'P', asset: 'acme/api', file: 'acme/api/auth.ts', state: 'scope_verified' };
     upsertFinding(db, finding);
     const blocked = cmdSubmissionPreflight(db, finding.id, { now: new Date('2026-09-03T18:00:00Z').getTime(), programPolicy: TEST_PROGRAM_POLICY });
     assert.equal(blocked.ready, false);
@@ -307,12 +352,17 @@ test('submission-preflight é fail-closed e explica a limitação de reports pri
       packageOrContract: '@acme/api@1.2.3', confidence: 'high',
       notes: 'release pública ligada ao commit introdutor',
     });
-    cmdRecordDuplicateCheck(db, finding.id, {
+    const priorArtPatch = withPriorArtAttestation({
       methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
       queries: ['auth function IDOR', 'missing ownership check', 'commit regression IDOR'], foundExisting: false,
       evidence: publicSearchEvidence(['auth function IDOR', 'missing ownership check', 'commit regression IDOR']),
       ts: '2026-09-03T17:00:00Z', signals: { codeAgeDays: 30 }, noveltyProof: REGRESSION_PROOF,
     });
+    recordValidation(db, finding.id, {
+      type: 'prior_art_search', result: 'pass', ts: priorArtPatch.searchAttestation.validationTs,
+      evidence: { provenance: 'prior-art-search', attestation: priorArtPatch.searchAttestation },
+    });
+    cmdRecordDuplicateCheck(db, finding.id, priorArtPatch);
     const ready = cmdSubmissionPreflight(db, finding.id, {
       now: new Date('2026-09-03T18:00:00Z').getTime(), programPolicy: TEST_PROGRAM_POLICY,
       scopeResolver: () => ({ allowed: true, reason: 'fixture elegível', bountyEligible: true }),

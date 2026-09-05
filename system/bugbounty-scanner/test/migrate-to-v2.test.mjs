@@ -347,6 +347,11 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       foundExisting: false, noveltyStatus: 'private_unknown', riskScore: 25, riskLevel: 'low',
       signals: { priorDuplicateSubmissions: 0, codeAgeDays: 2 },
       noveltyProof: { kind: 'verified_regression', introducedCommit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+      searchAttestation: {
+        schemaVersion: 1, kind: 'executed_prior_art_search', executor: 'zerotoone.prior-art-search/v1',
+        repository: 'acme/api', checkedAt: '2026-09-03T17:00:00Z', validationTs: '2026-09-03T17:00:01Z',
+        digest: `sha256:${'b'.repeat(64)}`,
+      },
       ts: '2026-09-03T17:00:00Z',
     });
     recordImpactAssessment(db1, 'x::professional-roundtrip', {
@@ -373,6 +378,7 @@ test('round-trip completo: fingerprint, duplicateCheck, impacto e submissão sob
       assert.deepEqual(latestDuplicateCheck(db2, exported.id).evidence, exported.duplicateCheck.evidence);
       assert.equal(latestDuplicateCheck(db2, exported.id).signals.codeAgeDays, 2);
       assert.equal(latestDuplicateCheck(db2, exported.id).noveltyProof.kind, 'verified_regression');
+      assert.equal(latestDuplicateCheck(db2, exported.id).searchAttestation.digest, exported.duplicateCheck.searchAttestation.digest);
       assert.equal(latestImpactAssessment(db2, exported.id).impactScope, 'other_user');
       assert.equal(listSubmissions(db2).length, 1);
       assert.equal(listSubmissions(db2)[0].originalReportId, '100');

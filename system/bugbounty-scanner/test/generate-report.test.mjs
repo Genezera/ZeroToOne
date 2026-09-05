@@ -8,7 +8,7 @@ import {
   recordDuplicateCheck, recordImpactAssessment, latestReport, closeDb,
 } from '../db.mjs';
 import { assembleReportContext, renderReportDraft, generateReport, reportSlugFor } from '../generate-report.mjs';
-import { publicSearchEvidence } from './fixtures/prior-art-evidence.mjs';
+import { publicSearchEvidence, withPriorArtAttestation } from './fixtures/prior-art-evidence.mjs';
 
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-report-test-'));
@@ -51,7 +51,7 @@ const SAMPLE = {
 
 const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-const STRICT_NOVELTY = {
+const STRICT_NOVELTY = withPriorArtAttestation({
   methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
   queries: ['withdraw reentrancy', 'external call before state update', 'commit regression withdraw'],
   evidence: publicSearchEvidence(['withdraw reentrancy', 'external call before state update', 'commit regression withdraw']),
@@ -68,7 +68,7 @@ const STRICT_NOVELTY = {
     },
   },
   ts: '2026-09-03T17:00:00Z',
-};
+}, 'circlefin/evm-gateway-contracts');
 
 test('assembleReportContext recusa achado em estado não-elegível (candidate)', () => {
   withTempEnv((dbPath) => {
