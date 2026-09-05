@@ -701,7 +701,8 @@
     "packages/svelte/src/compiler/preprocess/decode_sourcemap.js (decode_map/decoded_sourcemap_from_generator -- so transforma dado de sourcemap fornecido pelo proprio dev em compile-time via JSON.parse/desestruturacao, sem leitura de filesystem por path externo nem sink de execucao. Sem achado)",
     "packages/svelte/src/internal/client/dom/elements/custom-element.js (SvelteElement/create_custom_element -- reflexao de props<->atributos de custom element no browser; JSON.parse/JSON.stringify em get_custom_element_value so (de)serializa Object/Array, sem eval nem innerHTML; setAttribute/removeAttribute via API nativa do DOM, auto-escapada. Sem achado)",
     "packages/svelte/src/internal/client/dom/elements/bindings/input.js (bind_value/bind_group/bind_checked/bind_files -- two-way binding de <input>, so le/escreve .value/.checked/.files via propriedades nativas do DOM, nenhuma concatenacao de HTML nem innerHTML. Sem achado)",
-    "packages/svelte/src/internal/client/dom/blocks/key.js"
+    "packages/svelte/src/internal/client/dom/blocks/key.js",
+    "packages/svelte/src/internal/server/renderer.js (Renderer#hydratable_block/#script_block -- csp.nonce interpolado sem escaping em atributo nonce=\"...\", mas opcao publica confiavel fornecida pelo host (nunca por request nao confiavel), comportamento intencional e testado em tests/server-side-rendering/samples/csp-nonce/. Investigado como candidate, refutado como false_positive -- ver queue.jsonl)"
   ],
   "vercel-labs/agent-skills": [
     ".github/workflows/agent-skills-discovery.yml",

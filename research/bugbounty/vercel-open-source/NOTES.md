@@ -8274,3 +8274,71 @@ contrato novo, 15 arquivos `.clar` seguem 100% do escopo).
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/turborepo`: 31->33, `sveltejs/svelte`: 20->21).
 Clones temporários removidos ao final.
+
+## Rodada 2026-09-05 #8 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`) confirmados via `check-program`; nenhum dos três tocado.
+`list-pending` global = 34 candidatos, 100% fora de escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP) -- skip completo.
+
+Nota operacional: ao rodar `migrate-to-v2.mjs`, `origin/master` já
+estava um commit à frente do checkout local desta sessão (rodada `#7`
+paralela, que também leu `sveltejs/svelte`, mas o arquivo
+`packages/svelte/src/internal/client/dom/blocks/key.js`, diferente do
+lido nesta rodada). Sincronizei com `git checkout -B master
+origin/master` + `migrate-to-v2.mjs` antes de prosseguir, para herdar
+o estado real mais recente sem sobrescrever o trabalho da rodada
+paralela.
+
+Os 8 achados `corroborated_static` já existentes deste programa
+(`runBridge` timing_attack_risk, `verify-claim.mjs` path_traversal,
+`update-remix-run-dev.js` command_injection, `image-optimizer.ts` SSRF
+-- já duplicate do report #3943945 --, e os 3
+`semgrep_detect_child_process` de `mcp.ts`) revisados novamente:
+nenhuma evidência nova, não tocados.
+
+Leitura profunda proativa: `sveltejs/svelte` (tier 1, clone raso
+público, commit `5895c637b04dc8667020c8d326807c3f3a984472`,
+2026-09-03). Busca por nome de caminho
+auth/session/crypto/token/login/password/admin/permission/access/secret/hash/jwt
+não trouxe arquivo novo (`crypto.js`/`crypto.test.ts` já cobertos).
+Ampliei para busca por conteúdo
+(`createHash`/`createHmac`/`randomBytes`/`timingSafeEqual`/`jwt`/`eval(`/`new Function(`)
+em `packages/`, excluindo testes/specs/snapshots/fixtures -- trouxe 1
+arquivo novo: `packages/svelte/src/internal/server/renderer.js`.
+
+Achado levantado e já refutado nesta mesma rodada (registrado como
+finding, transitado `candidate` -> `false_positive`, ver
+`queue.jsonl`): `Renderer#hydratable_block`/bloco de emissão de
+`<script>` monta `nonce="${this.global.csp.nonce}"` sem escapar aspas
+-- em tese, um `csp.nonce` contendo `"` quebraria o atributo. Rastreei
+a cadeia completa: `csp` é opção pública documentada de `render()`
+(`packages/svelte/src/server/index.js:68-73`, tipo `Csp = { nonce?:
+string; hash?: boolean }` em `server/public.d.ts`), fornecida
+inteiramente pela aplicação hospedeira (ex.: SvelteKit gera seu
+próprio nonce, tipicamente `crypto.randomBytes(...).toString('base64')`,
+sem aspas possíveis) -- nunca derivada de dado de request não
+confiável dentro do próprio svelte. Confirmado pelo teste oficial do
+repo (`tests/server-side-rendering/samples/csp-nonce/_config.js` +
+`_expected_head.html`): o comportamento sem escaping é intencional e
+testado, não descuido. Sem sink que exponha `csp.nonce` a partir de
+header/query/cookie de request dentro do svelte -- fronteira de
+confiança pertence ao app hospedeiro, mesmo padrão de outros achados
+já refutados neste programa (opção de API confiavelmente fornecida
+pelo host, não pelo atacante). Consistente com a política do programa
+(rejeita SAST isolado e chains teóricas sem PoC funcional em release
+estável): aqui não há cadeia de exploração real sem assumir que o
+próprio host já injeta dado não confiável como nonce, o que seria bug
+do host, não do svelte. Falso positivo.
+
+Para StackingDAO: os 15 arquivos `.clar` seguem 100% dos 13 assets do
+escopo oficial; `api.hiro.so` retestado nesta rodada, proxy segue
+recusando (`connect_rejected`), condição inalterada. Ver
+`research/bugbounty/stackingdao/NOTES.md`.
+
+`deep-read-log.json` atualizado (`sveltejs/svelte`: +1 entrada, de 21
+para 22, cobrindo tanto `key.js` da rodada paralela quanto
+`renderer.js` desta rodada). Clone temporário removido ao final.
+Nenhuma transição de estado além do achado já refutado acima.

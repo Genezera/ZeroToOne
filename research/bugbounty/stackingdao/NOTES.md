@@ -1380,3 +1380,28 @@ contratos `ststxbtc-*` seguem impossíveis de baixar. Os 15 contratos
 proativa desta rodada direcionada a `vercel/turborepo` e
 `sveltejs/svelte` (2 arquivos triviais cada, sem achado; ver NOTES.md
 de Vercel Open Source). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-05 #8 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero -- `Block Open
+Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados, nenhum dos
+três tocado. `list-pending` global segue com os mesmos 34 candidatos
+fora do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP) --
+confirmado via `check-program`, skip completo. `api.hiro.so`
+retestado nesta rodada (`curl` direto): proxy segue recusando a
+conexão (`connect_rejected`, política da organização) -- condição de
+bloqueio de rede inalterada há dezenas de rodadas, os 3 contratos
+`ststxbtc-*` seguem inacessíveis. Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Nota operacional: ao iniciar esta rodada, `origin/master` já estava um
+commit à frente do checkout local (rodada `#7` paralela, que também
+tocou `sveltejs/svelte` mas num arquivo diferente, `blocks/key.js`).
+Sincronizei (`git checkout -B master origin/master` + `migrate-to-v2`)
+antes de exportar, para não sobrescrever o trabalho da rodada paralela.
+
+Leitura profunda proativa desta rodada direcionada a `sveltejs/svelte`
+(ver NOTES.md de Vercel Open Source -- 1 arquivo novo, achado inicial
+levantado e já refutado como false_positive nesta mesma rodada).
+Nenhuma transição de estado neste programa.
