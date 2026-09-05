@@ -49,6 +49,13 @@ Both exchange the same version-controlled `queue.jsonl`, submissions and
 ledger; fail-closed Git preflight prevents a stale or dirty worker from
 silently overwriting shared state.
 
+`mission-control` joins those components into one live health view: it checks
+the latest real GitHub Actions outcomes against each cadence, the local
+service heartbeat, repository/policy invariants, pipeline state counts and
+submission outcomes. The Windows service repeats the cloud-health check every
+30 minutes and routes failures/recovery through its existing backoff and
+Telegram notification path.
+
 ## Where to look
 
 - [`system/bugbounty-scanner/`](system/bugbounty-scanner/README.md) —
@@ -70,3 +77,10 @@ npm test
 runs the full test suite. The pipeline's own commands (discovery, scan,
 report generation, syncing report status with the platform) are
 documented in `system/bugbounty-scanner/README.md`.
+
+```bash
+node system/bugbounty-scanner/cli.mjs mission-control
+```
+
+returns the end-to-end operational view. It exits non-zero when a required
+local or cloud component is unhealthy.

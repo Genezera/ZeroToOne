@@ -35,6 +35,12 @@ export const SERVICE_JOBS = [
     enabled: () => true,
   },
   {
+    name: 'cloud_health', kind: 'light', intervalMs: 30 * MINUTE,
+    timeoutMs: 2 * MINUTE,
+    args: [path.join(__dirname, 'cloud-workflow-health.mjs')],
+    enabled: () => true,
+  },
+  {
     name: 'scan', kind: 'heavy', intervalMs: 6 * HOUR,
     timeoutMs: 2 * HOUR,
     args: [path.join(__dirname, 'scan-runner.mjs')],

@@ -141,9 +141,9 @@ test('service inicializa sem disparar carga e depois roda leves + no máximo um 
         runner: (job) => { ran.push(job.name); return { status: 0, stdout: `${job.name} ok`, stderr: '' }; },
         notify: async () => ({ ok: true }), recordEvent: (event) => events.push(event),
       });
-      assert.deepEqual(ran, ['sync_reports', 'doctor', 'scan']);
+      assert.deepEqual(ran, ['sync_reports', 'doctor', 'cloud_health', 'scan']);
       assert.equal(result.ok, true);
-      assert.equal(events.length, 3);
+      assert.equal(events.length, 4);
       assert.equal(result.state.jobs.discovery.lastSuccessAt, null, 'inicialização não pode fingir execução bem-sucedida');
       assert.equal(result.state.jobs.discovery.scheduleAnchorAt, '2026-09-03T12:00:00.000Z');
     } finally {
@@ -173,7 +173,7 @@ test('modo cloud-primary desliga scan/sync locais e mantém doctor + discovery',
         runner: (job) => { ran.push(job.name); return { status: 0, stdout: 'ok', stderr: '' }; },
         notify: async () => ({ ok: true }), recordEvent: () => {},
       });
-      assert.deepEqual(ran, ['doctor', 'discovery']);
+      assert.deepEqual(ran, ['doctor', 'cloud_health', 'discovery']);
       assert.match(result.state.jobs.sync_reports.disabledReason, /workflow cloud/);
       assert.match(result.state.jobs.scan.disabledReason, /workflow cloud/);
       assert.equal(result.state.jobs.sync_reports.consecutiveFailures, 0);
@@ -202,7 +202,10 @@ test('falha de job gera backoff, persiste erro e notifica; watchdog só avisa na
       const messages = [];
       const failed = await runServiceCycle({
         statePath, lockPath, now: () => now,
-        runner: () => { throw new Error('falha sintética'); },
+        runner: (job) => {
+          if (job.name === 'scan') throw new Error('falha sintética');
+          return { status: 0, stdout: `${job.name} ok`, stderr: '' };
+        },
         notify: async (message) => { messages.push(message); return { ok: true }; },
         recordEvent: () => {},
       });

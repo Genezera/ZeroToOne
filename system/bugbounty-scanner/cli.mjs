@@ -19,6 +19,7 @@ import { loadRuntimeState, summarizeRuntimeHealth } from './runtime-state.mjs';
 import { DEFAULT_RUNTIME_STATE_PATH } from './service-runner.mjs';
 import { runToolchainDoctor } from './toolchain-doctor.mjs';
 import { runReadinessAudit } from './readiness-audit.mjs';
+import { runMissionControl } from './mission-control.mjs';
 import { loadPriorArtConfig, searchPublicPriorArt } from './prior-art-search.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -695,6 +696,12 @@ async function main() {
     if (!result.ok) process.exitCode = 1;
     return;
   }
+  if (command === 'mission-control') {
+    const result = await runMissionControl();
+    printJson(result);
+    if (!result.operational) process.exitCode = 1;
+    return;
+  }
   if (command === 'search-prior-art') {
     printJson(await searchPublicPriorArt(loadPriorArtConfig(flags.config)));
     return;
@@ -783,7 +790,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, verify-longstanding-exposure --config=<arquivo.json>, runtime-status, doctor, audit-system, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, verify-longstanding-exposure --config=<arquivo.json>, runtime-status, doctor, audit-system, mission-control, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

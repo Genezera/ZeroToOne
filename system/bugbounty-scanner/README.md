@@ -18,7 +18,10 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   permissões mínimas explícitas e actions pinadas por SHA.
 - O serviço Windows coordena os analisadores pesados da descoberta,
   diagnóstico, heartbeat,
-  backoff e watchdog. Com `ZERO2ONE_CLOUD_PRIMARY=1`, scan e sync ficam
+  backoff e watchdog. A cada 30 minutos, `cloud_health` consulta os outcomes
+  reais das quatro automações no GitHub Actions; falha terminal ou silêncio
+  além da tolerância entra no mesmo backoff/alerta de recuperação do serviço.
+  Com `ZERO2ONE_CLOUD_PRIMARY=1`, scan e sync ficam
   delegados aos workflows para evitar dois writers concorrentes. O SQLite é uma materialized view local:
   cada job o hidrata de `queue.jsonl`/`submissions.jsonl`/ledger sem emitir
   eventos duplicados antes de trabalhar.
@@ -448,7 +451,16 @@ confundir "instalado" com "job executado com sucesso".
 ```powershell
 node system/bugbounty-scanner/cli.mjs runtime-status
 node system/bugbounty-scanner/cli.mjs doctor
+node system/bugbounty-scanner/cli.mjs mission-control
 ```
+
+`mission-control` é a visão end-to-end: cruza auditoria do repositório e da
+política, execução real dos quatro workflows cloud, heartbeat local, contagem
+dos estados do pipeline e outcomes de submissão. Cada workflow tem tolerância
+maior que sua cadência nominal (1h monitor, 4h sync, 18h scan, 48h discovery)
+para absorver jitter do scheduler sem esconder falha. Última execução terminal
+falha, ausência de sucesso ou sucesso velho tornam o componente `unhealthy` e
+o comando sai diferente de zero.
 
 Instalação/reinstalação idempotente:
 

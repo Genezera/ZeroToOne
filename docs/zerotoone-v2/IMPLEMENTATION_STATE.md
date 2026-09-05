@@ -25,6 +25,16 @@ commit, ativo explicitamente bounty-eligible, impacto Medium+ e aprovação
 humana. Reports privados seguem invisíveis; portanto nenhuma implementação
 pode garantir risco zero de duplicate.
 
+O `mission-control.mjs` fecha a lacuna entre “workflow bem configurado” e
+“workflow realmente executando”: consulta as execuções reais das quatro
+automações no GitHub, valida sucesso e idade contra tolerâncias explícitas,
+cruza com heartbeat local, auditoria, estados do funil e os seis outcomes
+registrados. O serviço local roda `cloud_health` a cada 30 minutos; falha e
+recuperação seguem o mesmo backoff e alerta Telegram dos demais jobs. Em
+05/09/2026 o check foi executado ao vivo e encontrou os quatro workflows e o
+serviço local saudáveis; durante desenvolvimento, recusou corretamente declarar
+operação completa enquanto o worktree tinha mudanças não publicadas.
+
 ## Fase 0 — Auditoria do repositório e baseline
 
 **Status: concluída em 2026-08-29.**

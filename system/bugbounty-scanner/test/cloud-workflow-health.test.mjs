@@ -1,0 +1,63 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  assessWorkflowRuns, checkCloudWorkflowHealth, parseGitHubRepository,
+} from '../cloud-workflow-health.mjs';
+
+const HOUR = 60 * 60 * 1000;
+const expectation = { file: 'workflow.yml', label: 'workflow', maxSuccessAgeMs: HOUR };
+
+test('parseGitHubRepository aceita env e remotes HTTPS/SSH sem inventar host', () => {
+  assert.equal(parseGitHubRepository('Genezera/ZeroToOne'), 'Genezera/ZeroToOne');
+  assert.equal(parseGitHubRepository('https://github.com/Genezera/ZeroToOne.git'), 'Genezera/ZeroToOne');
+  assert.equal(parseGitHubRepository('git@github.com:Genezera/ZeroToOne.git'), 'Genezera/ZeroToOne');
+  assert.equal(parseGitHubRepository('https://example.test/Genezera/ZeroToOne'), null);
+});
+
+test('assessWorkflowRuns aceita sucesso fresco e mostra execução nova em andamento', () => {
+  const now = Date.parse('2026-09-05T12:00:00Z');
+  const result = assessWorkflowRuns(expectation, [
+    { id: 2, status: 'in_progress', created_at: '2026-09-05T11:59:00Z' },
+    { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:45:00Z' },
+  ], { now });
+  assert.equal(result.ok, true);
+  assert.equal(result.status, 'running');
+  assert.equal(result.latestSuccess.id, 1);
+});
+
+test('assessWorkflowRuns falha fechado para último terminal falho ou sucesso velho', () => {
+  const now = Date.parse('2026-09-05T12:00:00Z');
+  const failed = assessWorkflowRuns(expectation, [
+    { id: 2, status: 'completed', conclusion: 'failure', updated_at: '2026-09-05T11:55:00Z' },
+    { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:45:00Z' },
+  ], { now });
+  assert.equal(failed.ok, false);
+  assert.match(failed.reasons.join(' '), /failure/);
+  const stale = assessWorkflowRuns(expectation, [
+    { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T10:00:00Z' },
+  ], { now });
+  assert.equal(stale.ok, false);
+  assert.match(stale.reasons.join(' '), /excedeu/);
+});
+
+test('checkCloudWorkflowHealth consulta cada workflow e agrega indisponibilidade', async () => {
+  const seen = [];
+  const fetchImpl = async (url) => {
+    seen.push(url);
+    if (url.includes('bad.yml')) return { ok: false, status: 503, json: async () => ({}) };
+    return {
+      ok: true,
+      json: async () => ({ workflow_runs: [
+        { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:45:00Z' },
+      ] }),
+    };
+  };
+  const result = await checkCloudWorkflowHealth({
+    repository: 'owner/repo', fetchImpl, now: Date.parse('2026-09-05T12:00:00Z'),
+    expectations: [expectation, { ...expectation, file: 'bad.yml', label: 'bad' }],
+  });
+  assert.equal(seen.length, 2);
+  assert.equal(result.ok, false);
+  assert.equal(result.checks[0].ok, true);
+  assert.equal(result.checks[1].status, 'unreachable');
+});
