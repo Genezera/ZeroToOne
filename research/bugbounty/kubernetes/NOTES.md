@@ -927,3 +927,66 @@ revisados: nenhuma evidência nova, nenhuma transição tentada,
 consistente com rodadas anteriores. Leitura profunda proativa desta
 rodada ficou em `kiwicom/k8s-vault-operator` (ver NOTES.md de
 Kiwi.com). Nenhum achado novo, nenhuma transição de estado.
+
+## Rodada 2026-09-05 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`research/bugbounty/program-policy.json`
+lido por inteiro antes de escolher qualquer alvo): `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`, escolha do usuário) e
+`Auth0 by Okta` (`blocked`, RoE proíbe scanner automatizado) confirmados
+bloqueados — nenhum repo desses três clonado/lido/aberto nesta rodada.
+`migrate-to-v2.mjs` + `list-pending` global = 34 candidatos, 100% fora
+de escopo: 30 em `Auth0 by Okta` e 4 em `Circle BBP`, ambos bloqueados.
+Nenhuma leitura feita neles, nenhuma transição tentada — pulados por
+inteiro, como a regra exige.
+
+Leitura profunda proativa em `kubernetes/cloud-provider-openstack`
+(`STATUS.md` marca como alvo ativo; só 2 arquivos de
+`pkg/identity/keystone/` tinham leitura prévia). Clone raso
+sparse-checkout (`pkg/identity`, `pkg/client`, `pkg/util/openstack`,
+`pkg/autohealing`, `docs`), descartado ao final. 3 arquivos escolhidos
+por julgamento próprio nos restantes de `pkg/identity/keystone/`
+(auth/token real, não regex):
+
+- `policy.go` (`newFromFile`) — só struct/loader de policy JSON via
+  `encoding/json`; matching real já vive em `authorizer.go` (revisado
+  em rodada anterior). Sem achado.
+- `token_getter.go` (`GetToken`) — `tls.Config{}` só ganha
+  `Certificates`/`RootCAs` quando `ClientCertPath`/`ClientCAPath` são
+  explicitamente passados; nenhum `InsecureSkipVerify` em lugar nenhum.
+  Sem achado.
+- `keystone.go` (`Auth.Run`/`Auth.Handler`/`Auth.authorizeToken`) —
+  o webhook HTTP sobe via `http.ListenAndServeTLS` sem
+  `tls.Config{ClientAuth: RequireAndVerifyClientCert}` (sem mTLS de
+  cliente), e `authorizeToken` (handler de `SubjectAccessReview`)
+  monta `k8suser.DefaultInfo` inteiramente a partir de
+  `spec.user`/`spec.group`/`spec.extra` do corpo JSON recebido, sem
+  validação adicional de quem enviou o request. Confirmado nos docs
+  oficiais do próprio projeto
+  (`docs/keystone-auth/using-keystone-webhook-authenticator-and-authorizer.md`):
+  o exemplo de `webhookconfig.yaml` recomendado usa
+  `insecure-skip-tls-verify: true` e a entrada `users: - name: webhook`
+  não tem `client-certificate`/`client-key` — nenhum dos dois lados se
+  autentica no exemplo oficial. Virou achado formal
+  (`ai_deep_read_finding`, id
+  `Kubernetes::kubernetes/cloud-provider-openstack::pkg/identity/keystone/keystone.go::Auth.authorizeToken::ai_deep_read_finding`)
+  e foi investigado com ceticismo: um atacante com só acesso de rede ao
+  Service consegue no máximo um oráculo de política via
+  `SubjectAccessReview` forjado (resposta `allowed:true/false` que só
+  importa se consumida pelo apiserver dentro do processamento de uma
+  requisição *real* já autenticada por ele mesmo — consultar o webhook
+  direto não injeta decisão na cadeia de autorização de outra sessão,
+  logo não há escalação de privilégio direta, só vazamento de baixa
+  severidade de política); para `TokenReview` ainda precisa de um token
+  Keystone real válido. Bypass completo exigiria posição de MITM na
+  rede do cluster, barra adicional não dada só por network-reach. Mesmo
+  trust model (webhook não autentica o chamador, responsabilidade do
+  operador proteger a rede) já fechado sem achado 2x antes para
+  admission webhooks equivalentes em `kubernetes/cloud-provider`
+  (`app/webhooks.go`/`options/webhook.go`, rodada 2026-09-04). Fechado
+  como `false_positive`: real e documentado, mas não é bug de código
+  reportável neste pipeline — é config de exemplo em doc + trust model
+  padrão da comunidade Kubernetes.
+
+`deep-read-log.json` atualizado (`kubernetes/cloud-provider-openstack`,
++3 entradas). `export-queue` rodado, commit/push ao final da rodada.
