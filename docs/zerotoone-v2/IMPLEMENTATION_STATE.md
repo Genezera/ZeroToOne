@@ -467,6 +467,13 @@ repositório — não contra o que "deveria" ter sido feito.
 
 ### O que a auditoria pediu e CONTINUA genuinamente pendente
 
+- **Operação 24/7 de descoberta de alvos** — concluída em 05/09/2026:
+  `bugbounty-target-discovery.yml` roda diariamente na nuvem em modo
+  `--metadata-only`, aplica política antes de consultar o GitHub e publica
+  os alvos promovidos para o scan de 6 horas e o monitor de 15 minutos.
+  Slither/OSV/Semgrep/CodeQL continuam no serviço local porque executar ou
+  compilar repositórios de terceiros requer a toolchain/sandbox controlada.
+
 - **6.4 Sandbox de execução isolado** — construído para a prova de regressão:
   container efêmero, usuário sem privilégio, rede bloqueada, root filesystem
   read-only, capabilities removidas e limites de CPU/RAM/PIDs. Continua

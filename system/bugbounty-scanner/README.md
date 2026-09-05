@@ -8,11 +8,13 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
 
 - GitHub Actions monitora o HEAD dos repositórios permitidos a cada 15
   minutos e dispara a varredura imediatamente quando observa mudança. A
-  varredura de segurança continua a cada 6 horas como rede de proteção e a
-  sincronização de outcomes da HackerOne roda a cada hora. Os três workflows
-  usam o mesmo grupo de concorrência,
+  descoberta/promoção de novos alvos roda diariamente na nuvem em modo
+  `--metadata-only`, sem executar código de terceiros; a varredura de
+  segurança continua a cada 6 horas como rede de proteção e a sincronização
+  de outcomes da HackerOne roda a cada hora. Os quatro workflows usam o mesmo grupo de concorrência,
   permissões mínimas explícitas e actions pinadas por SHA.
-- O serviço Windows coordena descoberta pesada, diagnóstico, heartbeat,
+- O serviço Windows coordena os analisadores pesados da descoberta,
+  diagnóstico, heartbeat,
   backoff e watchdog. Com `ZERO2ONE_CLOUD_PRIMARY=1`, scan e sync ficam
   delegados aos workflows para evitar dois writers concorrentes. O SQLite é uma materialized view local:
   cada job o hidrata de `queue.jsonl`/`submissions.jsonl`/ledger sem emitir

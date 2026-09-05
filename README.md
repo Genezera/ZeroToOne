@@ -38,9 +38,9 @@ deliberate human action; the automation never files a report by itself.
    after the fact.
 
 It runs in complementary roles: scheduled cloud workflows own the
-15-minute change monitor, six-hour safety scan and hourly HackerOne
-outcome sync, while the local
-Windows service owns heavier discovery, diagnostics and watchdog duties.
+15-minute change monitor, daily target discovery/promotion, six-hour
+safety scan and hourly HackerOne outcome sync, while the local Windows
+service owns heavier analyzer runs, diagnostics and watchdog duties.
 Both exchange the same version-controlled `queue.jsonl`, submissions and
 ledger; fail-closed Git preflight prevents a stale or dirty worker from
 silently overwriting shared state.

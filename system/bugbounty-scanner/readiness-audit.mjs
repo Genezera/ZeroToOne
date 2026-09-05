@@ -146,7 +146,7 @@ export function runReadinessAudit({
     checks.push(check('toolchain_and_integrations', false, 'critical', error.message));
   }
 
-  for (const workflow of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml']) {
+  for (const workflow of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml']) {
     try {
       const contract = workflowContract(path.join(repoRoot, '.github', 'workflows', workflow));
       checks.push(check(`workflow_${workflow}`, contract.ok, 'critical', contract.detail));

@@ -83,7 +83,7 @@ function loadJson(filePath, fallback = {}) {
   try { return JSON.parse(readFileSync(filePath, 'utf8')); } catch { return fallback; }
 }
 
-export async function runDiscovery() {
+export async function runDiscovery({ metadataOnly = false } = {}) {
   const preflightSync = pullLatest(REPO_ROOT, log);
   if (!preflightSync.ok) throw new Error(`preflight de sincronização bloqueou a descoberta: ${preflightSync.reason}`);
   migrateAll({ queuePath: QUEUE_PATH, dbPath: DB_PATH, writeLog: false, emitLedger: false });
@@ -213,6 +213,9 @@ export async function runDiscovery() {
   if (promotionResult.skipped.tooLarge.length > 0) {
     log(`Repos grandes demais pra promoção automática (curadoria de pathPrefix manual recomendada, ver ${PROMOTION_LOG_PATH}): ${promotionResult.skipped.tooLarge.map((r) => `${r.owner}/${r.repo}`).join(', ')}`);
   }
+  if (metadataOnly) {
+    log('Modo metadata-only: promoção/publicação continuam ativas; Slither, OSV, Semgrep e CodeQL ficam para a execução pesada local.');
+  }
 
   // Slither (github.com/crytic/slither, Trail of Bits) contra os alvos
   // Solidity curados -- gratuito, 100% local (pip install slither-analyzer,
@@ -229,7 +232,7 @@ export async function runDiscovery() {
   let slitherNewFindings = 0;
   let slitherReposOk = 0;
   let slitherReposFailed = 0;
-  {
+  if (!metadataOnly) {
     const db = openDb(DB_PATH);
     try {
       for (const target of freshSolidityTargets) {
@@ -281,7 +284,7 @@ export async function runDiscovery() {
   let osvNewFindings = 0;
   let osvReposOk = 0;
   let osvReposFailed = 0;
-  {
+  if (!metadataOnly) {
     const db = openDb(DB_PATH);
     try {
       for (const target of [...freshJsTargets, ...freshGoTargets, ...freshJvmTargets]) {
@@ -328,7 +331,7 @@ export async function runDiscovery() {
   let semgrepNewFindings = 0;
   let semgrepReposOk = 0;
   let semgrepReposFailed = 0;
-  {
+  if (!metadataOnly) {
     const db = openDb(DB_PATH);
     try {
       for (const target of [...freshJsTargets, ...freshGoTargets, ...freshJvmTargets]) {
@@ -371,8 +374,8 @@ export async function runDiscovery() {
   let codeqlReposOk = 0;
   let codeqlReposFailed = 0;
   let codeqlRotation = loadJson(CODEQL_ROTATION_PATH, {});
-  const codeqlTargets = selectTargetsForRotation(freshJsTargets, codeqlRotation, { limit: 1 });
-  {
+  const codeqlTargets = metadataOnly ? [] : selectTargetsForRotation(freshJsTargets, codeqlRotation, { limit: 1 });
+  if (!metadataOnly) {
     const db = openDb(DB_PATH);
     try {
       for (const target of codeqlTargets) {
@@ -406,13 +409,13 @@ export async function runDiscovery() {
       closeDb(db);
     }
   }
-  writeFileSync(CODEQL_ROTATION_PATH, `${JSON.stringify(codeqlRotation, null, 2)}\n`, 'utf8');
+  if (!metadataOnly) writeFileSync(CODEQL_ROTATION_PATH, `${JSON.stringify(codeqlRotation, null, 2)}\n`, 'utf8');
   log(`CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS analisado(s), ${codeqlReposFailed} falha(s), ${codeqlNewFindings} achado(s) novo(s).`);
 
   // Ferramentas pesadas gravam primeiro no SQLite para preservar o estado
   // existente. Publica a visão completa de volta na fila compartilhada;
   // sem isso, findings novos existiam apenas no .db local ignorado pelo Git.
-  {
+  if (!metadataOnly) {
     const exportDb = openDb(DB_PATH);
     try { exportFindingsToQueueJsonl(exportDb, QUEUE_PATH); }
     finally { closeDb(exportDb); }
@@ -438,7 +441,7 @@ export async function runDiscovery() {
       .sort((a, b) => new Date(b.newestProgramStartedAt) - new Date(a.newestProgramStartedAt))[0];
     await sendTelegramMessage(
       [
-        '🗓️ <b>ZeroToOne — descoberta semanal</b>',
+        `🗓️ <b>ZeroToOne — descoberta de alvos${metadataOnly ? ' (nuvem/metadata)' : ' + análise pesada'}</b>`,
         `${result.totalCandidatesInDatasets} candidato(s) com bounty no dataset; ${result.authorizedCandidatesInDatasets} autorizados e ${result.policyBlockedCandidates} excluídos pela política antes de consultar o GitHub.`,
         `${result.newCandidatesFound} candidato(s) autorizado(s) ainda não rastreado(s).`,
         `${result.discovered.length} receberam metadado nesta rodada${result.truncatedCount > 0 ? ` (${result.truncatedCount} ficaram pra semana que vem)` : ''}.`,
@@ -447,22 +450,32 @@ export async function runDiscovery() {
           ? `🚀 <b>${promotionResult.promoted.length} alvo(s) novo(s) promovido(s)</b> pra varredura ativa: ${promotionResult.promoted.map((p) => `${p.owner}/${p.repo} (${p.program})`).join(', ')}. Total agora: ${mergedAutoPromoted.length}.`
           : `Nenhum alvo novo promovido nesta rodada (${mergedAutoPromoted.length} ativo(s) no total).`,
         promotionResult.skipped.tooLarge.length > 0 ? `${promotionResult.skipped.tooLarge.length} repo(s) grande(s) demais pra promoção automática — revisão manual sugerida.` : null,
-        `🔬 Slither: ${slitherReposOk}/${freshSolidityTargets.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.`,
-        `📦 OSV-Scanner: ${osvReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.`,
-        `🕵️ Semgrep: ${semgrepReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.`,
-        `🧬 CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS da rotação analisado(s)${codeqlReposFailed > 0 ? ` (${codeqlReposFailed} com falha)` : ''}, ${codeqlNewFindings} achado(s) novo(s) de dataflow global com security-severity 7+.`,
+        metadataOnly ? 'Analisadores pesados delegados ao serviço local; nenhum código de terceiro foi executado neste job de nuvem.' : null,
+        !metadataOnly ? `🔬 Slither: ${slitherReposOk}/${freshSolidityTargets.length} repositório(s) Solidity analisado(s)${slitherReposFailed > 0 ? ` (${slitherReposFailed} com fricção de ambiente, ver log)` : ''}, ${slitherNewFindings} achado(s) novo(s) de impacto Medium+.` : null,
+        !metadataOnly ? `📦 OSV-Scanner: ${osvReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${osvReposFailed > 0 ? ` (${osvReposFailed} com falha, ver log)` : ''}, ${osvNewFindings} dependência(s) vulnerável(is) nova(s) de severidade 7.0+.` : null,
+        !metadataOnly ? `🕵️ Semgrep: ${semgrepReposOk}/${freshJsTargets.length + freshGoTargets.length + freshJvmTargets.length} repositório(s) JS/Go/JVM analisado(s)${semgrepReposFailed > 0 ? ` (${semgrepReposFailed} com falha, ver log)` : ''}, ${semgrepNewFindings} achado(s) novo(s) de severidade Warning+.` : null,
+        !metadataOnly ? `🧬 CodeQL: ${codeqlReposOk}/${codeqlTargets.length} repositório(s) JS/TS da rotação analisado(s)${codeqlReposFailed > 0 ? ` (${codeqlReposFailed} com falha)` : ''}, ${codeqlNewFindings} achado(s) novo(s) de dataflow global com security-severity 7+.` : null,
       ].filter(Boolean).join('\n')
     );
   } catch (err) {
     log(`Aviso: resumo semanal do Telegram falhou (não afeta a descoberta): ${err.message}`);
   }
 
-  return result;
+  return {
+    ...result,
+    metadataOnly,
+    analysis: {
+      slither: { reposOk: slitherReposOk, reposFailed: slitherReposFailed, newFindings: slitherNewFindings },
+      osv: { reposOk: osvReposOk, reposFailed: osvReposFailed, newFindings: osvNewFindings },
+      semgrep: { reposOk: semgrepReposOk, reposFailed: semgrepReposFailed, newFindings: semgrepNewFindings },
+      codeql: { reposOk: codeqlReposOk, reposFailed: codeqlReposFailed, newFindings: codeqlNewFindings },
+    },
+  };
 }
 
 const isMainModule = process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
 if (isMainModule) {
-  runDiscovery().catch((err) => {
+  runDiscovery({ metadataOnly: process.argv.includes('--metadata-only') }).catch((err) => {
     console.error('Erro fatal no discovery-runner:', err);
     process.exit(1);
   });
