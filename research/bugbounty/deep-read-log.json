@@ -824,7 +824,10 @@
     "packages/adapter-teams/src/webhook/continuation.ts (extractTeamsContinuation/extractTeamsUser/extractTeamsAttachments/isTeamsMention -- parsing puro de Activity ja verificada pelo Bot Framework em verify.ts; isTeamsMention e heuristica de UX, nao controle de acesso. Sem achado)",
     "packages/adapter-slack/src/webhook/parse.ts (parseSlackWebhookBody/classifyJsonPayload/classifyInteractionPayload/parseBlockActions/parseViewSubmission/parseViewValues -- roda so apos HMAC-SHA256+timingSafeEqual de verify.ts; sem poluicao de prototipo via Object.entries/spread sobre JSON do atacante (V8 trata __proto__ como propriedade propria nesse caso) e sem sink perigoso nos valores extraidos. Sem achado)",
     "packages/adapter-slack/src/webhook/utils.ts (helpers de parse.ts, sem achado)",
-    "packages/adapter-slack/src/webhook/index.ts (re-export trivial, sem achado)"
+    "packages/adapter-slack/src/webhook/index.ts (re-export trivial, sem achado)",
+    "packages/adapter-gchat/src/workspace-events.ts (decodePubSubMessage -- so decode, sem verificacao; JSDoc mostra exemplo inseguro de uso standalone sem checar Bearer/OIDC, mas caminho de producao real via GoogleChatAdapter.handleWebhook sempre verifica antes de chamar, e README documenta so esse caminho correto. Achado registrado e refutado como false_positive: falha de exemplo em JSDoc, nao vulnerabilidade no caminho padrao)",
+    "packages/create-chat-sdk/_template/src/app/api/webhooks/[platform]/route.ts (template de scaffold -- so delega bot.webhooks[platform] pro handler do adapter correspondente ja auditado; platform vindo de param de rota usado so como chave de lookup, sem sink perigoso mesmo com __proto__/constructor. Sem achado)",
+    "packages/adapter-teams/src/graph/client.ts (callTeamsGraphApi/paginateTeamsGraph -- getTrustedGraphUrl valida host contra allowlist TRUSTED_GRAPH_HOSTS antes de anexar o Bearer token, protege contra vazamento de token via nextLink potencialmente hostil. Sem achado)"
   ],
   "vercel/eve": [
     ".github/actions/vcr-login/lib.mjs (helper de mascaramento de output GHA + constantes; sem achado)",

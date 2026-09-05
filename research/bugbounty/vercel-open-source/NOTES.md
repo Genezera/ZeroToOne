@@ -8528,3 +8528,60 @@ com 26 arquivos cobertos (de 22). `Block Open Source`/`Circle BBP`
 seguem fora de escopo desta sessão por política local
 (`program-policy.json`, checado como passo zero). Clone temporário
 removido ao final.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via `check-program`,
+nenhum dos três tocado. `list-pending` global = 34, 100% fora do escopo
+desta missão (30 Auth0 by Okta, 4 Circle BBP), skip completo, nenhum
+arquivo desses programas lido.
+
+Nota operacional: ao tentar `git push` desta rodada, `origin/master` já
+estava um commit à frente (rodada paralela — `vercel/flags`, sem
+achado). `git checkout -B master origin/master` + `migrate-to-v2.mjs`
+pra sincronizar antes de reaplicar as edições desta rodada, sem
+sobrescrever nada da rodada paralela.
+
+Leitura profunda proativa direcionada a `vercel/chat` (8% coberto).
+Todos os 4 arquivos com nome batendo em auth/session/crypto/token/
+login/password/admin/permission/access já tinham sido lidos em rodadas
+anteriores; usei julgamento próprio pra achar superfície de auth ainda
+não coberta por nome de caminho. Lidos 3 arquivos:
+
+- `packages/adapter-gchat/src/workspace-events.ts` (completo, 321
+  linhas): `decodePubSubMessage()` só decodifica o payload base64 da
+  push message, sem nenhuma verificação de autenticação — e o JSDoc da
+  própria função mostra um exemplo de uso standalone (`const event =
+  decodePubSubMessage(body)` direto numa rota de webhook) sem checar
+  Bearer/OIDC antes. Investiguei o caminho real: `GoogleChatAdapter.
+  handleWebhook` (index.ts L894-969) é o único chamador real, e sempre
+  verifica o JWT (`verifyBearerToken` + `validatePubsubTokenPayload`,
+  L919-943 — checa `aud` E `email` do service account, fail-closed sem
+  config, com comentário do próprio autor sobre risco de bypass
+  cross-transport) antes de chamar `decodePubSubMessage`. O README.md
+  do pacote só documenta esse caminho via `handleWebhook` com
+  `pubsubAudience`/`pubsubServiceAccountEmail` configurados — nunca
+  instrui usar `decodePubSubMessage` isolado. Registrei o achado
+  (`ai_deep_read_finding`) e refutei como `false_positive`: é uma falha
+  de exemplo dentro de um JSDoc de código-fonte, não uma vulnerabilidade
+  no caminho de execução padrão (que é o mesmo padrão rigoroso de
+  fail-closed já visto no resto do `adapter-gchat`). Reasoning completo
+  no finding.
+- `packages/create-chat-sdk/_template/src/app/api/webhooks/[platform]/route.ts`:
+  template de scaffold, só delega `bot.webhooks[platform]` pro handler
+  do adapter correspondente (já auditado por adapter); `platform` vem
+  de param de rota usado só como chave de lookup, sem sink perigoso
+  mesmo com `__proto__`/`constructor` como valor. Sem achado.
+- `packages/adapter-teams/src/graph/client.ts`: `callTeamsGraphApi`/
+  `paginateTeamsGraph` — `getTrustedGraphUrl` valida o host contra
+  allowlist `TRUSTED_GRAPH_HOSTS` antes de anexar o Bearer token,
+  protegendo contra vazamento de token via `nextLink` potencialmente
+  hostil da própria resposta paginada do Graph. Sem achado.
+
+Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md` (sem
+contrato novo, 15 arquivos `.clar` seguem 100% do escopo).
+
+`deep-read-log.json` atualizado (`vercel/chat`: +3 entradas). Um achado
+registrado e já refutado (`false_positive`) nesta mesma rodada — sem
+transição pendente. Clone temporário removido ao final.
