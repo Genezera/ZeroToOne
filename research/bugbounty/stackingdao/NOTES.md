@@ -1307,3 +1307,17 @@ arquivo novo para ler neste programa -- leitura profunda proativa
 desta rodada foi direcionada a `vercel/vercel` e `nitrojs/nitro` (ver
 NOTES.md de Vercel Open Source). Nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-05 #2 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero. Mesmos 34 candidatos
+globais pendentes (30 Auth0 by Okta, 4 Circle BBP), ambos bloqueados —
+nenhum repo tocado. `api.hiro.so` reconfirmado bloqueado (`CONNECT
+tunnel failed, response 403`) — os 3 contratos `ststxbtc-*` seguem
+impossíveis de baixar, condição inalterada há dezenas de rodadas. Os
+15 contratos `.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo. Leitura
+profunda proativa desta rodada direcionada a `vercel/next.js` (ver
+NOTES.md de Vercel Open Source — bundle vendored `jsonwebtoken` e
+script de release da própria Vercel, sem achado). Nenhuma transição de
+estado neste programa.
