@@ -8410,3 +8410,57 @@ contrato novo, 15 arquivos `.clar` seguem 100% do escopo).
 Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/eve`: +3 entradas). Clone temporário removido ao
 final.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via `check-program`,
+nenhum dos três tocado. `list-pending` global = 34, 100% fora do escopo
+desta missão (30 Auth0 by Okta, 4 Circle BBP), skip completo.
+
+`list-deep-read-candidates.mjs` (via `env -u GITHUB_TOKEN`, mesmo
+contorno de rodadas anteriores) apontou `vercel/workflow` como o repo
+Vercel com menor cobertura absoluta ainda razoável (3%, 35 arquivos já
+lidos de 891 relevantes). Clone raso, grep por
+auth/session/crypto/token/login/password/admin/permission/access no
+caminho: só 2 arquivos batem (`packages/cli/src/lib/inspect/auth.ts`,
+`packages/web/app/components/display-utils/hook-token-cell.tsx`), ambos
+já lidos em rodadas anteriores. Sem candidato novo por nome de caminho,
+usei julgamento próprio: `packages/world-postgres/` (implementação
+Postgres do World, nunca tocada nesta missão) é a contraparte direta do
+`world-local` já investigado a fundo no achado
+`predictable_hook_token_seed_risk` — mesma superfície (armazenamento de
+hooks/tokens), backend diferente, prioridade óbvia.
+
+Lidos 3 arquivos:
+
+- `packages/world-postgres/src/drizzle/schema.ts` (completo, 307
+  linhas): tabela `workflow_hooks` tem colunas `ownerId`/`projectId`/
+  `environment`, mas nenhuma delas é usada nos lookups por hookId/token
+  em `storage.ts` (ver abaixo) — investiguei se seria um IDOR
+  cross-tenant. Mesma conclusão já fechada em rodada anterior para
+  `workflow-server-actions.server.ts`/`world-local`: o escopo de tenant
+  não é uma checagem de linha dentro deste backend OSS, é a instância
+  do `World` em si, criada por processo com credencial/token real da
+  Vercel (fora deste repositório). Consistente, não é achado novo.
+- `packages/world-postgres/src/config.ts` (completo, 28 linhas):
+  `PostgresWorldConfig` só aceita `connectionString`/`pool`/`namespace`
+  de configuração de deploy-time (env var ou construtor), nenhum input
+  vindo de requisição de usuário. Sem achado.
+- `packages/world-postgres/src/storage.ts` (2712 linhas — leitura
+  direcionada, não integral, às seções de hook/token: prepared
+  statement `getHookByToken` L763-776, ciclo `hook_created`/
+  `hook_conflict` L1808-1943, `hook_disposed`/`hook_received`
+  L1960-2067, `createHooksStorage`/`getByToken`/`get`/`list`
+  L2525-2602). Lookup por token é `eq()` parametrizado via Drizzle
+  (sem injeção); `get(hookId)` não filtra por `runId`/`ownerId`, mesmo
+  padrão do achado acima — não é um achado isolado novo, é a mesma
+  arquitetura já avaliada.
+
+Para StackingDAO: ver `research/bugbounty/stackingdao/NOTES.md` (sem
+contrato novo, `api.hiro.so` retestado e segue bloqueado, 15 arquivos
+`.clar` seguem 100% do escopo).
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/workflow`: +3 entradas, de 35 para 38). Clone
+temporário removido ao final.

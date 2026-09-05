@@ -268,5 +268,77 @@
     "stars": 901,
     "totalScannableFiles": null,
     "fetchedAt": "2026-09-04T04:41:22.905Z"
+  },
+  "kubernetes/cli-runtime": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:50.966Z",
+    "error": "HTTP 403 buscando metadado de kubernetes/cli-runtime"
+  },
+  "mattermost/mattermost-plugin-zoom": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.025Z",
+    "error": "HTTP 403 buscando metadado de mattermost/mattermost-plugin-zoom"
+  },
+  "kubernetes/csi-translation-lib": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.060Z",
+    "error": "HTTP 403 buscando metadado de kubernetes/csi-translation-lib"
+  },
+  "kubernetes/component-base": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.095Z",
+    "error": "HTTP 403 buscando metadado de kubernetes/component-base"
+  },
+  "mattermost/mattermost-plugin-gitlab": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.130Z",
+    "error": "HTTP 403 buscando metadado de mattermost/mattermost-plugin-gitlab"
+  },
+  "mattermost/mattermost-plugin-msteams": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.166Z",
+    "error": "HTTP 403 buscando metadado de mattermost/mattermost-plugin-msteams"
+  },
+  "mattermost/mattermost-plugin-github": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.202Z",
+    "error": "HTTP 403 buscando metadado de mattermost/mattermost-plugin-github"
+  },
+  "plaid/react-plaid-link": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.242Z",
+    "error": "HTTP 403 buscando metadado de plaid/react-plaid-link"
+  },
+  "kubernetes/cloud-provider": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.284Z",
+    "error": "HTTP 403 buscando metadado de kubernetes/cloud-provider"
+  },
+  "kiwicom/k8s-vault-operator": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.322Z",
+    "error": "HTTP 403 buscando metadado de kiwicom/k8s-vault-operator"
+  },
+  "kubernetes/publishing-bot": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.356Z",
+    "error": "HTTP 403 buscando metadado de kubernetes/publishing-bot"
+  },
+  "kubernetes/apiserver": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-05T20:43:51.390Z",
+    "error": "HTTP 403 buscando metadado de kubernetes/apiserver"
   }
 }

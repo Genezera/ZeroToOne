@@ -1427,3 +1427,21 @@ paralela).
 Leitura profunda proativa desta rodada direcionada a `vercel/eve` (ver
 NOTES.md de Vercel Open Source -- 3 arquivos novos, sem achado).
 Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero (`Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` bloqueados, nenhum tocado). `migrate-to-v2.mjs`
++ `list-pending` global = 34, 100% fora do escopo desta missão (30 Auth0
+by Okta, 4 Circle BBP) — confirmado via `check-program`, skip completo,
+nenhum arquivo desses dois programas lido. `api.hiro.so` retestado
+(`curl -v` direto via agent-proxy): mesmo `CONNECT tunnel failed,
+response 403`, condição inalterada há dezenas de rodadas — os 3
+contratos `ststxbtc-*` seguem impossíveis de baixar. Os 15 contratos
+`.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/workflow`
+(ver NOTES.md de Vercel Open Source — `world-postgres`, schema/config/
+storage de hooks, sem achado novo). Nenhuma transição de estado neste
+programa.
