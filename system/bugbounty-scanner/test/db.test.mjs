@@ -13,7 +13,7 @@ import {
   recordCodeAgeEvidence, latestCodeAgeEvidence,
   exportSubmissionsToJsonl, importSubmissionsFromJsonl,
   exportFindingsToQueueLines, closeDb, LEDGER_SCHEMA_VERSION,
-  withoutLedgerWrites,
+  withoutLedgerWrites, withoutSubmissionPersistence,
 } from '../db.mjs';
 import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
 
@@ -60,6 +60,20 @@ const SAMPLE = {
   state: 'candidate',
   reasoning: 'achado inicial do scanner, ainda não investigado',
 };
+
+test('withoutSubmissionPersistence mantém a gravação SQLite sem reescrever submissions.jsonl', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    withoutSubmissionPersistence(db, () => recordSubmission(db, {
+      platform: 'HackerOne', externalReportId: 'manual-hydration-test',
+      program: SAMPLE.program, state: 'duplicate', updatedAt: '2026-09-05T00:00:00Z',
+    }, [SAMPLE.id]));
+    assert.equal(listSubmissions(db).length, 1);
+    assert.equal(existsSync(path.join(path.dirname(dbPath), 'submissions.jsonl')), false);
+    closeDb(db);
+  });
+});
 
 test('upsertFinding grava e getFinding lê de volta com os mesmos campos', () => {
   withTempEnv((dbPath) => {

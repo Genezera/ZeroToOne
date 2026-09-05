@@ -12,6 +12,7 @@ import { GO_TARGETS } from './targets-go.mjs';
 import { JVM_TARGETS } from './targets-jvm.mjs';
 import { SWIFT_TARGETS } from './targets-swift.mjs';
 import { SOLIDITY_TARGETS } from './targets-solidity.mjs';
+import { loadOperationProfile } from './operation-profile.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DEFAULT_REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -78,6 +79,7 @@ export function runReadinessAudit({
   git = (args) => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8', stdio: 'pipe' }),
   targetPrograms = DEFAULT_TARGET_PROGRAMS,
   now = Date.now(),
+  profile = loadOperationProfile(),
 } = {}) {
   const checks = [];
   const queuePath = path.join(repoRoot, 'research', 'bugbounty', 'queue.jsonl');
@@ -138,9 +140,13 @@ export function runReadinessAudit({
   }
 
   try {
-    const toolchain = doctor();
+    const toolchain = doctor(profile.local.requiredForOperation
+      ? {}
+      : { requiredTools: ['node', 'git'], requiredIntegrations: [] });
     checks.push(check('toolchain_and_integrations', toolchain.ok, 'critical', toolchain.ok
-      ? `${Object.keys(toolchain.tools || {}).length} ferramenta(s), integrações configuradas`
+      ? profile.local.requiredForOperation
+        ? `${Object.keys(toolchain.tools || {}).length} ferramenta(s), integrações configuradas`
+        : `núcleo cloud/manual disponível; runtime local não é obrigatório (${(toolchain.unavailableTools || []).join(', ') || 'todas as ferramentas locais disponíveis'})`
       : `faltando: ${[...(toolchain.failedTools || []), ...(toolchain.missingIntegrations || [])].join(', ')}`));
   } catch (error) {
     checks.push(check('toolchain_and_integrations', false, 'critical', error.message));
@@ -175,6 +181,7 @@ export function runReadinessAudit({
     checkedAt: new Date().toISOString(),
     summary: { checks: checks.length, criticalFailures: criticalFailures.length, warnings: warnings.length, limitations: limitations.length },
     checks,
+    operationProfile: profile,
   };
 }
 

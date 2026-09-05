@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
@@ -10,7 +10,7 @@ import {
   recordDuplicateCheck, latestDuplicateCheck, recordImpactAssessment, latestImpactAssessment,
   listSubmissions,
 } from '../db.mjs';
-import { migrateEntry } from '../migrate-to-v2.mjs';
+import { migrateAll, migrateEntry } from '../migrate-to-v2.mjs';
 import { buildScopeSnapshot } from '../scope-registry.mjs';
 import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
 import { deriveStatesFromLedger } from '../state-machine.mjs';
@@ -51,6 +51,32 @@ const CIRCLE_SNAPSHOT = buildScopeSnapshot({
   rawSourceContent: 'fixture',
   confidence: 'medium',
   assets: [{ assetIdentifier: 'https://github.com/circlefin/evm-gateway-contracts', eligibleForBounty: true, eligibleForSubmission: true }],
+});
+
+test('migrateAll em modo hydrate reconstrói SQLite sem modificar submissions.jsonl compartilhado', () => {
+  withTempEnv((dbPath) => {
+    const dir = path.dirname(dbPath);
+    const queuePath = path.join(dir, 'queue.jsonl');
+    const submissionsPath = path.join(dir, 'submissions.jsonl');
+    writeFileSync(queuePath, `${JSON.stringify({
+      id: 'x::hydrate-no-persist', program: 'Vercel Open Source', platform: 'HackerOne',
+      type: 'ssrf_risk', language: 'js', file: 'vercel/flags/x.ts', state: 'candidate',
+      reasoning: 'fixture de hidratação',
+      platformOutcome: {
+        platform: 'HackerOne', externalReportId: 'hydrate-900', state: 'duplicate',
+        updatedAt: '2026-09-05T00:00:00Z',
+      },
+    })}\n`, 'utf8');
+    writeFileSync(submissionsPath, '', 'utf8');
+
+    migrateAll({ queuePath, dbPath, writeLog: false, ledgerEnv: 'research', emitLedger: false });
+
+    assert.equal(readFileSync(submissionsPath, 'utf8'), '');
+    const db = openDb(dbPath);
+    assert.equal(listSubmissions(db).length, 1);
+    assert.equal(listSubmissions(db)[0].externalReportId, 'hydrate-900');
+    closeDb(db);
+  });
 });
 
 test('migrateEntry: falso_positivo v1 vira false_positive v2 via transição real', () => {

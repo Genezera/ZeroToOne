@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "primaryRuntime": "github_actions",
+  "cloudSchedulesRequired": true,
+  "local": {
+    "automaticStart": false,
+    "requiredForOperation": false,
+    "mode": "manual_only"
+  }
+}

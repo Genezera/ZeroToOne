@@ -7,12 +7,14 @@ import { runReadinessAudit } from './readiness-audit.mjs';
 import { checkCloudWorkflowHealth } from './cloud-workflow-health.mjs';
 import { loadRuntimeState, summarizeRuntimeHealth } from './runtime-state.mjs';
 import { DEFAULT_RUNTIME_STATE_PATH } from './service-runner.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
+import { loadOperationProfile } from './operation-profile.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_DB_PATH = path.join(REPO_ROOT, 'research', 'bugbounty', 'zerotoone.db');
 
-export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts = {}, outcomeStats = {} }) {
+export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts = {}, outcomeStats = {}, profile = loadOperationProfile() }) {
   const attention = [];
   for (const item of readiness.checks || []) {
     if (!item.ok && item.severity !== 'limitation') attention.push(`audit:${item.name}: ${item.detail}`);
@@ -20,15 +22,20 @@ export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, c
   for (const item of cloud.checks || []) {
     if (!item.ok) attention.push(`cloud:${item.label}: ${item.reasons.join('; ')}`);
   }
-  for (const reason of runtimeHealth.reasons || []) attention.push(`local:${reason}`);
-  const operational = readiness.fullyOperational === true && cloud.ok === true && runtimeHealth.healthy === true;
+  if (profile.local.requiredForOperation) {
+    for (const reason of runtimeHealth.reasons || []) attention.push(`local:${reason}`);
+  }
+  const operational = readiness.fullyOperational === true && cloud.ok === true
+    && (!profile.local.requiredForOperation || runtimeHealth.healthy === true);
   return {
     operational,
     checkedAt: new Date().toISOString(),
     components: {
       repositoryAndPolicy: readiness.fullyOperational === true,
       cloudWorkflows: cloud.ok === true,
-      localService: runtimeHealth.healthy === true,
+      localService: profile.local.requiredForOperation ? runtimeHealth.healthy === true : true,
+      localServiceRequired: profile.local.requiredForOperation,
+      localServiceObservedHealthy: runtimeHealth.healthy === true,
     },
     pipeline: {
       stateCounts: counts,
@@ -46,15 +53,24 @@ export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, c
     readiness,
     cloud,
     runtime: runtimeHealth,
+    operationProfile: profile,
   };
 }
 
 export async function runMissionControl({
   dbPath = DEFAULT_DB_PATH,
   runtimeStatePath = DEFAULT_RUNTIME_STATE_PATH,
-  readiness = runReadinessAudit(),
-  cloudPromise = checkCloudWorkflowHealth(),
+  readiness = null,
+  cloudPromise = null,
+  profile = loadOperationProfile(),
+  hydrate = migrateAll,
 } = {}) {
+  hydrate({
+    queuePath: path.join(REPO_ROOT, 'research', 'bugbounty', 'queue.jsonl'),
+    dbPath, writeLog: false, emitLedger: false,
+  });
+  readiness ||= runReadinessAudit({ profile });
+  cloudPromise ||= checkCloudWorkflowHealth();
   const cloud = await cloudPromise;
   const runtimeHealth = summarizeRuntimeHealth(loadRuntimeState(runtimeStatePath));
   let counts = {};
@@ -67,7 +83,7 @@ export async function runMissionControl({
       outcomeStats = computeStatsFromSubmissions(submissions);
     } finally { closeDb(db); }
   }
-  return buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts, outcomeStats });
+  return buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts, outcomeStats, profile });
 }
 
 const isMain = process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);

@@ -221,6 +221,17 @@ CREATE INDEX IF NOT EXISTS idx_submission_findings_finding ON submission_finding
 const DB_PATHS = new WeakMap();
 const IMPORTING_SUBMISSIONS = new WeakSet();
 
+/** Rebuilding the local materialized view may call recordPlatformOutcome,
+ * which links submissions. Keep those SQLite writes while suppressing the
+ * shared submissions.jsonl rewrite during hydration. */
+export function withoutSubmissionPersistence(db, fn) {
+  const alreadySuppressed = IMPORTING_SUBMISSIONS.has(db);
+  IMPORTING_SUBMISSIONS.add(db);
+  try { return fn(); } finally {
+    if (!alreadySuppressed) IMPORTING_SUBMISSIONS.delete(db);
+  }
+}
+
 function ensureColumn(db, table, column, definition) {
   const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((row) => row.name);
   if (!columns.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);

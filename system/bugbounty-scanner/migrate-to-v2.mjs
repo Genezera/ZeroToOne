@@ -8,7 +8,7 @@ import {
   recordSubmission, latestSubmissionForFinding,
   recordCodeAgeEvidence, latestCodeAgeEvidence,
   importSubmissionsFromJsonl,
-  withoutLedgerWrites,
+  withoutLedgerWrites, withoutSubmissionPersistence,
 } from './db.mjs';
 import { loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { readLedger } from '../ledger/ledger.mjs';
@@ -342,7 +342,7 @@ export function migrateAll({ queuePath = QUEUE_PATH, dbPath = DB_PATH, writeLog 
     importSubmissionsFromJsonl(db, path.join(path.dirname(dbPath), path.basename(SUBMISSIONS_PATH)));
     return restored;
   };
-  const logs = emitLedger ? restore() : withoutLedgerWrites(restore);
+  const logs = emitLedger ? restore() : withoutLedgerWrites(() => withoutSubmissionPersistence(db, restore));
   closeDb(db);
 
   const driftCount = logs.filter((l) => l.steps.some((s) => s.reason && s.reason.startsWith('DRIFT CORRIGIDO'))).length;

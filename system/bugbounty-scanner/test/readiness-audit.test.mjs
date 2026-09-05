@@ -52,6 +52,41 @@ test('readiness audit consolida invariantes e mantém reports privados como limi
   assert.equal(result.summary.limitations, 1);
 });
 
+test('readiness cloud-primary passa ao doctor somente os requisitos realmente obrigatórios', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'zto-readiness-cloud-primary-'));
+  mkdirSync(path.join(root, 'research', 'bugbounty'), { recursive: true });
+  mkdirSync(path.join(root, '.github', 'workflows'), { recursive: true });
+  writeFileSync(path.join(root, 'research', 'bugbounty', 'queue.jsonl'), '', 'utf8');
+  writeFileSync(path.join(root, 'research', 'bugbounty', 'program-policy.json'), '{}', 'utf8');
+  const db = openDb(path.join(root, 'research', 'bugbounty', 'zerotoone.db'));
+  closeDb(db);
+  const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';
+  for (const name of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml']) {
+    writeFileSync(path.join(root, '.github', 'workflows', name), workflow, 'utf8');
+  }
+  let requirements;
+  const result = runReadinessAudit({
+    repoRoot: root,
+    profile: {
+      primaryRuntime: 'github_actions', cloudSchedulesRequired: true,
+      local: { automaticStart: false, requiredForOperation: false, mode: 'manual_only' },
+    },
+    doctor: (options) => {
+      requirements = options;
+      return {
+        ok: true, tools: { node: {}, git: {}, docker_engine: {} },
+        failedTools: [], missingIntegrations: [], unavailableTools: ['docker_engine'],
+      };
+    },
+    verifyLedger: () => ({ valid: true, entries: 0 }),
+    git: () => '',
+    targetPrograms: [],
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(requirements, { requiredTools: ['node', 'git'], requiredIntegrations: [] });
+  assert.match(result.checks.find((item) => item.name === 'toolchain_and_integrations').detail, /runtime local não é obrigatório/);
+});
+
 test('readiness audit bloqueia uma liberação de pesquisa com revisão de RoE expirada', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'zto-readiness-expired-'));
   mkdirSync(path.join(root, 'research', 'bugbounty'), { recursive: true });

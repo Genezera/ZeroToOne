@@ -16,7 +16,12 @@ function executable(candidates) {
     || candidates.filter(Boolean)[0];
 }
 
-export function runToolchainDoctor({ spawn = spawnSync, env = process.env } = {}) {
+export function runToolchainDoctor({
+  spawn = spawnSync,
+  env = process.env,
+  requiredTools = ['node', 'git', 'semgrep', 'osv_scanner', 'slither', 'forge', 'docker_engine', 'codeql'],
+  requiredIntegrations = ['githubTokenConfigured', 'hackerOneConfigured', 'telegramConfigured'],
+} = {}) {
   const semgrep = executable([env.SEMGREP_EXE, 'E:\\dev-toolchains\\venv-security\\Scripts\\semgrep.exe', 'semgrep']);
   const osv = executable([env.OSV_SCANNER_EXE, 'E:\\dev-toolchains\\go\\bin\\osv-scanner.exe', 'osv-scanner']);
   const docker = findDockerExecutable({ env });
@@ -49,8 +54,15 @@ export function runToolchainDoctor({ spawn = spawnSync, env = process.env } = {}
     hackerOneConfigured: !!(env.HACKERONE_USERNAME && env.HACKERONE_API_TOKEN),
     telegramConfigured: !!(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID),
   };
-  const failedTools = Object.entries(tools).filter(([, value]) => !value.ok).map(([name]) => name);
-  const missingIntegrations = Object.entries(integrations).filter(([, value]) => !value).map(([name]) => name);
+  const unknownTools = requiredTools.filter((name) => !Object.hasOwn(tools, name));
+  const unknownIntegrations = requiredIntegrations.filter((name) => !Object.hasOwn(integrations, name));
+  if (unknownTools.length || unknownIntegrations.length) {
+    throw new Error(`requisito de doctor desconhecido: ${[...unknownTools, ...unknownIntegrations].join(', ')}`);
+  }
+  const unavailableTools = Object.entries(tools).filter(([, value]) => !value.ok).map(([name]) => name);
+  const unavailableIntegrations = Object.entries(integrations).filter(([, value]) => !value).map(([name]) => name);
+  const failedTools = requiredTools.filter((name) => !tools[name].ok);
+  const missingIntegrations = requiredIntegrations.filter((name) => !integrations[name]);
   return {
     ok: failedTools.length === 0 && missingIntegrations.length === 0,
     checkedAt: new Date().toISOString(),
@@ -58,6 +70,9 @@ export function runToolchainDoctor({ spawn = spawnSync, env = process.env } = {}
     integrations,
     failedTools,
     missingIntegrations,
+    unavailableTools,
+    unavailableIntegrations,
+    requirements: { tools: requiredTools, integrations: requiredIntegrations },
   };
 }
 

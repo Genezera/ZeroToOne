@@ -41,3 +41,21 @@ test('doctor falha fechado e nomeia ferramenta e integração ausentes', () => {
   assert.deepEqual(result.failedTools, ['forge']);
   assert.deepEqual(result.missingIntegrations, ['hackerOneConfigured']);
 });
+
+test('doctor cloud-primary exige apenas núcleo portável e ainda observa ferramentas locais opcionais', () => {
+  const result = runToolchainDoctor({
+    env: {},
+    requiredTools: ['node', 'git'],
+    requiredIntegrations: [],
+    spawn: (command) => ['forge', 'docker'].some((name) => String(command).toLowerCase().includes(name))
+      ? { status: 1, stdout: '', stderr: 'indisponível' }
+      : { status: 0, stdout: 'v1\n', stderr: '' },
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.failedTools, []);
+  assert.deepEqual(result.missingIntegrations, []);
+  assert.deepEqual(result.requirements, { tools: ['node', 'git'], integrations: [] });
+  assert.ok(result.unavailableTools.includes('forge'));
+  assert.ok(result.unavailableTools.includes('docker_engine'));
+  assert.ok(result.unavailableIntegrations.includes('hackerOneConfigured'));
+});

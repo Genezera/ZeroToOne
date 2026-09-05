@@ -449,22 +449,24 @@ o checkout sujo e não criam commit vazio. Inclusão ou remoção de alvo atuali
 e publica o baseline, mas não é tratada como vulnerabilidade nem como mudança
 de código pré-existente.
 
-`install-service-tasks.ps1` instala duas tarefas independentes no Windows:
+O perfil operacional versionado em `operation-profile.json` define GitHub
+Actions como runtime primário e o computador local como `manual_only`.
+Portanto nenhum componente deste projeto pode registrar gatilho de boot,
+logon, relógio, wake ou catch-up no Windows. Docker Desktop também não é
+requisito do serviço cloud; pode ser aberto manualmente somente quando uma
+reprodução local realmente precisar dele.
 
-- `ZeroToOne_BugBountyService`, ciclo a cada 5 minutos: sincroniza outcomes
-  do HackerOne a cada hora, roda um doctor do toolchain a cada 24 horas,
-  scan a cada 6 horas e discovery a cada 24 horas. Jobs pesados nunca se
-  sobrepõem e um lease impede duas instâncias.
-- `ZeroToOne_BugBountyWatchdog`, a cada 10 minutos: lê o heartbeat por outra
-  entrada do Task Scheduler e alerta via Telegram somente quando o estado
-  muda para indisponível ou volta a saudável.
+As quatro rotinas contínuas vivem na nuvem: monitor de mudanças a cada 15
+minutos, sincronização de reports a cada hora, scan estático a cada 6 horas
+e discovery diário. A indisponibilidade do computador local não degrada o
+estado operacional. O arquivo `logs/bugbounty-runtime-state.json` continua
+existindo como observação de execuções manuais, não como heartbeat exigido.
 
-O estado é escrito atomicamente em `logs/bugbounty-runtime-state.json`;
-falhas usam backoff exponencial, ficam no ledger e provocam alerta. As
-tarefas reiniciam até três vezes, recuperam execução perdida, aceitam
-bateria, podem acordar o computador e são disparadas novamente no logon.
-Os logs giram em 10 MiB (`.log` e `.log.1`). As tarefas diárias antigas são
-apenas desabilitadas para evitar execução dupla, não apagadas. Estado atual:
+O script de compatibilidade `install-service-tasks.ps1` não instala mais
+tarefas. Ele materializa a base local, desabilita tarefas antigas e, somente
+com a opção explícita `-RunOnce`, executa um ciclo local único. O teste
+`local-autostart-contract.test.mjs` falha se registro, início ou trigger de
+tarefa voltar ao instalador.
 
 Inicialização usa `scheduleAnchorAt`; `lastSuccessAt` só é preenchido depois
 de uma execução real. Estados antigos são migrados automaticamente para não
@@ -476,26 +478,25 @@ node system/bugbounty-scanner/cli.mjs doctor
 node system/bugbounty-scanner/cli.mjs mission-control
 ```
 
-`mission-control` é a visão end-to-end: cruza auditoria do repositório e da
-política, execução real dos quatro workflows cloud, heartbeat local, contagem
-dos estados do pipeline e outcomes de submissão. Cada workflow tem tolerância
+`mission-control` é a visão end-to-end: primeiro reconstrói a visão SQLite a
+partir do estado compartilhado e então cruza auditoria do repositório e da
+política, execução real dos quatro workflows cloud, contagem dos estados do
+pipeline e outcomes de submissão. A saúde local é apenas observada. Cada
+workflow tem tolerância
 maior que sua cadência nominal (1h monitor, 4h sync, 18h scan, 48h discovery)
 para absorver jitter do scheduler sem esconder falha. Última execução terminal
 falha, ausência de sucesso ou sucesso velho tornam o componente `unhealthy` e
 o comando sai diferente de zero.
 
-Instalação/reinstalação idempotente:
+Preparação local idempotente, sem criar autostart:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File system/bugbounty-scanner/install-service-tasks.ps1
+# ciclo local único, somente quando solicitado:
+powershell -NoProfile -ExecutionPolicy Bypass -File system/bugbounty-scanner/install-service-tasks.ps1 -RunOnce
+# remove definições antigas de tarefas automáticas e desliga o autostart do Docker Desktop:
+powershell -NoProfile -ExecutionPolicy Bypass -File system/bugbounty-scanner/disable-local-autostart.ps1 -DisableDockerDesktop -RemoveTaskDefinitions
 ```
-
-As tarefas usam o usuário interativo atual para preservar acesso seguro às
-credenciais do usuário e à chave Git; portanto executam continuamente
-enquanto essa sessão estiver logada. Rodar deslogado exigiria armazenar uma
-senha no Task Scheduler ou migrar segredos/SSH para uma conta de serviço —
-isso não é feito automaticamente porque aumentaria materialmente a
-superfície de exposição.
 
 ## Prova de conceito executável (Solidity, via Foundry fork local)
 Diferente de só ler código, o agente de nuvem agora escreve e RODA um
