@@ -8730,3 +8730,49 @@ coberta por nome. Lidos 3 arquivos:
 achado novo nesta rodada, nenhuma transição de estado. `StackingDAO`:
 ver NOTES.md do programa — sem contrato novo, 15 `.clar` seguem 100%
 do escopo. Clone temporário removido ao final.
+
+## Rodada 05/09/2026 (push 44152c8, sessão paralela)
+
+`list-pending` trouxe 34 candidatos, mas todos pertenciam a dois
+programas bloqueados (`Circle BBP` e `Auth0 by Okta` -- este último
+agora também presente na fila, confirmado bloqueado em
+`program-policy.json` por proibição de scanner automatizado + IA sem
+revisão humana). Nenhum arquivo desses dois programas foi clonado ou
+lido -- `check-program` rodado para ambos antes de qualquer decisão,
+como manda o CLAUDE.md.
+
+Leitura profunda proativa em `vercel-labs/skills` (repo já com 20
+arquivos lidos em rodadas anteriores). Antes de escolher, cloneei
+`vercel/vercel`, `vercel/turborepo`, `vercel/next.js` e
+`vercel-labs/skills` e comparei os candidatos por palavra-chave
+(auth/session/crypto/token/login/password/admin/permission/access)
+contra `deep-read-log.json` -- praticamente toda a superfície óbvia por
+nome já havia sido lida em rodadas passadas (115 arquivos em
+vercel/vercel, 39 em next.js, 33 em turborepo). Optei por julgamento de
+especialista em vez de regex: `vercel-labs/skills` é um instalador de
+"skills" (baixa/extrai/escreve pacotes de terceiro em disco), então a
+classe de risco relevante é path-traversal/RCE na instalação, não só
+nome de arquivo com "auth" no path -- mesmo padrão que motivou achados
+`sem achado` anteriores em `wellknown.ts`/`remove.ts` deste repo.
+
+- `src/add.ts` (2230 linhas, completo) -- orquestração de UI/CLI do
+  comando `skills add`; nenhuma operação de fs própria (sem
+  writeFile/mkdir/symlink direto no arquivo), toda escrita real delega
+  pra `installer.ts`/`blob.ts`, já auditados como "completo" em rodada
+  anterior. Sem achado.
+- `src/update-source.ts` (completo) -- só monta strings de source pra
+  re-parsear via `parseSource` (já auditado); `supportsAppendedSubpath`
+  restringe concatenação de subpath a `github.com`/`gitlab.com`
+  explicitamente antes de permitir montar URL, sem brecha de host
+  arbitrário. Sem achado.
+- `src/frontmatter.ts` (completo) -- usa `parseYaml` do pacote `yaml`
+  (não `gray-matter`); comentário no próprio código documenta decisão
+  deliberada de não suportar bloco ```---js``` para evitar RCE via
+  `eval()` que `gray-matter` teria. `yaml.parse` não executa código nem
+  tem prototype pollution conhecida por padrão. Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado. `program-policy.json` consultado como step zero antes de
+qualquer clone/leitura, conforme regra do CLAUDE.md. Esta rodada
+coincidiu com outra sessão em paralelo sobre o mesmo push (`vercel/chat`,
+commit `6ca37b4`) -- sem sobreposição de arquivos lidos entre elas.

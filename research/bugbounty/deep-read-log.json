@@ -725,6 +725,9 @@
     "skills/vercel-optimize/references/scoring.md"
   ],
   "vercel-labs/skills": [
+    "src/add.ts (runAdd/handleWellKnownSkills -- toda a superficie de UI/orquenstracao de instalacao interativa; nenhuma operacao de fs propria (sem writeFile/mkdir/symlink direto), toda escrita real delega para installer.ts/blob.ts ja auditados como 'completo' em rodada anterior. Sem achado)",
+    "src/update-source.ts (buildUpdateInstallSource/buildLocalUpdateSource/appendFolderAndRef -- so monta strings de source pra reparsear via parseSource ja auditado (source-parser.ts); supportsAppendedSubpath restringe concatenacao de subpath a github.com/gitlab.com explicitamente, sem injecao de host. Sem achado)",
+    "src/frontmatter.ts (parseFrontmatter -- usa parseYaml do pacote 'yaml' (nao gray-matter), comentario no proprio codigo documenta decisao deliberada de nao suportar bloco ---js pra evitar RCE via eval() que gray-matter teria; yaml.parse nao executa codigo nem tem prototype pollution conhecido por padrao. Sem achado)",
     "src/github-host.ts",
     "src/skill-lock.ts",
     "src/blob.ts",
