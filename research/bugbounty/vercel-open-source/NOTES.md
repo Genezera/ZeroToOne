@@ -8083,3 +8083,41 @@ Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
 atualizado (`vercel/next.js`: +3 entradas, de 36 para 39). Clones
 temporários (`/tmp/vercel-scan`, `/tmp/nextjs-scan`) removidos ao
 final.
+
+## Rodada 2026-09-05 #4 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero -- confirmado `Block Open
+Source`, `Circle BBP` e `Auth0 by Okta` bloqueados; nenhum repo desses
+três tocado, nem para priorização. `list-pending` global segue com os
+mesmos 34 candidatos fora do escopo desta missão (30 "Auth0 by Okta", 4
+"Circle BBP"). Para StackingDAO: os 15 arquivos `.clar` seguem 100%
+cobertos, `api.hiro.so` não retestado nesta rodada (mesmo bloqueio de
+proxy documentado há dezenas de rodadas).
+
+Leitura profunda proativa direcionada a `vercel/workflow`, seguindo o
+fio de tokens de hook (`hook-token-cell.tsx`, novo desde a última
+rodada que tocou este repo). Investiguei com ceticismo genuíno uma
+hipótese de IDOR: `fetchHookToken(worldEnv, runId, hookId)` em
+`workflow-server-actions.server.ts` recebe `runId` mas nunca o usa pra
+escopar a busca -- só repassa `hookId` pra `world.hooks.get(hookId)`.
+Rastreei a cadeia completa até `api.rpc.tsx` (endpoint `/api/rpc`, sem
+middleware de sessão visível neste arquivo, `worldEnv` vem direto do
+body do POST) e `getWorldFromEnv`, que confirma que pra `isVercelWorld`
+o `userEnvMap` (client-provided) pode sobrescrever
+`WORKFLOW_VERCEL_AUTH_TOKEN`/`PROJECT`/`TEAM` -- comentário explícito
+no código sobre isso ser "multi-tenant" e instanciado "per-user".
+Refutei a hipótese de achado reportável: o docstring da própria função
+diz "The @workflow/web UI should always pass {} for envMap", e
+confirmei em `rpc-client.ts`/`workflow-actions.ts` que o cliente
+shipado nunca preenche esses campos com credencial real (só cai no
+fallback `process.env` do servidor). Para ser explorável, um atacante
+já precisaria ter um `WORKFLOW_VERCEL_AUTH_TOKEN` válido de outra
+vítima -- nesse caso o app só reencaminha pra API real da Vercel
+(fora deste repo OSS), sem evidência de elevação de privilégio nova.
+Chain teórica, não verificável sem conta real na Vercel (proibido) nem
+acesso ao código proprietário que emite esse token em produção --
+consistente com a política do programa, que rejeita SAST isolado e
+chains teóricas sem PoC funcional. Sem achado confirmável.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`vercel/workflow`: +4 entradas, de 31 para 35).

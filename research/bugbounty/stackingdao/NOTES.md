@@ -1321,3 +1321,15 @@ profunda proativa desta rodada direcionada a `vercel/next.js` (ver
 NOTES.md de Vercel Open Source — bundle vendored `jsonwebtoken` e
 script de release da própria Vercel, sem achado). Nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-05 #4 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero (`Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` bloqueados, nenhum tocado). Os 15
+arquivos `.clar` já cobertos seguem sendo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo; `api.hiro.so`
+não retestado nesta rodada (mesmo bloqueio de proxy de dezenas de
+rodadas, condição inalterada). Sem arquivo novo para ler neste
+programa -- leitura profunda proativa direcionada a `vercel/workflow`
+(hipótese de IDOR em `fetchHookToken`, refutada; ver NOTES.md de
+Vercel Open Source). Nenhuma transição de estado neste programa.
