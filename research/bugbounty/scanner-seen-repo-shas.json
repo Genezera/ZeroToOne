@@ -4593,7 +4593,7 @@
     "pkg/util/openstack/security_group.go": "caee66697fd96485f5ec753fcc3c2c5b98be6c60",
     "pkg/util/util.go": "32ee15648ae503a74b6d7df839d0f3b5a66865dc",
     "pkg/version/version.go": "0278ad2a340fb42b949c381a6b4a4634a2d46118",
-    "go.mod": "94774e6f1161e71e18a6545004c2ac1db8c5c2bd"
+    "go.mod": "cff23f5dd1521aa918718b30df5b5844494a74e9"
   },
   "kubernetes/code-generator": {
     "cmd/applyconfiguration-gen/args/args.go": "487b936e6f364c8359d52d9f1b7e9b044456c097",
