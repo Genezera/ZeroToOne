@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-05T05:40:36.013Z",
+  "checkedAt": "2026-09-05T06:07:26.891Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -15,6 +15,21 @@
       ],
       "languages": [
         "js"
+      ]
+    },
+    "kiwicom/k8s-vault-operator": {
+      "sha": "69834d44e50ebf714a59779d1a0bc9e19394f398",
+      "branch": "main",
+      "parentSha": "f1caa39e801aa7e1da6ce1c6f65a4239c5b775e8",
+      "committedAt": "2026-07-15T12:24:42Z",
+      "url": "https://github.com/kiwicom/k8s-vault-operator/commit/69834d44e50ebf714a59779d1a0bc9e19394f398",
+      "title": "Merge pull request #24 from kiwicom/uros/fix-sa-cache-key-collision",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kiwi.com"
+      ],
+      "languages": [
+        "go"
       ]
     },
     "kiwicom/navigation-compose-typed": {
@@ -42,21 +57,6 @@
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
         "Kubernetes"
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "kiwicom/k8s-vault-operator": {
-      "sha": "69834d44e50ebf714a59779d1a0bc9e19394f398",
-      "branch": "main",
-      "parentSha": "f1caa39e801aa7e1da6ce1c6f65a4239c5b775e8",
-      "committedAt": "2026-07-15T12:24:42Z",
-      "url": "https://github.com/kiwicom/k8s-vault-operator/commit/69834d44e50ebf714a59779d1a0bc9e19394f398",
-      "title": "Merge pull request #24 from kiwicom/uros/fix-sa-cache-key-collision",
-      "observedAt": "2026-09-05T05:40:36.013Z",
-      "programs": [
-        "Kiwi.com"
       ],
       "languages": [
         "go"
@@ -137,21 +137,6 @@
         "go"
       ]
     },
-    "kubernetes/cri-api": {
-      "sha": "b47fc37312c54caef1a68c8b4ac8e07158331a82",
-      "branch": "master",
-      "parentSha": "5055fee1b0f18bda2a82055a7933ba6cf0e40cdf",
-      "committedAt": "2026-09-04T19:00:43Z",
-      "url": "https://github.com/kubernetes/cri-api/commit/b47fc37312c54caef1a68c8b4ac8e07158331a82",
-      "title": "Merge pull request #141663 from liggitt/go127",
-      "observedAt": "2026-09-05T05:40:36.013Z",
-      "programs": [
-        "Kubernetes"
-      ],
-      "languages": [
-        "go"
-      ]
-    },
     "kubernetes/code-generator": {
       "sha": "6392f11dc417da72c71ea9d9c2bc939756717c1e",
       "branch": "master",
@@ -182,13 +167,13 @@
         "go"
       ]
     },
-    "kubernetes/gengo": {
-      "sha": "25e2208e0dc371a827289e7faced19a2dbcd480b",
+    "kubernetes/cri-api": {
+      "sha": "b47fc37312c54caef1a68c8b4ac8e07158331a82",
       "branch": "master",
-      "parentSha": "5ee0d033ba5bcb073f0e69c32057520b82d75ccb",
-      "committedAt": "2026-04-08T19:25:33Z",
-      "url": "https://github.com/kubernetes/gengo/commit/25e2208e0dc371a827289e7faced19a2dbcd480b",
-      "title": "Merge pull request #317 from aramase/aramase/f/fix_generators_inline",
+      "parentSha": "5055fee1b0f18bda2a82055a7933ba6cf0e40cdf",
+      "committedAt": "2026-09-04T19:00:43Z",
+      "url": "https://github.com/kubernetes/cri-api/commit/b47fc37312c54caef1a68c8b4ac8e07158331a82",
+      "title": "Merge pull request #141663 from liggitt/go127",
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
         "Kubernetes"
@@ -212,13 +197,13 @@
         "go"
       ]
     },
-    "kubernetes/kube-controller-manager": {
-      "sha": "2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
+    "kubernetes/gengo": {
+      "sha": "25e2208e0dc371a827289e7faced19a2dbcd480b",
       "branch": "master",
-      "parentSha": "637f66d233bf2878e90dbb1d3c0c418235558993",
-      "committedAt": "2026-09-04T23:14:08Z",
-      "url": "https://github.com/kubernetes/kube-controller-manager/commit/2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "parentSha": "5ee0d033ba5bcb073f0e69c32057520b82d75ccb",
+      "committedAt": "2026-04-08T19:25:33Z",
+      "url": "https://github.com/kubernetes/gengo/commit/25e2208e0dc371a827289e7faced19a2dbcd480b",
+      "title": "Merge pull request #317 from aramase/aramase/f/fix_generators_inline",
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
         "Kubernetes"
@@ -242,12 +227,12 @@
         "go"
       ]
     },
-    "kubernetes/kube-scheduler": {
-      "sha": "68103b98628a5795e4eca33c91b31e00350702f9",
+    "kubernetes/kube-controller-manager": {
+      "sha": "2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
       "branch": "master",
-      "parentSha": "58fdf6521ac2b8abdd1c12601d898e41881cc92e",
-      "committedAt": "2026-09-04T23:32:46Z",
-      "url": "https://github.com/kubernetes/kube-scheduler/commit/68103b98628a5795e4eca33c91b31e00350702f9",
+      "parentSha": "637f66d233bf2878e90dbb1d3c0c418235558993",
+      "committedAt": "2026-09-04T23:14:08Z",
+      "url": "https://github.com/kubernetes/kube-controller-manager/commit/2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
       "title": "Merge pull request #141664 from liggitt/smd-json-v2",
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
@@ -278,6 +263,21 @@
       "parentSha": "c9e2ee3d2d678f0c611a78b6b491a0538150564a",
       "committedAt": "2026-09-04T22:57:55Z",
       "url": "https://github.com/kubernetes/kube-proxy/commit/e61739d3d987a5c0e9ad75ba48b9361fb489927e",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "kubernetes/kube-scheduler": {
+      "sha": "68103b98628a5795e4eca33c91b31e00350702f9",
+      "branch": "master",
+      "parentSha": "58fdf6521ac2b8abdd1c12601d898e41881cc92e",
+      "committedAt": "2026-09-04T23:32:46Z",
+      "url": "https://github.com/kubernetes/kube-scheduler/commit/68103b98628a5795e4eca33c91b31e00350702f9",
       "title": "Merge pull request #141664 from liggitt/smd-json-v2",
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
@@ -347,13 +347,13 @@
         "go"
       ]
     },
-    "kubernetes/sample-controller": {
-      "sha": "b18bc997d6c9af668569cf663caa3cb5fe89b09f",
+    "kubernetes/publishing-bot": {
+      "sha": "0d28d64800e40abb56d6579adfd13cd35447835f",
       "branch": "master",
-      "parentSha": "085f00d4dc31e7f30db8df4df8310274025b6711",
-      "committedAt": "2026-09-04T22:42:19Z",
-      "url": "https://github.com/kubernetes/sample-controller/commit/b18bc997d6c9af668569cf663caa3cb5fe89b09f",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
+      "parentSha": "9a7ad4025d710c95c9be38afc5cc7e60439e869b",
+      "committedAt": "2026-08-17T20:37:04Z",
+      "url": "https://github.com/kubernetes/publishing-bot/commit/0d28d64800e40abb56d6579adfd13cd35447835f",
+      "title": "Merge pull request #569 from kubernetes/dependabot/go_modules/golang.org/x/mod-0.40.0",
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
         "Kubernetes"
@@ -377,13 +377,13 @@
         "go"
       ]
     },
-    "kubernetes/publishing-bot": {
-      "sha": "0d28d64800e40abb56d6579adfd13cd35447835f",
+    "kubernetes/sample-controller": {
+      "sha": "b18bc997d6c9af668569cf663caa3cb5fe89b09f",
       "branch": "master",
-      "parentSha": "9a7ad4025d710c95c9be38afc5cc7e60439e869b",
-      "committedAt": "2026-08-17T20:37:04Z",
-      "url": "https://github.com/kubernetes/publishing-bot/commit/0d28d64800e40abb56d6579adfd13cd35447835f",
-      "title": "Merge pull request #569 from kubernetes/dependabot/go_modules/golang.org/x/mod-0.40.0",
+      "parentSha": "085f00d4dc31e7f30db8df4df8310274025b6711",
+      "committedAt": "2026-09-04T22:42:19Z",
+      "url": "https://github.com/kubernetes/sample-controller/commit/b18bc997d6c9af668569cf663caa3cb5fe89b09f",
+      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
         "Kubernetes"
@@ -402,6 +402,21 @@
       "observedAt": "2026-09-05T05:40:36.013Z",
       "programs": [
         "Kubernetes"
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "mattermost/mattermost-plugin-confluence": {
+      "sha": "aeb4448f0327bf7863377f561eba4de2e8657647",
+      "branch": "master",
+      "parentSha": "43abbda27b4ee1c1c65d2a9d9621a6d0d41d5b7b",
+      "committedAt": "2026-08-28T06:07:40Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-confluence/commit/aeb4448f0327bf7863377f561eba4de2e8657647",
+      "title": "Let connected non-admins manage channel subscriptions on Confluence  (#232)",
+      "observedAt": "2026-09-05T06:07:26.891Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
       ],
       "languages": [
         "go"
@@ -452,19 +467,49 @@
         "go"
       ]
     },
-    "plaid/plaid-link-android": {
-      "sha": "faf726465080e723066507dba5e942f754c5215f",
+    "mattermost/mattermost-plugin-mscalendar": {
+      "sha": "a8aecdb6e2450a066562ed671810f68b5db6f4d4",
       "branch": "master",
-      "parentSha": "fbd1e691c9787389b2bb0118ed51587850e20f05",
-      "committedAt": "2026-08-17T16:52:08Z",
-      "url": "https://github.com/plaid/plaid-link-android/commit/faf726465080e723066507dba5e942f754c5215f",
-      "title": "upgrade to 6.2.1 (#346)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "a720894d5e154bd700046042f2941050f4c7325d",
+      "committedAt": "2026-09-03T09:19:16Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/a8aecdb6e2450a066562ed671810f68b5db6f4d4",
+      "title": "Bump fast-uri from 3.1.5 to 3.1.7 in /webapp (#541)",
+      "observedAt": "2026-09-05T06:07:26.891Z",
       "programs": [
-        "Plaid"
+        "Mattermost Public Bug Bounty Engagement "
       ],
       "languages": [
-        "jvm"
+        "go"
+      ]
+    },
+    "mattermost/mattermost-plugin-msteams": {
+      "sha": "d9ad4dd7030b052bf0fecce0e15a78cd08621975",
+      "branch": "main",
+      "parentSha": "6fe4d295592ecc8767d67e69286cbeec01be3210",
+      "committedAt": "2026-03-04T05:49:27Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-msteams/commit/d9ad4dd7030b052bf0fecce0e15a78cd08621975",
+      "title": "Remove golang-version parameter from CI workflow (#896)",
+      "observedAt": "2026-09-05T06:07:26.891Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
+      ],
+      "languages": [
+        "go"
+      ]
+    },
+    "mattermost/mattermost-plugin-msteams-meetings": {
+      "sha": "dba66a9c8e14ade8b2bbf6f66187a2f52b8b6c84",
+      "branch": "master",
+      "parentSha": "64c1602ad739b520a1f3ab7bde1c9f234f9e0d7c",
+      "committedAt": "2026-09-01T11:01:47Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-msteams-meetings/commit/dba66a9c8e14ade8b2bbf6f66187a2f52b8b6c84",
+      "title": "Bump github.com/stretchr/testify from 1.10.0 to 1.12.1 (#179)",
+      "observedAt": "2026-09-05T06:07:26.891Z",
+      "programs": [
+        "Mattermost Public Bug Bounty Engagement "
+      ],
+      "languages": [
+        "go"
       ]
     },
     "mattermost/mattermost-plugin-zoom": {
@@ -495,6 +540,21 @@
       ],
       "languages": [
         "go"
+      ]
+    },
+    "plaid/plaid-link-android": {
+      "sha": "faf726465080e723066507dba5e942f754c5215f",
+      "branch": "master",
+      "parentSha": "fbd1e691c9787389b2bb0118ed51587850e20f05",
+      "committedAt": "2026-08-17T16:52:08Z",
+      "url": "https://github.com/plaid/plaid-link-android/commit/faf726465080e723066507dba5e942f754c5215f",
+      "title": "upgrade to 6.2.1 (#346)",
+      "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Plaid"
+      ],
+      "languages": [
+        "jvm"
       ]
     },
     "plaid/react-plaid-link": {
@@ -557,6 +617,21 @@
         "js"
       ]
     },
+    "vercel/chat": {
+      "sha": "85a37c896f86611c23b024afc8325183e6f1ec99",
+      "branch": "main",
+      "parentSha": "31bce0a7a087917030b5fa335566d2e8d3dc3328",
+      "committedAt": "2026-09-05T06:06:47Z",
+      "url": "https://github.com/vercel/chat/commit/85a37c896f86611c23b024afc8325183e6f1ec99",
+      "title": "chore(release): version packages (#878)",
+      "observedAt": "2026-09-05T06:07:26.891Z",
+      "programs": [
+        "Vercel Open Source"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
     "vercel/flags": {
       "sha": "c9d28116ebca661f4e3c73f301d4b2d35310c823",
       "branch": "main",
@@ -565,6 +640,21 @@
       "url": "https://github.com/vercel/flags/commit/c9d28116ebca661f4e3c73f301d4b2d35310c823",
       "title": "Experiments (#486)",
       "observedAt": "2026-09-05T05:40:36.013Z",
+      "programs": [
+        "Vercel Open Source"
+      ],
+      "languages": [
+        "js"
+      ]
+    },
+    "vercel/swr": {
+      "sha": "01cb4888a1abc96b279fbf771c084b46c575bf53",
+      "branch": "main",
+      "parentSha": "7173e55b2a175dee455612c5fa067383345c392f",
+      "committedAt": "2026-09-02T18:01:19Z",
+      "url": "https://github.com/vercel/swr/commit/01cb4888a1abc96b279fbf771c084b46c575bf53",
+      "title": "[ci] add prevent deployment config (#4326)",
+      "observedAt": "2026-09-05T06:07:26.891Z",
       "programs": [
         "Vercel Open Source"
       ],
