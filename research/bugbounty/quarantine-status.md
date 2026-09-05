@@ -2,7 +2,7 @@
 
 Gerado automaticamente por `quarantine.mjs` a cada rodada do scanner. Não editar à mão.
 
-22 candidato(s) suprimido(s) nesta rodada por regra quarentenada.
+37 candidato(s) suprimido(s) nesta rodada por regra quarentenada.
 
 | Tipo | Linguagem | Revisados | Falso-positivo | Taxa FP |
 |---|---|---|---|---|

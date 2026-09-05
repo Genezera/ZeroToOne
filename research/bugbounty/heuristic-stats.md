@@ -10,7 +10,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 4 | 2 | 1 | 1 | 25% |
+| ai_deep_read_finding | go | 5 | 3 | 1 | 1 | 20% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | rust | 3 | 2 | 1 | 0 | 33% |
@@ -27,7 +27,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | known_vulnerable_dependency | js | 223 | 0 | 223 | 0 | 100% |
 | known_vulnerable_dependency | jvm | 4 | 0 | 4 | 0 | 100% |
 | known_vulnerable_dependency | unknown | 2 | 0 | 2 | 0 | 100% |
-| non_constant_time_hmac_comparison | go | 1 | 1 | 0 | 0 | 0% |
+| non_constant_time_hmac_comparison | go | 2 | 2 | 0 | 0 | 0% |
 | path_traversal_arbitrary_file_read_risk | javascript | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | go | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | js | 2 | 0 | 2 | 0 | 100% |
@@ -70,7 +70,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 |---|---|---|---|---|---|---|
 | ai_deep_read_finding | Block Open Source | 6 | 1 | 3 | 2 | 50% |
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
-| ai_deep_read_finding | OKG | 4 | 1 | 0 | 3 | 0% |
+| ai_deep_read_finding | OKG | 5 | 2 | 0 | 3 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 5 | 2 | 2 | 1 | 40% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
@@ -88,6 +88,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | known_vulnerable_dependency | Plaid | 48 | 0 | 48 | 0 | 100% |
 | known_vulnerable_dependency | Vercel Open Source | 82 | 0 | 82 | 0 | 100% |
 | non_constant_time_hmac_comparison | Kubernetes | 1 | 1 | 0 | 0 | 0% |
+| non_constant_time_hmac_comparison | Mattermost Public Bug Bounty Engagement  | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_arbitrary_file_read_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | Kubernetes | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |

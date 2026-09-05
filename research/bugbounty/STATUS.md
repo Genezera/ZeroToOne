@@ -1,16 +1,12 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-05T04:32:54.081Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-05T10:39:02.250Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
 | clarity | StackingDAO | Immunefi | 13 contrato(s) |
-| js | Vercel Open Source | HackerOne | vercel/flags |
-| js | Vercel Open Source | HackerOne | vercel/vercel |
-| js | Vercel Open Source | HackerOne | vercel-labs/agent-skills |
-| js | Vercel Open Source | HackerOne | vercel-labs/skills |
 | js | Plaid | HackerOne | plaid/react-plaid-link |
 | js | Kiwi.com | HackerOne | kiwicom/js-iam-middleware |
 | js | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-gitlab |
@@ -44,13 +40,17 @@ Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não
 | go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-zoom |
 | go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-github |
 | go | Slack | HackerOne | slackhq/nebula |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-mscalendar |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-msteams-meetings |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-confluence |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-msteams |
 | jvm | Kiwi.com | HackerOne | kiwicom/navigation-compose-typed |
 | jvm | Plaid | HackerOne | plaid/plaid-link-android |
 
 ## Fila de bug bounty
 
-- Pendentes (aguardando o agente de nuvem): **34**
-- Já revisados: 757
+- Pendentes (aguardando o agente de nuvem): **38**
+- Já revisados: 759
 
 ### Últimos vereditos
 

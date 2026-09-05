@@ -756,5 +756,7 @@
   "Kubernetes::kubernetes/publishing-bot/cmd/publishing-bot/config/rules.go::line:127::insecure_tls": "confirmado",
   "Kubernetes::kubernetes/publishing-bot/cmd/sync-tags/gomod.go::line:218::path_traversal_risk": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding": "confirmado",
-  "Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk": "falso_positivo"
+  "Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/webhook.go::handleWebhook::non_constant_time_hmac_comparison": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/helium/keypair/address.go::NewAddressable::ai_deep_read_finding": "confirmado"
 }
