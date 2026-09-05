@@ -1,217 +1,144 @@
 {
-  "generatedAt": "2026-09-05T05:47:17.538Z",
+  "generatedAt": "2026-09-05T05:58:04.513Z",
   "totalActiveAutoPromoted": 43,
-  "promotedThisRound": [
-    {
-      "program": "Mattermost Public Bug Bounty Engagement ",
-      "platform": "Bugcrowd",
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-mscalendar",
-      "branch": "master",
-      "maxBountyUsd": 2000,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 12,
-      "reasons": [
-        "teto de recompensa conhecido: US$2,000",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-05T05:47:17.500Z"
-    },
-    {
-      "program": "Mattermost Public Bug Bounty Engagement ",
-      "platform": "Bugcrowd",
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-msteams-meetings",
-      "branch": "master",
-      "maxBountyUsd": 2000,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 12,
-      "reasons": [
-        "teto de recompensa conhecido: US$2,000",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-05T05:47:17.500Z"
-    },
-    {
-      "program": "Mattermost Public Bug Bounty Engagement ",
-      "platform": "Bugcrowd",
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-confluence",
-      "branch": "master",
-      "maxBountyUsd": 2000,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 12,
-      "reasons": [
-        "teto de recompensa conhecido: US$2,000",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa"
-      ],
-      "promotedAt": "2026-09-05T05:47:17.500Z"
-    },
-    {
-      "program": "Vercel Open Source",
-      "platform": "HackerOne",
-      "owner": "vercel",
-      "repo": "chat",
-      "branch": "main",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "js",
-      "score": 4,
-      "reasons": [
-        "2342 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa",
-        "histórico real neste programa: 2/2 envio(s) voltou(aram) duplicate (100%) -- prioridade reduzida, não eliminada"
-      ],
-      "promotedAt": "2026-09-05T05:47:17.500Z"
-    },
-    {
-      "program": "Vercel Open Source",
-      "platform": "HackerOne",
-      "owner": "vercel",
-      "repo": "swr",
-      "branch": "main",
-      "maxBountyUsd": null,
-      "pathPrefixes": [],
-      "language": "js",
-      "score": 4,
-      "reasons": [
-        "32476 estrelas no GitHub — indício de uso real, não projeto de brinquedo",
-        "atividade recente (push nos últimos 90 dias) — código em manutenção ativa",
-        "histórico real neste programa: 2/2 envio(s) voltou(aram) duplicate (100%) -- prioridade reduzida, não eliminada"
-      ],
-      "promotedAt": "2026-09-05T05:47:17.500Z"
-    },
-    {
-      "program": "Mattermost Public Bug Bounty Engagement ",
-      "platform": "Bugcrowd",
-      "owner": "mattermost",
-      "repo": "mattermost-plugin-msteams",
-      "branch": "main",
-      "maxBountyUsd": 2000,
-      "pathPrefixes": [],
-      "language": "go",
-      "score": 2,
-      "reasons": [
-        "teto de recompensa conhecido: US$2,000"
-      ],
-      "promotedAt": "2026-09-05T05:47:17.500Z"
-    }
-  ],
+  "promotedThisRound": [],
   "skippedThisRound": {
     "blockedProgram": [],
     "unsupportedLanguage": [
       {
-        "owner": "vercel",
-        "repo": "turborepo",
-        "githubLanguage": "Rust"
+        "owner": "kubernetes",
+        "repo": "examples",
+        "githubLanguage": "Shell"
       },
       {
         "owner": "kubernetes",
-        "repo": "community",
-        "githubLanguage": "Jupyter Notebook"
+        "repo": "git-sync",
+        "githubLanguage": "Shell"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "k8s.io",
+        "githubLanguage": "HCL"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "kubernetes-template-project",
+        "githubLanguage": null
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "repo-infra",
+        "githubLanguage": "Starlark"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "security",
+        "githubLanguage": "Shell"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "sig-release",
+        "githubLanguage": "Shell"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "steering",
+        "githubLanguage": null
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "website",
+        "githubLanguage": "HTML"
+      },
+      {
+        "owner": "kiwicom",
+        "repo": "kiwi-cache",
+        "githubLanguage": "Python"
       }
     ],
     "tooLarge": [
       {
-        "owner": "mattermost",
-        "repo": "mattermost-plugin-ai",
-        "sizeKb": 67559
-      },
-      {
-        "owner": "nitrojs",
-        "repo": "nitro",
-        "sizeKb": 27046
-      },
-      {
-        "owner": "nuxt",
-        "repo": "nuxt",
-        "sizeKb": 149597
-      },
-      {
-        "owner": "sveltejs",
-        "repo": "svelte",
-        "sizeKb": 122439
-      },
-      {
-        "owner": "vercel",
-        "repo": "ai",
-        "sizeKb": 376065
-      },
-      {
-        "owner": "vercel",
-        "repo": "eve",
-        "sizeKb": 59109
-      },
-      {
-        "owner": "vercel",
-        "repo": "next.js",
-        "sizeKb": 2552277
-      },
-      {
-        "owner": "vercel",
-        "repo": "workflow",
-        "sizeKb": 92606
+        "owner": "kubernetes",
+        "repo": "dns",
+        "sizeKb": 51712
       },
       {
         "owner": "kubernetes",
-        "repo": "api",
-        "sizeKb": 84639
+        "repo": "enhancements",
+        "sizeKb": 59125
       },
       {
         "owner": "kubernetes",
-        "repo": "apiextensions-apiserver",
-        "sizeKb": 29403
+        "repo": "kompose",
+        "sizeKb": 45218
       },
       {
         "owner": "kubernetes",
-        "repo": "apiserver",
-        "sizeKb": 30261
+        "repo": "kops",
+        "sizeKb": 502129
       },
       {
         "owner": "kubernetes",
-        "repo": "autoscaler",
-        "sizeKb": 267906
+        "repo": "kube-aggregator",
+        "sizeKb": 24876
       },
       {
         "owner": "kubernetes",
-        "repo": "client-go",
-        "sizeKb": 32320
+        "repo": "kube-state-metrics",
+        "sizeKb": 26116
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-alibaba-cloud",
-        "sizeKb": 103761
+        "repo": "kubectl",
+        "sizeKb": 43743
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-azure",
-        "sizeKb": 148741
+        "repo": "kubernetes",
+        "sizeKb": 1516900
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-gcp",
-        "sizeKb": 190740
+        "repo": "minikube",
+        "sizeKb": 303745
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-vsphere",
-        "sizeKb": 78815
+        "repo": "node-problem-detector",
+        "sizeKb": 37437
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "perf-tests",
+        "sizeKb": 116664
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "release",
+        "sizeKb": 23317
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "sample-apiserver",
+        "sizeKb": 23976
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "test-infra",
+        "sizeKb": 262239
       }
     ],
     "metadataFetchFailed": [],
     "insufficientSignal": [
       {
-        "owner": "vercel",
-        "repo": "async-sema",
-        "score": -6
+        "owner": "kubernetes",
+        "repo": "legacy-cloud-providers",
+        "score": 0
       },
       {
-        "owner": "vercel",
-        "repo": "ms",
-        "score": -6
+        "owner": "kubernetes",
+        "repo": "node-api",
+        "score": 0
       }
     ],
     "alreadyPromoted": 0,
