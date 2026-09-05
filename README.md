@@ -23,7 +23,10 @@ deliberate human action; the automation never files a report by itself.
    of exactly the repositories whose HEAD changed. Programs with at least
    two submissions and an 80%+ duplicate rate are excluded from routine
    historical scans, but remain monitored and are re-enabled automatically
-   for a fresh commit. Raw findings are noisy by design at this stage.
+   for a fresh commit. Delta findings carry the observed base/new commit and
+   use a commit-versioned identity, so a past false positive in the same
+   function cannot hide a real regression. Raw findings are noisy by design
+   at this stage.
 3. **Corroborate** — every candidate finding gets a manual code-reading
    pass tracing the actual call chain end to end, then, wherever
    feasible, a real, executed proof of concept — a local reproduction,

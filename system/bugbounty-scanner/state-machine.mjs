@@ -43,6 +43,12 @@ function fail(reason) {
   return { ok: false, reason };
 }
 
+function repositoryKey(value) {
+  const normalized = String(value || '').replace(/\\/g, '/').replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '');
+  const parts = normalized.split('/').filter(Boolean);
+  return parts.length >= 2 ? `${parts[0]}/${parts[1]}`.toLowerCase() : normalized.toLowerCase();
+}
+
 export function submissionReadinessGate(finding, ctx = {}) {
   const blockReason = getBlockReason(finding.program, ctx.programPolicy || {});
   if (blockReason) return fail(`programa "${finding.program}" está bloqueado para envio: ${blockReason}`);
@@ -72,6 +78,14 @@ export function submissionReadinessGate(finding, ctx = {}) {
     now: ctx.now ? new Date(ctx.now).getTime() : Date.now(),
   });
   if (!duplicate.ok) return fail(duplicate.reason);
+  const changeContext = finding.changeContext || finding.raw?.changeContext || null;
+  if (changeContext?.introducedCommit
+    && String(changeContext.introducedCommit).toLowerCase() !== ctx.duplicateCheck.noveltyProof.introducedCommit.toLowerCase()) {
+    return fail('noveltyProof precisa comprovar o mesmo commit que originou o finding no change monitor');
+  }
+  if (changeContext?.repository && repositoryKey(deployment.repo) !== repositoryKey(changeContext.repository)) {
+    return fail('DeploymentEvidence.repo precisa ser o mesmo repositório observado pelo change monitor');
+  }
   if (deployment.commit_sha.toLowerCase() !== ctx.duplicateCheck.noveltyProof.introducedCommit.toLowerCase()) {
     return fail('DeploymentEvidence.commit_sha precisa ser o mesmo commit introdutor comprovado no noveltyProof');
   }

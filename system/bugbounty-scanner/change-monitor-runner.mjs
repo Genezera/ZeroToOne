@@ -22,13 +22,18 @@ function loadJson(filePath, fallback) {
   try { return JSON.parse(readFileSync(filePath, 'utf8')); } catch { return fallback; }
 }
 
+export function buildDeltaScanEnvironment(changes = [], baseEnv = process.env) {
+  return {
+    ...baseEnv,
+    ZERO2ONE_CHANGED_REPOSITORIES: JSON.stringify(changes.map((change) => change.repository)),
+    ZERO2ONE_CHANGE_CONTEXT: JSON.stringify(changes),
+  };
+}
+
 function defaultScan(changes = []) {
   return spawnSync(process.execPath, [path.join(__dirname, 'scan-runner.mjs')], {
     cwd: REPO_ROOT,
-    env: {
-      ...process.env,
-      ZERO2ONE_CHANGED_REPOSITORIES: JSON.stringify(changes.map((change) => change.repository)),
-    },
+    env: buildDeltaScanEnvironment(changes),
     encoding: 'utf8', windowsHide: true,
     timeout: 90 * 60 * 1000, maxBuffer: 16 * 1024 * 1024,
   });

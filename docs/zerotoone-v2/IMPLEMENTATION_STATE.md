@@ -25,6 +25,14 @@ commit, ativo explicitamente bounty-eligible, impacto Medium+ e aprovação
 humana. Reports privados seguem invisíveis; portanto nenhuma implementação
 pode garantir risco zero de duplicate.
 
+O contexto completo de cada mudança (`previousSha`, `introducedCommit`,
+`parentCommit`, branch e timestamps) atravessa monitor → scanner → finding →
+relatório. A identidade do alerta delta inclui o commit, evitando que o cache
+histórico suprima uma regressão nova na mesma função/tipo de um falso positivo
+antigo. Na saída, o gate exige que noveltyProof, E4 e deployment correspondam
+ao mesmo commit e repositório do monitor; a observação do HEAD nunca é tratada
+como prova de vulnerabilidade por si só.
+
 O `mission-control.mjs` fecha a lacuna entre “workflow bem configurado” e
 “workflow realmente executando”: consulta as execuções reais das quatro
 automações no GitHub, valida sucesso e idade contra tolerâncias explícitas,

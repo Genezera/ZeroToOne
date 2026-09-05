@@ -188,6 +188,21 @@ test('renderReportDraft inclui controles e disclosure exigidos pela policy do pr
   assert.match(md, /revisou independentemente o código/);
 });
 
+test('renderReportDraft mostra proveniência do delta sem chamá-la de prova', () => {
+  const md = renderReportDraft({
+    finding: { ...SAMPLE, changeContext: {
+      repository: 'acme/api', previousSha: 'a'.repeat(40), introducedCommit: 'b'.repeat(40),
+      parentCommit: 'a'.repeat(40), detectedAt: '2026-09-05T12:00:00Z',
+    } },
+    passingValidation: null, deploymentEvidence: null, duplicateCheck: null,
+    impactAssessment: null, officialUrl: null, policyEntry: null,
+  });
+  assert.match(md, /Proveniência da mudança monitorada/);
+  assert.match(md, new RegExp('b'.repeat(40)));
+  assert.match(md, /não prova sozinho/);
+  assert.match(md, /noveltyProof E4/);
+});
+
 test('generateReport escreve o arquivo em disco e registra via recordReport', () => {
   withTempEnv((dbPath, reportsDir) => {
     const db = openDb(dbPath);

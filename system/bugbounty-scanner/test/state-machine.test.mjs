@@ -238,6 +238,34 @@ test('scope_verified -> human_ready exige E4 end-to-end e deployment do mesmo co
   assert.match(mismatchedDeploy.reason, /mesmo commit introdutor/);
 });
 
+test('finding originado pelo monitor exige prova e deploy do mesmo delta', () => {
+  const monitored = finding('scope_verified', { changeContext: {
+    repository: 'acme/api', previousSha: PARENT, introducedCommit: INTRODUCED,
+  } });
+  assert.equal(transition(monitored, 'human_ready', readyContext()).ok, true);
+  const wrongProof = {
+    ...REGRESSION_PROOF,
+    introducedCommit: 'c'.repeat(40),
+    candidate: { ...REGRESSION_PROOF.candidate, ref: 'c'.repeat(40) },
+  };
+  const wrongContext = readyContext({
+    duplicateCheck: { ...GOOD_DUPLICATE_CHECK, noveltyProof: wrongProof },
+    deploymentEvidence: { ...GOOD_DEPLOYMENT, commit_sha: 'c'.repeat(40) },
+    validations: [{
+      ...GOOD_E4_VALIDATION,
+      evidence: { provenance: 'regression-sandbox', noveltyProof: wrongProof },
+    }],
+  });
+  const wrongCommit = transition(monitored, 'human_ready', wrongContext);
+  assert.equal(wrongCommit.ok, false);
+  assert.match(wrongCommit.reason, /mesmo commit que originou/);
+  const wrongRepo = transition(monitored, 'human_ready', readyContext({
+    deploymentEvidence: { ...GOOD_DEPLOYMENT, repo: 'other/api' },
+  }));
+  assert.equal(wrongRepo.ok, false);
+  assert.match(wrongRepo.reason, /mesmo repositório/);
+});
+
 test('human_ready -> submitted exige humanApproval com actor humano (nunca agente/IA)', () => {
   const f = finding('human_ready');
   assert.equal(transition(f, 'submitted', {}).ok, false);

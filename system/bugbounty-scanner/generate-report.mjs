@@ -92,6 +92,19 @@ export function renderReportDraft(ctx) {
   const aiDisclosureSection = policyEntry?.aiDisclosureRequired
     ? `\n## Divulgação obrigatória de uso de IA\n\nEste trabalho utilizou ferramentas assistidas por IA para descoberta, tooling, análise e preparação do rascunho. Antes do envio, o pesquisador revisou independentemente o código, executou a PoC e confirmou pessoalmente cada alegação técnica e de impacto.\n`
     : '';
+  const changeProvenance = finding.changeContext
+    ? [
+        '',
+        '### Proveniência da mudança monitorada',
+        `- Repositório: \`${finding.changeContext.repository}\``,
+        `- Base observada: \`${finding.changeContext.previousSha}\``,
+        `- Commit novo: \`${finding.changeContext.introducedCommit}\``,
+        `- Parent do commit novo: \`${finding.changeContext.parentCommit || 'não disponível'}\``,
+        `- Detectado em: ${finding.changeContext.detectedAt || 'não registrado'}`,
+        '',
+        '> Este contexto prioriza a investigação, mas não prova sozinho que o bug foi introduzido nesse commit. O noveltyProof E4 abaixo precisa executar o mesmo teste no base e no commit novo.',
+      ].join('\n')
+    : '';
 
   const pocSection = passingValidation
     ? `## Prova de conceito executável\n\`\`\`\ncomando: ${passingValidation.command || '{{comando não registrado}}'}\n\`\`\`\nSaída real (${passingValidation.type}, ${passingValidation.ts}):\n\`\`\`\n${passingValidation.rawOutput || '{{raw_output não registrado -- ver validations no banco}}'}\n\`\`\`\n`
@@ -172,6 +185,7 @@ ${policyChecklist}
 ${deployLines}
 - Arquivo: \`${finding.file || '{{não registrado}}'}\`${finding.line ? ` (linha ${finding.line})` : ''}
 - Função/símbolo: \`${finding.function || '{{não registrado}}'}\`
+${changeProvenance}
 
 ## Resumo
 {{RASCUNHO -- escrever 2-4 frases reais aqui. O raciocínio bruto da investigação está na seção final deste documento -- use como matéria-prima, não copie literalmente.}}

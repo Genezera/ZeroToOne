@@ -34,7 +34,7 @@ import { sendTelegramMessage } from './telegram.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { runTelegramDigest } from './telegram-digest.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
-import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, isDuplicateSaturatedProgram } from './outcome-intelligence.mjs';
+import { computeStatsFromSubmissions, enrichSubmissionsWithFindings, isDuplicateSaturatedProgram, repositoryFromFinding } from './outcome-intelligence.mjs';
 import { filterBannedTargets, loadProgramPolicyStrict } from './program-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,6 +56,28 @@ const MAX_FILES_PER_TARGET = 450;
 
 function fingerprint(f) {
   return `${f.program}::${f.file}::${f.function}::${f.type}`;
+}
+
+export function findingIdentity(finding, changeContext = null) {
+  const base = fingerprint(finding);
+  return changeContext?.introducedCommit
+    ? `${base}::commit:${changeContext.introducedCommit}`
+    : base;
+}
+
+export function buildQueuedFinding(finding, {
+  changeContext = null,
+  historicalConfidence = null,
+  foundAt = new Date().toISOString(),
+} = {}) {
+  return {
+    ...finding,
+    id: findingIdentity(finding, changeContext),
+    status: 'pending',
+    foundAt,
+    ...(changeContext ? { changeContext } : {}),
+    ...(historicalConfidence ? { historicalConfidence } : {}),
+  };
 }
 
 function loadSeen() {
@@ -99,7 +121,7 @@ function log(msg) {
 // heurística. Não persiste o código-fonte no git (repos grandes demais) —
 // só o texto do achado (com trecho de contexto) vai para a fila. Cache de
 // SHA de blob por arquivo evita rebuscar/rescanear o que não mudou.
-async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas, language, priorStats, quarantineOverrides = new Set()) {
+async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, repoShas, language, priorStats, quarantineOverrides = new Set(), changeContexts = null) {
   let filesChecked = 0;
   let fetchErrors = 0;
   let quarantinedCount = 0;
@@ -116,6 +138,7 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
     files = files.filter((f) => isScannable(f.path));
 
     const repoKey = `${target.owner}/${target.repo}`;
+    const changeContext = changeContexts?.get(repoKey.toLowerCase()) || null;
     repoShas[repoKey] = repoShas[repoKey] || {};
 
     if (files.length > MAX_FILES_PER_TARGET) {
@@ -161,7 +184,8 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       const scanned = await scanFn(source, `${repoKey}/${file.path}`); // await funciona pra scanFn síncrona ou assíncrona (ex.: scanJsSource usa AST)
       const findings = scanned.map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd, language }));
       for (const f of findings) {
-        const fp = fingerprint(f);
+        const queued = buildQueuedFinding(f, { changeContext });
+        const fp = queued.id;
         if (seen.has(fp)) continue;
         seen.add(fp);
         if (isQuarantined(priorStats, f.type, language, { overrides: quarantineOverrides })) {
@@ -169,7 +193,7 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
           continue;
         }
         const historicalConfidence = historicalConfidenceFor(priorStats, f.type, language);
-        newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
+        newFindings.push(buildQueuedFinding(f, { changeContext, historicalConfidence }));
       }
     }
   }
@@ -205,6 +229,40 @@ export function parseChangedRepositories(value) {
     throw new Error('ZERO2ONE_CHANGED_REPOSITORIES contém owner/repo inválido');
   }
   return new Set(keys);
+}
+
+export function parseChangeContexts(value) {
+  if (value == null || value === '') return null;
+  let parsed;
+  try { parsed = JSON.parse(value); } catch (error) {
+    throw new Error(`ZERO2ONE_CHANGE_CONTEXT inválido: ${error.message}`);
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('ZERO2ONE_CHANGE_CONTEXT precisa ser array JSON não-vazio');
+  }
+  const contexts = new Map();
+  for (const item of parsed) {
+    const repository = String(item?.repository || '').toLowerCase();
+    const previousSha = String(item?.previousSha || '').toLowerCase();
+    const introducedCommit = String(item?.introducedCommit || '').toLowerCase();
+    const parentCommit = item?.parentCommit == null ? null : String(item.parentCommit).toLowerCase();
+    if (!/^[a-z0-9_.-]+\/[a-z0-9_.-]+$/.test(repository)) throw new Error('ZERO2ONE_CHANGE_CONTEXT contém owner/repo inválido');
+    if (!/^[0-9a-f]{40}$/.test(previousSha) || !/^[0-9a-f]{40}$/.test(introducedCommit)) {
+      throw new Error('ZERO2ONE_CHANGE_CONTEXT exige previousSha e introducedCommit completos');
+    }
+    if (parentCommit !== null && !/^[0-9a-f]{40}$/.test(parentCommit)) throw new Error('ZERO2ONE_CHANGE_CONTEXT contém parentCommit inválido');
+    if (contexts.has(repository)) throw new Error(`ZERO2ONE_CHANGE_CONTEXT repete o repositório ${repository}`);
+    contexts.set(repository, {
+      repository, previousSha, introducedCommit, parentCommit,
+      introducedAt: item.introducedAt || null,
+      detectedAt: item.detectedAt || null,
+      branch: item.branch || null,
+      directSingleCommit: item.directSingleCommit === true,
+      commitUrl: item.commitUrl || null,
+      title: item.title || null,
+    });
+  }
+  return contexts;
 }
 
 /** Routine scans skip duplicate-saturated programs; a change-triggered scan
@@ -259,7 +317,14 @@ export async function runScan() {
       duplicateHistoryByProgram = computeStatsFromSubmissions(submissions).byProgram;
     } finally { closeDb(historyDb); }
   }
-  const changedRepositories = parseChangedRepositories(process.env.ZERO2ONE_CHANGED_REPOSITORIES);
+  const changeContexts = parseChangeContexts(process.env.ZERO2ONE_CHANGE_CONTEXT);
+  const legacyChangedRepositories = parseChangedRepositories(process.env.ZERO2ONE_CHANGED_REPOSITORIES);
+  const changedRepositories = changeContexts ? new Set(changeContexts.keys()) : legacyChangedRepositories;
+  if (changeContexts && legacyChangedRepositories
+    && (changeContexts.size !== legacyChangedRepositories.size
+      || [...changeContexts.keys()].some((key) => !legacyChangedRepositories.has(key)))) {
+    throw new Error('ZERO2ONE_CHANGE_CONTEXT e ZERO2ONE_CHANGED_REPOSITORIES divergem');
+  }
   const selection = selectTargetsForRun(configuredTargetLists, programPolicy, duplicateHistoryByProgram, changedRepositories);
   const { targetLists } = selection;
   const blockedTargetCount = selection.policyBlocked;
@@ -297,7 +362,7 @@ export async function runScan() {
 
       const findings = scanSource(source, `${contractName}.clar`).map((f) => ({ ...f, program: target.program, platform: target.platform, maxBountyUsd: target.maxBountyUsd, language: 'clarity' }));
       for (const f of findings) {
-        const fp = fingerprint(f);
+        const fp = findingIdentity(f);
         if (seen.has(fp)) continue;
         seen.add(fp);
         if (isQuarantined(priorStats, f.type, 'clarity', { overrides: quarantineOverrides })) {
@@ -305,17 +370,17 @@ export async function runScan() {
           continue;
         }
         const historicalConfidence = historicalConfidenceFor(priorStats, f.type, 'clarity');
-        newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
+        newFindings.push(buildQueuedFinding(f, { historicalConfidence }));
       }
     }
   }
 
   const repoShas = loadRepoShas();
-  const jsResult = await runLanguageScan(targetLists.js, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats, quarantineOverrides);
-  const goResult = await runLanguageScan(targetLists.go, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats, quarantineOverrides);
-  const jvmResult = await runLanguageScan(targetLists.jvm, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats, quarantineOverrides);
-  const swiftResult = await runLanguageScan(targetLists.swift, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats, quarantineOverrides);
-  const solidityResult = await runLanguageScan(targetLists.solidity, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats, quarantineOverrides);
+  const jsResult = await runLanguageScan(targetLists.js, isScannableFile, scanJsSource, seen, newFindings, repoShas, 'js', priorStats, quarantineOverrides, changeContexts);
+  const goResult = await runLanguageScan(targetLists.go, isScannableGoFile, scanGoSource, seen, newFindings, repoShas, 'go', priorStats, quarantineOverrides, changeContexts);
+  const jvmResult = await runLanguageScan(targetLists.jvm, isScannableJvmFile, scanJvmSource, seen, newFindings, repoShas, 'jvm', priorStats, quarantineOverrides, changeContexts);
+  const swiftResult = await runLanguageScan(targetLists.swift, isScannableSwiftFile, scanSwiftSource, seen, newFindings, repoShas, 'swift', priorStats, quarantineOverrides, changeContexts);
+  const solidityResult = await runLanguageScan(targetLists.solidity, isScannableSolidityFile, scanSoliditySource, seen, newFindings, repoShas, 'solidity', priorStats, quarantineOverrides, changeContexts);
   quarantinedTotal += jsResult.quarantinedCount + goResult.quarantinedCount + jvmResult.quarantinedCount + swiftResult.quarantinedCount + solidityResult.quarantinedCount;
 
   // Cross-referência de dependência conhecida vulnerável (OSV.dev) — roda
@@ -324,7 +389,8 @@ export async function runScan() {
   // não são ecossistemas suportados pelo OSV.dev (confirmado ao vivo).
   const depResult = await runDependencyScan([...targetLists.js, ...targetLists.go, ...targetLists.jvm], repoShas);
   for (const f of depResult.findings) {
-    const fp = fingerprint(f);
+    const changeContext = changeContexts?.get(repositoryFromFinding(f)) || null;
+    const fp = findingIdentity(f, changeContext);
     if (seen.has(fp)) continue;
     seen.add(fp);
     if (isQuarantined(priorStats, f.type, f.language, { overrides: quarantineOverrides })) {
@@ -332,7 +398,7 @@ export async function runScan() {
       continue;
     }
     const historicalConfidence = historicalConfidenceFor(priorStats, f.type, f.language);
-    newFindings.push({ ...f, id: fp, status: 'pending', foundAt: new Date().toISOString(), ...(historicalConfidence ? { historicalConfidence } : {}) });
+    newFindings.push(buildQueuedFinding(f, { changeContext, historicalConfidence }));
   }
 
   saveRepoShas(repoShas);

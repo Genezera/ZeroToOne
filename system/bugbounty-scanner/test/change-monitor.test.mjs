@@ -4,10 +4,21 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { collectMonitoredRepositories, pollRepositoryChanges } from '../change-monitor.mjs';
-import { runChangeMonitor } from '../change-monitor-runner.mjs';
+import { buildDeltaScanEnvironment, runChangeMonitor } from '../change-monitor-runner.mjs';
 
 const A = 'a'.repeat(40);
 const B = 'b'.repeat(40);
+
+test('buildDeltaScanEnvironment entrega repositórios e contexto completo ao scanner', () => {
+  const changes = [{
+    repository: 'acme/api', previousSha: A, introducedCommit: B,
+    parentCommit: A, detectedAt: '2026-09-05T12:01:00Z',
+  }];
+  const env = buildDeltaScanEnvironment(changes, { KEEP: 'yes' });
+  assert.equal(env.KEEP, 'yes');
+  assert.deepEqual(JSON.parse(env.ZERO2ONE_CHANGED_REPOSITORIES), ['acme/api']);
+  assert.deepEqual(JSON.parse(env.ZERO2ONE_CHANGE_CONTEXT), changes);
+});
 
 test('collectMonitoredRepositories deduplica e exclui programa bloqueado antes da rede', () => {
   const targets = {

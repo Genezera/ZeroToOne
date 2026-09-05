@@ -86,6 +86,21 @@ test('upsertFinding é idempotente (mesmo id não duplica linha)', () => {
   });
 });
 
+test('changeContext do monitor faz round-trip sem coluna paralela', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    const changeContext = {
+      repository: 'acme/api', previousSha: 'a'.repeat(40), introducedCommit: 'b'.repeat(40),
+      parentCommit: 'a'.repeat(40), detectedAt: '2026-09-05T12:00:00Z', directSingleCommit: true,
+    };
+    upsertFinding(db, { ...SAMPLE, changeContext });
+    const back = getFinding(db, SAMPLE.id);
+    assert.deepEqual(back.changeContext, changeContext);
+    assert.deepEqual(back.raw.changeContext, changeContext);
+    closeDb(db);
+  });
+});
+
 test('recordTransition recusa transição inválida sem mudar o estado nem gravar no ledger', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);

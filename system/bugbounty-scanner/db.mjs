@@ -314,6 +314,7 @@ export function upsertFinding(db, finding) {
 
 function rowToFinding(row) {
   if (!row) return null;
+  const raw = JSON.parse(row.raw_json);
   let historicalConfidence = row.historical_confidence;
   if (typeof historicalConfidence === 'string' && /^[{[]/.test(historicalConfidence.trim())) {
     try { historicalConfidence = JSON.parse(historicalConfidence); } catch { /* mantém valor legado */ }
@@ -340,7 +341,8 @@ function rowToFinding(row) {
     pocResult: row.poc_result,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    raw: JSON.parse(row.raw_json),
+    changeContext: raw.changeContext || null,
+    raw,
   };
 }
 

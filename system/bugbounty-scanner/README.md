@@ -414,13 +414,21 @@ seguros; nas outras 4 linguagens, roda contra o código real de
 
 O workflow `bugbounty-change-monitor.yml` consulta somente metadados de HEAD
 dos repositórios permitidos a cada 15 minutos. Um HEAD novo passa a lista
-exata de `owner/repo` para `scan-runner.mjs`; alvos estáveis não são
+exata de `owner/repo` e o contexto completo (base observada, commit novo,
+parent e timestamps) para `scan-runner.mjs`; alvos estáveis não são
 reprocessados e a seleção delta ignora o filtro `monitor-only` para não perder
 uma regressão fresca. O cursor só avança depois que esse scan termina com
 sucesso, portanto falha ou timeout é tentado novamente na próxima rodada.
 Cada delta fica em `research/bugbounty/change-events.jsonl` com SHA anterior,
 commit novo, parent, data e indicação de mudança direta. O evento é sinal de
 prioridade temporal, nunca uma alegação de vulnerabilidade.
+
+Finding criado nessa via guarda `changeContext` e recebe identidade terminada
+em `::commit:<SHA>`. Isso impede o cache `scanner-seen.json` de esconder uma
+regressão porque o mesmo detector já tinha produzido falso positivo na mesma
+função em outro commit. O gate final vincula `noveltyProof`, E4 e
+`DeploymentEvidence` ao mesmo commit/repositório observado; `changeContext`
+sozinho continua sendo apenas proveniência e prioridade, nunca prova.
 
 Rodadas sem alteração são byte-estáveis: não atualizam timestamps, não deixam
 o checkout sujo e não criam commit vazio. Inclusão ou remoção de alvo atualiza

@@ -169,7 +169,9 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
     }
     switch (f.state) {
       case 'candidate':
-        blocker = 'aguardando leitura profunda (deep-read) -- ainda não investigado';
+        blocker = f.changeContext
+          ? `detectado no delta ${f.changeContext.previousSha} -> ${f.changeContext.introducedCommit}; aguardando leitura profunda e prova E4 nos dois refs`
+          : 'aguardando leitura profunda (deep-read) -- ainda não investigado';
         break;
       case 'corroborated_static': {
         const validations = listValidations(db, f.id);
