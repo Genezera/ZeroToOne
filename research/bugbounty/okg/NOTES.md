@@ -711,3 +711,79 @@ máquina de estados, documentado, não um bug do pipeline.
 Nenhum achado novo neste programa nesta rodada (leitura profunda
 proativa desta rodada foi em `plaid/react-plaid-link`, ver NOTES.md do
 Plaid).
+
+## Rodada 2026-09-05 #2 (push automático via GitHub webhook, sessão cloud) — 5º achado real da família panic/DoS, fecha a nota lateral pendente de `NewAddressable`
+
+`program-policy.json` conferido de novo antes de qualquer clone (passo
+0): `Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados.
+`migrate-to-v2.mjs` + `list-pending` global = 34, 100% em programas
+bloqueados (30 Auth0 by Okta, 4 Circle BBP) — nenhum tocado.
+
+Leitura profunda proativa fechou explicitamente a nota lateral deixada
+pendente há duas rodadas ("Rodada 2026-09-04", achado helium.go
+Sign+NewAddress): `coins/helium/keypair/address.go::NewAddressable`
+tinha sido notado de passagem com o mesmo padrão de bug
+(`base58.Decode` sem checar erro + slice sem checar comprimento
+mínimo), mas nunca virou finding próprio. Investiguei a fundo desta
+vez, com uma diferença importante em relação aos 4 achados-irmãos
+anteriores (solana/cardano/elrond/helium.Sign+NewAddress, todos sobre a
+SEED/chave privada do próprio usuário): aqui o dado perigoso é o
+**endereço de destino** (`to`), passado pela função pública `Sign()`
+em `helium.go` → `transactions.NewPaymentV2Tx` → `keypair.NewAddressable(to)`
+para cada destinatário, sem validação alguma. Um endereço de destino é
+tipicamente colado pelo usuário, lido de QR code, ou vindo de um
+link/deep-link de pagamento — mais plausivelmente influenciável por uma
+contraparte (ex.: destinatário/phishing fornecendo endereço malformado
+de propósito) do que a própria seed seria por um atacante.
+
+`base58.Decode` (vendored de btcsuite em `crypto/base58/base58.go`,
+mesmo helper usado pelo achado-irmão Solana) devolve `[]byte("")`
+silenciosamente para string vazia OU qualquer caractere fora do
+alfabeto base58 (nunca erro) — e para qualquer resultado com menos de 5
+bytes, `data[1:len(data)-4]` tem limite superior negativo e sempre
+panica.
+
+PoC real com `go test` (não teórica), 4 casos, `go mod tidy` resolveu
+`go.sum` do módulo próprio `coins/helium`:
+```
+TestNewAddressable_PanicsOnEmptyAddress:    slice bounds out of range [:-4]
+TestNewAddressable_PanicsOnInvalidBase58Char: slice bounds out of range [:-4]  (endereço "0")
+TestNewAddressable_PanicsOnShortValidBase58:  slice bounds out of range [:-3]  (endereço "1")
+TestSign_PanicsOnMalformedRecipient (API pública Sign(), to=""): slice bounds out of range [:-4]
+```
+O último teste chama `Sign()` de verdade (não só o helper interno),
+confirmando alcançabilidade desde a API pública documentada do SDK.
+
+Fluxo: `upsert-finding` (candidate) → `update-finding` (reasoning +
+filesRead) → `transition corroborated_static` (aceito) →
+`record-validation --type=go_test_poc --result=pass` (saída real acima)
+→ `transition reproduced_local` (aceito) → `check-scope "OKG"
+"okx/go-wallet-sdk"` (allowed=true, bountyEligible=true, mesmo asset
+SOURCE_CODE dos irmãos) → `record-deployment-evidence`
+(confidence="unverified": HEAD `main`=`12fec6b0616347` confirmado via
+clone, mas repositório **sem nenhuma tag/release Git** — `git
+ls-remote --tags` vazio — logo sem forma honesta de ancorar qual
+commit exato o app/extensão real da OKX Wallet consome) → tentativa de
+`scope_verified` **recusada corretamente** pelo mesmo motivo dos 4
+irmãos ("confidence=unverified"). Não forcei. Finding fica em
+`reproduced_local`.
+
+Idade do bug: `git log --follow --diff-filter=A` (clone unshallow)
+mostra que `coins/helium/keypair/address.go` foi adicionado no MESMO
+commit do achado-irmão Sign+NewAddress (`5cd6c132d638`, 2023-11-07) —
+mais de 1000 dias, mesma barreira estrutural de novidade que já bloqueia
+os 4 irmãos (sem janela de regressão verificável de 7 dias). Nem
+tentei avançar para `human_ready` por esse motivo já bem estabelecido
+nas rodadas anteriores — ficaria preso no mesmo
+`duplicateCheckGate`/`noveltyStatus=regression` de qualquer forma, e a
+transição `reproduced_local->scope_verified` já foi recusada antes
+disso por causa do deployment evidence.
+
+ID do finding:
+`OKG::okx/go-wallet-sdk/coins/helium/keypair/address.go::NewAddressable::ai_deep_read_finding`.
+
+`deep-read-log.json` atualizado (+2 entradas novas em
+`okx/go-wallet-sdk`: `coins/helium/transactions/payment_v2.go` e
+`crypto/base58/base58.go`; `address.go`/`helium.go` já estavam
+logados de rodadas anteriores, revisitados para fechar este achado).
+Nenhuma outra ação nesta rodada em OKG.
