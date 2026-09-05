@@ -757,6 +757,10 @@
   "Kubernetes::kubernetes/publishing-bot/cmd/sync-tags/gomod.go::line:218::path_traversal_risk": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding": "confirmado",
   "Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk": "falso_positivo",
-  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/webhook.go::handleWebhook::non_constant_time_hmac_comparison": "confirmado",
-  "OKG::okx/go-wallet-sdk/coins/helium/keypair/address.go::NewAddressable::ai_deep_read_finding": "confirmado"
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/webhook.go::handleWebhook::non_constant_time_hmac_comparison": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/helium/keypair/address.go::NewAddressable::ai_deep_read_finding": "inconclusivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/store/sqlstore/utils.go::line:19::sql_injection_risk": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/msteams/client_mock.go::line:41::insecure_tls": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/store/sqlstore/utils.go::line:11::sql_injection_risk": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/msteams/client_mock.go::line:25::insecure_tls": "falso_positivo"
 }
