@@ -186,3 +186,11 @@ nova leitura) — ficam intocados em `candidate`, documentados aqui pro
 usuário decidir o que fazer (provavelmente descartar/fechar manualmente,
 já que reabrir para investigar violaria a RoE de novo). Nenhum relatório
 foi gerado a partir deles em nenhum momento.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `blocked: true`
+continua vigente. Nenhum arquivo deste programa foi lido, clonado ou
+aberto nesta rodada. Os 30 candidatos residuais pré-bloqueio em
+`auth0/react-native-auth0` seguem intocados em `candidate`, sem
+nenhuma ação (nem update-finding, nem transition, nem nova leitura).

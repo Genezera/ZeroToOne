@@ -913,3 +913,17 @@ auth de fato (mTLS/token/websocket), não regex:
 `deep-read-log.json` atualizado (`kubernetes/apiserver`, +3 entradas).
 Nenhum achado novo, nenhuma transição de estado nesta rodada — resultado
 normal e válido.
+
+## Rodada 2026-09-05 #2 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero: `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` bloqueados, confirmados, nenhum tocado.
+`migrate-to-v2.mjs` + `list-pending` global = 34, 100% fora de escopo.
+
+Os 2 achados `corroborated_static` já existentes deste programa
+(`insecure_tls` em `publishing-bot/cmd/publishing-bot/config/rules.go`
+e em `cloud-provider-openstack/pkg/autohealing/healthcheck/plugin_endpoint.go`)
+revisados: nenhuma evidência nova, nenhuma transição tentada,
+consistente com rodadas anteriores. Leitura profunda proativa desta
+rodada ficou em `kiwicom/k8s-vault-operator` (ver NOTES.md de
+Kiwi.com). Nenhum achado novo, nenhuma transição de estado.

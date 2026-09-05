@@ -787,3 +787,30 @@ ID do finding:
 `crypto/base58/base58.go`; `address.go`/`helium.go` já estavam
 logados de rodadas anteriores, revisitados para fechar este achado).
 Nenhuma outra ação nesta rodada em OKG.
+
+## Rodada 2026-09-05 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido de novo antes de qualquer clone (passo
+0): `Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados,
+nenhum tocado. `migrate-to-v2.mjs` + `list-pending` global = 34, 100%
+em programas bloqueados (30 Auth0 by Okta, 4 Circle BBP) — nenhum
+tocado.
+
+Único achado OKG em `scope_verified`
+(`coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy`, relatório já
+registrado em rodada anterior) revisado: `record-report` já feito,
+tentativa de `transition ... human_ready` com o mesmo contexto de
+report — **recusada** pelo state machine com o motivo já documentado
+(`duplicateCheck.noveltyStatus="private_unknown"`, modo anti-duplicata
+exige `regression`). Isso é o gate funcionando corretamente (o achado
+é bug críptico real mas não há como provar novidade/regressão a partir
+de leitura de código público) — não forcei, não contornei. Finding
+permanece em `scope_verified`, sem relatório avançado a `human_ready`.
+
+Achado `reproduced_local` (`NewAddressable`) também revisado: nenhuma
+mudança desde a rodada anterior (repo ainda sem tags/releases Git,
+`deploymentEvidence.confidence` continua `unverified` — não há como
+reforçar isso a partir só de código público). Não tocado.
+
+Leitura profunda proativa desta rodada ficou em `kiwicom/k8s-vault-operator`
+(ver NOTES.md de Kiwi.com). Nenhum achado novo em OKG nesta rodada.
