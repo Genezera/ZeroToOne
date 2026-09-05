@@ -870,3 +870,46 @@ voltou a aceitar somente regressão recente verificada. A evidência de idade
 continua válida como contexto, mas este achado está **bloqueado para envio**;
 o `human_ready` histórico no ledger não autoriza submissão e o preflight
 atual deve recusá-lo.
+
+## Rodada 2026-09-05 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` checado como passo zero (`Block Open Source`/
+`Circle BBP`/`Auth0 by Okta` continuam bloqueados; nenhum repo desses
+três tocado). `migrate-to-v2.mjs` + `list-pending` global = 34, 100%
+fora de escopo (30 Auth0 by Okta bloqueado, 4 Circle BBP bloqueado).
+Nenhum candidato pendente em Kubernetes.
+
+Leitura profunda proativa: `kubernetes/apiserver` já tinha 5 arquivos
+registrados (todos em `pkg/authorization/`/`pkg/authentication/token/`
+ou `pkg/endpoints/filters/`), mas o pacote `pkg/authentication/request/`
+inteiro (x509, websocket, headerrequest, bearertoken parcialmente) e
+`pkg/authentication/token/jwt/` nunca tinham sido cobertos. Clone raso
+com sparse-checkout (`pkg/authentication` + `pkg/authorization`,
+descartado ao final), HEAD real `ca98fc133511040ddd0adafbcd0694daa0a6be53`
+(2026-09-04). Escolhi 3 arquivos por julgamento próprio, priorizando
+auth de fato (mTLS/token/websocket), não regex:
+
+- `pkg/authentication/request/x509/x509.go` (`Authenticator`/`Verifier`
+  `.AuthenticateRequest`) — usa `crypto/x509` stdlib `Certificate.Verify`
+  contra `VerifyOptions` dinâmico (CA pool); `Groups` vêm de
+  `Subject.Organization` (design documentado do mTLS k8s, não bug);
+  `parseUIDFromCert` exige exatamente 1 valor do OID de UID custom
+  (rejeita 0 ou >1 explicitamente — sem confusão de UID). `Verifier.
+  verifySubject` só aplica allowlist de CommonName depois que `Verify()`
+  já validou a cadeia contra a CA raiz — ordem correta. Sem achado.
+- `pkg/authentication/token/jwt/jwt.go` — arquivo trivial
+  (`CredentialIDForJTI`, só formata string pra extra info); nenhuma
+  lógica de verificação de assinatura JWT vive aqui. Sem achado.
+- `pkg/authentication/request/websocket/protocol.go`
+  (`ProtocolAuthenticator.AuthenticateRequest`) — extrai bearer token do
+  subprotocolo `Sec-WebSocket-Protocol`, decodifica base64url sem
+  padding, valida UTF-8, rejeita múltiplos tokens no mesmo request,
+  exige pelo menos 1 protocolo adicional (evita vazar de volta o
+  protocolo-token) e remove o protocolo com token do header antes de
+  repassar adiante em caso de sucesso. Área historicamente sensível
+  (adjacente a CVE-2018-1002105), mas lógica atual corretamente
+  stripa o token. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/apiserver`, +3 entradas).
+Nenhum achado novo, nenhuma transição de estado nesta rodada — resultado
+normal e válido.
