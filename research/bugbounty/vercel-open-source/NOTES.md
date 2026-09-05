@@ -8899,3 +8899,61 @@ atualizado (`vercel/vercel`: +2, `vercel/flags`: +1). `StackingDAO`:
 sem contrato novo, 15 `.clar` seguem 100% do escopo (ver NOTES.md do
 programa). Clones temporários (sparse-checkout de `vercel/vercel` e
 clone raso de `vercel/flags`) removidos ao final.
+
+## Rodada 2026-09-05b (push automático via GitHub webhook, push 802c957->e095b07, sessão cloud)
+
+`program-policy.json` conferido como passo zero via `check-program` para
+os 4 candidatos possíveis (`Auth0 by Okta`, `Circle BBP`, `StackingDAO`,
+`Vercel Open Source`) antes de escolher qualquer alvo. `migrate-to-v2.mjs`
++ `list-pending` global = 34 candidatos, de novo 100% fora do escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP, ambos bloqueados) — skip completo,
+nenhum arquivo desses dois programas clonado ou lido.
+
+Leitura profunda proativa: dos 16 assets em escopo deste programa, três
+nunca tinham sido tocados por nenhuma rodada anterior —
+`nitrojs/nitro`, `nuxt/nuxt`, `sveltejs/svelte`. Escolhido `nitrojs/nitro`
+(menor superfície, mais fácil auditar em 3 arquivos) via `check-scope`
+(allowed=true, tier 1). Clone raso (`--depth 1`) temporário. Sem arquivo
+com nome auth/session/crypto/token/login/password/admin/permission/access
+no repo inteiro (só um `examples/middleware/server/middleware/auth.ts` de
+exemplo, fora do runtime real) — busca ampliada por palavra-chave de
+segurança (`cookie|csrf|cors|forwarded|trustProxy|hmac|sign\(`) em
+`src/**/*.ts`, escolhidos os 3 arquivos mais centrais ao runtime real
+(não preset de plataforma específica):
+
+- `src/runtime/internal/app.ts` (completo) — infraestrutura de
+  composição/cache de middleware (route-rule middleware, middleware
+  roteado por `server/middleware/**`), sem lógica de autenticação ou
+  parsing de header sensível. Cache por `WeakMap`/trie é só otimização de
+  performance, sem risco de colisão entre requests (chave é a *lista*
+  de handlers casados, não dado do request). Sem achado.
+- `src/runtime/internal/route-rule-handlers.ts` (completo, 17 linhas) —
+  só religa o handler `cache` da regra de rota ao storage do Nitro
+  (`useStorage()`); os handlers de fato sensíveis (`headers`, `redirect`,
+  `proxy`, `cors`) vêm prontos de `h3/rules` e não são tocados aqui. Sem
+  achado, e fora do escopo de auditoria de qualquer forma (não é lógica
+  de segurança nova, é só wiring).
+- `src/dev/_request.ts` (completo, 26 linhas) — `isLocalDevRequest`
+  decide se uma request ao dev server pode acessar endpoints de debug
+  (VFS viewer, task runner). Ponto que exigiria ceticismo real: só
+  confia em `X-Forwarded-For` (`xForwardedFor: isUnixSocket`) quando a
+  heurística determina que a conexão chegou por Unix domain socket (sem
+  `remoteAddress`/`localAddress`, sem porta, socket ainda
+  readable/writable) — cenário em que só um proxy de confiança na mesma
+  máquina poderia estar conectando. Pra conexão TCP direta (o caso do
+  dev server exposto num host não-loopback, que é o ameaça descrita no
+  próprio comentário do arquivo), `remoteAddress` do socket é usado sem
+  intermediação de header, então um cliente remoto não pode forjar
+  `X-Forwarded-For` pra parecer loopback. Testado o caso degenerado
+  (`event.runtime?.node?.req` ausente, outros runtimes que não Node):
+  `socket` fica `undefined`, e a cadeia de `&&` que calcula `isUnixSocket`
+  colapsa em `undefined` (falsy) por causa de `socket?.readable` --
+  então `xForwardedFor` nunca vira `true` por acidente fora do runtime
+  Node. Não encontrei bypass; parece desenho deliberado (comentários no
+  próprio arquivo justificam cada condição). Sem achado.
+
+Nenhum achado novo, nenhuma transição de estado. `deep-read-log.json`
+atualizado (`nitrojs/nitro`: +3, arquivo novo no log). `nuxt/nuxt` e
+`sveltejs/svelte` seguem como próximos candidatos naturais (também nunca
+tocados). `StackingDAO`: sem contrato novo, 15 `.clar` seguem 100% do
+escopo. Clone temporário (`nitrojs/nitro`, raso) removido ao final.
