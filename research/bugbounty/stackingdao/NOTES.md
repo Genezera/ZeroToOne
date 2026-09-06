@@ -1870,3 +1870,20 @@ VFS viewer do dev server) revisado: já tem `deploymentEvidence` com
 sem release/deploy público confirmado) — corretamente parado em
 `corroborated_static`, nada de novo pra mudar essa avaliação nesta
 rodada, não retentado. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06q (push automático via GitHub webhook, sessão cloud, push 3c8ac2a)
+
+`migrate-to-v2.mjs` rodado (820 findings). `program-policy.json`
+conferido como passo zero — `StackingDAO` e `Vercel Open Source`
+confirmados `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados — nenhum arquivo desses três
+clonado/lido/aberto nesta rodada. `list-pending` = 34 candidatos, 100%
+fora do escopo desta missão (30 `Auth0 by Okta`, 4 `Circle BBP`), skip
+completo. Os 15 contratos `.clar` já lidos seguem cobrindo 100% dos 13
+assets do `scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/flags` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos: hook de sync do
+adapter Statsig em Edge Runtime, metadado interno de origem de dados e
+classes de erro estáticas, sem achado). Nenhuma transição de estado
+neste programa.

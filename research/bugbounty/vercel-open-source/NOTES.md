@@ -10309,3 +10309,50 @@ confidence ou retentar `scope_verified`. Não retentado nesta rodada.
 Nenhum achado novo, nenhuma transição de estado nesta rodada. Clones
 temporários (`svelte`, `async-sema`, `ms`, `swr`, `nitro`) removidos do
 scratch dir ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06q (push automático via GitHub webhook, sessão cloud, push 3c8ac2a)
+
+Fila (`list-pending`): 34 candidates, todos em programas bloqueados
+(Auth0 by Okta: 30, Circle BBP: 4) — confirmado via `check-program`
+antes de qualquer clone/leitura, nenhum tocado.
+
+Leitura profunda proativa: `vercel/flags` (clone raso via `git clone
+--depth 1`), já com 34 arquivos auditados cobrindo o núcleo de
+auth/crypto/access (`controller/auth.ts`, `lib/crypto.ts`,
+`lib/verify-access.ts`, `utils/sdk-keys.ts`, cadeia completa de
+stream/poll/bundled do controller). Escolhi 3 arquivos ainda não lidos
+por julgamento próprio, priorizando os adapters de terceiros (Statsig,
+que lidam com credenciais/config repassadas a SDKs externos):
+
+- `packages/adapter-statsig/src/edge-runtime-hooks.ts` — helper de
+  sincronização do Statsig SDK em Edge Runtime + adapter opcional de
+  Global Config. `connectionString` do Global Config vem só de `options`
+  passadas explicitamente pelo integrador (nunca de request/env não
+  confiável dentro deste arquivo); o sync handler só faz debounce por
+  timestamp local, sem I/O de rede além do próprio SDK Statsig. Sem
+  achado.
+- `packages/vercel-flags-core/src/controller/tagged-data.ts` — só anexa
+  metadado interno de origem (`stream`/`poll`/`bundled`/`provided`/`fetched`)
+  ao objeto de datafile pra telemetria, sem decisão de autenticação/acesso.
+  Sem achado.
+- `packages/vercel-flags-core/src/errors.ts` — duas classes de erro com
+  mensagens estáticas (`FallbackNotFoundError`/`FallbackEntryNotFoundError`),
+  nenhuma interpola `sdkKey` nem outro segredo na mensagem. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/flags`: 34 → 37 arquivos).
+Nenhum achado novo, nenhuma transição de estado nesta rodada. Clone
+temporário (`flags`) removido do scratch dir ao final. `export-queue`
+rodado ao final.
+
+Bug operacional recorrente do `ledger.research.jsonl` (reapêndice de
+eventos já publicados com nova cadeia de hash) ocorreu nesta rodada —
+`migrate-to-v2.mjs` reintroduziu 74 linhas no fim do arquivo. Verifiquei
+programaticamente (comparação por `type+ts+findingId`) que as 74 são
+100% duplicatas exatas de eventos já presentes no `HEAD` anterior (nenhum
+dado novo, só a mesma informação com `prevHash`/`hash` recalculados a
+partir da ponta atual da cadeia) — descartei a mudança
+(`git checkout -- ledger/ledger.research.jsonl`) antes do commit em vez
+de perpetuar o inchaço. Causa raiz (por que `migrate-to-v2.mjs`
+ocasionalmente re-deriva e reapenda eventos históricos do ledger a partir
+do banco local) permanece não investigada — é bug de infraestrutura do
+scanner, fora do escopo desta rodada de triagem de findings.

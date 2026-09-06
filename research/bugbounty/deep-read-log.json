@@ -988,7 +988,10 @@
     "packages/flags/src/spec-extension/adapters/reflect.ts (ReflectAdapter -- copiado do Next.js, so repassa get/set/has/deleteProperty via Reflect.*, sem logica propria. Sem achado)",
     "packages/vercel-flags-core/src/utils/usage-tracker.ts (completo -- UsageTracker.trackRead dedup via WeakSet<object> por ctx de request, trackEvaluation bucketa por minuto; flushEvents so encaminha os proprios eventos ja construidos (FlagsConfigReadEvent/FlagsEvaluationEvent, cobertos antes) pra sendIngestEvents, sem novo campo de dado sensivel introduzido aqui. Sem achado)",
     "packages/flags/src/lib/report-value.ts (completo -- reportValue/internalReportValue so repassam key/value/sdkVersion pro callback reportValue do proprio request-context global do Vercel (globalThis[Symbol.for(...)]), nunca pra rede externa nem log; sem sink de terceiro. Sem achado)",
-    "packages/flags/src/lib/normalize-options.ts (completo, 16 linhas -- so normaliza primitivos (boolean/number/string/null) pra shape {value}, sem I/O nem logica de seguranca. Sem achado)"
+    "packages/flags/src/lib/normalize-options.ts (completo, 16 linhas -- so normaliza primitivos (boolean/number/string/null) pra shape {value}, sem I/O nem logica de seguranca. Sem achado)",
+    "packages/adapter-statsig/src/edge-runtime-hooks.ts (completo, 75 linhas -- isEdgeRuntime/createGlobalConfigDataAdapter/createSyncingHandler: connectionString do Global Config vem de options passadas pelo proprio integrador (nunca de request/env nao confiavel neste arquivo), sync helper so debounce por timestamp local, sem I/O de rede alem do proprio Statsig SDK. Sem achado)",
+    "packages/vercel-flags-core/src/controller/tagged-data.ts (completo, 38 linhas -- tagData/originToMetricsSource so anexam metadado interno de origem (stream/poll/bundled/provided/fetched) ao objeto de dados, sem logica de autenticacao/acesso. Sem achado)",
+    "packages/vercel-flags-core/src/errors.ts (completo, 21 linhas -- FallbackNotFoundError/FallbackEntryNotFoundError sao mensagens estaticas, nao interpolam sdkKey nem outro segredo. Sem achado)"
   ],
   "vercel/ms": [
     "src/index.ts"
