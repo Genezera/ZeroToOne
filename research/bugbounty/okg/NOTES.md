@@ -898,3 +898,72 @@ achado novo) — resolvido via `git reset --hard origin/master` +
 que só existia localmente) + reaplicação dos mesmos comandos de CLI
 sobre o estado atualizado, sem perda de trabalho nem sobrescrita do
 avanço das outras sessões.
+
+## Rodada 2026-09-06 #3 (cloud, disparada por push)
+
+`program-policy.json` conferido antes de qualquer clone (passo 0):
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados.
+`list-pending` global = 34, 100% em programas bloqueados (30 Auth0 by
+Okta, 4 Circle BBP) — nenhum arquivo desses repos lido, nenhuma
+transição de estado tentada neles.
+
+Leitura profunda proativa em `okx/go-wallet-sdk`, continuando a
+varredura pelo padrão já confirmado 5x no SDK. Busquei todo caller de
+`ed25519.NewKeyFromSeed` ainda não lido e achei dois novos casos reais:
+
+1. **6º irmão**: `crypto/ed25519/ed25519.go::PrivateKeyFromSeed` /
+   `PublicKeyFromSeed` — `hex.DecodeString(seedHex)` só checa erro de
+   decode, nunca o comprimento resultante, antes de
+   `ed25519.NewKeyFromSeed`. Esse helper compartilhado é usado por
+   `coins/aptos/aptos.go` (`NewAddress`, `SignRawTransaction`,
+   `SimulateTransaction` — todas públicas exportadas) e
+   `coins/sui/sui.go` (`NewAddress` e outras). PoC real: `go test` em
+   `coins/sui` (`go mod tidy` resolveu `go.sum`, `replace` local pro
+   módulo `crypto` lido neste commit) com `sui.NewAddress("ab")` —
+   panic real via `recover()`, PASS confirmando
+   `"ed25519: bad seed length: 1"`. Finding:
+   `OKG::okx/go-wallet-sdk/crypto/ed25519/ed25519.go::PrivateKeyFromSeed+PublicKeyFromSeed::ai_deep_read_finding`.
+
+2. **Achado relacionado, reachability mais indireta**:
+   `coins/ton/address.go::NewAddress` / `VenomNewAddress` — chamam
+   `ed25519.NewKeyFromSeed(seed)` direto sem checar `len(seed)==32`,
+   ao contrário de `NewWallet` no MESMO ARQUIVO, que faz a checagem
+   certa. Diferença dos demais irmãos: aqui `seed` já chega como
+   `[]byte`, não como string hex decodificada dentro da função —
+   registrado com essa ressalva explícita no `reasoning`. PoC real:
+   `go test` em `coins/ton` com `NewAddress([]byte("short"), 0)` —
+   panic real confirmando `"ed25519: bad seed length: 5"`. Finding:
+   `OKG::okx/go-wallet-sdk/coins/ton/address.go::NewAddress+VenomNewAddress::ai_deep_read_finding`.
+
+Também lido `coins/ton/connect.go` como contraste: `SignProof` já
+valida `len(seed)==ed25519.SeedSize` corretamente antes de
+`NewKeyFromSeed` — mais um contraexemplo confirmando que o padrão
+seguro é conhecido no codebase, sem achado isolado nesse arquivo.
+
+Ambos os findings avançaram `candidate` → `corroborated_static` →
+`reproduced_local` (PoC `go_manual_poc` pass em cada). `check-scope`
+confirmou `allowed=true` para `okx/go-wallet-sdk` (mesmo snapshot já
+usado nos achados anteriores). `record-deployment-evidence` registrado
+em ambos com `confidence="unverified"` (honesto: repo continua sem
+nenhuma tag/release Git — `git ls-remote --tags` vazio). Tentativa de
+`transition ... scope_verified` **recusada** em ambos pelo motivo
+esperado (`confidence="unverified"` exige `"high"`) — gate funcionando
+corretamente, não forçado nem contornado. Os dois findings permanecem
+em `reproduced_local`, mesma situação dos 5 achados-irmãos já
+existentes (cardano/solana/elrond/helium/polkadot) — família agora com
+7 membros confirmados, todos capados no mesmo ponto por falta de
+vínculo de deploy real verificável.
+
+`deep-read-log.json` atualizado com os 3 arquivos lidos nesta rodada
+(`crypto/ed25519/ed25519.go`, `coins/ton/address.go`,
+`coins/ton/connect.go`).
+
+Nota operacional: esta rodada também colidiu em `git push` com duas
+outras sessões concorrentes que avançaram `master` no meio do trabalho
+(`stackingdao` e `vercel/eve`, ambas sem achado novo em `okx/go-wallet-sdk`)
+— resolvido do mesmo jeito documentado na rodada #2: backup local dos
+arquivos editados manualmente (este NOTES.md e `deep-read-log.json`),
+`git reset --hard origin/master`, `migrate-to-v2.mjs` (confirmado que
+os dois achados desta rodada sobreviveram intactos em `zerotoone.db`,
+que nunca é tocado por operações de Git), reaplicação das edições
+manuais sobre os arquivos atualizados, `export-queue` de novo.
