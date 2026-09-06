@@ -1098,3 +1098,50 @@ gated pelo mesmo padrão. Sem achado — confirma que o guard de
 atualizado com a entrada `kubernetes/kubernetes`. Clone temporário
 removido ao final (não commitado, era só em `/tmp`). `export-queue`
 rodado ao final da rodada.
+
+## Rodada 2026-09-06 (scheduled routine, sessão cloud, push automático via GitHub webhook)
+
+`program-policy.json` conferido como passo zero — `Auth0 by Okta` e
+`Circle BBP` confirmados `blocked=true` via `check-program`, nenhum
+arquivo desses dois programas clonado/lido. `list-pending` global = 34,
+100% fora do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP) —
+skip completo, consistente com rodadas anteriores.
+
+Leitura profunda proativa direcionada a `kubernetes/kubernetes`
+(`check-program` confirmou `blocked=false`), sparse-checkout novo em
+`/tmp` cobrindo só `staging/src/k8s.io/apiserver/pkg/authentication`,
+`staging/src/k8s.io/apiserver/pkg/authorization`, `pkg/serviceaccount`,
+`pkg/registry/core/serviceaccount` e `pkg/apis/authentication` (repo
+completo grande demais pra clonar inteiro; filter=blob:none + depth=1
++ sparse-checkout cone ficou em ~1.5M). 3 arquivos novos lidos,
+priorizando path com `auth`/`token`:
+
+- `pkg/serviceaccount/jwt.go` — `JWTTokenAuthenticator.AuthenticateToken`:
+  parse não verificado só extrai `iss` antes da verificação de
+  assinatura (comentário explícito no código alertando que o payload
+  ainda não é confiável ali); assinatura verificada contra cada chave
+  pública cujo `kid` bate (ou todas, sem `kid`), issuer reconfirmado
+  depois, interseção de audiences com fallback pra `implicitAuds`.
+  `keyIDFromPublicKey` deriva o `kid` via SHA-256 do DER da chave
+  pública — não reversível, sem canal pra vazar a chave privada via
+  `kid`. Sem achado.
+- `staging/.../request/headerrequest/requestheader_controller.go` —
+  só sincroniza o ConfigMap `extension-apiserver-authentication` pra
+  uma struct em memória; a validação real de CN do client cert contra
+  `AllowedClientNames` mora em `requestheader.go` (irmão, ainda não
+  lido — pendência pra próxima rodada). Sem achado neste arquivo.
+- `staging/.../authentication/token/cache/cached_token_authenticator.go`
+  — cache de decisão de autenticação chaveado por
+  HMAC-SHA256(chave aleatória por processo) sobre token+audiences com
+  length-prefix (evita ambiguidade tipo `"xy"+"z"` vs `"x"+"yz"`),
+  `singleflight` colapsa lookups concorrentes, panic vira erro 500
+  genérico sem vazar stack. Sem achado.
+
+`deep-read-log.json` atualizado com as 3 entradas. Clone temporário
+removido ao final (só em `/tmp`, não commitado). `export-queue` rodado
+ao final da rodada.
+
+Pendência explícita pra próxima rodada: ler
+`staging/src/k8s.io/apiserver/pkg/authentication/request/headerrequest/requestheader.go`
+(a validação de CN do client cert do front-proxy em si, não o
+controller de config lido nesta rodada).
