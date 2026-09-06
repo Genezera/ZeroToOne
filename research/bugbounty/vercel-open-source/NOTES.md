@@ -9619,3 +9619,48 @@ achado mas reforça a robustez do processo de revisão.
 `deep-read-log.json` atualizado (`vercel/next.js`: +1 arquivo). Nenhum
 achado novo, nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final (sem mudança de conteúdo — nenhuma transição aplicada).
+
+## Rodada 2026-09-06d (scheduled routine, sessão cloud)
+
+`migrate-to-v2.mjs` rodado (818 findings). `program-policy.json` conferido
+como passo zero: `Block Open Source` (`aiResearchBanned`), `Circle BBP`
+(`blocked`, escolha do usuário) e `Auth0 by Okta` (`blocked`, RoE proíbe
+scanner automatizado) confirmados bloqueados via `check-program`, nenhum
+arquivo desses três programas clonado/lido. `list-pending` = 34 candidatos,
+100% em programas bloqueados (30 `Auth0 by Okta`, 4 `Circle BBP`) — skip
+completo, nenhum candidato novo em `Vercel Open Source` ou `StackingDAO`
+nesta rodada. Origin/master avançou duas vezes durante esta sessão
+(rodadas concorrentes em mattermost-plugin-calls e depois uma rodada sem
+achados); branch local rebaseado sobre `origin/master` (via reset +
+reaplicação manual do patch desta rodada, pelo conflito textual normal de
+`queue.jsonl`/`NOTES.md` apensado por outra sessão) e `migrate-to-v2.mjs`
+re-executado contra o `queue.jsonl` atualizado antes de prosseguir, sem
+sobrescrever nada das outras sessões.
+
+Leitura profunda proativa direcionada a `vercel/eve` (clone raso do HEAD
+atual, commit `9cb98b9`): varredura de nomes de arquivo com
+auth/session/crypto/token/login/password/admin/permission/access,
+filtrada contra `deep-read-log.json`. A grande maioria dos ~250 hits já
+estava coberta por rodadas anteriores (toda a superfície de
+`channel/auth/*`, `execution/tool-auth.ts`, `shared/session-auth.ts`,
+callbacks OAuth por canal, etc., todas já lidas e refutadas); dos
+remanescentes, priorizados 3 arquivos de fronteira sandbox/sessão ainda
+não lidos:
+- `execution/sandbox/session.ts` — `buildSandboxSession` é wrapper fino
+  sobre os primitives do backend (spawn/readFile/writeFile/removePath),
+  resolução de path delegada ao backend; isolamento real é o
+  container/sandbox em si (mesmo modelo já documentado em
+  `docker-session.ts`). Sem achado.
+- `harness/session-limit-continuation.ts` — prompt HITL determinístico do
+  guardrail de budget de tokens/custo; requestId derivado de
+  sessionId+violation (estritamente crescente), resposta casada por
+  requestId dentro do batch já escopado à sessão corrente — não decide
+  autorização de sessão por si (mesmo padrão de responsabilidade do app
+  integrador já documentado em `channel/session.ts`). Sem achado.
+- `shared/sandbox-session.ts` — só tipos derivados de
+  `Experimental_SandboxSession` da AI SDK, sem lógica nem fronteira de
+  autorização própria. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/eve`: +3
+arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final.

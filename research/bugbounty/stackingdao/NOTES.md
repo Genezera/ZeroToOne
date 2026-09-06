@@ -1666,3 +1666,17 @@ Leitura profunda proativa desta rodada direcionada inteiramente a
 handler do endpoint `__nuxt_island` e guardas de tamanho/profundidade
 de payload, mais o socket IPC dev-only do vite-node; sem achado).
 Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06c (scheduled routine, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via `check-program`,
+nenhum tocado. `list-pending` global = 34, 100% fora do escopo desta
+missão (30 Auth0 by Okta, 4 Circle BBP), skip completo. Os 15 contratos
+`.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada inteiramente a
+`vercel/eve` (ver NOTES.md de Vercel Open Source — 3 arquivos novos na
+fronteira sandbox/sessão, sem achado). Nenhuma transição de estado neste
+programa.
