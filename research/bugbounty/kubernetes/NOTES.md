@@ -1145,3 +1145,47 @@ Pendência explícita pra próxima rodada: ler
 `staging/src/k8s.io/apiserver/pkg/authentication/request/headerrequest/requestheader.go`
 (a validação de CN do client cert do front-proxy em si, não o
 controller de config lido nesta rodada).
+
+## Rodada 2026-09-06 #4 (scheduled routine, sessão cloud, push automático via GitHub webhook)
+
+`program-policy.json` conferido como passo zero via `check-program`
+para os dois candidatos presentes na fila: `Auth0 by Okta` e `Circle
+BBP`, ambos `blocked=true` confirmados novamente. `list-pending`
+global = 34, 100% fora do escopo desta missão (30 Auth0 by Okta, 4
+Circle BBP) — skip completo, consistente com rodadas anteriores.
+
+Leitura profunda proativa resolveu a pendência explícita deixada na
+rodada anterior. Sparse-checkout novo em `/tmp` cobrindo
+`staging/src/k8s.io/apiserver/pkg/authentication/request/headerrequest`
+e `.../request/x509` (repo completo grande demais). 3 arquivos lidos:
+
+- `requestheader.go` — `requestHeaderAuthRequestHandler.AuthenticateRequest`
+  de fato confia sem checagem adicional nos headers de
+  nome/uid/grupos/extra vindos de `req.Header`. Rastreado o caller
+  real até o fim: este handler nunca é exposto isolado — sempre
+  embrulhado por `x509request.NewDynamicCAVerifier`/`NewVerifier`
+  (em `x509.go`), que só delega a ele DEPOIS de (a) verificar a cadeia
+  do certificado cliente contra a CA configurada e (b) checar o CN do
+  certificado contra `allowedCommonNames`
+  (`--requestheader-allowed-names`). Sem certificado assinado pela CA
+  certa e com CN na allowlist, os headers de identidade nunca chegam a
+  ser processados — não há spoofing direto por cliente externo sem
+  esse certificado.
+- `x509.go` — `Verifier.AuthenticateRequest`/`verifySubject` fecham a
+  cadeia: verificam a cadeia do peer cert, rejeitam CN fora da
+  allowlist ANTES de delegar pro auth embrulhado. `parseUIDFromCert`
+  só lê UID do certificado com a feature gate
+  `AllowParsingUserUIDFromCertAuth` habilitada, rejeita OID duplicado
+  ou vazio. Sem achado.
+- `verify_options.go` — só carrega CA de arquivo pra
+  `x509.VerifyOptions.Roots`, nenhuma decisão de autorização aqui. Sem
+  achado.
+
+Conclusão: a pendência está resolvida — o design do front-proxy auth
+(client cert + CN allowlist antes de confiar em headers) está correto
+e fecha a cadeia completa, sem achado. Nenhuma pendência nova aberta
+nesta área; próxima rodada pode escolher outro diretório (ex.
+`authorization/`) se quiser continuar em `kubernetes/kubernetes`.
+`deep-read-log.json` atualizado com as 3 entradas. Clone temporário
+removido ao final (só em `/tmp`, não commitado). `export-queue`
+rodado ao final da rodada.
