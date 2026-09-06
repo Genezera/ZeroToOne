@@ -1275,3 +1275,49 @@ deep-read `mattermost-plugin-msteams`) até `origin/master` estabilizar em
 `deep-read-log.json` atualizado (`kubernetes/kubernetes`: +5, total 15).
 Nenhuma transição de estado neste programa. Clone temporário em `/tmp`,
 removido ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06h (push automático via GitHub webhook, push cd213e7->a54c423, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Kubernetes` confirmado
+`blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0 by Okta`
+confirmados bloqueados. `migrate-to-v2.mjs` reexecutado (820 findings).
+`list-pending` = 34 candidatos, 100% fora do escopo desta missão (30
+Auth0 by Okta, 4 Circle BBP, todos em programas bloqueados) — skip
+completo, nenhum arquivo desses dois programas foi tocado nesta rodada.
+
+Leitura profunda proativa: seguindo a sugestão explícita da rodada
+anterior, cloneei raso (`--filter=blob:none --sparse`) e li os 3 arquivos
+ainda pendentes de `staging/src/k8s.io/apiserver/pkg/authorization/authorizerfactory/`:
+
+- `builtin.go` — `alwaysAllowAuthorizer`/`alwaysDenyAuthorizer`/
+  `privilegedGroupAuthorizer`. `alwaysDenyAuthorizer.Authorize` retorna
+  `DecisionNoOpinion` (não `DecisionDeny`) apesar do nome — investigado
+  como possível desvio, mas não é: o comentário do próprio arquivo
+  documenta uso restrito a testes unitários, nunca usado standalone em
+  produção, e mesmo que fosse, `NoOpinion` já é fail-closed no
+  comportamento padrão do apiserver (só um `Allow` explícito concede
+  acesso; `union/union.go`, já revisado em rodada anterior, nunca deixa
+  um `NoOpinion` sobrescrever um `Deny` de outro authorizer na cadeia).
+  `privilegedGroupAuthorizer` só compara string exata de grupo, sem
+  wildcard. Sem achado.
+- `delegating.go` — constrói o authorizer webhook que delega pro
+  SubjectAccessReview do apiserver real; falha explicitamente se
+  `WebhookRetryBackoff` não foi configurado (sem default silencioso);
+  decisão padrão passada ao webhook é `DecisionNoOpinion`, mesma
+  semântica fail-closed de builtin.go. Sem achado.
+- `metrics.go` — só registro Prometheus via `sync.Once`, nenhuma lógica
+  de decisão. Sem achado.
+
+Conclusão: `authorizerfactory/` inteiro revisado, mesma maturidade
+fail-closed do resto da cadeia de auth já mapeada nas rodadas
+anteriores. Próxima rodada pode olhar `cel/` (compile.go, matcher.go —
+parsing/compilação da expressão CEL em si, ainda pendente) ou migrar
+pra outro diretório de `kubernetes/kubernetes` (ex. admission control,
+`pkg/registry/`).
+
+`deep-read-log.json` atualizado (`kubernetes/kubernetes`: +3, total 18).
+Nenhuma transição de estado neste programa. Clone temporário no
+scratchpad, removido ao final. `export-queue` rodado ao final. Base
+rebaseada duas vezes por push concorrente durante a rodada (`a54c423`->
+`0cf0dc6` deep-read `nuxt/nuxt`, depois `0cf0dc6`->`8b82df2` deep-read
+`vercel/flags`); sem overlap com este programa/diretório em nenhum caso.
