@@ -1829,3 +1829,22 @@ NOTES.md de Vercel Open Source — 3 arquivos novos: hash não-criptográfico
 de cache-key, carryover de estado via sessionStorage e geração de tipos
 de rota build-time, sem achado). Nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-06n (push automático via GitHub webhook, sessão cloud, push 864faac)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados via `check-program`, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 `Auth0
+by Okta`, 4 `Circle BBP`), skip completo. Os 15 contratos `.clar` já
+lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo (não retestado
+`api.hiro.so` nesta rodada — bloqueio de proxy documentado há dezenas de
+rodadas, sem sinal de mudança de condição).
+
+Leitura profunda proativa desta rodada direcionada a `vercel/ai` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos: repasse de token de
+sessão realtime pro backend do próprio integrador, tipo de config de
+sessão realtime e mensagem de erro de autenticação do gateway sem
+interpolar credencial real, sem achado). Nenhuma transição de estado
+neste programa.

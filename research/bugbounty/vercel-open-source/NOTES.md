@@ -10159,3 +10159,47 @@ eventos de `ledger/ledger.research.jsonl` com uma cadeia
 commit (`git checkout origin/master -- ledger/ledger.research.jsonl`);
 `docs/zerotoone-v2/migration-log.json` mantido (esse é sobrescrito por
 inteiro a cada rodada, não é append-only, então não tem o mesmo risco).
+
+## Rodada 2026-09-06o (push automático via GitHub webhook, sessão cloud, push 864faac)
+
+`migrate-to-v2.mjs` rodado (820 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Vercel Open Source` e
+`StackingDAO` confirmados `blocked:false`; `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados — nenhum arquivo
+desses três clonado/lido/aberto. `list-pending` = 34 candidatos, 100%
+fora do escopo desta missão (30 `Auth0 by Okta`, 4 `Circle BBP`), skip
+completo.
+
+Leitura profunda proativa direcionada a `vercel/ai` (clone raso do HEAD
+atual). Comparação contra `deep-read-log.json` (54 arquivos já
+documentados nesse repo) identificou 3 arquivos genuinamente novos com
+nome relevante (auth/token/session):
+
+- `packages/ai/src/realtime/realtime-session.ts` — `AbstractRealtimeSession.connect()`
+  faz `POST` para `this.api.token`, um endpoint fornecido pelo próprio
+  app integrador (não hardcoded, não exposto pela lib), recebe
+  `{token,url,tools}` e só repassa pro transport — a lib nunca gera nem
+  valida credencial, mesmo padrão de credential-forwarding já confirmado
+  em outros pontos do pacote (harness-*). Sem achado.
+- `packages/provider/src/realtime-model/v4/realtime-model-v4-session-config.ts`
+  — só tipo TS `RealtimeModelV4SessionConfig`, sem lógica de runtime.
+  Sem achado.
+- `packages/gateway/src/errors/gateway-authentication-error.ts` —
+  `GatewayAuthenticationError.createContextualError` monta mensagem de
+  erro conforme `apiKeyProvided`/`oidcTokenProvided`, nunca interpola o
+  valor real da credencial na mensagem (só instrui onde obter uma
+  nova). Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (`vercel/ai`: 54 → 57
+arquivos). Nenhuma transição de estado nesta rodada. Clone temporário
+removido do scratch dir ao final.
+
+Reincidência confirmada do mesmo bug operacional das rodadas `2026-09-06m`/`n`:
+`migrate-to-v2.mjs` reapendiceu os mesmos 74 eventos de
+`ledger/ledger.research.jsonl` com uma cadeia `prevHash`/`hash`
+divergente da já publicada. Restaurado
+`ledger/ledger.research.jsonl` pra versão de `origin/master` antes do
+commit (`git fetch origin master && git checkout origin/master --
+ledger/ledger.research.jsonl`); `docs/zerotoone-v2/migration-log.json`
+mantido (sobrescrito por inteiro a cada rodada, sem o mesmo risco).
+`export-queue` rodado ao final.
