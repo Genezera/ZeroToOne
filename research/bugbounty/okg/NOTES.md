@@ -967,3 +967,36 @@ arquivos editados manualmente (este NOTES.md e `deep-read-log.json`),
 os dois achados desta rodada sobreviveram intactos em `zerotoone.db`,
 que nunca é tocado por operações de Git), reaplicação das edições
 manuais sobre os arquivos atualizados, `export-queue` de novo.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero: `Auth0 by Okta` e
+`Circle BBP` confirmados bloqueados via `check-program`, nenhum arquivo
+desses dois programas clonado/lido. `list-pending` = 34 candidatos,
+100% em programas bloqueados (30 `Auth0 by Okta`, 4 `Circle BBP`) —
+skip completo.
+
+Leitura profunda proativa direcionada de forma independente a
+`okx/go-wallet-sdk` (mesmo commit `12fec6b0...`), seguindo a mesma
+família de bugs já confirmada 5x (cardano/solana/elrond/helium/polkadot):
+encontrei e cheguei a registrar `coins/ton/address.go::NewAddress+
+VenomNewAddress+NewWallet` (PoC real com `go test`, panic confirmado
+em 3 variantes) — mas ao rebasear sobre `origin/master` no fim da
+rodada descobri que uma sessão concorrente já havia registrado,
+~30s antes, o finding equivalente
+`OKG::okx/go-wallet-sdk/coins/ton/address.go::NewAddress+VenomNewAddress::ai_deep_read_finding`
+(commit `12ad41c`, mesmo arquivo, mesmas duas funções públicas, mesma
+causa raiz, PoC real independente com o mesmo resultado) além de um
+7º irmão em `crypto/ed25519/ed25519.go::PrivateKeyFromSeed+
+PublicKeyFromSeed` que eu não tinha lido. Tratado como duplicata
+interna: **não** mantive meu finding separado (id com `+NewWallet` no
+sufixo) — descartei-o (`git reset --hard origin/master` +
+`rm zerotoone.db` + `migrate-to-v2.mjs` limpo a partir do
+`queue.jsonl` já correto) em favor do já registrado, para não poluir a
+fila com dois findings sobre o mesmo bug. Nenhum estado de `duplicate`
+foi auto-atribuído (esse campo é reservado para resultado real de
+triagem de plataforma, não para dedup interno). Convergência
+independente de duas sessões no mesmo bug serve como confirmação
+adicional da causa raiz, sem valor incremental de achado novo.
+`export-queue` rodado ao final (sem mudança de conteúdo líquida —
+apenas reordenação, descartada).
