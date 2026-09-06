@@ -9900,3 +9900,38 @@ com superfície plausível (telemetria/serialização):
 Sem achado. `deep-read-log.json` atualizado (`vercel/flags`: 31 → 34
 arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06i (scheduled routine, sessão cloud, push 8c2a8f6->496f729)
+
+`migrate-to-v2.mjs` rodado (820 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`, escolha do usuário)
+confirmados bloqueados — nenhum arquivo desses programas clonado/lido;
+`Auth0 by Okta` também confirmado bloqueado (RoE proíbe ferramenta/
+scanner automatizado). `list-pending` = 34 candidatos, 100% nesses dois
+últimos programas bloqueados (30 `Auth0 by Okta`, 4 `Circle BBP`) — skip
+completo, nenhum candidato novo em `Vercel Open Source` ou `StackingDAO`
+nesta rodada.
+
+Leitura profunda proativa direcionada a `nitrojs/nitro` de novo (clone
+raso do HEAD atual, commit `c5177e9`): filtro de nome de arquivo
+(auth/session/crypto/token/login/password/admin/permission/access/secret/
+cors/csrf) só bateu em `examples/middleware/server/middleware/auth.ts`,
+já coberto (arquivo de exemplo sem lógica real). Ampliei pra grep de
+conteúdo por padrões de superfície real (setCookie/getCookie/
+Authorization/hmac/randomBytes/timingSafeEqual/same-origin/
+Access-Control) — 2 arquivos genuinamente novos:
+
+- `src/presets/azure/runtime/_utils.ts` (`getAzureParsedCookiesFromHeaders`,
+  completo) — traduz o `Set-Cookie` da RESPOSTA que o próprio nitro já
+  construiu para o formato `Cookie[]` da Azure Functions
+  (`httpOnly`/`secure`/`sameSite` preservados). Não faz parsing de
+  cookie de ENTRADA não confiável — é só adaptação de saída pro runtime
+  específico da Azure. Sem achado.
+- `src/types/openapi.ts` — só declaração de tipo TS
+  (`persistAuthorization?: boolean`, opção de config do Swagger UI),
+  sem lógica executável. Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (`nitrojs/nitro`: 10 →
+12 arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final.

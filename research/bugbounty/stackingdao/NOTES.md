@@ -1764,3 +1764,20 @@ Leitura profunda proativa desta rodada direcionada a `vercel/flags` (3
 arquivos novos em telemetria/serialização — ver NOTES.md de Vercel Open
 Source para detalhes técnicos, sem achado). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-06i (scheduled routine, sessão cloud, push 8c2a8f6->496f729)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados via `check-program`, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 Auth0
+by Okta, 4 Circle BBP), skip completo. Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`,
+sem contrato novo (não retestado `api.hiro.so` nesta rodada — bloqueio
+de proxy documentado há dezenas de rodadas, sem sinal de mudança de
+condição).
+
+Leitura profunda proativa desta rodada direcionada a `nitrojs/nitro` (ver
+NOTES.md de Vercel Open Source — 2 arquivos novos, cookie adapter da
+Azure e tipo de config do Swagger UI, sem achado). Nenhuma transição de
+estado neste programa.
