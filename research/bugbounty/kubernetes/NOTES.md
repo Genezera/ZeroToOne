@@ -1219,3 +1219,59 @@ rodadas anteriores.
 `deep-read-log.json` atualizado (`kubernetes/kubernetes`: +3, total
 10). Nenhuma transição de estado neste programa. Clone temporário em
 `/tmp`, removido ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06g (push automático via GitHub webhook, push 5aa8919->2af470c, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Kubernetes` confirmado
+`blocked:false` via `check-program`; `Block Open Source`, `Circle BBP` e
+`Auth0 by Okta` confirmados bloqueados, nenhum tocado. `migrate-to-v2.mjs`
+reexecutado (820 findings). `list-pending` = 34 candidatos, 100% fora do
+escopo desta missão (30 Auth0 by Okta, 4 Circle BBP) — skip completo.
+
+Leitura profunda proativa: seguindo a sugestão explícita da rodada
+anterior ("próxima rodada pode escolher outro diretório, ex.
+`authorization/`"), cloneei raso (`--filter=blob:none --sparse`) e li os
+5 arquivos não-teste ainda pendentes de
+`staging/src/k8s.io/apiserver/pkg/authorization/` relevantes à decisão de
+autorização real (excluindo `authorizerfactory/`, `cel/` e `metrics/`,
+deixados para rodada futura):
+
+- `path/path.go` — `NewAuthorizer` (paths estáticos AlwaysAllow) só
+  retorna `Allow` para path não-resource batendo allowlist/prefixo
+  exato, nunca `Deny`, nunca para requisição de recurso. Sem achado.
+- `union/union.go` — irmão do `authentication/union.go` já revisado,
+  mas para `Authorizer` (RBAC+Node+Webhook). Rastreada especificamente
+  a interação entre `ConditionsAwareAuthorize` (que não para de iterar
+  em decisão condicional pendente, só em Allow/Deny incondicional) e
+  `EvaluateConditions` (que resolve na mesma ordem original quando os
+  dados chegam): confirmado que uma `ConditionsMap` pendente de um
+  autorizador anterior na cadeia sempre é avaliada antes de um `Allow`
+  incondicional de um autorizador posterior ser considerado válido —
+  não há inversão de ordem/precedência. Sem achado.
+- `authorizer/rule.go` — trivial, só structs de dados. Sem achado.
+- `authorizer/evaluate.go` — lógica central do matching CEL
+  (`StructuredAuthorizationConfiguration`): precedência
+  Deny > NoOpinion > Allow entre grupos, `true > error > unevaluatable >
+  false` dentro de cada grupo, erro em Deny/NoOpinion fecha fail-closed
+  (nunca abre para Allow por causa de um erro). Sem achado.
+- `authorizer/conditions.go` — `ConditionsAwareDecision` tem zero-value
+  == Deny (fail-closed por padrão, comentado explicitamente no código);
+  `UnconditionalPartsOrFailClosed` nunca autoriza uma decisão ainda
+  condicional. Sem achado.
+
+Conclusão: a peça de composição condicional (CEL matchConditions) é
+recente e mais complexa que o resto da cadeia de auth já mapeada, mas
+o desenho é consistente e conservador (fail-closed em todo ponto de
+ambiguidade/erro), sem desvio encontrado. Próxima rodada pode olhar
+`authorizerfactory/` (builtin.go, delegating.go, metrics.go) ou
+`cel/` (compile.go, matcher.go — parsing/compilação da expressão CEL
+em si, superfície diferente da composição de decisões já coberta aqui).
+
+Base rebaseada duas vezes por push concorrente durante a rodada
+(`2af470c`->`4724e1d` deep-read `vercel/swr`, depois `4724e1d`->`cd213e7`
+deep-read `mattermost-plugin-msteams`) até `origin/master` estabilizar em
+`cd213e7`; nenhum overlap com este programa/diretório em ambos os casos.
+
+`deep-read-log.json` atualizado (`kubernetes/kubernetes`: +5, total 15).
+Nenhuma transição de estado neste programa. Clone temporário em `/tmp`,
+removido ao final. `export-queue` rodado ao final.
