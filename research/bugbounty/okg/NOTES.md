@@ -1020,3 +1020,46 @@ coins; aqui não há geração de chave alguma.
 
 `deep-read-log.json` atualizado. Nenhum achado novo, nenhuma transição
 de estado nesta rodada — resultado normal e válido.
+
+## Rodada 2026-09-06 #3 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido no passo 0 antes de tocar em qualquer
+repositório: `Auth0 by Okta` e `Circle BBP` confirmados bloqueados via
+`check-program`. `list-pending` global = 34 candidatos, 100% nesses
+dois programas (30 `Auth0 by Okta`, 4 `Circle BBP`) — skip completo,
+nenhum arquivo desses dois programas clonado/lido.
+
+Leitura profunda proativa, 3 arquivos:
+
+- `kubernetes/kubelet` (2 arquivos novos, clone raso público
+  descartado ao final): `pkg/apis/credentialprovider/v1beta1/
+  conversion.go` + `.../v1alpha1/conversion.go`. Ambas omitem
+  deliberadamente `serviceAccountToken`/`serviceAccountAnnotations` ao
+  converter de `internal` para as versões antigas da API — comentário
+  no próprio código documenta que esses campos só existem na v1.
+  Downgrade de schema intencional e documentado (plugin negociando
+  protocolo v1beta1/v1alpha1 nunca recebe esses campos na wire
+  request, por design), não é vazamento nem omissão acidental. Sem
+  achado.
+- `okx/go-wallet-sdk` (mesmo commit `12fec6b0...`, clone raso público
+  descartado ao final): `coins/oasis/account.go` — **ACHADO REAL**, 7º
+  irmão da mesma família já confirmada 6x neste SDK/programa
+  (cardano/solana/elrond/helium/polkadot/aptos-sui). `NewAddress` e
+  `SignTransaction` recebem `privateKeyHex` (documentado no README
+  como uso normal), decodificam via `hex.DecodeString`
+  (`SignTransaction` ainda descarta o próprio erro do decode) e
+  castam direto pra `ed25519.PrivateKey` sem checar comprimento algum,
+  seguido de `privateKey[32:]` pra extrair a pubkey — pior que os 6
+  irmãos anteriores (nem sequer usa `ed25519.NewKeyFromSeed`, é slice
+  cru sem nenhuma validação). PoC real com `go test` (`go mod tidy`
+  resolveu go.sum) confirmou panic real: `slice bounds out of range
+  [32:1]` via `NewAddress("ab")` e `[32:0]` via `SignTransaction` com
+  hex inválido. Finding
+  `OKG::okx/go-wallet-sdk/coins/oasis/account.go::NewAddress+SignTransaction::ai_deep_read_finding`
+  chegou a `reproduced_local`; `scope_verified` recusado corretamente
+  por `deploymentEvidence.confidence=unverified` (repo sem
+  tags/releases Git pra ancorar contra build de produção real da
+  OKX) — mesma barreira dos 6 achados-irmãos, sistema funcionando como
+  esperado, não forçado.
+
+`deep-read-log.json` atualizado. `export-queue` rodado ao final.
