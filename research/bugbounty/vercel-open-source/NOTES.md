@@ -9379,3 +9379,44 @@ Nenhum achado novo. `deep-read-log.json` atualizado (`nitrojs/nitro`:
 7 → 10 arquivos). Os 8 achados `corroborated_static` deste programa
 seguem no teto estrutural já documentado (sem validador local para
 não-Solidity). `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push b6c7f49f->50c8788e, sessão cloud, rodada seguinte #6)
+
+`program-policy.json` conferido como passo zero. `list-pending` global
+= 34 candidatos, 100% em programas bloqueados (30 Auth0 by Okta, 4
+Circle BBP) — nenhum tocado, nenhum arquivo desses repositórios
+clonado/lido. Push concorrente de outra sessão (`50c8788`→`6d5664c`,
+rodada em `nitrojs/nitro`) detectado no `git push`; branch local
+rebaseado para `origin/master` e `migrate-to-v2.mjs` re-executado
+contra o `queue.jsonl` já atualizado antes de reaplicar as mudanças
+desta rodada — nenhum trabalho da outra sessão sobrescrito. Os 8
+achados `corroborated_static` deste programa seguem no mesmo teto
+estrutural (sem validador local pra tipos não-Solidity, já documentado
+em rodadas anteriores).
+
+Leitura profunda proativa direcionada a `vercel/flags` (clone raso,
+HEAD `c9d28116`), sweep de keywords auth/session/crypto/token/.../
+cookie contra `deep-read-log.json` (27 arquivos já cobertos): zero
+arquivo novo bateu a keyword de prioridade (`crypto.test.ts` já estava
+coberto — falso "não lido" da comparação exata de string, corrigido
+verificando prefixo). Julgamento próprio escolheu 4 arquivos de
+`packages/vercel-flags-core` como próxima superfície plausível depois
+de auth/crypto/cookies já esgotados:
+
+- `utils/read-bundled-definitions.ts` — `sdkKey` só usado como chave
+  de lookup num `Map` estático gerado em build-time pelo Vercel CLI
+  (import estático de `@vercel/flags-definitions`, nunca dinâmico);
+  tenta chave plana e depois SHA-256(sdkKey) para compat com CLIs
+  antigos. Sem achado.
+- `controller/index.ts` (831 linhas) — state machine de
+  streaming/polling/bundled/fetch, delega toda decisão de auth real a
+  `controller/auth.ts` (já coberto em rodada anterior). Sem achado.
+- `controller/normalized-options.ts` — só normaliza flags de config
+  numéricas/booleanas, `auth` passado como objeto opaco sem
+  transformação. Sem achado.
+- `spec-extension/adapters/reflect.ts` — `ReflectAdapter` copiado do
+  Next.js, repassa get/set/has/deleteProperty via `Reflect.*` puro, sem
+  lógica própria. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/flags`: 27
+→ 31 arquivos). `export-queue` rodado ao final da rodada.

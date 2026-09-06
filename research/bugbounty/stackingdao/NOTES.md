@@ -1628,3 +1628,24 @@ dezenas de rodadas, sem sinal de mudança de condição).
 Leitura profunda proativa desta rodada direcionada inteiramente a
 `nitrojs/nitro` (ver NOTES.md de Vercel Open Source — 3 arquivos novos,
 sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push b6c7f49f->50c8788e, sessão cloud, rodada seguinte #6)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado liberado via `check-program`. `list-pending` global = 34,
+100% fora do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP),
+skip completo. `api.hiro.so` retestado via `curl -v`: `CONNECT tunnel
+failed, response 403` — mesmo bloqueio de proxy documentado há dezenas
+de rodadas, condição inalterada. Origin/master havia avançado durante
+a rodada (outra sessão concorrente, rodada em `nitrojs/nitro`); branch
+local rebaseado para `origin/master` e `migrate-to-v2.mjs`
+re-executado contra o `queue.jsonl` atualizado antes de prosseguir —
+ver detalhe em NOTES.md de Vercel Open Source. Os 15 contratos `.clar`
+já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/flags`
+(ver NOTES.md de Vercel Open Source — 4 arquivos novos em
+`vercel-flags-core` (bundled-definitions lookup, controller
+state-machine, normalização de opções, ReflectAdapter); sem achado).
+Nenhuma transição de estado neste programa.

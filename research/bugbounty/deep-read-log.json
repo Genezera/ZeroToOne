@@ -947,7 +947,11 @@
     "packages/vercel-flags-core/src/evaluate.ts",
     "packages/flags/src/sveltekit/precompute.ts",
     "packages/flags/src/sveltekit/env.ts",
-    "packages/flags/src/lib/crypto.test.ts (completo, 78 linhas -- confirma por teste que decrypt com secret errado retorna undefined e que encryptFlagDefinitions nao verifica como access proof (separacao de claim de proposito ja documentada em crypto.ts). Sem achado, confirma auditoria anterior)"
+    "packages/flags/src/lib/crypto.test.ts (completo, 78 linhas -- confirma por teste que decrypt com secret errado retorna undefined e que encryptFlagDefinitions nao verifica como access proof (separacao de claim de proposito ja documentada em crypto.ts). Sem achado, confirma auditoria anterior)",
+    "packages/vercel-flags-core/src/utils/read-bundled-definitions.ts (readBundledDefinitions -- sdkKey so usado como chave de lookup num Map estatico gerado em build time pelo Vercel CLI (import estatico de '@vercel/flags-definitions', nunca dinamico/interpolado); tenta chave plana e depois SHA-256(sdkKey) pra compatibilidade com CLIs antigos, sem short-circuit nem comparacao insegura. Sem achado)",
+    "packages/vercel-flags-core/src/controller/index.ts (completo, 831 linhas -- Controller: state machine de idle/streaming/polling/degraded/build, delega toda decisao de autenticacao real a controller/auth.ts (ja coberto), aqui so orquestra stream/poll/bundled/fetch como fallback chain. Sem achado)",
+    "packages/vercel-flags-core/src/controller/normalized-options.ts (normalizeOptions -- so normaliza flags de configuracao numericas/booleanas, auth passado como objeto opaco sem transformacao. Sem achado)",
+    "packages/flags/src/spec-extension/adapters/reflect.ts (ReflectAdapter -- copiado do Next.js, so repassa get/set/has/deleteProperty via Reflect.*, sem logica propria. Sem achado)"
   ],
   "vercel/ms": [
     "src/index.ts"
