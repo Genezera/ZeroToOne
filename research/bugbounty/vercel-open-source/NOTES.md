@@ -9110,3 +9110,35 @@ de outra sessão) não foi revisitado nesta rodada. Leitura profunda
 proativa desta rodada ficou em `okx/go-wallet-sdk` (ver NOTES.md de
 OKG), fora do escopo deste programa. `export-queue` rodado ao final da
 rodada.
+
+## Rodada 2026-09-06 (cloud, disparada por push, sessão separada)
+`list-pending` global de novo = 34 candidatos, 100% Auth0 by Okta (30,
+bloqueado) + Circle BBP (4, bloqueado) — skip completo, nenhum arquivo
+desses dois programas tocado. `program-policy.json` conferido antes de
+qualquer escolha de alvo. Achado pendente em `nitrojs/nitro::vfs.ts`
+seguiu inalterado — `corroborated_static` com
+`deploymentEvidence.confidence=unverified`, sem novo elemento pra
+justificar nova tentativa de transição.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs` (nota: o
+script precisou rodar com `env -u GITHUB_TOKEN` — a variável do
+ambiente vem pré-preenchida com o placeholder `proxy-injected`, que a
+API do GitHub rejeita com 404 quando enviado como `Authorization:
+Bearer`; sem o header a chamada anônima funciona normalmente — condição
+do ambiente de execução, não do código deste projeto). Candidato
+escolhido: `vercel/workflow` (2370★, abaixo do limiar de "todo mundo já
+leu", menor cobertura entre os não-bloqueados nesta consulta). Clone
+raso temporário (`git clone --depth 1`), removido ao final. 3 arquivos
+novos lidos, nenhum ainda tocado por rodadas anteriores
+(`packages/core/src/define-hook.ts`,
+`packages/core/src/workflow/define-hook.ts`, e
+`packages/world/src/hooks.ts`) — os dois primeiros são wrappers finos
+que só delegam pra `resumeHook`/`createHook` já auditados a fundo em
+rodada anterior (nenhuma lógica de autorização própria); o terceiro é
+schema Zod puro do protocolo de hook, sem lógica executável, e só
+confirma (sem novidade) que `ownerId`/`projectId`/`environment` são
+campos do registro cujo isolamento real vem do token/credencial Vercel
+na borda do backend, não de filtro por linha neste contrato — mesma
+conclusão já registrada nas rodadas anteriores sobre a arquitetura de
+hooks. Sem achado novo. `deep-read-log.json` atualizado
+(`vercel/workflow`: 38 → 41 arquivos).
