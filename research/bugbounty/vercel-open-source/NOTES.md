@@ -9245,3 +9245,53 @@ Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/workflow`:
 41 → 44 arquivos). `api.hiro.so` (StackingDAO) retestado via `curl -v`:
 `CONNECT tunnel: HTTP 403 Forbidden`, condição inalterada — ver NOTES.md
 de StackingDAO. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push 34017281->880c9c11, sessão cloud, rodada seguinte #3)
+
+Revisitados os 8 achados `corroborated_static` deste programa ainda
+sem `deploymentEvidence`: `check-scope` reconfirmou escopo/elegibilidade
+para os 5 repos (next.js, vercel/vercel, vercel-labs/agent-skills,
+vercel/ai, nitrojs/nitro). Registrado `deploymentEvidence`
+(confidence=unverified, honesto quanto à impossibilidade de vincular a
+um deploy real específico — next.js é biblioteca consumida por
+milhares de deployments independentes) no achado de `image-optimizer.ts`
+(SSRF), que ainda não tinha esse registro. A leitura de
+`state-machine.mjs` confirmou que `scope_verified` sempre exige passar
+por `reproduced_local` primeiro — para achados JS/TS sem validador
+local essa transição já está (corretamente) capada como
+`not_applicable`, não há atalho direto de `corroborated_static` para
+`scope_verified`. Tentativa de transição direta foi recusada pela
+máquina de estados, como esperado — nenhuma tentativa de contornar. Os
+8 achados seguem em `corroborated_static`, teto estrutural do sistema
+hoje (sem validador pra tipos não-Solidity).
+
+Leitura profunda proativa direcionada de novo a `vercel/ai`, na família
+`harness-*/bridge/*` ainda não tocada (comm -23 entre um sweep de
+palavras-chave auth/session/token/... no clone raso e o
+`deep-read-log.json` existente, ~113 candidatos, maioria já lida):
+- `packages/harness/src/errors/harness-sandbox-authentication-error.ts`
+  — só classe de erro tipada (marker `AISDKError.hasMarker`), sem
+  lógica de autenticação. Sem achado.
+- `packages/harness-codex/src/bridge/tool-relay.ts` — servidor HTTP
+  bind explícito em `127.0.0.1` com porta aleatória (`port:0`); a
+  "autorização" de cada chamada de tool é um match exato de chave
+  `toolName + canonicalJson(input)` contra uma autorização
+  pré-registrada pelo lado host via `authorizeToolCall()` — não é
+  comparação de segredo/token, é aprovação de call específica.
+  Rastreado até `tool-relay-auth.ts::ToolRelayAuthorizer` (já lido em
+  rodada anterior). Mesmo modelo de ameaça dos demais arquivos de
+  credential-forwarding do harness (processo local dentro do sandbox,
+  sem fronteira multi-tenant cruzada). `ToolRelayPendingCalls.begin`
+  dedupe por chave evita reexecução duplicada da mesma chamada. Sem
+  achado.
+- `packages/harness-claude-code/src/bridge/index.ts` (902 linhas) —
+  chama `runBridge` sem token explícito, mesmo padrão dos outros 4
+  harnesses já auditados (depende de `BRIDGE_CHANNEL_TOKEN` setado no
+  spawn pelo processo pai) — confirma, não contradiz, a conclusão já
+  registrada no achado `timing_attack_risk` de `runBridge`. Restante do
+  arquivo é lógica de mapeamento de tool-use/permissão do Claude Agent
+  SDK sobre o bridge já revisado, sem servidor de rede próprio. Sem
+  achado novo.
+
+`deep-read-log.json` atualizado (`vercel/ai`: 45 → 48 arquivos).
+`export-queue` rodado ao final da rodada.

@@ -1577,3 +1577,36 @@ Leitura profunda proativa desta rodada direcionada inteiramente a
 `vercel/workflow` (ver NOTES.md de Vercel Open Source — 3 arquivos
 novos de serialização/execução, sem achado). Nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push 34017281->880c9c11, sessão cloud, rodada seguinte #3)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum tocado. `list-pending` global = 34, 100% fora
+do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP), skip
+completo. Os 15 contratos `.clar` já lidos seguem cobrindo 100% dos 13
+assets do `scope-snapshots/stackingdao.json`, sem contrato novo (sem
+retestar `api.hiro.so` nesta rodada — bloqueio de proxy documentado há
+dezenas de rodadas, nenhuma mudança de condição a verificar).
+
+Revisitados os 8 achados `corroborated_static` de Vercel Open Source
+ainda sem `deploymentEvidence` registrado: `check-scope` confirmou
+`allowed=true`/`bountyEligible=true` para os 5 repos envolvidos
+(next.js, vercel/vercel, vercel-labs/agent-skills, vercel/ai,
+nitrojs/nitro). Registrado `deploymentEvidence` (confidence=unverified)
+no achado de `image-optimizer.ts` (SSRF), que ainda não tinha. Tentativa
+de transição direta `corroborated_static->scope_verified` foi
+corretamente recusada pela máquina de estados — confirmado lendo
+`state-machine.mjs`: a transição exigida é sempre
+`corroborated_static->reproduced_local` primeiro, e para achados
+não-Solidity sem validador essa etapa já está documentada como
+`not_applicable` (bloqueio estrutural intencional, não bug). Os outros
+7 achados já tinham essa validação `not_applicable` registrada
+corretamente em rodada anterior — nenhum precisava de correção. Todos
+os 8 seguem capados em `corroborated_static`, como desenhado.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/ai` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos na família
+harness-*/bridge/*, incluindo o servidor HTTP local do tool-relay do
+harness-codex; sem achado, mesmo modelo de ameaça já estabelecido).
+Nenhuma transição de estado neste programa.
