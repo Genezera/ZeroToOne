@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-06T08:50:22.131Z",
+  "checkedAt": "2026-09-06T23:14:07.194Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -603,13 +603,13 @@
       ]
     },
     "vercel-labs/skills": {
-      "sha": "435076e78988e1e6ec40d00b0b1d76bdbbc5419a",
+      "sha": "1682051d48c34f5eb135e6475c1a965dce05e820",
       "branch": "main",
-      "parentSha": "99b56aacf31712cd704bc15d616d03830576cc15",
-      "committedAt": "2026-08-18T20:28:31Z",
-      "url": "https://github.com/vercel-labs/skills/commit/435076e78988e1e6ec40d00b0b1d76bdbbc5419a",
-      "title": "v1.5.23",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "038f9bfbadfeb943949318617c83ffe6a8681ca8",
+      "committedAt": "2026-09-06T22:47:51Z",
+      "url": "https://github.com/vercel-labs/skills/commit/1682051d48c34f5eb135e6475c1a965dce05e820",
+      "title": "v1.5.24",
+      "observedAt": "2026-09-06T23:14:07.194Z",
       "programs": [
         "Vercel Open Source"
       ],
