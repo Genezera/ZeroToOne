@@ -1,5 +1,48 @@
 # Mattermost Public Bug Bounty Engagement (Bugcrowd) — notas de pesquisa
 
+## Rodada 2026-09-06d (push automático via GitHub webhook, sessão cloud)
+
+`research/bugbounty/program-policy.json` conferido como passo zero
+(regra do CLAUDE.md): `Auth0 by Okta` e `Circle BBP` seguem
+`blocked:true`. `list-pending` = 34 candidatos, 100% nesses dois
+programas (30 `Auth0 by Okta`, 4 `Circle BBP`) — skip completo, nenhum
+arquivo desses dois programas tocado.
+
+Leitura profunda proativa em `mattermost/mattermost-plugin-mscalendar`
+(repo novo, nunca coberto por `deep-read-log.json`), clone raso
+público. Priorizei o fluxo OAuth2 (mesma classe de bug já encontrada
+em `mattermost-plugin-confluence` na rodada anterior — CSRF de
+account-linking por falta de checar o `mattermostUserID` embutido no
+`state` contra o usuário que completa o fluxo). 4 arquivos lidos:
+`calendar/utils/oauth2connect/oauth2_connect.go`,
+`calendar/utils/oauth2connect/oauth2_complete.go`,
+`calendar/utils/oauth2connect/oauth2.go`, `calendar/engine/oauth2.go`.
+
+- Hipótese investigada (a mesma vulnerabilidade do `-confluence`,
+  agora refutada aqui): `InitOAuth2`/`CompleteOAuth2`
+  (`engine/oauth2.go`) geram `state` no mesmo formato
+  `<random>_<mattermostUserID>` e o handler HTTP lê o usuário
+  autenticado do header `Mattermost-User-ID` em ambas as pontas
+  (`oauth2_connect.go`/`oauth2_complete.go`), igual ao padrão já visto
+  em `-confluence` e `-jira`. Diferença decisiva: `CompleteOAuth2`
+  faz `mattermostUserID := strings.Split(state, "_")[1]; if
+  mattermostUserID != authedUserID { return errors.New("not
+  authorized, user ID mismatch") }` — ou seja, o usuário embutido no
+  `state` É comparado explicitamente contra `authedUserID` (o usuário
+  real que completou o fluxo) antes de vincular a conta. Esse é
+  exatamente o gate que faltava em `-confluence`
+  (`VerifyOAuth2State` lá só confere existência/TTL do nonce, nunca
+  compara o `mattermostUserID` embutido contra quem completou).
+  `mscalendar` implementa o binding corretamente (mesmo padrão seguro
+  do `-jira`) — sem achado.
+
+`deep-read-log.json` atualizado (`mattermost/mattermost-plugin-mscalendar`,
+repo novo, 4 entradas). Clone temporário removido. Achado
+`-confluence::oauth2_login_csrf_account_linking` (rodada anterior)
+segue em `corroborated_static`, sem mudança (`check-scope` ainda sem
+snapshot pra este programa — gap de infraestrutura conhecido, não
+forçado). `export-queue` rodado ao final da rodada.
+
 ## Rodada 2026-09-06c (push automático via GitHub webhook, sessão cloud)
 
 `program-policy.json` conferido como passo zero (regra do CLAUDE.md,

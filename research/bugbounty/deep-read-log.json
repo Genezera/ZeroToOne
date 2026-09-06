@@ -1499,5 +1499,11 @@
     "server/config/main.go",
     "server/plugin.go",
     "server/auth_token.go"
+  ],
+  "mattermost/mattermost-plugin-mscalendar": [
+    "calendar/utils/oauth2connect/oauth2_connect.go",
+    "calendar/utils/oauth2connect/oauth2_complete.go",
+    "calendar/utils/oauth2connect/oauth2.go",
+    "calendar/engine/oauth2.go"
   ]
 }
