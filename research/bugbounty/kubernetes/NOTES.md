@@ -1066,3 +1066,35 @@ Marcado `false_positive` (finding
 (design documentado/guarda pós-CVE-2017-1002101, respectivamente).
 `deep-read-log.json` atualizado com a entrada `kubernetes/utils`.
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 #3 (cloud, disparada por push GitHub, ref master 6d5664c->8623232)
+
+`program-policy.json` conferido como passo zero via `check-program`
+para os dois candidatos presentes na fila: `Auth0 by Okta` e `Circle
+BBP`, ambos `blocked=true` confirmados. `list-pending` global = 34,
+100% fora do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP) —
+skip completo, nenhum arquivo desses dois repositórios clonado/lido.
+
+Leitura profunda proativa resolveu a pendência explícita deixada na
+rodada anterior (`kubernetes/utils/mount/mount.go`: "sem achado
+isolado sem rastrear caller real em kubernetes/kubernetes"): clonado
+`kubernetes/kubernetes` (sparse-checkout só `pkg/volume/util`,
+`pkg/volume/csi` — repo completo é grande demais pra clonar inteiro) e
+lido `pkg/volume/util/subpath/subpath_linux.go` por completo. Rastreei
+o caller real de `PathWithinBase`: `doBindSubPath` resolve
+`VolumePath`/`subpath.Path` via `filepath.EvalSymlinks` antes de
+chamar `safeOpenSubPath`->`doSafeOpen`, que caminha segmento-a-segmento
+via `openat(parentFD, seg, O_NOFOLLOW|O_PATH)` ancorado em file
+descriptor (não em string de path) com `fstat` rejeitando `S_IFLNK`
+por segmento. Avaliei race TOCTOU entre o `EvalSymlinks` inicial e o
+walk via FD — não é explorável porque cada `openat` seguinte parte do
+FD do diretório já aberto (inode fixado), não de uma nova resolução de
+path que um atacante com escrita no volume subjacente (NFS/hostPath
+compartilhado) pudesse trocar por symlink no meio do caminho. Mesma
+técnica pós-CVE-2017-1002101/CVE-2018-11212 (ataques de subPath já
+conhecidos e corrigidos), `doSafeMakeDir`/`removeEmptyDirs` também
+gated pelo mesmo padrão. Sem achado — confirma que o guard de
+`mount.go` fecha a cadeia real neste caller. `deep-read-log.json`
+atualizado com a entrada `kubernetes/kubernetes`. Clone temporário
+removido ao final (não commitado, era só em `/tmp`). `export-queue`
+rodado ao final da rodada.
