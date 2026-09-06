@@ -9538,3 +9538,38 @@ programas na fila compartilhada) seguem no teto estrutural documentado em
 rodadas anteriores (sem validador local de PoC para tipos não-Solidity);
 não retrabalhados nesta rodada por não fazerem parte dos candidatos novos
 processados. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06b (push automático via GitHub webhook, gatilho é o
+próprio commit `b3d6f1b` da rodada anterior, sessão cloud)
+
+`migrate-to-v2.mjs` rodado (818 findings). `program-policy.json` conferido
+como passo zero antes de qualquer leitura: `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`, escolha do usuário) e
+`Auth0 by Okta` (`blocked`, RoE proíbe scanner automatizado) confirmados
+bloqueados. `list-pending` = 34 candidatos, 100% em programas bloqueados
+(30 `Auth0 by Okta`, 4 `Circle BBP`) — nenhum arquivo desses dois
+programas clonado/lido/aberto, skip completo sem exceção. Nenhum candidato
+novo em `Vercel Open Source` ou `StackingDAO` nesta rodada (o push que
+disparou esta sessão é o próprio commit de refutação da rodada anterior,
+sem mudança de conteúdo desde então).
+
+Leitura profunda proativa: verificado `nitrojs/nitro` (clone raso no
+commit atual) por nomes de arquivo com auth/session/crypto/token/login/
+password/admin/permission/access — único hit (`examples/middleware/
+server/middleware/auth.ts`) já lido e documentado em rodada anterior, sem
+arquivo novo disponível sob esse filtro. `StackingDAO` — os 15 contratos
+`.clar` já lidos batem exatamente com os 15 assets do scope snapshot
+(`stackingdao.json`), nenhum contrato novo a ler.
+
+2 arquivos novos lidos em `vercel-labs/skills` (clone raso do HEAD atual):
+`tests/blob-fetch-tree-auth.test.ts` (suite de `fetchRepoTree` em
+`src/blob.ts` — confirma lazy auth fallback correto: tenta sem token
+primeiro, só resolve token/`gh api` em rate-limit real ou 404 de repo
+privado, nunca em 403 de permissão genérica; token via `gh api` nunca
+aparece em argv exportado) e `scripts/execute-tests.ts` (test runner
+interno, descobre `*.test.ts` só dentro de `tests/` do próprio repo,
+sem input de rede/usuário externo). Sem achado novo em nenhum dos dois.
+`deep-read-log.json` atualizado (`vercel-labs/skills`: 21 → 23 arquivos).
+
+Nenhum achado novo, nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final (sem mudança de conteúdo, idempotente).
