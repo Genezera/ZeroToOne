@@ -9751,3 +9751,64 @@ arquivos genuinamente novos e com superfície de autorização real:
 `deep-read-log.json` atualizado (`vercel/ai`: 51 → 54 arquivos). Nenhum
 achado novo, nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06f (scheduled routine, sessão cloud, disparada por push af50dbb; rebase sobre 2af470c por push concorrente durante a rodada)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`, escolha do usuário)
+confirmados bloqueados via `check-program` — nenhum arquivo desses dois
+programas clonado/lido/aberto. `migrate-to-v2.mjs` rodado. `list-pending`
+= 34 candidatos, 100% fora do escopo desta missão (30 `Auth0 by Okta` —
+também bloqueado, RoE proíbe scanner automatizado —, 4 `Circle BBP`),
+skip completo sem exceção. Nenhum candidato novo em `Vercel Open Source`
+ou `StackingDAO` nesta rodada. Origin/master avançou duas vezes durante
+esta sessão (rodadas concorrentes em `vercel/ai` e depois
+`kubernetes/kubernetes`); branch local resetado sobre `origin/master` e
+`migrate-to-v2.mjs` re-executado antes de finalizar, reaplicando só o
+conteúdo genuinamente novo desta rodada.
+
+Leitura profunda proativa desta rodada direcionada a `nuxt/nuxt`
+(reconfirmação): busca de nome de arquivo com
+auth/session/crypto/token/login/password/admin/permission/access/secret
+num clone raso do HEAD atual não encontrou nenhum arquivo de código novo
+(só 3 hits, todos `.md` de documentação, sem lógica executável) — os 29
+arquivos já lidos em rodadas anteriores seguem cobrindo toda a superfície
+relevante por nome de arquivo deste repo.
+
+Ampliada a leitura pra `vercel/swr` por julgamento próprio (não por
+filtro de nome — nenhum arquivo deste repo bate as keywords de
+prioridade), focando na fronteira SSR/RSC (categoria de risco já
+recorrente nesta missão: estado compartilhado entre requisições de
+usuários diferentes). 3 arquivos novos lidos por completo:
+
+- `src/_internal/utils/global-state.ts` — `SWRGlobalState` é um
+  `WeakMap<Cache, GlobalState>` escopado por instância de `Cache`, não um
+  singleton de dado real; por si só não implica compartilhamento entre
+  requisições.
+- `src/_internal/utils/config.ts` — o cache padrão exportado
+  (`initCache(new Map())`) É um singleton de escopo de módulo,
+  compartilhado por todo processo Node quando o app não fornece seu
+  próprio `<SWRConfig value={{provider}}>`. Rastreei se isso é
+  explorável em SSR real (mesma categoria de risco já vista e mitigada
+  em `nitro-server/.../cache.ts`): todo o código que popularia esse
+  cache com dado de fetch (`softRevalidate` dentro de
+  `useIsomorphicLayoutEffect` em `use-swr.ts`) só roda dentro de um
+  `useEffect`/`useLayoutEffect` do React — hooks de efeito nunca
+  executam durante render server-side (`renderToString`/RSC), só depois
+  da hidratação no browser. Ou seja, o singleton nunca é de fato
+  populado com dado de request real durante SSR no processo Node;
+  populamento acontece só client-side, por aba/usuário isolado no
+  próprio browser. Não é um bug de código auditável neste repositório
+  (é comportamento documentado da própria biblioteca — SSR real requer
+  cache por-request via `<SWRConfig>`, responsabilidade do app
+  integrador, mesmo padrão já refutado repetidas vezes nesta missão).
+- `src/_internal/utils/preload.ts` + `src/_internal/utils/server-preload.ts`
+  — `preload()` (client) faz no-op explícito quando `IS_SERVER`;
+  `server-preload.ts` (usado por RSC via `SWRConfig fallback`) devolve
+  um objeto plano novo a cada chamada, nunca escreve em
+  `SWRGlobalState`/cache default — sem estado compartilhado entre
+  requisições nesse caminho também.
+
+Sem achado. `deep-read-log.json` atualizado (`vercel/swr`: 11 → 14
+arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final.

@@ -1434,5 +1434,21 @@
     "server/host_controls.go",
     "server/session.go",
     "server/websocket.go"
+  ],
+  "vercel/swr": [
+    "src/_internal/utils/hash.ts",
+    "src/_internal/utils/serialize.ts",
+    "src/_internal/utils/cache.ts",
+    "src/_internal/utils/mutate.ts",
+    "src/index/use-swr.ts",
+    "src/mutation/index.ts",
+    "src/_internal/utils/subscribe-key.ts",
+    "src/index/serialize.ts",
+    "src/infinite/serialize.ts",
+    "src/_internal/utils/normalize-args.ts",
+    "src/_internal/utils/merge-config.ts",
+    "src/_internal/utils/global-state.ts (WeakMap<Cache, GlobalState> -- escopado por instancia de Cache, nao singleton global de verdade; sem achado isolado)",
+    "src/_internal/utils/config.ts (cache padrao = initCache(new Map()) em escopo de modulo, compartilhado por todo o processo Node quando o app nao passa <SWRConfig value={{provider}}> proprio -- investigado como possivel vazamento de dado entre requisicoes/usuarios em SSR)",
+    "src/_internal/utils/preload.ts + src/_internal/utils/server-preload.ts (preload() do client faz no-op explicito quando IS_SERVER; server-preload.ts, usado por RSC via SWRConfig fallback, devolve objeto plano novo por chamada, nunca toca SWRGlobalState/cache default -- sem estado compartilhado entre requisicoes nesse caminho)"
   ]
 }
