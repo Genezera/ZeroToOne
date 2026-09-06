@@ -567,3 +567,47 @@ priorizar outro repo pouco explorado (`mattermost/mattermost-plugin-github`,
 `cloud-provider-aws`, todos com 1-4 arquivos lidos até agora).
 Nenhum achado novo, nenhuma transição de estado nesta rodada —
 resultado normal e válido.
+
+## Rodada 2026-09-06 #3 (cloud, disparada por push)
+
+`program-policy.json` conferido antes de qualquer clone (passo 0):
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados.
+`migrate-to-v2.mjs` + `list-pending` global = 34, 100% em programas
+bloqueados (30 Auth0 by Okta, 4 Circle BBP) — nenhum tocado.
+
+Leitura profunda proativa revisitou `kiwicom/k8s-vault-operator` (clone
+raso público, descartado ao final): apesar da rodada anterior ter
+anotado o repo como "esgotado", 3 arquivos `.go` não-vendored/não-teste
+ainda não estavam em `deep-read-log.json` (lacuna de rastreio, mesmo
+padrão já visto antes em `js-iam-middleware`):
+
+- `pkg/vault/vault_copied.go` (`kvPreflightVersionRequest`/
+  `addPrefixToKVPath`/`kvReadRequest`) — copiado literalmente do CLI
+  oficial `hashicorp/vault` (`command/kv_helpers.go`); `path` vem de
+  `VaultSecret.Spec` (CRD, config server-side), sem lógica própria de
+  auth/validação. Sem achado.
+- `cmd/reader/parse.go` (`readYaml`) — `os.ReadFile` de caminho local
+  passado como flag CLI, `yaml.Unmarshal` padrão; sem input remoto.
+  Sem achado.
+- `pkg/vault/config.go` + `controllers/vaultsecret_controller.go::validateVaultAddr`
+  — investigado por suspeita real de SSRF/exfiltração da JWT da
+  ServiceAccount via `VaultSecret.Spec.Addr` arbitrário (campo de CRD,
+  em tese controlável por quem tem permissão de criar o recurso).
+  **Refutado** após rastrear a cadeia completa: `validateVaultAddr`
+  faz `url.Parse` + comparação de string EXATA contra
+  `AllowedVaultAddrs` (allowlist vinda de config server-side, não do
+  CRD), nega por padrão quando a allowlist está vazia
+  ("custom vault addresses are not permitted"); comparação exata
+  elimina bypass via userinfo/trailing-slash/case que funcionaria
+  contra um prefix-match. `saRef.Name`/namespace usados no
+  `TokenRequest` da ServiceAccount são sempre o namespace do próprio
+  `VaultSecret` (sem escalonamento cross-namespace, já coberto pelo
+  RBAC do cluster). Gate implementado corretamente — sem achado.
+
+`deep-read-log.json` atualizado (+3 em `kiwicom/k8s-vault-operator`,
+agora com 8 arquivos cobertos; restam só boilerplate/generated code de
+baixa prioridade: `pkg/metrics/metrics.go`, `api/v1/vaultsecret_types.go`,
+`api/v1/groupversion_info.go`, `zz_generated.deepcopy.go`,
+`controllers/event_recorder.go`, `cmd/manager/main.go` — repo agora
+genuinamente esgotado). Nenhum achado novo, nenhuma transição de
+estado nesta rodada — resultado normal e válido.
