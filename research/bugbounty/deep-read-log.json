@@ -1378,5 +1378,11 @@
     "server/auth_token.go",
     "server/user_cloud_oauth.go",
     "server/instance_cloud_oauth.go"
+  ],
+  "kubernetes/utils": [
+    "exec/exec.go (wrapper fino sobre os/exec.Cmd, args passados como array — sem shell, sem injecao; responsabilidade de sanitizar cmd/args e do chamador; sem achado)",
+    "nsenter/nsenter.go (NSEnter.Exec/Command — roda binarios do host via nsenter --mount=/rootfs/proc/1/ns/mnt; exige CAP_SYS_ADMIN e kubelet ja rodando privilegiado por design documentado no proprio pacote; args em array, sem shell; nao introduz superficie nova alem do que o design ja pressupoe; sem achado)",
+    "mount/mount.go (PathWithinBase/StartsWithBackstep — guarda de path traversal lexico pos-CVE-2017-1002101, nao resolve symlink por si (responsabilidade do chamador resolver antes, como o proprio EvalSymlinks em nsenter.go confirma); sem achado isolado sem rastrear caller real em kubernetes/kubernetes)",
+    "mount/mount_linux.go (formatAndMountSensitive completo — ACHADO INVESTIGADO E REFUTADO: mounter.Exec.Command(\"mkfs.\"+fstype, args...) roda binario mkfs.<fstype> sem allowlist, fstype vem de PersistentVolume.spec.csi.fsType/StorageClass.parameters.fsType, que exige privilegio de criar PV/StorageClass = ja equivalente a cluster-admin na RBAC padrao; sem elevacao real de privilegio, padrao publico desde ~2016 sem CVE proprio; ver finding formatAndMountSensitive::command_injection_risk, false_positive)"
   ]
 }

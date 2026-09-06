@@ -1035,3 +1035,34 @@ deliberadamente parado por noveltyRisk=95/100 acima do teto). Não
 tocados. Nenhum achado novo em Kubernetes nesta rodada (leitura
 profunda proativa desta rodada ficou em `okx/go-wallet-sdk`, ver
 NOTES.md de OKG). `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 #2 (cloud, disparada por push) — leitura profunda em kubernetes/utils, achado refutado
+
+Fila (34) continuou 100% em programas bloqueados (Auth0 by Okta,
+Circle BBP) — skip completo sem clonar/ler nada desses dois, conforme
+`program-policy.json`. Leitura profunda proativa mirou
+`kubernetes/utils` (alvo ativo no STATUS.md, nunca lido antes):
+`exec/exec.go`, `nsenter/nsenter.go`, `mount/mount.go` e
+`mount/mount_linux.go`.
+
+Achado investigado com ceticismo: `formatAndMountSensitive` (em
+`mount/mount_linux.go`) roda `mounter.Exec.Command("mkfs."+fstype,
+args...)` sem allowlist quando o disco está desformatado — o nome do
+binário é literalmente `"mkfs." + fstype`, e `fstype` vem de quem
+chama `SafeFormatAndMount` (kubelet/plugins de volume, drivers CSI).
+Rastreei a cadeia de privilégio até o fim: em Kubernetes, `fstype` de
+um volume CSI vem de `PersistentVolume.spec.csi.fsType` (recurso
+cluster-scoped) ou de `StorageClass.parameters.fsType` — nenhum dos
+dois é escrivível por um usuário comum criando só uma
+`PersistentVolumeClaim` namespaced via provisionamento dinâmico
+padrão. Controlar `fstype` já exige poder criar/editar
+`PersistentVolume`/`StorageClass` diretamente, privilégio equivalente
+a cluster-admin na RBAC padrão — não há elevação real de privilégio.
+Padrão público desde ~2016 em `kubernetes/kubernetes`, já revisado
+várias vezes pelo time de segurança do projeto sem virar CVE próprio.
+Marcado `false_positive` (finding
+`formatAndMountSensitive::command_injection_risk`). `nsenter.go` e
+`mount.go`/`PathWithinBase` também revisados, sem achado isolado
+(design documentado/guarda pós-CVE-2017-1002101, respectivamente).
+`deep-read-log.json` atualizado com a entrada `kubernetes/utils`.
+`export-queue` rodado ao final da rodada.
