@@ -9096,3 +9096,17 @@ validador local para `ai_deep_read_finding`/TypeScript ainda (mesma
 limitação real já documentada em rodadas anteriores, não um bug).
 Achado permanece em `corroborated_static`; nenhum rascunho de relatório
 escrito (barra de `scope_verified` não alcançada).
+
+## Rodada 2026-09-06 (cloud, disparada por push)
+Revisão dos 7 achados `corroborated_static` já existentes antes desta
+rodada (bridge timing_attack_risk, verify-claim.mjs path traversal,
+update-remix-run-dev.js command injection, image-optimizer.ts SSRF
+redirect bypass, 3x mcp.ts semgrep_detect_child_process) — todos já com
+raciocínio completo e barreira documentada (sem validador local pra
+JS/TS → `reproduced_local` mecanicamente inalcançável, ou risco de
+duplicata alto demais pro mesmo detector no mesmo repo). Nada novo que
+mudasse o cálculo. Não tocados. O achado novo em `nitrojs/nitro` (acima,
+de outra sessão) não foi revisitado nesta rodada. Leitura profunda
+proativa desta rodada ficou em `okx/go-wallet-sdk` (ver NOTES.md de
+OKG), fora do escopo deste programa. `export-queue` rodado ao final da
+rodada.

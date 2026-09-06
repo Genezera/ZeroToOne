@@ -1024,3 +1024,14 @@ para APIServices registrados, o mesmo componente do CVE-2018-1002105):
 Nenhum achado novo nesta rodada -- resultado normal. `deep-read-log.json`
 atualizado (`kubernetes/kube-aggregator`, +3 entradas). `export-queue`
 rodado, commit/push ao final da rodada.
+
+## Rodada 2026-09-06 (cloud, disparada por push)
+Revisão dos 2 achados `corroborated_static` (`publishing-bot::rules.go`
+insecure_tls, `cloud-provider-openstack::plugin_endpoint.go`
+insecure_tls) — nada mudou desde a última rodada que justificasse
+reabrir a decisão já documentada (o primeiro já tem deploymentEvidence
+`unverified` e ficaria capado em scope_verified; o segundo foi
+deliberadamente parado por noveltyRisk=95/100 acima do teto). Não
+tocados. Nenhum achado novo em Kubernetes nesta rodada (leitura
+profunda proativa desta rodada ficou em `okx/go-wallet-sdk`, ver
+NOTES.md de OKG). `export-queue` rodado ao final da rodada.

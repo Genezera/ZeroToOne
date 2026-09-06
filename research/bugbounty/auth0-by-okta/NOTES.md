@@ -194,3 +194,9 @@ continua vigente. Nenhum arquivo deste programa foi lido, clonado ou
 aberto nesta rodada. Os 30 candidatos residuais pré-bloqueio em
 `auth0/react-native-auth0` seguem intocados em `candidate`, sem
 nenhuma ação (nem update-finding, nem transition, nem nova leitura).
+
+## Rodada 2026-09-06 (cloud, disparada por push)
+`program-policy.json` checado como passo zero: `blocked: true`
+continua vigente (RoE proíbe ferramentas de IA). Nenhum arquivo deste
+programa foi lido, clonado ou aberto nesta rodada. Os 30 candidatos
+residuais pré-bloqueio seguem intocados em `candidate`.

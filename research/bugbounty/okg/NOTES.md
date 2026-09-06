@@ -814,3 +814,33 @@ reforçar isso a partir só de código público). Não tocado.
 
 Leitura profunda proativa desta rodada ficou em `kiwicom/k8s-vault-operator`
 (ver NOTES.md de Kiwi.com). Nenhum achado novo em OKG nesta rodada.
+
+## Rodada 2026-09-06 (cloud, disparada por push)
+`list-pending` global = 34, 100% em programas bloqueados (30 Auth0 by
+Okta, 4 Circle BBP, ambos com `blocked`/`aiResearchBanned` em
+`program-policy.json`) — nenhum arquivo desses repos lido, nenhum
+tocado, conforme regra crítica do CLAUDE.md.
+
+Achados `corroborated_static` de programas liberados (Kubernetes:2,
+Mattermost:1, Vercel Open Source:7) revisados via `get` — todos já têm
+raciocínio completo de rodadas anteriores e decisão honesta de não
+avançar (falta de validador local pra não-Solidity → `reproduced_local`
+mecanicamente inalcançável pela state machine, ou risco de duplicata
+alto, ou `check-scope` já negativo por falta de scope-snapshot). Nada
+mudou desde a última rodada que justificasse revisitar essas decisões
+— não tocados.
+
+Leitura profunda proativa: `okx/go-wallet-sdk` (3 arquivos novos,
+suspeita de achar um 5º irmão do padrão já confirmado 4x neste SDK —
+decode de seed/chave privada sem checar tamanho antes de usar,
+causando panic — em `cardano`, `solana`, `elrond`, `helium`):
+`crypto/sign.go` (utilitário RFC6979 padrão, sem achado) e
+`coins/stacks/signer.go` + `coins/stacks/account.go` (suspeita
+inicial: `signWithKey` faz `hex.EncodeToString(privateKey.Data)[:64]`
+sem checar `len(Data)` — pareceria o mesmo bug de sempre. **Refutado**
+ao rastrear o caller: `StacksPrivateKey` só é construído via
+`createStacksPrivateKey`, que já valida `len(data) in {32,33}` e
+retorna erro tratável caso contrário — não existe caminho de código
+que alcance `signWithKey` com `Data` de outro tamanho). Ceticismo
+aplicado corretamente — nenhum achado novo criado. Ver
+`deep-read-log.json` pra detalhe completo.

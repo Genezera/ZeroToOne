@@ -332,3 +332,11 @@ um "achado" onde só havia um typo.
 `deep-read-log.json` atualizado (+4 entradas em
 `mattermost/mattermost-plugin-zoom`). Clones temporários removidos.
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (cloud, disparada por push)
+Revisão do achado `corroborated_static`
+(`mattermost-plugin-zoom::verifyZoomWebhookSignature`) — nada mudou
+desde a última rodada (check-scope já negativo por falta de
+scope-snapshot pra este programa, mesma limitação de infraestrutura já
+documentada). Não tocado. Nenhum achado novo em Mattermost nesta
+rodada. `export-queue` rodado ao final da rodada.

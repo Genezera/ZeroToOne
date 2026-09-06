@@ -6765,3 +6765,10 @@ trouxe 4 candidatos deste programa (herdados de rodadas passadas,
 não tocados, nenhuma ação nesta rodada. Leitura profunda proativa desta
 rodada ficou em `nuxt/nuxt` (ver NOTES.md de Vercel Open Source), fora
 do escopo deste programa.
+
+## Rodada 2026-09-06 (cloud, disparada por push)
+`program-policy.json` checado como passo zero: `blocked: true`
+continua vigente (escolha do usuário). `list-pending` trouxe os mesmos
+4 candidatos herdados (`004_UpgradeGatewayWallet.sol`
+`unchecked_call_return`) — não lidos, não tocados, nenhuma ação nesta
+rodada.
