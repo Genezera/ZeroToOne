@@ -200,3 +200,11 @@ nenhuma ação (nem update-finding, nem transition, nem nova leitura).
 continua vigente (RoE proíbe ferramentas de IA). Nenhum arquivo deste
 programa foi lido, clonado ou aberto nesta rodada. Os 30 candidatos
 residuais pré-bloqueio seguem intocados em `candidate`.
+
+## Rodada 2026-09-06o (cloud, disparada por push, sessão concorrente)
+`program-policy.json` checado como passo zero: `blocked: true`
+continua vigente. Nenhum arquivo deste programa foi lido, clonado ou
+aberto nesta rodada. `list-pending` confirma os mesmos 30 candidatos
+residuais em `auth0/react-native-auth0::.yarn/releases/yarn-4.11.0.cjs`,
+sem mudança de contagem. Leitura profunda proativa desta rodada ficou
+em `kubernetes/kubernetes` (ver NOTES.md de Kubernetes).

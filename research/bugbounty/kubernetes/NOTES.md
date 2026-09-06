@@ -1372,3 +1372,57 @@ ainda não investigado.
 `deep-read-log.json` atualizado (`kubernetes/kubernetes`: +3, total 21).
 Nenhum achado novo, nenhuma transição de estado nesta rodada — resultado
 normal e válido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06o (push automático via GitHub webhook, sessão cloud)
+
+Sessão iniciada com HEAD local já uma rodada atrás de `origin/master`
+(outra sessão concorrente já tinha processado este mesmo push e
+publicado `864faac`, deep-read em `cel/matchconditions`); rebaseado
+(`git merge --ff-only`) antes de prosseguir, evitando duplicar esse
+trabalho. `program-policy.json` conferido no passo 0: `Block Open
+Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados, nenhum
+arquivo desses programas tocado. `list-pending` global = 34, 100% nesses
+dois últimos programas (nenhum Kubernetes) — skip completo.
+
+Leitura profunda proativa seguindo a sugestão explícita deixada pela
+rodada anterior: a camada de funções CEL customizadas expostas ao
+autor de `ValidatingAdmissionPolicy`/`MutatingAdmissionPolicy` via
+`library/` (sparse checkout raso de `staging/src/k8s.io/apiserver/pkg/cel/library/`,
+descartado ao final):
+
+- `cel/library/authz.go` — `Authz()` expõe `authorizer.path/group/
+  serviceAccount/resource/...check/allowed/reason/error` pra CEL. Toda
+  checagem monta um `authorizer.AttributesRecord` e delega pro
+  `UnconditionalAuthorizer` real (mesma cadeia `authorization/union`
+  já revisada em rodadas anteriores) — sem bypass, decisão sempre passa
+  pelo authorizer de produção configurado. `authorizerServiceAccount`
+  troca o `userInfo` do CEL pra um service account arbitrário (após
+  validar nome/namespace) — a primeira vista parece "se passar" por
+  qualquer SA, mas é a funcionalidade documentada do recurso (checar
+  "a policy permitiria a este SA fazer X" como consulta hipotética,
+  nunca reautentica a request real nem sobrescreve o `UserInfo`
+  verdadeiro usado no resto do admission chain). Erro de parse de
+  `fieldSelector`/`labelSelector` é absorvido silenciosamente (seletor
+  fica vazio) — comportamento documentado, não bypass de filtro. Sem
+  achado.
+- `cel/library/jsonpatch.go` — só `jsonpatch.escapeKey` via
+  `strings.NewReplacer('/','~1','~','~0')`; `NewReplacer` aplica as
+  substituições num único passo simultâneo (não sequencial), evitando
+  o risco clássico de escaping em duas fases que reescaparia um `~1`
+  gerado a partir de `/`. Comportamento correto conforme RFC 6901. Sem
+  achado.
+
+Cadeia de exposição CEL pra admission control (compile → match →
+condition binding → funções `authorizer`/`jsonpatch` customizadas)
+agora coberta de ponta a ponta nesta sessão; não achei um bypass de
+autorização introduzido por essa camada — toda decisão real continua
+delegada pro authorizer/authenticator de produção já maduro. Não lido
+ainda: `cel/library/{cidr,ip,quantity,regex,semverlib,urls,lists,
+format}.go` (funções utilitárias sem relação óbvia com auth/permissão,
+prioridade mais baixa pro critério desta missão) nem `cost.go` (só
+orçamento de custo CEL, já mencionado indiretamente em `condition.go`).
+
+`deep-read-log.json` atualizado (`kubernetes/kubernetes`: +2, total 23).
+Nenhum achado novo, nenhuma transição de estado nesta rodada — resultado
+normal e válido. Clone raso descartado ao final. `export-queue` rodado
+ao final.

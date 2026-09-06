@@ -6772,3 +6772,12 @@ continua vigente (escolha do usuário). `list-pending` trouxe os mesmos
 4 candidatos herdados (`004_UpgradeGatewayWallet.sol`
 `unchecked_call_return`) — não lidos, não tocados, nenhuma ação nesta
 rodada.
+
+## Rodada 2026-09-06o (cloud, disparada por push, sessão concorrente)
+`program-policy.json` checado como passo zero: `blocked: true`
+continua vigente (escolha do usuário). `list-pending` trouxe os mesmos
+4 candidatos herdados (`004_UpgradeGatewayWallet.sol`
+`unchecked_call_return`) — não lidos, não tocados, nenhuma ação nesta
+rodada. Leitura profunda proativa desta rodada ficou em
+`kubernetes/kubernetes` (ver NOTES.md de Kubernetes), fora do escopo
+deste programa.
