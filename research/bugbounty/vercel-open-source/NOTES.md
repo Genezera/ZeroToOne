@@ -10254,3 +10254,58 @@ cadeia de hash) não ocorreu desta vez porque o merge/rebase já trouxe o
 ledger correto — `git status` confirmou zero diff nesse arquivo antes do
 commit. Clone temporário de `vercel/turborepo` removido do scratch dir ao
 final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06p (scheduled routine, push automático via GitHub webhook, sessão cloud, push 90848464->1aae2c07)
+
+Fila (`list-pending`): 34 candidates, todos em programas bloqueados
+(Auth0 by Okta: 30, Circle BBP: 4) — confirmado via `check-program` antes
+de qualquer clone/leitura, nenhum tocado.
+
+Leitura profunda proativa: busca por nome de arquivo com
+auth/session/crypto/token/login/password/admin/permission/access em
+`sveltejs/svelte` (clone raso) só encontrou `crypto.js`/`crypto.test.ts`,
+ambos já lidos em rodada anterior — 22 arquivos já cobrem praticamente
+toda a superfície de XSS/HTML-injection do compilador/runtime, sem alvo
+novo por esse filtro. `vercel/async-sema` e `vercel/ms` são libs de
+arquivo único já totalmente lidas (sem alvo novo). `vercel/swr` (14 já
+lidos, incluindo a investigação prévia sobre cache global compartilhado
+em SSR) também sem hit novo por esse filtro entre os arquivos restantes
+(`use-swr-config.ts`, `timestamp.ts`, `middleware-preset.ts`, etc. —
+nenhum com superfície de auth/sessão própria).
+
+Redirecionado por julgamento próprio pra `nitrojs/nitro` (12 arquivos já
+lidos, clone raso via `git clone --depth 1`). 3 arquivos novos fora do
+filtro de nome mas dentro do raio de config/secrets/cache que o filtro
+de nome não capturaria sozinho:
+
+- `src/runtime/internal/runtime-config.ts` — `useRuntimeConfig()`/`applyEnv`
+  faz overlay de `process.env` sobre o runtime config compilado em
+  build-time (prefixo `NITRO_`/altPrefix configurável pelo próprio
+  projeto). `_expandFromEnv` (interpolação de `{{VAR}}` a partir de env)
+  só roda quando `envExpansion` está explicitamente habilitado na config
+  do projeto — não é default, não deriva de request/input externo. Não
+  implementa nem decide o split entre config pública/privada exposta ao
+  client (isso é responsabilidade de camada superior, ex. Nuxt, fora
+  deste arquivo). Sem achado.
+- `src/runtime/internal/cache.ts` — `defineCachedFunction`/`defineCachedHandler`
+  são glue fino que delega toda derivação de chave de cache/TTL/storage
+  pro pacote externo `ocache` (fora deste repo, fora do escopo desta
+  leitura) — não deriva chave a partir de header/cookie por conta própria
+  aqui, então não há decisão de isolamento por usuário neste arquivo
+  específico pra auditar. Sem achado.
+- `src/runtime/internal/storage.ts` — wrapper de 4 linhas em torno de
+  `unstorage` (`initStorage()`/`prefixStorage`), sem lógica própria de
+  path/chave. Sem achado.
+
+Finding pré-existente `nitrojs/nitro/src/dev/vfs.ts::createVFSHandler`
+(script-tag breakout + HTML injection não escapada no VFS viewer,
+`corroborated_static`, confidence baixa) reconferido: já tem
+`deploymentEvidence` registrado (`confidence=unverified`, feature
+dev-only sem release/deploy público confirmado) de rodada anterior —
+avaliação permanece correta, nada de novo pra justificar mudar
+confidence ou retentar `scope_verified`. Não retentado nesta rodada.
+
+`deep-read-log.json` atualizado (`nitrojs/nitro`: 12 → 15 arquivos).
+Nenhum achado novo, nenhuma transição de estado nesta rodada. Clones
+temporários (`svelte`, `async-sema`, `ms`, `swr`, `nitro`) removidos do
+scratch dir ao final. `export-queue` rodado ao final.

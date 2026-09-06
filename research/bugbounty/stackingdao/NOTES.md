@@ -1848,3 +1848,25 @@ sessão realtime pro backend do próprio integrador, tipo de config de
 sessão realtime e mensagem de erro de autenticação do gateway sem
 interpolar credencial real, sem achado). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-06p (scheduled routine, push automático via GitHub webhook, sessão cloud, push 90848464->1aae2c07)
+
+`migrate-to-v2.mjs` rodado (820 findings). `program-policy.json` conferido
+como passo zero via `check-program`: `StackingDAO` e `Vercel Open Source`
+confirmados `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados — nenhum arquivo desses três
+clonado/lido/aberto. `list-pending` = 34 candidatos, 100% fora do escopo
+desta missão (30 `Auth0 by Okta`, 4 `Circle BBP`), skip completo. Os 15
+contratos `.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `nitrojs/nitro` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos: overlay de env vars
+sobre runtime config, glue de cache delegando pro pacote externo `ocache`
+e wrapper trivial de storage, sem achado). Finding pré-existente
+`nitrojs/nitro/src/dev/vfs.ts::createVFSHandler` (script-tag breakout no
+VFS viewer do dev server) revisado: já tem `deploymentEvidence` com
+`confidence=unverified` registrado em rodada anterior (feature dev-only,
+sem release/deploy público confirmado) — corretamente parado em
+`corroborated_static`, nada de novo pra mudar essa avaliação nesta
+rodada, não retentado. Nenhuma transição de estado neste programa.
