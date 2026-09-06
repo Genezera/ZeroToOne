@@ -9018,3 +9018,81 @@ atualizado (`nuxt/nuxt`: +3 arquivos novos no log). `sveltejs/svelte`
 segue como próximo candidato natural (ainda não tocado por nenhuma
 rodada). `StackingDAO`: sem contrato novo, 15 `.clar` seguem 100% do
 escopo. Clone temporário (`nuxt/nuxt`, raso) removido ao final.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum tocado; `StackingDAO` e `Vercel Open Source`
+confirmados liberados (`blocked: false`). `deep-read-log.json` revisado
+(~1350 linhas) antes de escolher alvo: `sveltejs/svelte` já tem
+cobertura extensa (24 arquivos, incluindo o `crypto.js`/`crypto.test.ts`
+e o `false_positive` de `renderer.js` csp-nonce já investigado), assim
+como `vercel/ai`, `vercel/eve`, `vercel/vercel`, `vercel/chat` etc.
+`nitrojs/nitro` tinha só 3 arquivos no log — escolhido como alvo por ser
+o repo com menor cobertura entre os liberados.
+
+Clone raso (`git clone --depth 1 https://github.com/nitrojs/nitro.git`).
+Busca ampliada por palavra-chave de segurança (auth/session/token/
+password/login/admin/permission/access/jwt/oauth/signature/verify/csrf/
+redirect/proxy/sanitize/escape) sobre `src/**/*.ts`, filtrando os
+arquivos já presentes no log. 3 arquivos novos lidos por completo:
+
+- `src/presets/vercel/runtime/cron-handler.ts` — validação de
+  `CRON_SECRET` via `timingSafeEqual` com checagem de comprimento antes
+  da comparação (evita exceção, evita bypass) — implementa corretamente
+  o padrão que a própria Vercel documenta para proteger o endpoint de
+  cron (`/_vercel/cron`). Quando `CRON_SECRET` não está setado, a única
+  barreira é a presença do header `x-vercel-cron-schedule` (facilmente
+  forjável) — mas isso é comportamento opt-in documentado oficialmente
+  pela Vercel, não uma falha do nitro. Sem achado.
+- `src/utils/regex.ts` — `escapeRegExp`/`pathRegExp`/`toPathRegExp`,
+  escaping de metacaracteres regex correto e completo, usado para
+  matching de rotas/paths internos. Sem ReDoS, sem bypass. Sem achado.
+- `src/dev/vfs.ts` — **achado registrado**: `createVFSHandler` (handler
+  do visualizador de VFS do dev server) interpola `fname` (nome de
+  arquivo/segmento de path) sem escaping de HTML em `<a>`/`<summary>`
+  na árvore de arquivos, e embute conteúdo de arquivo via
+  `JSON.stringify` cru dentro de um `<script>` inline (`editorTemplate`)
+  sem escapar a sequência `</script>` — script-tag breakout clássico se
+  o conteúdo do arquivo (ou nome) contiver esses metacaracteres. A rota
+  é gated por `isLocalDevRequest` (loopback-only, já auditado em rodada
+  anterior sem bypass conhecido), então exploração real dependeria de
+  conteúdo de projeto contendo `</script>`/HTML bruto, ou de um vetor
+  cross-site-to-localhost (classe de ataque conhecida contra dev
+  servers) que este handler específico não mitiga com checagem de
+  Origin/CSRF além do IP-gating. Criado
+  `Vercel Open Source::nitrojs/nitro/src/dev/vfs.ts::createVFSHandler::html_js_injection_unescaped_interpolation`
+  via `upsert-finding`, detalhado via `update-finding` e avançado a
+  `corroborated_static` via `transition` (confidence baixa — feature de
+  dev-tooling, nunca roda em produção, e exploração exige condições
+  adicionais fora do controle direto do handler). Ver `queue.jsonl`
+  para o reasoning completo.
+
+`StackingDAO`: tentativa de clonar/espelhar o protocolo real via GitHub
+confirmada infrutífera de novo (sem org/repo público conhecido — os
+contratos só existem on-chain via Hiro; ver NOTES.md do programa) e
+`api.hiro.so` segue bloqueado pelo agent-proxy (`CONNECT tunnel failed,
+response 403`), condição estável há dezenas de rodadas. Os 15 `.clar`
+já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`. `deep-read-log.json` atualizado
+(`nitrojs/nitro`: +3 arquivos). Clone temporário (`nitrojs/nitro`, raso)
+removido ao final.
+
+Continuação da mesma rodada: `list-pending` global = 34 candidatos,
+100% fora do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP, ambos
+bloqueados em `program-policy.json`) — skip completo, nenhum arquivo
+desses dois programas clonado ou lido. Para o achado novo em
+`nitrojs/nitro` (acima): `check-scope "Vercel Open Source" "nitrojs/nitro"`
+confirmou `allowed=true, bountyEligible=true, maxSeverity=critical`;
+`record-deployment-evidence` registrado com `confidence="unverified"`
+(código confirmado no HEAD atual `c5177e9218cdd113c6c6a6a74b2924b2354af120`
+via clone raso, mas sem vínculo de release/deploy hospedado — é feature
+de dev server local, não de produção). Tentativa de `transition
+scope_verified` recusada como esperado pela máquina de estados:
+`corroborated_static->scope_verified` não é transição válida — o
+caminho exige passar por `reproduced_local` antes, e não existe
+validador local para `ai_deep_read_finding`/TypeScript ainda (mesma
+limitação real já documentada em rodadas anteriores, não um bug).
+Achado permanece em `corroborated_static`; nenhum rascunho de relatório
+escrito (barra de `scope_verified` não alcançada).

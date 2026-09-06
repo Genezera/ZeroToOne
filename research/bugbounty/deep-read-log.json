@@ -612,7 +612,10 @@
   "nitrojs/nitro": [
     "src/runtime/internal/app.ts",
     "src/runtime/internal/route-rule-handlers.ts",
-    "src/dev/_request.ts"
+    "src/dev/_request.ts",
+    "src/presets/vercel/runtime/cron-handler.ts (validação de CRON_SECRET via timingSafeEqual, com checagem de comprimento antes de comparar -- evita exceção por tamanho e implementa corretamente o padrão documentado oficialmente pela própria Vercel para proteger o handler de cron; quando CRON_SECRET não está setado, a única barreira é a presença do header x-vercel-cron-schedule, mas isso é opt-in por desenho documentado da Vercel, não falha do nitro. Sem achado)",
+    "src/utils/regex.ts (escapeRegExp/pathRegExp/toPathRegExp -- escaping de metacaracteres regex correto e completo para uso em matching de rotas/paths; sem ReDoS, sem bypass de escaping identificado nos call sites. Sem achado)",
+    "src/dev/vfs.ts (createVFSHandler -- ACHADO: fname não escapado interpolado como HTML em <a>/<summary> na árvore de arquivos do VFS viewer, e conteúdo de arquivo embutido via JSON.stringify cru dentro de <script> inline em editorTemplate, sem escapar a sequência </script> -- script-tag breakout clássico. Rota é gated por isLocalDevRequest (loopback-only, já auditado sem bypass conhecido), então exploração real exigiria conteúdo de projeto contendo esses metacaracteres ou um vetor cross-site-to-localhost que este handler não mitiga com Origin/CSRF check. Finding criado e avançado a corroborated_static, confidence baixa -- ver queue.jsonl)"
   ],
   "nuxt/nuxt": [
     "packages/nuxt/src/core/plugins/import-protection.ts (createImportProtectionPatterns -- registra padrões de regex bloqueando import de módulos build-time/server em contexto client e vice-versa, aplicado via plugin Vite/Rollup em build-time; puramente allowlist declarativa sem I/O nem decisão em runtime de request, sem achado)",

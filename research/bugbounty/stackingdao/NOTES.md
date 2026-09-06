@@ -1526,3 +1526,21 @@ Leitura profunda proativa desta rodada direcionada a `nuxt/nuxt` (ver
 NOTES.md de Vercel Open Source — `composables/cookie.ts`,
 `dev-request.ts`, `runtime/utils/cache.ts`; sem achado). Nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado liberado via `check-program`. Reconfirmado (mais uma vez)
+que não há org/repo público conhecido no GitHub que espelhe o
+protocolo StackingDAO (contratos só existem on-chain, via API Hiro) —
+não adivinhei URL de repositório às cegas. `api.hiro.so` retestado via
+`curl` direto: `CONNECT tunnel failed, response 403` — mesmo bloqueio
+de rede do agent-proxy documentado há dezenas de rodadas, condição
+inalterada. Os 15 contratos `.clar` já lidos seguem cobrindo 100% dos
+13 assets do `scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada inteiramente a
+`nitrojs/nitro` (Vercel Open Source — ver NOTES.md desse programa): 3
+arquivos novos, 1 achado registrado (`src/dev/vfs.ts`, HTML/script
+injection sem escaping no visualizador de VFS do dev server, avançado
+a `corroborated_static`). Nenhuma transição de estado neste programa.
