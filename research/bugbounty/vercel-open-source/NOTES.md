@@ -9573,3 +9573,49 @@ sem input de rede/usuário externo). Sem achado novo em nenhum dos dois.
 
 Nenhum achado novo, nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final (sem mudança de conteúdo, idempotente).
+
+## Rodada 2026-09-06c (push automático via GitHub webhook, push 6803ba1->e256568, sessão cloud)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`, escolha do usuário)
+confirmados bloqueados — nenhum arquivo desses dois programas
+clonado/lido/aberto. `migrate-to-v2.mjs` rodado (818 findings). `list-pending`
+= 34 candidatos, 100% em programas bloqueados (30 `Auth0 by Okta`, também
+bloqueado por política — RoE proíbe scanner automatizado —, 4 `Circle BBP`).
+Nenhum candidato novo em `Vercel Open Source` ou `StackingDAO` nesta rodada.
+
+Leitura profunda proativa: busca por nome de arquivo com
+auth/session/crypto/token/login/password/admin/permission/access/secret em
+`vercel/turborepo`, `square/wire`, `vercel/flags`, `vercel/swr`, `nuxt/nuxt`
+e `sveltejs/svelte` (clones rasos do HEAD atual) não encontrou nenhum
+arquivo genuinamente novo — todos os hits já constavam em
+`deep-read-log.json` de rodadas anteriores (`wire` e `swr` não têm nenhum
+arquivo batendo o filtro).
+
+Ampliei a busca pra `vercel/next.js` (clone raso `--filter=blob:none`) e
+achei aparentes candidatos novos, mas a maioria já estava coberta sob
+notação abreviada no log (`arquivo-a.ts + arquivo-b.ts` e
+`{env,helpers,index,result,tcp,types}.ts`) — corrigido o script de
+comparação pra expandir essas notações antes de concluir "novo". Sobrou 1
+arquivo genuinamente não lido: `packages/next/src/compiled/@edge-runtime/
+primitives/crypto.d.ts` — só declarações de tipo TS vendorizadas do
+polyfill `Crypto`/`CryptoKey`/`SubtleCrypto`, sem nenhuma lógica executável
+(8 linhas, puro `declare`/`export`). Sem achado.
+
+Reconfirmei também, de forma independente (sem antes reler a nota da
+rodada anterior), a análise já registrada sobre
+`build/turborepo-access-trace/{env,helpers,index,result,tcp,types}.ts`:
+`envProxy` só registra as CHAVES de variável de ambiente acessadas
+(`Set<string>`, nunca o valor), `tcpProxy` só registra addr/porta de
+`net.Socket.connect`, e `toPublicTrace()` — o único formato de fato
+escrito no arquivo de trace, gated por `process.env.TURBOREPO_TRACE_FILE`
+(só ativa se o operador do build definir essa env var explicitamente,
+não é acionável por terceiro) — expõe só `envVarKeys` (nomes),
+`filePaths` e um booleano `network`, nunca valor de segredo nem endereço
+de rede real. Mesma conclusão da rodada anterior: sem vazamento de
+segredo, sem achado. Confirmação independente, sem valor incremental de
+achado mas reforça a robustez do processo de revisão.
+
+`deep-read-log.json` atualizado (`vercel/next.js`: +1 arquivo). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final (sem mudança de conteúdo — nenhuma transição aplicada).
