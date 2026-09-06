@@ -9480,3 +9480,61 @@ Nenhum achado novo. `deep-read-log.json` atualizado (`nuxt/nuxt`: 26 →
 29 arquivos). Os 8 achados `corroborated_static` deste programa seguem
 no teto estrutural já documentado (sem validador local para não-Solidity).
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push d596c6e->558b860, sessão cloud)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`, escolha do usuário) e
+`Auth0 by Okta` (`blocked`, RoE proíbe scanner automatizado) confirmados
+bloqueados, nenhum arquivo desses três programas clonado/lido. `list-pending`
+= 47 candidatos: 13 novos em `Vercel Open Source` (introduzidos pelo commit
+`056d8830` de `vercel/chat`, "feat(history): support uncapped per-user
+retention (#904)"), 30 `Auth0 by Okta` e 4 `Circle BBP` (100% fora de escopo,
+skip completo, consistente com rodadas anteriores).
+
+Clone raso de `vercel/chat` no commit exato `056d8830` e investigação
+cética dos 13 candidatos, todos refutados como falso positivo:
+- `scripts/sync-resources.ts:46` (`redos_risk`, `SLUG_PATTERN`) — quantificadores
+  mutuamente exclusivos (`-` não pertence a `[a-z0-9]`), sem ambiguidade de
+  backtracking; além disso script de build/manutenção, não roda contra
+  input de usuário final.
+- 7x `eval_usage` em `state-redis/src/index.ts` (4) e `state-ioredis/src/index.ts`
+  (3) — todos `client.eval(script, ...)` = comando `EVAL` do Redis (Lua),
+  não `eval()` de JS; scripts Lua são literais fixos no código-fonte, valores
+  dinâmicos entram como `ARGV`/argv posicional, nunca interpolados no texto
+  do script.
+- `packages/integration-tests/.../emulator/github/utils.ts:221` (`tainted_data_flow`,
+  `req.headers`→`fetch(rewritten)`) — o `fetch` é o handler interno do
+  emulador GitHub in-process (`app.fetch`, só usado em suítes de teste),
+  não a rede real; `rewrittenUrl` preserva host/origin do request original
+  (só o pathname muda), sem SSRF possível.
+- `packages/adapter-x/src/chat/test-utils.ts:212` (`hardcoded_secret`,
+  `accessToken: "test-token"`) — fixture de teste (arquivo `test-utils.ts`),
+  placeholder óbvio, não segredo real.
+- 2x `redos_risk` em `TABLE_SEPARATOR_RE`/`TABLE_SEPARATOR_PATTERN`
+  (`streaming-markdown.ts:214`, `adapter-slack/src/index.ts:324`) — cada
+  repetição do grupo externo é ancorada por `|` literal não presente nas
+  classes internas, sem ambiguidade; testado empiricamente em node com
+  input adversarial de 100.000 caracteres, 0ms (linear, sem catastrophic
+  backtracking).
+
+Todos os 13 atualizados via `update-finding` (reasoning + filesRead) e
+transicionados para `false_positive` via `transition`, todas as 13
+transições `{ok:true}`.
+
+Leitura profunda proativa: 3 arquivos novos em `packages/chat/src/history/`
+(`user.ts`, `resolve-adapter.ts`, `thread.ts`) — o próprio arquivo alterado
+pela feature desta rodada (`user.ts`, `maxPerUser:false`) e dois vizinhos.
+`userKey` é resolvido pelo `_identity` resolver fornecido pelo próprio app
+(BYO identity, mesmo padrão de `adapter-web`), não por input direto de
+terceiro; nenhum tool de IA expõe `userKey` como parâmetro (diferente do
+`threadId` em `ai/tools/threads.ts`, já coberto e fail-closed via
+`ai/scope.ts` em rodada anterior). `thread.ts` reusa a mesma superfície
+`threadId` já protegida pelo scope guard. Sem achado novo. `deep-read-log.json`
+atualizado (`vercel/chat`: 37 → 40 arquivos).
+
+Os 15 achados `corroborated_static` já existentes (deste e de outros
+programas na fila compartilhada) seguem no teto estrutural documentado em
+rodadas anteriores (sem validador local de PoC para tipos não-Solidity);
+não retrabalhados nesta rodada por não fazerem parte dos candidatos novos
+processados. `export-queue` rodado ao final da rodada.
