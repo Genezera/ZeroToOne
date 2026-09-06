@@ -385,3 +385,67 @@ Nenhum achado novo nesta rodada — resultado válido e esperado.
 `deep-read-log.json` atualizado (+3 entradas em
 `mattermost/mattermost-plugin-jira`). Clones temporários removidos.
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 #4 (rotina agendada)
+
+`program-policy.json` conferido como passo zero via `check-program`:
+`Auth0 by Okta` e `Circle BBP` seguem `blocked:true` — `list-pending`
+global = 34, 100% nesses dois programas, skip completo sem tocar
+nenhum arquivo deles.
+
+Leitura profunda proativa em `mattermost/mattermost-plugin-calls`
+(primeiro repo Mattermost tocado por sweep proativo nesta sessão — os
+outros plugins Mattermost já cobertos são `-jira`/`-zoom`/`-github`/
+`-gitlab`/`-msteams`; `-calls` nunca tinha entrada em
+`deep-read-log.json`), clone raso público. Priorizei a superfície de
+controles de host (mute/remove/make-host/end-call), por ser a
+funcionalidade com maior potencial de bypass de autorização
+(um participante comum agindo como host). 6 arquivos lidos:
+`server/api.go`, `server/api_router.go`, `server/host_controls_api.go`,
+`server/host_controls.go`, `server/session.go`, `server/websocket.go`.
+
+- Hipótese investigada com ceticismo (e refutada): as rotas de host
+  controls (`/calls/{call_id}/host/make|mute|screen-off|lower-hand|
+  remove|mute-others|end`) extraem `call_id` da URL e passam esse
+  valor posicionalmente pras funções `changeHost`/`muteSession`/
+  `screenOff`/`lowerHand`/`hostRemoveSession`/`hostEnd`/`muteOthers`
+  em `host_controls.go`, cujo parâmetro se chama `channelID` e é usado
+  pra buscar o estado da call via `getCallState`/`lockCallReturnState`
+  (ambas keyed por `channelID`, não por `Call.ID` — confirmado em
+  `state.go`/`sync.go`). Como `Call.ID` e `Call.ChannelID` são campos
+  distintos (`public/call.go`), a princípio isso pareceria uma
+  confusão call-ID vs. channel-ID que quebraria (ou pior, cruzaria) a
+  autorização entre calls. Rastreei o valor real enviado pelo webapp
+  (`webapp/src/actions.ts` + `host_controls_menu.tsx` +
+  `participant_cell.tsx`/`call_widget/component.tsx`) até a origem: em
+  toda a cadeia, a prop/variável chamada `callID` é populada com
+  `this.props.channel.id` — ou seja, apesar do nome enganoso em ambos
+  os lados (rota Go `call_id`, prop TS `callID`), o valor que
+  efetivamente trafega é sempre o **channel ID**, nunca o `Call.ID`
+  real. Confirma-se com `slash_command.go:166`, que chama a mesma
+  `changeHost(args.UserId, args.ChannelId, ...)` passando
+  explicitamente `ChannelId`. Não há bug de autorização — é só uma
+  escolha de nomenclatura confusa (mantida consistente em produção),
+  não uma vulnerabilidade. Sem achado.
+- `handleJoin` (`websocket.go:734`) — verificado o gate de permissão
+  real antes de `addUserSession`: exige
+  `HasPermissionToChannel(userID, channelID, PermissionCreatePost)`
+  (ou ser o bot) antes de qualquer entrada em uma call, incluindo
+  quando "If there is an ongoing call, we can let anyone join" (state.go
+  comment) — esse comentário se refere a limites de licença/sysadmin-only
+  pra *criar* uma call, não a pular a checagem de canal; a checagem de
+  permissão de canal já aconteceu antes, incondicionalmente. Sem achado.
+- `handleUploadLogsToBot` (`api.go`) — `req.ChannelID`/`req.TeamID` só
+  validados como IDs bem-formados (`model.IsValidId`), sem checar
+  associação do usuário a eles; usados só pra `SendEphemeralPost`
+  (visível apenas ao próprio remetente) e pra montar um permalink
+  textual — impacto no máximo de enumeração de nome de time via texto
+  de erro, não elevação de privilégio nem leitura de dado alheio. Não
+  atinge a barra de achado reportável.
+
+Nenhum achado novo nesta rodada — resultado válido e esperado (uma
+hipótese real de bypass de autorização foi levantada e ativamente
+refutada rastreando a cadeia completa cliente→servidor, não apenas
+descartada por inspeção superficial). `deep-read-log.json` atualizado
+(`mattermost/mattermost-plugin-calls`, repo novo, 6 entradas). Clone
+temporário removido. `export-queue` rodado ao final da rodada.

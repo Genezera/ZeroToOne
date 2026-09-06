@@ -1405,5 +1405,13 @@
   ],
   "kubernetes/kubernetes": [
     "pkg/volume/util/subpath/subpath_linux.go (completo — rastreado o caller real de PathWithinBase deixado pendente em kubernetes/utils/mount/mount.go: doBindSubPath resolve VolumePath/subpath.Path com filepath.EvalSymlinks ANTES de chamar safeOpenSubPath->doSafeOpen; doSafeOpen caminha segmento-a-segmento com openat(parentFD, seg, O_NOFOLLOW|O_PATH) ancorado em FD (nao em string de path), com fstat por segmento rejeitando S_IFLNK explicitamente -- TOCTOU entre o EvalSymlinks inicial e o walk via FD nao e explorável porque cada openat seguinte parte do FD do diretorio ja aberto (inode fixado), nao de uma nova resolucao de path susceptivel a troca de symlink por um atacante que so controla o volume subjacente (ex.: NFS/hostPath compartilhado); mesma tecnica pos-CVE-2017-1002101/CVE-2018-11212, doSafeMakeDir/removeEmptyDirs tambem gated por PathWithinBase com EvalSymlinks previo. Sem achado -- confirma que o guard de mount.go realmente fecha a cadeia neste caller, resolvendo a pendencia registrada na entrada kubernetes/utils acima)"
+  ],
+  "mattermost/mattermost-plugin-calls": [
+    "server/api.go",
+    "server/api_router.go",
+    "server/host_controls_api.go",
+    "server/host_controls.go",
+    "server/session.go",
+    "server/websocket.go"
   ]
 }
