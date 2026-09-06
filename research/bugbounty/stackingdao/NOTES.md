@@ -1813,3 +1813,19 @@ Leitura profunda proativa desta rodada direcionada a `vercel/next.js`
 (ver NOTES.md de Vercel Open Source — 3 arquivos novos, todos ligados ao
 cookie interno de debug do painel de devtools de navegação instantânea,
 sem achado). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06m (scheduled routine, push automático via GitHub webhook, sessão cloud, push 4e8edca->2348858)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados via `check-program`, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 `Auth0
+by Okta`, 4 `Circle BBP`), skip completo. Os 15 contratos `.clar` já
+lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `nuxt/nuxt` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos: hash não-criptográfico
+de cache-key, carryover de estado via sessionStorage e geração de tipos
+de rota build-time, sem achado). Nenhuma transição de estado neste
+programa.

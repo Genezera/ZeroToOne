@@ -10105,3 +10105,57 @@ em rodadas anteriores).
 Nenhuma mudança de estado, nenhum arquivo de programa liberado lido,
 nenhum commit novo gerado por esta rodada (nada mudou em relação ao
 HEAD já existente).
+
+## Rodada 2026-09-06n (scheduled routine, push automático via GitHub webhook, sessão cloud, push 4e8edca->2348858)
+
+`migrate-to-v2.mjs` rodado (820 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Vercel Open Source` e
+`StackingDAO` confirmados `blocked:false`; `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados — nenhum arquivo
+desses três clonado/lido/aberto. `list-pending` = 34 candidatos, 100%
+fora do escopo desta missão (30 `Auth0 by Okta`, 4 `Circle BBP`), skip
+completo.
+
+Leitura profunda proativa direcionada a `nuxt/nuxt` (tier 1, clone raso
+do HEAD atual, commit `6ffe9bf`). Corrigi um bug na minha própria
+comparação contra `deep-read-log.json` de rodadas anteriores: entradas
+do log guardam `"arquivo (descrição...)"`, não o path puro, então
+comparar por igualdade de string contra o path puro gerava falsos
+"novo" (ex.: `import-protection.ts` e `composables/preview.ts` pareciam
+não lidos mas já estavam documentados linha a linha). Refeita a
+comparação por prefixo antes de escolher os 3 arquivos genuinamente
+novos:
+
+- `packages/nuxt/src/app/utils/hash.ts` — `hashKey`/`hashFunction` via
+  `fnv1a64Base36`, hash não-criptográfico documentado explicitamente no
+  próprio arquivo como impróprio pra checagem de integridade; usado só
+  como chave de cache de `useFetch`/`useAsyncData`. Sem achado.
+- `packages/nuxt/src/app/plugins/restore-state.client.ts` — hook
+  `app:mounted` faz `Object.assign(nuxtApp.payload.state,
+  JSON.parse(sessionStorage.getItem('nuxt:reload:state'))?.state)`.
+  `sessionStorage` é same-origin e só escrito pelo próprio app antes de
+  um reload (carryover de estado entre navegações, não input de rede);
+  mesmo que o valor tivesse uma chave `__proto__`, `Object.assign` de
+  um nível só reatribuiria o protótipo do próprio `payload.state` (via
+  setter herdado de `Object.prototype`), não poluiria
+  `Object.prototype` globalmente — e forjar esse valor em
+  `sessionStorage` já pressupõe XSS prévio no mesmo nível de acesso que
+  permitiria mutar `payload.state` diretamente sem passar por este
+  arquivo. Sem achado.
+- `packages/nuxt/src/core/utils/server-routes.ts` — geração de tipos
+  TypeScript pra rotas de servidor (`$fetch` tipado via `fetchdts`),
+  100% build-time, sem execução de request nem decisão de autorização
+  em runtime. Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (`nuxt/nuxt`: 29 → 32
+arquivos). Nenhuma transição de estado nesta rodada. Clone temporário
+removido do scratch dir ao final. `export-queue` rodado ao final.
+
+Confirmado o mesmo bug operacional já registrado na rodada `2026-09-06m`
+acima e em `2348858`: `migrate-to-v2.mjs` reapendiceu os mesmos 74
+eventos de `ledger/ledger.research.jsonl` com uma cadeia
+`prevHash`/`hash` divergente da já publicada. Restaurado
+`ledger/ledger.research.jsonl` pra versão de `origin/master` antes do
+commit (`git checkout origin/master -- ledger/ledger.research.jsonl`);
+`docs/zerotoone-v2/migration-log.json` mantido (esse é sobrescrito por
+inteiro a cada rodada, não é append-only, então não tem o mesmo risco).
