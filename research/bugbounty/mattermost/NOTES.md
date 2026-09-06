@@ -1,5 +1,49 @@
 # Mattermost Public Bug Bounty Engagement (Bugcrowd) — notas de pesquisa
 
+## Rodada 2026-09-06b (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero: `Auth0 by Okta` e
+`Circle BBP` confirmados bloqueados via `check-program`, nenhum arquivo
+desses dois programas clonado/lido. `list-pending` = 34 candidatos,
+100% em programas bloqueados (30 `Auth0 by Okta`, 4 `Circle BBP`) —
+skip completo, sem exceção.
+
+Leitura profunda proativa direcionada a `mattermost/mattermost-plugin-msteams`,
+seguindo a mesma família de bug já confirmada 2x nesta missão
+(`non_constant_time_hmac_comparison`: gate único em
+`mattermost-plugin-gitlab`, segunda camada em `mattermost-plugin-zoom`;
+já refutado em `mattermost-plugin-github`, que usa `hmac.Equal`
+corretamente). 2 arquivos novos lidos por completo:
+
+- `server/api.go` (`processActivity`/`processLifecycle`, linhas
+  103-177) — REFUTADO: ambos os handlers de webhook do MS Graph usam
+  `subtle.ConstantTimeCompare(activity.ClientState/event.ClientState,
+  WebhookSecret)` corretamente, inclusive com comentário explícito no
+  próprio código citando proteção contra timing attack. `validationToken`
+  do handshake de assinatura do MS Graph é refletido como
+  `text/plain`, sem contexto de renderização HTML — sem risco de XSS
+  reletido. Não é o 3º irmão da família.
+- `server/subscriptions.go` — gerenciamento de ciclo de vida de
+  subscription (criar/renovar/deletar), sem input de rede não
+  confiável alcançando essas funções (`NotificationURL` só comparado
+  contra `m.baseURL` próprio, nunca o inverso).
+
+Também verificado `mattermost/mattermost-plugin-calls` (já com 6
+arquivos lidos em rodada anterior) e `plaid/plaid-ruby` (já com 4
+arquivos lidos) via clone raso: `calls` não tem nenhum arquivo com
+`signature`/`hmac`/`webhook` no conteúdo (usa sessão WebSocket, não
+webhook de terceiro com segredo compartilhado); `plaid-ruby` só tem 4
+arquivos de lógica escrita à mão (os 4 já lidos) — todo o resto de
+`lib/plaid/models/*.rb` é código gerado por OpenAPI (classes de dado
+puras, sem lógica de verificação de assinatura/JWT). Nenhum dos dois
+gerou arquivo novo genuinamente inédito para o orçamento desta rodada;
+não contam como um dos 3 slots, só descrito aqui para não repetir a
+mesma checagem numa rodada futura.
+
+Sem achado novo. `deep-read-log.json` atualizado
+(`mattermost/mattermost-plugin-msteams`: 3 → 5 arquivos). Clones
+temporários removidos. `export-queue` rodado ao final.
+
 ## Rodada 2026-09-03 (push automático via GitHub webhook, sessão cloud)
 
 Primeira rodada tocando este programa. Mesma lacuna documentada em
