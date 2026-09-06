@@ -9995,3 +9995,37 @@ Sem achado nesta rodada. `deep-read-log.json` atualizado
 estado. Clone temporário (`vercel-labs/agent-skills`, `vercel/ms`,
 `vercel/async-sema`) removido do scratch dir ao final. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06k (scheduled routine, sessão cloud, push 409bc62; rebase sobre 6192ac2 por push concorrente durante a rodada)
+
+`migrate-to-v2.mjs` rodado (820 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`) confirmados — nenhum arquivo desses três programas
+clonado/lido/aberto nesta rodada. `list-pending` = 34 candidatos, 100%
+fora do escopo desta missão (30 `Auth0 by Okta`, 4 `Circle BBP`), skip
+completo sem exceção.
+
+Leitura profunda proativa direcionada a `vercel-labs/skills` (`check-scope`
+confirmou `allowed:true`, tier 1; distinto de `vercel-labs/agent-skills`,
+coberto em paralelo pela rodada concorrente `2026-09-06j` acima). Clone
+raso do HEAD atual; comparação com `deep-read-log.json` (26 arquivos já
+cobertos) achou 14 arquivos genuinamente novos, nenhum batendo o filtro
+de nome auth/session/crypto/token/login/password/admin/permission/access/
+secret. Por julgamento próprio, escolhi os 3 com superfície mais
+plausível (telemetria/detecção de ambiente/re-export):
+
+- `src/telemetry.ts` (completo) — `track()`/`fetchAuditData()` são
+  fire-and-forget pra host fixo `add-skill.vercel.sh`, payload só com
+  metadados de invocação (source/skills/agents/versão), nunca conteúdo
+  de arquivo nem segredo; respeita `DISABLE_TELEMETRY`/`DO_NOT_TRACK`.
+  Sem achado.
+- `src/providers/index.ts` (completo, 13 linhas) — só barrel de
+  re-export de módulos já auditados. Sem achado.
+- `src/detect-agent.ts` (completo) — só lê env vars locais pra
+  detectar o agente de IA em execução (UX de pular prompt interativo),
+  nenhuma decisão de autorização depende disso. Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (`vercel-labs/skills`:
+26 → 29 arquivos). Nenhuma transição de estado nesta rodada.
+`export-queue` rodado ao final.

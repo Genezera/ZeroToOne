@@ -1781,3 +1781,20 @@ Leitura profunda proativa desta rodada direcionada a `nitrojs/nitro` (ver
 NOTES.md de Vercel Open Source — 2 arquivos novos, cookie adapter da
 Azure e tipo de config do Swagger UI, sem achado). Nenhuma transição de
 estado neste programa.
+
+## Rodada 2026-09-06k (scheduled routine, sessão cloud, push 409bc62; rebase sobre 6192ac2 por push concorrente durante a rodada)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados via `check-program`, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 `Auth0
+by Okta`, 4 `Circle BBP`), skip completo. Os 15 contratos `.clar` já
+lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo (não retestado
+`api.hiro.so` nesta rodada — bloqueio de proxy documentado há dezenas de
+rodadas, sem sinal de mudança de condição).
+
+Leitura profunda proativa desta rodada direcionada a `vercel-labs/skills`
+(ver NOTES.md de Vercel Open Source — 3 arquivos novos: telemetria,
+detecção de agente e barrel de providers, sem achado). Nenhuma transição
+de estado neste programa.
