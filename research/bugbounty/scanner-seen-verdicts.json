@@ -767,5 +767,8 @@
   "Mattermost Public Bug Bounty Engagement ::mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison": "falso_positivo",
   "Vercel Open Source::vercel/chat/packages/adapter-gchat/src/workspace-events.ts::decodePubSubMessage::ai_deep_read_finding": "falso_positivo",
   "Kubernetes::kubernetes/cloud-provider-openstack::pkg/identity/keystone/keystone.go::Auth.authorizeToken::ai_deep_read_finding": "falso_positivo",
-  "Vercel Open Source::sveltejs/svelte/packages/svelte/src/internal/server/renderer.js::Renderer#hydratable_block::ai_deep_read_finding": "falso_positivo"
+  "Vercel Open Source::sveltejs/svelte/packages/svelte/src/internal/server/renderer.js::Renderer#hydratable_block::ai_deep_read_finding": "falso_positivo",
+  "Kubernetes::kubernetes/utils/mount/mount_linux.go::formatAndMountSensitive::command_injection_risk": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/polkadot/transaction.go::SignTx::ai_deep_read_finding": "confirmado",
+  "Vercel Open Source::nitrojs/nitro/src/dev/vfs.ts::createVFSHandler::html_js_injection_unescaped_interpolation": "confirmado"
 }

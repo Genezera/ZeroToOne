@@ -10,14 +10,14 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 8 | 3 | 3 | 2 | 38% |
+| ai_deep_read_finding | go | 10 | 4 | 4 | 2 | 40% |
 | ai_deep_read_finding | js | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | rust | 3 | 2 | 1 | 0 | 33% |
 | ai_deep_read_finding | solidity | 4 | 0 | 4 | 0 | 100% |
 | ai_deep_read_finding | swift | 2 | 1 | 1 | 0 | 50% |
-| ai_deep_read_finding | typescript | 5 | 2 | 2 | 1 | 40% |
+| ai_deep_read_finding | typescript | 6 | 3 | 2 | 1 | 33% |
 | auth_arg_inconsistency | clarity | 1 | 0 | 1 | 0 | 100% |
 | command_injection_risk | go | 1 | 0 | 0 | 1 | 0% |
 | command_injection_risk | js | 7 | 1 | 6 | 0 | 86% |
@@ -72,11 +72,11 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 |---|---|---|---|---|---|---|
 | ai_deep_read_finding | Block Open Source | 6 | 1 | 3 | 2 | 50% |
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
-| ai_deep_read_finding | Kubernetes | 1 | 0 | 1 | 0 | 100% |
+| ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 2 | 1 | 1 | 0 | 50% |
-| ai_deep_read_finding | OKG | 5 | 1 | 0 | 4 | 0% |
+| ai_deep_read_finding | OKG | 6 | 2 | 0 | 4 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | Vercel Open Source | 7 | 2 | 4 | 1 | 57% |
+| ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
 | command_injection_risk | Kubernetes | 1 | 0 | 0 | 1 | 0% |
 | command_injection_risk | Vercel Open Source | 7 | 1 | 6 | 0 | 86% |
