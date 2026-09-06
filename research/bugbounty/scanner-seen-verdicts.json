@@ -785,5 +785,8 @@
   "Vercel Open Source::vercel/chat/packages/state-ioredis/src/index.ts::line:178::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
   "Vercel Open Source::vercel/chat/packages/chat/src/streaming-markdown.ts::line:214::redos_risk::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
   "Vercel Open Source::vercel/chat/packages/adapter-x/src/chat/test-utils.ts::line:212::hardcoded_secret::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
-  "Vercel Open Source::vercel/chat/packages/adapter-slack/src/index.ts::line:324::redos_risk::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo"
+  "Vercel Open Source::vercel/chat/packages/adapter-slack/src/index.ts::line:324::redos_risk::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/oasis/account.go::NewAddress+SignTransaction::ai_deep_read_finding": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams-meetings/server/http.go::completeUserOAuth::oauth2_login_csrf_account_linking": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/user.go::CompleteOAuth2::oauth2_login_csrf_account_linking": "confirmado"
 }

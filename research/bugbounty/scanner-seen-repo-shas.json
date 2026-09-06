@@ -2873,7 +2873,7 @@
     "src/download-source.ts": "198022f31cda8c547d668c8b01b0c0fc669eddb0",
     "src/find.ts": "9fe60ce81be21a65508299b469519af4b67155b2",
     "src/frontmatter.ts": "c48723019131db194c6351323f905968b650c558",
-    "src/git.ts": "551bb41d4b29adeac7a49fe04c3f7105e67c1774",
+    "src/git.ts": "5605bc7e7c673e0459d345a1c6bb885e06bb2cc9",
     "src/github-host.ts": "65b59974634d9579e9bc05c701993e957c1dc3d8",
     "src/install.ts": "ae24cc015e8bc6addcafbd58c0498b825c6b6d94",
     "src/installer.ts": "f3e5810f4eeaaf1b47aaa61ad7476a2b06537c4e",
@@ -2888,15 +2888,16 @@
     "src/remove.ts": "20a30f512f469c33031b081506b20e47d0220ae5",
     "src/sanitize.ts": "1ddfad22b9eb851a6740fe4c24f7cb6b0f8e78f2",
     "src/skill-lock.ts": "3edade682b171f7d4d06f62a0ab11e30c0231867",
-    "src/skills.ts": "c0f36627471f66e6d1b0861768baa4d0b1261755",
+    "src/skills.ts": "09e718ae8b832b907d68d88be9598a7d3eb6a87e",
     "src/source-parser.ts": "26f627bb3794bad06c5379743d14ffe91033e0ad",
     "src/sync.ts": "a0ee75650e7a00534b4f25580ecb0a47ae1a6760",
     "src/telemetry.ts": "5efccd02f75555dcc1f36cc9c4623e9b49100500",
     "src/test-utils.ts": "10df2840200ddfa33a868a8a5fa54630aafa624e",
     "src/types.ts": "e72241b74b607dbd6b93212d57e6991645b60152",
     "src/update-source.ts": "133dbcd8c86e81014f0bacb0d977de4d7390390b",
-    "src/update.ts": "50b2e9a9ed4db3ddb3f45db79110c6b477960e22",
-    "src/use.ts": "19522c2705aa2e10132532c66f61c573ee9c3806"
+    "src/update.ts": "6e732d33b747b608086e057f8c938a186029dc40",
+    "src/use.ts": "19522c2705aa2e10132532c66f61c573ee9c3806",
+    "src/skill-relocation.ts": "2356b533a7ecd5e9a35626312dbc98987bdc79be"
   },
   "kubernetes/apimachinery": {
     "doc.go": "1659a0fa6e34457fee9b60e13608e5638843c2f2",
