@@ -10068,3 +10068,40 @@ navegação instantânea:
 Sem achado novo. `deep-read-log.json` atualizado (`vercel/next.js`: 40 →
 43 arquivos). Nenhuma transição de estado nesta rodada. Clone temporário
 removido do scratch dir ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06m (scheduled routine, push automático via GitHub webhook, sessão cloud — trigger duplicado do mesmo push da rodada 2026-09-06l)
+
+`program-policy.json` conferido como passo zero via `check-program`
+antes de qualquer leitura (`Block Open Source` `aiResearchBanned`,
+`Circle BBP` `blocked`, `Auth0 by Okta` `blocked` confirmados) —
+nenhum arquivo desses três clonado/lido/aberto.
+
+Ao chegar no HEAD, `git log -1` mostrou que o commit no topo
+(`4e8edca`) já É o resultado da rodada `2026-09-06l` acima — mesmo SHA
+citado no `github-trigger-context` desta sessão. Ou seja, esta sessão
+foi disparada pelo mesmo evento de push que uma sessão concorrente já
+processou integralmente (fila 100% bloqueada, deep-read em
+`vercel/next.js`, sem achado, já commitado). Não havia trabalho novo
+para fazer nesta rodada.
+
+Achado operacional (não é finding de bug bounty, é sobre o próprio
+pipeline): rodar `migrate-to-v2.mjs` de novo sobre um `queue.jsonl` já
+sincronizado NÃO é idempotente em relação a `ledger/ledger.research.jsonl`
+como a doc do CLI afirma — reapêndice os mesmos 74 eventos já presentes
+no ledger, só que com uma cadeia `prevHash`/`hash` diferente da já
+commitada (mesmo conteúdo lógico, hash chain divergente). Se isso
+tivesse sido commitado, teria duplicado esses 74 eventos no ledger com
+uma cadeia de hash inconsistente. Descartado via `git checkout --` nos
+dois arquivos afetados (`docs/zerotoone-v2/migration-log.json` e
+`ledger/ledger.research.jsonl`) antes de qualquer commit; árvore de
+trabalho ficou idêntica ao HEAD. Vale investigar em rodada futura (não
+feito aqui, fora do escopo desta missão): `migrate-to-v2.mjs` deveria
+checar se um evento (por hash de conteúdo ou por
+`findingId`+`type`+`ts`) já existe no ledger antes de reapendicar,
+especialmente relevante porque múltiplas sessões cloud concorrentes pro
+mesmo push já é um padrão observado (ver "rebase sobre push concorrente"
+em rodadas anteriores).
+
+Nenhuma mudança de estado, nenhum arquivo de programa liberado lido,
+nenhum commit novo gerado por esta rodada (nada mudou em relação ao
+HEAD já existente).
