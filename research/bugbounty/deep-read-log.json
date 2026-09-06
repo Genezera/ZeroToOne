@@ -1175,7 +1175,9 @@
     "examples/hydrogen-2/app/routes/account_.activate.$id.$activationToken.tsx (action() -- mesmo padrao: id/activationToken de params vao direto pra customerActivate mutation da Shopify, validacao real do token acontece no backend da Shopify, nao neste arquivo; session so seta customerAccessToken apos resposta valida. Sem achado)",
     "python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/datastructures/auth.py (Authorization/WWWAuthenticate -- vendored verbatim do projeto Werkzeug/Pallets upstream, so parsing/serializacao de header RFC7235 (Basic base64, Bearer token, Digest params), nenhuma decisao de autorizacao/comparacao de segredo acontece aqui; comparado de memoria com a implementacao upstream conhecida, sem sinal de patch/modificacao local que introduzisse divergencia. Sem achado)",
     "examples/hydrogen-2/app/routes/account_.reset.$id.$resetToken.tsx (completo -- mesmo padrao dos irmaos login/activate: id/resetToken de params vao direto pra customerReset mutation da Shopify, validacao real do token no backend Shopify, nao neste arquivo; session so seta customerAccessToken apos resposta valida. Sem achado)",
-    "examples/eleventy/feed/htaccess.njk (completo, 6 linhas -- template estatico Apache DirectoryIndex, sem input externo. Sem achado)"
+    "examples/eleventy/feed/htaccess.njk (completo, 6 linhas -- template estatico Apache DirectoryIndex, sem input externo. Sem achado)",
+    "packages/cli/evals/evals/login-not-logged-in/vitest.config.ts (config vitest trivial, so include:['EVAL.ts'], mesmo padrao do EVAL.ts irmao ja lido. Sem achado)",
+    "packages/cli/evals/evals/login-whoami/vitest.config.ts (config vitest trivial, so include:['EVAL.ts'], mesmo padrao do EVAL.ts irmao ja lido. Sem achado)"
   ],
   "vercel/workflow": [
     "packages/core/src/runtime/step-ownership.ts (isStepOwnershipActive/stepLeaseRemainingSeconds/backstopIdempotencyKey/hasPendingStepOwnedByMessage -- ownership de mensagem de fila entre workers internos, nao fronteira de autorizacao de usuario; sem achado)",

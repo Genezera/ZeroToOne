@@ -9664,3 +9664,35 @@ não lidos:
 Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/eve`: +3
 arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06e (push automático via GitHub webhook, push 439f339->12ad41c, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program` (as três checagens devolveram `blocked:true`, motivos
+inalterados); `StackingDAO` e `Vercel Open Source` confirmados
+`blocked:false`. `migrate-to-v2.mjs` reexecutado (820 findings).
+`list-pending` = 34 candidatos, 100% fora do escopo desta missão (30
+`Auth0 by Okta`, 4 `Circle BBP`) — skip completo, nenhum arquivo desses
+dois programas clonado/lido, nenhum candidato novo em `Vercel Open
+Source` ou `StackingDAO` nesta rodada.
+
+Leitura profunda proativa desta rodada: como as rodadas recentes já
+tinham exaurido o filtro de nome de arquivo
+(auth/session/crypto/token/login/password/admin/permission/access) em
+`vercel/workflow`, `vercel/chat` e `nitrojs/nitro` (reconfirmado nesta
+rodada via clone raso do HEAD atual de cada um — todo hit novo do grep
+já constava em `deep-read-log.json`), ampliei a busca pra `vercel/vercel`
+(clone raso `--filter=blob:none`, commit `e06cc643`), o maior repo do
+escopo (117 arquivos já lidos). Do total de 76 arquivos batendo o filtro
+de nome, só 2 eram genuinamente novos:
+- `packages/cli/evals/evals/login-not-logged-in/vitest.config.ts`
+- `packages/cli/evals/evals/login-whoami/vitest.config.ts`
+
+Ambos são config trivial de vitest (`{test:{include:['EVAL.ts']}}`),
+mesmo padrão dos `EVAL.ts` irmãos já lidos e refutados em rodada
+anterior (harness de avaliação de agente de IA, sem lógica de
+autenticação do produto). Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/vercel`: +2 arquivos). Nenhuma
+transição de estado nesta rodada. `export-queue` rodado ao final.

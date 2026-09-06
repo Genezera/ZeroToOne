@@ -1667,6 +1667,23 @@ handler do endpoint `__nuxt_island` e guardas de tamanho/profundidade
 de payload, mais o socket IPC dev-only do vite-node; sem achado).
 Nenhuma transição de estado neste programa.
 
+## Rodada 2026-09-06e (push automático via GitHub webhook, push 439f339->12ad41c, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false` via `check-program`; `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 Auth0
+by Okta, 4 Circle BBP), skip completo. Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`,
+sem contrato novo (não retestado `api.hiro.so` nesta rodada — bloqueio
+de proxy documentado há dezenas de rodadas, sem sinal de mudança de
+condição).
+
+Leitura profunda proativa desta rodada direcionada a `vercel/vercel`
+(ver NOTES.md de Vercel Open Source — 2 arquivos novos, ambos config
+trivial de vitest do harness de eval; sem achado). Nenhuma transição de
+estado neste programa.
+
 ## Rodada 2026-09-06c (scheduled routine, sessão cloud)
 
 `program-policy.json` conferido como passo zero — `Block Open Source`,
