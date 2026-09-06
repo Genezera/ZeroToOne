@@ -611,3 +611,30 @@ baixa prioridade: `pkg/metrics/metrics.go`, `api/v1/vaultsecret_types.go`,
 `controllers/event_recorder.go`, `cmd/manager/main.go` — repo agora
 genuinamente esgotado). Nenhum achado novo, nenhuma transição de
 estado nesta rodada — resultado normal e válido.
+
+## Rodada 2026-09-06 #4 (cloud, disparada por push)
+
+`program-policy.json` conferido no passo 0: `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` seguem bloqueados. `list-pending` global
+= 34, 100% nesses dois últimos programas (nenhum Kiwi.com) — skip
+completo, nenhum arquivo desses programas tocado.
+
+Fechei de vez o `kiwicom/k8s-vault-operator` (clone raso público,
+descartado ao final): li os 2 arquivos não-vendored/não-gerados que a
+rodada anterior já tinha identificado como restantes de baixa
+prioridade —
+
+- `cmd/manager/main.go` — só bootstrap do controller-runtime
+  (scheme/manager/leader-election/health checks) e wiring do
+  `VaultReconciler`; nenhuma lógica de auth própria além do que já foi
+  lido em `pkg/vault/auth.go`. Sem achado.
+- `pkg/vault/types.go` — tipos de dados (`PathData`/`Data`/`Secrets`)
+  e serialização JSON/YAML/ENV pós-leitura do Vault; `AddNode`/
+  `AddSecrets` rejeitam override de chave em vez de sobrescrever
+  silenciosamente. Gate de acesso real continua em `pkg/vault/auth.go`,
+  não aqui. Sem achado.
+
+Repo agora genuinamente esgotado (só sobra `pkg/metrics/metrics.go`,
+`api/v1/*` gerado/CRD boilerplate e testes). `deep-read-log.json`
+atualizado. Nenhum achado novo, nenhuma transição de estado nesta
+rodada — resultado normal e válido.

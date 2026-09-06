@@ -1000,3 +1000,23 @@ independente de duas sessões no mesmo bug serve como confirmação
 adicional da causa raiz, sem valor incremental de achado novo.
 `export-queue` rodado ao final (sem mudança de conteúdo líquida —
 apenas reordenação, descartada).
+
+## Rodada 2026-09-06 #2 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido no passo 0: `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` seguem bloqueados. `list-pending`
+global = 34, 100% nesses dois últimos programas — skip completo.
+
+Leitura profunda proativa: 1 arquivo novo em `okx/go-wallet-sdk`
+(mesmo repo, clone raso público descartado ao final) —
+`coins/oracle/vrf/proof/seed.go`. Código vendorizado do Chainlink VRF
+(copyright original no cabeçalho): `FinalSeed` mistura `PreSeed` com o
+hash do bloco via hash público, por design (VRF combina seed
+pré-computado com blockhash para gerar imprevisibilidade verificável —
+não é gerador de entropia próprio, e VRF não depende de sigilo do
+seed, só de verificabilidade). Sem achado — não é a mesma família de
+bug (derivação de chave/seed insegura) já confirmada 6x nos outros
+coins; aqui não há geração de chave alguma.
+
+`deep-read-log.json` atualizado. Nenhum achado novo, nenhuma transição
+de estado nesta rodada — resultado normal e válido.
