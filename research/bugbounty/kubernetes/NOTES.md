@@ -1426,3 +1426,62 @@ orçamento de custo CEL, já mencionado indiretamente em `condition.go`).
 Nenhum achado novo, nenhuma transição de estado nesta rodada — resultado
 normal e válido. Clone raso descartado ao final. `export-queue` rodado
 ao final.
+
+## Rodada 2026-09-06 (scheduled routine, sessão cloud, push 040985b->0fa6048)
+
+`program-policy.json` conferido como passo zero (regra do CLAUDE.md):
+`Block Open Source`, `Circle BBP` e `Auth0 by Okta` confirmados
+bloqueados via `check-program`, nenhum arquivo desses três tocado.
+`list-pending` = 34 candidatos, 100% nos dois programas bloqueados (30
+`Auth0 by Okta`, 4 `Circle BBP`) — skip completo.
+
+Leitura profunda proativa em `kubernetes/cloud-provider-aws` (clone raso
+público, filtro de nome auth/token/credential/permission/access), 3
+arquivos novos (repo tinha só 1 lido: `ecr-credential-provider/plugin.go`):
+
+- `pkg/services/aws_sts.go` — `NewStsClient`/`WithStsHeadersMiddleware`
+  injeta os headers `x-amz-source-arn`/`x-amz-source-account` (proteção
+  anti confused-deputy do STS ao assumir role via IRSA) derivados de
+  `cfg.Global.RoleARN`/`SourceARN`, que vêm exclusivamente do
+  cloud-config carregado pelo admin no startup (não de input de
+  request/tenant). Sem achado.
+- `cmd/ecr-credential-provider/main.go` — hipótese real investigada com
+  ceticismo: `buildCredentialsProvider` assume uma IAM role via
+  `AssumeRoleWithWebIdentity` usando o `ServiceAccountToken`/anotação
+  `eks.amazonaws.com/ecr-role-arn` da ServiceAccount do pod (fluxo
+  IRSA), mas a resposta declara `CacheKeyType=RegistryPluginCacheKeyType`
+  (cache por registry, não por pod/SA) — a princípio isso pareceria
+  permitir que credenciais de uma role assumida por uma SA com IRSA
+  vazassem via cache do kubelet para outro pod/SA sem essa role, desde
+  que ambos puxem imagem do mesmo registry. **Refutada**: rastreei o
+  lado kubelet real (`kubernetes/kubernetes`
+  `pkg/credentialprovider/plugin/plugin.go`, buscado via
+  raw.githubusercontent.com só para fechar esta cadeia específica, sem
+  clonar o monorepo inteiro) — quando o credential provider é
+  configurado com `tokenAttributes.serviceAccountTokenAudience` (feature
+  gate `KubeletServiceAccountTokenForCredentialProviders`), o kubelet
+  combina a cache key declarada pelo plugin com uma
+  `serviceAccountCacheKey` derivada de namespace/nome/UID da SA + hash
+  do token (`generateCacheKey(cacheKey, serviceAccountCacheKey)`,
+  `plugin.go` ~L582) — isso isola corretamente o cache por identidade de
+  SA mesmo com `CacheKeyType=Registry`. Sem esse modo configurado (SA
+  vazia ou feature off), `request.ServiceAccountToken` chega vazio ao
+  plugin e `buildCredentialsProvider` nunca tenta assumir role (cai pro
+  credential chain padrão do node). Hipótese de vazamento cross-tenant
+  fechada com evidência direta do código kubelet, não apenas descartada
+  por inspeção superficial. Sem achado.
+- `pkg/providers/v1/sets_ippermissions.go` — só estrutura de dados/
+  set-algebra (`Insert`/`Delete`/`Difference`/`Equal`) pra reconciliar
+  regras de security group, chave via `json.Marshal` do próprio
+  `IpPermission`; nenhuma decisão de autorização aqui. Sem achado.
+
+`deep-read-log.json` atualizado (`kubernetes/cloud-provider-aws`: 1 → 4
+arquivos). Nenhum achado novo, nenhuma transição de estado nesta rodada
+— resultado normal e válido (uma hipótese real de vazamento de
+credenciais cross-tenant foi levantada e ativamente refutada com
+rastreamento de cadeia completa, não descartada por suposição). Clones
+temporários removidos ao final. `ledger.research.jsonl` teve 75 linhas
+reapendidas pelo bug conhecido de `migrate-to-v2.mjs` (reapêndice de
+eventos históricos já presentes, verificado programaticamente por
+`type+ts+findingId` — 100% duplicatas) — descartado via `git checkout --`
+antes do commit, não perpetuado. `export-queue` rodado ao final.
