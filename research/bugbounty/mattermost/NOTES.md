@@ -1,5 +1,63 @@
 # Mattermost Public Bug Bounty Engagement (Bugcrowd) — notas de pesquisa
 
+## Rodada 2026-09-06e (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero: `Auth0 by Okta` e
+`Circle BBP` seguem `blocked:true`. `list-pending` = 34 candidatos,
+100% nesses dois programas — skip completo, nenhum arquivo tocado.
+
+Esta rodada investigou `mattermost/mattermost-plugin-mscalendar`
+(fluxo OAuth2, mesma hipótese da rodada 2026-09-06d abaixo) em
+paralelo a outra sessão cloud que chegou à mesma conclusão (binding
+CSRF correto via `strings.Split(state, "_")[1] != authedUserID`,
+mesmo padrão seguro do `-jira`, sem achado) — resultado duplicado,
+sem novidade a registrar aqui além do que a rodada 2026-09-06d já
+documenta.
+
+A investigação foi então estendida a outro plugin da mesma família
+ainda não coberto por `deep-read-log.json`:
+`mattermost/mattermost-plugin-msteams-meetings` (clone raso público).
+5 arquivos lidos: `server/authorization.go`, `server/state.go`,
+`server/http.go`, `server/user.go`, `server/command.go`.
+
+- **Achado novo confirmado** (`oauth2_login_csrf_account_linking`,
+  `server/http.go::completeUserOAuth`): diferente de `-confluence`
+  (onde a comparação de `mattermostUserID` simplesmente não existe) e
+  diferente de `-jira`/`-mscalendar` (onde existe e funciona porque o
+  `state` tem um componente aleatório de alta entropia), aqui o bug é
+  mais sutil: a comparação de usuário *existe* em
+  `completeUserOAuth`, mas é inócua porque o próprio `state` gerado em
+  `StoreState` (`server/state.go`) é **100% determinístico** —
+  `"msteamsmeetinguserstate_<userID>_<channelID>_<justConnect>"`, sem
+  nenhum nonce aleatório. Qualquer atacante que conheça o `userID` e
+  um `channelID` da vítima (ambos observáveis/previsíveis) consegue
+  reconstruir o `state` exato sem nenhum segredo, e
+  `completeUserOAuth` reconstrói a chave de KV a partir do próprio
+  `state` recebido na requisição (não da sessão), então a comparação
+  `storedState == state` e o check de `userID` subsequente não travam
+  nada. Cadeia de exploração completa (CSRF em dois estágios —
+  `/oauth2/connect?channelID=...` pra semear o KV com um state
+  previsível, depois `/oauth2/complete?code=<code do atacante>&state=<state
+  forjado>` pra vincular a conta Microsoft do atacante à identidade
+  Mattermost da vítima) documentada em detalhe no campo `reasoning`
+  do finding. Mesma classe (CWE-352, OAuth login/account-linking
+  CSRF) já confirmada 2x nesta família de plugins, terceiro mecanismo
+  de quebra distinto. `filesRead`/`reasoning` salvos, avançado para
+  `corroborated_static` (aceito pelo CLI). `check-scope` recusa
+  (`allowed:false`, "nenhum scope snapshot existe para este
+  programa") — mesma lacuna de infraestrutura já documentada pros
+  outros achados deste programa. `record-deployment-evidence`
+  registrado com `confidence:"unverified"`. Tentativa de
+  `scope_verified` corretamente recusada pela máquina de estados
+  (transição `corroborated_static` → `scope_verified` não é permitida
+  sem passar por `reproduced_local`, inexistente para Go — sem
+  validador de PoC pra essa linguagem hoje). `corroborated_static` é
+  o teto possível nesta rodada.
+
+`deep-read-log.json` atualizado (+5 em
+`mattermost-plugin-msteams-meetings`, repo novo). Clone temporário
+removido. `export-queue` rodado ao final da rodada.
+
 ## Rodada 2026-09-06d (push automático via GitHub webhook, sessão cloud)
 
 `research/bugbounty/program-policy.json` conferido como passo zero
