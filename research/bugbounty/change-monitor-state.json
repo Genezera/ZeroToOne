@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-05T20:28:46.570Z",
+  "checkedAt": "2026-09-06T08:50:22.131Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -618,13 +618,13 @@
       ]
     },
     "vercel/chat": {
-      "sha": "85a37c896f86611c23b024afc8325183e6f1ec99",
+      "sha": "056d8830b26eea46b9ef0ea50d055f33d4516739",
       "branch": "main",
-      "parentSha": "31bce0a7a087917030b5fa335566d2e8d3dc3328",
-      "committedAt": "2026-09-05T06:06:47Z",
-      "url": "https://github.com/vercel/chat/commit/85a37c896f86611c23b024afc8325183e6f1ec99",
-      "title": "chore(release): version packages (#878)",
-      "observedAt": "2026-09-05T06:07:26.891Z",
+      "parentSha": "85a37c896f86611c23b024afc8325183e6f1ec99",
+      "committedAt": "2026-09-06T05:27:47Z",
+      "url": "https://github.com/vercel/chat/commit/056d8830b26eea46b9ef0ea50d055f33d4516739",
+      "title": "feat(history): support uncapped per-user retention (#904)",
+      "observedAt": "2026-09-06T08:50:22.131Z",
       "programs": [
         "Vercel Open Source"
       ],
