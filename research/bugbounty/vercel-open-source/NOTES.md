@@ -9696,3 +9696,58 @@ autenticação do produto). Sem achado.
 
 `deep-read-log.json` atualizado (`vercel/vercel`: +2 arquivos). Nenhuma
 transição de estado nesta rodada. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06f (push automático via GitHub webhook, push f9ae1b7->ce98444, sessão cloud)
+
+`migrate-to-v2.mjs` reexecutado (820 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Block Open Source`
+(`aiResearchBanned`) e `Circle BBP` (`blocked`, escolha do usuário)
+confirmados bloqueados; `Auth0 by Okta` também confirmado bloqueado
+(RoE revisada em 04/09/2026 proíbe qualquer ferramenta/scanner
+automatizado — este pipeline é automatizado por definição). Nenhum
+arquivo desses três programas clonado/lido/aberto. `list-pending` = 34
+candidatos, 100% nesses dois programas bloqueados (30 `Auth0 by Okta`,
+4 `Circle BBP`) — skip completo, nenhum candidato novo em `Vercel Open
+Source` ou `StackingDAO` nesta rodada.
+
+Leitura profunda proativa desta rodada: como `vercel/vercel`,
+`vercel/eve`, `vercel/workflow`, `vercel/chat` e `nitrojs/nitro` já
+tinham o filtro de nome de arquivo
+(auth/session/crypto/token/login/password/admin/permission/access/secret)
+essencialmente exaurido em rodadas recentes, ampliei a busca pra
+`vercel/ai` (clone raso `--filter=blob:none`), repo grande do escopo
+com 51 arquivos já lidos em rodadas anteriores. Do total de 122 hits do
+filtro de nome, a maioria eram arquivos `.test.ts` espelhando fonte já
+revisado, ou falsos positivos de "token" no sentido de contagem de
+tokens de LLM (uso/custo, não segredo de autenticação) — descartados
+sem leitura por não terem superfície de segurança nova. Priorizados 3
+arquivos genuinamente novos e com superfície de autorização real:
+
+- `packages/harness-acp/src/v1/bridge/permission-mode.ts` —
+  `configureACPPermissionMode` mapeia `HarnessV1PermissionMode` para
+  session-mode/config-option do protocolo ACP; `validateTarget` confere
+  cada modo mapeado (não só o alvo ativo) contra o que o agente
+  realmente anunciou em `sessionConfiguration.modes`/`configOptions`
+  antes de qualquer chamada, lançando erro de capability-unsupported se
+  o agente não suporta. Sem achado.
+- `packages/harness/src/v1/harness-v1-permission-mode.ts` — só o type
+  union `'allow-reads'|'allow-edits'|'allow-all'`, sem lógica. Sem
+  achado.
+- `packages/harness-cline/src/cline-session.ts` (completo, 1035
+  linhas) — `clineBuiltinToolRequiresApproval` aplica a mesma matriz
+  allow-reads/allow-edits/allow-all já documentada nos outros
+  harnesses; `requestToolApproval` libera tool custom do host sem gate
+  porque essa aprovação é responsabilidade do framework antes do
+  resultado ser submetido de volta (mesmo modelo de divisão de
+  responsabilidade já confirmado alhures). `parkedClineSessions` é
+  `Map` de módulo (não por-instância) chaveado por `sessionId`, sem
+  verificação adicional de identidade no resume — mesmo padrão já
+  revisado em `recovered-session.ts` (ACP): `sessionId` é identificador
+  opaco do caller (biblioteca client-side para apps próprios, não
+  servidor multi-tenant), então colisão/reuso de `sessionId` entre
+  usuários diferentes é responsabilidade de quem integra a biblioteca,
+  não um bypass desta biblioteca. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/ai`: 51 → 54 arquivos). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final.
