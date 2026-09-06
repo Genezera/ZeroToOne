@@ -1321,3 +1321,54 @@ scratchpad, removido ao final. `export-queue` rodado ao final. Base
 rebaseada duas vezes por push concorrente durante a rodada (`a54c423`->
 `0cf0dc6` deep-read `nuxt/nuxt`, depois `0cf0dc6`->`8b82df2` deep-read
 `vercel/flags`); sem overlap com este programa/diretório em nenhum caso.
+
+
+## Rodada 2026-09-06m (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido no passo 0: `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` seguem bloqueados, nenhum arquivo desses
+programas tocado. `list-pending` global = 34, 100% nesses dois últimos
+programas (nenhum Kubernetes) — skip completo.
+
+Leitura profunda proativa continuando o ponto exato deixado pela rodada
+anterior (`cel/` — parsing/compilação/match de expressão CEL usada por
+`ValidatingAdmissionPolicy`/`MutatingAdmissionPolicy` e por
+`matchConditions` de webhooks), 3 arquivos novos em
+`kubernetes/kubernetes` (sparse checkout raso via `git clone` público,
+descartado ao final):
+
+- `admission/plugin/cel/compile.go` — `Compiler.CompileCELExpression`
+  só monta o ambiente CEL (variáveis `object`/`oldObject`/
+  `namespaceObject`/`request`/`params`/`authorizer`) e compila,
+  validando o tipo de retorno da expressão. Nenhuma decisão de
+  autorização acontece aqui, só parsing/type-check. Sem achado.
+- `admission/plugin/webhook/matchconditions/matcher.go` —
+  `matcher.Match`: qualquer condição CEL avaliando `False` pula o
+  webhook/policy (`Matches:false`), sem checar as demais; erro
+  misturado com resultados `true` respeita `failPolicy` (`Fail` agrega
+  erro e falha a requisição, `Ignore` trata como não-match) — bate com
+  o comportamento documentado da API, não é bypass. Há um `TODO`
+  explícito no próprio código upstream sobre fallthrough se um terceiro
+  `FailurePolicyType` for adicionado no futuro (hoje o enum da API só
+  tem `Fail`/`Ignore`, validado por CRD schema) — risco teórico já
+  reconhecido pelos próprios mantenedores, não é achado novo. Sem achado.
+- `admission/plugin/cel/condition.go` — `condition.ForInput` monta a
+  activation e avalia cada expressão compilada em sequência, respeitando
+  o orçamento de custo CEL; `CreateAdmissionRequest` copia `UserInfo`
+  direto de `attr.GetUserInfo()` (identidade já autenticada pela cadeia
+  `authentication/` revisada em rodadas anteriores, não é dado
+  controlado por atacante) para dentro do objeto `request` exposto ao
+  CEL — nenhum caminho de forjar identidade aqui. Sem achado.
+
+Cadeia completa de compilação/match de CEL usada por admission
+control agora revisada (schema + match + condition binding); não foi
+lida ainda a camada de execução da expressão em si nem as funções CEL
+customizadas expostas via `library/` (ex. `authorizer.group(...)`,
+`authorizer.resource(...)`, `params`) — candidato natural pra próxima
+rodada, é onde uma `ValidatingAdmissionPolicy` escrita por um operador
+poderia, em tese, invocar checagens de autorização de forma incomum;
+ainda não investigado.
+
+`deep-read-log.json` atualizado (`kubernetes/kubernetes`: +3, total 21).
+Nenhum achado novo, nenhuma transição de estado nesta rodada — resultado
+normal e válido. `export-queue` rodado ao final.
