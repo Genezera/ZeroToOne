@@ -1733,3 +1733,19 @@ Leitura profunda proativa desta rodada direcionada a `nuxt/nuxt`
 fronteira SSR/cache compartilhado — ver NOTES.md de Vercel Open Source
 para detalhes técnicos, sem achado). Nenhuma transição de estado neste
 programa.
+
+## Rodada 2026-09-06h (push automático via GitHub webhook, push af50dbb->5aa8919, sessão cloud; rebase sobre 4724e1d por pushes concorrentes durante a rodada)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source` e `Circle BBP`
+confirmados bloqueados via `check-program`, nenhum tocado. `list-pending`
+global = 34, 100% fora do escopo desta missão (30 `Auth0 by Okta`, 4
+`Circle BBP`), skip completo. Os 15 contratos `.clar` já lidos seguem
+cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`, sem
+contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `nuxt/nuxt` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos: `h3.ts` (re-export
+trivial) e o par `router.ts`/`nuxt-link.ts` de proteção contra open
+redirect/script-protocol em `navigateTo`/`<NuxtLink>`, sem achado).
+Nenhuma transição de estado neste programa.

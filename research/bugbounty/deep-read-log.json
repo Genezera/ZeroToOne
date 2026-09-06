@@ -650,7 +650,10 @@
     "packages/nitro-server/src/runtime/utils/cache.ts",
     "packages/nitro-server/src/runtime/utils/island-props.ts (exceedsMaxDepth/exceedsMaxBytes -- guarda de profundidade de colchetes/bytes sobre o body cru do island request ANTES do parse/hash, single-pass linear ignorando colchetes dentro de string; usado por island.ts::readGuardedIslandBody. Sem achado)",
     "packages/nitro-server/src/runtime/handlers/island.ts (handler completo do endpoint __nuxt_island, chamado sem autenticacao: readGuardedIslandBody consome o body via reader com contagem de bytes correndo -- nao so content-length, cobrindo chunked upload -- e continua drenando apos estourar o limite em vez de abortar a conexao (evita reset de socket/poison de keep-alive); getIslandContext recomputa expectedHash = getIslandHash(name,props,context) e rejeita se != hashId da URL, mas isso e so consistencia de parametro (hash publico sem segredo, atacante controla os 3 inputs e pode recomputar), NAO controle de acesso -- o controle real e VALID_COMPONENT_NAME_RE (nome de componente restrito a identificador seguro) e findUnsafeIslandPropKey (bloqueia prop \"template\" quando runtimeCompiler bundlado, evitando SSTI via Vue runtime compiler); guard e corretamente escopado (so roda quando o compiler que tornaria \"template\" executavel esta presente). Sem achado)",
-    "packages/vite/src/plugins/vite-node.ts (dev-only, gated por nuxt.options.dev): pickSocketPath cria dir 0o700 (fs.chmodSync) para o socket IPC do vite-node em Unix/macOS, comentario cita explicitamente o advisory ja corrigido GHSA-534h-c3cw-v3h9 -- confirmado que a mitigacao (permissao restrita do diretorio-pai) se aplica nos dois ramos (mkdtempSync padrao e fallback de path longo no macOS). Ramo Windows (named pipe \\\\.\\pipe\\...) so usa sufixo randomUUID para evitar colisao/previsibilidade, sem ACL explicita visivel neste arquivo -- named pipe sem security descriptor customizado pode nao ter o mesmo isolamento que o dir 0o700 do Unix. Residual real mas dev-only/local-multiuser (atacante precisaria outro processo rodando na MESMA maquina Windows durante 'nuxt dev'), mesmo modelo de ameaca de dev-tooling-local ja excluido em rodadas anteriores (ver nitro-server/src/runtime/utils/dev.ts, postMessage nonce) -- nao abri finding, registrado como candidato a reconsiderar se o modelo de ameaca do programa cobrir dev tooling/Windows local multi-user explicitamente."
+    "packages/vite/src/plugins/vite-node.ts (dev-only, gated por nuxt.options.dev): pickSocketPath cria dir 0o700 (fs.chmodSync) para o socket IPC do vite-node em Unix/macOS, comentario cita explicitamente o advisory ja corrigido GHSA-534h-c3cw-v3h9 -- confirmado que a mitigacao (permissao restrita do diretorio-pai) se aplica nos dois ramos (mkdtempSync padrao e fallback de path longo no macOS). Ramo Windows (named pipe \\\\.\\pipe\\...) so usa sufixo randomUUID para evitar colisao/previsibilidade, sem ACL explicita visivel neste arquivo -- named pipe sem security descriptor customizado pode nao ter o mesmo isolamento que o dir 0o700 do Unix. Residual real mas dev-only/local-multiuser (atacante precisaria outro processo rodando na MESMA maquina Windows durante 'nuxt dev'), mesmo modelo de ameaca de dev-tooling-local ja excluido em rodadas anteriores (ver nitro-server/src/runtime/utils/dev.ts, postMessage nonce) -- nao abri finding, registrado como candidato a reconsiderar se o modelo de ameaca do programa cobrir dev tooling/Windows local multi-user explicitamente.",
+    "packages/nitro-server/src/h3.ts (só re-export nomeado de nitro/h3 -- HTTPError/H3Error/H3Event/createError/deleteCookie/getCookie/getRequestURL/sanitizeStatusCode/setCookie -- camada de compatibilidade sem lógica própria. Sem achado)",
+    "packages/nuxt/src/app/composables/router.ts (navigateTo/encodeURL -- fluxo de redirect server-side já hardened contra open redirect: isExternalHost=hasProtocol(toPath,{acceptRelative:true}) via ufo detecta URL protocol-relative ('//evil.com'), navegação externa exige options.external=true explícito (senão lança NUXT_E2001) e isScriptProtocol (ufo) bloqueia esquemas script-capable antes do redirect; encodeURL colapsa barras duplas iniciais só quando !isExternalHost, comentário próprio cita CWE-601. Denylist de protocolo delegada à lib externa 'ufo' (fora do escopo deste repo) -- dentro do código próprio do nuxt/nuxt, a lógica de decisão de external/internal está correta. Sem achado)",
+    "packages/nuxt/src/app/components/nuxt-link.ts (sanitizeExternalHref, linhas 42-53, e os 2 call-sites em href computed/click handler -- remove whitespace/controle ASCII antes do scheme, resolve 'view-source:' recursivamente (Chromium expande de forma transparente), delega denylist de protocolo a isScriptProtocol (ufo); href.value===null bloqueia tanto o render do atributo href (linha 476) quanto o próprio clique/navigateTo (linha 266) -- não é só sanitização de exibição, o bloqueio é reforçado na navegação real. Sem achado -- implementação já madura/hardened, comentário no código documenta o raciocínio de bypass conhecido)"
   ],
   "square/wire": [
     "wire-runtime/src/commonMain/kotlin/com/squareup/wire/ProtoReader.kt",
@@ -1023,7 +1026,10 @@
     "src/index/serialize.ts",
     "src/infinite/serialize.ts",
     "src/_internal/utils/normalize-args.ts",
-    "src/_internal/utils/merge-config.ts"
+    "src/_internal/utils/merge-config.ts",
+    "src/_internal/utils/global-state.ts (WeakMap<Cache, GlobalState> -- escopado por instancia de Cache, nao singleton global de verdade; sem achado isolado)",
+    "src/_internal/utils/config.ts (cache padrao = initCache(new Map()) em escopo de modulo, compartilhado por todo o processo Node quando o app nao passa <SWRConfig value={{provider}}> proprio -- investigado como possivel vazamento de dado entre requisicoes/usuarios em SSR)",
+    "src/_internal/utils/preload.ts + src/_internal/utils/server-preload.ts (preload() do client faz no-op explicito quando IS_SERVER; server-preload.ts, usado por RSC via SWRConfig fallback, devolve objeto plano novo por chamada, nunca toca SWRGlobalState/cache default -- sem estado compartilhado entre requisicoes nesse caminho)"
   ],
   "vercel/turborepo": [
     "crates/turborepo-cache/src/signature_authentication.rs",
@@ -1441,21 +1447,5 @@
     "server/host_controls.go",
     "server/session.go",
     "server/websocket.go"
-  ],
-  "vercel/swr": [
-    "src/_internal/utils/hash.ts",
-    "src/_internal/utils/serialize.ts",
-    "src/_internal/utils/cache.ts",
-    "src/_internal/utils/mutate.ts",
-    "src/index/use-swr.ts",
-    "src/mutation/index.ts",
-    "src/_internal/utils/subscribe-key.ts",
-    "src/index/serialize.ts",
-    "src/infinite/serialize.ts",
-    "src/_internal/utils/normalize-args.ts",
-    "src/_internal/utils/merge-config.ts",
-    "src/_internal/utils/global-state.ts (WeakMap<Cache, GlobalState> -- escopado por instancia de Cache, nao singleton global de verdade; sem achado isolado)",
-    "src/_internal/utils/config.ts (cache padrao = initCache(new Map()) em escopo de modulo, compartilhado por todo o processo Node quando o app nao passa <SWRConfig value={{provider}}> proprio -- investigado como possivel vazamento de dado entre requisicoes/usuarios em SSR)",
-    "src/_internal/utils/preload.ts + src/_internal/utils/server-preload.ts (preload() do client faz no-op explicito quando IS_SERVER; server-preload.ts, usado por RSC via SWRConfig fallback, devolve objeto plano novo por chamada, nunca toca SWRGlobalState/cache default -- sem estado compartilhado entre requisicoes nesse caminho)"
   ]
 }

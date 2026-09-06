@@ -9812,3 +9812,52 @@ usuários diferentes). 3 arquivos novos lidos por completo:
 Sem achado. `deep-read-log.json` atualizado (`vercel/swr`: 11 → 14
 arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06h (push automático via GitHub webhook, push af50dbb->5aa8919, sessão cloud; rebase sobre 4724e1d por pushes concorrentes durante a rodada)
+
+`program-policy.json` conferido como passo zero via `check-program`:
+`Block Open Source` (`aiResearchBanned`) e `Circle BBP` (`blocked`)
+confirmados bloqueados, nenhum arquivo desses programas clonado/lido;
+`StackingDAO` e `Vercel Open Source` confirmados `blocked:false`.
+`migrate-to-v2.mjs` rodado (820 findings). `list-pending` = 34
+candidatos, 100% fora do escopo desta missão (30 `Auth0 by Okta`, 4
+`Circle BBP`) — skip completo, nenhum candidato novo em `Vercel Open
+Source` ou `StackingDAO` nesta rodada.
+
+Leitura profunda proativa desta rodada: rotacionei para `nuxt/nuxt`
+(clone raso `--filter=blob:none`, commit `c1cde96`) — asset Tier 1
+explícito no `scope-snapshots/vercel-open-source.json`. O grep de nome
+de arquivo (auth/session/crypto/token/login/password/admin/permission/
+access/secret) não bateu em arquivo novo (framework core não expõe
+esses termos no nome dos próprios arquivos), então ampliei pra grep de
+conteúdo por padrões de superfície real
+(setCookie/getCookie/Authorization/csrf/same-origin/hmac/randomBytes/
+timingSafeEqual) — 3 arquivos genuinamente novos e com superfície de
+segurança real, priorizados por julgamento próprio (não regex):
+
+- `packages/nitro-server/src/h3.ts` — só re-export nomeado de
+  `nitro/h3`, camada de compatibilidade sem lógica própria. Sem achado.
+- `packages/nuxt/src/app/composables/router.ts` (`navigateTo`/
+  `encodeURL`) — fluxo de redirect server-side: `isExternalHost` via
+  `hasProtocol(toPath,{acceptRelative:true})` (ufo) detecta URL
+  protocol-relative (`//evil.com`); navegação externa exige
+  `options.external=true` explícito (senão lança `NUXT_E2001`);
+  `isScriptProtocol` (ufo) bloqueia esquema script-capable antes do
+  redirect; `encodeURL` colapsa barras duplas iniciais só quando
+  `!isExternalHost`, com comentário próprio citando CWE-601. Denylist
+  de protocolo delegada à lib externa `ufo` (fora do escopo deste
+  programa) — dentro do código próprio do `nuxt/nuxt` a decisão
+  external/internal está correta. Sem achado.
+- `packages/nuxt/src/app/components/nuxt-link.ts`
+  (`sanitizeExternalHref` + os 2 call-sites) — remove whitespace/
+  controle ASCII antes do scheme, resolve `view-source:`
+  recursivamente (Chromium expande de forma transparente), delega
+  denylist de protocolo a `isScriptProtocol` (ufo); `href.value===null`
+  bloqueia tanto o render do atributo `href` quanto o clique real
+  (`navigateTo` nunca é chamado). Sem achado — implementação já
+  madura/hardened, com raciocínio de bypass documentado no próprio
+  código.
+
+`deep-read-log.json` atualizado (`nuxt/nuxt`: 29 → 32 arquivos). Nenhum
+achado novo, nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final.
