@@ -10,7 +10,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 10 | 4 | 4 | 2 | 40% |
+| ai_deep_read_finding | go | 12 | 6 | 4 | 2 | 33% |
 | ai_deep_read_finding | js | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
@@ -22,7 +22,8 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | command_injection_risk | go | 1 | 0 | 0 | 1 | 0% |
 | command_injection_risk | js | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | solidity | 1 | 0 | 1 | 0 | 100% |
-| eval_usage | js | 3 | 0 | 3 | 0 | 100% |
+| eval_usage | js | 11 | 0 | 11 | 0 | 100% |
+| hardcoded_secret | js | 1 | 0 | 1 | 0 | 100% |
 | insecure_tls | go | 5 | 2 | 3 | 0 | 60% |
 | known_vulnerable_dependency | go | 119 | 0 | 119 | 0 | 100% |
 | known_vulnerable_dependency | js | 223 | 0 | 223 | 0 | 100% |
@@ -34,7 +35,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | path_traversal_risk | js | 2 | 0 | 2 | 0 | 100% |
 | positional_argument_mismatch | js | 1 | 1 | 0 | 0 | 0% |
 | prototype_pollution_risk | js | 2 | 0 | 2 | 0 | 100% |
-| redos_risk | js | 3 | 0 | 3 | 0 | 100% |
+| redos_risk | js | 6 | 0 | 6 | 0 | 100% |
 | reentrancy_risk | solidity | 4 | 0 | 4 | 0 | 100% |
 | semgrep_avoid_bind_to_all_interfaces | go | 2 | 0 | 2 | 0 | 100% |
 | semgrep_defaulthttpclient_is_deprecated | jvm | 1 | 0 | 1 | 0 | 100% |
@@ -62,6 +63,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | slither_uninitialized_local | solidity | 2 | 0 | 2 | 0 | 100% |
 | sql_injection_risk | go | 2 | 0 | 2 | 0 | 100% |
 | ssrf_risk | js | 13 | 0 | 13 | 0 | 100% |
+| tainted_data_flow | js | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | solidity | 10 | 1 | 9 | 0 | 90% |
 | unguarded_transfer | clarity | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | go | 1 | 0 | 1 | 0 | 100% |
@@ -74,14 +76,15 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
 | ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 2 | 1 | 1 | 0 | 50% |
-| ai_deep_read_finding | OKG | 6 | 2 | 0 | 4 | 0% |
+| ai_deep_read_finding | OKG | 8 | 4 | 0 | 4 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
 | command_injection_risk | Kubernetes | 1 | 0 | 0 | 1 | 0% |
 | command_injection_risk | Vercel Open Source | 7 | 1 | 6 | 0 | 86% |
 | delegatecall_risk | Circle BBP | 1 | 0 | 1 | 0 | 100% |
-| eval_usage | Vercel Open Source | 3 | 0 | 3 | 0 | 100% |
+| eval_usage | Vercel Open Source | 11 | 0 | 11 | 0 | 100% |
+| hardcoded_secret | Vercel Open Source | 1 | 0 | 1 | 0 | 100% |
 | insecure_tls | Kubernetes | 3 | 2 | 1 | 0 | 33% |
 | insecure_tls | Mattermost Public Bug Bounty Engagement  | 2 | 0 | 2 | 0 | 100% |
 | known_vulnerable_dependency | Auth0 by Okta | 14 | 0 | 14 | 0 | 100% |
@@ -99,7 +102,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | path_traversal_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |
 | positional_argument_mismatch | Kiwi.com | 1 | 1 | 0 | 0 | 0% |
 | prototype_pollution_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |
-| redos_risk | Vercel Open Source | 3 | 0 | 3 | 0 | 100% |
+| redos_risk | Vercel Open Source | 6 | 0 | 6 | 0 | 100% |
 | reentrancy_risk | Circle BBP | 4 | 0 | 4 | 0 | 100% |
 | semgrep_avoid_bind_to_all_interfaces | Kubernetes | 2 | 0 | 2 | 0 | 100% |
 | semgrep_defaulthttpclient_is_deprecated | Auth0 by Okta | 1 | 0 | 1 | 0 | 100% |
@@ -134,6 +137,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | slither_uninitialized_local | Circle BBP | 2 | 0 | 2 | 0 | 100% |
 | sql_injection_risk | Mattermost Public Bug Bounty Engagement  | 2 | 0 | 2 | 0 | 100% |
 | ssrf_risk | Vercel Open Source | 13 | 0 | 13 | 0 | 100% |
+| tainted_data_flow | Vercel Open Source | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | Circle BBP | 10 | 1 | 9 | 0 | 90% |
 | unguarded_transfer | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | OKG | 1 | 0 | 1 | 0 | 100% |

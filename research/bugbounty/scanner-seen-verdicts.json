@@ -770,5 +770,20 @@
   "Vercel Open Source::sveltejs/svelte/packages/svelte/src/internal/server/renderer.js::Renderer#hydratable_block::ai_deep_read_finding": "falso_positivo",
   "Kubernetes::kubernetes/utils/mount/mount_linux.go::formatAndMountSensitive::command_injection_risk": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/polkadot/transaction.go::SignTx::ai_deep_read_finding": "confirmado",
-  "Vercel Open Source::nitrojs/nitro/src/dev/vfs.ts::createVFSHandler::html_js_injection_unescaped_interpolation": "confirmado"
+  "Vercel Open Source::nitrojs/nitro/src/dev/vfs.ts::createVFSHandler::html_js_injection_unescaped_interpolation": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/ton/address.go::NewAddress+VenomNewAddress::ai_deep_read_finding": "confirmado",
+  "OKG::okx/go-wallet-sdk/crypto/ed25519/ed25519.go::PrivateKeyFromSeed+PublicKeyFromSeed::ai_deep_read_finding": "confirmado",
+  "Vercel Open Source::vercel/chat/scripts/sync-resources.ts::line:46::redos_risk::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-redis/src/index.ts::line:371::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-redis/src/index.ts::line:343::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-redis/src/index.ts::line:256::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-redis/src/index.ts::line:236::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-ioredis/src/index.ts::line:317::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-ioredis/src/index.ts::line:285::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-ioredis/src/index.ts::line:195::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/integration-tests/src/emulator/github/utils.ts::line:221::tainted_data_flow::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/state-ioredis/src/index.ts::line:178::eval_usage::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/chat/src/streaming-markdown.ts::line:214::redos_risk::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/adapter-x/src/chat/test-utils.ts::line:212::hardcoded_secret::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/adapter-slack/src/index.ts::line:324::redos_risk::commit:056d8830b26eea46b9ef0ea50d055f33d4516739": "falso_positivo"
 }

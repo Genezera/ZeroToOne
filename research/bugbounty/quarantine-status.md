@@ -6,8 +6,10 @@ Gerado automaticamente por `quarantine.mjs` a cada rodada do scanner. Não edita
 
 | Tipo | Linguagem | Revisados | Falso-positivo | Taxa FP |
 |---|---|---|---|---|
+| eval_usage | js | 11 | 11 | 100% |
 | known_vulnerable_dependency | go | 119 | 119 | 100% |
 | known_vulnerable_dependency | js | 223 | 223 | 100% |
+| redos_risk | js | 6 | 6 | 100% |
 | semgrep_math_random_used | go | 22 | 22 | 100% |
 | semgrep_use_of_unsafe_block | go | 231 | 231 | 100% |
 | ssrf_risk | js | 13 | 13 | 100% |
