@@ -762,5 +762,10 @@
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/store/sqlstore/utils.go::line:19::sql_injection_risk": "falso_positivo",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/msteams/client_mock.go::line:41::insecure_tls": "falso_positivo",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/store/sqlstore/utils.go::line:11::sql_injection_risk": "falso_positivo",
-  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/msteams/client_mock.go::line:25::insecure_tls": "falso_positivo"
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams/server/msteams/client_mock.go::line:25::insecure_tls": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison": "falso_positivo",
+  "Vercel Open Source::vercel/chat/packages/adapter-gchat/src/workspace-events.ts::decodePubSubMessage::ai_deep_read_finding": "falso_positivo",
+  "Kubernetes::kubernetes/cloud-provider-openstack::pkg/identity/keystone/keystone.go::Auth.authorizeToken::ai_deep_read_finding": "falso_positivo",
+  "Vercel Open Source::sveltejs/svelte/packages/svelte/src/internal/server/renderer.js::Renderer#hydratable_block::ai_deep_read_finding": "falso_positivo"
 }
