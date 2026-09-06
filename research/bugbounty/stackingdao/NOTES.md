@@ -1562,3 +1562,18 @@ NOTES.md de Vercel Open Source — 3 arquivos novos de auth/credential
 brokering, mesmo padrão já auditado em dezenas de arquivos irmãos
 desse mesmo repositório; sem achado). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud, rodada seguinte #2)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+liberado. `list-pending` global = 34, 100% fora do escopo desta missão
+(30 Auth0 by Okta bloqueado, 4 Circle BBP bloqueado), skip completo.
+`api.hiro.so` retestado via `curl -v`: `CONNECT tunnel: HTTP 403
+Forbidden` — mesmo bloqueio de rede do agent-proxy de sempre, condição
+inalterada. Os 15 contratos `.clar` já lidos seguem cobrindo 100% dos
+13 assets do `scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada inteiramente a
+`vercel/workflow` (ver NOTES.md de Vercel Open Source — 3 arquivos
+novos de serialização/execução, sem achado). Nenhuma transição de
+estado neste programa.

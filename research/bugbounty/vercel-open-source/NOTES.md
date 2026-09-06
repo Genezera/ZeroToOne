@@ -9201,3 +9201,47 @@ atualizado (`vercel/ai`: 42 → 45 arquivos). `api.hiro.so` (StackingDAO)
 retestado nesta rodada via `curl -v`: `CONNECT tunnel: HTTP 403
 Forbidden`, mesmo bloqueio de proxy de sempre — ver NOTES.md de
 StackingDAO. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud, rodada seguinte #2)
+
+`program-policy.json` conferido como passo zero. `list-pending` global
+= 34 candidatos, 100% em programas bloqueados (30 Auth0 by Okta, 4
+Circle BBP) — nenhum tocado, sem leitura de nenhum arquivo desses
+repositórios. `list-deep-read-candidates.mjs` (`env -u GITHUB_TOKEN`)
+voltou a funcionar normalmente nesta rodada, sem o erro de parse de
+JSON de rodadas passadas.
+
+Leitura profunda proativa direcionada a `vercel/workflow` (41 arquivos
+já lidos, 4% coberto, primeiro candidato Vercel Open Source não-mega-
+popular na ordem sugerida pelo script). Clone raso temporário
+(`git clone --depth 1`, HEAD `c1293329230c13be98e6c9e1bda87521cb50d9d3`),
+removido ao final. Nenhum arquivo não lido bateu com as palavras-chave
+de prioridade (auth/session/crypto/token/login/password/admin/
+permission/access) no nome — julgamento próprio escolheu 3 arquivos de
+serialização/execução por serem a próxima superfície plausível depois
+de já ter esgotado hooks/tokens/tenancy em rodadas anteriores:
+
+- `packages/core/src/serialization/codec-devalue.ts` — reducers/revivers
+  por modo, `stringify` usa `hardenedStringifyOperations` (impede
+  código guest de rodar durante introspecção do devalue) e `parse` tem
+  `MAX_SPARSE_ARRAY_LENGTH=100_000` explícito contra DoS por sparse
+  array gigante. Sem achado.
+- `packages/core/src/serialization/codec-devalue-vm.ts` — mesmos
+  reducers/revivers em versão sem dependência Node; usado hoje só por
+  `workflow-vm.ts`, cujo próprio comentário diz ser implementação de
+  referência para testes de paridade de wire format (o caminho real de
+  produção é `quickjs-serde.ts` no host, já mapeado antes) — não é
+  superfície viva exposta a input externo. Notei que aqui o `parse()`
+  não tem o mesmo cap de `MAX_SPARSE_ARRAY_LENGTH` do codec não-VM, mas
+  sem consequência prática por ser caminho só de teste. Sem achado.
+- `packages/core/src/runtime/step-executor.ts` — motor de
+  orquestração de step (retry/timeout/replay), 1590 linhas; grep por
+  idempotência/concorrência/tenant/random não retornou nada — sem
+  fronteira de autorização própria nem geração de identificador
+  sensível neste arquivo. Não lido byte-a-byte, só seções relevantes.
+  Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/workflow`:
+41 → 44 arquivos). `api.hiro.so` (StackingDAO) retestado via `curl -v`:
+`CONNECT tunnel: HTTP 403 Forbidden`, condição inalterada — ver NOTES.md
+de StackingDAO. `export-queue` rodado ao final da rodada.
