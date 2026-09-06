@@ -10203,3 +10203,54 @@ commit (`git fetch origin master && git checkout origin/master --
 ledger/ledger.research.jsonl`); `docs/zerotoone-v2/migration-log.json`
 mantido (sobrescrito por inteiro a cada rodada, sem o mesmo risco).
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-06 (push webhook, cloud) — fila 100% bloqueada, deep-read vercel/turborepo
+
+Fila (`list-pending`): 34 candidates, todos em programas bloqueados
+(Auth0 by Okta: 30, `aiResearchBanned`+proibição de scanner automatizado;
+Circle BBP: 4, bloqueio por escolha do usuário) — nenhum lido/investigado,
+confirmado via `check-program` antes de qualquer clone/leitura.
+
+Leitura profunda proativa: `vercel/turborepo` (clone raso local via
+`git clone --depth 1`) já tinha 34 arquivos auditados em rodadas
+anteriores, cobrindo praticamente toda a superfície óbvia de
+auth/token/crypto (`turborepo-auth`, `turborepo-cache/signature_authentication.rs`,
+`turborepo-boundaries`, `apps/docs/lib/og/sign.ts`). Escolhi 3 arquivos
+ainda não lidos, fora dessa superfície já exaurida mas ainda no raio
+auth/session/crypto/token/access do prompt:
+- `crates/turborepo-cache/src/cache_archive/restore_symlink.rs` — restauração
+  de symlink de artefato de cache (tar). Validação dupla contra escape de
+  diretório: canonicalização lexical (`starts_with(anchor)`) + resolução de
+  realpath dos prefixos já existentes no disco (`realpath_existing_prefix`),
+  cobrindo o ataque de symlink-pivot (uma entrada do tar cria um symlink
+  dentro do anchor apontando pra fora, entrada seguinte usa esse symlink
+  como prefixo). Localização do próprio link também validada via
+  `check_path` (rejeita `..`/`.` em qualquer posição, não só no início).
+  Sem achado — hardening já correto.
+- `crates/turborepo-daemon/src/connector.rs` + `endpoint.rs` — autenticação
+  do socket local do daemon via `peer_cred().uid()` (Unix) / SID+DACL
+  owner-only (Windows), diretório 0700/arquivo 0600. Mesmo modelo de
+  confiança same-user já confirmado em rodada anterior pro proxy de
+  extensões do CLI principal (`vercel/vercel`). Sem achado.
+- `crates/turborepo-microfrontends-proxy/src/websocket.rs` — proxy
+  bidirecional de WebSocket do dev server local; usa `validated_host_header`
+  já auditado (restrito a localhost/127.0.0.1), limite de conexões via
+  `compare_exchange` atômico (comentário explícito anti-TOCTOU). Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/turborepo`: 34 → 37 arquivos).
+Nenhum achado novo, nenhuma transição de estado nesta rodada.
+
+Sincronização com push concorrente: workspace foi provisionado no commit
+`c102359` (round "kubernetes"), mas `origin/master` já tinha avançado pra
+`9084846` (round "vercel/ai", sessão paralela) antes deste commit. Rebasei
+pra `origin/master` antes de commitar (`git checkout -B master
+origin/master`, stash pop das mudanças locais) — merge automático em
+`deep-read-log.json`, conflito trivial em `migration-log.json` resolvido
+regenerando o arquivo do zero via `migrate-to-v2.mjs` contra o
+`queue.jsonl` já sincronizado (mesmo padrão de sempre pra esse arquivo,
+que é sobrescrito por inteiro, não append-only). Bug operacional recorrente
+do `ledger.research.jsonl` (reapêndice de eventos já publicados com nova
+cadeia de hash) não ocorreu desta vez porque o merge/rebase já trouxe o
+ledger correto — `git status` confirmou zero diff nesse arquivo antes do
+commit. Clone temporário de `vercel/turborepo` removido do scratch dir ao
+final. `export-queue` rodado ao final.
