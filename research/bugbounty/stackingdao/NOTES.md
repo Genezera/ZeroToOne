@@ -1649,3 +1649,20 @@ Leitura profunda proativa desta rodada direcionada a `vercel/flags`
 `vercel-flags-core` (bundled-definitions lookup, controller
 state-machine, normalização de opções, ReflectAdapter); sem achado).
 Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push 27c3e03->6d5664c, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum tocado. `list-pending` global = 34, 100% fora
+do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP), skip completo.
+Os 15 contratos `.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo (não retestado
+`api.hiro.so` nesta rodada — bloqueio de proxy documentado há dezenas
+de rodadas, sem sinal de mudança de condição).
+
+Leitura profunda proativa desta rodada direcionada inteiramente a
+`nuxt/nuxt` (ver NOTES.md de Vercel Open Source — 3 arquivos novos,
+handler do endpoint `__nuxt_island` e guardas de tamanho/profundidade
+de payload, mais o socket IPC dev-only do vite-node; sem achado).
+Nenhuma transição de estado neste programa.

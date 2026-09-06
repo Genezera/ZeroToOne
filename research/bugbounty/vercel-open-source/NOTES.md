@@ -9420,3 +9420,63 @@ de auth/crypto/cookies já esgotados:
 
 Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/flags`: 27
 → 31 arquivos). `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push 27c3e03->6d5664c, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum tocado. `list-pending` global = 34, 100% fora
+do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP), skip completo.
+Head do trigger (`6d5664c`) já era o próprio commit da rodada anterior
+(leitura em `nitrojs/nitro`) — sem push novo de conteúdo de terceiros
+pra reagir; tratado como rodada normal de leitura profunda proativa.
+Origin/master avançou duas rodadas durante esta sessão (`8623232`
+kubernetes/utils→triagem, `21cfc7e` kubernetes/kubernetes
+subpath_linux.go); branch local rebaseado para `origin/master` e
+`migrate-to-v2.mjs` re-executado contra o `queue.jsonl` atualizado
+antes de reaplicar as mudanças desta rodada, sem sobrescrever nada das
+outras sessões.
+
+Leitura profunda proativa direcionada a `nuxt/nuxt` (26→29 arquivos;
+sweep de keyword auth/session/crypto/token/login/password/admin/permission
+em conteúdo, filtrado contra `deep-read-log.json` via comparação de
+paths, 30 candidatos novos, maioria descartada por match trivial —
+"author"/"authoring" como substring de "auth", `session` em comentário
+de build, hash não-criptográfico de cache-key):
+- `packages/nitro-server/src/runtime/utils/island-props.ts` —
+  `exceedsMaxDepth`/`exceedsMaxBytes`, guarda de profundidade de
+  colchetes e tamanho em bytes sobre o body cru do request de island
+  ANTES do parse/hash, single-pass linear que ignora colchetes dentro
+  de string. Sem achado.
+- `packages/nitro-server/src/runtime/handlers/island.ts` — handler
+  completo do endpoint `__nuxt_island` (chamado sem autenticação).
+  `readGuardedIslandBody` conta bytes via stream reader (não só
+  `content-length`, cobrindo upload chunked) e continua drenando após
+  estourar o limite em vez de abortar a conexão (evita reset de
+  socket/poison de keep-alive). `getIslandContext` recomputa
+  `expectedHash = getIslandHash(name,props,context)` e rejeita se
+  diferente do hash da URL — mas isso é só consistência de parâmetro
+  (hash público sem segredo, atacante controla os 3 inputs e pode
+  recomputar), não controle de acesso. O controle real é
+  `VALID_COMPONENT_NAME_RE` (nome de componente restrito a
+  identificador seguro) e `findUnsafeIslandPropKey` (bloqueia prop
+  `template` quando o runtime compiler Vue está bundlado, evitando
+  SSTI) — guard corretamente escopado, só roda quando o compiler que
+  tornaria `template` executável está presente. Sem achado.
+- `packages/vite/src/plugins/vite-node.ts` (dev-only, gated por
+  `nuxt.options.dev`) — `pickSocketPath` cria diretório 0o700 para o
+  socket IPC do vite-node em Unix/macOS, comentário cita explicitamente
+  o advisory já corrigido `GHSA-534h-c3cw-v3h9`; confirmado que a
+  mitigação cobre os dois ramos (mkdtemp padrão e fallback de path
+  longo no macOS). Ramo Windows (named pipe) só usa sufixo `randomUUID`
+  pra evitar colisão/previsibilidade, sem ACL explícita visível neste
+  arquivo — residual real mas dev-only/local-multiuser (mesmo modelo de
+  ameaça de dev-tooling-local já excluído em rodadas anteriores, ver
+  `nitro-server/src/runtime/utils/dev.ts`). Não abri finding, registrado
+  como candidato a reconsiderar se o modelo de ameaça do programa algum
+  dia cobrir dev tooling/Windows local multi-user explicitamente.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`nuxt/nuxt`: 26 →
+29 arquivos). Os 8 achados `corroborated_static` deste programa seguem
+no teto estrutural já documentado (sem validador local para não-Solidity).
+`export-queue` rodado ao final da rodada.
