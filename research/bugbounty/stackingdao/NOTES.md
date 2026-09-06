@@ -1610,3 +1610,21 @@ NOTES.md de Vercel Open Source — 3 arquivos novos na família
 harness-*/bridge/*, incluindo o servidor HTTP local do tool-relay do
 harness-codex; sem achado, mesmo modelo de ameaça já estabelecido).
 Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, base rebaseada de b6c7f49 para 50c8788 por push concorrente durante a rodada, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 Auth0
+by Okta, 4 Circle BBP), skip completo. Origin/master avançou durante a
+rodada (outra sessão concorrente); branch local rebaseado para
+`origin/master` e `migrate-to-v2.mjs` re-executado contra o
+`queue.jsonl` atualizado — ver detalhe em NOTES.md de Vercel Open
+Source. Os 15 contratos `.clar` já lidos seguem cobrindo 100% dos 13
+assets do `scope-snapshots/stackingdao.json`, sem contrato novo (não
+retestado `api.hiro.so` nesta rodada — bloqueio de proxy documentado há
+dezenas de rodadas, sem sinal de mudança de condição).
+
+Leitura profunda proativa desta rodada direcionada inteiramente a
+`nitrojs/nitro` (ver NOTES.md de Vercel Open Source — 3 arquivos novos,
+sem achado). Nenhuma transição de estado neste programa.

@@ -9336,3 +9336,46 @@ não segurança):
 
 Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/ai`: 48 →
 51 arquivos). `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, base rebaseada de b6c7f49 para 50c8788 por push concorrente durante a rodada, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados. `list-pending`
+global = 34, 100% fora do escopo desta missão (30 Auth0 by Okta, 4
+Circle BBP), skip completo. Detectado durante a rodada que
+`origin/master` havia avançado (outra sessão empurrou a rodada
+`50c8788` — leitura profunda em `vercel/ai` klingai/google-vertex-edge/
+cline-resume-state — enquanto esta sessão ainda rodava); rebaseado o
+branch local para `origin/master` e `migrate-to-v2.mjs` re-executado
+contra o `queue.jsonl` atualizado antes de prosseguir, evitando
+sobrescrever o trabalho da outra sessão.
+
+Leitura profunda proativa desta rodada direcionada a `nitrojs/nitro`
+(repo Vercel Open Source menos coberto do grupo, 7→10 arquivos; nenhum
+arquivo do repo bate com as palavras-chave auth/session/crypto/token/
+login/password/admin/permission/access além do único candidato — já
+lido em rodada anterior — então julgamento próprio mirou em superfícies
+de path traversal/SSRF/execução):
+- `src/runtime/internal/static.ts` — handler de assets estáticos em
+  produção: `id` do request vira chave de lookup direto num dicionário
+  pré-compilado no build a partir do glob real do `publicDir`, nunca
+  concatenado a um path de filesystem em runtime. Sem traversal
+  possível. Sem achado.
+- `src/runtime/internal/routes/dev-tasks.ts` — rotas
+  `GET/POST /_nitro/tasks/:name` executam qualquer task nomeada com
+  payload arbitrário do caller; rastreado até `src/dev/app.ts`, onde
+  `assertLocalTaskRequest`/`isLocalDevRequest` restringe a rota a
+  loopback antes do handler, com detalhe de só confiar em
+  `X-Forwarded-For` via unix socket (nunca TCP), evitando spoof
+  trivial. Gate correto, documentado no próprio código como mitigação
+  intencional; tentativa de refutação (achar bypass) não encontrou
+  nada. Sem achado.
+- `src/dev/app.ts` — monta o gate acima e implementa `serveStaticDir`
+  para diretórios de asset em dev: valida traversal com
+  `resolved.startsWith(dir)` depois de `join`/`resolve` normalizarem
+  `..` — padrão defensivo correto. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`nitrojs/nitro`:
+7 → 10 arquivos). Os 8 achados `corroborated_static` deste programa
+seguem no teto estrutural já documentado (sem validador local para
+não-Solidity). `export-queue` rodado ao final da rodada.
