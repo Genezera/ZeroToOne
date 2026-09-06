@@ -1189,3 +1189,33 @@ nesta área; próxima rodada pode escolher outro diretório (ex.
 `deep-read-log.json` atualizado com as 3 entradas. Clone temporário
 removido ao final (só em `/tmp`, não commitado). `export-queue`
 rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero: `Auth0 by Okta`,
+`Block Open Source` e `Circle BBP` confirmados bloqueados;
+`StackingDAO`/`Vercel Open Source` liberados. `migrate-to-v2.mjs`
+reexecutado. `list-pending` = 34 candidatos, 100% fora do escopo (30
+Auth0 by Okta, 4 Circle BBP) — nenhum arquivo desses dois programas
+tocado. Base rebaseada de `6217856` para `5aa8919` por push concorrente
+durante a rodada (outra sessão trabalhou em `vercel/ai`, sem overlap
+com este programa) — reconciliado via `git reset --hard origin/master`
+antes de reaplicar o conteúdo desta rodada.
+
+Leitura profunda proativa: seguindo a sugestão da rodada anterior,
+continuei em `staging/src/k8s.io/apiserver/pkg/authentication/request/`
+(clone raso `--filter=blob:none --sparse`, commit `b2ec8b6f`), lendo os
+3 arquivos que faltavam pra fechar como o Request Authenticator real é
+composto: `bearertoken/bearertoken.go` (extrai Bearer do header
+Authorization, remove o header após sucesso pra não vazar o token cru
+adiante), `websocket/protocol.go` (extrai bearer token do subprotocolo
+`base64url.bearer.authorization.k8s.io.*`, valida base64url+utf8,
+rejeita múltiplos tokens, nunca ecoa o token de volta) e
+`union/union.go` (encadeamento com curto-circuito no primeiro sucesso,
+`FailOnError` opcional). Os três são maduros e sem achado — completam
+a cadeia bearertoken/websocket/x509/headerrequest já mapeada nas
+rodadas anteriores.
+
+`deep-read-log.json` atualizado (`kubernetes/kubernetes`: +3, total
+10). Nenhuma transição de estado neste programa. Clone temporário em
+`/tmp`, removido ao final. `export-queue` rodado ao final.
