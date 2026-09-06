@@ -1749,3 +1749,18 @@ NOTES.md de Vercel Open Source — 3 arquivos novos: `h3.ts` (re-export
 trivial) e o par `router.ts`/`nuxt-link.ts` de proteção contra open
 redirect/script-protocol em `navigateTo`/`<NuxtLink>`, sem achado).
 Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06g (push automático via GitHub webhook, push cd213e7, sessão cloud; rebase sobre 0cf0dc6 por 2 pushes concorrentes durante a rodada)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados via `check-program`, nenhum tocado.
+`list-pending` global = 34, 100% fora do escopo desta missão (30 Auth0
+by Okta, 4 Circle BBP), skip completo. Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`,
+sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/flags` (3
+arquivos novos em telemetria/serialização — ver NOTES.md de Vercel Open
+Source para detalhes técnicos, sem achado). Nenhuma transição de estado
+neste programa.

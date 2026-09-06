@@ -968,7 +968,10 @@
     "packages/vercel-flags-core/src/utils/read-bundled-definitions.ts (readBundledDefinitions -- sdkKey so usado como chave de lookup num Map estatico gerado em build time pelo Vercel CLI (import estatico de '@vercel/flags-definitions', nunca dinamico/interpolado); tenta chave plana e depois SHA-256(sdkKey) pra compatibilidade com CLIs antigos, sem short-circuit nem comparacao insegura. Sem achado)",
     "packages/vercel-flags-core/src/controller/index.ts (completo, 831 linhas -- Controller: state machine de idle/streaming/polling/degraded/build, delega toda decisao de autenticacao real a controller/auth.ts (ja coberto), aqui so orquestra stream/poll/bundled/fetch como fallback chain. Sem achado)",
     "packages/vercel-flags-core/src/controller/normalized-options.ts (normalizeOptions -- so normaliza flags de configuracao numericas/booleanas, auth passado como objeto opaco sem transformacao. Sem achado)",
-    "packages/flags/src/spec-extension/adapters/reflect.ts (ReflectAdapter -- copiado do Next.js, so repassa get/set/has/deleteProperty via Reflect.*, sem logica propria. Sem achado)"
+    "packages/flags/src/spec-extension/adapters/reflect.ts (ReflectAdapter -- copiado do Next.js, so repassa get/set/has/deleteProperty via Reflect.*, sem logica propria. Sem achado)",
+    "packages/vercel-flags-core/src/utils/usage-tracker.ts (completo -- UsageTracker.trackRead dedup via WeakSet<object> por ctx de request, trackEvaluation bucketa por minuto; flushEvents so encaminha os proprios eventos ja construidos (FlagsConfigReadEvent/FlagsEvaluationEvent, cobertos antes) pra sendIngestEvents, sem novo campo de dado sensivel introduzido aqui. Sem achado)",
+    "packages/flags/src/lib/report-value.ts (completo -- reportValue/internalReportValue so repassam key/value/sdkVersion pro callback reportValue do proprio request-context global do Vercel (globalThis[Symbol.for(...)]), nunca pra rede externa nem log; sem sink de terceiro. Sem achado)",
+    "packages/flags/src/lib/normalize-options.ts (completo, 16 linhas -- so normaliza primitivos (boolean/number/string/null) pra shape {value}, sem I/O nem logica de seguranca. Sem achado)"
   ],
   "vercel/ms": [
     "src/index.ts"

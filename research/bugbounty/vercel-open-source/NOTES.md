@@ -9861,3 +9861,42 @@ segurança real, priorizados por julgamento próprio (não regex):
 `deep-read-log.json` atualizado (`nuxt/nuxt`: 29 → 32 arquivos). Nenhum
 achado novo, nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06g (push automático via GitHub webhook, push cd213e7, sessão cloud; rebase sobre 0cf0dc6 por 2 pushes concorrentes durante a rodada)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+(`aiResearchBanned`), `Circle BBP` (`blocked`) e `Auth0 by Okta`
+(`blocked`) confirmados via `check-program` — nenhum arquivo desses três
+programas clonado/lido/aberto. `migrate-to-v2.mjs` rodado. `list-pending`
+= 34 candidatos, 100% fora do escopo desta missão (30 `Auth0 by Okta`,
+4 `Circle BBP`), skip completo sem exceção. Origin/master avançou duas
+vezes durante esta sessão (`kubernetes/kubernetes authorization/` e
+`nuxt/nuxt`); branch local resetado sobre `origin/master` e
+`migrate-to-v2.mjs` re-executado antes de finalizar.
+
+Leitura profunda proativa direcionada a `vercel/flags`: nenhum arquivo
+com nome batendo auth/session/crypto/token/login/password/admin/
+permission/access/secret ficou sem leitura (os 4 hits de filename —
+`controller/auth.ts`, `lib/crypto.ts`, `lib/verify-access.ts`,
+`lib/crypto.test.ts` — já cobertos em rodadas anteriores). Por
+julgamento próprio, ampliei pra 3 arquivos sem esses termos no nome mas
+com superfície plausível (telemetria/serialização):
+
+- `packages/vercel-flags-core/src/utils/usage-tracker.ts` (completo) —
+  `UsageTracker.trackRead` dedup por `WeakSet<object>` escopado ao
+  contexto de request; `flushEvents` só repassa eventos já construídos
+  (`FlagsConfigReadEvent`/`FlagsEvaluationEvent`, cujo allowlist de
+  campos já foi auditado em rodada anterior) pro endpoint de ingest.
+  Nenhum campo novo de dado sensível introduzido aqui.
+- `packages/flags/src/lib/report-value.ts` (completo) — `reportValue`/
+  `internalReportValue` só repassam `key`/`value`/`sdkVersion` pro
+  callback `reportValue` do próprio request-context global do Vercel
+  (`globalThis[Symbol.for('@vercel/request-context')]`); nunca vai pra
+  rede externa nem log — sem sink de terceiro.
+- `packages/flags/src/lib/normalize-options.ts` (completo, 16 linhas) —
+  só normaliza primitivos (boolean/number/string/null) pra shape
+  `{value}`, sem I/O nem lógica de segurança.
+
+Sem achado. `deep-read-log.json` atualizado (`vercel/flags`: 31 → 34
+arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
+rodado ao final.
