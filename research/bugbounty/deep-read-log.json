@@ -1357,5 +1357,10 @@
     "pkg/apiserver/handler_proxy.go (ServeHTTP/updateAPIService -- ponto historico do CVE-2018-1002105; confirma que a identidade de usuario propagada ao backend agregado vem de genericapirequest.UserFrom(req.Context()) (autenticado pelo apiserver principal antes de chegar aqui, nao de header controlavel pelo cliente) via transport.NewAuthProxyRoundTripper/SetAuthProxyHeaders; upgrade (websocket/exec) usa caminho separado (SetAuthProxyHeaders direto no newReq) mas com a mesma fonte de identidade. RejectForwardingRedirects configuravel corrige o vetor historico de redirect-to-internal do CVE citado. Sem achado novo -- codigo pos-fix, alinhado com apiserver upstream.)",
     "pkg/apiserver/resolvers.go (ResolveEndpoint dos 3 resolvers -- clusterIP/endpoint/loopback -- so repassam para k8s.io/apiserver/pkg/util/proxy (vendored, fora deste repo) ou comparam namespace/name/port contra literais fixos (loopback so ativa para default/kubernetes/443); nenhuma logica propria de parsing/validacao aqui. Sem achado.)",
     "pkg/controllers/autoregister/autoregister_controller.go (checkAPIService -- reconciliacao desired vs curr; 'desired' vem so de AddAPIServiceToSync/AddAPIServiceToSyncOnStart, chamado por codigo do proprio apiserver process (nao input de rede/API), UID precondition no Delete evita race de apagar objeto trocado. Sem achado.)"
+  ],
+  "mattermost/mattermost-plugin-jira": [
+    "server/auth_token.go",
+    "server/user_cloud_oauth.go",
+    "server/instance_cloud_oauth.go"
   ]
 }

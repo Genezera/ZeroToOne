@@ -340,3 +340,48 @@ desde a última rodada (check-scope já negativo por falta de
 scope-snapshot pra este programa, mesma limitação de infraestrutura já
 documentada). Não tocado. Nenhum achado novo em Mattermost nesta
 rodada. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (b) (cloud, disparada por push)
+
+`list-pending` só trouxe candidatos em programas bloqueados (Auth0 by
+Okta, Circle BBP) — nenhum tocado, consistente com `program-policy.json`.
+
+Leitura profunda proativa em `mattermost/mattermost-plugin-jira` (ainda
+não coberto por `deep-read-log.json` até esta rodada, apesar de já ter
+achados antigos revisados em rodadas anteriores — os arquivos abaixo
+nunca tinham sido lidos): `server/auth_token.go`,
+`server/user_cloud_oauth.go`, `server/instance_cloud_oauth.go`.
+
+- `auth_token.go`: `encrypt`/`decrypt` tem fallback `if len(secret) ==
+  0 { return plain, nil }` (token ficaria em texto puro/base64 se o
+  segredo de criptografia estivesse vazio). Rastreei até
+  `EnsureAuthTokenEncryptSecret` em `kv.go` — sempre gera e persiste 32
+  bytes aleatórios na primeira chamada (self-healing), então o "secret
+  vazio" não é um caminho alcançável em operação normal, só em teoria
+  se o KV store falhasse de um jeito que hoje não acontece. Sem
+  achado.
+- `user_cloud_oauth.go` (`httpOAuth2Complete`) + `instance_cloud_oauth.go`
+  (`GetUserConnectURL`): o parâmetro `state` do callback OAuth do Jira
+  Cloud é decomposto em `{secret}_{mattermostUserID}`, e o
+  `mattermostUserID` embutido nele vem direto da URL (potencialmente
+  controlável por quem constrói o redirect). Investiguei se isso
+  permite login-CSRF (vincular a conta Jira de um atacante à conta
+  Mattermost de outra pessoa) — mas o `state` completo é gerado como
+  `model.NewId()[0:15] + "_" + mattermostUserID` no momento do
+  `/jira connect` (autenticado), armazenado server-side via
+  `StoreOneTimeSecret` com TTL de 15 min e apagado no primeiro uso, e
+  `httpOAuth2Complete` exige que o segredo aleatório bata exatamente
+  com o valor guardado pra aquele `mattermostUserID` — sem conhecer o
+  segredo de 15 chars (alta entropia, de uso único), o atacante não
+  consegue forjar o `state`. CSRF binding funciona como esperado. Notei
+  também que o par PKCE (`CodeVerifier`/`CodeChallenge`) é gerado uma
+  vez por instância Jira (não por fluxo/usuário) — mais fraco que PKCE
+  por-requisição, mas o client já é confidencial (tem
+  `JiraClientSecret`), então PKCE aqui é defesa em profundidade, não o
+  mecanismo primário; não é um caminho de exploração isolado. Sem
+  achado.
+
+Nenhum achado novo nesta rodada — resultado válido e esperado.
+`deep-read-log.json` atualizado (+3 entradas em
+`mattermost/mattermost-plugin-jira`). Clones temporários removidos.
+`export-queue` rodado ao final da rodada.
