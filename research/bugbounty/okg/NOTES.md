@@ -844,3 +844,57 @@ retorna erro tratável caso contrário — não existe caminho de código
 que alcance `signWithKey` com `Data` de outro tamanho). Ceticismo
 aplicado corretamente — nenhum achado novo criado. Ver
 `deep-read-log.json` pra detalhe completo.
+## Rodada 2026-09-06 #2 (cloud, disparada por push)
+
+`program-policy.json` conferido antes de qualquer clone (passo 0):
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados,
+nenhum tocado. `list-pending` global = 34, 100% em programas bloqueados
+(30 Auth0 by Okta, 4 Circle BBP) — nenhum arquivo desses repos lido.
+
+Leitura profunda proativa em `okx/go-wallet-sdk`, continuando a
+varredura pelo padrão já confirmado 4x no SDK (decode de seed/chave
+privada sem checar comprimento → panic em `ed25519.NewKeyFromSeed`):
+busquei por `NewKeyFromSeed`/`ed25519.NewKeyFromSeed` em todo
+`coins/*.go` ainda não lido e achei um **5º irmão real**:
+`coins/polkadot/transaction.go::SignTx` — `hex.DecodeString(privateKey)`
+só checa erro de decode, nunca o comprimento resultante, antes de
+`ed25519.NewKeyFromSeed(prikey)`. `SignTx` é função pública exportada
+e `privateKey` é o parâmetro hex documentado como uso padrão no próprio
+README do pacote (`coins/polkadot/README.md:40`) e no test suite
+oficial (`polkadot_test.go:39,62`). PoC real: `go test` (módulo próprio,
+`go mod tidy` resolveu `go.sum`) com `SignTx(tx, Transfer, "ab")` —
+panic real capturado via `recover()`, PASS confirmando
+`"ed25519: bad seed length: 1"`. Contraexemplo seguro verificado no
+mesmo commit: `coins/aptos/v2/crypto/ed25519.go::FromBytes` faz a
+checagem de comprimento corretamente antes de `NewKeyFromSeed` — prova
+que o padrão seguro é conhecido no próprio codebase, reforçando que a
+omissão em `polkadot` é inconsistência real. `coins/solana/sol.go`
+também revisado (usa `bip39.NewSeed(...)[:32]`, sempre 64 bytes fixos —
+não repete o padrão, sem achado).
+
+Finding criado: `OKG::okx/go-wallet-sdk/coins/polkadot/transaction.go::SignTx::ai_deep_read_finding`.
+Avançou `candidate` → `corroborated_static` → `reproduced_local` (PoC
+`go_manual_poc` pass). `check-scope` confirmou `allowed=true` para
+`okx/go-wallet-sdk`. `record-deployment-evidence` registrado com
+`confidence="unverified"` (honesto: repo `okx/go-wallet-sdk` não tem
+nenhuma tag/release Git — `git ls-remote --tags` vazio — sem como
+ancorar vínculo com build de produção real da OKX). Tentativa de
+`transition ... scope_verified` **recusada** pelo state machine pelo
+motivo esperado (`confidence="unverified"` exige `"high"`) — gate
+funcionando corretamente, não forçado nem contornado. Finding
+permanece em `reproduced_local`, mesma situação dos 4 achados-irmãos
+já existentes.
+
+Também lido nesta rodada: `examples/middleware/server/middleware/auth.ts`
+do `nitrojs/nitro` (Vercel Open Source) — arquivo de exemplo trivial,
+sem lógica de auth real, sem achado (ver NOTES.md de Vercel Open
+Source).
+
+Nota operacional: esta rodada colidiu em `git push` com outras duas
+sessões concorrentes que avançaram `master` no meio do trabalho
+(`vercel/workflow` e `mattermost/mattermost-plugin-jira`, ambas sem
+achado novo) — resolvido via `git reset --hard origin/master` +
+`migrate-to-v2.mjs` (que faz upsert aditivo, preservando este achado
+que só existia localmente) + reaplicação dos mesmos comandos de CLI
+sobre o estado atualizado, sem perda de trabalho nem sobrescrita do
+avanço das outras sessões.

@@ -9142,3 +9142,13 @@ na borda do backend, não de filtro por linha neste contrato — mesma
 conclusão já registrada nas rodadas anteriores sobre a arquitetura de
 hooks. Sem achado novo. `deep-read-log.json` atualizado
 (`vercel/workflow`: 38 → 41 arquivos).
+## Rodada 2026-09-06 #2 (cloud, disparada por push)
+`list-pending` global de novo = 34, 100% em programas bloqueados (30
+Auth0 by Okta, 4 Circle BBP) — nenhum tocado. Leitura profunda proativa
+desta rodada: 1 arquivo em `nitrojs/nitro`
+(`examples/middleware/server/middleware/auth.ts`, exemplo trivial de
+documentação, sem lógica de auth real — sem achado); achado principal
+da rodada (5º irmão da família de panic por seed sem checagem de
+comprimento) ficou em `okx/go-wallet-sdk` (programa OKG, ver NOTES.md
+correspondente), fora do escopo deste programa. Nenhum achado novo em
+Vercel Open Source nesta rodada. `export-queue` rodado ao final.
