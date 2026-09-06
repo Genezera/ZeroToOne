@@ -1484,5 +1484,17 @@
     "server/host_controls.go",
     "server/session.go",
     "server/websocket.go"
+  ],
+  "kubernetes/kubelet": [
+    "pkg/apis/credentialprovider/types.go"
+  ],
+  "mattermost/mattermost-plugin-confluence": [
+    "server/user.go",
+    "server/oauth2.go",
+    "server/store/store.go",
+    "server/controller.go",
+    "server/config/main.go",
+    "server/plugin.go",
+    "server/auth_token.go"
   ]
 }

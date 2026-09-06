@@ -1,5 +1,59 @@
 # Mattermost Public Bug Bounty Engagement (Bugcrowd) — notas de pesquisa
 
+## Rodada 2026-09-06c (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero (regra do CLAUDE.md,
+antes de escolher qualquer alvo): `Auth0 by Okta` e `Circle BBP`
+confirmados bloqueados via `check-program`. `list-pending` = 34
+candidatos, 100% nesses dois programas (30 `Auth0 by Okta`, 4
+`Circle BBP`) — skip completo, nenhum arquivo desses dois programas
+tocado.
+
+Leitura profunda proativa: `kubernetes/kubelet` (repo de staging,
+`pkg/apis/credentialprovider/types.go` — só definição de tipos da API
+kubelet↔credential-provider-plugin, sem lógica; repo é majoritariamente
+tipos gerados/protobuf publicados do monorepo principal via
+publishing-bot; sem achado) e `mattermost/mattermost-plugin-confluence`
+(repo novo, ainda não coberto por `deep-read-log.json`).
+
+**Achado novo** (`ai_deep_read_finding`, id termina em
+`oauth2_login_csrf_account_linking`, avançou pra `corroborated_static`):
+`server/store/store.go` `VerifyOAuth2State(state)` só confere que o
+`state` recebido no callback OAuth2 (`/oauth2/complete.html`) foi
+previamente armazenado (nonce anti-replay puro, TTL de 15min e — bug
+secundário menor — sem `KVDelete` real apesar do comentário dizer que a
+chave "will be deleted after the first verification"). Em nenhum
+momento o `mattermostUserID` embutido no `state`
+(`<random>_<mattermostUserID>`, gerado em `getUserConnectURL`) é
+comparado contra o `mattermostUserID` de quem efetivamente completa o
+fluxo (lido do header `Mattermost-User-Id` da segunda requisição, em
+`httpOAuth2Complete`/`CompleteOAuth2`). Divergência real frente ao
+`mattermost-plugin-jira` (investigado em rodada anterior, sem achado —
+lá o segredo é explicitamente checado contra o `mattermostUserID`
+específico antes de aceitar). Cadeia de ataque: atacante autenticado
+inicia `/oauth2/connect` como si mesmo, completa a autorização no
+Confluence com a própria conta, intercepta a URL de callback
+(code+state válidos e atrelados à própria conta do atacante) sem
+segui-la, e induz a vítima (sessão Mattermost já autenticada) a
+visitar essa URL GET — o servidor troca o `code` pelo token do
+atacante e vincula essa conta Confluence do atacante ao
+`mattermostUserID` da vítima (CWE-352, OAuth login/account-linking
+CSRF).
+
+`check-scope` voltou `allowed:false` — não existe scope-snapshot local
+pra este programa (mesma lacuna de infraestrutura já documentada em
+achados anteriores de Mattermost, ex. `mattermost-plugin-zoom`).
+Registrei `deploymentEvidence` com `confidence:"unverified"` mesmo
+assim e tentei `scope_verified` — recusado pela máquina de estados como
+esperado; achado permanece em `corroborated_static`. Nenhum rascunho de
+relatório escrito (barra de `scope_verified` não foi alcançada —
+sistema funcionando corretamente).
+
+`deep-read-log.json` atualizado (`kubernetes/kubelet` +1;
+`mattermost/mattermost-plugin-confluence`, repo novo, 7 entradas).
+Clones temporários removidos. `export-queue` rodado ao final da
+rodada.
+
 ## Rodada 2026-09-06b (push automático via GitHub webhook, sessão cloud)
 
 `program-policy.json` conferido como passo zero: `Auth0 by Okta` e
