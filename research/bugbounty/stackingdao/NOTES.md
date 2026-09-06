@@ -1798,3 +1798,18 @@ Leitura profunda proativa desta rodada direcionada a `vercel-labs/skills`
 (ver NOTES.md de Vercel Open Source — 3 arquivos novos: telemetria,
 detecção de agente e barrel de providers, sem achado). Nenhuma transição
 de estado neste programa.
+
+## Rodada 2026-09-06l (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero — `StackingDAO`
+confirmado `blocked:false`; `Block Open Source`, `Circle BBP` e `Auth0
+by Okta` confirmados bloqueados via `check-program`, nenhum tocado.
+`list-pending` global = 68, 100% fora do escopo desta missão (60 `Auth0
+by Okta`, 8 `Circle BBP`), skip completo. Os 15 contratos `.clar` já
+lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/next.js`
+(ver NOTES.md de Vercel Open Source — 3 arquivos novos, todos ligados ao
+cookie interno de debug do painel de devtools de navegação instantânea,
+sem achado). Nenhuma transição de estado neste programa.

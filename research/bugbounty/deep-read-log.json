@@ -1024,7 +1024,10 @@
     "packages/next/src/compiled/jsonwebtoken/index.js (leitura direta do bundle vendored -- confirma achado de rodada anterior sobre try-get-preview-data.ts/api-resolver.ts: verify.js so aceita alg none quando secretOrPublicKey.type nao e secret E algorithms nao especificado E assinatura vazia -- aqui a chave e sempre string/Buffer (type=secret), entao default vira HS256/384/512 apenas, batendo com o HS256 fixo do sign(). Sem achado, apenas confirmacao mais rigorosa)",
     "scripts/release-github-auth.js (script de release/CI, so roda com credenciais proprias da Vercel; token vem de env var, execa com args em array (sem shell:true) -- sem injecao de comando, sem superficie de ataque externa. Sem achado)",
     "packages/next/src/compiled/@edge-runtime/primitives/crypto.d.ts (so declaracoes de tipo TS vendorizadas do polyfill Crypto/CryptoKey/SubtleCrypto -- sem logica executavel. Sem achado)",
-    "turbopack test fixtures com nome auth/session/secret/token no path (auth0.js, firebase-admin.js, auth1.js/auth2.js, Tokenizer.js, secret.txt x2, emptied_cells_session_dependent.rs) -- checados, todos fixtures triviais de teste do bundler (circular import, dependency tracing, snapshot de transform), sem logica de auth real. Sem achado)"
+    "turbopack test fixtures com nome auth/session/secret/token no path (auth0.js, firebase-admin.js, auth1.js/auth2.js, Tokenizer.js, secret.txt x2, emptied_cells_session_dependent.rs) -- checados, todos fixtures triviais de teste do bundler (circular import, dependency tracing, snapshot de transform), sem logica de auth real. Sem achado)",
+    "packages/next/src/server/web/spec-extension/cookies.ts",
+    "packages/next/src/shared/lib/instant-nav-cookie.ts",
+    "packages/next/src/next-devtools/dev-overlay/components/instant-navs/instant-nav-cookie.ts"
   ],
   "vercel/swr": [
     "src/_internal/utils/hash.ts",

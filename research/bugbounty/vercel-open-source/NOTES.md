@@ -10029,3 +10029,42 @@ plausível (telemetria/detecção de ambiente/re-export):
 Sem achado novo. `deep-read-log.json` atualizado (`vercel-labs/skills`:
 26 → 29 arquivos). Nenhuma transição de estado nesta rodada.
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-06l (scheduled routine, push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero via `check-program`:
+`Vercel Open Source` e `StackingDAO` confirmados `blocked:false`;
+`Block Open Source` e `Circle BBP` confirmados bloqueados (`Auth0 by
+Okta` também bloqueado, apesar de não fazer parte dos 4 programas desta
+missão) — nenhum arquivo desses três clonado/lido/aberto. `list-pending`
+global = 68, 100% fora do escopo desta missão (60 `Auth0 by Okta`, 8
+`Circle BBP`), skip completo.
+
+Leitura profunda proativa direcionada a `vercel/next.js` (tier 1,
+`check-scope` implícito já confirmado em rodadas anteriores). Clone raso
+do HEAD atual; grep por nome (auth/session/crypto/token/login/password/
+admin/permission/access/secret/cookie) sob `packages/next/src` comparado
+contra as 40 entradas já cobertas no `deep-read-log.json` achou 3
+arquivos genuinamente novos, todos relacionados ao cookie interno de
+debug `next-instant-navigation-testing` usado pelo painel de devtools de
+navegação instantânea:
+
+- `packages/next/src/server/web/spec-extension/cookies.ts` — só
+  re-exporta `RequestCookies`/`ResponseCookies`/`stringifyCookie` do
+  bundle vendorizado `@edge-runtime/cookies` (já coberto indiretamente
+  via `request-cookies.ts`/`get-cookie-parser.ts` em rodadas
+  anteriores). Sem lógica própria. Sem achado.
+- `packages/next/src/shared/lib/instant-nav-cookie.ts` — parser puro
+  (`parseInstantNavCookieValue`) de um array JSON de 3 posições; `try`
+  engole qualquer `JSON.parse` malformado e cai em fallback
+  `{state:'pending'}`, nunca lança nem alimenta sink perigoso. Sem
+  achado.
+- `packages/next/src/next-devtools/dev-overlay/components/instant-navs/instant-nav-cookie.ts`
+  — leitor/assinante (`useSyncExternalStore`) desse mesmo cookie pro
+  painel de devtools; cookie é só telemetria de teste local (nome
+  `next-instant-navigation-testing`, sem relação com sessão/auth real do
+  usuário), nenhuma decisão de autorização depende dele. Sem achado.
+
+Sem achado novo. `deep-read-log.json` atualizado (`vercel/next.js`: 40 →
+43 arquivos). Nenhuma transição de estado nesta rodada. Clone temporário
+removido do scratch dir ao final. `export-queue` rodado ao final.
