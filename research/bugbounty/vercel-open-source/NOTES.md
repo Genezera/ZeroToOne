@@ -9152,3 +9152,52 @@ da rodada (5º irmão da família de panic por seed sem checagem de
 comprimento) ficou em `okx/go-wallet-sdk` (programa OKG, ver NOTES.md
 correspondente), fora do escopo deste programa. Nenhum achado novo em
 Vercel Open Source nesta rodada. `export-queue` rodado ao final.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`list-pending` global = 34 candidatos, 100% Auth0 by Okta (30,
+bloqueado) + Circle BBP (4, bloqueado) — skip completo, `program-policy.json`
+conferido antes de qualquer escolha de alvo. Achado pendente em
+`nitrojs/nitro::vfs.ts` seguiu inalterado (`corroborated_static`,
+`deploymentEvidence.confidence=unverified`, sem elemento novo pra
+justificar nova tentativa de transição).
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs` (`env -u
+GITHUB_TOKEN`, mesma condição de ambiente das rodadas anteriores).
+Candidato escolhido: `vercel/ai` (26541★, 1% coberto — menor cobertura
+percentual entre os repositórios Vercel Open Source não-blocklistados,
+apesar de já ter 42 arquivos lidos por ser um monorepo grande). Clone
+raso temporário (`git clone --depth 1`, HEAD
+`efdfd6290d783864f00ebdf5a0aad8711f2eb2db`), removido ao final. 3
+arquivos novos lidos, priorizando o que ainda faltava no padrão
+`harness-*-auth.ts`/credential brokering já mapeado em rodadas
+anteriores:
+
+- `packages/harness-codex/src/codex-auth.ts` — `createCodexRequestTransformations`/
+  `resolveCodexEnv`: mesmo padrão de credential brokering já revisado
+  em `bridge-token.ts`/`sandbox-credential-brokering.ts` — só cria
+  transformação quando ambos env real e sandbox têm `CODEX_API_KEY`,
+  match exato de header `Authorization: Bearer` contra o valor do
+  sandbox antes de trocar pelo valor real, `matchUrl` restringe a troca
+  ao host correto (gateway vs. OpenAI direto). Sem achado.
+- `packages/google-vertex/src/google-vertex-auth-google-auth-library.ts`
+  — `createAuthTokenGenerator`: wrapper fino sobre `GoogleAuth` oficial
+  da lib `google-auth-library`, escopo fixo `cloud-platform`, só
+  repassa `client.getAccessToken().token`. Sem cache/log de token, sem
+  lógica própria de segurança implementada neste arquivo. Sem achado.
+- `packages/harness-opencode/src/opencode-auth.ts` —
+  `createOpenCodeRequestTransformations`: mesmo padrão de credential
+  brokering, agora para 3 providers (ai-gateway/openai/anthropic) no
+  mesmo arquivo — sempre match exato de header contra o valor do
+  sandbox antes de substituir pelo valor real, `matchUrl` por provider.
+  Sem achado.
+
+Conclusão: os 3 arquivos confirmam (sem novidade) que o padrão de
+credential brokering do harness é consistente em todos os provedores
+já mapeados — troca de credencial sempre gated por match exato de URL
++ header contra o valor exato do sandbox, nunca um prefixo/substring
+nem uma comparação fraca. Nenhum achado novo. `deep-read-log.json`
+atualizado (`vercel/ai`: 42 → 45 arquivos). `api.hiro.so` (StackingDAO)
+retestado nesta rodada via `curl -v`: `CONNECT tunnel: HTTP 403
+Forbidden`, mesmo bloqueio de proxy de sempre — ver NOTES.md de
+StackingDAO. `export-queue` rodado ao final da rodada.

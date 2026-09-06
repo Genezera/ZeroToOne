@@ -1544,3 +1544,21 @@ Leitura profunda proativa desta rodada direcionada inteiramente a
 arquivos novos, 1 achado registrado (`src/dev/vfs.ts`, HTML/script
 injection sem escaping no visualizador de VFS do dev server, avançado
 a `corroborated_static`). Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, sessão cloud, rodada seguinte)
+
+`program-policy.json` conferido como passo zero — `Block Open Source`,
+`Circle BBP` e `Auth0 by Okta` confirmados bloqueados via
+`check-program`, nenhum tocado. `list-pending` global = 34, 100% fora
+do escopo desta missão (30 Auth0 by Okta, 4 Circle BBP), skip
+completo. `api.hiro.so` retestado via `curl -v`: `CONNECT tunnel: HTTP
+403 Forbidden` — mesmo bloqueio de proxy documentado há dezenas de
+rodadas, condição inalterada. Os 15 contratos `.clar` já lidos seguem
+cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`, sem
+contrato novo.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/ai` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos de auth/credential
+brokering, mesmo padrão já auditado em dezenas de arquivos irmãos
+desse mesmo repositório; sem achado). Nenhuma transição de estado
+neste programa.
