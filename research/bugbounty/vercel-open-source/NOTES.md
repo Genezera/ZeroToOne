@@ -9295,3 +9295,44 @@ palavras-chave auth/session/token/... no clone raso e o
 
 `deep-read-log.json` atualizado (`vercel/ai`: 45 → 48 arquivos).
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-06 (push automático via GitHub webhook, push 2461845->3e22c79, sessão cloud, rodada seguinte #4)
+
+`list-pending`: os 34 candidatos da fila inteira pertencem só a `Auth0
+by Okta` (30) e `Circle BBP` (4) — ambos bloqueados em
+`program-policy.json` (Auth0: proibição de scanner automatizado +
+conteúdo de IA sem revisão humana rejeitado; Circle: escolha explícita
+do usuário). Nenhum arquivo desses dois programas foi clonado, lido ou
+aberto nesta rodada — checagem de política feita antes de qualquer
+escolha de alvo, como exige o CLAUDE.md do repo.
+
+Leitura profunda proativa em `vercel/ai` (clone raso, commit
+`efdfd62`), sweep de palavras-chave auth/session/token/crypto/... com
+`comm` contra `deep-read-log.json` (51 candidatos por caminho, 19
+genuinamente não lidos após filtrar anotações já registradas; descartei
+os que batiam só por "token" no sentido de contagem de tokens de LLM,
+não segurança):
+- `packages/klingai/src/klingai-auth.ts` — provider novo ainda não
+  auditado. `resolveKlingAIAuthToken` resolve bearer token com
+  precedência apiKey > accessKey/secretKey > env; JWT HS256 via
+  `crypto.subtle` só quando falta apiKey. `ak`/`sk` vêm de
+  opções/env do integrador, nunca de rede. Sem achado.
+- `packages/google-vertex/src/edge/google-vertex-auth-edge.ts` —
+  variante edge-compatible do fluxo JWT-bearer da Google, mesmo padrão
+  do client server-side já auditado (`google-vertex-auth-google-auth-library.ts`),
+  troca real via POST a `oauth2.googleapis.com` com credenciais do
+  próprio integrador. Sem achado.
+- `packages/harness-cline/src/cline-resume-state.ts` — em vez do
+  `cline-session.ts` inteiro (823+ linhas, maioria wiring de agente sem
+  lógica de segurança nova), fui direto no arquivo que decide
+  caminho de arquivo: `safeClineHistoryFileName` (regex que recusa
+  qualquer nome com "/" ou começando em ".") + `resolveContainedSandboxPath`
+  (reconfirma via `path.posix.relative` que o path resolvido não escapa
+  do diretório privado) — dupla defesa contra path traversal.
+  `resolveClinePrivateSessionDirectory` deriva o diretório de
+  `sha256(sessionId)` e **exige** (throw caso contrário) que o
+  resultado fique fora do `sessionWorkDir` visível ao agente, isolando
+  o histórico de conversa do que o modelo consegue ler. Sem achado.
+
+Nenhum achado novo. `deep-read-log.json` atualizado (`vercel/ai`: 48 →
+51 arquivos). `export-queue` rodado ao final da rodada.
