@@ -9935,3 +9935,63 @@ Access-Control) — 2 arquivos genuinamente novos:
 Sem achado novo. `deep-read-log.json` atualizado (`nitrojs/nitro`: 10 →
 12 arquivos). Nenhuma transição de estado nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-06j (leitura profunda proativa, sessão cloud)
+
+`check-program "Vercel Open Source"` confirmado `blocked:false` como
+passo zero. `Block Open Source`/`Circle BBP`/`Auth0 by Okta` não
+tocados (já bloqueados, confirmado em rodadas anteriores). `list-pending`
+não reconferido nesta rodada por já vir pré-verificado pelo orquestrador
+como 100% fora de escopo (30 `Auth0 by Okta` + 4 `Circle BBP`).
+
+Revisei `deep-read-log.json` e `scope-snapshots/vercel-open-source.json`
+por completo: todo repo listado como asset explícito do programa já
+tem entrada no log. Os "menos cobertos" por contagem (`vercel/async-sema`,
+`vercel/ms`, 1 arquivo cada) se mostraram, após clonar e listar,
+bibliotecas de utilidade genuinamente minúsculas (`src/index.ts` é o
+único arquivo-fonte real de cada uma, resto é teste/config) — já
+efetivamente esgotadas, sem superfície nova para ler. Por julgamento
+próprio, escolhi `vercel-labs/agent-skills` em vez disso: apesar de ter
+mais arquivos já lidos (18) que os dois anteriores, o clone raso revelou
+446 arquivos totais no repo (vs. os ~18 cobertos), incluindo um pacote
+inteiro nunca tocado (`packages/react-best-practices-build/`) — asset
+Tier 1 explícito no scope-snapshot, com superfície plausível ainda não
+avaliada (mistura arquivos de build/CI com `execFileSync`/`readFile`/
+`writeFile`).
+
+Grep de conteúdo (child_process/exec/eval/JSON.parse/path.join) sobre
+todos os arquivos não-teste apontou poucos candidatos reais de sink;
+priorizei 3 por julgamento próprio:
+
+- `scripts/build-discovery-index.mjs` (completo) — script de release
+  que monta o índice de discovery/artefatos publicados a partir de
+  `skills/<nome>`. Usa `execFileSync('git', [...])` com argumentos em
+  array em toda parte (nunca `shell:true`), então nomes de diretório
+  hostis não dão injeção de comando. Verifiquei também escape via
+  sintaxe de revisão do git (`HEAD:skills/${directory}`) — nomes de
+  diretório vêm de `git ls-tree -d --name-only HEAD:skills`, ou seja,
+  são nomes reais de árvore git já commitados (git não permite objetos
+  chamados `.`/`..`, e não contêm `/` por serem entradas de um único
+  nível), então não há travessia de path nem confusão de sintaxe
+  rev:path exploravel. Achei explicitamente deliberado o guard
+  `entries.some(e => !/^100(644|755) blob /.test(e))` que rejeita
+  qualquer symlink/submodule antes de gerar o `tar.gz` publicado —
+  proteção correta contra symlink escaping no artefato final. Sem
+  achado.
+- `packages/react-best-practices-build/src/build.ts` (completo, 320
+  linhas) — gera `AGENTS.md` a partir de arquivos `.md` de regras do
+  próprio repo. Todo `readFile`/`writeFile` opera sobre paths vindos de
+  config local (`skillConfig.rulesDir`/`metadataFile`), nunca de input
+  de rede; workflow `react-best-practices-ci.yml` (relido para
+  contexto) dispara em `pull_request` comum (não `pull_request_target`),
+  então não há exposição de secrets a PR de fork. Sem achado.
+- `packages/react-best-practices-build/src/parser.ts` (completo, 261
+  linhas) — parsing regex puro de markdown de regra para estrutura
+  `Rule`; nenhum sink perigoso, saída realimenta só o build.ts/AGENTS.md
+  local. Sem achado.
+
+Sem achado nesta rodada. `deep-read-log.json` atualizado
+(`vercel-labs/agent-skills`: 18 → 21 arquivos). Nenhuma transição de
+estado. Clone temporário (`vercel-labs/agent-skills`, `vercel/ms`,
+`vercel/async-sema`) removido do scratch dir ao final. `export-queue`
+rodado ao final.

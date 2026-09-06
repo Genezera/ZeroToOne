@@ -716,7 +716,10 @@
     "skills/vercel-optimize/lib/repo-root.mjs",
     "skills/vercel-optimize/references/verification.md",
     "skills/vercel-optimize/references/candidates.md",
-    "skills/vercel-optimize/references/scoring.md"
+    "skills/vercel-optimize/references/scoring.md",
+    "scripts/build-discovery-index.mjs (completo -- readMetadata/createArtifact/createArchive usam execFileSync com args em array, sem shell:true em nenhuma chamada git/gzip; entries.some(!/^100(644|755) blob /) rejeita symlink/submodule antes de arquivar, prevenindo escape via symlink no tar.gz publicado; nomes de diretorio vem de 'git ls-tree -d --name-only HEAD:skills' (nomes reais de arvore git, sem '/' interno, git nao permite commitar '.'/'..' como nome). Sem achado)",
+    "packages/react-best-practices-build/src/build.ts (completo -- build tool local/CI que le arquivos .md do proprio repo e escreve AGENTS.md; sem I/O de rede, sem eval, todo readFile/writeFile sobre paths derivados de config local (skillConfig.rulesDir), nao de input externo. Sem achado)",
+    "packages/react-best-practices-build/src/parser.ts (completo -- parseRuleFile: parsing regex puro de markdown de regras para estrutura Rule, sem sink perigoso, output só realimenta build.ts/AGENTS.md local. Sem achado)"
   ],
   "vercel-labs/skills": [
     "src/add.ts (runAdd/handleWellKnownSkills -- toda a superficie de UI/orquenstracao de instalacao interativa; nenhuma operacao de fs propria (sem writeFile/mkdir/symlink direto), toda escrita real delega para installer.ts/blob.ts ja auditados como 'completo' em rodada anterior. Sem achado)",
