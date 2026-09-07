@@ -340,5 +340,35 @@
     "totalScannableFiles": null,
     "fetchedAt": "2026-09-05T20:43:51.390Z",
     "error": "HTTP 403 buscando metadado de kubernetes/apiserver"
+  },
+  "mattermost/mattermost-plugin-jira": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-07T04:17:05.084Z",
+    "error": "HTTP 401 buscando metadado de mattermost/mattermost-plugin-jira"
+  },
+  "mattermost/mattermost-plugin-mscalendar": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-07T04:17:05.127Z",
+    "error": "HTTP 401 buscando metadado de mattermost/mattermost-plugin-mscalendar"
+  },
+  "mattermost/mattermost-plugin-msteams-meetings": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-07T04:17:05.160Z",
+    "error": "HTTP 401 buscando metadado de mattermost/mattermost-plugin-msteams-meetings"
+  },
+  "mattermost/mattermost-plugin-calls": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-07T04:17:05.203Z",
+    "error": "HTTP 401 buscando metadado de mattermost/mattermost-plugin-calls"
+  },
+  "mattermost/mattermost-plugin-confluence": {
+    "stars": null,
+    "totalScannableFiles": null,
+    "fetchedAt": "2026-09-07T04:17:05.238Z",
+    "error": "HTTP 401 buscando metadado de mattermost/mattermost-plugin-confluence"
   }
 }

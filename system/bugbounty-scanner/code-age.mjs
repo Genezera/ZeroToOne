@@ -17,7 +17,7 @@
 // tornariam isso caro e lento) -- é uma ferramenta pra quando um achado
 // específico já está sendo investigado.
 
-import { githubHeaders } from './github-auth.mjs';
+import { githubFetch } from './github-auth.mjs';
 
 export function daysSince(dateString, now = Date.now()) {
   // Bug real pego pelo próprio teste deste arquivo: `new Date(null)` NÃO
@@ -39,7 +39,7 @@ export async function fetchFileLastCommit(owner, repo, path, { ref } = {}) {
   const query = new URLSearchParams({ path, per_page: '1' });
   if (ref) query.set('sha', ref);
   const url = `https://api.github.com/repos/${owner}/${repo}/commits?${query.toString()}`;
-  const res = await fetch(url, { headers: githubHeaders() });
+  const res = await githubFetch(url);
   if (!res.ok) {
     throw new Error(`HTTP ${res.status} buscando histórico de commits de ${owner}/${repo}:${path}`);
   }

@@ -57,7 +57,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { extractGithubCandidates, fetchRepoMetadata } from './discover-targets.mjs';
-import { githubHeaders } from './github-auth.mjs';
+import { githubFetch } from './github-auth.mjs';
 import { getBlockReason, loadProgramPolicyStrict, isProgramBanned } from './program-policy.mjs';
 import { openDb, closeDb, listFindings, listSubmissions } from './db.mjs';
 import { enrichSubmissionsWithFindings, duplicateHistoryForFinding } from './outcome-intelligence.mjs';
@@ -345,8 +345,8 @@ export function authorizedRepoKeysForDeepRead(deepReadLog, repoProgramIndex, pol
  * token obrigatório). */
 export async function fetchDatasets() {
   const [hackerOneRes, bugcrowdRes] = await Promise.all([
-    fetch(HACKERONE_URL, { headers: githubHeaders() }),
-    fetch(BUGCROWD_URL, { headers: githubHeaders() }),
+    githubFetch(HACKERONE_URL),
+    githubFetch(BUGCROWD_URL),
   ]);
   return [await hackerOneRes.json(), await bugcrowdRes.json()];
 }

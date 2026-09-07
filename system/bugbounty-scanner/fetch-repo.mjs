@@ -4,7 +4,7 @@
 // Genérico por linguagem — usado para todos os alvos JS/TS, Go,
 // Kotlin/Java e Swift/ObjC deste projeto.
 
-import { githubHeaders } from './github-auth.mjs';
+import { githubFetch } from './github-auth.mjs';
 
 const EXCLUDED_DIR = /(^|\/)(node_modules|dist|build|\.next|out|coverage|\.turbo|\.git|vendor|Pods|\.gradle|target)(\/|$)/;
 const TEST_FILE_JS = /\.(test|spec)\.[jt]sx?$/;
@@ -91,13 +91,13 @@ export function isDependencyManifest(path) {
  * de uma vez. */
 export async function listRecentlyChangedFiles(owner, repo, branch, sinceDays = 90) {
   const sinceIso = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000).toISOString();
-  const boundaryRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&until=${sinceIso}&per_page=1`, { headers: githubHeaders() });
+  const boundaryRes = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&until=${sinceIso}&per_page=1`);
   if (!boundaryRes.ok) throw new Error(`HTTP ${boundaryRes.status} buscando commit-limite de ${owner}/${repo}`);
   const boundaryJson = await boundaryRes.json();
   if (!Array.isArray(boundaryJson) || boundaryJson.length === 0) return null;
   const boundarySha = boundaryJson[0].sha;
 
-  const cmpRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/compare/${boundarySha}...${branch}`, { headers: githubHeaders() });
+  const cmpRes = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/compare/${boundarySha}...${branch}`);
   if (!cmpRes.ok) throw new Error(`HTTP ${cmpRes.status} comparando ${boundarySha}...${branch} em ${owner}/${repo}`);
   const cmpJson = await cmpRes.json();
   return new Set((cmpJson.files || []).map((f) => f.filename));
@@ -105,7 +105,7 @@ export async function listRecentlyChangedFiles(owner, repo, branch, sinceDays = 
 
 export async function listRepoFiles(owner, repo, branch, pathPrefixes) {
   const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
-  const res = await fetch(url, { headers: githubHeaders() });
+  const res = await githubFetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} listando árvore de ${owner}/${repo}@${branch}`);
   const json = await res.json();
   if (!Array.isArray(json.tree)) throw new Error(`Resposta sem tree para ${owner}/${repo}: ${JSON.stringify(json).slice(0, 200)}`);
@@ -155,7 +155,7 @@ export function prioritizeFilesForScan(files, seenPaths = new Set(), recentlyCha
 
 export async function fetchRawFile(owner, repo, branch, filePath) {
   const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
-  const res = await fetch(url, { headers: githubHeaders() });
+  const res = await githubFetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando ${owner}/${repo}/${filePath}`);
   return res.text();
 }

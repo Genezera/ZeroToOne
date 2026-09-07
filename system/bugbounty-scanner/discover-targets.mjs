@@ -8,7 +8,7 @@
 // pathPrefixes pra monorepo grande exige julgamento que um script não
 // replica com segurança a partir de metadado em massa.
 
-import { githubHeaders } from './github-auth.mjs';
+import { githubFetch } from './github-auth.mjs';
 import { getBlockReason } from './program-policy.mjs';
 
 const HACKERONE_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/hackerone_data.json';
@@ -193,7 +193,7 @@ export function attachProgramAge(candidates, ageByHandle = {}) {
 // reusa exatamente esta chamada pra buscar `stars` dos repos JÁ rastreados,
 // em vez de duplicar a mesma requisição GET /repos/{owner}/{repo}.
 export async function fetchRepoMetadata(owner, repo) {
-  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: githubHeaders() });
+  const res = await githubFetch(`https://api.github.com/repos/${owner}/${repo}`);
   if (!res.ok) throw new Error(`HTTP ${res.status} buscando metadado de ${owner}/${repo}`);
   const json = await res.json();
   return {
@@ -225,7 +225,7 @@ export async function fetchRepoMetadata(owner, repo) {
  * não estiverem configuradas, todo esse passo é pulado com honestidade
  * (sem idade de programa, não trava a rodada inteira por isso). */
 export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProgramInfo = null, { programPolicy = {} } = {}) {
-  const [hackerOneRes, bugcrowdRes] = await Promise.all([fetch(HACKERONE_URL, { headers: githubHeaders() }), fetch(BUGCROWD_URL, { headers: githubHeaders() })]);
+  const [hackerOneRes, bugcrowdRes] = await Promise.all([githubFetch(HACKERONE_URL), githubFetch(BUGCROWD_URL)]);
   if (!hackerOneRes.ok) throw new Error(`HTTP ${hackerOneRes.status} buscando dataset HackerOne`);
   if (!bugcrowdRes.ok) throw new Error(`HTTP ${bugcrowdRes.status} buscando dataset Bugcrowd`);
   const hackerOneData = await hackerOneRes.json();

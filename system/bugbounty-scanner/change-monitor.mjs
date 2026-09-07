@@ -1,4 +1,4 @@
-import { githubHeaders } from './github-auth.mjs';
+import { githubFetch } from './github-auth.mjs';
 import { filterBannedTargets } from './program-policy.mjs';
 
 export const CHANGE_MONITOR_SCHEMA_VERSION = 1;
@@ -29,7 +29,7 @@ export function collectMonitoredRepositories(targetLists, programPolicy) {
 }
 
 async function githubJson(url, { fetchImpl }) {
-  const response = await fetchImpl(url, { headers: githubHeaders() });
+  const response = await githubFetch(url, { fetchImpl });
   if (!response.ok) throw new Error(`GitHub ${response.status} em ${url}`);
   return response.json();
 }

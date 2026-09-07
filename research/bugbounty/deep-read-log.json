@@ -1490,7 +1490,10 @@
     "server/host_controls_api.go",
     "server/host_controls.go",
     "server/session.go",
-    "server/websocket.go"
+    "server/websocket.go",
+    "server/recording_api.go (handleRecordingAction -- gate correto: HasPermissionToChannel(userID, callID, PermissionReadChannel) + state.Call.GetHostID()==userID antes de start/stop; userID vem do header Mattermost-User-Id setado pelo core, nao spoofable. startRecordingJob/stopRecordingJob nao tem path HTTP proprio, so chamados a partir do handler ja gateado. Sem achado.)",
+    "server/transcription_api.go (startTranscribingJob/stopTranscribingJob -- sem handler HTTP proprio, so acionados a partir de recording_api.go (ja gateado host-only) ou do timeout checker interno; nenhum input de rede nao autenticado alcanca estas funcoes diretamente. Sem achado.)",
+    "server/rtcd.go (AuthKey do client<->rtcd offload service gerado via random.NewSecureString(32) crypto-seguro, registro via client.Register(ClientID, AuthKey); e credencial servidor-a-servico proprio do admin, nao alcancavel por usuario final da chamada. Sem comparacao de string insegura encontrada. Sem achado.)"
   ],
   "kubernetes/kubelet": [
     "pkg/apis/credentialprovider/types.go",

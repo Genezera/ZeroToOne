@@ -756,3 +756,93 @@ Clones temporários (`mattermost-plugin-zoom`) removidos ao final.
 `deep-read-log.json` não alterado nesta rodada (trabalho foi 100% sobre
 achados de fila existentes, não leitura profunda proativa nova).
 `export-queue` rodado ao final da rodada.
+
+---
+
+## Rodada 07/09/2026 (research-plan / verify_scope + leitura profunda proativa)
+
+`cli.mjs research-plan` apontou os 3 achados corroborated_static deste
+programa (`confluence`, `msteams-meetings`, `zoom`) como os únicos 3
+itens `actionable` do banco inteiro (ação `verify_scope`). Antes de
+tocar em qualquer coisa, `check-program "Mattermost Public Bug Bounty
+Engagement "` (nome exato, com o espaço à direita que a chave usa em
+`program-policy.json`) -- confirmado `blocked:false`, roeReviewed,
+liberado. (Nota: rodar sem o espaço à direita bate no default seguro
+"bloqueado" por não achar a chave exata -- corrigido a query, não a
+suposição.)
+
+`check-scope` ao vivo pros 3 repositórios confirma de novo
+`allowed:true`, `bountyEligible:null` -- mesmo estado documentado na
+rodada anterior, nada mudou na fonte pública. Tentativa de
+`corroborated_static->reproduced_local` recusada corretamente pela
+máquina de estados pros 3 (nenhum validador de PoC local existe pra
+CSRF de OAuth account-linking nem pro timing HMAC sem infraestrutura
+Mattermost real) -- registrado `record-validation type=manual_review
+result=not_applicable` em cada um pra documentar isso formalmente (não
+existia esse registro ainda, só a prosa no reasoning). Reasoning de
+cada achado atualizado com a confirmação desta rodada. Nenhuma
+transição de estado avançou -- resultado esperado, não forçado.
+
+**Bug de infraestrutura real encontrado e corrigido nesta rodada**:
+`list-deep-read-candidates.mjs` (passo 4, leitura profunda proativa)
+falhava com `SyntaxError` ao buscar os datasets HackerOne/Bugcrowd --
+mesma causa raiz já corrigida pontualmente em
+`capture-scope-snapshots.mjs` (ver rodada anterior acima), mas o
+conserto não tinha sido generalizado: `github-auth.mjs::githubHeaders()`
+manda `Authorization: Bearer <GITHUB_TOKEN>` em toda chamada, e nesta
+sessão cloud esse token é escopado só a `genezera/zerotoone` -- qualquer
+leitura de repositório de terceiro (100% do que este projeto lê) volta
+404 em vez do conteúdo público. Confirmado com `curl` direto contra
+`raw.githubusercontent.com/arkadiyt/bounty-targets-data`: 404 com o
+header, 200 sem ele, mesma URL. Adicionado `githubFetch()` em
+`github-auth.mjs` (tenta autenticado, refaz sem `Authorization` só se
+vier 404) e migrados os 6 pontos de rede que usavam `githubHeaders()`
+diretamente (`fetch-repo.mjs`, `discover-targets.mjs`, `code-age.mjs`,
+`cve-digest.mjs`, `change-monitor.mjs`,
+`list-deep-read-candidates.mjs`) -- preserva o ganho de rate-limit em
+ambiente local (token com acesso público real nunca bate 404, nunca
+refaz a chamada) e conserta o ambiente cloud sem precisar detectar qual
+ambiente é. 3 testes novos em `github-auth.test.mjs` cobrindo o
+fallback; suíte completa dos 7 arquivos afetados rodada (92/92 pass).
+Confirmado ao vivo: `list-deep-read-candidates.mjs` agora lista os
+candidatos normalmente.
+
+Com a ferramenta destravada, leitura profunda proativa (passo 4) nos 3
+arquivos ainda não lidos de `mattermost-plugin-calls` com maior
+prioridade de auth/token no nome dentre os candidatos seguros do
+momento: `server/recording_api.go`, `server/transcription_api.go`,
+`server/rtcd.go`. Nenhum achado: `handleRecordingAction` faz o gate
+correto (`HasPermissionToChannel` + `state.Call.GetHostID()==userID`,
+`Mattermost-User-Id` vindo do header setado pelo core, não spoofável)
+antes de start/stop de gravação; `transcription_api.go` não tem handler
+HTTP próprio, só é acionado a partir do path já gateado; `rtcd.go` usa
+`AuthKey` gerado via `crypto/rand` (`random.NewSecureString(32)`) pra
+credencial servidor-a-serviço própria do admin, não alcançável por
+usuário final da chamada -- nenhuma comparação insegura de string
+encontrada nos 3. `deep-read-log.json` atualizado com os 3 arquivos e o
+motivo de "sem achado" de cada um.
+
+**Repeti o mesmo erro operacional já documentado na rodada anterior**
+(ver "Lição operacional" logo acima): rodei `list-pending
+--include-held` e (indiretamente, via `list-deep-read-candidates.mjs`,
+que chama `migrateAll` no próprio `main()`) `migrateAll` DEPOIS dos 3
+`update-finding`/`record-validation` originais desta rodada, sem
+`export-queue` entre eles -- `list-pending`/`research-plan` sempre
+rodam `migrateAll` primeiro (`cli.mjs` linha ~797), que reimporta a
+tabela `findings` inteira a partir do `queue.jsonl` ainda não exportado,
+descartando qualquer `reasoning`/`state` só-em-DB. `validationsHistory`
+sobreviveu porque `record-validation` grava numa tabela `validations`
+separada, nunca tocada por `migrateAll` -- só o `reasoning` (coluna da
+tabela `findings`) se perdeu, silenciosamente, sem erro nenhum pra
+avisar. Percebido só ao conferir o `queue.jsonl` exportado contra
+`cli.mjs get` ao vivo antes do commit. Refeitos os 3 `update-finding`
+(mesmo texto) e `export-queue` de novo, desta vez sem nenhum
+`list-pending`/`research-plan` no meio -- confirmado via `get` que os
+3 ficaram com o reasoning certo antes do export final. Regra prática
+pra próxima rodada: depois do último `update-finding`/`transition` que
+precisa sobreviver, não rodar mais `list-pending`/`research-plan` (nem
+`list-deep-read-candidates.mjs`, que também chama `migrateAll`) até
+depois do `export-queue` -- ou, se precisar rodar mesmo assim,
+`export-queue` ANTES de qualquer um desses três.
+
+`export-queue` rodado ao final da rodada.
