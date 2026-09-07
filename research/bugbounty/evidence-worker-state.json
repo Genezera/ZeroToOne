@@ -97,15 +97,39 @@
       "repository": "mattermost/mattermost-plugin-zoom",
       "action": "assess_impact",
       "priority": 70,
-      "status": "needs_human",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "estabelecer controle pelo atacante, vítima, efeito observável e severidade justificada antes de construir outra PoC",
       "createdAt": "2026-09-07T12:37:44.527Z",
       "lastAttemptAt": "2026-09-07T12:37:44.527Z",
       "result": {
-        "reason": "nenhuma prova registrada demonstra automaticamente atacante, vítima e fronteira; adicione uma receita isolada ou registre uma avaliação sustentada por evidência"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-07T12:37:44.527Z"
+      "finishedAt": "2026-09-07T12:43:52.060Z"
+    },
+    "evidence:v1:46676bde54211ef12998abf62efb30c1adffa5eba632f21a794cffed12fcf70d": {
+      "taskId": "evidence:v1:46676bde54211ef12998abf62efb30c1adffa5eba632f21a794cffed12fcf70d",
+      "inputDigest": "baab4e3bd9a19e5a800ff636eb0a06db589ffcdd760a67b8c6d93a2c6d2cb3cf",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-zoom",
+      "action": "assess_impact",
+      "priority": 70,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "estabelecer controle pelo atacante, vítima, efeito observável e severidade justificada antes de construir outra PoC",
+      "createdAt": "2026-09-07T12:43:52.060Z",
+      "lastAttemptAt": "2026-09-07T12:43:52.060Z",
+      "result": {
+        "reason": "avaliação negativa registrada a partir da validação indicada; o finding fica preservado, mas fora da campanha Medium+",
+        "evidence": {
+          "reportable": false,
+          "technicalValidity": "confirmed",
+          "validationType": "go_timing_benchmark",
+          "validationTimestamp": "2026-09-07T04:04:01.382Z"
+        }
+      },
+      "finishedAt": "2026-09-07T12:43:52.076Z"
     }
   },
   "runs": [
@@ -127,6 +151,16 @@
       "claimed": 1,
       "completed": 0,
       "needsHuman": 1,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:771759d8c2dc8bef02d2e43fadd837cbd3046661479699d5fc0a44f63d38adca",
+      "startedAt": "2026-09-07T12:43:52.060Z",
+      "finishedAt": "2026-09-07T12:43:52.076Z",
+      "planned": 1,
+      "claimed": 1,
+      "completed": 1,
+      "needsHuman": 0,
       "failed": 0
     }
   ]
