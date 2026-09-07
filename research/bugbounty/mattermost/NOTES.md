@@ -1566,3 +1566,26 @@ Nenhum achado novo, nenhuma mudança de estado. Leitura profunda
 proativa desta rodada foi direcionada a `slackhq/nebula` (ver
 `slack/NOTES.md`), não a este programa. `export-queue` rodado ao final
 da rodada.
+
+## Rodada 2026-09-07 #20 (rotina agendada, gatilho push, sessão paralela)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `research-plan`
+trouxe de novo os mesmos `actionable`/`verify_scope` já documentados
+extensivamente nas ~19 rodadas anteriores desta mesma data — `check-scope`
+ao vivo reconfirma `allowed=true`/`bountyEligible=null`, mesmo snapshot,
+sem mudança. Tentativa adicional de `WebFetch` direto em
+`https://bugcrowd.com/engagements/mattermost-mbb-public`: bloqueada de
+novo pelo proxy de egress desta sessão cloud (`EGRESS_BLOCKED:
+bugcrowd.com`) — mesma limitação já confirmada repetidamente, nenhuma
+mudança de infraestrutura. Não retocado.
+
+Leitura profunda proativa desta rodada foi direcionada a `okg/NOTES.md`
+(rodada #8: `codeAgeEvidence` genuinamente nova registrada pro achado
+`multiEd25519.go`, que só tinha a conclusão em prosa antes) e
+`slackhq/nebula` (3 arquivos novos em `noiseutil/`: `cipher_state.go`,
+`aesgcm.go`, `chachapoly.go` — sem achado, ver `okg/NOTES.md` rodada #8
+para o detalhe da checagem de nil-safety não-alcançável).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).

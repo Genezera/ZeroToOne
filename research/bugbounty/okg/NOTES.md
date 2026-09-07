@@ -1520,3 +1520,39 @@ Leitura profunda proativa desta rodada foi direcionada a `slackhq/nebula`
 `nebula` tinham cobertura similarmente baixa entre os candidatos
 liberados, e `nebula` ainda não tinha tido uma rodada dedicada nesta
 sessão. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #8 (rotina agendada, gatilho push, sessão paralela)
+
+`research-plan` trouxe de novo os dois achados (`multiKey.go`,
+`multiEd25519.go`) como `actionable`/`establish_novelty` — mesma
+conclusão estrutural das rodadas #6/#7 (`verified_regression`
+inalcançável pra código de 318 dias). Diferença real desta rodada:
+`multiKey.go` já tinha `codeAgeEvidence` registrada (rodada #5), mas
+`multiEd25519.go` nunca teve o dado equivalente registrado formalmente
+(só a conclusão em prosa) — lacuna fechada agora: `code-age` via API
+segue bloqueado nesta sessão cloud (`api.github.com` 401/403 pra
+terceiro), contornado de novo via clone público local + `git log
+--follow --diff-filter=A`: único commit no histórico de
+`multiEd25519.go`, `71c47a3` (2025-10-24, mesmo commit de vendoring do
+irmão), nunca modificado depois, `codeAgeDays=318`. Registrado via
+`recordCodeAgeEvidence` direto (mesmo padrão ad-hoc das rodadas
+anteriores). Sem tags de release no repo (`git tag` vazio) — Go module
+consumido por pseudo-versão/commit direto do branch default, sem
+"release version" pra ancorar `deploymentEvidence.confidence=high`.
+Estado permanece `reproduced_local` nos dois, nada forçado.
+
+Leitura profunda proativa desta rodada: `slackhq/nebula`,
+`noiseutil/cipher_state.go`/`aesgcm.go`/`chachapoly.go` (3 arquivos
+ainda não cobertos pelas rodadas anteriores desta mesma sessão, que já
+tinham lido `handshake/payload.go`/`patterns.go`/
+`cmd/nebula-cert/keygen.go`) — checagem de receiver nil em
+`DecryptDanger` retorna sucesso vazio (`[]byte{}, nil`) em vez de erro
+quando o `CipherState` é nil, mas confirmado NÃO alcançável:
+`ConnectionState.dKey` é sempre atribuído a partir de um
+`handshake.Result` real e completo (`connection_state.go`), nunca fica
+nil no caminho de `Decrypt()`/`VerifyRelay()` alcançado por pacote de
+rede — guarda defensiva consistente (mesmo padrão em `Overhead()`),
+não um bug explorável nesta base. Sem achado.
+
+`deep-read-log.json` atualizado (`slackhq/nebula`: 19→22 arquivos).
+Clone temporário removido. `export-queue` rodado ao final da rodada.
