@@ -1437,7 +1437,8 @@
   "mattermost/mattermost-plugin-gitlab": [
     "server/webhook.go (handleWebhook, linha 79 -- ACHADO: `config.WebhookSecret != signature` compara o header X-Gitlab-Token com string != comum (curto-circuita no primeiro byte diferente) em vez de hmac.Equal/subtle.ConstantTimeCompare -- CWE-208, timing side-channel. Registrado como non_constant_time_hmac_comparison, avancado ate reproduced_local com PoC de timing real (benchstat, +88% p=0.000 no `!=` vulneravel, ~sem diferenca p=0.985 no ConstantTimeCompare). Ver reasoning completo no finding.)",
     "server/api.go (initializeAPI, linhas 49-65 -- confirma que a rota `/webhook` e registrada no router RAIZ, sem o middleware checkConfigured/checkAuth que protege `/api/v1/*` -- unico gate de autenticacao do endpoint publico e a comparacao vulneravel de webhook.go)",
-    "server/configuration.go (struct configuration + generateSecret() linhas 248-259 -- WebhookSecret e gerado via crypto/rand, 32 chars base64, usado apenas para a comparacao de webhook.go; confirma que nao ha outro fator de autenticacao no path do webhook)"
+    "server/configuration.go (struct configuration + generateSecret() linhas 248-259 -- WebhookSecret e gerado via crypto/rand, 32 chars base64, usado apenas para a comparacao de webhook.go; confirma que nao ha outro fator de autenticacao no path do webhook)",
+    "server/oauth.go (OAuthCompleteEvent/OAuthBroker -- so pub/sub interno de conclusao por userID via channel, sem logica de autenticacao. Verificado tambem server/api.go:250-420 connectUserToGitlab/completeConnectUserToGitlab: state = randomID_userID armazenado no KV (sem TTL, mas deletado apos uso), completeConnectUserToGitlab extrai userID do proprio state e compara contra authedUserID do header Mattermost-User-ID (linha 344 if userID != authedUserID) ANTES de aceitar -- vinculacao CSRF-segura, mesmo padrao correto do irmao jira, ao contrario do bug ja confirmado em confluence/msteams-meetings. oauthStateRegexp restrito a ^[a-z0-9]{15}_[a-z0-9]{26}$. Sem achado.)"
   ],
   "mattermost/mattermost-plugin-msteams": [
     "server/store/sqlstore/crypt.go (encrypt/decrypt, linhas 16-79 -- AES-256-GCM correto: nonce aleatorio por chamada via crypto/rand, AEAD com hmac implicito do GCM, decrypt valida tamanho minimo antes de fatiar nonce/ciphertext. Chave vem de EncryptionKey (configuration.go), gerada via generateSecret() em plugin.go (256 bytes crypto/rand, base64, truncado a 32 chars) e usada diretamente como []byte -- chave de 32 bytes valida para AES-256, alta entropia. Sem achado.)",
@@ -1454,7 +1455,8 @@
   "mattermost/mattermost-plugin-jira": [
     "server/auth_token.go",
     "server/user_cloud_oauth.go",
-    "server/instance_cloud_oauth.go"
+    "server/instance_cloud_oauth.go",
+    "server/webhook_http.go (httpWebhook/verifyHTTPSecret -- comparacao do secret do webhook via subtle.ConstantTimeCompare (constant-time, correto); loop de fallback so faz url.QueryUnescape iterativo do valor recebido para lidar com secrets duplo-codificados na query string, comparando unescaped==got apenas para detectar quando parar de desescapar (nao compara contra o segredo, sem side-channel). EnableWebhookEventLogging (opt-in, config de admin) loga request cru via httputil.DumpRequest quando ligado -- inclui o proprio secret do admin nos logs de debug do proprio servidor dele; nao e vulnerabilidade explorável por terceiro. Sem achado -- confirma jira como implementacao de referencia tambem para verificacao de webhook secret, nao so para account-linking OAuth.)"
   ],
   "kubernetes/utils": [
     "exec/exec.go (wrapper fino sobre os/exec.Cmd, args passados como array — sem shell, sem injecao; responsabilidade de sanitizar cmd/args e do chamador; sem achado)",

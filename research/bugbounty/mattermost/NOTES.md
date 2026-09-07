@@ -875,3 +875,45 @@ achado).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 07/09/2026 #3 (push automático via GitHub webhook, rotina agendada)
+
+`program-policy.json` conferido no passo 0: `Mattermost Public Bug Bounty
+Engagement ` segue `blocked:false`, RoE já revisado. `migrate-to-v2.mjs` +
+`research-plan` trouxeram de novo os mesmos 3 `corroborated_static`
+(`-confluence`, `-msteams-meetings`, `-zoom`) como únicos
+`actionable`/`verify_scope`. Tentei fechar a lacuna real (`bountyEligible`
+`null` no scope-snapshot do dataset comunitário Bugcrowd) via `WebFetch`
+direto na página oficial `https://bugcrowd.com/engagements/mattermost-mbb-public`
+— bloqueado pelo proxy de egress desta sessão cloud (`EGRESS_BLOCKED:
+bugcrowd.com`). Confirma que a confirmação manual de elegibilidade
+mencionada no `reasoning` dos 3 achados só é possível de uma sessão com
+acesso de navegador real (a mesma que gerou `reviewMethod:
+official_program_page_full_browser_read` em `program-policy.json`), não
+desta sessão cloud sandboxed — não é um problema no achado, é limitação de
+ambiente já esperada. Nenhum dos 3 tocado além disso (nada novo pra
+registrar).
+
+Leitura profunda proativa: a nota da rodada #2 dizia que "todos os plugins
+Mattermost com superfície OAuth/webhook/HMAC conhecida já foram lidos
+exaustivamente" — na prática ainda faltava `server/oauth.go` (broker de
+eventos) e o handler completo `connectUserToGitlab`/`completeConnectUserToGitlab`
+em `server/api.go` do **mattermost-plugin-gitlab**, que não estavam no
+`deep-read-log.json`. Lidos agora: confirma o mesmo padrão CORRETO de
+vinculação OAuth já visto em `jira` (state = `<random>_<userID>`, e
+`completeConnectUserToGitlab` compara explicitamente o `userID` embutido
+no state contra `Mattermost-User-ID` da requisição de completion antes de
+aceitar — linha 344, `if userID != authedUserID`) — ao contrário do bug já
+confirmado em `confluence`/`msteams-meetings`. **Sem achado.**
+
+Também lido `mattermost-plugin-jira/server/webhook_http.go`
+(`verifyHTTPSecret`): comparação do secret via `subtle.ConstantTimeCompare`
+corretamente constant-time; o loop de `url.QueryUnescape` é só pra lidar
+com secrets duplo-codificados na query string e não introduz side-channel
+(a comparação `unescaped==got` só decide quando parar de desescapar, nunca
+compara contra o segredo). `EnableWebhookEventLogging` (opt-in, config do
+próprio admin) loga a request crua com o secret quando ligado — não é
+explorável por terceiro. **Sem achado** — jira confirmado como referência
+também pra verificação de webhook secret, não só account-linking OAuth.
+
+`export-queue` rodado ao final da rodada.
