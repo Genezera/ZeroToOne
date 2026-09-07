@@ -1,233 +1,9 @@
 {
   "byTypeLanguage": {
-    "semgrep_use_of_sha1::go": {
-      "reviewed": 4,
+    "known_vulnerable_dependency::js": {
+      "reviewed": 223,
       "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_incorrect_return::solidity": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_use_of_unsafe_block::go": {
-      "reviewed": 231,
-      "confirmed": 0,
-      "falsePositive": 231,
-      "other": 0,
-      "fpRate": 1
-    },
-    "unchecked_call_return::solidity": {
-      "reviewed": 10,
-      "confirmed": 1,
-      "falsePositive": 9,
-      "other": 0,
-      "fpRate": 0.9
-    },
-    "semgrep_math_random_used::go": {
-      "reviewed": 22,
-      "confirmed": 0,
-      "falsePositive": 22,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_divide_before_multiply::solidity": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_msg_value_in_nonpayable::solidity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_encode_packed_collision::solidity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_incorrect_exp::solidity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_reentrancy_balance::solidity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_uninitialized_local::solidity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_arbitrary_send_erc20::solidity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_httpsconnection_detected::unknown": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_detect_child_process::js": {
-      "reviewed": 27,
-      "confirmed": 3,
-      "falsePositive": 24,
-      "other": 0,
-      "fpRate": 0.8888888888888888
-    },
-    "reentrancy_risk::solidity": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_arbitrary_send_eth::solidity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "known_vulnerable_dependency::unknown": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_subprocess_shell_true::unknown": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_exec_detected::unknown": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_insecure_hash_algorithm_sha1::unknown": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_use_of_md5::go": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_avoid_bind_to_all_interfaces::go": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "known_vulnerable_dependency::go": {
-      "reviewed": 119,
-      "confirmed": 0,
-      "falsePositive": 119,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_var_in_href::unknown": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "command_injection_risk::js": {
-      "reviewed": 7,
-      "confirmed": 1,
-      "falsePositive": 6,
-      "other": 0,
-      "fpRate": 0.8571428571428571
-    },
-    "eval_usage::js": {
-      "reviewed": 11,
-      "confirmed": 0,
-      "falsePositive": 11,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::swift": {
-      "reviewed": 2,
-      "confirmed": 1,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 0.5
-    },
-    "redos_risk::js": {
-      "reviewed": 6,
-      "confirmed": 0,
-      "falsePositive": 6,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::solidity": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "path_traversal_risk::js": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::typescript": {
-      "reviewed": 6,
-      "confirmed": 3,
-      "falsePositive": 2,
-      "other": 1,
-      "fpRate": 0.3333333333333333
-    },
-    "path_traversal_arbitrary_file_read_risk::javascript": {
-      "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
-    },
-    "ai_deep_read_finding::clarity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
+      "falsePositive": 223,
       "other": 0,
       "fpRate": 1
     },
@@ -238,7 +14,119 @@
       "other": 2,
       "fpRate": 0.5
     },
+    "known_vulnerable_dependency::go": {
+      "reviewed": 119,
+      "confirmed": 0,
+      "falsePositive": 119,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::unknown": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_tls::go": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_math_random_used::go": {
+      "reviewed": 22,
+      "confirmed": 0,
+      "falsePositive": 22,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_of_unsafe_block::go": {
+      "reviewed": 231,
+      "confirmed": 0,
+      "falsePositive": 231,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::typescript": {
+      "reviewed": 6,
+      "confirmed": 3,
+      "falsePositive": 2,
+      "other": 1,
+      "fpRate": 0.3333333333333333
+    },
+    "ai_deep_read_finding::rust": {
+      "reviewed": 3,
+      "confirmed": 2,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.3333333333333333
+    },
+    "insecure_tls::go": {
+      "reviewed": 5,
+      "confirmed": 2,
+      "falsePositive": 3,
+      "other": 0,
+      "fpRate": 0.6
+    },
+    "ai_deep_read_finding::Rust": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
+    "semgrep_avoid_bind_to_all_interfaces::go": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "command_injection_risk::js": {
+      "reviewed": 7,
+      "confirmed": 1,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 0.8571428571428571
+    },
+    "unguarded_transfer::clarity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::go": {
+      "reviewed": 20,
+      "confirmed": 14,
+      "falsePositive": 4,
+      "other": 2,
+      "fpRate": 0.2
+    },
     "known_vulnerable_dependency::jvm": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::clarity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::move": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::solidity": {
       "reviewed": 4,
       "confirmed": 0,
       "falsePositive": 4,
@@ -259,20 +147,6 @@
       "other": 0,
       "fpRate": 1
     },
-    "delegatecall_risk::solidity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::rust": {
-      "reviewed": 3,
-      "confirmed": 2,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 0.3333333333333333
-    },
     "auth_arg_inconsistency::clarity": {
       "reviewed": 1,
       "confirmed": 0,
@@ -280,52 +154,178 @@
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::move": {
+    "delegatecall_risk::solidity": {
       "reviewed": 1,
       "confirmed": 0,
       "falsePositive": 1,
       "other": 0,
       "fpRate": 1
     },
-    "unguarded_transfer::clarity": {
-      "reviewed": 2,
+    "reentrancy_risk::solidity": {
+      "reviewed": 4,
       "confirmed": 0,
-      "falsePositive": 2,
+      "falsePositive": 4,
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::go": {
-      "reviewed": 20,
-      "confirmed": 14,
-      "falsePositive": 4,
-      "other": 2,
-      "fpRate": 0.2
+    "redos_risk::js": {
+      "reviewed": 6,
+      "confirmed": 0,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 1
     },
-    "ai_deep_read_finding::Rust": {
+    "eval_usage::js": {
+      "reviewed": 11,
+      "confirmed": 0,
+      "falsePositive": 11,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::swift": {
+      "reviewed": 2,
+      "confirmed": 1,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.5
+    },
+    "unchecked_call_return::solidity": {
+      "reviewed": 10,
+      "confirmed": 1,
+      "falsePositive": 9,
+      "other": 0,
+      "fpRate": 0.9
+    },
+    "path_traversal_arbitrary_file_read_risk::javascript": {
       "reviewed": 1,
       "confirmed": 1,
       "falsePositive": 0,
       "other": 0,
       "fpRate": 0
     },
-    "insecure_tls::go": {
-      "reviewed": 5,
-      "confirmed": 2,
-      "falsePositive": 3,
-      "other": 0,
-      "fpRate": 0.6
-    },
-    "known_vulnerable_dependency::js": {
-      "reviewed": 223,
-      "confirmed": 0,
-      "falsePositive": 223,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_use_tls::go": {
+    "path_traversal_risk::js": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_var_in_href::unknown": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_of_md5::go": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_detect_child_process::js": {
+      "reviewed": 27,
+      "confirmed": 3,
+      "falsePositive": 24,
+      "other": 0,
+      "fpRate": 0.8888888888888888
+    },
+    "semgrep_insecure_hash_algorithm_sha1::unknown": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_exec_detected::unknown": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_subprocess_shell_true::unknown": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_divide_before_multiply::solidity": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_uninitialized_local::solidity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_arbitrary_send_eth::solidity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_reentrancy_balance::solidity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_httpsconnection_detected::unknown": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_arbitrary_send_erc20::solidity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_incorrect_exp::solidity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_encode_packed_collision::solidity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_msg_value_in_nonpayable::solidity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_of_sha1::go": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_incorrect_return::solidity": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
       "other": 0,
       "fpRate": 1
     },
@@ -443,199 +443,10 @@
     }
   },
   "byTypeProgram": {
-    "semgrep_use_of_sha1::OKG": {
-      "reviewed": 2,
+    "known_vulnerable_dependency::Mattermost Public Bug Bounty Engagement ": {
+      "reviewed": 38,
       "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_incorrect_return::Circle BBP": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_use_of_unsafe_block::OKG": {
-      "reviewed": 35,
-      "confirmed": 0,
-      "falsePositive": 35,
-      "other": 0,
-      "fpRate": 1
-    },
-    "unchecked_call_return::Circle BBP": {
-      "reviewed": 10,
-      "confirmed": 1,
-      "falsePositive": 9,
-      "other": 0,
-      "fpRate": 0.9
-    },
-    "semgrep_math_random_used::OKG": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_divide_before_multiply::Circle BBP": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_msg_value_in_nonpayable::Circle BBP": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_encode_packed_collision::Circle BBP": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_incorrect_exp::Circle BBP": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_reentrancy_balance::Circle BBP": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_uninitialized_local::Circle BBP": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_arbitrary_send_erc20::Circle BBP": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_httpsconnection_detected::Vercel Open Source": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_detect_child_process::Vercel Open Source": {
-      "reviewed": 27,
-      "confirmed": 3,
-      "falsePositive": 24,
-      "other": 0,
-      "fpRate": 0.8888888888888888
-    },
-    "reentrancy_risk::Circle BBP": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "slither_arbitrary_send_eth::Circle BBP": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "known_vulnerable_dependency::Vercel Open Source": {
-      "reviewed": 82,
-      "confirmed": 0,
-      "falsePositive": 82,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_subprocess_shell_true::Vercel Open Source": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_exec_detected::Vercel Open Source": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_insecure_hash_algorithm_sha1::Vercel Open Source": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_math_random_used::Kubernetes": {
-      "reviewed": 19,
-      "confirmed": 0,
-      "falsePositive": 19,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_use_of_unsafe_block::Kubernetes": {
-      "reviewed": 110,
-      "confirmed": 0,
-      "falsePositive": 110,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_use_of_md5::Kubernetes": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_avoid_bind_to_all_interfaces::Kubernetes": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "known_vulnerable_dependency::Kubernetes": {
-      "reviewed": 42,
-      "confirmed": 0,
-      "falsePositive": 42,
-      "other": 0,
-      "fpRate": 1
-    },
-    "semgrep_var_in_href::Kubernetes": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "command_injection_risk::Vercel Open Source": {
-      "reviewed": 7,
-      "confirmed": 1,
-      "falsePositive": 6,
-      "other": 0,
-      "fpRate": 0.8571428571428571
-    },
-    "eval_usage::Vercel Open Source": {
-      "reviewed": 11,
-      "confirmed": 0,
-      "falsePositive": 11,
+      "falsePositive": 38,
       "other": 0,
       "fpRate": 1
     },
@@ -646,108 +457,31 @@
       "other": 2,
       "fpRate": 0.5
     },
-    "redos_risk::Vercel Open Source": {
-      "reviewed": 6,
+    "known_vulnerable_dependency::Auth0 by Okta": {
+      "reviewed": 14,
       "confirmed": 0,
-      "falsePositive": 6,
+      "falsePositive": 14,
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::Circle BBP": {
-      "reviewed": 11,
-      "confirmed": 4,
-      "falsePositive": 7,
-      "other": 0,
-      "fpRate": 0.6363636363636364
-    },
-    "path_traversal_risk::Vercel Open Source": {
-      "reviewed": 2,
+    "known_vulnerable_dependency::Vercel Open Source": {
+      "reviewed": 82,
       "confirmed": 0,
-      "falsePositive": 2,
+      "falsePositive": 82,
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::Vercel Open Source": {
-      "reviewed": 8,
-      "confirmed": 3,
-      "falsePositive": 4,
-      "other": 1,
-      "fpRate": 0.5
-    },
-    "path_traversal_arbitrary_file_read_risk::Vercel Open Source": {
-      "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
-    },
-    "ai_deep_read_finding::StackingDAO": {
-      "reviewed": 2,
+    "known_vulnerable_dependency::Plaid": {
+      "reviewed": 48,
       "confirmed": 0,
-      "falsePositive": 2,
+      "falsePositive": 48,
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::Block Open Source": {
-      "reviewed": 6,
+    "known_vulnerable_dependency::Kubernetes": {
+      "reviewed": 42,
       "confirmed": 0,
-      "falsePositive": 6,
-      "other": 0,
-      "fpRate": 1
-    },
-    "prototype_pollution_risk::Vercel Open Source": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ssrf_risk::Vercel Open Source": {
-      "reviewed": 13,
-      "confirmed": 0,
-      "falsePositive": 13,
-      "other": 0,
-      "fpRate": 1
-    },
-    "delegatecall_risk::Circle BBP": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "known_vulnerable_dependency::OKG": {
-      "reviewed": 72,
-      "confirmed": 0,
-      "falsePositive": 72,
-      "other": 0,
-      "fpRate": 1
-    },
-    "auth_arg_inconsistency::StackingDAO": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
-    "unguarded_transfer::StackingDAO": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "insecure_tls::Kubernetes": {
-      "reviewed": 3,
-      "confirmed": 2,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 0.3333333333333333
-    },
-    "semgrep_math_random_used::Kiwi.com": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
+      "falsePositive": 42,
       "other": 0,
       "fpRate": 1
     },
@@ -765,24 +499,290 @@
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::Plaid": {
-      "reviewed": 48,
+    "semgrep_math_random_used::Kubernetes": {
+      "reviewed": 19,
       "confirmed": 0,
-      "falsePositive": 48,
+      "falsePositive": 19,
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::Mattermost Public Bug Bounty Engagement ": {
-      "reviewed": 38,
+    "semgrep_use_of_unsafe_block::Kubernetes": {
+      "reviewed": 110,
       "confirmed": 0,
-      "falsePositive": 38,
+      "falsePositive": 110,
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::Auth0 by Okta": {
-      "reviewed": 14,
+    "semgrep_math_random_used::Kiwi.com": {
+      "reviewed": 1,
       "confirmed": 0,
-      "falsePositive": 14,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::Vercel Open Source": {
+      "reviewed": 8,
+      "confirmed": 3,
+      "falsePositive": 4,
+      "other": 1,
+      "fpRate": 0.5
+    },
+    "known_vulnerable_dependency::OKG": {
+      "reviewed": 72,
+      "confirmed": 0,
+      "falsePositive": 72,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::Circle BBP": {
+      "reviewed": 11,
+      "confirmed": 4,
+      "falsePositive": 7,
+      "other": 0,
+      "fpRate": 0.6363636363636364
+    },
+    "insecure_tls::Kubernetes": {
+      "reviewed": 3,
+      "confirmed": 2,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.3333333333333333
+    },
+    "semgrep_avoid_bind_to_all_interfaces::Kubernetes": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "command_injection_risk::Vercel Open Source": {
+      "reviewed": 7,
+      "confirmed": 1,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 0.8571428571428571
+    },
+    "unguarded_transfer::StackingDAO": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::Block Open Source": {
+      "reviewed": 6,
+      "confirmed": 0,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ai_deep_read_finding::StackingDAO": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "prototype_pollution_risk::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "ssrf_risk::Vercel Open Source": {
+      "reviewed": 13,
+      "confirmed": 0,
+      "falsePositive": 13,
+      "other": 0,
+      "fpRate": 1
+    },
+    "auth_arg_inconsistency::StackingDAO": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "delegatecall_risk::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "reentrancy_risk::Circle BBP": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "redos_risk::Vercel Open Source": {
+      "reviewed": 6,
+      "confirmed": 0,
+      "falsePositive": 6,
+      "other": 0,
+      "fpRate": 1
+    },
+    "eval_usage::Vercel Open Source": {
+      "reviewed": 11,
+      "confirmed": 0,
+      "falsePositive": 11,
+      "other": 0,
+      "fpRate": 1
+    },
+    "unchecked_call_return::Circle BBP": {
+      "reviewed": 10,
+      "confirmed": 1,
+      "falsePositive": 9,
+      "other": 0,
+      "fpRate": 0.9
+    },
+    "path_traversal_arbitrary_file_read_risk::Vercel Open Source": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
+    "path_traversal_risk::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_var_in_href::Kubernetes": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_of_md5::Kubernetes": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_detect_child_process::Vercel Open Source": {
+      "reviewed": 27,
+      "confirmed": 3,
+      "falsePositive": 24,
+      "other": 0,
+      "fpRate": 0.8888888888888888
+    },
+    "semgrep_insecure_hash_algorithm_sha1::Vercel Open Source": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_exec_detected::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_subprocess_shell_true::Vercel Open Source": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_divide_before_multiply::Circle BBP": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_of_unsafe_block::OKG": {
+      "reviewed": 35,
+      "confirmed": 0,
+      "falsePositive": 35,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_uninitialized_local::Circle BBP": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_arbitrary_send_eth::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_reentrancy_balance::Circle BBP": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_httpsconnection_detected::Vercel Open Source": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_arbitrary_send_erc20::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_incorrect_exp::Circle BBP": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_encode_packed_collision::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_msg_value_in_nonpayable::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_math_random_used::OKG": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "semgrep_use_of_sha1::OKG": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_incorrect_return::Circle BBP": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
       "other": 0,
       "fpRate": 1
     },
