@@ -1647,3 +1647,45 @@ aqui.
 53→57). Clone temporário (incluindo `go get`/`go mod tidy` local só
 pra rodar o teste, dependências vêm de `proxy.golang.org` público, sem
 credencial) removido. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #11 (rotina agendada, gatilho push) — assess_impact do achado stellar/strkey; sem achado novo
+
+`program-policy.json`/`check-program "OKG"` conferidos no passo 0:
+`blocked:false`. `research-plan` devolveu exatamente 1 item `actionable`
+(`assess_impact`): o achado `coins/stellar/strkey/signed_payload.go::DecodeSignedPayload`
+da rodada #10, já em `reproduced_local` com PoC real, faltando
+`impactAssessment` estruturado antes de qualquer novo passo.
+
+Rastreei a cadeia de chamada completa de `SignerKey.SetAddress` (único
+caminho que alcança `DecodeSignedPayload`, já que `AccountId`/`MuxedAccount.SetAddress`
+só aceitam version byte de conta, nunca `SignedPayload` — confirmado
+lendo `account_id.go` e `muxed_account.go`) em todo o SDK: `xdr.MustSigner`,
+`txnbuild/preconditions.go` (`ExtraSigners`) e `txnbuild/helpers.go`.
+Todos os call sites ficam no caminho de CONSTRUÇÃO da própria transação
+pelo chamador (o usuário/wallet decidindo incluir um endereço de signer
+que um terceiro forneceu) — nenhum parser interno do SDK decodifica esse
+endereço em nome de múltiplos usuários/tenants compartilhando um único
+processo. `record-impact-assessment` registrado com
+`technicalValidity=confirmed`, `attackerControlledInput=true`,
+`availability=high` (localmente), mas `impactScope=self_request_only` e
+`reportable=false` — mesmo padrão já estabelecido nos 6 achados-irmãos
+deste programa (cardano/solana/elrond/helium/oasis/polkadot, todos
+retidos por `below_campaign_impact`): bug de robustez real e confirmado
+por PoC, mas sem evidência de deployment multi-tenant que sustente
+impacto Medium+ contra outra vítima. `scope_verified` tentado por
+completude do fluxo (mesmo sabendo que `reportable=false` já bloquearia
+`human_ready` de qualquer forma) — recusado corretamente pelo gate
+profissional (`deploymentEvidence.confidence="medium"`, exige `"high"`),
+nada forçado. Estado final: `reproduced_local`, agora com
+`impactAssessment` completo e consistente com o `research-plan`.
+
+Leitura profunda proativa: 3 arquivos novos em `slackhq/nebula` (Slack),
+únicos candidatos com termo prioritário (`control`) ainda não lidos no
+repo mais coberto da lista permitida — `control.go` (API programática de
+embedding do daemon, parâmetros vêm do processo host que embute a lib,
+não de peer remoto — sem achado), `control_tester.go` (helpers
+exclusivos de teste, `//go:build e2e_testing`, nunca compilado em
+produção — fora do modelo de ameaça) e `sshd/writer.go` (wrapper trivial
+sobre `io.Writer`, sem lógica de segurança). `deep-read-log.json`
+atualizado (23→26 em `slackhq/nebula`). `export-queue` rodado ao final
+da rodada.
