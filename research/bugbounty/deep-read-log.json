@@ -952,7 +952,10 @@
     "packages/eve/src/channel/forwarded-principal.ts (completo -- resolveForwardedPrincipal: identidade forjada só é aceita depois do predicado trustedForwarders(forwarder) autorizar o CHAMADOR verificado pelo transporte (não a identidade forjada em si), e o hop é sempre carimbado com FORWARDED_BY_ATTRIBUTE sobrescrevendo qualquer valor enviado pelo cliente -- não há como o forwarder falsificar quem fez o forward. Sem achado)",
     "packages/eve/src/execution/sandbox/session.ts (completo -- buildSandboxSession: wrapper fino sobre primitives.spawn/readFile/writeFile/removePath do backend, só resolve path via primitives.resolvePath (delegado, não decidido aqui) e faz slicing de linha/encoding no readTextFile; nenhuma checagem de autorização própria, isolamento real é o sandbox/container em si, consistente com docker-session.ts já lido. Sem achado)",
     "packages/eve/src/harness/session-limit-continuation.ts (completo -- createSessionLimitContinuationRequest/resolveSessionLimitContinuation: prompt HITL determinístico pro guardrail de budget de tokens/custo, requestId derivado só de sessionId+violation (estritamente crescente, sem colisão com prompt anterior); resolução da resposta casa por requestId dentro do batch de requests/responses já escopado à sessão corrente, não decide autorização de sessão por si -- mesmo padrão de responsabilidade do app integrador já documentado em channel/session.ts. Sem achado)",
-    "packages/eve/src/shared/sandbox-session.ts (completo, só tipos -- SandboxSession/RuntimeSandboxSession/InternalSandboxSession são interfaces derivadas do tipo Experimental_SandboxSession da AI SDK, sem lógica própria nem fronteira de autorização. Sem achado)"
+    "packages/eve/src/shared/sandbox-session.ts (completo, só tipos -- SandboxSession/RuntimeSandboxSession/InternalSandboxSession são interfaces derivadas do tipo Experimental_SandboxSession da AI SDK, sem lógica própria nem fronteira de autorização. Sem achado)",
+    "packages/eve/src/public/models/openai/chatgpt/credential-store.ts",
+    "packages/eve/src/public/models/openai/chatgpt/oauth.ts",
+    "packages/eve/src/setup/flows/registry-session.ts"
   ],
   "vercel/flags": [
     "packages/vercel-flags-core/src/controller/auth.ts",

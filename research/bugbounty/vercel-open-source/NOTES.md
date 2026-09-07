@@ -10356,3 +10356,72 @@ de perpetuar o inchaço. Causa raiz (por que `migrate-to-v2.mjs`
 ocasionalmente re-deriva e reapenda eventos históricos do ledger a partir
 do banco local) permanece não investigada — é bug de infraestrutura do
 scanner, fora do escopo desta rodada de triagem de findings.
+
+## Rodada 2026-09-07 (scheduled routine, push automático via GitHub webhook, sessão cloud, push f578281->3f67129)
+
+`migrate-to-v2.mjs` rodado (827 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Vercel Open Source` e
+`StackingDAO` confirmados `blocked:false`; `Block Open Source` e
+`Circle BBP` confirmados bloqueados — nenhum arquivo desses dois
+clonado/lido/aberto. `list-pending` vazio (schema novo omite retidos);
+`research-plan` confirma `actionable: 0`. Os 8 findings retidos deste
+programa (`nitrojs/nitro` VFS script-tag, `vercel-labs/agent-skills`
+path traversal, `vercel/ai` timing attack, `vercel/next.js` SSRF
+allowlist bypass, `vercel/vercel` semgrep child_process x3,
+`vercel/vercel` command injection em `update-remix-run-dev.js`)
+seguem retidos pelos mesmos motivos já registrados (`campaign_duplicate_history`
+com `submissionIds` vinculados, ou `previous_submission`) — revisão
+rápida confirma que nada mudou desde a última rodada, não retentado.
+
+Leitura profunda proativa: dos 16 repos curados no
+`scope-snapshots/vercel-open-source.json`, todos já têm cobertura
+substancial em `deep-read-log.json` (de 1 arquivo em libs de arquivo
+único como `vercel/async-sema`/`vercel/ms`, até 119 em `vercel/vercel`).
+Escolhi `vercel/eve` (90 arquivos já lidos) por julgamento próprio —
+produto de agente de IA da Vercel com integração ChatGPT/OAuth e
+superfície de credenciais ainda maior que os outros. Clone raso (`git
+clone --depth 1`), busquei por nome com o filtro
+auth/session/crypto/token/login/password/admin/permission/access
+(284 arquivos candidatos, a maioria e2e fixtures/evals de teste do
+próprio framework) e cruzei contra o log pra achar os genuinamente
+não lidos ainda. Quase toda a superfície de auth/credential real
+(`harness/authorization.ts`, `tools/auth.ts`, `runtime/connections/*`,
+`public/channels/*/auth.ts`, `shared/session-auth.ts`,
+`shared/validate-authorization.ts`, etc.) já tinha sido coberta em
+rodadas anteriores. 3 arquivos novos:
+
+- `packages/eve/src/public/models/openai/chatgpt/credential-store.ts`
+  — store de credenciais ChatGPT do CLI local em
+  `~/.eve/auth/chatgpt.json`, lock via `mkdir` atômico, escrita via
+  temp-file+rename com `mode:0o600`/dir `mode:0o700`, limite de 64KB na
+  leitura. Superfície é só o próprio filesystem local do usuário
+  (mesmo modelo de ameaça de qualquer outro segredo em `~/.config`);
+  sem I/O de rede, sem input de outro usuário/processo remoto. Sem
+  achado.
+- `packages/eve/src/public/models/openai/chatgpt/oauth.ts` —
+  `requestChatGptTokens` troca código/refresh token com
+  `https://auth.openai.com/oauth/token` de verdade (`redirect:"error"`
+  bloqueia hijack via redirect, `AbortSignal.timeout(30s)`, response
+  cap de 64KB). `accountId`/`accountLabel` vêm de claims de JWT
+  (id_token/access_token) extraídos sem verificar assinatura
+  (`extractCodexAccountIdFromToken`, em `./auth.ts`, já lido em rodada
+  anterior) — mas são só label de exibição local (qual conta ChatGPT
+  está logada), a decisão de autorização de verdade continua sendo o
+  próprio `accessToken` bearer validado pelo servidor da OpenAI, não
+  algo decidido a partir do claim não verificado neste arquivo. Sem
+  achado.
+- `packages/eve/src/setup/flows/registry-session.ts` — acumulador de
+  resultado do fluxo `/add` do setup local (instala item de registry,
+  pergunta se quer fazer deploy depois). "Session" aqui é só o estado
+  em memória de uma sessão de terminal do usuário local, sem
+  autenticação/autorização própria pra auditar — decisão real de deploy
+  delega pra `runDeployFlow` (fora deste arquivo). Sem achado.
+
+`deep-read-log.json` atualizado (`vercel/eve`: 90 → 93 arquivos).
+Nenhum achado novo, nenhuma transição de estado nesta rodada. Clone
+temporário (`eve`) removido do scratch dir ao final. `export-queue`
+rodado ao final.
+
+Mesmo bug operacional recorrente do `ledger.research.jsonl` desta vez
+também (ver NOTES.md de StackingDAO pra detalhe da verificação) —
+descartado via `git checkout` antes do commit.

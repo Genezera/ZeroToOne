@@ -1887,3 +1887,41 @@ NOTES.md de Vercel Open Source — 3 arquivos novos: hook de sync do
 adapter Statsig em Edge Runtime, metadado interno de origem de dados e
 classes de erro estáticas, sem achado). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-07 (scheduled routine, push automático via GitHub webhook, sessão cloud, push f578281->3f67129)
+
+`migrate-to-v2.mjs` rodado (827 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `StackingDAO` e `Vercel
+Open Source` confirmados `blocked:false`; `Block Open Source` e `Circle
+BBP` confirmados bloqueados — nenhum arquivo desses dois
+clonado/lido/aberto nesta rodada. `list-pending` agora vem vazio
+(schema novo omite retidos); `research-plan` confirma `actionable: 0`,
+`held: 59` — todos os 59 retidos são de programas/repos fora desta
+missão (Auth0 by Okta bloqueado, Circle BBP bloqueado por escolha do
+usuário, Kubernetes/Mattermost/OKG/Vercel Open Source com motivo
+registrado de duplicate-history/scope/impacto/janela). Nenhum candidato
+`StackingDAO` presente em `held` nem `actionable` — os 15 contratos
+`.clar` já lidos seguem cobrindo 100% dos 13 assets do
+`scope-snapshots/stackingdao.json`, sem contrato novo, sem nada a
+investigar aqui nesta rodada.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/eve` (ver
+NOTES.md de Vercel Open Source — 3 arquivos novos: credential store e
+fluxo OAuth do login ChatGPT do CLI, mais um acumulador de resultado do
+setup local `/add`, sem achado). Nenhuma transição de estado neste
+programa.
+
+Bug operacional recorrente do `ledger.research.jsonl` (mesma causa já
+documentada nas rodadas anteriores: `migrate-to-v2.mjs` reapenda
+eventos históricos com nova cadeia de hash) ocorreu de novo nesta
+rodada — 103 linhas adicionadas ao final, das quais verifiquei
+programaticamente que 101 são duplicatas exatas (mesmo conteúdo, só
+`hash`/`prevHash` recalculados) de eventos já presentes no `HEAD`
+anterior, e 2 são eventos `bugbounty_code_age` genuinamente novos
+(gerados pelo próprio `research-plan` desta rodada, sobre findings do
+programa `OKG`, fora desta missão). Descartei a mudança inteira
+(`git checkout -- ledger/ledger.research.jsonl`) em vez de perpetuar o
+inchaço, mesmo critério das rodadas anteriores — perder o registro de
+auditoria dos 2 eventos novos é custo baixo frente a acumular mais
+duplicatas a cada rodada. Causa raiz permanece não investigada, fora do
+escopo desta rodada de triagem.
