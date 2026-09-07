@@ -391,3 +391,73 @@ novo nesta rodada.
 `deep-read-log.json` atualizado (+4 entradas em `slackhq/nebula` — os 3
 arquivos novos e a revisita anotada de `cert_v2.go` —, 26→30 no total).
 Clone temporário removido. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 (push automático via GitHub webhook, sessão cloud)
+
+`research-plan` e `list-pending` vazios de novo (`actionable: 0`) —
+nada acionável em nenhum programa nesta rodada. Fui para leitura
+profunda proativa (`list-deep-read-candidates.mjs`, política/histórico
+conferidos antes de qualquer clone, conforme CLAUDE.md).
+
+`slackhq/nebula` continuava sendo o candidato liberado com maior
+superfície não lida (17% coberto). 3 arquivos novos, priorizados por
+proximidade com `crypto`/`access`/`session`:
+
+- `cert/p256/p256.go` (não lido antes — só os call sites em `sign.go`/
+  `cert.go` já tinham sido lidos em rodadas anteriores):
+  `IsNormalized`/`Normalize`/`Swap`, normalização low-S de assinaturas
+  ECDSA P256. `Normalize` só é chamado ao assinar (`sign.go:132`,
+  anti-malleability padrão). `Swap` é chamado só em
+  `cert.go:169 CalculateAlternateFingerprint`, que calcula de propósito
+  o fingerprint da forma alternativa (high-S) da mesma assinatura válida
+  para que o teste de blocklist do `CAPool` cheque as duas formas —
+  design defensivo intencional contra evasão de blocklist via
+  maleabilidade ECDSA, não um bug. Sem achado.
+- `allow_list.go`: árvore CIDR construída a partir de config do
+  operador (não de input de rede/peer); `Allow()` nil-safe retorna
+  `true` (permite) quando a allowlist não foi configurada — default
+  documentado (feature opt-in), não bypass de autenticação. Sem achado.
+- `connection_state.go` — **ACHADO NOVO**: `ConnectionState.Decrypt` e
+  `VerifyRelay` fazem `Check` → `Decrypt` (sem lock) → `Update` em duas
+  seções críticas separadas por `decryptLock.Unlock()`/`Lock()`, TOCTOU
+  real (CWE-367/CWE-294) sobre a janela anti-replay (`Bits`, `bits.go`)
+  — se duas goroutines processarem o mesmo `messageCounter` (mesmo
+  pacote replayed) concorrentemente para a mesma `ConnectionState`,
+  ambas podem passar por `Check()` antes de qualquer `Update()`,
+  derrotando a proteção anti-replay. Rastreei a cadeia completa:
+  `outside.go:132` é o único call site fora de teste; `interface.go`
+  confirma que `routines>1` (config `routines`/`listen.routines`,
+  default 1) lança uma goroutine `listenOut(i)` por fila UDP, cada uma
+  com socket `SO_REUSEPORT` próprio (`udp/udp_linux.go:51-54`); o
+  lookup do hostinfo usa `h.RemoteIndex` do header, não o endereço UDP
+  de origem (comentário "Roam before we respond" confirma que roaming
+  é suportado de propósito) — ou seja, um atacante que capturou um
+  pacote legítimo pode reenviar os mesmos bytes de uma porta de origem
+  diferente para cair numa fila `SO_REUSEPORT` diferente e abrir a
+  corrida. `git log`: o lock foi introduzido no commit `3615a79` ("add
+  locks around replay window updates", #1802, 2026-07-20) — antes disso
+  não havia lock nenhum (race de memória pior ainda); o PR fechou o
+  data race Go mas manteve a mesma estrutura de duas seções separadas
+  pelo decrypt caro no meio, sem comentário justificando isso como
+  aceitável. Confirmado presente já na tag de release publicada
+  `v1.11.0` (`git show v1.11.0:connection_state.go`), não só em HEAD
+  não lançado. Pré-condições honestas (severidade não inflada):
+  `routines>1` não é default; atacante precisa já ter capturado um
+  ciphertext legítimo (observação passiva de rede); precisa reenviar
+  com porta de origem diferente (spoofing UDP trivial, sem exigir estar
+  exatamente on-path já que não há checagem de origem antes do
+  decrypt); janela de timing estreita (decrypt AEAD é da ordem de
+  microssegundos). Registrado como
+  `Slack::slackhq/nebula/connection_state.go::ConnectionState.Decrypt+VerifyRelay::replay_window_toctou_race`,
+  avançado `candidate` → `corroborated_static` (reasoning + filesRead
+  salvos, `check-scope` rodado — sem scope snapshot pra Slack ainda —,
+  deployment evidence registrada com `confidence="medium"` pelo vínculo
+  commit↔tag de release confirmado). Tentativa de `reproduced_local`
+  não se aplica: achado Go, sem validador local disponível no sistema
+  hoje (mesma limitação conhecida já documentada para outros achados
+  não-Solidity) — fica em `corroborated_static`, não forcei nem
+  contornei. Sem PoC executável possível para esta classe hoje.
+
+`deep-read-log.json` atualizado (+3 entradas em `slackhq/nebula`,
+30→33 no total). Clone temporário removido. `export-queue` rodado ao
+final da rodada.
