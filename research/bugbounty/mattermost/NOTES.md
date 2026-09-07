@@ -1363,3 +1363,44 @@ código novo desde a última leitura):
 `deep-read-log.json` atualizado (edição programática via Python
 `json.load`/`json.dump`). `export-queue` rodado ao final da rodada (sem
 mudança de estado nesta rodada em Mattermost).
+
+## Rodada 2026-09-07 #14 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/`verify_scope`
+(`-confluence`, `-msteams-meetings`, `-zoom` em `corroborated_static`,
+`-mscalendar` em `reproduced_local`) — 14ª vez consecutiva. Rodei
+`check-scope` ao vivo pros 4 novamente (não pulei por já saber o
+resultado — `verify_scope` autoriza revisar a fonte de escopo, não supor
+o resultado): mesmo `snapshotCapturedAt`/`snapshotContentHash` da rodada
+#12/#13 (`2026-09-07T03:58:01.834Z`), `allowed=true` e `bountyEligible=null`
+nos 4, sem mudança. Bloqueio estrutural confirmado por leitura de código
+na rodada #13 (`refresh-scope-live` só existe pra HackerOne) continua
+válido — nenhuma nova evidência disponível para justificar reabrir a
+investigação; nada forçado, nada retocado.
+
+Leitura profunda proativa desta rodada: 3 arquivos novos em
+`mattermost/mattermost-plugin-jira` (candidato com menos arquivos lidos
+no log — 4 antes desta rodada), escolhidos por nome relacionado a
+auth/rota HTTP: `server/http.go`, `server/user.go`, `server/instance.go`.
+Hipótese investigada com ceticismo em `http.go`: três rotas
+(`routeIssueTransition`, `routeSharePublicly`, `routeGetIssueByKey`) são
+registradas em `initializeRouter` com `p.handleResponse` puro, sem o
+wrapper `p.checkAuth` usado por todas as outras rotas de `apiRouter` —
+pareceu inicialmente possível bypass de autenticação. **Refutado por
+leitura completa dos handlers**: `httpGetIssueByKey` lê
+`Mattermost-User-Id` e retorna 401 se vazio antes de qualquer ação;
+`httpShareIssuePublicly`/`httpTransitionIssuePostAction` passam por
+`decodePostActionRequest`, que exige o mesmo header não-vazio (401 se
+ausente) e ainda soma checagens extras (`action_signature`,
+`buildPostActionContext` valida post/canal/membership) — implementação
+de auth equivalente ou mais rigorosa que `p.checkAuth`, só inline em vez
+de no wrapper do router. `user.go`/`instance.go`: sem achado, consistente
+com o papel de `jira` como implementação de referência já estabelecido
+nas rodadas anteriores (account-linking OAuth CSRF-safe, webhook secret
+com `subtle.ConstantTimeCompare`). `deep-read-log.json` atualizado
+(edição programática via Python).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
