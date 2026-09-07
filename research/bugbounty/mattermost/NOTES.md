@@ -1128,3 +1128,60 @@ terceiro, sem achado).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #10 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 3 `corroborated_static`
+(`-confluence`, `-msteams-meetings`, `-zoom`) como únicos
+`actionable`/`verify_scope` do banco inteiro (10ª vez consecutiva na
+mesma data) — `cli.mjs get` em `-confluence` reconfirma que
+reasoning/`check-scope`/deployment evidence/`record-validation
+type=manual_review` já foram registrados em rodadas anteriores, sem
+nenhuma informação nova a acrescentar: o único passo que falta
+(confirmar `bountyEligible` na página oficial do Bugcrowd) exige
+navegação/login humano que esta sessão automatizada não tem meios de
+fazer, não é uma tarefa que uma 11ª tentativa idêntica resolveria. Não
+retocado, para não duplicar trabalho já commitado. `list-pending` (sem
+`--include-held`) = 0.
+
+Leitura profunda proativa direcionada a `mattermost/mattermost-plugin-github`
+(4→6 arquivos lidos, escolhido por ter só 4 arquivos no log entre os
+candidatos permitidos por `list-deep-read-candidates.mjs`):
+
+- `server/plugin/command.go` — `handleSubscribesAdd`/`Subscribe`/
+  `SubscribeOrg`: a hipótese investigada foi se um usuário qualquer
+  poderia inscrever um canal público em um repositório GitHub PRIVADO
+  ao qual não tem acesso, vazando conteúdo desse repo pro canal
+  (`info disclosure`). Refutado: `Subscribe` (`subscriptions.go:199`)
+  só grava a subscription depois de `githubClient.Repositories.Get`/
+  `Organizations.Get` retornar sucesso usando o `githubClient` do
+  PRÓPRIO usuário que roda o comando (token OAuth dele, obtido em
+  `/github connect`) — se o usuário não tem acesso de leitura ao
+  repo/org via GitHub, a chamada falha (404) e a função retorna erro
+  antes de `AddSubscription`. Quando o repo É privado e o usuário TEM
+  acesso, o código ainda emite um aviso explícito no post de
+  confirmação (`"Warning: You subscribed to a private repository.
+  Anyone with access to this channel will be able to read the events
+  getting posted here."`) — comportamento documentado e intencional,
+  não uma falha. `isAuthorizedSysAdmin`/`ExecuteCommand`: ações de
+  configuração (`setup`) checam `system_admin` via `user.Roles`; o
+  slash command em si só é invocado pelo servidor Mattermost para um
+  usuário que já é membro do canal onde digitou o comando (garantia do
+  core, não do plugin). Sem achado.
+- `server/plugin/configuration.go` — `setDefaults`/`sanitize`/
+  `ClientConfiguration`: `EncryptionKey`/`WebhookSecret` gerados via
+  `generateSecret()` (`crypto/rand`) quando vazios; `ClientConfiguration()`
+  (único mapa de config exposto ao JS do navegador via API) inclui
+  apenas `left_sidebar_enabled`/`review_target_days`/
+  `review_target_day_type` — nunca `GitHubOAuthClientSecret`/
+  `WebhookSecret`/`EncryptionKey`. Sem vazamento de segredo pro
+  frontend. Sem achado.
+
+`deep-read-log.json` atualizado (edição programática via Python
+`json.load`/`json.dump`, não reconstrução manual do arquivo inteiro —
+evita o risco de corrupção por transcrição já documentado na rodada #6).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
