@@ -123,6 +123,28 @@ function matchesScopeAsset(identifier, requested) {
   return requested.toLowerCase().endsWith(scoped.slice(1).toLowerCase());
 }
 
+function explicitGithubRepositories(value) {
+  const repositories = new Set();
+  const text = typeof value === 'string' ? value : '';
+  for (const match of text.matchAll(/https?:\/\/github\.com\/([a-z0-9_.-]+)\/([a-z0-9_.-]+)/gi)) {
+    const owner = match[1];
+    // Markdown punctuation may immediately follow the URL. A real repository
+    // may contain dots, but cannot end in one; `.git` is only a URL suffix.
+    const repo = match[2].replace(/[.,;:]+$/g, '').replace(/\.git$/i, '');
+    if (owner && repo) repositories.add(`github:${owner.toLowerCase()}/${repo.toLowerCase()}`);
+  }
+  return repositories;
+}
+
+function matchesExplicitInstructionAsset(snapshot, asset, requested) {
+  // Instructions from a current official/API snapshot sometimes carry the
+  // exact repositories behind an aggregate label such as "Mattermost
+  // Plugins".  Only complete GitHub owner/repo URLs are aliases.  Natural
+  // language, organization URLs and prefix guesses never expand scope.
+  if (!['hackerone_api_live', 'official_page_fetch', 'manual_human_confirmed'].includes(snapshot?.sourceType)) return false;
+  return explicitGithubRepositories(asset?.instruction).has(requested);
+}
+
 function repositoryFromFindingId(finding = {}) {
   const location = normalizeAssetKey(String(finding.id || '').split('::')[1]);
   if (!location) return null;
@@ -167,7 +189,8 @@ export function assetRefForFinding(finding = {}) {
 export function assetInScope(snapshot, assetRef) {
   if (!Array.isArray(snapshot?.assets)) return null;
   const requested = scopeAssetKey(assetRef);
-  const matches = snapshot.assets.filter((asset) => matchesScopeAsset(asset?.assetIdentifier, requested));
+  const matches = snapshot.assets.filter((asset) => matchesScopeAsset(asset?.assetIdentifier, requested)
+    || matchesExplicitInstructionAsset(snapshot, asset, requested));
   // An explicit exclusion must not be shadowed by an earlier wildcard.
   return matches.find((asset) => asset.eligibleForSubmission === false)
     || matches.find((asset) => asset.eligibleForBounty === false)
@@ -187,10 +210,6 @@ export function scopeGate(snapshot, assetRef, now = new Date().toISOString()) {
   if (isSnapshotExpired(snapshot, now)) {
     return { allowed: false, reason: `scope snapshot expirado em ${snapshot.expiresAt} (capturado ${snapshot.capturedAt}, fonte ${snapshot.sourceType})` };
   }
-  const asset = assetInScope(snapshot, assetRef);
-  if (!asset) {
-    return { allowed: false, reason: `ativo "${assetRef}" não encontrado no snapshot de escopo do programa` };
-  }
   const evidence = {
     snapshotCapturedAt: snapshot.capturedAt,
     snapshotExpiresAt: snapshot.expiresAt,
@@ -198,6 +217,10 @@ export function scopeGate(snapshot, assetRef, now = new Date().toISOString()) {
     snapshotContentHash: snapshot.contentHash,
     officialUrl: snapshot.officialUrl,
   };
+  const asset = assetInScope(snapshot, assetRef);
+  if (!asset) {
+    return { allowed: false, reason: `ativo "${assetRef}" não encontrado no snapshot de escopo do programa`, ...evidence };
+  }
   if ([asset.eligibleForSubmission, asset.eligibleForBounty].some((value) => value != null && typeof value !== 'boolean')) {
     return { allowed: false, reason: 'flags de elegibilidade inválidas no scope snapshot', asset, ...evidence };
   }

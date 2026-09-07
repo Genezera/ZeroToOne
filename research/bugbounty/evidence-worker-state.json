@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "workOrders": {
+    "evidence:v1:c96064f4a497ee0f904eea6ad6079c1f9b54d8f02626bad46917616635b9d80a": {
+      "taskId": "evidence:v1:c96064f4a497ee0f904eea6ad6079c1f9b54d8f02626bad46917616635b9d80a",
+      "inputDigest": "f87189204e8e5b043125c046132adf3a1f2a4a1a3228c2cdd640f22832b72f8b",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/user.go::CompleteOAuth2::oauth2_login_csrf_account_linking",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-confluence",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-07T12:32:45.701Z",
+      "lastAttemptAt": "2026-09-07T12:32:45.701Z",
+      "result": {
+        "reason": "ativo \"mattermost/mattermost-plugin-confluence\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": null,
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-07T12:32:46.106Z"
+    },
+    "evidence:v1:ba8226bb2eaa9761a406e3fae78337d19bc6e3850955cdb029059fc315ff8319": {
+      "taskId": "evidence:v1:ba8226bb2eaa9761a406e3fae78337d19bc6e3850955cdb029059fc315ff8319",
+      "inputDigest": "d927e404d3948d8e23133b6ca3f6892964f62658aa468dd510b84e696469f2a7",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-mscalendar/calendar/engine/notification.go::processNotification::non_constant_time_hmac_comparison",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-mscalendar",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-07T12:32:45.701Z",
+      "lastAttemptAt": "2026-09-07T12:32:46.106Z",
+      "result": {
+        "reason": "ativo \"mattermost/mattermost-plugin-mscalendar\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": null,
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-07T12:32:46.108Z"
+    },
+    "evidence:v1:4c0c12300ad85c3dd5a342ca299c7fcbeb136159a9a50a08810d40c0f16bb936": {
+      "taskId": "evidence:v1:4c0c12300ad85c3dd5a342ca299c7fcbeb136159a9a50a08810d40c0f16bb936",
+      "inputDigest": "3d2f3b7c68d39716cfaa74830d798df4dbe3c1c80a5ef6190c32ae2e01c4e353",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams-meetings/server/http.go::completeUserOAuth::oauth2_login_csrf_account_linking",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-msteams-meetings",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-07T12:32:45.701Z",
+      "lastAttemptAt": "2026-09-07T12:32:46.108Z",
+      "result": {
+        "reason": "ativo \"mattermost/mattermost-plugin-msteams-meetings\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": null,
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-07T12:32:46.110Z"
+    },
+    "evidence:v1:0bb8839b4e1f04b97a16fdb784c5f4a17da5aeaee4e0689cc5c33f143cb4aba1": {
+      "taskId": "evidence:v1:0bb8839b4e1f04b97a16fdb784c5f4a17da5aeaee4e0689cc5c33f143cb4aba1",
+      "inputDigest": "5af54601ce82c894db7b87978a6dfb2e010081e41e055db43f06f112179e96b5",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-zoom",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-07T12:32:45.701Z",
+      "lastAttemptAt": "2026-09-07T12:32:46.110Z",
+      "result": {
+        "reason": "ativo \"mattermost/mattermost-plugin-zoom\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": null,
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-07T12:32:46.113Z"
+    }
+  },
+  "runs": [
+    {
+      "runId": "evidence-run:v1:bd78782e83d941bba83a09c517bd3835584af3e66a443993879c901532f67a5f",
+      "startedAt": "2026-09-07T12:32:45.701Z",
+      "finishedAt": "2026-09-07T12:32:46.113Z",
+      "planned": 4,
+      "claimed": 4,
+      "completed": 4,
+      "needsHuman": 0,
+      "failed": 0
+    }
+  ]
+}

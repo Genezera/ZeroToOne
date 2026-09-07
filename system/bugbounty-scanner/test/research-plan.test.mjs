@@ -55,6 +55,21 @@ test('escopo desconhecido exige confirmação; bounty explicitamente negado fica
   assert.equal(excluded.held[0].code, 'scope_excluded');
 });
 
+test('ativo ausente de snapshot oficial ao vivo fica retido em vez de gerar verify_scope infinito', () => {
+  const officialMissing = buildResearchPlan([finding], {
+    ...options,
+    scopeFor:()=>({allowed:false,snapshotSourceType:'hackerone_api_live',reason:'ativo exato não encontrado'}),
+  });
+  assert.equal(officialMissing.actionable.length, 0);
+  assert.equal(officialMissing.held[0].code, 'scope_not_confirmed');
+
+  const communityMissing = buildResearchPlan([finding], {
+    ...options,
+    scopeFor:()=>({allowed:false,snapshotSourceType:'community_dataset_structured'}),
+  });
+  assert.equal(communityMissing.actionable[0].action, 'verify_scope');
+});
+
 test('um candidato novo e uma PoC pass não fabricam impacto ou novidade', () => {
   const result = buildResearchPlan([{...finding,state:'reproduced_local',createdAt:new Date(NOW).toISOString()}], {
     ...options, contextFor:()=>({validations:[{result:'pass'}]}),

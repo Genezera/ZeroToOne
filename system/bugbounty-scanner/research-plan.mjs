@@ -93,6 +93,10 @@ export function buildResearchPlan(findings, {
       hold('bounty_ineligible', 'ativo explicitamente sem elegibilidade de bounty');
       continue;
     }
+    if (scope?.allowed === false && scope.snapshotSourceType === 'hackerone_api_live') {
+      hold('scope_not_confirmed', 'ativo exato ausente no escopo estruturado oficial atual; aguardar mudança de escopo ou revisão humana explícita em vez de repetir a pesquisa');
+      continue;
+    }
     if (!scope?.allowed || scope.bountyEligible == null) {
       task('verify_scope', scope?.reason || 'confirmar ativo exato e recompensa na fonte oficial antes de aprofundar pesquisa', 90 + freshnessPriority);
       continue;

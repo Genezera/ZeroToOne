@@ -106,6 +106,7 @@ test('executor revalida política e atualiza escopo oficial antes de concluir', 
   assert.equal(refreshCalls, 1);
   assert.equal(result.status, 'completed');
   assert.equal(result.evidence.bountyEligible, true);
+  assert.notEqual(result.queueMutated, true);
 }));
 
 test('executor mede idade e grava evidência; código antigo não pede nova PoC', async () => withDb(async (db) => {
@@ -121,6 +122,7 @@ test('executor mede idade e grava evidência; código antigo não pede nova PoC'
   });
   const result = await executor({ findingId: FINDING.id, action: 'establish_novelty' });
   assert.equal(result.status, 'completed');
+  assert.equal(result.queueMutated, true);
   assert.match(result.reason, /fora da janela/);
   assert.equal(latestCodeAgeEvidence(db, FINDING.id).codeAgeDays, 371);
 }));
@@ -142,6 +144,7 @@ test('receita registrada executa regressão isolada e grava validação reservad
   });
   const result = await executor({ findingId: FINDING.id, action: 'establish_novelty' });
   assert.equal(result.status, 'completed');
+  assert.equal(result.queueMutated, true);
   const validations = listValidations(db, FINDING.id);
   assert.equal(validations[0].type, 'isolated_regression');
   assert.equal(validations[0].evidence.provenance, 'regression-sandbox');

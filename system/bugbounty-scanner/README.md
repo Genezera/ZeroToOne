@@ -19,7 +19,12 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   Suporta somente wildcard DNS explícito `*.example.com` (sem incluir o
   domínio raiz); exclusões prevalecem. Validade ausente/inválida e flags
   não booleanas falham fechado. GitHub `owner/repo` e a URL do mesmo repo
-  são aliases, mas prefixos, substrings e caminhos arbitrários não são.
+  são aliases. Em snapshot oficial, uma URL GitHub `owner/repo` completa
+  nas instruções de um ativo agregado também é aceita; texto livre, URL de
+  organização, prefixos, substrings e caminhos arbitrários não expandem o
+  escopo. Ativo ausente de um snapshot ao vivo da HackerOne fica retido até
+  mudança do escopo ou revisão humana explícita, sem gerar verificação
+  automática repetida.
 - `bugbounty-health.yml` executa o health check na nuvem por agendamento
   de 30 minutos e ao concluir um dos cinco jobs operacionais. Tem somente
   permissões de leitura, timeout de três minutos e não usa o writer lock.

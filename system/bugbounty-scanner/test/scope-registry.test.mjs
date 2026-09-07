@@ -111,6 +111,25 @@ test('identificadores opacos, app URLs e organizações preservam igualdade sem 
   }
 });
 
+test('snapshot oficial resolve somente repositórios GitHub explicitamente ligados nas instruções', () => {
+  const snap = buildScopeSnapshot({...BASE, sourceType:'hackerone_api_live', assets:[
+    {
+      assetIdentifier:'Mattermost Plugins', eligibleForSubmission:true, eligibleForBounty:true,
+      instruction:'- [Zoom](https://github.com/mattermost/mattermost-plugin-zoom)\n- Organização: https://github.com/mattermost',
+    },
+    {
+      assetIdentifier:'Other publicly-released plugins', eligibleForSubmission:true, eligibleForBounty:false,
+      instruction:'Plugins not officially supported are informational only.',
+    },
+  ]});
+  const zoom = scopeGate(snap, 'mattermost/mattermost-plugin-zoom', snap.capturedAt);
+  assert.equal(zoom.allowed, true);
+  assert.equal(zoom.bountyEligible, true);
+  for (const value of ['mattermost/mattermost-plugin-zoom-extra', 'mattermost/mattermost-plugin-confluence', 'mattermost/anything']) {
+    assert.equal(assetInScope(snap, value), null, value);
+  }
+});
+
 test('assetRefForFinding recupera owner/repo do ID quando asset e file são caminhos relativos', () => {
   const finding = {
     id: 'OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding',
@@ -146,6 +165,8 @@ test('scopeGate bloqueia ativo fora do snapshot — nunca assume elegível por p
   const gate = scopeGate(snap, 'circlefin/nao-rastreado', '2026-08-30T00:00:00.000Z');
   assert.equal(gate.allowed, false);
   assert.match(gate.reason, /não encontrado/);
+  assert.equal(gate.snapshotSourceType, snap.sourceType);
+  assert.equal(gate.snapshotContentHash, snap.contentHash);
 });
 
 test('scopeGate permite ativo em escopo e elegível para recompensa', () => {

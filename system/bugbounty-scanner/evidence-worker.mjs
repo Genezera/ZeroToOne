@@ -136,6 +136,7 @@ export async function runEvidenceCycle({ state, plan, executor, maxTasks = 4, no
   const selected = runnableOrders(next, started.getTime()).slice(0, Math.max(0, maxTasks));
   const summary = { planned: plan?.actionable?.length || 0, claimed: selected.length, completed: 0, needsHuman: 0, failed: 0 };
   let evidenceMutated = false;
+  let queueMutated = false;
   for (const order of selected) {
     const attemptedAt = now();
     order.status = 'running';
@@ -145,6 +146,7 @@ export async function runEvidenceCycle({ state, plan, executor, maxTasks = 4, no
     try {
       const result = await executor(order);
       evidenceMutated ||= result?.evidenceMutated === true;
+      queueMutated ||= result?.queueMutated === true;
       order.result = {
         reason: String(result?.reason || 'executor não informou resultado').slice(0, 2000),
         ...(result?.evidence ? { evidence: result.evidence } : {}),
@@ -174,7 +176,7 @@ export async function runEvidenceCycle({ state, plan, executor, maxTasks = 4, no
       startedAt: started.toISOString(), finishedAt: now().toISOString(), ...summary,
     }].slice(-MAX_RUN_HISTORY);
   }
-  return { state: next, summary, changed: JSON.stringify(next) !== JSON.stringify(state || emptyEvidenceState()), evidenceMutated };
+  return { state: next, summary, changed: JSON.stringify(next) !== JSON.stringify(state || emptyEvidenceState()), evidenceMutated, queueMutated };
 }
 
 function command(gitExe, args, options = {}) {
@@ -302,7 +304,7 @@ export function createEvidenceExecutor({
       });
       const needsImpact = order.action === 'assess_impact';
       return {
-        status: needsImpact ? 'needs_human' : 'completed', evidenceMutated: true,
+        status: needsImpact ? 'needs_human' : 'completed', evidenceMutated: true, queueMutated: true,
         reason: needsImpact
           ? 'regressão reproduzida isoladamente; controle do atacante, vítima e impacto ainda exigem avaliação explícita'
           : 'regressão verificada automaticamente no parent e no commit introdutor com o mesmo teste',
@@ -324,18 +326,18 @@ export function createEvidenceExecutor({
         });
       }
       if (Number(age.codeAgeDays) * DAY_MS > MAX_VERIFIED_REGRESSION_AGE_MS) {
-        return { status: 'completed', evidenceMutated: true,
+        return { status: 'completed', evidenceMutated: true, queueMutated: true,
           reason: `histórico git confirma exposição de ${age.codeAgeDays} dias; fora da janela anti-duplicate de 48h`,
           evidence: { method: age.method, codeAgeDays: age.codeAgeDays, commit: age.lastCommitSha } };
       }
-      return { status: 'needs_human', evidenceMutated: true,
+      return { status: 'needs_human', evidenceMutated: true, queueMutated: true,
         reason: 'código recente, mas falta receita de regressão que compare parent e commit introdutor com o mesmo teste' };
     }
 
     if (order.action === 'verify_prior_art') {
       if (!recipe.priorArt) return { status: 'needs_human', reason: 'faltam três queries específicas e programHandle em evidence-recipes.json' };
       const result = await searchPriorArt(db, finding.id, recipe.priorArt);
-      return { status: 'needs_human', evidenceMutated: true,
+      return { status: 'needs_human', evidenceMutated: true, queueMutated: true,
         reason: result.candidateCount
           ? `${result.candidateCount} correspondência(s) pública(s) exigem classificação humana`
           : 'busca pública completa sem correspondência; ainda falta vincular noveltyProof e risco, e reports privados permanecem invisíveis',
@@ -372,7 +374,7 @@ export async function runEvidenceWorker({
     const initial = loadEvidenceState(statePath);
     const executor = createEvidenceExecutor({ db, recipes, policy, repoRoot, now });
     const cycle = await runEvidenceCycle({ state: initial, plan, executor, maxTasks, now });
-    if (cycle.evidenceMutated) exportFindingsToQueueJsonl(db, queuePath);
+    if (cycle.queueMutated) exportFindingsToQueueJsonl(db, queuePath);
     if (cycle.changed || cycle.evidenceMutated) saveEvidenceState(statePath, cycle.state);
     closeDb(db);
     db = null;
