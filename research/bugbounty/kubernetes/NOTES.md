@@ -1485,3 +1485,22 @@ reapendidas pelo bug conhecido de `migrate-to-v2.mjs` (reapêndice de
 eventos históricos já presentes, verificado programaticamente por
 `type+ts+findingId` — 100% duplicatas) — descartado via `git checkout --`
 antes do commit, não perpetuado. `export-queue` rodado ao final.
+
+## Rodada 2026-09-07 (segundo trigger da mesma manhã) — deep-read kubelet/credentialprovider
+
+Fila 100% bloqueada de novo (list-pending vazio; os 3 verify_scope de
+Mattermost seguem presos por egress bloqueado a bugcrowd.com nesta sessão
+cloud — reconfirmado ao vivo, `WebFetch` retornou `EGRESS_BLOCKED`, mesma
+causa raiz já documentada na rodada anterior; nenhuma informação nova).
+Leitura profunda proativa em `kubernetes/kubelet`
+(`pkg/credentialprovider/keyring.go`, `pkg/credentialprovider/plugin/plugin.go`,
+`pkg/credentialprovider/secrets/secrets.go` — matching de credenciais de
+registry por imagem e o plugin exec de credential provider). Nenhum achado
+reportável. Uma observação de robustez anotada em `deep-read-log.json`:
+a checagem anti-eco do service account token de volta como senha do
+registry (`plugin.go`, quando `cacheType != Token`) só compara
+`authConfig.Password`, não `Auth`/`IdentityToken`/`RegistryToken` — mas
+como o credential provider plugin é configurado pelo próprio admin do
+cluster (binário local, não input de pod/usuário), isso não abre
+superfície de ataque nova, só reduz a robustez de uma rede de segurança
+best-effort contra plugin mal-comportado. Não virou finding.
