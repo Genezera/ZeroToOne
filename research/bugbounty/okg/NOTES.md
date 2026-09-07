@@ -1587,3 +1587,63 @@ sem achado nos 4.
 `deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
 49→53). Clone temporário removido. `export-queue` rodado ao final da
 rodada.
+
+## Rodada 2026-09-07 #10 (rotina agendada, gatilho push) — TERCEIRO achado real, panic/DoS em `coins/stellar/strkey`
+
+`program-policy.json`/`check-program "OKG"` conferidos no passo 0:
+`blocked:false`. `research-plan` seguiu com `actionable: []` (mesmos
+motivos held das rodadas anteriores). Leitura profunda proativa: 4
+arquivos novos em `okx/go-wallet-sdk`, escolhidos por adjacência a
+sign/verify/derive ainda não cobertos — `coins/oracle/vrf/proof/key_v2.go`
++ `crypto.go` (porte direto do VRF da Chainlink, nonce sempre via
+`crypto/rand`, auto-verificação antes de devolver a prova — sem achado)
+e `coins/zksync/core/zk_signer.go` (monta/assina mensagens com campos de
+largura fixa, mesmo padrão já auditado em `signing_utils.go` — sem
+achado).
+
+O quarto arquivo, `coins/stellar/strkey/signed_payload.go`, rendeu
+achado real: `DecodeSignedPayload` faz `raw[:32]`/`raw[32:]` sem checar
+`len(raw)>=32` antes. `Decode()` (`main.go`, função genérica reusada por
+toda version byte) só exige `len(raw)>=3` — sem mínimo de payload
+específico por tipo — então um StrKey `P...` com checksum CRC16 válido
+(não é segredo, qualquer atacante computa) mas payload menor que 32
+bytes passa `Decode()` e panica dentro de `DecodeSignedPayload`.
+Alcançabilidade pública confirmada por grep: `xdr.SignerKey.SetAddress`
+chama `DecodeSignedPayload` sem `recover()` sempre que o version byte é
+`VersionByteSignedPayload` — `SetAddress` é API pública de alto nível
+que uma wallet chamaria com endereço fornecido por usuário/terceiro (ex.:
+signer de uma operação `SetOptions`).
+
+Ceticismo aplicado com PoC real (não Solidity, então sem Foundry — usei
+`go test` local, que é exatamente o tipo de reprodução determinística
+que o gate `corroborated_static->reproduced_local` aceita, não um
+validador inventado): escrevi `poc_panic_test.go` usando a própria
+`Encode()` do pacote pra gerar `PAAQEA4HUY` (payload de 3 bytes, checksum
+real e válido) e confirmei o panic real: `runtime error: slice bounds
+out of range [:32] with capacity 15`. `record-validation
+--type=go_test_poc --result=pass` com a saída literal do teste,
+`corroborated_static`→`reproduced_local` aceito pelo gate genérico de
+validação (não exige `foundry_poc` especificamente).
+
+`check-scope "OKG" "okx/go-wallet-sdk"` → `allowed:true`,
+`bountyEligible:true`, `maxSeverity:critical`. `deploymentEvidence`
+registrada com `confidence="medium"`: commit `12fec6b0` confirmado como
+HEAD real de `origin/main` (branch padrão), `git tag -l` vazio no repo
+inteiro (mesmo padrão já documentado nas rodadas #5-#9 pros outros dois
+achados) — sem camada de release/tag pra ancorar `confidence="high"`, só
+confirmação de que o código lido é exatamente o publicado agora no
+branch default. `reproduced_local`→`scope_verified` recusado
+corretamente pelo gate profissional (`confidence="medium"` não é
+`"high"`) — nada forçado, mesmo padrão estrutural que já bloqueia os
+dois achados anteriores neste mesmo programa. Estado final:
+`reproduced_local`.
+
+Impacto documentado como DoS local (panic derruba a goroutine/processo
+chamador) — não é corrupção de fundos, chave privada ou bypass de
+autenticação; severidade real fica pra avaliação humana, não inflada
+aqui.
+
+`deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
+53→57). Clone temporário (incluindo `go get`/`go mod tidy` local só
+pra rodar o teste, dependências vêm de `proxy.golang.org` público, sem
+credencial) removido. `export-queue` rodado ao final da rodada.
