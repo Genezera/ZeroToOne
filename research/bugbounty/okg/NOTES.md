@@ -1204,3 +1204,115 @@ não só por não "parecer" igual.
 estado nesta rodada em OKG (os 8 achados-irmãos já retidos em
 `below_campaign_impact`/`reproduced_local` seguem sem mudança).
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #4 (rotina agendada, gatilho push) — ACHADO grave real: bypass completo de verificação de assinatura MultiKey, com PoC executada, diferente estruturalmente dos 8 irmãos anteriores (afeta outra parte, não só o próprio chamador)
+
+`program-policy.json`/`check-program` conferidos no passo 0: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum tocado. `research-plan`
+trouxe só os 4 `verify_scope` de Mattermost como `actionable` do banco
+inteiro (ver `mattermost/NOTES.md` — 16ª rodada consecutiva na mesma
+situação, bloqueio estrutural de `bountyEligible` no Bugcrowd, nada de
+novo lá). `list-pending` = 0.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`:
+`okx/go-wallet-sdk` (38 arquivos lidos, 4% coberto) tinha o maior espaço
+livre entre os candidatos liberados. Clone raso público, priorizei
+`coins/aptos/v2/crypto/` (autenticação/assinatura no nome do diretório,
+nunca tocado nesta campanha): `authenticationKey.go` (derivação/BCS, sem
+achado), `authenticator.go` (dispatcher genérico `AccountAuthenticator`,
+sem achado direto), `multiKey.go` (445 linhas).
+
+**ACHADO CONFIRMADO com PoC real, diferente em natureza dos 8 irmãos
+panic/DoS já retidos por `below_campaign_impact`** —
+`MultiKeyBitmap.ContainsKey` (linha 369): `(bm.inner[numByte] & (128 >>
+numBit)) == 1`. Essa comparação só está correta quando `numBit==7`
+(máscara=1); para `numBit` 0..6 a máscara é 128,64,32,16,8,4,2 e o AND,
+quando o bit está de fato setado, produz esse valor de máscara (nunca
+1) — `ContainsKey` retorna `false` pra 7 dos 8 bit-positions possíveis
+em cada byte, esteja o bit setado ou não. `Indices()` (usada por
+`MultiKey.Verify`, linha 45, pra reconstruir a lista real de
+signatário-índices a partir do bitmap recebido) chama `ContainsKey` pra
+cada índice 0..31 — como a checagem está quebrada pra quase todos os
+índices, `Indices()` **descarta silenciosamente** qualquer signatário
+cujo índice não seja ≡7 (mod 8) — ou seja, só 7/15/23/31 sobrevivem.
+Consequência em `MultiKey.Verify`: o loop `for sigIndex, keyIndex :=
+range sig.Bitmap.Indices()` nunca executa nenhuma iteração quando os
+índices reais dos signatários (o caso comum — 0,1,2 pra um 2-de-3, por
+exemplo) não caem em 7/15/23/31, e a função cai direto no `return true`
+final **sem verificar criptograficamente nenhuma assinatura** — o único
+gate anterior é `len(sig.Signatures) >= key.SignaturesRequired`, uma
+CONTAGEM de objetos, aceitando até bytes de assinatura zerados/garbage.
+Bypass completo de verificação de assinatura multisig (CWE-347/CWE-354).
+
+**Diferença estrutural crítica frente aos 8 irmãos já retidos**: os
+irmãos são panics de robustez contra input malformado do PRÓPRIO
+chamador (`impactScope=self_request_only`, sem vítima distinta) — este
+achado engana quem quer que confie no resultado de `Verify()` sobre a
+autorização de OUTRA parte (o titular do MultiKey account): um atacante
+com ZERO chaves privadas consegue forjar uma `MultiKeySignature`
+"válida" que `MultiKey.Verify`/`AccountAuthenticator.Verify`/
+`SignedTransaction.Verify()` (`signedTransaction.go:42`, API pública)
+aceitam como criptograficamente válida. A rede Aptos em si não é afetada
+(validadores rodam verificação real em Move/Rust, independente desta
+SDK) — o dano recai sobre qualquer sistema que use esta SDK Go como
+fonte de verdade pra checar assinatura de terceiro (ex.: serviço de
+custódia validando aprovação multisig off-chain antes de liberar
+fundos). Não confirmado nesta rodada qual produto OKX específico
+consome a função — mesma honestidade dos achados-irmãos.
+
+**PoC real escrita e rodada** (não simulada):
+`coins/aptos/v2/crypto/zzrepro_multikey_bitmap_test.go`, 3 testes contra
+o código de produção real (`go mod tidy` resolveu go.sum do módulo
+`coins/aptos`): (1) `ContainsKey` falso pros índices 0-6 mesmo após
+`AddKey` confirmar presença; (2) `Indices()` com bitmap `{0,1,2}` volta
+slice vazio; (3) end-to-end — `MultiKey` com 3 chaves Ed25519 reais
+(`crypto/rand`), `SignaturesRequired=2`, `MultiKeySignature` forjada com
+2 assinaturas zeradas (sanity-check prévio confirma que essas
+assinaturas FALHAM contra as chaves reais, isolando a causa) —
+`MultiKey.Verify(msg, forgedSig)` retorna **true**. Saída literal do
+`go test -run TestZZRepro -v` registrada via `record-validation
+type=go_manual_poc result=pass`. Transição
+`candidate→corroborated_static→reproduced_local` aceita pelo CLI.
+
+**Achado colateral relevante durante a checagem de novidade**: o próprio
+`multiKey_test.go` do repositório upstream (não deste pipeline) já
+contém o comentário `"Note: ContainsKey implementation has issues"` e
+pula deliberadamente asserções que falhariam — inclusive
+`TestMultiKeyAuthenticator_Interface` comenta exatamente o teste
+negativo que revelaria o bypass (`// assert.False(t,
+auth.Verify([]byte("wrong message")))`, com nota "Skip ... due to
+verification logic issues"). Nenhum teste "feliz" existente
+(`TestMultiKey`) usa índices de signatário ≡7 (mod 8), então a própria
+suíte de testes do repositório nunca exercita o caminho de verificação
+criptográfica real. Isso corrobora fortemente o achado (terceira fonte
+independente batendo no mesmo sintoma) sem constituir prior-art/advisory
+pública — é só um comentário de teste, não um issue/PR de segurança.
+Duplicate-check feito via `mcp__github__search_code`/`search_issues`
+diretamente (`cli.mjs search-prior-art` falhou com HTTP 401, mesma
+limitação de token já documentada nesta campanha): zero resultados
+específicos pra este bug; achei sim a issue pública **#141** (aberta
+2026-09-06, autor `r7eam`) sobre uma vulnerabilidade DIFERENTE e
+não-duplicada (`coins/ton/connect.go::VerifySignProof`, falta de
+binding pubkey↔endereço TON) — mas que sinaliza pesquisa concorrente
+ativa na mesma área (verificação de assinatura/prova) deste repositório,
+risco de corrida por novidade documentado, não descartado.
+`record-duplicate-check` registrado com `foundExisting=false`,
+`noveltyStatus="private_unknown"`, `riskLevel="medium"`.
+
+`check-scope "OKG" "okx/go-wallet-sdk"` confirma `allowed=true,
+bountyEligible=true` (programa HackerOne com scope estruturado real,
+diferente do Bugcrowd/Mattermost). `record-deployment-evidence`
+registrado com `confidence="unverified"` (honestidade: sem tags/release
+no repo pra ancorar contra build exato de produção, mesma barreira dos
+8 irmãos). Tentativa `reproduced_local→scope_verified` corretamente
+recusada pelo CLI (`DeploymentEvidence existe mas confidence="unverified"
+— modo profissional exige confidence="high"`) — não forçado. **Estado
+final: `reproduced_local`**, `impactAssessment.reportable=true`,
+`severityRating="high"`, `impactScope="other_user"` — o achado aparece
+como `actionable`/`establish_novelty` no `research-plan` (não
+`below_campaign_impact`), confirmando que o gate de impacto da campanha
+reconheceu a diferença estrutural frente aos 8 irmãos.
+
+`deep-read-log.json` atualizado (+5 entradas em `okx/go-wallet-sdk`,
+38→43 arquivos). Clone temporário removido. `export-queue` rodado ao
+final da rodada.

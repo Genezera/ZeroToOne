@@ -1448,3 +1448,28 @@ identificado até aqui.
 `deep-read-log.json` atualizado (edição programática via Python).
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #16 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/
+`verify_scope` (`-confluence`, `-msteams-meetings`, `-zoom` em
+`corroborated_static`, `-mscalendar` em `reproduced_local`) — 16ª vez
+consecutiva na mesma data, mesmo bloqueio estrutural de `bountyEligible`
+no dataset Bugcrowd já confirmado por leitura de código na rodada #13
+(sem `refresh-scope-live` pra Bugcrowd). Nada novo a registrar sem
+confirmação manual externa na página oficial (fora do alcance desta
+sessão cloud). Não retocado. `list-pending` (sem `--include-held`) = 0.
+
+Leitura profunda proativa desta rodada foi direcionada a
+`okx/go-wallet-sdk` (programa OKG) em vez de mais um plugin Mattermost —
+ver `okg/NOTES.md` desta mesma data, rodada #4: **achado grave
+confirmado com PoC real** (bypass completo de verificação de assinatura
+MultiKey em `coins/aptos/v2/crypto/multiKey.go`), estruturalmente
+diferente dos achados anteriores deste programa por afetar uma vítima
+distinta do próprio chamador — avançado até `reproduced_local`,
+`impactAssessment.reportable=true`.
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
