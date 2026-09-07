@@ -1318,7 +1318,8 @@
     "lib/plaid/api_client.rb",
     "lib/plaid/configuration.rb",
     "lib/plaid/api_error.rb",
-    "lib/plaid/version.rb"
+    "lib/plaid/version.rb",
+    "lib/plaid/api/plaid_api.rb (23887 linhas, 100% gerado pelo openapi-generator -- confirmado por amostragem: todo metodo segue o mesmo padrao mecanico de construcao de request HTTP (verify required param -> monta header/query/body -> chama call_api), nenhuma logica de autenticacao/verificacao de webhook propria do SDK; grep por \"jwt|JWT|Verify\" so retorna comentarios de doc e nomes de endpoint (/auth/verify etc), nao codigo de verificacao criptografica. lib/plaid.rb (2226 linhas, so autoload/require) tambem confirmado boilerplate. Repositorio plaid-ruby permanece esgotado para leitura profunda -- todos os arquivos hand-written (fora de api/ e models/, 100% gerados) ja cobertos em rodadas anteriores, sem logica de auth propria em lugar nenhum do pacote."
   ],
   "okx/go-wallet-sdk": [
     "coins/aptos/v2/crypto/privateKey.go",
@@ -1443,7 +1444,10 @@
     "src/usePlaidLink.ts (hook central -- so passa token/config direto pro window.Plaid.create do script oficial cdn.plaid.com; sem achado)",
     "src/factory.ts (createPlaid/createPlaidHandler -- renameKeyInObject so copia chaves planas, sem risco de prototype pollution; sem achado)",
     "src/PlaidEmbeddedLink.tsx (embedded link -- token repassado direto ao window.Plaid.createEmbedded, sem dangerouslySetInnerHTML/eval; sem achado)",
-    "src/react-script-hook/index.tsx (useScript -- src do <script> sempre e a constante PLAID_LINK_STABLE_URL hardcoded, nunca input do consumidor; sem achado)"
+    "src/react-script-hook/index.tsx (useScript -- src do <script> sempre e a constante PLAID_LINK_STABLE_URL hardcoded, nunca input do consumidor; sem achado)",
+    "src/PlaidLink.tsx (componente de botao React que envolve usePlaidLink -- so passa className/style como props React normais (sem dangerouslySetInnerHTML/innerHTML), onClick chama open() do hook ja auditado; sem achado)",
+    "src/constants.ts (PLAID_LINK_STABLE_URL hardcoded -- confirma o que ja se sabia via react-script-hook/index.tsx: a URL do script Plaid nunca vem de input do consumidor; sem achado)",
+    "src/types/index.ts (so interfaces TypeScript -- PlaidAccount/PlaidLinkError/metadados de callback, nenhuma logica executavel; sem achado)"
   ],
   "mattermost/mattermost-plugin-gitlab": [
     "server/webhook.go (handleWebhook, linha 79 -- ACHADO: `config.WebhookSecret != signature` compara o header X-Gitlab-Token com string != comum (curto-circuita no primeiro byte diferente) em vez de hmac.Equal/subtle.ConstantTimeCompare -- CWE-208, timing side-channel. Registrado como non_constant_time_hmac_comparison, avancado ate reproduced_local com PoC de timing real (benchstat, +88% p=0.000 no `!=` vulneravel, ~sem diferenca p=0.985 no ConstantTimeCompare). Ver reasoning completo no finding.)",

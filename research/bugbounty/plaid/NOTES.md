@@ -146,3 +146,41 @@ agora estão cobertos em `deep-read-log.json`. Repositório
 profunda proativa até que uma nova versão publique lógica hand-written
 nova. Nenhum achado novo, nenhuma transição de estado neste programa
 nesta rodada.
+
+## Rodada 2026-09-07 #12 (rotina agendada, gatilho push)
+
+`program-policy.json` conferido no passo 0: Plaid segue `roeReviewed:true`,
+`aiResearchBanned:false`, liberado. `list-pending` global = 0 (só
+`verify_scope` do Mattermost como `actionable`, sem novidade — ver
+`mattermost/NOTES.md` desta mesma data). Leitura profunda proativa
+direcionada a `plaid/plaid-ruby` e `plaid/react-plaid-link`, os dois
+repositórios com menos arquivos lidos no ranking de
+`list-deep-read-candidates.mjs` (4 cada).
+
+- `plaid/plaid-ruby` — clone raso local pra confirmar por amostragem
+  (em vez de só supor) que os dois arquivos hand-written ainda não
+  registrados também não têm lógica: `lib/plaid/api/plaid_api.rb`
+  (23887 linhas) é inteiramente gerado pelo `openapi-generator` — todo
+  método segue o mesmo padrão mecânico (`verify required param` ->
+  monta header/query/body -> `call_api`); grep por `jwt|JWT|Verify`
+  só retorna nomes de endpoint (`/auth/verify` etc.) e comentários de
+  doc, nenhum código de verificação criptográfica própria do SDK.
+  `lib/plaid.rb` (2226 linhas) confirmado só `autoload`/`require`.
+  Conclusão reforçada da rodada de 04/09: repositório esgotado —
+  toda a lógica de negócio real (webhook signature verification, JWT/JWKS)
+  fica do lado do consumidor da lib, documentada nos docs do Plaid, não
+  implementada neste pacote.
+- `plaid/react-plaid-link` — 3 arquivos que faltavam: `PlaidLink.tsx`
+  (componente de botão, só repassa `className`/`style` como props React
+  normais, sem `dangerouslySetInnerHTML`; `onClick` chama o `open()` já
+  auditado do hook `usePlaidLink`), `constants.ts` (confirma
+  `PLAID_LINK_STABLE_URL` hardcoded, nunca influenciado por input do
+  consumidor — reforça a conclusão de `react-script-hook/index.tsx` já
+  lido), `types/index.ts` (só interfaces TypeScript de metadados de
+  callback, nenhuma lógica executável). Sem achado em nenhum. Todos os
+  arquivos `.ts`/`.tsx` de `src/` (fora dos `.test.tsx`) agora cobertos —
+  repositório também esgotado para leitura profunda proativa.
+
+`deep-read-log.json` atualizado (edição programática via Python).
+`export-queue` rodado ao final da rodada — nenhum achado novo, nenhuma
+transição de estado neste programa nesta rodada.

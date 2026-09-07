@@ -1259,3 +1259,35 @@ confirmado com PoC local**.
 reconstrução manual do arquivo inteiro). `export-queue` rodado ao final
 da rodada (mudança de estado nesta rodada: 1 finding novo
 `candidate->corroborated_static->reproduced_local`).
+
+## Rodada 2026-09-07 #12 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/`verify_scope`
+(`-confluence`, `-msteams-meetings`, `-zoom` em `corroborated_static`, e
+agora também o achado novo de `-mscalendar` da rodada #11 em
+`reproduced_local`) — 12ª vez consecutiva na mesma data com o mesmo
+bloqueio: `scope-snapshots/mattermost-public-bug-bounty-engagement.json`
+é `sourceType: community_dataset_structured` (arkadiyt/bounty-targets-data),
+todo `eligibleForBounty` vem `null` estruturalmente — não é um valor que
+uma nova leitura desta sessão resolve, exige confirmação humana na página
+oficial do Bugcrowd (login). `list-pending` (sem `--include-held`) = 0
+confirmado.
+
+Tentei `cli.mjs search-prior-art` de novo para o achado `-mscalendar`
+(mesma diligência da rodada #11, pra ver se a limitação de rede tinha
+sido resolvida): ainda `GitHub API HTTP 401` — sem mudança, documentado
+apenas, sem retrabalho no finding (reasoning já registra a mesma
+limitação).
+
+Leitura profunda proativa desta rodada foi direcionada para fora de
+Mattermost — `plaid/plaid-ruby` (fechamento: `lib/plaid/api/plaid_api.rb`,
+23887 linhas, confirmado 100% gerado pelo openapi-generator, sem lógica de
+auth própria) e `plaid/react-plaid-link` (`PlaidLink.tsx`, `constants.ts`,
+`types/index.ts` — sem achado, repositório agora com todos os arquivos
+hand-written cobertos). Ver `research/bugbounty/plaid/NOTES.md` desta
+mesma data para detalhe completo.
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
