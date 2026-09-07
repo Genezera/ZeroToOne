@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openDb, closeDb, stateCounts, listFindings, listSubmissions, latestImpactAssessment, latestDuplicateCheck, latestReport, latestDeploymentEvidence, listValidations } from './db.mjs';
+import { openDb, closeDb, stateCounts, listFindings, listSubmissions, latestImpactAssessment, latestDuplicateCheck, latestReport, latestDeploymentEvidence, latestCodeAgeEvidence, listValidations } from './db.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
 import { runReadinessAudit } from './readiness-audit.mjs';
 import { checkCloudWorkflowHealth } from './cloud-workflow-health.mjs';
@@ -98,7 +98,7 @@ export async function runMissionControl({
         contextFor: (finding) => ({
           impactAssessment: latestImpactAssessment(db, finding.id), duplicateCheck: latestDuplicateCheck(db, finding.id),
           report: latestReport(db, finding.id), deploymentEvidence: latestDeploymentEvidence(db, finding.id),
-          validations: listValidations(db, finding.id),
+          validations: listValidations(db, finding.id), codeAgeEvidence: latestCodeAgeEvidence(db, finding.id),
         }),
       });
     } finally { closeDb(db); }
