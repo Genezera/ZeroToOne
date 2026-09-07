@@ -789,5 +789,8 @@
   "OKG::okx/go-wallet-sdk/coins/oasis/account.go::NewAddress+SignTransaction::ai_deep_read_finding": "confirmado",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams-meetings/server/http.go::completeUserOAuth::oauth2_login_csrf_account_linking": "confirmado",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/user.go::CompleteOAuth2::oauth2_login_csrf_account_linking": "confirmado",
-  "OKG::okx/go-wallet-sdk/coins/near/account.go::PrivateKeyToAddr::ai_deep_read_finding": "inconclusivo"
+  "OKG::okx/go-wallet-sdk/coins/near/account.go::PrivateKeyToAddr::ai_deep_read_finding": "inconclusivo",
+  "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiEd25519.go::MultiEd25519PublicKey.Verify::multied25519_bitmap_ignored_index_oob_panic": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKeyBitmap.ContainsKey+MultiKey.Verify::multikey_bitmap_signature_verification_bypass": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-mscalendar/calendar/engine/notification.go::processNotification::non_constant_time_hmac_comparison": "confirmado"
 }

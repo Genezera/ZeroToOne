@@ -10,7 +10,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 15 | 9 | 4 | 2 | 27% |
+| ai_deep_read_finding | go | 16 | 10 | 4 | 2 | 25% |
 | ai_deep_read_finding | js | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
@@ -29,7 +29,8 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | known_vulnerable_dependency | js | 223 | 0 | 223 | 0 | 100% |
 | known_vulnerable_dependency | jvm | 4 | 0 | 4 | 0 | 100% |
 | known_vulnerable_dependency | unknown | 2 | 0 | 2 | 0 | 100% |
-| non_constant_time_hmac_comparison | go | 2 | 1 | 1 | 0 | 50% |
+| multikey_bitmap_signature_verification_bypass | go | 1 | 1 | 0 | 0 | 0% |
+| non_constant_time_hmac_comparison | go | 3 | 2 | 1 | 0 | 33% |
 | path_traversal_arbitrary_file_read_risk | javascript | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | go | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | js | 2 | 0 | 2 | 0 | 100% |
@@ -76,7 +77,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
 | ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 4 | 3 | 1 | 0 | 25% |
-| ai_deep_read_finding | OKG | 10 | 5 | 0 | 5 | 0% |
+| ai_deep_read_finding | OKG | 11 | 6 | 0 | 5 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
@@ -95,8 +96,9 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | known_vulnerable_dependency | OKG | 72 | 0 | 72 | 0 | 100% |
 | known_vulnerable_dependency | Plaid | 48 | 0 | 48 | 0 | 100% |
 | known_vulnerable_dependency | Vercel Open Source | 82 | 0 | 82 | 0 | 100% |
+| multikey_bitmap_signature_verification_bypass | OKG | 1 | 1 | 0 | 0 | 0% |
 | non_constant_time_hmac_comparison | Kubernetes | 1 | 1 | 0 | 0 | 0% |
-| non_constant_time_hmac_comparison | Mattermost Public Bug Bounty Engagement  | 1 | 0 | 1 | 0 | 100% |
+| non_constant_time_hmac_comparison | Mattermost Public Bug Bounty Engagement  | 2 | 1 | 1 | 0 | 50% |
 | path_traversal_arbitrary_file_read_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | Kubernetes | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |

@@ -1,18 +1,18 @@
 {
   "byTypeLanguage": {
-    "ai_deep_read_finding::Go": {
-      "reviewed": 3,
-      "confirmed": 0,
-      "falsePositive": 0,
-      "other": 3,
-      "fpRate": 0
+    "ai_deep_read_finding::go": {
+      "reviewed": 16,
+      "confirmed": 10,
+      "falsePositive": 4,
+      "other": 2,
+      "fpRate": 0.25
     },
-    "unchecked_call_return::solidity": {
-      "reviewed": 10,
-      "confirmed": 1,
-      "falsePositive": 9,
+    "semgrep_use_of_sha1::go": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
       "other": 0,
-      "fpRate": 0.9
+      "fpRate": 1
     },
     "slither_incorrect_return::solidity": {
       "reviewed": 4,
@@ -21,12 +21,12 @@
       "other": 0,
       "fpRate": 1
     },
-    "semgrep_use_of_sha1::go": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
+    "unchecked_call_return::solidity": {
+      "reviewed": 10,
+      "confirmed": 1,
+      "falsePositive": 9,
       "other": 0,
-      "fpRate": 1
+      "fpRate": 0.9
     },
     "semgrep_use_of_unsafe_block::go": {
       "reviewed": 231,
@@ -42,17 +42,17 @@
       "other": 0,
       "fpRate": 1
     },
-    "slither_msg_value_in_nonpayable::solidity": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
     "slither_divide_before_multiply::solidity": {
       "reviewed": 4,
       "confirmed": 0,
       "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_msg_value_in_nonpayable::solidity": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
       "other": 0,
       "fpRate": 1
     },
@@ -84,26 +84,19 @@
       "other": 0,
       "fpRate": 1
     },
-    "slither_uninitialized_local::solidity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "reentrancy_risk::solidity": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
     "semgrep_detect_child_process::js": {
       "reviewed": 27,
       "confirmed": 3,
       "falsePositive": 24,
       "other": 0,
       "fpRate": 0.8888888888888888
+    },
+    "slither_uninitialized_local::solidity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
     },
     "slither_arbitrary_send_eth::solidity": {
       "reviewed": 1,
@@ -116,6 +109,13 @@
       "reviewed": 1,
       "confirmed": 0,
       "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "reentrancy_risk::solidity": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
       "other": 0,
       "fpRate": 1
     },
@@ -175,19 +175,19 @@
       "other": 0,
       "fpRate": 1
     },
-    "eval_usage::js": {
-      "reviewed": 11,
-      "confirmed": 0,
-      "falsePositive": 11,
-      "other": 0,
-      "fpRate": 1
-    },
     "command_injection_risk::js": {
       "reviewed": 7,
       "confirmed": 1,
       "falsePositive": 6,
       "other": 0,
       "fpRate": 0.8571428571428571
+    },
+    "eval_usage::js": {
+      "reviewed": 11,
+      "confirmed": 0,
+      "falsePositive": 11,
+      "other": 0,
+      "fpRate": 1
     },
     "ai_deep_read_finding::swift": {
       "reviewed": 2,
@@ -231,6 +231,13 @@
       "other": 0,
       "fpRate": 0
     },
+    "ai_deep_read_finding::clarity": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
     "ai_deep_read_finding::kotlin": {
       "reviewed": 4,
       "confirmed": 0,
@@ -242,13 +249,6 @@
       "reviewed": 4,
       "confirmed": 0,
       "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
-    "ai_deep_read_finding::clarity": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
       "other": 0,
       "fpRate": 1
     },
@@ -294,13 +294,6 @@
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::go": {
-      "reviewed": 15,
-      "confirmed": 9,
-      "falsePositive": 4,
-      "other": 2,
-      "fpRate": 0.26666666666666666
-    },
     "unguarded_transfer::clarity": {
       "reviewed": 2,
       "confirmed": 0,
@@ -336,6 +329,27 @@
       "other": 0,
       "fpRate": 1
     },
+    "multikey_bitmap_signature_verification_bypass::go": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
+    "non_constant_time_hmac_comparison::go": {
+      "reviewed": 3,
+      "confirmed": 2,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.3333333333333333
+    },
+    "ai_deep_read_finding::Go": {
+      "reviewed": 3,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 3,
+      "fpRate": 0
+    },
     "tainted_data_flow::js": {
       "reviewed": 1,
       "confirmed": 0,
@@ -356,13 +370,6 @@
       "falsePositive": 1,
       "other": 0,
       "fpRate": 1
-    },
-    "non_constant_time_hmac_comparison::go": {
-      "reviewed": 2,
-      "confirmed": 1,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 0.5
     },
     "sql_injection_risk::go": {
       "reviewed": 2,
@@ -430,18 +437,18 @@
   },
   "byTypeProgram": {
     "ai_deep_read_finding::OKG": {
-      "reviewed": 10,
-      "confirmed": 5,
+      "reviewed": 11,
+      "confirmed": 6,
       "falsePositive": 0,
       "other": 5,
       "fpRate": 0
     },
-    "unchecked_call_return::Circle BBP": {
-      "reviewed": 10,
-      "confirmed": 1,
-      "falsePositive": 9,
+    "semgrep_use_of_sha1::OKG": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
       "other": 0,
-      "fpRate": 0.9
+      "fpRate": 1
     },
     "slither_incorrect_return::Circle BBP": {
       "reviewed": 4,
@@ -450,12 +457,12 @@
       "other": 0,
       "fpRate": 1
     },
-    "semgrep_use_of_sha1::OKG": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
+    "unchecked_call_return::Circle BBP": {
+      "reviewed": 10,
+      "confirmed": 1,
+      "falsePositive": 9,
       "other": 0,
-      "fpRate": 1
+      "fpRate": 0.9
     },
     "semgrep_use_of_unsafe_block::OKG": {
       "reviewed": 35,
@@ -471,17 +478,17 @@
       "other": 0,
       "fpRate": 1
     },
-    "slither_msg_value_in_nonpayable::Circle BBP": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
-      "other": 0,
-      "fpRate": 1
-    },
     "slither_divide_before_multiply::Circle BBP": {
       "reviewed": 4,
       "confirmed": 0,
       "falsePositive": 4,
+      "other": 0,
+      "fpRate": 1
+    },
+    "slither_msg_value_in_nonpayable::Circle BBP": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 1,
       "other": 0,
       "fpRate": 1
     },
@@ -513,26 +520,19 @@
       "other": 0,
       "fpRate": 1
     },
-    "slither_uninitialized_local::Circle BBP": {
-      "reviewed": 2,
-      "confirmed": 0,
-      "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "reentrancy_risk::Circle BBP": {
-      "reviewed": 4,
-      "confirmed": 0,
-      "falsePositive": 4,
-      "other": 0,
-      "fpRate": 1
-    },
     "semgrep_detect_child_process::Vercel Open Source": {
       "reviewed": 27,
       "confirmed": 3,
       "falsePositive": 24,
       "other": 0,
       "fpRate": 0.8888888888888888
+    },
+    "slither_uninitialized_local::Circle BBP": {
+      "reviewed": 2,
+      "confirmed": 0,
+      "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
     },
     "slither_arbitrary_send_eth::Circle BBP": {
       "reviewed": 1,
@@ -545,6 +545,13 @@
       "reviewed": 1,
       "confirmed": 0,
       "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "reentrancy_risk::Circle BBP": {
+      "reviewed": 4,
+      "confirmed": 0,
+      "falsePositive": 4,
       "other": 0,
       "fpRate": 1
     },
@@ -618,19 +625,19 @@
       "other": 0,
       "fpRate": 1
     },
-    "eval_usage::Vercel Open Source": {
-      "reviewed": 11,
-      "confirmed": 0,
-      "falsePositive": 11,
-      "other": 0,
-      "fpRate": 1
-    },
     "command_injection_risk::Vercel Open Source": {
       "reviewed": 7,
       "confirmed": 1,
       "falsePositive": 6,
       "other": 0,
       "fpRate": 0.8571428571428571
+    },
+    "eval_usage::Vercel Open Source": {
+      "reviewed": 11,
+      "confirmed": 0,
+      "falsePositive": 11,
+      "other": 0,
+      "fpRate": 1
     },
     "ai_deep_read_finding::Block Open Source": {
       "reviewed": 6,
@@ -674,17 +681,17 @@
       "other": 0,
       "fpRate": 0
     },
-    "known_vulnerable_dependency::Block Open Source": {
-      "reviewed": 6,
-      "confirmed": 0,
-      "falsePositive": 6,
-      "other": 0,
-      "fpRate": 1
-    },
     "ai_deep_read_finding::StackingDAO": {
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::Block Open Source": {
+      "reviewed": 6,
+      "confirmed": 0,
+      "falsePositive": 6,
       "other": 0,
       "fpRate": 1
     },
@@ -709,17 +716,17 @@
       "other": 0,
       "fpRate": 1
     },
-    "known_vulnerable_dependency::OKG": {
-      "reviewed": 72,
-      "confirmed": 0,
-      "falsePositive": 72,
-      "other": 0,
-      "fpRate": 1
-    },
     "auth_arg_inconsistency::StackingDAO": {
       "reviewed": 1,
       "confirmed": 0,
       "falsePositive": 1,
+      "other": 0,
+      "fpRate": 1
+    },
+    "known_vulnerable_dependency::OKG": {
+      "reviewed": 72,
+      "confirmed": 0,
+      "falsePositive": 72,
       "other": 0,
       "fpRate": 1
     },
@@ -779,6 +786,20 @@
       "other": 0,
       "fpRate": 1
     },
+    "multikey_bitmap_signature_verification_bypass::OKG": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
+    },
+    "non_constant_time_hmac_comparison::Mattermost Public Bug Bounty Engagement ": {
+      "reviewed": 2,
+      "confirmed": 1,
+      "falsePositive": 1,
+      "other": 0,
+      "fpRate": 0.5
+    },
     "ai_deep_read_finding::Mattermost Public Bug Bounty Engagement ": {
       "reviewed": 4,
       "confirmed": 3,
@@ -804,13 +825,6 @@
       "reviewed": 2,
       "confirmed": 0,
       "falsePositive": 2,
-      "other": 0,
-      "fpRate": 1
-    },
-    "non_constant_time_hmac_comparison::Mattermost Public Bug Bounty Engagement ": {
-      "reviewed": 1,
-      "confirmed": 0,
-      "falsePositive": 1,
       "other": 0,
       "fpRate": 1
     },
