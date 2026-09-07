@@ -1654,3 +1654,45 @@ Nenhum finding novo criado — resultado normal e válido desta rodada.
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #23 (rotina agendada, gatilho push, continuação)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `research-plan`
+trouxe `actionable: 0` de novo (`list-pending` = 0) — mesmos achados
+já documentados em `held` por `scope_not_confirmed`/`below_campaign_impact`,
+sem evidência nova, nenhuma transição tentada.
+
+Leitura profunda proativa direcionada a `mattermost-plugin-confluence`
+(candidato liberado por `list-deep-read-candidates.mjs`): 10 arquivos
+novos (`http.go`, `confluence_server_v2.go`, `serializer/confluence_cloud.go`,
+`service/mentions.go`, `notification.go`, `service/storage_xhtml.go`,
+`forge_reset.go`, `forge_poller.go`, `command.go`, revisita de
+`controller.go`). HIPÓTESE levantada: `GetPageDisplayNameForPageEvents`/
+`GetSpaceDisplayNameForPageEvents`/`SlackAttachment.Title`/
+`buildMentionMessage` constroem mensagens do bot via
+`fmt.Sprintf("[%s](%s)", ...)` inserindo `Page.Title`/`Comment.Container.Title`/
+`Space.Name` sem escapar `]` — em teoria permitindo que um título malicioso
+quebre a sintaxe do link Markdown e injete um href arbitrário dentro de
+uma mensagem do bot oficial em canal compartilhado (phishing/spoofing de
+link). TENTATIVA DE REFUTAÇÃO via WebSearch: confirmado que o Confluence
+recusa (HTTP 400) títulos de página contendo `[`/`]` — o vetor via
+`Page.Title`/`Comment.Container.Title` está refutado na prática, o que
+derruba a maioria dos call-sites. Resíduo genuinamente não confirmado
+nem refutado: `Space.Name` (distinto de `Space.Key`, que é comprovadamente
+alfanumérico apenas) pode ou não aceitar colchetes — sem instância
+Confluence real pra testar (fora do escopo desta pipeline, só leitura de
+código público), não dá pra decidir com confiança suficiente. Registrado
+como candidato e movido para `inconclusive` (não `false_positive`, porque
+o resíduo do `Space.Name` continua genuinamente em aberto; não
+`corroborated_static`, porque a hipótese principal caiu) — ver finding
+`Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/confluence_server_v2.go::GetNotificationPost::markdown_link_injection`.
+Nota lateral: `verifyHTTPSecret` em `controller.go` confirmado seguro
+(`subtle.ConstantTimeCompare`, mesmo padrão do `jira`) — não repete a
+família `non_constant_time_hmac_comparison` já fechada nos plugins
+irmãos (gitlab/zoom/mscalendar). Fluxo do Forge bridge (`forge_reset.go`/
+`forge_poller.go`) gated por `IsSystemAdmin`, HMAC correto, redirects
+desabilitados propositalmente (SSRF já mitigado pelos próprios devs) —
+sem achado. `deep-read-log.json` atualizado com os 10 arquivos.
+
+`export-queue` rodado ao final da rodada.

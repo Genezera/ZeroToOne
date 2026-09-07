@@ -1575,10 +1575,18 @@
     "server/user.go",
     "server/oauth2.go",
     "server/store/store.go",
-    "server/controller.go",
+    "server/controller.go (verifyHTTPSecret -- subtle.ConstantTimeCompare correto, mesmo padrao seguro do jira. Sem achado)",
     "server/config/main.go",
     "server/plugin.go",
-    "server/auth_token.go"
+    "server/auth_token.go",
+    "server/http.go (so plumbing de template html/template, sem logica de auth. Sem achado)",
+    "server/confluence_server_v2.go (GetNotificationPost + GetPageDisplayNameFor*/GetSpaceDisplayNameFor* -- HIPOTESE de markdown link injection via Page.Title/Space.Name inserido cru em '[%s](%s)': REFUTADO para Page.Title/Comment.Container.Title via WebSearch (Confluence rejeita colchetes em titulo de pagina, HTTP 400) -- vetor via Space.Name fica residual/nao confirmado, sem instancia real pra testar. Ver finding Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/confluence_server_v2.go::GetNotificationPost::markdown_link_injection, inconclusive)",
+    "server/serializer/confluence_cloud.go (GetNotificationPost -- mesmo padrao '[%s](%s)' com page.Title/comment.Parent.Title cru, mesma refutacao do irmao server-side acima)",
+    "server/service/mentions.go (SendMentionDMs/buildMentionMessage -- mesmo padrao com PageTitle=Page.Title/Comment.Container.Title, mesma refutacao)",
+    "server/notification.go (SendConfluenceNotifications/SendGenericWHNotification -- so roteamento de post pra canais subscritos, delega a construcao da mensagem pra GetNotificationPost ja analisado acima. Sem achado isolado aqui)",
+    "server/service/storage_xhtml.go (ExtractMentionAccountIDsFromStorage -- so regex de extracao de account-id do XHTML, sem risco. Sem achado)",
+    "server/forge_reset.go + server/forge_poller.go (fluxo de rotacao/drain do Forge bridge -- gated por util.IsSystemAdmin, HMAC-SHA256 correto no envio, redirects desabilitados propositalmente para evitar SSRF/vazamento de secret documentado no proprio codigo. Sem achado)",
+    "server/command.go (dispatch de slash commands -- so parsing/roteamento, gates de IsSystemAdmin conferidos onde esperado. Sem achado)"
   ],
   "mattermost/mattermost-plugin-mscalendar": [
     "calendar/utils/oauth2connect/oauth2_connect.go",
