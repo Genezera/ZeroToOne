@@ -1614,3 +1614,43 @@ segue estruturalmente inalcançável, mesma conclusão da rodada #6).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #22 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram `actionable: 0` (0 achados em `list-pending`
+também) — os mesmos 4 achados de rodadas anteriores (`-confluence`,
+`-msteams-meetings`, `-zoom` em `corroborated_static`, `-mscalendar` em
+`reproduced_local`) aparecem agora em `held` com códigos
+`scope_not_confirmed` (3) / `below_campaign_impact` (1, o `-zoom`) —
+mesmo motivo de sempre, sem evidência nova pra reabrir, nenhuma
+transição tentada.
+
+Leitura profunda proativa direcionada a `mattermost-plugin-msteams-meetings`
+(candidato liberado por `list-deep-read-candidates.mjs`, política e
+histórico da campanha já conferidos): 3 arquivos novos ainda não lidos
+(`server/client.go`, `server/configuration.go`, `server/meeting.go`) —
+sem achado isolado neles, mas `configuration.go` (gestão de
+`EncryptionKey`) levou a reexaminar o par `encrypt`/`decrypt` em
+`server/user.go` (já lido em rodada anterior, sem anotação detalhada
+registrada até agora): usa AES-CFB sem MAC/AEAD (CWE-326) pra
+criptografar o OAuth2 token do usuário no KV store, e `unpad()` faz
+`src[length-1]` sem checar `length==0` antes — panic de
+index-out-of-range em tese se `decrypt()` recebesse um blob cujo
+conteúdo pós-IV tivesse exatamente 0 bytes. Rastreei todo write-path de
+`tokenKey+userID` (`grep KVSet/KVGet/StoreUserInfo` no pacote inteiro):
+o único escritor é `StoreUserInfo`, chamado só a partir de
+`http.go:173` após um exchange OAuth2 real e bem-sucedido — não existe
+endpoint/comando que aceite `EncryptedOAuthToken` ou blob de KV
+arbitrário de um chamador externo não autenticado; alcançar o panic
+exigiria escrita direta no KV store (compromisso prévio do servidor).
+REFUTADO como achado reportável pela mesma classe de não-alcançabilidade
+já vista nos "footguns" do OKG (`avax.go`/`harmony.go`/`waves` —
+biblioteca insegura mas sem input de rede não confiável chegando lá).
+Nenhum finding novo criado — resultado normal e válido desta rodada.
+`deep-read-log.json` atualizado com os 3 arquivos + anotação do
+`user.go` revisitado.
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
