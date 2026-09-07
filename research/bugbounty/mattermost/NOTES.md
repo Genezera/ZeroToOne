@@ -1185,3 +1185,77 @@ evita o risco de corrupção por transcrição já documentado na rodada #6).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #11 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 3 `corroborated_static`
+(`-confluence`, `-msteams-meetings`, `-zoom`) como únicos
+`actionable`/`verify_scope` do banco inteiro (11ª vez consecutiva na
+mesma data) — `cli.mjs get` em `-confluence` e `-msteams-meetings`
+reconfirma que não há nada novo a acrescentar sem confirmação manual
+externa de `bountyEligible` na página oficial do Bugcrowd (mesma
+limitação documentada nas rodadas #1-#10). Não retocado.
+`list-pending` (sem `--include-held`) = 0.
+
+Leitura profunda proativa desta rodada, direcionada a
+`mattermost/mattermost-plugin-mscalendar` (4→8 arquivos lidos, escolhido
+por `list-deep-read-candidates.mjs` entre os candidatos com menos
+arquivos lidos, priorizando webhook/token/secret): **achado novo,
+confirmado com PoC local**.
+
+- `msgraph/handle_webhook.go` (`HandleWebhook`): endpoint público do
+  Microsoft Graph, sem autenticação própria além do fluxo de
+  `validationToken`; `clientState` do JSON recebido é copiado cru para
+  `remote.Notification.ClientState`.
+- `msgraph/subscription.go` (`newRandomString`/`CreateMySubscription`):
+  `ClientState` é gerado com `crypto/rand` (96 bytes, base64.URLEncoding)
+  e é **sempre não-vazio** nas subscriptions criadas por este código —
+  confirma que o guard de `!= ""` do passo seguinte não é branch morto.
+- `calendar/engine/notification.go:132` (`processNotification`) —
+  **ACHADO**: `if sub.Remote.ClientState != "" && sub.Remote.ClientState
+  != n.ClientState { return errors.New("unauthorized webhook") }` usa
+  `!=` (comparação não-constante do Go) em vez de
+  `subtle.ConstantTimeCompare` para validar o único fator de autorização
+  do webhook do Microsoft Graph — CWE-208, exatamente o mesmo padrão já
+  confirmado nesta campanha em `mattermost-plugin-gitlab` (achado
+  `non_constant_time_hmac_comparison`, hoje `known_duplicate` por PR
+  público pré-existente #692) e no próprio core do Mattermost
+  (CVE-2025-54499). Registrado como novo finding, `filesRead`/reasoning
+  salvos, avançado `candidate->corroborated_static->reproduced_local`
+  com PoC de timing real: benchmark Go isolado (sem rede, mesma
+  metodologia validada no achado irmão do gitlab — `go test -bench`,
+  `benchtime=2000000x`, `count=10`, `benchstat`) replicando o primitivo
+  exato de `notification.go:132` contra um secret gerado com o mesmo
+  `newRandomString()`. Resultado: `!=` vulnerável mostra +18.17% mais
+  lento para erro-no-último-byte vs erro-no-primeiro-byte (3.404ns vs
+  4.023ns, **p=0.000**, estatisticamente conclusivo — efeito mais fraco
+  que o achado gitlab de 88%, mas ainda altamente significativo);
+  `subtle.ConstantTimeCompare` não mostra diferença significativa
+  (51.21ns vs 51.19ns, **p=0.925**). `record-validation
+  type=timing_benchmark result=pass` registrado; transição
+  `reproduced_local` aceita.
+  - **Novidade NÃO confirmada nem refutada nesta rodada**: tentei
+    `cli.mjs search-prior-art` (mesma diligência que decidiu o achado
+    gitlab como duplicata) mas a API do GitHub retornou HTTP 401/403
+    tanto autenticado quanto anônimo nesta sessão cloud (confirmado
+    também via `curl` direto) — limitação de rede desta sessão, não
+    ausência de prior art. Documentado explicitamente no reasoning do
+    finding em vez de presumir novidade.
+  - `check-scope` confirma `allowed=true`, `bountyEligible=null` (mesma
+    lacuna dos outros 3 achados deste programa). `record-deployment-evidence`
+    (`confidence=unverified`) registrado.
+    `reproduced_local->scope_verified` recusado corretamente pela máquina
+    de estados (`bountyEligible` não é `true` explícito) —
+    `record-validation type=manual_review result=not_applicable`
+    documentando a limitação. **Fica em `reproduced_local`, não
+    forçado** — 4º achado deste programa nesta mesma situação
+    (aguardando confirmação humana de elegibilidade de recompensa na
+    página oficial do Bugcrowd), mas o único dos quatro com PoC de
+    timing local executada e passando nesta rodada.
+
+`deep-read-log.json` atualizado (edição programática via Python, não
+reconstrução manual do arquivo inteiro). `export-queue` rodado ao final
+da rodada (mudança de estado nesta rodada: 1 finding novo
+`candidate->corroborated_static->reproduced_local`).
