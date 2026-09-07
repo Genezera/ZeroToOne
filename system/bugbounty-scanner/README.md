@@ -54,7 +54,11 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   provas seguras: renova escopo estruturado na API oficial da HackerOne;
   mede a idade de um arquivo usando apenas metadado `git log --follow`;
   e executa receitas `verified_regression` registradas em
-  `evidence-recipes.json` usando o sandbox Docker já existente. Uma tarefa
+  `evidence-recipes.json` usando o sandbox Docker já existente. Uma receita
+  `validated_negative_assessment` pode transformar uma validação `fail`
+  específica já registrada numa avaliação de impacto não-reportável; ela
+  nunca pode aprovar impacto positivo. Alterar uma receita cria um novo work
+  order, portanto uma pendência humana antiga não fica congelada. Uma tarefa
   sem executor conclusivo vira `needs_human`, nunca aprovação implícita.
 - GitHub Actions é o runtime primário versionado. O Windows fica em modo
   `manual_only`: não há tarefa, serviço, gatilho de logon/boot ou dependência

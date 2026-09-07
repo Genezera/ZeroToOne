@@ -6,7 +6,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   closeDb, exportFindingsToQueueJsonl, getFinding, latestCodeAgeEvidence,
-  listFindings, openDb, recordCodeAgeEvidence, recordValidation,
+  listFindings, listValidations, openDb, recordCodeAgeEvidence,
+  recordImpactAssessment, recordValidation,
 } from './db.mjs';
 import { cmdRefreshScopeLive, cmdResearchPlan, cmdSearchPriorArt } from './cli.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
@@ -78,10 +79,21 @@ function taskIdentity(item) {
   const inputDigest = digest({
     findingId: item.id, state: item.state, action: item.action,
     reason: item.reason, missingEvidence: item.missingEvidence || null,
+    evidenceRecipeDigest: item.evidenceRecipeDigest || null,
   });
   return {
     taskId: `evidence:v1:${digest([item.id, item.action, inputDigest])}`,
     inputDigest,
+  };
+}
+
+export function bindRecipesToPlan(plan, recipes) {
+  return {
+    ...(plan || {}),
+    actionable: (plan?.actionable || []).map((item) => ({
+      ...item,
+      evidenceRecipeDigest: digest(recipes?.findings?.[item.id] || null),
+    })),
   };
 }
 
@@ -259,6 +271,7 @@ export function createEvidenceExecutor({
   inspectAge = inspectGitFileAge,
   searchPriorArt = cmdSearchPriorArt,
   recordAge = recordCodeAgeEvidence,
+  recordImpact = recordImpactAssessment,
   recordValidationFn = recordValidation,
   now = () => new Date(),
 } = {}) {
@@ -290,6 +303,35 @@ export function createEvidenceExecutor({
       }
       return { status: 'completed', evidenceMutated: true, reason: checked.reason,
         evidence: { officialUrl: checked.officialUrl || null, bountyEligible: checked.bountyEligible ?? null } };
+    }
+
+    const impactRecipe = recipe.impactAssessment;
+    if (order.action === 'assess_impact' && impactRecipe?.kind === 'validated_negative_assessment') {
+      const required = impactRecipe.requiresValidation || {};
+      if (impactRecipe.assessment?.reportable !== false) {
+        return { status: 'needs_human', reason: 'receita negativa só pode registrar reportable=false' };
+      }
+      if (typeof required.type !== 'string' || required.result !== 'fail') {
+        return { status: 'needs_human', reason: 'receita negativa exige uma validação específica com result=fail' };
+      }
+      const validation = listValidations(db, finding.id)
+        .find((item) => item.type === required.type && item.result === required.result);
+      if (!validation) {
+        return { status: 'needs_human', reason: `validação negativa ${required.type}/fail não encontrada; nenhuma conclusão foi inferida` };
+      }
+      const assessment = recordImpact(db, finding.id, {
+        ...impactRecipe.assessment,
+        evidenceBasis: {
+          kind: 'recorded_negative_validation', validationType: validation.type,
+          validationResult: validation.result, validationTimestamp: validation.ts,
+        },
+      });
+      return {
+        status: 'completed', evidenceMutated: true, queueMutated: true,
+        reason: 'avaliação negativa registrada a partir da validação indicada; o finding fica preservado, mas fora da campanha Medium+',
+        evidence: { reportable: assessment.reportable, technicalValidity: assessment.technicalValidity,
+          validationType: validation.type, validationTimestamp: validation.ts },
+      };
     }
 
     const regressionRecipe = recipe.regression;
@@ -371,9 +413,10 @@ export async function runEvidenceWorker({
     const policy = loadProgramPolicyStrict();
     const plan = cmdResearchPlan(db, { programPolicy: policy, now: now().getTime() });
     const recipes = loadEvidenceRecipes(recipesPath);
+    const boundPlan = bindRecipesToPlan(plan, recipes);
     const initial = loadEvidenceState(statePath);
     const executor = createEvidenceExecutor({ db, recipes, policy, repoRoot, now });
-    const cycle = await runEvidenceCycle({ state: initial, plan, executor, maxTasks, now });
+    const cycle = await runEvidenceCycle({ state: initial, plan: boundPlan, executor, maxTasks, now });
     if (cycle.queueMutated) exportFindingsToQueueJsonl(db, queuePath);
     if (cycle.changed || cycle.evidenceMutated) saveEvidenceState(statePath, cycle.state);
     closeDb(db);

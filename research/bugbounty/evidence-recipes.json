@@ -4,5 +4,29 @@
     "Mattermost Public Bug Bounty Engagement": "mattermost",
     "OKG": "okg"
   },
-  "findings": {}
+  "findings": {
+    "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison": {
+      "impactAssessment": {
+        "kind": "validated_negative_assessment",
+        "requiresValidation": {
+          "type": "go_timing_benchmark",
+          "result": "fail"
+        },
+        "assessment": {
+          "technicalValidity": "confirmed",
+          "attackerControlledInput": true,
+          "attacker": "remote sender who already possesses the independent Mattermost WebhookSecret required by the first constant-time gate",
+          "victim": "a Mattermost instance with the Zoom plugin configured",
+          "securityBoundary": "the Zoom webhook HMAC check behind a separate mandatory Mattermost webhook secret",
+          "observableOutcome": "the production-function benchmark rejected invalid signatures and found no statistically distinguishable early-versus-late mismatch timing signal",
+          "rationale": "the ordinary string comparison exists, but the recorded real-function benchmark did not confirm an exploitable oracle and reaching it already requires a separate secret; no Medium-or-higher cross-victim effect is proven",
+          "confidentiality": "none",
+          "integrity": "none",
+          "availability": "none",
+          "impactScope": "self_request_only",
+          "reportable": false
+        }
+      }
+    }
+  }
 }

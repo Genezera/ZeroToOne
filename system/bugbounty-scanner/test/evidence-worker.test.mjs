@@ -4,11 +4,12 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
-  closeDb, latestCodeAgeEvidence, listValidations, openDb, recordCodeAgeEvidence,
-  recordValidation, upsertFinding, withoutLedgerWrites,
+  closeDb, latestCodeAgeEvidence, latestImpactAssessment, listValidations,
+  openDb, recordCodeAgeEvidence, recordImpactAssessment, recordValidation,
+  upsertFinding, withoutLedgerWrites,
 } from '../db.mjs';
 import {
-  createEvidenceExecutor, emptyEvidenceState, inspectGitFileAge,
+  bindRecipesToPlan, createEvidenceExecutor, emptyEvidenceState, inspectGitFileAge,
   reconcileWorkOrders, runEvidenceCycle,
 } from '../evidence-worker.mjs';
 
@@ -39,6 +40,18 @@ test('reconcileWorkOrders gera identidade determinística e torna ação antiga 
   assert.equal(order.status, 'pending');
   const gone = reconcileWorkOrders(first, { actionable: [] }, NOW.toISOString());
   assert.equal(gone.workOrders[order.taskId].status, 'obsolete');
+});
+
+test('alterar a receita vinculada cria novo work order e não deixa needs_human congelado', () => {
+  const firstPlan = bindRecipesToPlan(PLAN, { findings: {} });
+  const secondPlan = bindRecipesToPlan(PLAN, { findings: { [FINDING.id]: { impactAssessment: { kind: 'validated_negative_assessment' } } } });
+  const first = reconcileWorkOrders(emptyEvidenceState(), firstPlan, NOW.toISOString());
+  const oldId = Object.keys(first.workOrders)[0];
+  first.workOrders[oldId].status = 'needs_human';
+  const second = reconcileWorkOrders(first, secondPlan, NOW.toISOString());
+  assert.equal(Object.keys(second.workOrders).length, 2);
+  assert.equal(second.workOrders[oldId].status, 'obsolete');
+  assert.equal(Object.values(second.workOrders).some((order) => order.status === 'pending'), true);
 });
 
 test('runEvidenceCycle aplica limite, persiste needs_human e não repete tarefa encerrada', async () => {
@@ -148,4 +161,46 @@ test('receita registrada executa regressão isolada e grava validação reservad
   const validations = listValidations(db, FINDING.id);
   assert.equal(validations[0].type, 'isolated_regression');
   assert.equal(validations[0].evidence.provenance, 'regression-sandbox');
+}));
+
+test('receita negativa exige validação fail específica e registra impacto não-reportável', async () => withDb(async (db) => {
+  withoutLedgerWrites(() => recordValidation(db, FINDING.id, {
+    type: 'timing_benchmark', result: 'fail', rawOutput: 'nenhum sinal distinguível',
+  }));
+  const assessment = {
+    technicalValidity: 'confirmed', attackerControlledInput: true,
+    attacker: 'remetente que já conhece o primeiro segredo', victim: 'instância de teste',
+    securityBoundary: 'segunda assinatura HMAC', observableOutcome: 'nenhum timing distinguível',
+    rationale: 'benchmark da função real não confirmou oracle explorável',
+    confidentiality: 'none', integrity: 'none', availability: 'none',
+    impactScope: 'self_request_only', reportable: false,
+  };
+  const executor = createEvidenceExecutor({
+    db, policy: POLICY, now: () => new Date(NOW),
+    recordImpact: (...args) => withoutLedgerWrites(() => recordImpactAssessment(...args)),
+    recipes: { findings: { [FINDING.id]: {
+      impactAssessment: { kind: 'validated_negative_assessment',
+        requiresValidation: { type: 'timing_benchmark', result: 'fail' }, assessment },
+    } } },
+  });
+  const result = await executor({ findingId: FINDING.id, action: 'assess_impact' });
+  assert.equal(result.status, 'completed');
+  assert.equal(result.queueMutated, true);
+  assert.equal(latestImpactAssessment(db, FINDING.id).reportable, false);
+  assert.equal(latestImpactAssessment(db, FINDING.id).evidenceBasis.validationType, 'timing_benchmark');
+}));
+
+test('receita negativa sem a validação exigida falha fechado', async () => withDb(async (db) => {
+  const executor = createEvidenceExecutor({
+    db, policy: POLICY, now: () => new Date(NOW),
+    recipes: { findings: { [FINDING.id]: {
+      impactAssessment: { kind: 'validated_negative_assessment',
+        requiresValidation: { type: 'timing_benchmark', result: 'fail' },
+        assessment: { reportable: false } },
+    } } },
+  });
+  const result = await executor({ findingId: FINDING.id, action: 'assess_impact' });
+  assert.equal(result.status, 'needs_human');
+  assert.match(result.reason, /não encontrada/);
+  assert.equal(latestImpactAssessment(db, FINDING.id), null);
 }));
