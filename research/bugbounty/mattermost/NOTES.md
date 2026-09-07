@@ -936,3 +936,27 @@ desta mesma data para o 8º irmão da família panic/DoS encontrado lá.
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #5 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` (nome exato, espaço final) conferidos no passo 0:
+`blocked:false`. `migrate-to-v2.mjs` + `research-plan` trouxeram de novo os
+mesmos 3 `corroborated_static` (`-confluence`, `-msteams-meetings`, `-zoom`)
+como únicos `actionable`/`verify_scope` do banco inteiro — conferidos via
+`cli.mjs get` em cada um: reasoning/`check-scope`/deployment evidence/
+`record-validation type=manual_review` já registrados em rodadas anteriores
+desta mesma data, nada novo a fazer sem confirmação manual externa de
+`bountyEligible` (bloqueada nesta sessão cloud por egress a bugcrowd.com,
+mesma limitação já documentada nas rodadas #3/#4). Não retocado, pra não
+duplicar trabalho já commitado.
+
+`list-pending` (sem `--include-held`) = 0.
+
+Leitura profunda proativa desta rodada foi direcionada a `slackhq/nebula`
+(programa Slack) em vez de um novo plugin Mattermost — ver `slack/NOTES.md`
+desta mesma data (3 arquivos novos: `cmd/nebula-cert/passwords.go`,
+`handshake_manager.go`, `sshd/session.go`, sem achado confirmado).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).

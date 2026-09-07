@@ -198,3 +198,53 @@ Nenhum achado novo nesta rodada (13/? arquivos cobertos, ~6%+ do repo,
 cobertura ainda parcial). `deep-read-log.json` atualizado (+3, 13 no total
 para `slackhq/nebula`). Clone temporário removido. `export-queue` rodado ao
 final da rodada.
+
+## Rodada 07/09/2026 #5 (push automático via GitHub webhook, rotina agendada)
+
+`program-policy.json`/`check-program` conferidos no passo 0: `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado.
+`research-plan` trouxe só os 3 `verify_scope` de Mattermost como
+`actionable` (já totalmente processados em rodadas anteriores desta mesma
+data — ver `mattermost/NOTES.md`, nada novo sem confirmação manual externa
+de `bountyEligible`, bloqueada por egress nesta sessão cloud). `list-pending`
+(sem `--include-held`) = 0.
+
+Leitura profunda proativa continuando `slackhq/nebula` (13→16 arquivos
+lidos), priorizando por palavra-chave (`password`/`session`) mais um arquivo
+de handshake ainda não coberto no nível do gerenciador (distinto de
+`handshake/machine.go`, já lido):
+
+- `cmd/nebula-cert/passwords.go` — `StdinPasswordReader.ReadPassword` é um
+  wrapper fino sobre `golang.org/x/term.ReadPassword`/`IsTerminal` pra ler a
+  senha de criptografia da chave privada offline via terminal interativo.
+  Nenhuma lógica própria de crypto/validação aqui (delega pra
+  `cert/crypto.go`, já lido). Sem achado.
+- `handshake_manager.go` — camada que envolve `handshake/machine.go`:
+  `HandleIncoming` exige `RemoteIndex==0` no stage-1 e dropa qualquer
+  `RemoteIndex!=0` sem gastar CPU rodando Noise; `beginHandshake`/
+  `continueHandshake` só aceitam o pacote depois que
+  `handshake.Machine.ProcessPacket` já verificou o certificado do peer
+  contra a CA pool (`certVerifier` → `pki.GetCAPool().VerifyCertificate`);
+  `validatePeerCert` recusa self-handshake e aplica
+  `lighthouse.remote_allow_list`; `continueHandshake` ainda confere
+  `correctHostResponded` (o cert de quem respondeu bate com o `vpnAddr`
+  pretendido) antes de completar — defesa contra um lighthouse/MITM
+  redirecionar pra um peer diferente com cert próprio válido mas de outro
+  endereço. Ponto anotado pra investigação futura (não um achado
+  confirmado): `via.IsRelayed` pula a checagem de `remote_allow_list` tanto
+  em `HandleIncoming` quanto em `validatePeerCert` — parece intencional
+  (tráfego relayed já passou por um túnel autenticado separado, perímetro
+  de confiança diferente), mas não confirmei a fundo lendo
+  `relay_manager.go` nesta rodada. `allocateIndex` usa `crypto/rand` com
+  checagem de colisão. Sem achado confirmado.
+- `sshd/session.go` — despacho de comando do console SSH admin
+  (pós-autenticação, já gateada por `sshd/server.go` lido em rodada
+  anterior). `shlex.Split` só tokeniza a linha, `lookupCommand` resolve
+  contra uma radix tree de comandos internos registrados — nenhum
+  `os/exec`, nenhuma concatenação de shell, inclusive no canal `exec` do
+  SSH (que reusa o mesmo `dispatchCommand` interno, não abre shell do SO).
+  Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3, 16 no
+total para `slackhq/nebula`). Clone temporário removido. `export-queue`
+rodado ao final da rodada.
