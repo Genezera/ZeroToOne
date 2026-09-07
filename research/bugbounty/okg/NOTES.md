@@ -1689,3 +1689,91 @@ produção — fora do modelo de ameaça) e `sshd/writer.go` (wrapper trivial
 sobre `io.Writer`, sem lógica de segurança). `deep-read-log.json`
 atualizado (23→26 em `slackhq/nebula`). `export-queue` rodado ao final
 da rodada.
+
+## Rodada 2026-09-07 #12 (rotina agendada, gatilho push) — novo achado real em coins/zcash/address.go; ValidateAddress aceita byte de versão errado
+
+`program-policy.json`/`check-program "OKG"` conferidos no passo 0:
+`blocked:false`. `research-plan` devolveu `actionable:0` (60 retidos,
+todos com motivo legítimo — `program_blocked` para Block Open
+Source/Auth0/Circle, `campaign_duplicate_history`/`previous_submission`
+para achados Vercel já vistos, `scope_not_confirmed` para os 3 achados
+Mattermost com ativo ausente do escopo estruturado, `below_campaign_impact`
+para os achados-irmãos deste programa). `list-pending` vazio. Nenhum
+item retido revisitado sem evidência nova — todos os motivos continuam
+válidos.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs` (13
+candidatos permitidos, StackingDAO/Vercel/Block Open Source/Circle não
+aparecem — Circle/Block corretamente excluídos pela política, Vercel/
+StackingDAO sem candidato elegível nesta rodada): a maioria dos repos
+pequenos já listados (plaid-ruby, react-plaid-link, plugins Mattermost
+zoom/github/jira/confluence/gitlab/msteams) está esgotada ou sem arquivo
+prioritário novo (`msteams`: os 8 arquivos com termo prioritário no
+caminho já tinham sido lidos em rodada anterior). Fui para
+`okx/go-wallet-sdk` (56 lidos / 574★, 6% coberto — maior margem de
+leitura ainda inexplorada entre os candidatos permitidos) e busquei
+diretórios de coin ainda com zero leitura no dataset: `bitcoin, cosmos,
+ethereum, flow, kaspa, tron, zcash, zil` — escolhi 3 arquivos de
+derivação/assinatura de chave nesses diretórios novos:
+
+1. `coins/zil/keytools/secp256k1.go` — `GeneratePrivateKey` usa
+   `btcec.NewPrivateKey()` (já garante escalar válido) com checagem
+   redundante; `GetAddressFromPublic` = `sha256(pubkey)[24:]`, consistente
+   com o spec real de endereço Zilliqa. Sem achado.
+2. `coins/flow/account.go` — `SignTx` faz `btcec.PrivKeyFromBytes(...).ToECDSA()`
+   antes de `ecdsa.Sign`, ou seja assina com os parâmetros de curva do
+   **secp256k1** mesmo quando a chave veio de `GenerateKeyPair` (P256).
+   Bug de corretude (assinatura não bateria com a curva da chave pública,
+   falharia verificação imediatamente na rede Flow) — sem impacto de
+   segurança demonstrável (não vaza chave, não aceita forjaria
+   silenciosamente), não registrado como achado.
+3. **`coins/zcash/address.go::ValidateAddress`** — ACHADO REAL. O ramo
+   P2SH (t3 mainnet) do OR só compara `v[1] == 0xbd`, ignorando `v[0]`
+   por completo — deveria comparar o par inteiro contra `{0x1c, 0xbd}`,
+   do mesmo jeito que o primeiro ramo (P2PKH/t1) já faz corretamente
+   para `{0x1c, 0xb8}`. Rastreei `util.CheckDecodeDoubleV`
+   (`util/base58.go`) e `base58.CheckEncode/CheckDecode`
+   (`crypto/base58/base58check.go`) para confirmar que `v[0]` é o byte
+   de versão externo do formato base58check (livremente escolhível por
+   quem gera a string) e `v[1]` é só o primeiro byte do payload — ou
+   seja, o segundo ramo aceita QUALQUER byte de versão externo, não só
+   `0x1c`, desde que o payload comece com `0xbd`.
+
+   Ceticismo aplicado com PoC real (Go, sem Foundry — mesmo padrão já
+   aceito nesta campanha para achados não-Solidity): `go test` local
+   usando o próprio `base58.CheckEncode` do SDK pra gerar uma string
+   base58check de 35 chars com byte de versão externo `0x01` (não
+   `0x1c`) e payload iniciando em `0xbd`. Saída real:
+   ```
+   BUG REPRODUCED: zcash.ValidateAddress("4653im8anfXZCvypCjj5gQF8dj6DLx4aJb5") = true,
+   despite outer version byte 0x01 != zcash's real prefix 0x1c
+   --- PASS: TestValidateAddress_AcceptsWrongVersionByte (0.00s)
+   ```
+   `record-validation --type=go_test_poc --result=pass` com a saída
+   literal; `corroborated_static`→`reproduced_local` aceito pelo gate
+   genérico de validação.
+
+   `check-scope "OKG" "okx/go-wallet-sdk"` → `allowed:true,
+   bountyEligible:true, maxSeverity:critical`. `deploymentEvidence`
+   registrada com `confidence="medium"`: commit `12fec6b0` confirmado
+   como HEAD real de `origin/main`, `git tag -l` vazio (mesmo padrão já
+   documentado nos achados-irmãos deste programa) — sem release/tag pra
+   ancorar `confidence="high"`. `reproduced_local`→`scope_verified`
+   recusado corretamente pelo gate profissional, nada forçado.
+
+   `impactAssessment` registrado honestamente: `technicalValidity=confirmed`,
+   `attackerControlledInput=true`, mas nenhum ponto de chamada DENTRO do
+   SDK público invoca `ValidateAddress` em nome de múltiplos usuários/
+   tenants — uso downstream real (single-user vs validando endereço de
+   terceiro em fluxo multi-tenant) depende de arquitetura de integradores
+   fechados fora da minha visibilidade. `impactScope=self_request_only`,
+   `reportable=false` — mesmo padrão estrutural já estabelecido nos 6
+   achados-irmãos deste programa e no achado stellar/strkey da rodada
+   anterior. Estado final: `reproduced_local`, não reportável nesta
+   campanha sem evidência adicional de deployment/uso real contra outra
+   vítima.
+
+`deep-read-log.json` atualizado (+3 entradas em `okx/go-wallet-sdk`,
+56→59). Clone raso e módulo Go temporário (`go test` local, dependências
+via proxy público sem credencial) removidos do scratchpad ao final.
+`export-queue` rodado ao final da rodada.
