@@ -1043,3 +1043,38 @@ produto, não uma falha exclusiva deste plugin).
 
 `deep-read-log.json` atualizado. `export-queue` rodado ao final da rodada
 (sem mudança de estado nesta rodada em Mattermost).
+
+## Rodada 2026-09-07 #8 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs` +
+`research-plan` trouxeram de novo os mesmos 3 `corroborated_static`
+(`-confluence`, `-msteams-meetings`, `-zoom`) como único `actionable`/
+`verify_scope` do banco inteiro (8ª vez consecutiva na mesma data) —
+`cli.mjs get` em cada um confirma reasoning/`check-scope`/deployment
+evidence/`record-validation type=manual_review` já registrados em rodadas
+anteriores, sem nenhuma informação nova (mesma limitação de
+`bountyEligible` manual pendente, fora do alcance desta sessão cloud). Não
+retocado. `list-pending` (sem `--include-held`) = 0.
+
+Leitura profunda proativa direcionada a `mattermost/mattermost-plugin-calls`
+(12→15 arquivos lidos), priorizando por contagem de palavras-chave
+auth/permission/token/secret/admin nos arquivos ainda não lidos:
+`server/limits.go` (`handleCloudNotifyAdmins`/aviso de sessões
+concorrentes — userID sempre do header `Mattermost-User-Id`, não
+spoofável; sem escalação de privilégio, só notifica os próprios admins do
+servidor), `server/state.go` (gerenciamento de estado da call, populado só
+a partir do DB depois de handlers já gateados; `getHostID` deriva host por
+ordem de entrada/lock, sem input de rede direto) e uma leitura dirigida
+(grep) de `server/configuration.go` em busca de auth/token/secret/admin —
+achou `TURNStaticAuthSecret` alimentando `rtc.GenTURNConfigs`, mas essa
+função geradora de credenciais TURN vive no pacote externo
+`github.com/mattermost/rtcd`, fora deste repositório e fora da lista de
+candidatos vetada por `list-deep-read-candidates.mjs` nesta rodada — não
+investigado (precisaria de `check-program`/policy check próprio antes de
+tratar `rtcd` como alvo em rodada futura, conforme regra do CLAUDE.md de
+checar a política antes de escolher qualquer repositório, inclusive por
+iniciativa própria). **Sem achado** nos três itens revisados nesta rodada.
+
+`deep-read-log.json` atualizado. `export-queue` rodado ao final da rodada
+(sem mudança de estado nesta rodada em Mattermost).
