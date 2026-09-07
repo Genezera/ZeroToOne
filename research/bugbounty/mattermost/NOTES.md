@@ -846,3 +846,32 @@ depois do `export-queue` -- ou, se precisar rodar mesmo assim,
 `export-queue` ANTES de qualquer um desses três.
 
 `export-queue` rodado ao final da rodada.
+
+## Rodada 07/09/2026 #2 (push automático via GitHub webhook, rotina agendada)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` (nome exato, com espaço final) conferidos no passo 0:
+`blocked:false`, RoE já revisado. `migrate-to-v2.mjs` + `research-plan`
+trouxeram os mesmos 3 achados `corroborated_static` (`-confluence`,
+`-msteams-meetings`, `-zoom`) como únicos `actionable`/`verify_scope` do
+banco inteiro — conferido via `cli.mjs get` em cada um: já totalmente
+processados na rodada anterior, que é o próprio commit que disparou esta
+sessão (`3ca14cb`, ~10min antes deste run). `check-scope`/deployment
+evidence/`record-validation type=manual_review` já registrados, nada de
+novo a fazer nos 3 sem confirmação manual externa de `bountyEligible` (fora
+do alcance deste pipeline). Não retocado, para não duplicar trabalho já
+feito e commitado.
+
+`list-pending` (sem `--include-held`) = 0 — os 34 `candidate` restantes no
+banco são 100% `Auth0 by Okta`/`Circle BBP` bloqueados, held corretamente.
+
+Leitura profunda proativa desta rodada foi direcionada a `slackhq/nebula`
+(programa Slack) em vez de um novo plugin Mattermost, já que todos os
+plugins Mattermost com superfície OAuth/webhook/HMAC conhecida já foram
+lidos exaustivamente em rodadas anteriores sem achado adicional pendente
+de investigação óbvia — ver `slack/NOTES.md` desta mesma data para o
+detalhe dos 3 arquivos lidos (`firewall.go`/`pki.go`/`outside.go`, sem
+achado).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).

@@ -164,3 +164,37 @@ pelo lado do console admin SSH (`sshd.*`, prioridade por palavra-chave
 
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3,
 agora 10 no total para `slackhq/nebula`).
+
+## Rodada 07/09/2026 #2 (push automático via GitHub webhook, rotina agendada)
+
+`program-policy.json` conferido no passo 0 (`check-program`): `Block Open
+Source`/`Circle BBP` seguem bloqueados, nenhum repo desses tocado. `research-plan`
+trouxe só os 3 `verify_scope` de Mattermost como `actionable` (ver
+`mattermost/NOTES.md` desta mesma data) — já totalmente processados na rodada
+anterior (mesmo commit que disparou esta sessão), nada novo a fazer ali.
+
+Leitura profunda proativa continuando `slackhq/nebula` (10→13 arquivos lidos),
+desta vez no caminho de dados de pacote/firewall em vez do console SSH já
+coberto:
+- `firewall.go` — avaliação de regras allow (CA sha/name, groups AND, host,
+  cidr) sobre pacotes já autenticados pelo handshake Noise; conntrack revalida
+  contra ruleset atual em reload; `Drop()` confere endereço remoto contra as
+  redes do próprio certificado do peer antes de checar qualquer regra. Sem
+  achado.
+- `pki.go` — carregamento de `pki.key`/`pki.cert`/`pki.ca`, sempre a partir de
+  config local do operador (não de pacote de rede); `VerifyPrivateKey`
+  confere par pub/priv, hot-reload recusa mudança de rede/curva no cert. Sem
+  achado.
+- `outside.go` — caminho de pacote recebido da rede antes/depois da
+  decriptação; toda leitura de slice em `parseV4`/`parseV6` é precedida por
+  checagem de comprimento mínimo (testei mentalmente pacote IPv4 truncado no
+  meio do header TCP/UDP — retorna erro antes de qualquer slice de porta);
+  `handleRecvError` confere o endereço remoto antes de aceitar um
+  `RecvError` (proteção contra spoofing já no próprio código, comentário
+  "Someone spoofing recv_errors?"); decrypt/verify sempre antes de qualquer
+  parse do payload (auth-then-parse). Sem achado.
+
+Nenhum achado novo nesta rodada (13/? arquivos cobertos, ~6%+ do repo,
+cobertura ainda parcial). `deep-read-log.json` atualizado (+3, 13 no total
+para `slackhq/nebula`). Clone temporário removido. `export-queue` rodado ao
+final da rodada.
