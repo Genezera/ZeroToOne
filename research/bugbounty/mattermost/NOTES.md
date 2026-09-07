@@ -1589,3 +1589,28 @@ para o detalhe da checagem de nil-safety não-alcançável).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #21 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/
+`verify_scope` (`-confluence`, `-msteams-meetings`, `-zoom` em
+`corroborated_static`, `-mscalendar` em `reproduced_local`) — 21ª vez
+consecutiva na mesma data. `check-scope` ao vivo rodado pros 4 de novo:
+mesmo `snapshotContentHash` (`2d6b1ab8...`) e `snapshotCapturedAt`
+(`2026-09-07T03:58:01.834Z`) das ~20 rodadas anteriores, `allowed=true`/
+`bountyEligible=null` inalterado — bloqueio estrutural (Bugcrowd sem
+`refresh-scope-live`, sem exceção nova) continua válido, nenhuma
+evidência nova encontrada, nenhuma transição tentada além da já
+documentada exaustivamente. `list-pending` (sem `--include-held`) = 0.
+
+Esforço real desta rodada foi direcionado a `okx/go-wallet-sdk` (OKG) —
+ver `okg/NOTES.md` rodada #9: 4 arquivos novos lidos, todos do lado
+"sign" (não "verify") do SDK ou triviais, sem achado; os dois achados
+`establish_novelty` (`multiKey.go`/`multiEd25519.go`) reconfirmados em
+`reproduced_local`, sem mudança de estado (gate `verified_regression`
+segue estruturalmente inalcançável, mesma conclusão da rodada #6).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).

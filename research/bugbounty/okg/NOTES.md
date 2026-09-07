@@ -1556,3 +1556,34 @@ não um bug explorável nesta base. Sem achado.
 
 `deep-read-log.json` atualizado (`slackhq/nebula`: 19→22 arquivos).
 Clone temporário removido. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #9 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "OKG"` conferidos no passo 0:
+`blocked:false`. `research-plan` trouxe de novo os dois achados
+(`multiKey.go`, `multiEd25519.go`) como `actionable`/`establish_novelty`
+— reconfirmado via `cli.mjs get` que ambos seguem em `reproduced_local`,
+sem regressão. Mesma conclusão estrutural das rodadas #6/#7/#8 (gate
+`verified_regression` inalcançável pra código vendorizado já quebrado
+num único commit de importação sem parent seguro no histórico local,
+`docker` sem daemon nesta sessão) — nada mudou, nenhuma transição
+tentada.
+
+Leitura profunda proativa desta rodada: 4 arquivos novos em
+`okx/go-wallet-sdk`, escolhidos por adjacência a sign/verify/multisig
+ainda não cobertos pelo log — `coins/nervos/types/key.go` (interface
+`Key` pura, 7 linhas, sem lógica própria), `coins/stellar/xdr/signers.go`
+(`SortSignersByKey`, só ordenação de apresentação por endereço, não
+lógica de threshold/verificação), `coins/zksync/core/eth_signer.go` e
+`coins/zksync/core/signing_utils.go` (todo o par é lado "sign" do SDK —
+constrói e assina mensagens com a chave privada do próprio usuário,
+nunca verifica assinatura de terceiro; `signing_utils.go` tem inclusive
+round-trip check explícito no pack/unpack de valores decimais, provando
+serialização auto-consistente sem overflow silencioso). Nenhum dos 4
+pertence à classe de bug (verificação de assinatura/bitmap com input de
+rede não confiável) que rendeu os dois achados reais já confirmados —
+sem achado nos 4.
+
+`deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
+49→53). Clone temporário removido. `export-queue` rodado ao final da
+rodada.
