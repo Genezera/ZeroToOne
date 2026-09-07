@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { appendFileSync, readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -79,4 +79,59 @@ export function verifyChain(env) {
     prevHash = hash;
   }
   return { valid: true, entries: entries.length };
+}
+
+/** Reencadeia somente a partir da primeira quebra. Os payloads e a ordem dos
+ * eventos são preservados; apenas prevHash/hash são recalculados. Isso é uma
+ * recuperação para merges Git concorrentes de dois sufixos válidos que
+ * partiram do mesmo hash, não uma forma de editar fatos do ledger. */
+export function rechainEntries(entries) {
+  const output = [];
+  let prevHash = '0'.repeat(64);
+  let repairedFrom = null;
+  let originalBrokenHash = null;
+  for (const [index, entry] of entries.entries()) {
+    const { hash, ...rest } = entry;
+    const expectedHash = createHash('sha256').update(JSON.stringify(rest)).digest('hex');
+    const validContinuation = rest.prevHash === prevHash && expectedHash === hash;
+    if (repairedFrom === null && validContinuation) {
+      output.push(entry);
+      prevHash = hash;
+      continue;
+    }
+    if (repairedFrom === null) {
+      repairedFrom = index;
+      originalBrokenHash = hash || null;
+    }
+    const { prevHash: _discardedPrevHash, ...payload } = rest;
+    const repaired = { ...payload, prevHash };
+    const repairedHash = createHash('sha256').update(JSON.stringify(repaired)).digest('hex');
+    output.push({ ...repaired, hash: repairedHash });
+    prevHash = repairedHash;
+  }
+  return {
+    entries: output, repaired: repairedFrom !== null, repairedFrom,
+    repairedEntries: repairedFrom === null ? 0 : entries.length - repairedFrom,
+    originalBrokenHash,
+  };
+}
+
+export function repairChainFile(file, { now = () => new Date(), environment = 'research' } = {}) {
+  if (!existsSync(file)) return { repaired: false, entries: 0 };
+  const source = readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line));
+  const result = rechainEntries(source);
+  if (!result.repaired) return { repaired: false, entries: source.length };
+  const prevHash = result.entries.length ? result.entries.at(-1).hash : '0'.repeat(64);
+  const record = {
+    type: 'ledger_chain_repair', repairVersion: 1,
+    repairedFromIndex: result.repairedFrom,
+    repairedEntryCount: result.repairedEntries,
+    originalBrokenHash: result.originalBrokenHash,
+    ts: now().toISOString(), env: environment, prevHash,
+  };
+  const hash = createHash('sha256').update(JSON.stringify(record)).digest('hex');
+  const entries = [...result.entries, { ...record, hash }];
+  writeFileSync(file, `${entries.map((entry) => JSON.stringify(entry)).join('\n')}\n`, 'utf8');
+  return { repaired: true, repairedFrom: result.repairedFrom,
+    repairedEntries: result.repairedEntries, entries: entries.length };
 }

@@ -13,7 +13,9 @@
 // empurrasse algo por perto do horário fixo da tarefa.
 
 import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 import { inspectStagedPublication } from './publication-secret-gate.mjs';
+import { repairChainFile } from '../ledger/ledger.mjs';
 
 function git(repoRoot, args) {
   return execFileSync('git', args, { cwd: repoRoot, stdio: 'pipe', encoding: 'utf8' }).trim();
@@ -86,6 +88,22 @@ export function commitAndPush(repoRoot, message, log = () => {}) {
       log(`ERRO: rebase de recuperação conflitou -- abortando e preservando o commit local para reconciliação: ${pullErr.message.split('\n')[0]}`);
       try { git(repoRoot, ['rebase', '--abort']); } catch { /* nada pra abortar */ }
       return { ok: false, committed: true, requiresRecovery: true, reason: `rebase de recuperação falhou: ${pullErr.message.split('\n')[0]}`, state: inspectGitState(repoRoot) };
+    }
+    const ledgerRepair = repairChainFile(path.join(repoRoot, 'ledger', 'ledger.research.jsonl'));
+    if (ledgerRepair.repaired) {
+      log(`AVISO: dois sufixos concorrentes do ledger foram reencadeados a partir do índice ${ledgerRepair.repairedFrom}; payloads preservados.`);
+      try {
+        git(repoRoot, ['add', '--', 'ledger/ledger.research.jsonl']);
+        const publication = inspectStagedPublication(repoRoot);
+        if (!publication.ok) {
+          return { ok: false, committed: true, requiresRecovery: true,
+            blockedBy: 'publication-secret-gate', reason: publication.reason, publication };
+        }
+        git(repoRoot, ['commit', '--amend', '--no-edit']);
+      } catch (repairErr) {
+        return { ok: false, committed: true, requiresRecovery: true,
+          reason: `reparo do ledger após rebase falhou: ${repairErr.message.split('\n')[0]}`, state: inspectGitState(repoRoot) };
+      }
     }
     try {
       git(repoRoot, ['push']);
