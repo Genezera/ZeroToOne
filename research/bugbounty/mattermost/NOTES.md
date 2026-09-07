@@ -994,3 +994,52 @@ achado (sem input de usuário não confiável alcançando lógica sensível).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #7 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs` +
+`research-plan` trouxeram de novo os mesmos 3 `corroborated_static`
+(`-confluence`, `-msteams-meetings`, `-zoom`) como únicos `actionable`/
+`verify_scope` do banco inteiro — `cli.mjs get` em cada um confirma que
+reasoning/`check-scope`/deployment evidence/`record-validation
+type=manual_review` já foram registrados nas rodadas #3/#4/#5/#6 desta
+mesma data, sem nenhuma informação nova (mesma limitação de
+`bountyEligible` manual pendente, fora do alcance desta sessão cloud). Não
+retocado, pra não duplicar trabalho já commitado. `list-pending` (sem
+`--include-held`) = 0.
+
+Leitura profunda proativa desta rodada (independente da rodada #6, que
+cobriu `mattermost-plugin-mscalendar`) foi direcionada a
+`mattermost/mattermost-plugin-calls` (9→13 arquivos lidos): `server/bot_api.go`,
+`server/job_service.go`, `server/activate.go` (mais uma releitura confirmatória
+de `server/api_router.go`, já lido antes). Motivação: `bot_api.go` expõe
+handlers `handleBot*` (postar recording/transcription, criar/enviar upload,
+atualizar status de job) que, à primeira vista, pareciam não ter checagem de
+autorização própria dentro do arquivo — hipótese de que um usuário comum
+pudesse forjar posts de recording/transcription ou status de job em
+qualquer chamada. Refutado ao ler `api_router.go`: todo o `botRouter` está
+sob middleware que exige `isBotSession(r)` (compara `Mattermost-User-Id` —
+header reescrito pelo core do Mattermost após validar sessão, não
+spoofável pelo cliente — contra o ID do bot `calls`) + `licenseChecker.
+RecordingsAllowed()` antes de qualquer handler; `handleBotUploadData`
+também confere `us.UserId==p.getBotID()`. Gate correto, sem achado.
+
+Investigação seguiu a cadeia até `job_service.go`/`activate.go` por
+curiosidade sobre o `authToken` repassado ao job de recording/transcribing
+offloaded (`RunJob`): é um Mattermost session token do próprio bot `calls`
+(`createJobSession`, `ExpiresAt=now+jobSessionTTL`, TTL = 2× duração máxima
+de gravação), usado pelo container externo (recorder/transcriber) para se
+autenticar de volta contra os endpoints `/bot/*` já gateados. Isso é o
+padrão de credencial esperado pela própria arquitetura `calls-offloader`
+(o job processando fora do processo do plugin precisa se autenticar como o
+bot para postar o resultado) — não é uma falha de código introduzida neste
+repositório, e o escopo dessa credencial já é limitado às permissões do
+bot `calls` (não admin), controladas pelo próprio Mattermost. Registrado
+como observação de arquitetura no `deep-read-log.json`, não como achado
+reportável (comprometer o container offloaded dá acesso a essa sessão pela
+duração do TTL, mas isso é inerente ao modelo de offloading documentado do
+produto, não uma falha exclusiva deste plugin).
+
+`deep-read-log.json` atualizado. `export-queue` rodado ao final da rodada
+(sem mudança de estado nesta rodada em Mattermost).
