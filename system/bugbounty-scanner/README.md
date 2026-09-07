@@ -52,7 +52,8 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   sucedidos. Ele transforma `research-plan` em work orders idempotentes,
   com lease, histórico, limite por rodada e backoff. Hoje executa três
   provas seguras: renova escopo estruturado na API oficial da HackerOne;
-  mede a idade de um arquivo usando apenas metadado `git log --follow`;
+  mede há quanto tempo o caminho não é alterado usando o commit mais recente
+  de `git log --follow` (sem confundir isso com a criação original do arquivo);
   e executa receitas `verified_regression` registradas em
   `evidence-recipes.json` usando o sandbox Docker já existente. Uma receita
   `validated_negative_assessment` pode transformar uma validação `fail`
@@ -942,6 +943,14 @@ justificativa, e só escreve um rascunho de relatório em
 (nunca metadado/cosmético). **Nunca envia nada — todo rascunho começa com
 aviso de que precisa de revisão humana antes de qualquer envio real.**
 
+Antes de investir numa nova PoC, `research-plan` pede `measure_code_age`
+quando ainda não existe uma mudança exata recente. Essa medição usa o último
+commit que tocou o caminho. Se ele é anterior à janela de 48 horas, o finding
+fica retido; se é recente, o sistema pode avaliar impacto, mas ainda não chama
+isso de regressão. Só o mesmo teste passando no parent seguro e reproduzindo
+no commit introdutor gera `noveltyProof`. Evidências antigas baseadas no
+primeiro commit do arquivo são remedidas e nunca decidem o gate.
+
 ## O que ainda é manual
 - Criar conta no Immunefi/GitHub — só o usuário.
 - Enviar o relatório de verdade para o programa — só o usuário, depois de
@@ -963,7 +972,8 @@ O Evidence Worker automatiza a execução depois que essa receita específica
 é cadastrada em `research/bugbounty/evidence-recipes.json`. A receita fica
 vinculada ao `findingId`; uma prova nunca é reaproveitada para outro achado.
 Sem receita ele pode eliminar código antigo da campanha por evidência de
-idade, mas não inventa vítima, deployment, impacto ou novidade. Resultados,
+ausência de alteração recente no caminho, mas não inventa quais linhas
+mudaram, vítima, deployment, impacto ou novidade. Resultados,
 retries e pendências humanas ficam em
 `research/bugbounty/evidence-worker-state.json` e são compartilhados pelo
 mesmo barramento Git dos demais módulos.
