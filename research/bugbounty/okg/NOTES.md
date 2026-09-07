@@ -1158,3 +1158,49 @@ de um irmão, usar o padrão **dominante** do grupo como referência, não o
 primeiro encontrado.
 
 `export-queue` pendente até o fim desta rodada (Mattermost + demais passos).
+
+## Rodada 2026-09-07 #3 (rotina agendada) — 3 arquivos novos, sem achado (padrão da família refutado com evidência de biblioteca)
+
+`program-policy.json` conferido no passo 0: `Circle BBP` (bloqueio por
+escolha do usuário) e `Auth0 by Okta` seguem fora de escopo, nenhum
+tocado. `research-plan` trouxe só os 3 `verify_scope` de Mattermost como
+`actionable` do banco inteiro (ver `mattermost/NOTES.md` desta rodada) —
+nenhum item novo em OKG na fila.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`
+(`okx/go-wallet-sdk` seguia com 3% de cobertura, maior espaço livre
+entre os candidatos liberados): clone raso público, 3 diretórios de
+coin ainda sem nenhuma entrada em `deep-read-log.json`
+(`avax`/`harmony`/`nostrassets`) — escolhidos por conterem o mesmo
+padrão superficial (`hex.DecodeString` → `btcec.PrivKeyFromBytes` sem
+checar comprimento) que **pareceria**, à primeira vista, repetir a
+família de 8 irmãos já confirmada (decode sem checar tamanho →
+panic via `ed25519.NewKeyFromSeed`).
+
+**Hipótese investigada e refutada com evidência de código-fonte de
+terceiro** (não apenas inspeção do SDK): busquei o código real de
+`btcec.PrivKeyFromBytes` (v2.3.4) e do `ModNScalar.SetByteSlice`
+subjacente (`decred/dcrd/dcrec/secp256k1/v4`) via `raw.githubusercontent.com`
+— ao contrário de `ed25519.NewKeyFromSeed` (usado pelos 8 irmãos, que
+exige exatamente 32 bytes e panica caso contrário),
+`SetByteSlice` trunca a entrada para `min(len,32)`, faz left-pad com
+zero e **nunca panica**, para nenhum comprimento de entrada. Os 3
+arquivos (`coins/avax/avax.go::NewTransferTransaction`,
+`coins/harmony/harmony.go::NewAddress`,
+`coins/nostrassets/nostr.go`: `GetPublicKey`/`AddressFromPrvKey`/
+`NpubEncode`/`NsecEncode`/`AddressFromPubKey`) usam esse padrão sem
+checar comprimento, mas isso não produz crash — na pior hipótese gera
+silenciosamente uma chave/endereço derivado de um scalar
+reduzido/zero-padded a partir de hex curto, sem panic, sem DoS. Notei
+adicionalmente que `nostr.go` tem `defer/recover` em cada uma das 5
+funções relevantes, convertendo qualquer panic residual em erro
+tratável — defesa em profundidade extra, ausente nos 8 irmãos
+originais. **Sem achado nos 3** — não é o 9º irmão da família; a
+hipótese foi ativamente perseguida e descartada com prova de biblioteca,
+não só por não "parecer" igual.
+
+`deep-read-log.json` atualizado (+3 entradas em `okx/go-wallet-sdk`,
+34→37 arquivos lidos). Clone temporário removido. Nenhuma transição de
+estado nesta rodada em OKG (os 8 achados-irmãos já retidos em
+`below_campaign_impact`/`reproduced_local` seguem sem mudança).
+`export-queue` rodado ao final da rodada.

@@ -1098,3 +1098,33 @@ projeto. Efeito prático conhecido e aceito: uma rodada futura pode reler
 `calendar/utils/bot/admin.go` e `calendar/api/get_authorized.go` de
 `mattermost-plugin-mscalendar` sem saber que já foram lidos sem achado --
 custo baixo, sem risco de correção, já documentado aqui por extenso.
+
+## Rodada 2026-09-07 #9 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` (nome exato, espaço final) conferidos no passo 0:
+`blocked:false`, RoE já revisado. `migrate-to-v2.mjs` + `research-plan`
+trouxeram de novo os mesmos 3 `corroborated_static` (`-confluence`,
+`-msteams-meetings`, `-zoom`) como únicos `actionable`/`verify_scope` do
+banco inteiro (9ª vez consecutiva na mesma data) — conferido via
+`cli.mjs get` no achado `-confluence`: reasoning/`check-scope`/
+deployment evidence/`record-validation type=manual_review` já
+registrados em rodadas anteriores desta mesma data, sem nenhuma
+informação nova a acrescentar sem confirmação manual externa de
+`bountyEligible` na página oficial do Bugcrowd (fora do alcance desta
+sessão cloud, mesma limitação de egress já documentada nas rodadas
+#3-#8). Não retocado, para não duplicar trabalho já commitado.
+
+`list-pending` (sem `--include-held`) = 0 — os 34 `candidate` restantes
+no banco seguem 100% em `Auth0 by Okta`/`Circle BBP` bloqueados, held
+corretamente.
+
+Leitura profunda proativa desta rodada foi direcionada a
+`okx/go-wallet-sdk` (programa OKG) em vez de mais um plugin Mattermost —
+ver `okg/NOTES.md` desta mesma data (rodada #3: 3 arquivos novos,
+`avax`/`harmony`/`nostrassets`, hipótese de 9º irmão da família
+panic/DoS investigada e refutada com evidência de código-fonte de
+terceiro, sem achado).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
