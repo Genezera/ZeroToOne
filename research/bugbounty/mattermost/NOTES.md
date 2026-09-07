@@ -1291,3 +1291,75 @@ mesma data para detalhe completo.
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #13 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/`verify_scope`
+(`-confluence`, `-msteams-meetings`, `-zoom` em `corroborated_static`, e
+`-mscalendar` em `reproduced_local`) — 13ª vez consecutiva. Confirmado
+desta vez direto no código do CLI (`cli.mjs`/`cmdRefreshScopeLive`) que
+`refresh-scope-live` só existe pra HackerOne (`getStructuredScope`,
+`platform: 'HackerOne'` hardcoded) — não há caminho de refresh ao vivo
+pra Bugcrowd nesta ferramenta, então o bloqueio estrutural de
+`bountyEligible=null` documentado nas rodadas #1-#12 não é algo que este
+pipeline resolve sozinho; confirma a limitação por leitura do código-fonte
+do próprio scanner, não só por repetição do resultado. Não retocado.
+`list-pending` (sem `--include-held`) = 0 confirmado. Repeti
+`search-prior-art` (curl direto pra `api.github.com/search/issues`) pro
+achado `-mscalendar`: ainda `HTTP 403` — mesma limitação de rede das
+rodadas #11-#12, sem mudança.
+
+Leitura profunda proativa desta rodada, direcionada a
+`mattermost/mattermost-plugin-gitlab` (4→7 arquivos lidos, escolhido por
+ter só 4 arquivos no log entre os candidatos permitidos — mesmo repo do
+achado `non_constant_time_hmac_comparison` já `known_duplicate`, mas com
+código novo desde a última leitura):
+
+- `server/mcp.go`/`server/mcp_handlers.go` — feature nova (não existia na
+  leitura original de 4 arquivos): bridge MCP (`/mcp`) que expõe as
+  mesmas tools GitLab (issues/MRs/projetos/comentários) para o plugin
+  Agents chamar em nome de um usuário Mattermost via LLM. Hipótese
+  investigada com ceticismo genuíno: a rota `/mcp` é registrada em
+  `p.router` (linha 54 de `api.go`) **sem** `p.checkAuth` — diferente de
+  toda rota `/api/v1/*` — e `resolveCaller()` confia inteiramente em
+  `pluginmcp.GetUserID(ctx)` extraído do header `X-Mattermost-UserID`.
+  Isso pareceu inicialmente uma possível bypass de autenticação (um
+  cliente HTTP externo batendo direto em
+  `/plugins/mattermost-plugin-gitlab/mcp` com esse header forjado,
+  assumindo a identidade de qualquer usuário). **Refutado por
+  rastreamento cross-repo até a origem do trust boundary** (não só
+  leitura local): clonei `github.com/mattermost/mattermost-plugin-agents`
+  (pacote `pluginmcp`, usado pelo GitLab plugin) — `pluginmcp/server.go`
+  exige `Mattermost-Plugin-ID == "mattermost-ai"` **antes** de confiar em
+  `X-Mattermost-UserID`. Depois clonei `github.com/mattermost/mattermost`
+  (core, sparse-checkout de `server/channels/app/plugin_requests.go`) —
+  confirmado que `servePluginRequest()`, o único ponto de entrada de
+  requisição HTTP pública para `/plugins/{id}/*`, faz
+  `r.Header.Del("Mattermost-Plugin-ID")` incondicionalmente (linha 191)
+  antes de despachar pro handler do plugin; esse header só é setado por
+  `ServeInternalPluginRequest`/`ServeInterPluginRequest`, funções Go
+  internas chamadas via `pluginAPI.PluginHTTP()` (chamada de código
+  server-side, não requisição de rede) — inacessíveis a um cliente HTTP
+  externo. Ou seja: um atacante batendo direto no endpoint público nunca
+  consegue setar `Mattermost-Plugin-ID=mattermost-ai` (sempre stripped
+  pelo core), o gate em `pluginmcp/server.go` sempre rejeita com 403
+  nesse caminho, e `X-Mattermost-UserID` nunca chega a ser confiado.
+  Mesmo padrão de defesa que o core já usa para `Mattermost-User-Id`.
+  Todos os handlers em `mcp_handlers.go` (get/list/create/update
+  issue, add comment, MRs, projects, metadata, user) chamam
+  `resolveCaller` antes de qualquer ação — nenhum bypassa essa
+  autorização. **Sem achado** — hipótese investigada até a raiz (3
+  repositórios lidos: gitlab-plugin, mattermost-plugin-agents,
+  mattermost core) e genuinamente refutada, não apenas descartada por
+  não ter tempo de investigar.
+- `server/instance.go` — CRUD de configuração multi-instância GitLab via
+  KV store (`installInstance`/`getInstance`/`uninstallInstance`/
+  `setDefaultInstance`); sem lógica de autenticação neste arquivo (gate
+  fica em quem invoca, não investigado por não ser o arquivo citado).
+  Sem achado direto.
+
+`deep-read-log.json` atualizado (edição programática via Python
+`json.load`/`json.dump`). `export-queue` rodado ao final da rodada (sem
+mudança de estado nesta rodada em Mattermost).
