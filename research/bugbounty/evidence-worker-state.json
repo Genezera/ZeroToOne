@@ -176,6 +176,47 @@
         }
       },
       "finishedAt": "2026-09-07T18:35:22.793Z"
+    },
+    "evidence:v1:ee14958f79380ca816ff2f6b83c4225be1c360301b177305e00e9afee6aadd0d": {
+      "taskId": "evidence:v1:ee14958f79380ca816ff2f6b83c4225be1c360301b177305e00e9afee6aadd0d",
+      "inputDigest": "04f7c486bfd9269b4db7ee11af0b3e9c323c7be00d05b3c93f64f81d72af5791",
+      "findingId": "Slack::slackhq/nebula/connection_state.go::ConnectionState.Decrypt+VerifyRelay::replay_window_toctou_race",
+      "program": "Slack",
+      "repository": "slackhq/nebula",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "needs_human",
+      "attempts": 1,
+      "reason": "nenhum scope snapshot existe para este programa",
+      "createdAt": "2026-09-07T20:48:11.831Z",
+      "lastAttemptAt": "2026-09-07T20:48:11.831Z",
+      "result": {
+        "reason": "program handle oficial não configurado; nenhuma busca de escopo foi feita"
+      },
+      "finishedAt": "2026-09-07T20:48:11.832Z"
+    },
+    "evidence:v1:ce93a5021981b9537e1c37fcee3d991a5d7fde830f2cb00d8dd4e937aa60283a": {
+      "taskId": "evidence:v1:ce93a5021981b9537e1c37fcee3d991a5d7fde830f2cb00d8dd4e937aa60283a",
+      "inputDigest": "8dd3700263daa285517be75b167273bb9d4c925b0a2c20485c849dd32f60f16b",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/server/plugin/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-github",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-07T20:48:11.831Z",
+      "lastAttemptAt": "2026-09-07T20:48:11.832Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 33 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 33,
+          "commit": "deacc544eb148306ff34cd09618352dfa3de1cff"
+        }
+      },
+      "finishedAt": "2026-09-07T20:48:13.160Z"
     }
   },
   "runs": [
@@ -217,6 +258,16 @@
       "claimed": 2,
       "completed": 2,
       "needsHuman": 0,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:221b47fef4f393944736e073e7653911fc6065968f185d4a4b131755dd12cdb9",
+      "startedAt": "2026-09-07T20:48:11.831Z",
+      "finishedAt": "2026-09-07T20:48:13.160Z",
+      "planned": 2,
+      "claimed": 2,
+      "completed": 1,
+      "needsHuman": 1,
       "failed": 0
     }
   ]
