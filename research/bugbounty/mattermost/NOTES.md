@@ -1498,3 +1498,40 @@ avançado até `reproduced_local`).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #18 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/
+`verify_scope` (`-confluence`, `-msteams-meetings`, `-zoom` em
+`corroborated_static`, `-mscalendar` em `reproduced_local`) — 18ª vez
+consecutiva. `check-scope` ao vivo rodado pros 4 de novo (não pulei):
+mesmo `snapshotCapturedAt`/`snapshotContentHash` das rodadas #12-#17
+(`2026-09-07T03:58:01.834Z`), `allowed=true`/`bountyEligible=null` nos
+4, sem mudança — bloqueio estrutural (Bugcrowd sem `refresh-scope-live`,
+confirmado por leitura de código na rodada #13) continua válido, nenhuma
+evidência nova. `list-pending` = 0.
+
+Esforço desta rodada foi de novo majoritariamente pra `okx/go-wallet-sdk`
+(OKG) — ver `okg/NOTES.md` rodada #6 desta mesma data: investigação de
+fundo sobre por que `research-plan` insiste em re-listar `multiKey.go`/
+`multiEd25519.go` como `actionable`/`establish_novelty` mesmo após o
+trabalho da rodada #5. Conclusão: o gate exige `noveltyProof.kind
+=== "verified_regression"` (parent seguro → commit vulnerável, via
+`verify-regression`/Docker — indisponível nesta sessão, daemon ausente),
+e o README confirma explicitamente que `verify-longstanding-exposure`
+(o método já usado na rodada #5) **não é caminho alternativo** pro gate
+anti-duplicate. Como os dois achados foram vendorizados já quebrados
+num único commit de importação do SDK upstream (sem parent seguro no
+histórico local), `establish_novelty` é estruturalmente inalcançável
+para este tipo específico de achado — não por falta de esforço, é o
+desenho intencional do gate. Nada forçado, nada retocado; estado
+inalterado (`reproduced_local`) nos dois. Deep-read: 3 arquivos novos
+(`coins/helium/keypair/keypair.go` — na verdade já coberto por achado
+existente, sem duplicata criada; `coins/aptos/v2/crypto/simulation.go` e
+`coins/nervos/crypto/secp256k1.go` — ambos sem achado, fail-closed/
+validação de tamanho explícita).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).

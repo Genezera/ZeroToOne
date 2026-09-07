@@ -1424,3 +1424,78 @@ conforme a barreira intencional do sistema.
 43→47 arquivos). Clones temporários (`okx/go-wallet-sdk`,
 `aptos-labs/aptos-go-sdk`) removidos. `export-queue` rodado ao final da
 rodada.
+
+## Rodada 2026-09-07 #6 (rotina agendada, gatilho push) — limite metodológico confirmado pro gate `establish_novelty` dos 2 achados em `reproduced_local`
+
+`research-plan` trouxe de novo os dois achados (`multiKey.go`,
+`multiEd25519.go`) como `actionable`/`establish_novelty`, apesar do
+trabalho já feito na rodada #5 (code-age via clone, comparação byte-a-byte
+contra o upstream, `record-duplicate-check` com `noveltyStatus=
+private_unknown`). Investiguei a fundo por quê, em vez de repetir o
+mesmo trabalho: `research-plan.mjs` linha 93 exige
+`duplicate?.noveltyProof` — e `novelty-risk.mjs` (`verifiedRegressionGate`)
+só aceita `noveltyProof.kind === "verified_regression"` (par
+`parentCommit` seguro → `introducedCommit` vulnerável, produzido só por
+`verify-regression`, que por sua vez precisa de `regression-sandbox.mjs`
+rodando um harness em Docker). Testei `docker version` nesta sessão:
+cliente presente, mas **sem daemon** (`connect: no such file or
+directory` em `/var/run/docker.sock`) — `verify-regression` não é
+executável neste ambiente de qualquer forma, achado ou não.
+
+Mas o bloqueio real é mais fundo que "sem Docker": reli
+`system/bugbounty-scanner/README.md` linhas 256-271 (seção "Exposição
+pública de longa data") — `verify-longstanding-exposure` (o mecanismo
+que a rodada #5 efetivamente usou via `git log`/`merge-base
+--is-ancestor`, sem precisar de Docker) é **explicitamente documentado
+como NÃO sendo um caminho alternativo pro gate anti-duplicate**:
+"código antigo teve mais tempo pra ser descoberto e reportado, inclusive
+em reports privados invisíveis" — por isso `noveltyStatus:
+"longstanding_exposure"` é recusado por `duplicateCheckGate`, e só uma
+`verified_regression` (parent seguro → commit vulnerável) libera a
+etapa. Essa regra corrigiu de propósito, em 04/09/2026, uma inversão
+metodológica anterior ("não achei nada publicamente" sendo tratado como
+prova de ausência) — a mesma armadilha que eu estaria pisando se
+tentasse forçar `longstandingExposureProof` como substituto aqui.
+
+**Conclusão honesta, sem contornar nem forçar**: os dois achados
+(`multiKey.go`, `multiEd25519.go`) foram vendorizados JÁ QUEBRADOS do
+SDK upstream oficial num único commit de importação (`71c47a3`,
+2025-10-24) — não existe um "parent seguro" nesse histórico local pra
+provar regressão, porque o bug nunca foi introduzido por uma mudança daqui;
+ele sempre esteve lá, inclusive no upstream até hoje. Isso significa que
+`establish_novelty` (no sentido estrito de `verified_regression` que o
+gate exige) é **estruturalmente inalcançável para este tipo de achado
+específico** — não é falta de esforço desta rodada nem de rodadas
+anteriores, é o desenho intencional do gate reconhecendo que "vendorizado
+antigo e nunca corrigido" carrega risco real de descoberta prévia
+invisível (reports privados), então nunca deveria contar como prova de
+novidade só por si. Nenhuma transição forçada, nenhum campo retocado.
+**Estado inalterado nos dois: `reproduced_local`.** Caso apareça no
+futuro uma versão anterior do vendoring com um "parent seguro" real
+(não existe, pelo `git log --follow` já confirmado — foi introduzido de
+uma vez só) ou uma correção upstream que crie um ponto de comparação
+válido, revisitar; até lá, não há ação legítima adicional a tomar aqui
+sem violar a metodologia anti-duplicate da campanha.
+
+Leitura profunda proativa desta rodada: 3 arquivos em
+`okx/go-wallet-sdk`, escolhidos por adjacência a auth/crypto/key ainda
+não cobertos segundo o log (`coins/helium/keypair/keypair.go`,
+`coins/aptos/v2/crypto/simulation.go`,
+`coins/nervos/crypto/secp256k1.go`). Achados: nenhum novo.
+`keypair.go` (helium) na verdade **já estava coberto** — a entrada da
+rodada #4 no log lista os dois arquivos juntos
+(`coins/helium/helium.go + coins/helium/keypair/keypair.go`) como parte
+do mesmo achado `Sign+NewAddress` (`NewKeypairFromHex`/
+`CreateAddressable`/`Keypair.Sign` são exatamente as funções já
+reportadas); relido aqui só confirmou o texto do achado existente, sem
+criar duplicata. `simulation.go`: `NoAuthenticator.Verify` retorna
+`false` incondicionalmente — fail-closed por design, sem achado.
+`secp256k1.go` (nervos): `toKey(d, strict=true)` valida
+`8*len(d)==BitSize` explicitamente antes de aceitar a chave (mais o
+range `0 < D < N`), ao contrário dos 8 irmãos já confirmados — outro
+contraexemplo do padrão seguro já visto em `zksync`/`stacks`/
+`aptos ed25519.go FromBytes`. Sem achado.
+
+`deep-read-log.json` atualizado (+2 entradas genuinamente novas em
+`okx/go-wallet-sdk`, 47→49; `keypair.go` não duplicado). Clone
+temporário removido. `export-queue` rodado ao final da rodada.
