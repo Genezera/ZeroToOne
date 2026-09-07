@@ -1316,3 +1316,111 @@ reconheceu a diferença estrutural frente aos 8 irmãos.
 `deep-read-log.json` atualizado (+5 entradas em `okx/go-wallet-sdk`,
 38→43 arquivos). Clone temporário removido. `export-queue` rodado ao
 final da rodada.
+
+## Rodada 2026-09-07 #5 (rotina agendada, gatilho push) — `establish_novelty` do achado MultiKey + SEGUNDO achado real (DoS) no arquivo irmão
+
+`research-plan` trouxe o achado `multikey_bitmap_signature_verification_bypass`
+(rodada #4) como `actionable`/`establish_novelty`. `code-age` via API
+(`cmdCodeAge`/`api.github.com`) falhou com 401/403 -- confirmado que é
+limitação da PRÓPRIA sessão cloud (proxy de rede escopado só a
+`genezera/zerotoone`, bloqueia `api.github.com` pra qualquer repositório
+de terceiro independente de token/auth; testado com `curl` direto,
+resposta é `"GitHub access to this repository is not enabled for this
+session"`, não um 401/404 real do GitHub). Contornado com o método
+explicitamente autorizado pelas instruções da rotina (git clone público,
+sem conta/token): `git log --follow` em `okx/go-wallet-sdk` confirma
+commit único `71c47a3` (2025-10-24) introduzindo `multiKey.go` inteiro
+(parte de um vendoring maior, "update aptos"), nunca modificado depois
+-- `codeAgeDays=318`. `record-code-age` registrado via script Node
+ad-hoc chamando `recordCodeAgeEvidence` diretamente (mesma função que
+`cmdCodeAge` usaria, só com o dado vindo de clone local em vez da API).
+
+Ao comparar contra o SDK upstream oficial `aptos-labs/aptos-go-sdk`
+(também clonado público pra esta comparação): o pacote legado
+`crypto/multiKey.go` desse repo tem **o mesmo bug byte-a-byte**
+(`==1` em vez de `!=0`) e continua assim no HEAD atual dele hoje --
+confirma que a okx vendorizou/copiou este código do SDK oficial,
+incluindo o bug (não é um bug introduzido pela okx). O pacote mais novo
+`v2/internal/crypto` do mesmo upstream (reescrita independente pra v2,
+não um fix direcionado) usa a comparação correta. Nenhum CVE/GHSA/
+changelog específico encontrado pro bug `ContainsKey==1` (nem no
+upstream, que continua vulnerável lá; nem via `web_search`).
+`record-duplicate-check` atualizado com esta evidência:
+`noveltyStatus=private_unknown`, `riskLevel=medium` (elevado pela
+exposição gêmea no repo upstream, mais vigiado, aumentando risco de
+descoberta independente por terceiros). Estado permanece
+`reproduced_local` (correto -- novidade estabelecida não é suficiente
+pra `scope_verified`, que também exige `deploymentEvidence.confidence=
+high`, que não temos). Nada forçado.
+
+**Achado colateral relevante fora do escopo dos 4 programas desta
+campanha**: o `CHANGELOG.md` do upstream `aptos-labs/aptos-go-sdk`
+(v1.12.0, 2026-02-25) registra um fix num arquivo IRMÃO
+(`multiEd25519.go`, vendorizado pela okx no MESMO commit `71c47a3`)
+para um bug relacionado mas diferente: `MultiEd25519PublicKey.Verify()`
+tinha comentário `TODO: Verify with bitmap` e ignorava o bitmap por
+completo. `aptos-labs` corrigiu isso em `36335d9` (2026-01-27) --
+DEPOIS do vendoring da okx (2025-10-24), então a okx nunca recebeu o
+fix. Investiguei se a okx também copiou esse trecho vulnerável: **sim,
+verbatim, incluindo o comentário TODO**.
+
+**SEGUNDO achado real desta campanha em `okx/go-wallet-sdk`, registrado
+como novo candidato e levado até `reproduced_local` na mesma rodada**:
+`OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiEd25519.go::MultiEd25519PublicKey.Verify::multied25519_bitmap_ignored_index_oob_panic`.
+`MultiEd25519PublicKey.Verify` indexa `sig.Signatures[i]`
+posicionalmente pra cada `key.PubKeys[i]`, sem checar
+`len(sig.Signatures) >= len(key.PubKeys)` antes. `MultiEd25519Signature.
+FromBytes` deriva o número de assinaturas do tamanho bruto do blob
+(`len(bytes)/64`) -- inteiramente controlado por quem fornece os bytes
+da assinatura via deserialização BCS (o caminho padrão pra verificar
+uma transação/autenticador de terceiro). Um blob curto (ex.: só os 4
+bytes do bitmap, zero assinaturas) faz `Verify()` **panicar** com
+`index out of range` antes de qualquer checagem criptográfica --
+negação de serviço remotamente disparável contra quem roda a
+verificação (não contra quem forneceu o input, diferente dos 8
+irmãos `self_request_only` já retidos). Diferente em NATUREZA do
+bypass total do `multiKey.go` (aqui não há forja de autorização --
+`verified >= threshold` ainda exige assinaturas reais quando não
+panica antes), por isso severidade menor.
+
+**PoC real escrita e rodada**: `coins/aptos/v2/crypto/
+zzrepro_multied25519_panic_test.go` -- `MultiEd25519PublicKey` real com
+3 chaves Ed25519 (`crypto/rand`), `SignaturesRequired=2`; blob forjado
+de 4 bytes (só bitmap, zero assinaturas) parseado sem erro por
+`FromBytes`; `key.Verify(msg, sig)` panica de verdade:
+`runtime error: index out of range [0] with length 0`, capturado via
+`recover()`. `record-validation type=go_manual_poc result=pass`
+registrado com a saída literal. `candidate→corroborated_static→
+reproduced_local` aceito pelo CLI. `record-impact-assessment`:
+`impactScope=other_user`, `severityRating=medium`, `reportable=true`
+(verificador de assinatura processa entrada de terceiro por definição
+-- dano recai sobre o operador do serviço verificador, não sobre quem
+forjou o blob). `record-duplicate-check`: `foundExisting=false`,
+`noveltyStatus=private_unknown`, `riskLevel=medium` (o bug de fundo já
+foi corrigido no upstream por outro motivo -- correctness, sem CVE/
+advisory associado -- reduzindo um pouco a chance de ineditismo total,
+mas a okx nunca atualizou e não há prova de relato prévio específico
+deste panic). `check-scope` confirma `allowed=true, bountyEligible=
+true`. `record-deployment-evidence` registrado com `confidence=
+unverified` (mesma honestidade dos outros achados -- sem tag/release
+pra ancorar contra build de produção exato). Tentativa
+`reproduced_local→scope_verified` corretamente recusada pelo CLI
+(confidence precisa ser `high`) -- não forçado. **Estado final:
+`reproduced_local`**, igual ao irmão `multiKey.go`.
+
+Leitura profunda proativa desta rodada continuou em
+`coins/aptos/v2/crypto/` (mesmo diretório fértil): `secp256k1.go`,
+`ed25519.go`, `singleKey.go` -- todos delegam `Verify()` inteiramente
+pra biblioteca real (`decred/dcrd/secp256k1`, `crypto/ed25519` stdlib)
+ou fazem passthrough puro pro `VerifyingKey` concreto, sem lógica
+própria de bitmap/indexação. Sem achado nos 3.
+
+Ambos os achados (`multiKey.go` e `multiEd25519.go`) permanecem
+`reproduced_local`, não `scope_verified` -- nenhum relatório foi
+escrito nem será até haver vínculo de deploy real com confidence=high,
+conforme a barreira intencional do sistema.
+
+`deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
+43→47 arquivos). Clones temporários (`okx/go-wallet-sdk`,
+`aptos-labs/aptos-go-sdk`) removidos. `export-queue` rodado ao final da
+rodada.

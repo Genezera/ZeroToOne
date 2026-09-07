@@ -1473,3 +1473,28 @@ distinta do próprio chamador — avançado até `reproduced_local`,
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #17 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/
+`verify_scope` (`-confluence`, `-msteams-meetings`, `-zoom` em
+`corroborated_static`, `-mscalendar` em `reproduced_local`) — 17ª vez
+consecutiva. `check-scope` ao vivo rodado pros 4 de novo (não pulei):
+mesmo `snapshotCapturedAt`/`snapshotContentHash` das rodadas #12-#16
+(`2026-09-07T03:58:01.834Z`), `allowed=true`/`bountyEligible=null` nos
+4, sem mudança — bloqueio estrutural (Bugcrowd sem `refresh-scope-live`)
+continua válido, nenhuma evidência nova. `list-pending` = 0.
+
+Esforço de leitura profunda proativa desta rodada foi de novo pra
+`okx/go-wallet-sdk` (OKG) em vez de mais um plugin Mattermost — ver
+`okg/NOTES.md` rodada #5 desta mesma data: `establish_novelty` do
+achado `multiKey.go` (código-fonte confirmado copiado do SDK oficial
+`aptos-labs/aptos-go-sdk`, que ainda tem o mesmo bug live hoje) +
+SEGUNDO achado real no arquivo irmão `multiEd25519.go` (panic/DoS
+remotamente disparável contra verificador de assinatura, PoC real,
+avançado até `reproduced_local`).
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
