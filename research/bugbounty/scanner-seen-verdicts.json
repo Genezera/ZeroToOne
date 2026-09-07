@@ -792,5 +792,10 @@
   "OKG::okx/go-wallet-sdk/coins/near/account.go::PrivateKeyToAddr::ai_deep_read_finding": "inconclusivo",
   "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiEd25519.go::MultiEd25519PublicKey.Verify::multied25519_bitmap_ignored_index_oob_panic": "confirmado",
   "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKeyBitmap.ContainsKey+MultiKey.Verify::multikey_bitmap_signature_verification_bypass": "confirmado",
-  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-mscalendar/calendar/engine/notification.go::processNotification::non_constant_time_hmac_comparison": "confirmado"
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-mscalendar/calendar/engine/notification.go::processNotification::non_constant_time_hmac_comparison": "confirmado",
+  "Slack::slackhq/nebula/connection_state.go::ConnectionState.Decrypt+VerifyRelay::replay_window_toctou_race": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/server/plugin/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/zcash/address.go::ValidateAddress::address_validation_logic_error": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/confluence_server_v2.go::GetNotificationPost::markdown_link_injection": "inconclusivo",
+  "OKG::okx/go-wallet-sdk/coins/stellar/strkey/signed_payload.go::DecodeSignedPayload::ai_deep_read_finding": "confirmado"
 }
