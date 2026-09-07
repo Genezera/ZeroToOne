@@ -1063,3 +1063,31 @@ Leitura profunda proativa, 3 arquivos:
   esperado, não forçado.
 
 `deep-read-log.json` atualizado. `export-queue` rodado ao final.
+
+## Rodada 2026-09-07 (rotina agendada, gatilho push) — `impactAssessment` registrado nos 4 achados-irmãos ainda sem avaliação estruturada
+
+`research-plan` apontou `assess_impact` como próximo passo para 4 dos 7
+achados-irmãos da família panic/DoS (`oasis::NewAddress+
+SignTransaction`, `polkadot::SignTx`, `ton::NewAddress+
+VenomNewAddress`, `crypto/ed25519::PrivateKeyFromSeed+
+PublicKeyFromSeed`) -- os outros 3 (solana/elrond/helium) já tinham
+`impactAssessment` de rodadas anteriores. `record-impact-assessment`
+rodado nos 4, com ceticismo genuíno (não copiado do precedente
+solana/elrond/helium, que tinha marcado `impactScope=other_user`/
+`reportable=true` especulando um deployment de backend multiusuário
+nunca confirmado no código): em nenhuma investigação anterior (nem
+nesta) foi encontrado um chamador interno do SDK que processe chaves de
+múltiplos usuários dentro do mesmo processo -- supor isso pra elevar
+`impactScope` seria inflar severidade pra satisfazer o gate, exatamente
+o que o CLAUDE.md deste repo proíbe explicitamente. Registrado para os
+4: `technicalValidity=confirmed` (PoC real já existia), `attackerControlledInput=true`,
+`confidentiality=none`, `integrity=none`, `availability=high` (panic é
+crash real), mas `impactScope=self_request_only` e `reportable=false`
+-- quem fornece a própria chave/seed malformada derruba a própria
+operação, sem vítima diferente demonstrada. Consistente com o achado-irmão
+`cardano/NewXPrvKeyFromEntropy` já retido por `below_campaign_impact`
+pelo mesmo motivo. `research-plan` confirma: os 4 saíram de `actionable`
+e entraram em `held/below_campaign_impact` (total do código subiu de 1
+para 5). Nenhuma transição de estado tentada (ficam em
+`reproduced_local`, mesmo estado de antes -- `impactAssessment` é
+avaliação, não transição). Nenhum achado novo nesta rodada.

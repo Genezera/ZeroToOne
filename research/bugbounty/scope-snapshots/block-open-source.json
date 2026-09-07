@@ -4,14 +4,14 @@
   "officialUrl": "https://bugcrowd.com/engagements/blockopensource",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Block Open Source\"",
-  "contentHash": "97c7bd4c07bdf1a4643a429a1c76e014616a6b131246d894bbe79c908b639245",
-  "capturedAt": "2026-09-02T20:02:54.406Z",
-  "expiresAt": "2026-09-16T20:02:54.406Z",
+  "contentHash": "7fe670d4eea193e8c2a451c1d607de459d07e3e22386ba10dac1f3b57e3a3514",
+  "capturedAt": "2026-09-07T03:58:01.834Z",
+  "expiresAt": "2026-09-21T03:58:01.834Z",
   "ttlDays": 14,
   "confidence": "low",
   "assets": [
     {
-      "assetIdentifier": "https://github.com/afterpay/sdk-ios",
+      "assetIdentifier": "███████████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,
@@ -19,7 +19,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "https://github.com/afterpay/sdk-android",
+      "assetIdentifier": "███████████████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,
@@ -27,7 +27,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "https://github.com/cashapp/cash-app-pay-ios-sdk",
+      "assetIdentifier": "███████████████████████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,
@@ -35,7 +35,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "https://github.com/cashapp/cash-app-pay-android-sdk",
+      "assetIdentifier": "███████████████████████████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,
@@ -43,7 +43,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "https://github.com/cashapp/hermit",
+      "assetIdentifier": "█████████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,
@@ -51,7 +51,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "https://github.com/cashapp/misk",
+      "assetIdentifier": "███████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,
@@ -59,7 +59,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "https://github.com/square/wire",
+      "assetIdentifier": "██████████████████████████████",
       "assetType": "other",
       "eligibleForBounty": null,
       "eligibleForSubmission": null,

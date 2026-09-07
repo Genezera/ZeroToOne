@@ -1,0 +1,149 @@
+{
+  "program": "Mattermost Public Bug Bounty Engagement ",
+  "platform": "Bugcrowd",
+  "officialUrl": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Mattermost Public Bug Bounty Engagement \"",
+  "contentHash": "2d6b1ab831f635f139d86f56a550fd24de660db60e9280d32de917b68220930d",
+  "capturedAt": "2026-09-07T03:58:01.834Z",
+  "expiresAt": "2026-09-21T03:58:01.834Z",
+  "ttlDays": 14,
+  "confidence": "low",
+  "assets": [
+    {
+      "assetIdentifier": "https://play.google.com/store/search?q=mattermost&c=apps",
+      "assetType": "android",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://apps.apple.com/us/app/mattermost/id1257222717",
+      "assetType": "ios",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://mattermost.com/apps/",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://bugcrowd-*your-own-instance*.cloud.mattermost.com/",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-jira ",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-zoom",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-github",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-gitlab",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-calls",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-playbooks",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-boards",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-ai",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-mscalendar",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-msteams-meetings",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-confluence",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-msteams",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Mesma limitação de Block Open Source/Auth0: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Repositórios dos 3 achados pendentes (mattermost-plugin-confluence, mattermost-plugin-msteams-meetings, mattermost-plugin-zoom) confirmados como alvos reais em escopo (\"Mattermost Confluence Plugin\", \"Mattermost Plugin for Microsoft Teams Meetings\", \"Mattermost Zoom Plugin\") -- elegibilidade de recompensa por severidade precisa confirmação manual na página oficial antes de qualquer submissão real."
+}

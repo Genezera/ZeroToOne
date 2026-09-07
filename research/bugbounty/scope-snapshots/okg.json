@@ -5,8 +5,8 @@
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle okg",
   "contentHash": "f2257e60139afc6fa2b069675c463c0e6ba5e2902feaa65cd643835d69ae1e09",
-  "capturedAt": "2026-09-02T20:02:54.406Z",
-  "expiresAt": "2026-09-16T20:02:54.406Z",
+  "capturedAt": "2026-09-07T03:58:01.834Z",
+  "expiresAt": "2026-09-21T03:58:01.834Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [

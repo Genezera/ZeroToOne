@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import { buildScopeSnapshot, saveSnapshot } from './scope-registry.mjs';
 import { TARGETS } from './targets.mjs';
-import { githubHeaders } from './github-auth.mjs';
 
 const H1_DATA_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/hackerone_data.json';
 const BC_DATA_URL = 'https://raw.githubusercontent.com/arkadiyt/bounty-targets-data/main/data/bugcrowd_data.json';
@@ -32,8 +31,16 @@ const IMMUNEFI_STACKINGDAO_POLICY = {
   communitySourceNote: 'Página oficial Immunefi é server-rendered; fetch direto (sem navegador) confirma o conteúdo. Testnet/mock explicitamente fora de "Primacy of Impact".',
 };
 
+// arkadiyt/bounty-targets-data é um repositório de terceiro, alheio ao
+// escopo do GITHUB_TOKEN desta sessão (que só tem acesso a
+// genezera/zerotoone) -- enviar Authorization: Bearer com um token
+// instalado/escopado a OUTRO repositório faz raw.githubusercontent.com
+// devolver 404 em vez de servir o arquivo público anonimamente (achado
+// real nesta rodada: a chamada quebrava só quando GITHUB_TOKEN estava
+// presente no ambiente). Fetch deliberadamente anônimo aqui -- é um
+// arquivo raw público, sem necessidade de autenticação nenhuma.
 async function fetchJson(url) {
-  const res = await fetch(url, { headers: githubHeaders() });
+  const res = await fetch(url, { headers: { 'User-Agent': 'ZeroToOne-bugbounty-scanner' } });
   if (!res.ok) throw new Error(`fetch ${url} -> HTTP ${res.status}`);
   return res.json();
 }
@@ -67,6 +74,7 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
   const kiwicom = h1Raw.find((p) => p.handle === 'kiwicom');
   const block = bcRaw.find((p) => (p.name || '').toLowerCase().includes('block open source'));
   const auth0 = bcRaw.find((p) => (p.name || '').toLowerCase().includes('auth0'));
+  const mattermost = bcRaw.find((p) => (p.name || '').toLowerCase().includes('mattermost'));
   const stackingDaoRaw = h1Raw.find((p) => p.handle === 'stackingdao' || (p.name || '').toLowerCase() === 'stackingdao');
 
   const capturedAt = new Date().toISOString();
@@ -188,6 +196,25 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
       confidence: 'low',
       capturedAt,
       communitySourceNote: 'Mesma limitação do Block Open Source: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Sabemos QUE auth0/auth0-java está listado (confirmado ao vivo: "Auth0 Java SDK (auth0-java)", um dos 25 ativos em escopo), não a elegibilidade de recompensa por severidade -- precisa confirmação manual na página oficial antes de qualquer submissão real.',
+    }));
+  }
+  if (mattermost) {
+    // Programa auto-descoberto (não um dos 4 alvos originais desta missão),
+    // liberado por RoE em program-policy.json (roeReviewed 2026-09-03,
+    // leitura real da página oficial do engagement Bugcrowd). 3 achados
+    // `corroborated_static` ficaram presos por falta deste snapshot --
+    // criado especificamente para desbloquear check-scope deles.
+    snapshots.push(buildScopeSnapshot({
+      program: 'Mattermost Public Bug Bounty Engagement ',
+      platform: 'Bugcrowd',
+      officialUrl: 'https://bugcrowd.com/engagements/mattermost-mbb-public',
+      sourceType: 'community_dataset_structured',
+      sourceDetail: 'arkadiyt/bounty-targets-data, bugcrowd_data.json, name "Mattermost Public Bug Bounty Engagement "',
+      rawSourceContent: mattermost,
+      assets: toAssetList(mattermost.targets && mattermost.targets.in_scope).map((a) => ({ ...a, eligibleForBounty: null, eligibleForSubmission: null })),
+      confidence: 'low',
+      capturedAt,
+      communitySourceNote: 'Mesma limitação de Block Open Source/Auth0: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Repositórios dos 3 achados pendentes (mattermost-plugin-confluence, mattermost-plugin-msteams-meetings, mattermost-plugin-zoom) confirmados como alvos reais em escopo ("Mattermost Confluence Plugin", "Mattermost Plugin for Microsoft Teams Meetings", "Mattermost Zoom Plugin") -- elegibilidade de recompensa por severidade precisa confirmação manual na página oficial antes de qualquer submissão real.',
     }));
   }
   if (stackingDaoRaw || true) {

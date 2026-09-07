@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/vercel-open-source",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle vercel-open-source",
-  "contentHash": "33053c33566caf8035aa93295b3dcddf7ffd3eae5198440f4cfcaa2e120584e9",
-  "capturedAt": "2026-09-02T20:02:54.406Z",
-  "expiresAt": "2026-09-16T20:02:54.406Z",
+  "contentHash": "88751180cef1ac5f55f2cc76f713ef785db5bb5c11ce6404272d6be76c3542e6",
+  "capturedAt": "2026-09-07T03:58:01.834Z",
+  "expiresAt": "2026-09-21T03:58:01.834Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [

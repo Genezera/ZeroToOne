@@ -648,3 +648,111 @@ refutada rastreando a cadeia completa cliente→servidor, não apenas
 descartada por inspeção superficial). `deep-read-log.json` atualizado
 (`mattermost/mattermost-plugin-calls`, repo novo, 6 entradas). Clone
 temporário removido. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 (rotina agendada, gatilho push) — causa raiz real do bloqueio de `verify_scope` corrigida; PoC de timing tentada e honestamente refutada no achado zoom
+
+`program-policy.json` conferido no passo 0: `Block Open Source` e
+`Circle BBP` seguem bloqueados (`check-program`, nenhum repo desses
+tocado). Nota lateral sobre um falso alarme desta mesma checagem:
+`check-program "Mattermost Public Bug Bounty Engagement"` (sem o
+espaço final) devolvia `blocked:true` por mismatch exato de nome contra
+a chave real em `program-policy.json` (`"...Engagement "`, COM espaço
+final) — não é um bloqueio real, é erro de digitação na consulta.
+Confirmado com o espaço final: `blocked:false`, RoE já revisado
+(03/09/2026), sem proibição de IA.
+
+`research-plan` trouxe os 3 achados `corroborated_static` deste
+programa (`-confluence::CompleteOAuth2`, `-msteams-meetings::
+completeUserOAuth`, `-zoom::verifyZoomWebhookSignature`) como
+`actionable`/`verify_scope`, mesmos 3 já documentados em rodadas
+anteriores. Investigando por que nenhum avançava apesar de o snapshot
+`mattermost-public-bug-bounty-engagement.json` já existir (rodada
+anterior mencionava isso como resolvido) — **causa raiz real, dupla**:
+
+1. **Bug em `capture-scope-snapshots.mjs`**: `fetchJson` enviava o
+   `GITHUB_TOKEN` desta sessão cloud (escopado só a
+   `genezera/zerotoone` pela integração GitHub) como `Authorization:
+   Bearer` para `raw.githubusercontent.com/arkadiyt/bounty-targets-data`
+   -- um repositório de TERCEIRO alheio ao escopo do token. GitHub
+   responde 404 em vez de servir o arquivo raw público anonimamente
+   quando um token sem acesso àquele repo é enviado (confirmado ao
+   vivo: `curl` sem headers funcionava, o script com `githubHeaders()`
+   falhava). Corrigido: fetch agora deliberadamente anônimo (comentário
+   explicando o motivo deixado no arquivo) -- isso bloqueava a
+   regeneração de QUALQUER snapshot nesta sessão específica, não só
+   Mattermost.
+2. **`asset`/`file` destes 3 findings guardavam o CAMINHO COMPLETO
+   (`owner/repo/caminho/arquivo.go`) em vez de só `owner/repo`** --
+   quebra silenciosamente `assetRefForFinding`/`repositoryFromFindingId`
+   (que dependem do sufixo do path bater com uma fração do `id` pra
+   inferir o repo; aqui path completo == sufixo completo, a checagem
+   `location === suffix` sempre descarta e cai no fallback errado que
+   devolve o path inteiro). Corrigido registrando `repository` explícito
+   em cada um dos 3 findings (`update-finding`).
+3. **Efeito colateral notado e documentado, não uma correção nova**:
+   `research-plan`/`list-pending` rodam `migrateAll` a partir de
+   `queue.jsonl` ANTES de calcular o plano -- uma correção feita só no
+   banco local (`update-finding`) sem `export-queue` antes da próxima
+   chamada de `research-plan` é revertida silenciosamente (mesmo
+   comportamento "upsert aditivo" já documentado em NOTES anteriores,
+   mas aqui reescreve campos já existentes de um finding já existente,
+   não só preserva achados novos). Lição operacional: sempre
+   `export-queue` logo depois de um `update-finding` que precisa
+   sobreviver à próxima leitura de `research-plan`/`list-pending` na
+   mesma rodada.
+
+Com os 2 bugs reais corrigidos, criado o bloco Mattermost em
+`capture-scope-snapshots.mjs` (padrão idêntico a Block Open
+Source/Auth0: Bugcrowd, `confidence=low`, sem flags de elegibilidade de
+recompensa por ativo) e rodado -- `check-scope` agora confirma
+`allowed=true` pros 3 repositórios (`mattermost-plugin-confluence`,
+`-msteams-meetings`, `-zoom`), todos listados como alvo real no
+engagement (`Mattermost Confluence Plugin`, `Mattermost Plugin for
+Microsoft Teams Meetings`, `Mattermost Zoom Plugin`). `bountyEligible`
+continua `null` -- Bugcrowd não expõe elegibilidade por ativo no
+dataset público (mesma limitação de Block Open Source/Auth0);
+`research-plan` corretamente continua pedindo `verify_scope` por esse
+motivo específico agora ("esta fonte não informa elegibilidade de
+recompensa"), não mais por falta de snapshot -- confirmação manual na
+página oficial fica pendente pra antes de qualquer `human_ready`, não
+presumida.
+
+**Tentativa de PoC real no achado zoom** (`verifyZoomWebhookSignature`,
+não tentada em rodada anterior por decisão explícita de "ceticismo
+honesto"): já que o achado-irmão `mattermost-plugin-gitlab::
+handleWebhook` tinha avançado a `reproduced_local` com um benchmark de
+timing estatisticamente conclusivo, tentei o mesmo aqui pra não deixar
+a decisão de pular baseada só em suposição. Clone raso público +
+`server/manifest.go` stub local (arquivo gerado por `build/bin/manifest
+apply` normalmente, `.gitignore`, não disponível em clone raso sem o
+submódulo de build) pra permitir compilar o pacote de teste. Escrito
+`zzrepro_timing_test.go` chamando `verifyZoomWebhookSignature` de
+produção via `Plugin`/`configuration` reais (mesmo padrão dos testes
+oficiais do próprio repo), 10 trials x 300000 iters, comparando
+`providedSignature` com erro no 1º char pós-prefixo vs erro só no
+último char. **Resultado: SEM sinal estatístico** (Welch |t|=0.095,
+limiar 2.5) **e na direção errada** -- overhead de
+`json.Unmarshal`+parse de timestamp+HMAC-SHA256 (~11400ns/call) domina
+qualquer diferença de poucos ns da comparação de string em si. Um
+segundo teste de controle, isolando só a comparação `!=` pura sem
+overhead ao redor, também não confirmou sinal na direção esperada
+(dominado por otimização do compilador Go sobre operandos constantes em
+loop apertado). `record-validation` registrado com `result=fail`
+(honesto, não simulado) -- **não avança a `reproduced_local`**,
+diferente do irmão gitlab onde o mesmo tipo de teste teve sinal
+estatisticamente claro (p=0.000). Reforça a conclusão já registrada em
+rodada anterior de severidade BAIXA/Informativa para este achado
+específico (dupla camada de segredo + agora também falta de confirmação
+empírica do timing leak).
+
+Os 2 achados de CSRF de account-linking (`confluence`,
+`msteams-meetings`) permanecem em `corroborated_static`: nenhum
+validador de PoC local existe pra essa classe de bug (exigiria servidor
+Mattermost real rodando com o plugin instalado, infraestrutura que este
+pipeline não tem) -- reasoning atualizado em cada um documentando a
+correção de escopo, não forçado além disso.
+
+Clones temporários (`mattermost-plugin-zoom`) removidos ao final.
+`deep-read-log.json` não alterado nesta rodada (trabalho foi 100% sobre
+achados de fila existentes, não leitura profunda proativa nova).
+`export-queue` rodado ao final da rodada.

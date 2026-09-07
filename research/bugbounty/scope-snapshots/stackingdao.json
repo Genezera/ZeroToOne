@@ -5,8 +5,8 @@
   "sourceType": "official_page_fetch",
   "sourceDetail": "Fetch direto de immunefi.com/bug-bounty/stackingdao/information/ (SSR, sem necessidade de navegador) + contratos curados em targets.mjs",
   "contentHash": "71a38a010caecfb7b8a8ec200e4cdcbb6a45f14c51c33a6d727356f9293f9164",
-  "capturedAt": "2026-09-02T20:02:54.406Z",
-  "expiresAt": "2026-10-02T20:02:54.406Z",
+  "capturedAt": "2026-09-07T03:58:01.834Z",
+  "expiresAt": "2026-10-07T03:58:01.834Z",
   "ttlDays": 30,
   "confidence": "high",
   "assets": [

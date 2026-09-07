@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/kiwicom",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle kiwicom",
-  "contentHash": "c882850c1ff4c9ecf151f7cd653a29a9a4498b3fc4ecb96936b378dc4099f988",
-  "capturedAt": "2026-09-02T20:02:54.406Z",
-  "expiresAt": "2026-09-16T20:02:54.406Z",
+  "contentHash": "210056219cf3b07c1231e57570a01510685e5403c862e160c47b8bc37cf74012",
+  "capturedAt": "2026-09-07T03:58:01.834Z",
+  "expiresAt": "2026-09-21T03:58:01.834Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
