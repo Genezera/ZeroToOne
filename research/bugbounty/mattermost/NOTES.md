@@ -1729,3 +1729,45 @@ superfície auth/token/crypto agora. `deep-read-log.json` atualizado.
 
 Nenhuma transição de estado tentada (nada em `candidate`/`actionable`).
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #24 (rotina agendada, gatilho push)
+
+Passo 0 + `research-plan` repetidos: `actionable: 0`, `list-pending`
+vazio (mesmo quadro `held` da rodada anterior). `program-policy.json`
+conferido diretamente antes de qualquer leitura — `Block Open Source`
+e `Circle BBP` continuam bloqueados; `Mattermost Public Bug Bounty
+Engagement ` liberado.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`
+direcionada a `mattermost/mattermost-plugin-github` (6 arquivos já
+lidos em rodadas anteriores). 4 arquivos novos: `server/plugin/utils.go`,
+`server/plugin/plugin.go` (trechos oauth/token/crypto), `audit.go`,
+`cluster.go`.
+
+**Achado novo**: `server/plugin/utils.go::encrypt/decrypt` usa AES-CFB
+sem MAC/autenticação (CWE-353, mesmo comentário dos mantenedores
+admitindo API deprecada) para o AccessToken OAuth do GitHub guardado
+no KV store (`plugin.go::storeGitHubUserInfo`/`getGitHubUserInfo`).
+Tentativa de refutação: nenhum handler HTTP em `api.go` escreve na
+chave `userID+githubTokenKey` com bytes arbitrários — o único caminho
+de escrita é um fluxo OAuth real completo, e o KV store do plugin só é
+alcançável via System Console (Admin) ou pelo próprio código do plugin,
+nunca por API pública de terceiros. Sem alcançabilidade cross-user
+demonstrada — mesma categoria dos achados-irmãos
+`non_constant_time_hmac_comparison` (gitlab/zoom/mscalendar): padrão
+estrutural real, mas impacto insuficiente pra Medium+ sem uma segunda
+precondição que não existe aqui. Registrado e avançado para
+`corroborated_static` (reasoning + filesRead documentados,
+confidence=média, severidade não inflada); não forçado além disso —
+sem PoC disponível para achado não-Solidity (limitação real do sistema)
+e impacto estrutural insuficiente para justificar `scope_verified`.
+Nota lateral: o plugin irmão `mattermost-plugin-msteams` (rodada
+anterior) usa AES-GCM corretamente em `crypt.go` — confirma que isto é
+uma fraqueza pontual deste repositório, não do template comum a toda a
+família de plugins.
+
+`audit.go`/`cluster.go` sem achado (structs de audit log / bus de
+evento interno server-to-server, não alcançável por HTTP externo).
+`deep-read-log.json` atualizado com os 4 arquivos novos.
+
+`export-queue` rodado ao final da rodada.
