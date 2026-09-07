@@ -12,7 +12,14 @@ export const WORKFLOW_EXPECTATIONS = [
   { file: 'bugbounty-report-sync.yml', label: 'report_sync', maxSuccessAgeMs: 4 * HOUR },
   { file: 'bugbounty-scan.yml', label: 'safety_scan', maxSuccessAgeMs: 18 * HOUR },
   { file: 'bugbounty-target-discovery.yml', label: 'target_discovery', maxSuccessAgeMs: 48 * HOUR },
+  { file: 'bugbounty-health.yml', label: 'health_monitor', maxSuccessAgeMs: 3 * HOUR },
 ];
+
+export function workflowExpectations({ operationalOnly = false } = {}) {
+  // The supervisor cannot require its own current run to have succeeded.
+  // Mission Control and manual invocations still check the supervisor too.
+  return operationalOnly ? WORKFLOW_EXPECTATIONS.filter((item) => item.label !== 'health_monitor') : WORKFLOW_EXPECTATIONS;
+}
 
 export function parseGitHubRepository(value) {
   const text = String(value || '').trim();
@@ -43,7 +50,7 @@ function runTime(run) {
 /** Interpreta o histórico real, não só a presença do YAML. Uma execução em
  * andamento é saudável somente quando o último terminal foi sucesso e ainda
  * está fresco; falha terminal ou silêncio além da tolerância falham fechado. */
-export function assessWorkflowRuns(expectation, runs = [], { now = Date.now(), workflowState = 'active' } = {}) {
+export function assessWorkflowRuns(expectation, runs = [], { now = Date.now(), workflowState = null } = {}) {
   const ordered = [...runs].sort((a, b) => runTime(b) - runTime(a));
   const active = ordered.find((run) => ['queued', 'in_progress', 'waiting', 'requested', 'pending'].includes(run.status)) || null;
   const latestTerminal = ordered.find((run) => run.status === 'completed') || null;
@@ -60,7 +67,7 @@ export function assessWorkflowRuns(expectation, runs = [], { now = Date.now(), w
   return {
     file: expectation.file,
     label: expectation.label,
-    workflowState,
+    workflowState: workflowState || null,
     ok: reasons.length === 0,
     status: reasons.length === 0 ? (active ? 'running' : 'healthy') : 'unhealthy',
     reasons,
@@ -92,7 +99,10 @@ export async function checkCloudWorkflowHealth({
     const workflowUrl = `https://api.github.com/repos/${repository}/actions/workflows/${encodeURIComponent(expectation.file)}`;
     const runsUrl = `${workflowUrl}/runs?per_page=10`;
     try {
-      const request = { headers: githubHeaders({ Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }) };
+      const request = {
+        headers: githubHeaders({ Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }),
+        signal: AbortSignal.timeout(15000),
+      };
       const [workflowResponse, runsResponse] = await Promise.all([
         fetchImpl(workflowUrl, request),
         fetchImpl(runsUrl, request),
@@ -100,6 +110,7 @@ export async function checkCloudWorkflowHealth({
       if (!workflowResponse.ok) throw new Error(`GitHub workflow metadata ${workflowResponse.status}`);
       if (!runsResponse.ok) throw new Error(`GitHub workflow runs ${runsResponse.status}`);
       const [workflow, runsBody] = await Promise.all([workflowResponse.json(), runsResponse.json()]);
+      if (!Array.isArray(runsBody?.workflow_runs)) throw new Error('GitHub workflow runs sem lista válida');
       return assessWorkflowRuns(expectation, runsBody.workflow_runs || [], { now, workflowState: workflow.state });
     } catch (error) {
       return {
@@ -118,7 +129,7 @@ export async function checkCloudWorkflowHealth({
 
 const isMain = process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
 if (isMain) {
-  checkCloudWorkflowHealth().then((result) => {
+  checkCloudWorkflowHealth({ expectations: workflowExpectations({ operationalOnly: process.argv.includes('--operational-only') }) }).then((result) => {
     console.log(JSON.stringify(result));
     if (!result.ok) process.exitCode = 1;
   }).catch((error) => {

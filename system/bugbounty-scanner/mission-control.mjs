@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openDb, closeDb, stateCounts, listFindings, listSubmissions } from './db.mjs';
+import { openDb, closeDb, stateCounts, listFindings, listSubmissions, latestImpactAssessment, latestDuplicateCheck, latestReport, latestDeploymentEvidence, listValidations } from './db.mjs';
 import { computeStatsFromSubmissions, enrichSubmissionsWithFindings } from './outcome-intelligence.mjs';
 import { runReadinessAudit } from './readiness-audit.mjs';
 import { checkCloudWorkflowHealth } from './cloud-workflow-health.mjs';
@@ -9,12 +9,15 @@ import { loadRuntimeState, summarizeRuntimeHealth } from './runtime-state.mjs';
 import { DEFAULT_RUNTIME_STATE_PATH } from './service-runner.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
 import { loadOperationProfile } from './operation-profile.mjs';
+import { buildResearchPlan } from './research-plan.mjs';
+import { loadProgramPolicyStrict } from './program-policy.mjs';
+import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_DB_PATH = path.join(REPO_ROOT, 'research', 'bugbounty', 'zerotoone.db');
 
-export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts = {}, outcomeStats = {}, profile = loadOperationProfile() }) {
+export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts = {}, outcomeStats = {}, researchPlan = null, profile = loadOperationProfile() }) {
   const attention = [];
   for (const item of readiness.checks || []) {
     if (!item.ok && item.severity !== 'limitation') attention.push(`audit:${item.name}: ${item.detail}`);
@@ -41,7 +44,11 @@ export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, c
       stateCounts: counts,
       activeInvestigations: ['corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready']
         .reduce((sum, state) => sum + Number(counts[state] || 0), 0),
-      readyForHumanReview: Number(counts.human_ready || 0),
+      storedHumanReady: Number(counts.human_ready || 0),
+      readyForHumanReview: researchPlan
+        ? researchPlan.actionable.filter((item) => item.action === 'human_review').length
+        : Number(counts.human_ready || 0),
+      researchWork: researchPlan?.summary || null,
     },
     outcomes: {
       submissions: Number(outcomeStats.totalSubmissions || 0),
@@ -75,15 +82,28 @@ export async function runMissionControl({
   const runtimeHealth = summarizeRuntimeHealth(loadRuntimeState(runtimeStatePath));
   let counts = {};
   let outcomeStats = {};
+  let researchPlan = null;
   if (existsSync(dbPath)) {
     const db = openDb(dbPath);
     try {
       counts = stateCounts(db);
-      const submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db));
+      const findings = listFindings(db);
+      const submissions = enrichSubmissionsWithFindings(listSubmissions(db), findings);
       outcomeStats = computeStatsFromSubmissions(submissions);
+      let programPolicy = {};
+      try { programPolicy = loadProgramPolicyStrict(); } catch { /* audit already reports invalid policy; all research stays held */ }
+      researchPlan = buildResearchPlan(findings, {
+        programPolicy, submissions,
+        scopeFor: (finding, now) => scopeGate(loadSnapshot(finding.program), assetRefForFinding(finding), now),
+        contextFor: (finding) => ({
+          impactAssessment: latestImpactAssessment(db, finding.id), duplicateCheck: latestDuplicateCheck(db, finding.id),
+          report: latestReport(db, finding.id), deploymentEvidence: latestDeploymentEvidence(db, finding.id),
+          validations: listValidations(db, finding.id),
+        }),
+      });
     } finally { closeDb(db); }
   }
-  return buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts, outcomeStats, profile });
+  return buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts, outcomeStats, researchPlan, profile });
 }
 
 const isMain = process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);

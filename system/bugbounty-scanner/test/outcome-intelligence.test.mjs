@@ -4,7 +4,13 @@ import {
   distinctSubmissionsFromFindings, enrichSubmissionsWithFindings,
   duplicateHistoryForFinding, computeStatsFromSubmissions,
   isDuplicateSaturatedProgram,
+  repositoryFromFinding,
 } from '../outcome-intelligence.mjs';
+
+test('histórico usa o repo real quando o finding antigo guarda caminho relativo', () => {
+  const finding = {id:'OKG::okx/go-wallet-sdk/coins/cardano/key.go::derive::risk',file:'coins/cardano/key.go',asset:'coins/cardano/key.go'};
+  assert.equal(repositoryFromFinding(finding), 'okx/go-wallet-sdk');
+});
 
 test('vários findings ligados ao mesmo report contam como uma submissão', () => {
   const outcome = { platform: 'HackerOne', externalReportId: '100', state: 'duplicate', originalReportId: '50' };

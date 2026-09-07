@@ -80,11 +80,47 @@ export function buildScopeSnapshot({
 }
 
 export function isSnapshotExpired(snapshot, now = new Date().toISOString()) {
-  return new Date(snapshot.expiresAt).getTime() <= new Date(now).getTime();
+  const expiresAt = Date.parse(snapshot?.expiresAt);
+  const nowMs = new Date(now).getTime();
+  return !Number.isFinite(expiresAt) || !Number.isFinite(nowMs) || expiresAt <= nowMs;
 }
 
 function normalizeAssetKey(value) {
-  return (value || '').toLowerCase().replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(/\/$/, '');
+  return String(value || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '').replace(/\.git$/, '');
+}
+
+function scopeAssetKey(value) {
+  const raw = typeof value === 'string' ? value.trim() : '';
+  if (!raw || /\\/.test(raw)) return null;
+  if (/\s/.test(raw)) return /:\/\//.test(raw) ? null : `opaque:${raw}`;
+  const key = raw.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  // GitHub URLs and owner/repo are aliases only for a complete repository
+  // identity. Paths, suffixes and lookalike hosts never imply authorization.
+  if (/^github\.com\//i.test(key)) {
+    const repo = key.slice('github.com/'.length).replace(/\.git$/i, '');
+    if (/^[a-z0-9_-]+$/i.test(repo)) return `github-org:${repo.toLowerCase()}`;
+    return /^[a-z0-9_.-]+\/[a-z0-9_.-]+$/i.test(repo) ? `github:${repo.toLowerCase()}` : null;
+  }
+  if (/^[a-z0-9_-]+\/[a-z0-9_.-]+$/i.test(key)) return `github:${key.replace(/\.git$/i, '').toLowerCase()}`;
+  if (/^https?:\/\//i.test(raw) || /^(?:[a-z0-9-]+\.)+[a-z0-9-]+(?::\d+)?(?:\/|$)/i.test(raw)) {
+    try {
+      const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+      if (url.username || url.password) return null;
+      return `${url.host.toLowerCase()}${url.pathname.replace(/\/$/, '')}${url.search}${url.hash}`;
+    } catch { return null; }
+  }
+  return key;
+}
+
+function matchesScopeAsset(identifier, requested) {
+  const scoped = scopeAssetKey(identifier);
+  if (!scoped || !requested) return false;
+  if (scoped === requested) return true;
+  // Only explicit DNS wildcards are supported. The apex is not included;
+  // repository/path globs require an explicit, separately reviewed asset.
+  if (!/^\*\.(?:[a-z0-9-]+\.)+[a-z0-9-]+$/i.test(scoped)) return false;
+  if (!/^(?:[a-z0-9-]+\.)+[a-z0-9-]+$/i.test(requested)) return false;
+  return requested.toLowerCase().endsWith(scoped.slice(1).toLowerCase());
 }
 
 function repositoryFromFindingId(finding = {}) {
@@ -111,7 +147,7 @@ function repositoryFromFindingId(finding = {}) {
  * owner/repo/src/file.ts is reduced to owner/repo. Non-repository assets
  * (contracts/domains) retain their explicit `asset` value. */
 export function assetRefForFinding(finding = {}) {
-  const explicitRepo = finding.repository || finding.repo;
+  const explicitRepo = finding.repository || finding.repo || finding.raw?.repository || finding.raw?.repo;
   if (explicitRepo) return normalizeAssetKey(explicitRepo).replace(/^github\.com\//, '');
   const repositoryFromId = repositoryFromFindingId(finding);
   if (repositoryFromId) return repositoryFromId;
@@ -129,16 +165,14 @@ export function assetRefForFinding(finding = {}) {
  * por padrão).
  */
 export function assetInScope(snapshot, assetRef) {
-  if (!snapshot || !assetRef) return null;
-  const needle = normalizeAssetKey(assetRef);
-  for (const asset of snapshot.assets) {
-    const hay = normalizeAssetKey(asset.assetIdentifier);
-    if (!hay) continue;
-    if (hay === needle || hay.endsWith('/' + needle) || needle.endsWith(hay) || hay.includes(needle) || needle.includes(hay)) {
-      return asset;
-    }
-  }
-  return null;
+  if (!Array.isArray(snapshot?.assets)) return null;
+  const requested = scopeAssetKey(assetRef);
+  const matches = snapshot.assets.filter((asset) => matchesScopeAsset(asset?.assetIdentifier, requested));
+  // An explicit exclusion must not be shadowed by an earlier wildcard.
+  return matches.find((asset) => asset.eligibleForSubmission === false)
+    || matches.find((asset) => asset.eligibleForBounty === false)
+    || matches.find((asset) => scopeAssetKey(asset.assetIdentifier) === requested)
+    || matches[0] || null;
 }
 
 /**
@@ -164,6 +198,9 @@ export function scopeGate(snapshot, assetRef, now = new Date().toISOString()) {
     snapshotContentHash: snapshot.contentHash,
     officialUrl: snapshot.officialUrl,
   };
+  if ([asset.eligibleForSubmission, asset.eligibleForBounty].some((value) => value != null && typeof value !== 'boolean')) {
+    return { allowed: false, reason: 'flags de elegibilidade inválidas no scope snapshot', asset, ...evidence };
+  }
   if (asset.eligibleForSubmission === false) {
     return { allowed: false, reason: `ativo "${assetRef}" explicitamente NÃO elegível para submissão neste snapshot`, asset, ...evidence };
   }

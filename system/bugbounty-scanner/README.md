@@ -4,7 +4,34 @@ Dois estágios, custo bem diferente, ligados por um repositório GitHub
 compartilhado (`https://github.com/Genezera/ZeroToOne`, privado). O
 Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
 
-## Estado operacional atual — 05/09/2026
+## Estado operacional atual — 07/09/2026
+
+- Comece a rodada com `node system/bugbounty-scanner/cli.mjs research-plan`.
+  O plano consulta estados, política, outcomes, escopo e impacto atuais e
+  fornece o próximo teste necessário. Itens `held` ficam preservados, mas
+  fora da seleção acionável. `list-pending` devolve apenas candidatos
+  acionáveis; `--include-held` permite consultar o histórico completo.
+  Os dois comandos hidratam o SQLite da fila compartilhada sem publicar
+  alterações. A seleção de leitura proativa também consulta submissões
+  reais antes de buscar metadados/código e retém programas/repositórios
+  cujo histórico não pode passar pelo gate atual da campanha.
+- O scope gate compara identidades exatas de repositório/URL/contrato.
+  Suporta somente wildcard DNS explícito `*.example.com` (sem incluir o
+  domínio raiz); exclusões prevalecem. Validade ausente/inválida e flags
+  não booleanas falham fechado. GitHub `owner/repo` e a URL do mesmo repo
+  são aliases, mas prefixos, substrings e caminhos arbitrários não são.
+- `bugbounty-health.yml` executa o health check na nuvem por agendamento
+  de 30 minutos e ao concluir um dos quatro jobs operacionais. Tem somente
+  permissões de leitura, timeout de três minutos e não usa o writer lock.
+  O Mission Control verifica também se esse supervisor está ativo e recente;
+  o job usa `--operational-only` para não depender do próprio sucesso atual.
+  Falha aparece no resultado/log do Actions; a entrega de notificação
+  depende das preferências do GitHub. Ainda não substitui um supervisor
+  externo capaz de avisar durante indisponibilidade geral do GitHub.
+- Agendamentos são intenções, não garantias de frequência. O health check
+  consulta execuções reais, rejeita estado administrativo desconhecido e
+  limita cada consulta HTTP a 15 segundos. O Mission Control separa
+  estados históricos de trabalho acionável e revalida a prontidão humana.
 
 - GitHub Actions monitora o HEAD dos repositórios permitidos a cada 15
   minutos e dispara a varredura delta somente dos repositórios cujo HEAD
@@ -885,10 +912,11 @@ IA de verdade rodando em ambiente isolado na nuvem (não no seu Windows).
 - **Cron diário de segurança** (11h15 UTC = 8h15 São Paulo) — rede de
   proteção caso um webhook falhe na entrega.
 
-O primeiro passo do agente é sempre: checar se há item "pending" na fila.
-Se não houver, encerra imediatamente — é o que mantém o custo baixo quando
-não há nada de novo. Só gasta uso de verdade analisando quando há
-candidato genuíno para investigar.
+O primeiro passo do agente é consultar `research-plan`. `list-pending`
+contém somente candidates acionáveis, enquanto o plano também inclui
+investigações já corroboradas/reproduzidas com evidência ainda faltante.
+Se não houver trabalho acionável nem delta permitido novo, encerra a rodada
+sem repetir a leitura de casos retidos. Lista vazia não prova ausência de bugs.
 
 O agente lê o código, tenta REFUTAR a suspeita (mesmo padrão cético usado
 na auditoria manual desta sessão), atualiza `queue.jsonl` com veredito e

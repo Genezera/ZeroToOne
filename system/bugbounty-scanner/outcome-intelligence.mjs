@@ -1,5 +1,7 @@
+import { assetRefForFinding } from './scope-registry.mjs';
+
 export function repositoryFromFinding(finding = {}) {
-  const value = String(finding.repository || finding.file || finding.asset || '').replace(/\\/g, '/').replace(/^https?:\/\/github\.com\//, '');
+  const value = String(assetRefForFinding(finding) || '').replace(/\\/g, '/').replace(/^https?:\/\/github\.com\//, '');
   const parts = value.split('/').filter(Boolean);
   return parts.length >= 2 ? `${parts[0]}/${parts[1]}`.toLowerCase() : value.toLowerCase();
 }

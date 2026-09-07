@@ -58,6 +58,17 @@ test('loadDeepReadLog devolve {} quando o arquivo não existe, nunca lança', ()
   assert.deepEqual(loadDeepReadLog(missing), {});
 });
 
+test('seleção proativa retém programa com duplicate antes de buscar popularidade ou código', () => {
+  const log = { 'old/repo': [], 'old/other-repo': [], 'new/repo': [] };
+  const index = new Map([['old/repo',['P']],['old/other-repo',['P']],['new/repo',['Q']]]);
+  const entry = { roeReviewed:true, nextReviewAt:'2099-12-31' };
+  const submissions = [{ id:'HackerOne:100', state:'duplicate', program:'P', repositories:['old/repo'], findingIds:[] }];
+  const result = selectDeepReadCandidates(log,index,{P:entry,Q:entry},{},{},{submissions});
+  assert.deepEqual(result.safe.map((item)=>item.repo), ['new/repo']);
+  assert.equal(result.campaignHeld.length, 2);
+  assert.deepEqual(result.campaignHeld[0].submissionIds, ['HackerOne:100']);
+});
+
 test('loadDeepReadLog devolve {} pra JSON inválido, nunca lança', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'deep-read-log-test-'));
   const p = path.join(dir, 'log.json');
@@ -155,8 +166,20 @@ test('selectDeepReadCandidates ordena safe do menos lido pro mais lido', () => {
 });
 
 test('selectDeepReadCandidates trata log vazio/ausente como zero candidatos, nunca lança', () => {
-  assert.deepEqual(selectDeepReadCandidates({}, new Map(), {}), { safe: [], blocked: [], unresolved: [], fullyCovered: [] });
-  assert.deepEqual(selectDeepReadCandidates(null, new Map(), {}), { safe: [], blocked: [], unresolved: [], fullyCovered: [] });
+  assert.deepEqual(selectDeepReadCandidates({}, new Map(), {}), {
+    safe: [],
+    blocked: [],
+    campaignHeld: [],
+    unresolved: [],
+    fullyCovered: [],
+  });
+  assert.deepEqual(selectDeepReadCandidates(null, new Map(), {}), {
+    safe: [],
+    blocked: [],
+    campaignHeld: [],
+    unresolved: [],
+    fullyCovered: [],
+  });
 });
 
 test('selectDeepReadCandidates com policy real do projeto bloqueia Block Open Source de verdade', () => {

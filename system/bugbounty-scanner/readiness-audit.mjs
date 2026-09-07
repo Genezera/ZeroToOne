@@ -48,7 +48,7 @@ function check(name, ok, severity, detail) {
   return { name, ok: !!ok, severity, detail };
 }
 
-export function workflowContract(filePath) {
+export function workflowContract(filePath, { health = false } = {}) {
   if (!existsSync(filePath)) return { ok: false, detail: 'workflow ausente' };
   const text = readFileSync(filePath, 'utf8');
   const actionRefs = [...text.matchAll(/^\s*(?:-\s*)?uses:\s*([^\s#]+).*$/gm)].map((match) => match[1]);
@@ -56,12 +56,17 @@ export function workflowContract(filePath) {
   const requirements = [
     ['schedule', /\bschedule\s*:/],
     ['manual dispatch', /\bworkflow_dispatch\s*:/],
-    ['write permission explícita', /contents:\s*write/],
-    ['concurrency global', /group:\s*zerotoone-bugbounty-writer/],
+    ['permissão explícita', health ? /contents:\s*read/ : /contents:\s*write/],
+    ['concurrency global', health ? /group:\s*zerotoone-bugbounty-health/ : /group:\s*zerotoone-bugbounty-writer/],
     ['não cancela writer concorrente', /cancel-in-progress:\s*false/],
     ['ao menos uma action declarada', actionRefs.length > 0],
     ['todas as actions pinadas por SHA', unpinnedActions.length === 0],
   ];
+  if (health) requirements.push(
+    ['leitura de status Actions', /actions:\s*read/],
+    ['sem permissões de escrita', !/\bwrite\b/.test(text)],
+    ['executa health check', /run:\s*node system\/bugbounty-scanner\/cloud-workflow-health\.mjs/],
+  );
   const missing = requirements.filter(([, requirement]) => (
     requirement instanceof RegExp ? !requirement.test(text) : !requirement
   )).map(([label]) => label);
@@ -152,9 +157,9 @@ export function runReadinessAudit({
     checks.push(check('toolchain_and_integrations', false, 'critical', error.message));
   }
 
-  for (const workflow of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml']) {
+  for (const workflow of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml', 'bugbounty-health.yml']) {
     try {
-      const contract = workflowContract(path.join(repoRoot, '.github', 'workflows', workflow));
+      const contract = workflowContract(path.join(repoRoot, '.github', 'workflows', workflow), { health: workflow === 'bugbounty-health.yml' });
       checks.push(check(`workflow_${workflow}`, contract.ok, 'critical', contract.detail));
     } catch (error) {
       checks.push(check(`workflow_${workflow}`, false, 'critical', error.message));

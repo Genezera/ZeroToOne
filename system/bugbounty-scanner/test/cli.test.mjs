@@ -10,7 +10,7 @@ import {
   cmdListPending, cmdStatus, cmdUpdateFinding, cmdTransition, cmdRecordValidation,
   cmdGenerateReport, cmdPipelineStatus, cmdRecordPlatformOutcome,
   cmdRecordDuplicateCheck, cmdSubmissionStats, cmdSubmissionPreflight, cmdGetFinding, cmdRankFinding,
-  cmdAutoTriageKnownCve, cmdPackageForSubmission, cmdSearchPriorArt,
+  cmdAutoTriageKnownCve, cmdPackageForSubmission, cmdSearchPriorArt, cmdResearchPlan,
 } from '../cli.mjs';
 
 function withTempEnv(fn) {
@@ -65,7 +65,7 @@ test('cmdListPending / cmdStatus refletem o banco', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
     upsertFinding(db, SAMPLE);
-    assert.equal(cmdListPending(db).length, 1);
+    assert.equal(cmdListPending(db, { programPolicy: TEST_PROGRAM_POLICY }).length, 1);
     assert.deepEqual(cmdStatus(db), { candidate: 1 });
     closeDb(db);
   });
@@ -76,11 +76,27 @@ test('cmdUpdateFinding faz merge sem apagar campos não tocados', () => {
     const db = openDb(dbPath);
     upsertFinding(db, SAMPLE);
     cmdUpdateFinding(db, SAMPLE.id, { reasoning: 'atualizado com leitura completa', filesRead: ['a.sol', 'b.sol'] });
-    const updated = cmdListPending(db)[0];
+    const updated = cmdListPending(db, { programPolicy: TEST_PROGRAM_POLICY })[0];
     assert.equal(updated.reasoning, 'atualizado com leitura completa');
     assert.deepEqual(updated.filesRead, ['a.sol', 'b.sol']);
     assert.equal(updated.program, 'Circle BBP');
     closeDb(db);
+  });
+});
+
+test('list-pending filtra bloqueados sem apagar estado; research-plan explica a retenção', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    try {
+      upsertFinding(db, SAMPLE);
+      const programPolicy = { 'Circle BBP': { blocked: true, reason: 'bloqueio explícito da fixture' } };
+      assert.deepEqual(cmdListPending(db, { programPolicy }), []);
+      assert.equal(cmdListPending(db, { includeHeld: true }).length, 1);
+      const plan = cmdResearchPlan(db, { programPolicy });
+      assert.equal(plan.summary.heldByReason.program_blocked, 1);
+      assert.equal(getFinding(db, SAMPLE.id).state, 'candidate');
+      assert.deepEqual(cmdStatus(db), { candidate: 1 });
+    } finally { closeDb(db); }
   });
 });
 

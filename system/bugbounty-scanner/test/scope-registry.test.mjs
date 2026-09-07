@@ -61,6 +61,56 @@ test('assetRefForFinding reduz caminho de arquivo a owner/repo e preserva ativo 
   assert.equal(assetRefForFinding({ file: 'packages/next/src/image.ts', asset: 'vercel/next.js' }), 'vercel/next.js');
 });
 
+test('scope exige identidade exata, nunca substring de outro repo, domínio ou contrato', () => {
+  const snap = buildScopeSnapshot({ ...BASE, assets: [
+    { assetIdentifier: 'https://github.com/acme/api-backend' },
+    { assetIdentifier: 'console.example.com' },
+    { assetIdentifier: 'stx-reserve-v2' },
+  ] });
+  for (const asset of ['acme/api', 'acme/api-backend-extra', 'api-backend',
+    'https://github.com/acme/api', 'https://github.com/acme/api-backend/blob/main/x.ts',
+    'https://github.com.evil/acme/api-backend', 'console.example.com.evil', 'example.com',
+    'stx-reserve', 'prefix-stx-reserve-v2', 'stx-reserve-v20']) {
+    assert.equal(assetInScope(snap, asset), null, asset);
+  }
+  assert.ok(assetInScope(snap, 'https://github.com/ACME/API-BACKEND.git/'));
+  assert.ok(assetInScope(snap, 'https://CONSOLE.example.com/'));
+});
+
+test('wildcard DNS explícito respeita limite de hostname e exclusão específica', () => {
+  const snap = buildScopeSnapshot({ ...BASE, assets: [
+    { assetIdentifier: '*.example.com', eligibleForBounty: true },
+    { assetIdentifier: 'admin.example.com', eligibleForSubmission: false },
+  ] });
+  assert.ok(assetInScope(snap, 'app.example.com'));
+  assert.ok(assetInScope(snap, 'https://sub.app.example.com'));
+  for (const value of ['example.com', 'notexample.com', 'app.example.com.evil', 'example.com/app']) {
+    assert.equal(assetInScope(snap, value), null);
+  }
+  assert.equal(scopeGate(snap, 'admin.example.com', BASE.capturedAt).allowed, false);
+});
+
+test('snapshot com validade inválida ou flags não booleanas bloqueia autorização', () => {
+  const snap = buildScopeSnapshot(BASE);
+  for (const expiresAt of [undefined, null, '', 'invalid']) {
+    assert.equal(scopeGate({ ...snap, expiresAt }, 'circlefin/malachite', BASE.capturedAt).allowed, false);
+  }
+  const malformed = buildScopeSnapshot({ ...BASE, assets: [{assetIdentifier:'acme/api', eligibleForBounty:'true'}] });
+  assert.equal(scopeGate(malformed, 'acme/api', BASE.capturedAt).allowed, false);
+});
+
+test('identificadores opacos, app URLs e organizações preservam igualdade sem expandir escopo', () => {
+  const snap = buildScopeSnapshot({...BASE,assets:[
+    {assetIdentifier:'OKX Android APK'},
+    {assetIdentifier:'https://play.google.com/store/apps/details?id=com.example.app'},
+    {assetIdentifier:'https://github.com/acme'},
+  ]});
+  for(const asset of snap.assets) assert.ok(assetInScope(snap,asset.assetIdentifier));
+  for(const value of ['Android APK','https://play.google.com/store/apps/details?id=com.example.other','acme/api','https://github.com/acme/api']) {
+    assert.equal(assetInScope(snap,value),null,value);
+  }
+});
+
 test('assetRefForFinding recupera owner/repo do ID quando asset e file são caminhos relativos', () => {
   const finding = {
     id: 'OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding',

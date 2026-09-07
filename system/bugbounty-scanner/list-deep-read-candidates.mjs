@@ -59,7 +59,9 @@ import path from 'node:path';
 import { extractGithubCandidates, fetchRepoMetadata } from './discover-targets.mjs';
 import { githubHeaders } from './github-auth.mjs';
 import { getBlockReason, loadProgramPolicyStrict, isProgramBanned } from './program-policy.mjs';
-import { openDb, closeDb } from './db.mjs';
+import { openDb, closeDb, listFindings, listSubmissions } from './db.mjs';
+import { enrichSubmissionsWithFindings, duplicateHistoryForFinding } from './outcome-intelligence.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
 import { listRepoFiles, isScannableFile, isScannableGoFile, isScannableJvmFile, isScannableSwiftFile, isScannableSolidityFile } from './fetch-repo.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -267,11 +269,12 @@ export function buildRepoProgramIndex(hackerOneData, bugcrowdData) {
  * ter sido medido. Sem dado nenhum de popularidade/cobertura/duplicata
  * (todos os defaults `{}`), o comportamento é idêntico ao de antes de
  * qualquer uma destas mudanças existir. */
-export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy = {}, popularity = {}, knownDuplicates = {}) {
+export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy = {}, popularity = {}, knownDuplicates = {}, { submissions = [] } = {}) {
   const safe = [];
   const blocked = [];
   const unresolved = [];
   const fullyCovered = [];
+  const campaignHeld = [];
 
   for (const [repoKey, filesRead] of Object.entries(deepReadLog || {})) {
     const count = Array.isArray(filesRead) ? filesRead.length : 0;
@@ -285,6 +288,15 @@ export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy =
     const bannedProgram = programs.find((p) => isProgramBanned(p, policy));
     if (bannedProgram) {
       blocked.push({ repo: repoKey, filesRead: count, program: bannedProgram, reason: getBlockReason(bannedProgram, policy) });
+      continue;
+    }
+
+    const history = programs.map((program) => duplicateHistoryForFinding({ repository: repoKey, program }, submissions));
+    if (history.some((entry) => entry.priorDuplicateSubmissions > 0)) {
+      campaignHeld.push({ repo: repoKey, programs, filesRead: count,
+        reason: 'gate da campanha impede envio com duplicate anterior no programa/repositório; não repetir leitura histórica',
+        submissionIds: [...new Set(history.flatMap((entry) => entry.matchingSubmissionIds))],
+      });
       continue;
     }
 
@@ -318,7 +330,7 @@ export function selectDeepReadCandidates(deepReadLog, repoProgramIndex, policy =
   popular.sort(byCoverageThenFilesRead);
   flagged.sort((a, b) => b.knownDuplicates - a.knownDuplicates || byCoverageThenFilesRead(a, b));
 
-  return { safe: [...clean, ...popular, ...flagged], blocked, unresolved, fullyCovered };
+  return { safe: [...clean, ...popular, ...flagged], blocked, unresolved, fullyCovered, campaignHeld };
 }
 
 /** Lista mínima para qualquer I/O de metadado subsequente. A primeira
@@ -340,11 +352,16 @@ export async function fetchDatasets() {
 }
 
 async function main() {
+  const policy = loadProgramPolicyStrict();
+  migrateAll({ dbPath: DEFAULT_DB_PATH, writeLog: false, emitLedger: false });
+  const db = openDb(DEFAULT_DB_PATH);
+  let submissions;
+  try { submissions = enrichSubmissionsWithFindings(listSubmissions(db), listFindings(db)); }
+  finally { closeDb(db); }
   const [hackerOneData, bugcrowdData] = await fetchDatasets();
   const index = buildRepoProgramIndex(hackerOneData, bugcrowdData);
-  const policy = loadProgramPolicyStrict();
   const log = loadDeepReadLog();
-  const repoKeys = authorizedRepoKeysForDeepRead(log, index, policy);
+  const repoKeys = selectDeepReadCandidates(log, index, policy, {}, {}, { submissions }).safe.map((item) => item.repo);
 
   // Política já foi aplicada acima: programas bloqueados/unresolved nunca
   // chegam a estas consultas de metadado/árvore do GitHub. Popularidade:
@@ -374,9 +391,9 @@ async function main() {
     console.warn(`Aviso: não consegui consultar duplicatas conhecidas no banco (${err.message}) -- seguindo sem esse sinal.`);
   }
 
-  const { safe, blocked, unresolved, fullyCovered } = selectDeepReadCandidates(log, index, policy, popularityCache, duplicateCounts);
+  const { safe, blocked, unresolved, fullyCovered, campaignHeld } = selectDeepReadCandidates(log, index, policy, popularityCache, duplicateCounts, { submissions });
 
-  console.log(`=== ${safe.length} candidato(s) seguro(s) pra leitura profunda -- não-popular/sem duplicata primeiro, mega-popular depois, já-visto-como-duplicata por último ===`);
+  console.log(`=== ${safe.length} candidato(s) permitido(s) pela política e histórico da campanha; elegibilidade/novidade ainda precisam de prova ===`);
   for (const s of safe.slice(0, 30)) {
     const starsLabel = s.stars !== null ? `${s.stars}★` : '?★';
     const dupLabel = s.knownDuplicates > 0 ? ` [${s.knownDuplicates}x já voltou duplicate]` : '';
@@ -398,6 +415,9 @@ async function main() {
   if (fullyCovered.length > 0) {
     console.log(`\n=== ${fullyCovered.length} repositório(s) 100% COBERTOS -- nada sobrando pra ler, não perca tempo revisitando ===`);
     for (const f of fullyCovered) console.log(`${f.repo} -- ${f.filesRead}/${f.totalScannableFiles} arquivo(s)`);
+  }
+  if (campaignHeld.length > 0) {
+    console.log(`\n${campaignHeld.length} repositório(s) retido(s) pelo histórico de duplicate da campanha. Consulte cli.mjs research-plan; a leitura histórica não muda esse bloqueio.`);
   }
 }
 

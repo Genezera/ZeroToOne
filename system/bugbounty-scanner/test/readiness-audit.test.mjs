@@ -6,6 +6,15 @@ import path from 'node:path';
 import { auditQueueText, runReadinessAudit, workflowContract } from '../readiness-audit.mjs';
 import { openDb, closeDb } from '../db.mjs';
 
+function writeHealthFixture(root) {
+  writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-health.yml'), [
+    'on:', '  schedule:', '  workflow_dispatch:', 'permissions:', '  contents: read', '  actions: read',
+    'concurrency:', '  group: zerotoone-bugbounty-health', '  cancel-in-progress: false',
+    'steps:', `  - uses: actions/checkout@${'a'.repeat(40)}`,
+    '  - run: node system/bugbounty-scanner/cloud-workflow-health.mjs',
+  ].join('\n'));
+}
+
 test('auditQueueText detecta JSON inválido, id ausente e duplicata', () => {
   const result = auditQueueText('{"id":"a"}\n{"id":"a"}\n{}\n{não-json\n');
   assert.deepEqual(result.duplicateIds, ['a']);
@@ -38,6 +47,7 @@ test('readiness audit consolida invariantes e mantém reports privados como limi
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-report-sync.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-change-monitor.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-target-discovery.yml'), workflow, 'utf8');
+  writeHealthFixture(root);
   const result = runReadinessAudit({
     repoRoot: root,
     doctor: () => ({ ok: true, tools: { node: {} }, failedTools: [], missingIntegrations: [] }),
@@ -64,6 +74,7 @@ test('readiness cloud-primary passa ao doctor somente os requisitos realmente ob
   for (const name of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml']) {
     writeFileSync(path.join(root, '.github', 'workflows', name), workflow, 'utf8');
   }
+  writeHealthFixture(root);
   let requirements;
   const result = runReadinessAudit({
     repoRoot: root,
@@ -105,6 +116,7 @@ test('readiness audit bloqueia uma liberação de pesquisa com revisão de RoE e
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-report-sync.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-change-monitor.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-target-discovery.yml'), workflow, 'utf8');
+  writeHealthFixture(root);
   const result = runReadinessAudit({
     repoRoot: root,
     doctor: () => ({ ok: true, tools: { node: {} }, failedTools: [], missingIntegrations: [] }),

@@ -1,5 +1,32 @@
 # Antes de qualquer coisa: verificação de política de programa
 
+## Seleção de trabalho da campanha — 07/09/2026
+
+Antes de escolher uma investigação, execute:
+
+```bash
+node system/bugbounty-scanner/cli.mjs research-plan
+```
+
+O plano hidrata o banco local sem reescrever fila/ledger, consulta outcomes
+reais e separa `actionable` de `held`. Faça o próximo passo indicado em
+`actionable`: confirmar escopo, avaliar impacto, estabelecer novidade ou
+completar validação. Uma indicação `verify_scope` autoriza apenas revisar
+as fontes de escopo; não presume que o ativo ou a recompensa estejam confirmados.
+
+`list-pending` agora omite candidatos retidos. `list-pending --include-held`
+é uma consulta histórica, nunca uma autorização para pesquisar esses itens.
+Lista vazia não prova que não existem vulnerabilidades: consulte o plano e
+os deltas permitidos. Não reinicie uma investigação retida sem nova evidência
+que resolva o motivo registrado. Para seleção proativa, use
+`list-deep-read-candidates.mjs`, que também aplica o histórico da campanha
+antes de buscar arquivos/metadados dos alvos.
+
+Medium/High/Critical precisam de impacto demonstrado e justificativa; não
+aumente a severidade para satisfazer o gate. As regras atuais de janela de
+regressão e histórico de duplicates continuam válidas. O plano é uma
+prioridade de trabalho, não prova de novidade nem autorização de submissão.
+
 **Isto vale pra QUALQUER sessão Claude neste repositório — local ou na
 nuvem, rotina agendada ou pedido manual do usuário.** Foi escrito depois
 de pelo menos 6 incidentes reais e documentados (ver

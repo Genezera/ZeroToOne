@@ -25,6 +25,8 @@ import { createPriorArtSearchAttestation, verifyPriorArtSearchAttestation } from
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { buildResearchPlan } from './research-plan.mjs';
+import { migrateAll } from './migrate-to-v2.mjs';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
 // acesso MCP ao banco) uma forma estruturada de mudar estado — em vez de
@@ -68,8 +70,30 @@ function parseJsonFlag(flags, name, fallback = {}) {
   }
 }
 
-export function cmdListPending(db) {
-  return listFindings(db, { state: 'candidate' });
+export function cmdResearchPlan(db, {
+  programPolicy = loadProgramPolicyStrict(), now = Date.now(), scopeResolver = currentScopeGateForFinding,
+} = {}) {
+  const findings = listFindings(db);
+  const submissions = enrichSubmissionsWithFindings(listSubmissions(db), findings);
+  return buildResearchPlan(findings, {
+    programPolicy, submissions, now, scopeFor: scopeResolver,
+    contextFor: (finding) => ({
+      impactAssessment: latestImpactAssessment(db, finding.id),
+      duplicateCheck: latestDuplicateCheck(db, finding.id),
+      report: latestReport(db, finding.id),
+      deploymentEvidence: latestDeploymentEvidence(db, finding.id),
+      validations: listValidations(db, finding.id),
+    }),
+  });
+}
+
+export function cmdListPending(db, options = {}) {
+  const candidates = listFindings(db, { state: 'candidate' });
+  if (options.includeHeld === true) return candidates;
+  const plan = cmdResearchPlan(db, options);
+  const tasks = new Map(plan.actionable.map((item) => [item.id, item]));
+  return candidates.filter((finding) => tasks.has(finding.id))
+    .map((finding) => ({ ...finding, researchTask: tasks.get(finding.id) }));
 }
 
 export function cmdStatus(db) {
@@ -770,11 +794,17 @@ async function main() {
     return;
   }
 
+  if (['list-pending', 'research-plan'].includes(command)) {
+    migrateAll({ dbPath: DB_PATH, writeLog: false, emitLedger: false });
+  }
   const db = openDb(DB_PATH);
   try {
     switch (command) {
       case 'list-pending':
-        printJson(cmdListPending(db));
+        printJson(cmdListPending(db, { includeHeld: flags['include-held'] === true }));
+        break;
+      case 'research-plan':
+        printJson(cmdResearchPlan(db));
         break;
       case 'status':
         printJson(cmdStatus(db));
@@ -853,7 +883,7 @@ async function main() {
         printJson(cmdPackageForSubmission(db, positional[0]));
         break;
       default:
-        console.error(`Comando desconhecido: "${command}". Comandos: list-pending, status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, verify-longstanding-exposure --config=<arquivo.json>, runtime-status, doctor, audit-system, mission-control, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
+        console.error(`Comando desconhecido: "${command}". Comandos: research-plan, list-pending [--include-held], status, get <id>, upsert-finding, update-finding, transition, record-validation, record-deployment-evidence, record-impact-assessment, record-report, generate-report, pipeline-status, record-duplicate-check, assess-novelty, search-prior-art --config=<arquivo.json>, verify-regression --config=<arquivo.json>, verify-longstanding-exposure --config=<arquivo.json>, runtime-status, doctor, audit-system, mission-control, code-age <owner/repo> <path> [ref] [--finding-id=<id>], auto-triage-known-cve, record-platform-outcome, submission-stats, submission-preflight, rank-finding <id> --opts='{...}', evidence-grade, check-program, export-queue, check-scope, refresh-scope-live, report-status, my-reports, sync-my-reports, sync-report-status, package-for-submission`);
         process.exitCode = 1;
     }
   } finally {

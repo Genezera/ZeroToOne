@@ -42,3 +42,14 @@ test('Mission Control agrega falhas de módulos numa lista única de atenção',
   assert.match(result.attention.join('\n'), /cloud:scan/);
   assert.match(result.attention.join('\n'), /local:heartbeat/);
 });
+
+test('Mission Control não chama human_ready legado de pronto quando o plano atual o reteve', () => {
+  const result = buildMissionControlSnapshot({
+    readiness:{fullyOperational:true,checks:[]}, cloud:{ok:true,checks:[]},
+    runtimeHealth:{healthy:false,reasons:[]},counts:{human_ready:1},profile:CLOUD_PRIMARY_PROFILE,
+    researchPlan:{summary:{actionable:0,held:1},actionable:[]},
+  });
+  assert.equal(result.pipeline.storedHumanReady,1);
+  assert.equal(result.pipeline.readyForHumanReview,0);
+  assert.equal(result.pipeline.researchWork.held,1);
+});

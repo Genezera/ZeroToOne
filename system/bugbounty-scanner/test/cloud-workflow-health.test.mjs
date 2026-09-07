@@ -1,11 +1,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  assessWorkflowRuns, checkCloudWorkflowHealth, parseGitHubRepository,
+  assessWorkflowRuns, checkCloudWorkflowHealth, parseGitHubRepository, workflowExpectations,
 } from '../cloud-workflow-health.mjs';
 
 const HOUR = 60 * 60 * 1000;
 const expectation = { file: 'workflow.yml', label: 'workflow', maxSuccessAgeMs: HOUR };
+
+test('Mission Control verifica o supervisor; o supervisor só exclui a própria execução', () => {
+  assert.equal(workflowExpectations().length,5);
+  assert.equal(workflowExpectations().some((item)=>item.label==='health_monitor'),true);
+  assert.equal(workflowExpectations({operationalOnly:true}).length,4);
+  assert.equal(workflowExpectations({operationalOnly:true}).some((item)=>item.label==='change_monitor'),true);
+});
 
 test('parseGitHubRepository aceita env e remotes HTTPS/SSH sem inventar host', () => {
   assert.equal(parseGitHubRepository('Genezera/ZeroToOne'), 'Genezera/ZeroToOne');
@@ -19,7 +26,7 @@ test('assessWorkflowRuns aceita sucesso fresco e mostra execução nova em andam
   const result = assessWorkflowRuns(expectation, [
     { id: 2, status: 'in_progress', created_at: '2026-09-05T11:59:00Z' },
     { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:45:00Z' },
-  ], { now });
+  ], { now, workflowState: 'active' });
   assert.equal(result.ok, true);
   assert.equal(result.status, 'running');
   assert.equal(result.latestSuccess.id, 1);
@@ -30,12 +37,12 @@ test('assessWorkflowRuns falha fechado para último terminal falho ou sucesso ve
   const failed = assessWorkflowRuns(expectation, [
     { id: 2, status: 'completed', conclusion: 'failure', updated_at: '2026-09-05T11:55:00Z' },
     { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:45:00Z' },
-  ], { now });
+  ], { now, workflowState: 'active' });
   assert.equal(failed.ok, false);
   assert.match(failed.reasons.join(' '), /failure/);
   const stale = assessWorkflowRuns(expectation, [
     { id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T10:00:00Z' },
-  ], { now });
+  ], { now, workflowState: 'active' });
   assert.equal(stale.ok, false);
   assert.match(stale.reasons.join(' '), /excedeu/);
 });
@@ -71,4 +78,19 @@ test('checkCloudWorkflowHealth consulta cada workflow e agrega indisponibilidade
   assert.equal(result.checks[0].ok, true);
   assert.equal(result.checks[0].workflowState, 'active');
   assert.equal(result.checks[1].status, 'unreachable');
+});
+
+test('estado administrativo ausente nunca é inventado como active, mesmo com sucesso recente', async () => {
+  const now = Date.parse('2026-09-05T12:00:00Z');
+  const workflow_runs = [{ id: 1, status: 'completed', conclusion: 'success', updated_at: '2026-09-05T11:45:00Z' }];
+  for (const workflowState of [undefined, null, '', 'deleted', 'disabled_inactivity']) {
+    assert.equal(assessWorkflowRuns(expectation, workflow_runs, { now, workflowState }).ok, false);
+  }
+  const result = await checkCloudWorkflowHealth({
+    repository: 'owner/repo', now, expectations: [expectation],
+    fetchImpl: async (url) => ({ ok: true, json: async () => url.includes('/runs?') ? { workflow_runs } : {} }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.checks[0].workflowState, null);
+  assert.match(result.checks[0].reasons.join(' '), /sem estado/);
 });
