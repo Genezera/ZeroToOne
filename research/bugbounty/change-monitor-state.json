@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-07T17:46:14.930Z",
+  "checkedAt": "2026-09-07T20:47:37.939Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -108,13 +108,13 @@
       ]
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "4c76fe01b6b88289bfdac4f90dc6749f4e7718be",
+      "sha": "9f8630f04a93cd23d23d43d3bde0a04ad37c4d54",
       "branch": "master",
-      "parentSha": "bd4ad74a027a10db4dc5953ea75e963eca370692",
-      "committedAt": "2026-09-07T16:06:34Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/4c76fe01b6b88289bfdac4f90dc6749f4e7718be",
-      "title": "[cinder-csi-plugin] Support creating incremental backups (#3172)",
-      "observedAt": "2026-09-07T17:46:14.930Z",
+      "parentSha": "4c76fe01b6b88289bfdac4f90dc6749f4e7718be",
+      "committedAt": "2026-09-07T18:20:31Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/9f8630f04a93cd23d23d43d3bde0a04ad37c4d54",
+      "title": "[manila-csi-plugin] Restore --nodeid and --nodeaz as optional overrides (#3140)",
+      "observedAt": "2026-09-07T20:47:37.939Z",
       "programs": [
         "Kubernetes"
       ],
@@ -273,13 +273,13 @@
       ]
     },
     "kubernetes/kube-scheduler": {
-      "sha": "68103b98628a5795e4eca33c91b31e00350702f9",
+      "sha": "3806b6ec9328ecd63a53b678b33612bcedcfc80a",
       "branch": "master",
-      "parentSha": "58fdf6521ac2b8abdd1c12601d898e41881cc92e",
-      "committedAt": "2026-09-04T23:32:46Z",
-      "url": "https://github.com/kubernetes/kube-scheduler/commit/68103b98628a5795e4eca33c91b31e00350702f9",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "248168d94e7dd9fb7509f1a3effeee9c83807400",
+      "committedAt": "2026-09-07T19:24:13Z",
+      "url": "https://github.com/kubernetes/kube-scheduler/commit/3806b6ec9328ecd63a53b678b33612bcedcfc80a",
+      "title": "Merge pull request #141910 from macsko/move_genericpodgroup_to_staging",
+      "observedAt": "2026-09-07T20:47:37.939Z",
       "programs": [
         "Kubernetes"
       ],
@@ -333,13 +333,13 @@
       ]
     },
     "kubernetes/org": {
-      "sha": "2394cf6fd2803870088999a95561281e4711d813",
+      "sha": "788e9abf45e307137d58a1fe6e3e29047bb1c5f2",
       "branch": "main",
-      "parentSha": "df522a95d13e1b16f433e8450237a0bb2ce3d887",
-      "committedAt": "2026-09-04T21:20:20Z",
-      "url": "https://github.com/kubernetes/org/commit/2394cf6fd2803870088999a95561281e4711d813",
-      "title": "Merge pull request #6612 from jlbutler/update-kro-admins",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "2394cf6fd2803870088999a95561281e4711d813",
+      "committedAt": "2026-09-07T19:08:27Z",
+      "url": "https://github.com/kubernetes/org/commit/788e9abf45e307137d58a1fe6e3e29047bb1c5f2",
+      "title": "Merge pull request #6615 from gnufied/add-gnufied-storage-leads",
+      "observedAt": "2026-09-07T20:47:37.939Z",
       "programs": [
         "Kubernetes"
       ],
