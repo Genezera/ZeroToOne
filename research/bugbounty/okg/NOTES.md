@@ -1091,3 +1091,70 @@ e entraram em `held/below_campaign_impact` (total do código subiu de 1
 para 5). Nenhuma transição de estado tentada (ficam em
 `reproduced_local`, mesmo estado de antes -- `impactAssessment` é
 avaliação, não transição). Nenhum achado novo nesta rodada.
+
+## Rodada 2026-09-07 #2 (rotina agendada, gatilho push) — 8º irmão da família panic/DoS + incidente de processo próprio (corrigido)
+
+Leitura profunda proativa (3 arquivos, repos ainda com baixa cobertura
+segundo `list-deep-read-candidates.mjs`: `okx/go-wallet-sdk` 3%,
+`slackhq/nebula` 7% — Mattermost sem candidato novo óbvio, ver
+`mattermost/NOTES.md`): `coins/near/account.go`, `coins/starknet/curve.go`,
+`coins/sui/util.go`.
+
+`coins/starknet/curve.go` (`StarkCurve.Sign`/`GenerateSecret`, geração de
+nonce RFC6979 pra assinatura na curva STARK) e `coins/sui/util.go`
+(utilitários de serialização BCS) — **sem achado**, ver `deep-read-log.json`
+para detalhe.
+
+`coins/near/account.go` (`PrivateKeyToAddr`/`PrivateKeyToPublicKeyHex`) —
+**8º irmão real** da família já confirmada 7x neste SDK (decode de
+chave/seed sem checar comprimento antes de slice/derivação): `hex.DecodeString`
+sem checar `len(bytes)>=32` antes de `bytes[32:]`. PoC real (`go test`,
+clone público `okx/go-wallet-sdk` commit `12fec6b0616347265efcc23bfc240c155da710eb`,
+mesmo commit já usado no irmão Solana): hex <32 bytes → panic real `slice
+bounds out of range`; hex ==32 bytes (justamente o tamanho do `seedHex`
+que o próprio `NewAccount()` deste pacote devolve) → **não** panica, retorna
+endereço vazio silenciosamente sem erro — efeito mais brando que os 7
+irmãos (que sempre panicam nesse caso via `ed25519.NewKeyFromSeed`).
+Reachability também mais fraca que os irmãos: ao contrário do irmão Solana
+(que tem cadeia documentada no README encadeando geração→uso direto no
+padrão vulnerável), aqui README/testes sempre usam uma chave de 64 bytes
+hardcoded corretamente dimensionada — nenhum exemplo do próprio SDK encadeia
+o `seedHex` de `NewAccount()` de volta pra estas funções.
+
+**Incidente de processo nesta própria rodada (corrigido antes do commit)**:
+ao investigar o achado, ancorei por engano no precedente do irmão isolado
+`solana/base/keys.go::PrivateKeyFromBase58` — que hoje está em `inconclusive`
+— sem perceber que esse estado é resultado de uma reavaliação pontual
+*posterior* (não documentada como tal no `deep-read-log.json`, que ainda
+dizia "chegou a reproduced_local"), e não representa o padrão dominante da
+família: os outros 7 irmãos (incluindo os 4 reavaliados na rodada anterior
+acima, na mesma data) permanecem em `reproduced_local` com `impactAssessment`
+`self_request_only`/`reportable=false`. Por causa desse engano, transicionei
+o achado de near (`candidate`→`corroborated_static`→`inconclusive`) antes de
+perceber a inconsistência. `state-machine.mjs` só abre `inconclusive->false_positive`
+como saída (aresta criada num incidente anterior documentado mais acima neste
+mesmo NOTES.md) — marcar `false_positive` aqui seria **factualmente errado**
+(o bug é real e confirmado, não um falso positivo), então optei por **não**
+forçar essa transição só para "fechar" o registro. Em vez disso: registrei
+`record-impact-assessment` correto no achado (`technicalValidity=confirmed`,
+`reportable=false`, `impactScope=self_request_only`, `availability=low` —
+mais brando que os irmãos pelo motivo do retorno-vazio-sem-panic acima) e
+atualizei o `reasoning` com a correção explícita. Resultado: o campo `state`
+deste finding específico fica tecnicamente preso em `inconclusive` por
+limitação mecânica do state-machine, mas o `impactAssessment` registrado é
+a fonte de verdade correta e trata o achado de forma equivalente aos 7
+irmãos (`reproduced_local`, não reportável por impacto insuficiente) — não
+como algo refutado. Nenhuma transição adicional forçada; `check-scope`/
+`deploymentEvidence` não registrados aqui pelo mesmo motivo que os irmãos
+já resolvidos por `impactAssessment.reportable=false` não os têm (sem
+utilidade adicional depois que o achado já saiu de `actionable` por
+`below_campaign_impact`).
+
+**Lição registrada para rodadas futuras**: ao citar um finding-irmão como
+precedente de disposição, conferir o estado **atual** via `cli.mjs get`
+(não confiar só na prosa do `deep-read-log.json`, que pode estar
+desatualizada em relação a reavaliações posteriores) e, quando houver mais
+de um irmão, usar o padrão **dominante** do grupo como referência, não o
+primeiro encontrado.
+
+`export-queue` pendente até o fim desta rodada (Mattermost + demais passos).

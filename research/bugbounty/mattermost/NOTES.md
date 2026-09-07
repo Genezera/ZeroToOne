@@ -917,3 +917,22 @@ explorável por terceiro. **Sem achado** — jira confirmado como referência
 também pra verificação de webhook secret, não só account-linking OAuth.
 
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #4 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program` conferidos no passo 0: segue
+`blocked:false`. Os mesmos 3 `corroborated_static` (`-confluence`,
+`-msteams-meetings`, `-zoom`) continuam como únicos `actionable`/
+`verify_scope` — já totalmente processados nas rodadas anteriores desta
+mesma data (`check-scope` ao vivo, `deploymentEvidence`, `record-validation
+type=manual_review`); nada novo a registrar sem confirmação manual externa
+de `bountyEligible` (bloqueada nesta sessão cloud por egress a
+bugcrowd.com, mesma limitação já documentada na rodada #3). Não retocado
+para não duplicar trabalho já commitado.
+
+Leitura profunda proativa desta rodada foi direcionada a `okx/go-wallet-sdk`
+(programa OKG) em vez de um novo plugin Mattermost — ver `okg/NOTES.md`
+desta mesma data para o 8º irmão da família panic/DoS encontrado lá.
+
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
