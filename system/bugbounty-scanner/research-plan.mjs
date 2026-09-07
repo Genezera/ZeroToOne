@@ -6,6 +6,16 @@ import { reportabilityGate } from './impact-assessment.mjs';
 import { isTerminal, submissionReadinessGate } from './state-machine.mjs';
 
 const ACTIVE_STATES = new Set(['candidate', 'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready']);
+const TRUSTED_PATH_TOUCH_METHODS = new Set([
+  'git_log_follow_latest_path_commit',
+  'github_file_last_commit',
+]);
+
+function trustedPathTouchAge(evidence) {
+  if (!evidence || !TRUSTED_PATH_TOUCH_METHODS.has(evidence.method)) return null;
+  const days = Number(evidence.codeAgeDays);
+  return Number.isInteger(days) && days >= 0 ? days : null;
+}
 
 /** A read-only work view, not a new finding state or an authorization grant.
  * Every record remains in the ledger/queue. A held finding may reappear only
@@ -59,17 +69,13 @@ export function buildResearchPlan(findings, {
       continue;
     }
 
-    // A ausência de uma regression proof não deve manter código antigo na
-    // fila para sempre. Se até a alteração mais recente do arquivo já é mais
-    // velha que a janela da campanha, uma regressão de <=48h é impossível.
-    // Aceitamos tanto a evidência normalizada quanto o sinal legado que já
-    // foi persistido dentro do duplicateCheck.
-    const measuredCodeAgeDays = Number(
-      context.codeAgeEvidence?.codeAgeDays ?? duplicate?.signals?.codeAgeDays,
-    );
-    if (!duplicate?.noveltyProof && Number.isFinite(measuredCodeAgeDays)
+    // Só métodos que medem o último toque do caminho sustentam este corte.
+    // O antigo "oldest path commit" e sinais legados sem proveniência podem
+    // dizer há quanto tempo o arquivo existe, não quando ele mudou por último.
+    const measuredCodeAgeDays = trustedPathTouchAge(context.codeAgeEvidence);
+    if (!duplicate?.noveltyProof && measuredCodeAgeDays !== null
         && measuredCodeAgeDays * 86400000 > MAX_VERIFIED_REGRESSION_AGE_MS) {
-      hold('outside_campaign_window', `código observado há ${measuredCodeAgeDays} dias; a campanha exige regressão verificada em até 48h`);
+      hold('outside_campaign_window', `o caminho não recebe alteração há ${measuredCodeAgeDays} dias; ele não pode conter regressão de caminho introduzida na janela exigida de 48h`);
       continue;
     }
 
@@ -82,6 +88,8 @@ export function buildResearchPlan(findings, {
     }
     const freshnessPriority = Number.isFinite(introducedMs) && introducedMs <= now
       ? Math.max(0, 5 - Math.floor((now - introducedMs) / 3600000)) : 0;
+    const hasRecentExactChange = Number.isFinite(introducedMs) && introducedMs <= now
+      && now - introducedMs <= MAX_VERIFIED_REGRESSION_AGE_MS;
     let scope;
     try { scope = scopeFor(finding, new Date(now).toISOString()); }
     catch { scope = null; }
@@ -99,6 +107,10 @@ export function buildResearchPlan(findings, {
     }
     if (!scope?.allowed || scope.bountyEligible == null) {
       task('verify_scope', scope?.reason || 'confirmar ativo exato e recompensa na fonte oficial antes de aprofundar pesquisa', 90 + freshnessPriority);
+      continue;
+    }
+    if (!duplicate?.noveltyProof && measuredCodeAgeDays === null && !hasRecentExactChange) {
+      task('measure_code_age', 'medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão', 80 + freshnessPriority);
       continue;
     }
     const impactGate = reportabilityGate(impact);

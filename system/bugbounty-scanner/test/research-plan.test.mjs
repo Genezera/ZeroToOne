@@ -74,20 +74,35 @@ test('um candidato novo e uma PoC pass não fabricam impacto ou novidade', () =>
   const result = buildResearchPlan([{...finding,state:'reproduced_local',createdAt:new Date(NOW).toISOString()}], {
     ...options, contextFor:()=>({validations:[{result:'pass'}]}),
   });
-  assert.equal(result.actionable[0].action, 'assess_impact');
-  const assessed = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact})});
+  assert.equal(result.actionable[0].action, 'measure_code_age');
+  const assessed = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,
+    codeAgeEvidence:{codeAgeDays:1,method:'git_log_follow_latest_path_commit'}})});
   assert.equal(assessed.actionable[0].action, 'establish_novelty');
 });
 
 test('delta antigo fica retido; dados incompletos não viram automaticamente novidade recente', () => {
   const old = buildResearchPlan([{...finding,changeContext:{introducedAt:'2026-09-01T00:00:00Z'}}],options);
   assert.equal(old.held[0].code, 'outside_campaign_window');
-  const measured = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,codeAgeEvidence:{codeAgeDays:3}})});
+  const measured = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,
+    codeAgeEvidence:{codeAgeDays:3,method:'git_log_follow_latest_path_commit'}})});
   assert.equal(measured.held[0].code, 'outside_campaign_window');
   const legacySignal = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,duplicateCheck:{signals:{codeAgeDays:318}}})});
-  assert.equal(legacySignal.held[0].code, 'outside_campaign_window');
+  assert.equal(legacySignal.actionable[0].action, 'measure_code_age');
+  const unsafeOldest = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,
+    codeAgeEvidence:{codeAgeDays:318,method:'git_log_follow_oldest_path_commit'}})});
+  assert.equal(unsafeOldest.actionable[0].action, 'measure_code_age');
   const malformed = buildResearchPlan([{...finding,changeContext:{introducedAt:'invalid'}}],options);
-  assert.equal(malformed.actionable[0].action, 'assess_impact');
+  assert.equal(malformed.actionable[0].action, 'measure_code_age');
+});
+
+test('toque recente do caminho permite avaliar impacto, mas não prova regressão', () => {
+  const result = buildResearchPlan([finding], { ...options, contextFor: () => ({
+    codeAgeEvidence: { codeAgeDays: 1, method: 'github_file_last_commit' },
+  }) });
+  assert.equal(result.actionable[0].action, 'assess_impact');
+
+  const exactRecent = buildResearchPlan([{ ...finding, changeContext: { introducedAt: '2026-09-07T02:00:00Z' } }], options);
+  assert.equal(exactRecent.actionable[0].action, 'assess_impact');
 });
 
 test('terminal e inconclusive continuam históricos; correspondência pública bloqueia novo trabalho', () => {

@@ -82,7 +82,7 @@ test('runEvidenceCycle registra falha com backoff em vez de perder a tarefa', as
   assert.ok(Date.parse(order.nextEligibleAt) > NOW.getTime());
 });
 
-test('inspectGitFileAge usa somente metadado git e seleciona o commit mais antigo', () => {
+test('inspectGitFileAge usa somente metadado git e mede o último toque do caminho', () => {
   const root = mkdtempSync(path.join(tmpdir(), 'zto-evidence-age-test-'));
   const calls = [];
   try {
@@ -97,7 +97,9 @@ test('inspectGitFileAge usa somente metadado git e seleciona o commit mais antig
     });
     assert.equal(result.introducedCommit, 'a'.repeat(40));
     assert.equal(result.latestTouchCommit, 'b'.repeat(40));
-    assert.ok(result.codeAgeDays > 300);
+    assert.equal(result.codeAgeDays, 1);
+    assert.ok(result.pathHistoryAgeDays > 300);
+    assert.equal(result.method, 'git_log_follow_latest_path_commit');
     assert.equal(calls.some((args) => args.includes('--follow')), true);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
@@ -129,15 +131,41 @@ test('executor mede idade e grava evidência; código antigo não pede nova PoC'
     inspectAge: () => ({
       repository: 'acme/api', file: 'src/auth.go', introducedCommit: 'a'.repeat(40),
       introducedAt: '2025-09-01T00:00:00Z', latestTouchCommit: 'b'.repeat(40),
-      latestTouchAt: '2026-01-01T00:00:00Z', codeAgeDays: 371,
-      historyEntries: 2, method: 'git_log_follow_oldest_path_commit',
+      latestTouchAt: '2026-01-01T00:00:00Z', codeAgeDays: 249, pathHistoryAgeDays: 371,
+      historyEntries: 2, method: 'git_log_follow_latest_path_commit',
     }),
   });
   const result = await executor({ findingId: FINDING.id, action: 'establish_novelty' });
   assert.equal(result.status, 'completed');
   assert.equal(result.queueMutated, true);
   assert.match(result.reason, /fora da janela/);
-  assert.equal(latestCodeAgeEvidence(db, FINDING.id).codeAgeDays, 371);
+  assert.equal(latestCodeAgeEvidence(db, FINDING.id).codeAgeDays, 249);
+  assert.equal(latestCodeAgeEvidence(db, FINDING.id).lastCommitSha, 'b'.repeat(40));
+}));
+
+test('executor não reutiliza evidência legada baseada no commit mais antigo', async () => withDb(async (db) => {
+  withoutLedgerWrites(() => recordCodeAgeEvidence(db, FINDING.id, {
+    repository: 'acme/api', path: 'src/auth.go', codeAgeDays: 371,
+    lastCommitSha: 'a'.repeat(40), lastCommitDate: '2025-09-01T00:00:00Z',
+    method: 'git_log_follow_oldest_path_commit', checkedAt: '2026-09-06T00:00:00Z',
+  }));
+  let inspections = 0;
+  const executor = createEvidenceExecutor({
+    db, recipes: { findings: {} }, policy: POLICY, now: () => new Date(NOW),
+    recordAge: (...args) => withoutLedgerWrites(() => recordCodeAgeEvidence(...args)),
+    inspectAge: () => {
+      inspections += 1;
+      return { repository: 'acme/api', file: 'src/auth.go', introducedCommit: 'a'.repeat(40),
+        introducedAt: '2025-09-01T00:00:00Z', latestTouchCommit: 'b'.repeat(40),
+        latestTouchAt: '2026-09-06T00:00:00Z', codeAgeDays: 1, pathHistoryAgeDays: 371,
+        historyEntries: 2, method: 'git_log_follow_latest_path_commit' };
+    },
+  });
+  const result = await executor({ findingId: FINDING.id, action: 'measure_code_age' });
+  assert.equal(inspections, 1);
+  assert.equal(result.status, 'completed');
+  assert.equal(latestCodeAgeEvidence(db, FINDING.id).codeAgeDays, 1);
+  assert.equal(latestCodeAgeEvidence(db, FINDING.id).method, 'git_log_follow_latest_path_commit');
 }));
 
 test('receita registrada executa regressão isolada e grava validação reservada', async () => withDb(async (db) => {

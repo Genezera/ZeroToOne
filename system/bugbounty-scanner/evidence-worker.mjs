@@ -31,6 +31,15 @@ export const EVIDENCE_STATE_SCHEMA_VERSION = 1;
 
 const DAY_MS = 86400000;
 const MAX_RUN_HISTORY = 50;
+const TRUSTED_PATH_TOUCH_METHODS = new Set([
+  'git_log_follow_latest_path_commit',
+  'github_file_last_commit',
+]);
+
+function isTrustedPathTouchEvidence(evidence) {
+  return Boolean(evidence && TRUSTED_PATH_TOUCH_METHODS.has(evidence.method)
+    && Number.isInteger(evidence.codeAgeDays) && evidence.codeAgeDays >= 0);
+}
 
 function digest(value) {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -233,12 +242,16 @@ export function inspectGitFileAge({ repository, file }, {
     const newest = rows[0];
     const nowMs = now().getTime();
     const oldestMs = Date.parse(oldest.committedAt);
-    if (!Number.isFinite(nowMs) || oldestMs > nowMs) throw new Error('data do histórico está no futuro');
+    const newestMs = Date.parse(newest.committedAt);
+    if (!Number.isFinite(nowMs) || oldestMs > nowMs || newestMs > nowMs) {
+      throw new Error('data do histórico está no futuro');
+    }
     return {
       repository, file: normalizedFile, introducedCommit: oldest.commit,
       introducedAt: oldest.committedAt, latestTouchCommit: newest.commit,
-      latestTouchAt: newest.committedAt, codeAgeDays: Math.floor((nowMs - oldestMs) / DAY_MS),
-      historyEntries: rows.length, method: 'git_log_follow_oldest_path_commit',
+      latestTouchAt: newest.committedAt, codeAgeDays: Math.floor((nowMs - newestMs) / DAY_MS),
+      pathHistoryAgeDays: Math.floor((nowMs - oldestMs) / DAY_MS),
+      historyEntries: rows.length, method: 'git_log_follow_latest_path_commit',
     };
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
@@ -355,25 +368,30 @@ export function createEvidenceExecutor({
       };
     }
 
-    if (order.action === 'establish_novelty') {
+    if (order.action === 'measure_code_age' || order.action === 'establish_novelty') {
       let age = latestCodeAgeEvidence(db, finding.id);
-      if (!age) {
+      if (!isTrustedPathTouchEvidence(age)) {
         const inspected = inspectAge({ repository: repositoryFromFinding(finding), file: finding.file });
         age = recordAge(db, finding.id, {
           repository: inspected.repository, path: inspected.file, ref: null,
-          lastCommitSha: inspected.introducedCommit, lastCommitDate: inspected.introducedAt,
+          lastCommitSha: inspected.latestTouchCommit, lastCommitDate: inspected.latestTouchAt,
           codeAgeDays: inspected.codeAgeDays, method: inspected.method,
-          limitation: `metadado git: commit mais antigo encontrado com --follow; ${inspected.historyEntries} entrada(s) no histórico do caminho; não prova ausência de report privado`,
+          limitation: `metadado git: último commit que tocou o caminho com --follow; histórico do caminho remonta a ${inspected.pathHistoryAgeDays} dia(s), com ${inspected.historyEntries} entrada(s); não prova quais linhas mudaram nem ausência de report privado`,
           checkedAt: now().toISOString(),
         });
       }
       if (Number(age.codeAgeDays) * DAY_MS > MAX_VERIFIED_REGRESSION_AGE_MS) {
         return { status: 'completed', evidenceMutated: true, queueMutated: true,
-          reason: `histórico git confirma exposição de ${age.codeAgeDays} dias; fora da janela anti-duplicate de 48h`,
+          reason: `o caminho não recebe alteração há ${age.codeAgeDays} dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho`,
+          evidence: { method: age.method, codeAgeDays: age.codeAgeDays, commit: age.lastCommitSha } };
+      }
+      if (order.action === 'measure_code_age') {
+        return { status: 'completed', evidenceMutated: true, queueMutated: true,
+          reason: `último toque do caminho medido em ${age.codeAgeDays} dia(s); isso permite avaliar impacto, mas não prova a introdução exata da falha`,
           evidence: { method: age.method, codeAgeDays: age.codeAgeDays, commit: age.lastCommitSha } };
       }
       return { status: 'needs_human', evidenceMutated: true, queueMutated: true,
-        reason: 'código recente, mas falta receita de regressão que compare parent e commit introdutor com o mesmo teste' };
+        reason: 'o caminho foi tocado recentemente, mas falta receita de regressão que compare parent e commit introdutor com o mesmo teste' };
     }
 
     if (order.action === 'verify_prior_art') {
