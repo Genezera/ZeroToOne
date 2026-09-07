@@ -1925,3 +1925,23 @@ inchaço, mesmo critério das rodadas anteriores — perder o registro de
 auditoria dos 2 eventos novos é custo baixo frente a acumular mais
 duplicatas a cada rodada. Causa raiz permanece não investigada, fora do
 escopo desta rodada de triagem.
+
+## Rodada 2026-09-07b (push automático via GitHub webhook, sessão cloud, push 3f67129->862b387 — o próprio commit da rodada anterior disparou este webhook)
+
+`migrate-to-v2.mjs` rodado (827 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `StackingDAO`
+confirmado `blocked:false`; `Block Open Source` e `Circle BBP`
+confirmados bloqueados — nenhum arquivo desses dois clonado/lido/aberto
+nesta rodada. `list-pending` vazio; `research-plan` confirma
+`actionable: 0`. Os 15 contratos `.clar` já lidos seguem cobrindo 100%
+dos 13 assets do `scope-snapshots/stackingdao.json`, sem contrato novo,
+nada a investigar aqui nesta rodada.
+
+Leitura profunda proativa desta rodada direcionada a `vercel/chat` e
+`vercel-labs/agent-skills` (ver NOTES.md de Vercel Open Source — 3
+arquivos novos em agent-skills, todos parte interna do skill de
+otimização, sem achado). Nenhuma transição de estado neste programa.
+
+Mesmo bug operacional recorrente do `ledger.research.jsonl` ocorreu de
+novo nesta rodada (ver NOTES.md de Vercel Open Source pra detalhe da
+verificação) — descartado via `git checkout` antes do commit.

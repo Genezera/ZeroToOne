@@ -10425,3 +10425,63 @@ rodado ao final.
 Mesmo bug operacional recorrente do `ledger.research.jsonl` desta vez
 também (ver NOTES.md de StackingDAO pra detalhe da verificação) —
 descartado via `git checkout` antes do commit.
+
+## Rodada 2026-09-07b (push automático via GitHub webhook, sessão cloud, push 3f67129->862b387 — o próprio commit da rodada anterior disparou este webhook)
+
+`migrate-to-v2.mjs` rodado (827 findings). `program-policy.json`
+conferido como passo zero via `check-program`: `Vercel Open Source` e
+`StackingDAO` confirmados `blocked:false`; `Block Open Source` e
+`Circle BBP` confirmados bloqueados — nenhum arquivo desses dois
+clonado/lido/aberto. `list-pending` vazio; `research-plan` confirma
+`actionable: 0`, `held: 59` (mesma composição da rodada anterior:
+Auth0/Circle BBP bloqueados, Kubernetes/Mattermost/OKG/Vercel Open
+Source com duplicate-history/scope/impacto/janela já registrados,
+nenhum item novo). Os 8 findings retidos deste programa seguem sem
+mudança, não retentados.
+
+Leitura profunda proativa: primeiro tentei `vercel/chat` (clone raso)
+por não ter sido escolhido há muitas rodadas — busquei por nome com o
+filtro auth/session/crypto/token/login/admin/permission/access (4
+candidatos: `examples/nextjs-chat/.../modal-callback/[token]/route.ts`,
+`examples/nextjs-chat/src/lib/authorization.ts`,
+`packages/adapter-shared/src/crypto.ts`,
+`packages/adapter-slack/src/crypto.ts`) e conferi contra
+`deep-read-log.json`: os 4 já tinham sido lidos em rodadas anteriores
+(superfície de auth/crypto deste repo já está saturada — 40 arquivos
+cobertos, incluindo os dois `crypto.ts` com AES-256-GCM/IV único e o
+achado pré-existente do Discord `!==`/timingSafeEqual já fechado como
+`false_positive`). Sem candidato novo com nome sensível, troquei pra
+`vercel-labs/agent-skills` (21 arquivos já lidos) — mesma checagem:
+nenhum arquivo remanescente com nome auth/crypto/token (o único,
+`lib/auth-route.mjs`, já lido). Por julgamento próprio escolhi os 3
+arquivos com nome mais próximo de segurança entre os não lidos, todos
+dentro de `skills/vercel-optimize/lib/` (ferramenta interna de
+geração de relatório de otimização, não superfície de rede/autenticação):
+
+- `sanitizers/rate-limit.mjs` — só prepend de aviso textual em
+  `rec.fix` quando regex acha nome de provider + número de concorrência
+  no texto já gerado internamente pelo próprio agente; sem I/O, sem
+  sink, sem dado de terceiro não confiável. Sem achado.
+- `observation-safety.mjs` — `splitCustomerSafeObservations` filtra
+  quais observações (geradas pelo próprio agente de IA, não input de
+  usuário externo) são promovidas ao relatório final via regex sobre
+  texto interno; puro gate de qualidade, sem lógica de
+  autorização/acesso real pra auditar. Sem achado.
+- `sanitizers/vercel-directive-strip.mjs` — remove 3 diretivas
+  Cache-Control específicas do texto de recomendação via
+  regex/replace puro sobre string gerada internamente; sem I/O, sem
+  sink. Sem achado.
+
+`deep-read-log.json` atualizado (`vercel-labs/agent-skills`: 21 → 24
+arquivos; `vercel/chat` sem mudança, todos os 4 candidatos já eram
+conhecidos). Nenhum achado novo, nenhuma transição de estado nesta
+rodada. Clones temporários (`chat`, `agent-skills`) removidos do
+scratch dir ao final. `export-queue` rodado ao final.
+
+Mesmo bug operacional recorrente do `ledger.research.jsonl` ocorreu de
+novo nesta rodada (103 linhas reapensadas: 101 duplicatas exatas
+confirmadas programaticamente por `type+ts+findingId` contra o `HEAD`
+anterior, 2 eventos `bugbounty_code_age` genuinamente novos sobre
+findings `OKG`, fora desta missão) — descartado via `git checkout --
+ledger/ledger.research.jsonl` antes do commit, mesmo critério das
+rodadas anteriores.
