@@ -88,6 +88,24 @@
         }
       },
       "finishedAt": "2026-09-07T12:32:46.113Z"
+    },
+    "evidence:v1:4fc0348ed06c55a51c0210e038d9744279a498faf095134f3c62a266890a06ff": {
+      "taskId": "evidence:v1:4fc0348ed06c55a51c0210e038d9744279a498faf095134f3c62a266890a06ff",
+      "inputDigest": "c9b58dbfc1ed73bf89a666ca5b8a3e9392b3cc0637f8c47d7c3d66550fddd0b8",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-zoom",
+      "action": "assess_impact",
+      "priority": 70,
+      "status": "needs_human",
+      "attempts": 1,
+      "reason": "estabelecer controle pelo atacante, vítima, efeito observável e severidade justificada antes de construir outra PoC",
+      "createdAt": "2026-09-07T12:37:44.527Z",
+      "lastAttemptAt": "2026-09-07T12:37:44.527Z",
+      "result": {
+        "reason": "nenhuma prova registrada demonstra automaticamente atacante, vítima e fronteira; adicione uma receita isolada ou registre uma avaliação sustentada por evidência"
+      },
+      "finishedAt": "2026-09-07T12:37:44.527Z"
     }
   },
   "runs": [
@@ -99,6 +117,16 @@
       "claimed": 4,
       "completed": 4,
       "needsHuman": 0,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:6e2405c03b57b36df50c73668000b6e20e1b5d231a711571bbbbbff08346065e",
+      "startedAt": "2026-09-07T12:37:44.527Z",
+      "finishedAt": "2026-09-07T12:37:44.527Z",
+      "planned": 1,
+      "claimed": 1,
+      "completed": 0,
+      "needsHuman": 1,
       "failed": 0
     }
   ]
