@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "programHandles": {
+    "Mattermost Public Bug Bounty Engagement": "mattermost",
+    "OKG": "okg"
+  },
+  "findings": {}
+}

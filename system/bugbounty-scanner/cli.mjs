@@ -83,6 +83,7 @@ export function cmdResearchPlan(db, {
       report: latestReport(db, finding.id),
       deploymentEvidence: latestDeploymentEvidence(db, finding.id),
       validations: listValidations(db, finding.id),
+      codeAgeEvidence: latestCodeAgeEvidence(db, finding.id),
     }),
   });
 }

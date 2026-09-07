@@ -59,6 +59,20 @@ export function buildResearchPlan(findings, {
       continue;
     }
 
+    // A ausência de uma regression proof não deve manter código antigo na
+    // fila para sempre. Se até a alteração mais recente do arquivo já é mais
+    // velha que a janela da campanha, uma regressão de <=48h é impossível.
+    // Aceitamos tanto a evidência normalizada quanto o sinal legado que já
+    // foi persistido dentro do duplicateCheck.
+    const measuredCodeAgeDays = Number(
+      context.codeAgeEvidence?.codeAgeDays ?? duplicate?.signals?.codeAgeDays,
+    );
+    if (!duplicate?.noveltyProof && Number.isFinite(measuredCodeAgeDays)
+        && measuredCodeAgeDays * 86400000 > MAX_VERIFIED_REGRESSION_AGE_MS) {
+      hold('outside_campaign_window', `código observado há ${measuredCodeAgeDays} dias; a campanha exige regressão verificada em até 48h`);
+      continue;
+    }
+
     const change = finding.changeContext || finding.raw?.changeContext;
     const introducedAt = duplicate?.noveltyProof?.introducedAt || change?.introducedAt;
     const introducedMs = Date.parse(introducedAt);

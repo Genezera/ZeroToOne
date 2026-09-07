@@ -47,6 +47,7 @@ test('readiness audit consolida invariantes e mantém reports privados como limi
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-report-sync.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-change-monitor.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-target-discovery.yml'), workflow, 'utf8');
+  writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-evidence.yml'), workflow, 'utf8');
   writeHealthFixture(root);
   const result = runReadinessAudit({
     repoRoot: root,
@@ -71,7 +72,7 @@ test('readiness cloud-primary passa ao doctor somente os requisitos realmente ob
   const db = openDb(path.join(root, 'research', 'bugbounty', 'zerotoone.db'));
   closeDb(db);
   const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';
-  for (const name of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml']) {
+  for (const name of ['bugbounty-scan.yml', 'bugbounty-report-sync.yml', 'bugbounty-change-monitor.yml', 'bugbounty-target-discovery.yml', 'bugbounty-evidence.yml']) {
     writeFileSync(path.join(root, '.github', 'workflows', name), workflow, 'utf8');
   }
   writeHealthFixture(root);
@@ -116,6 +117,7 @@ test('readiness audit bloqueia uma liberação de pesquisa com revisão de RoE e
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-report-sync.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-change-monitor.yml'), workflow, 'utf8');
   writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-target-discovery.yml'), workflow, 'utf8');
+  writeFileSync(path.join(root, '.github', 'workflows', 'bugbounty-evidence.yml'), workflow, 'utf8');
   writeHealthFixture(root);
   const result = runReadinessAudit({
     repoRoot: root,

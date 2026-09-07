@@ -12,6 +12,7 @@ export const WORKFLOW_EXPECTATIONS = [
   { file: 'bugbounty-report-sync.yml', label: 'report_sync', maxSuccessAgeMs: 4 * HOUR },
   { file: 'bugbounty-scan.yml', label: 'safety_scan', maxSuccessAgeMs: 18 * HOUR },
   { file: 'bugbounty-target-discovery.yml', label: 'target_discovery', maxSuccessAgeMs: 48 * HOUR },
+  { file: 'bugbounty-evidence.yml', label: 'evidence_worker', maxSuccessAgeMs: 4 * HOUR },
   { file: 'bugbounty-health.yml', label: 'health_monitor', maxSuccessAgeMs: 3 * HOUR },
 ];
 

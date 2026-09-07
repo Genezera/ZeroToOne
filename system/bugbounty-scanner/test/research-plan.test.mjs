@@ -67,6 +67,10 @@ test('um candidato novo e uma PoC pass não fabricam impacto ou novidade', () =>
 test('delta antigo fica retido; dados incompletos não viram automaticamente novidade recente', () => {
   const old = buildResearchPlan([{...finding,changeContext:{introducedAt:'2026-09-01T00:00:00Z'}}],options);
   assert.equal(old.held[0].code, 'outside_campaign_window');
+  const measured = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,codeAgeEvidence:{codeAgeDays:3}})});
+  assert.equal(measured.held[0].code, 'outside_campaign_window');
+  const legacySignal = buildResearchPlan([finding], {...options,contextFor:()=>({impactAssessment:impact,duplicateCheck:{signals:{codeAgeDays:318}}})});
+  assert.equal(legacySignal.held[0].code, 'outside_campaign_window');
   const malformed = buildResearchPlan([{...finding,changeContext:{introducedAt:'invalid'}}],options);
   assert.equal(malformed.actionable[0].action, 'assess_impact');
 });

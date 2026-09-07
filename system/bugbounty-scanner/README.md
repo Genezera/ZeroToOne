@@ -21,7 +21,7 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   não booleanas falham fechado. GitHub `owner/repo` e a URL do mesmo repo
   são aliases, mas prefixos, substrings e caminhos arbitrários não são.
 - `bugbounty-health.yml` executa o health check na nuvem por agendamento
-  de 30 minutos e ao concluir um dos quatro jobs operacionais. Tem somente
+  de 30 minutos e ao concluir um dos cinco jobs operacionais. Tem somente
   permissões de leitura, timeout de três minutos e não usa o writer lock.
   O Mission Control verifica também se esse supervisor está ativo e recente;
   o job usa `--operational-only` para não depender do próprio sucesso atual.
@@ -41,8 +41,16 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   descoberta/promoção de novos alvos roda diariamente na nuvem em modo
   `--metadata-only`, sem executar código de terceiros; a varredura de
   segurança continua a cada 6 horas como rede de proteção e a sincronização
-  de outcomes da HackerOne roda a cada hora. Os quatro workflows usam o mesmo grupo de concorrência,
+  de outcomes da HackerOne roda a cada hora. Os cinco workflows escritores usam o mesmo grupo de concorrência,
   permissões mínimas explícitas e actions pinadas por SHA.
+- `bugbounty-evidence.yml` roda a cada duas horas e depois de scans bem
+  sucedidos. Ele transforma `research-plan` em work orders idempotentes,
+  com lease, histórico, limite por rodada e backoff. Hoje executa três
+  provas seguras: renova escopo estruturado na API oficial da HackerOne;
+  mede a idade de um arquivo usando apenas metadado `git log --follow`;
+  e executa receitas `verified_regression` registradas em
+  `evidence-recipes.json` usando o sandbox Docker já existente. Uma tarefa
+  sem executor conclusivo vira `needs_human`, nunca aprovação implícita.
 - GitHub Actions é o runtime primário versionado. O Windows fica em modo
   `manual_only`: não há tarefa, serviço, gatilho de logon/boot ou dependência
   de heartbeat local. O SQLite é uma materialized view local; `mission-control`
@@ -941,6 +949,15 @@ que nunca foi seguro (não regressão),
 `verify-longstanding-exposure --config=... --finding-id=...` verifica a
 idade real do commit introdutor via git, sem executar nada, mas o resultado
 é somente contexto de risco e não libera envio.
+
+O Evidence Worker automatiza a execução depois que essa receita específica
+é cadastrada em `research/bugbounty/evidence-recipes.json`. A receita fica
+vinculada ao `findingId`; uma prova nunca é reaproveitada para outro achado.
+Sem receita ele pode eliminar código antigo da campanha por evidência de
+idade, mas não inventa vítima, deployment, impacto ou novidade. Resultados,
+retries e pendências humanas ficam em
+`research/bugbounty/evidence-worker-state.json` e são compartilhados pelo
+mesmo barramento Git dos demais módulos.
 
 ## Comandos úteis
 - Rodar o scanner manualmente: `node system/bugbounty-scanner/scan-runner.mjs`

@@ -10,6 +10,7 @@ on:
       - Bug bounty - HackerOne outcome sync
       - Bug bounty - static scan
       - Bug bounty - target discovery
+      - Bug bounty - evidence worker
     types: [completed]
     branches: [master]
 

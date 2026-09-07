@@ -27,6 +27,13 @@ aumente a severidade para satisfazer o gate. As regras atuais de janela de
 regressão e histórico de duplicates continuam válidas. O plano é uma
 prioridade de trabalho, não prova de novidade nem autorização de submissão.
 
+O Evidence Worker pode renovar escopo, medir idade por metadado Git e rodar
+uma receita de regressão já registrada. `needs_human` é um bloqueio, não uma
+falha a contornar. Só adicione receita vinculada ao finding exato; nunca use
+um comando genérico ou resultado de outro finding como prova. Nenhum worker
+está autorizado a preencher impacto, deployment ou aprovação humana por
+inferência, nem a enviar relatório.
+
 **Isto vale pra QUALQUER sessão Claude neste repositório — local ou na
 nuvem, rotina agendada ou pedido manual do usuário.** Foi escrito depois
 de pelo menos 6 incidentes reais e documentados (ver
