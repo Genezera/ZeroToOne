@@ -6,7 +6,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 
 | Tipo | Linguagem | Revisados | Confirmados | Falso-positivo | Outro | Taxa FP |
 |---|---|---|---|---|---|---|
-| ai_deep_read_finding | Go | 2 | 0 | 0 | 2 | 0% |
+| ai_deep_read_finding | Go | 3 | 0 | 0 | 3 | 0% |
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
@@ -76,7 +76,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
 | ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 4 | 3 | 1 | 0 | 25% |
-| ai_deep_read_finding | OKG | 9 | 5 | 0 | 4 | 0% |
+| ai_deep_read_finding | OKG | 10 | 5 | 0 | 5 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
 | auth_arg_inconsistency | StackingDAO | 1 | 0 | 1 | 0 | 100% |
