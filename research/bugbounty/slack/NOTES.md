@@ -248,3 +248,44 @@ de handshake ainda não coberto no nível do gerenciador (distinto de
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3, 16 no
 total para `slackhq/nebula`). Clone temporário removido. `export-queue`
 rodado ao final da rodada.
+
+## Rodada 2026-09-07 (rotina agendada, gatilho push)
+
+`program-policy.json` conferido no passo 0 (regra do CLAUDE.md, antes de
+escolher qualquer alvo via `check-program`): `Block Open Source` e
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado. `Slack` segue
+`roeReviewed:true`/`aiResearchBanned:false`, liberado. `list-pending`
+global não trouxe nenhum achado pendente em Slack.
+
+Leitura profunda proativa (passo 4, via `list-deep-read-candidates.mjs`)
+escolheu `slackhq/nebula` (16 arquivos lidos, 9% coberto — maior espaço
+livre entre os candidatos liberados junto com `okx/go-wallet-sdk`, mas
+`nebula` ainda não tinha nenhuma rodada dedicada exclusivamente a ele
+nesta sessão). Clone raso público, 3 arquivos novos priorizados por
+adjacência a handshake/crypto/key ainda não cobertos pelo log:
+
+- `handshake/payload.go` (`MarshalPayload`/`UnmarshalPayload`):
+  serialização protobuf manual do payload de handshake IX. Rastreei
+  `UnmarshalPayload`/`unmarshalPayloadDetails` com ceticismo (hipótese:
+  parsing manual de protobuf é terreno clássico de overflow/aliasing) —
+  refutado: cada campo conhecido rejeita wire-type incompatível como erro
+  duro (não ignora silenciosamente), `ConsumeVarint`/`ConsumeBytes` tratam
+  `n<0` como erro, `CertVersion`/`InitiatorIndex`/`ResponderIndex` checam
+  `v>math.MaxUint32` antes do cast pra `uint32` (sem overflow silencioso),
+  e `p.Cert` é copiado via `append([]byte(nil), v...)` — sem aliasing do
+  buffer de rede recebido. Sem achado.
+- `handshake/patterns.go`: só uma tabela estática (`subtypeInfos`)
+  mapeando `header.MessageSubType` pro `noise.HandshakePattern` e flags
+  de quais mensagens carregam payload/cert — sem lógica de validação de
+  peer. Padrão XX ainda comentado/não habilitado. Sem achado.
+- `cmd/nebula-cert/keygen.go` (+ `x25519Keypair`/`p256Keypair` em
+  `sign.go`, lidos em conjunto por serem os dois call sites da geração de
+  chave): ferramenta CLI offline do operador da CA (`nebula-cert keygen`),
+  sem input de rede/peer remoto. `x25519Keypair` usa 32 bytes de
+  `crypto/rand.Reader` + `curve25519.X25519`; `p256Keypair` usa
+  `crypto/ecdh.P256().GenerateKey(rand.Reader)` — geração correta em
+  ambos, `fips140.Enforced()` bloqueia X25519 em modo FIPS. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3, 19
+no total para `slackhq/nebula`). Clone temporário removido. `export-queue`
+rodado ao final da rodada.

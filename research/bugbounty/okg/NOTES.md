@@ -1499,3 +1499,24 @@ contraexemplo do padrão seguro já visto em `zksync`/`stacks`/
 `deep-read-log.json` atualizado (+2 entradas genuinamente novas em
 `okx/go-wallet-sdk`, 47→49; `keypair.go` não duplicado). Clone
 temporário removido. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 #7 (rotina agendada, gatilho push)
+
+`program-policy.json` conferido no passo 0: `Block Open Source` e
+`Circle BBP` seguem bloqueados. `research-plan` trouxe de novo os dois
+achados (`multiKey.go`, `multiEd25519.go`) como `actionable`/
+`establish_novelty` — mesma situação já concluída na rodada #6 anterior
+(gate `verified_regression` estruturalmente inalcançável pra código
+vendorizado já quebrado num único commit de importação, sem parent
+seguro no histórico local). Reconfirmei via `cli.mjs get` que os dois
+seguem em `reproduced_local`, sem regressão de estado; não repeti a
+investigação completa (code-age, comparação byte-a-byte contra upstream,
+teste de Docker/`verify-regression`) por já estar integralmente
+documentada e sem fato novo que a mude nesta rodada. Nenhuma transição
+tentada nem forçada.
+
+Leitura profunda proativa desta rodada foi direcionada a `slackhq/nebula`
+(ver `slack/NOTES.md`), não a este programa — `okx/go-wallet-sdk` e
+`nebula` tinham cobertura similarmente baixa entre os candidatos
+liberados, e `nebula` ainda não tinha tido uma rodada dedicada nesta
+sessão. `export-queue` rodado ao final da rodada.

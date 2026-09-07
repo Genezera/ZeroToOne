@@ -1535,3 +1535,34 @@ validação de tamanho explícita).
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #2 (rotina agendada, gatilho push)
+
+`program-policy.json` conferido no passo 0: `Block Open Source` e
+`Circle BBP` seguem bloqueados, nenhum tocado. `research-plan` trouxe de
+novo os mesmos 4 achados deste programa como `actionable`/`verify_scope`
+(`confluence`, `mscalendar`, `msteams-meetings`, `zoom`).
+
+`check-scope` ao vivo pros 4 repositórios reconfirma exatamente o mesmo
+resultado das rodadas anteriores: `allowed:true`,
+`bountyEligible:null` (snapshot `community_dataset_structured` de
+2026-09-07T03:58:01Z, inalterado) — o dataset comunitário Bugcrowd
+continua sem expor elegibilidade de recompensa por ativo. Atualizei
+`deploymentEvidence` nos 4 (notas antigas de `confluence`/
+`msteams-meetings` ainda citavam "sem scope-snapshot", desatualizado
+desde a correção de infraestrutura de rodada anterior) e tentei
+`scope_verified` nos 4: recusado corretamente pela máquina de estados —
+3 (`confluence`, `msteams-meetings`, `zoom`) por ainda estarem em
+`corroborated_static` (sem validador de PoC local pra CSRF de OAuth
+account-linking nem pra timing HMAC sem infraestrutura Mattermost real);
+`mscalendar` (já em `reproduced_local`) recusado especificamente por
+`bountyEligible` não ser `true` explícito. Nenhuma transição forçada —
+mesmo teto já documentado nas ~18 rodadas anteriores desta mesma
+situação estrutural (confirmação de elegibilidade de recompensa exige
+leitura manual da página oficial do Bugcrowd, fora do alcance desta
+sessão automatizada).
+
+Nenhum achado novo, nenhuma mudança de estado. Leitura profunda
+proativa desta rodada foi direcionada a `slackhq/nebula` (ver
+`slack/NOTES.md`), não a este programa. `export-queue` rodado ao final
+da rodada.
