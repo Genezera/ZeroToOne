@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -31,22 +32,37 @@ function knownSecretValues(env) {
   return [...values];
 }
 
-/** Only detector names/line numbers leave this module, never matched values.
- * This is a heuristic guard, not a comprehensive secret or PII classifier. */
-export function scanTextForSecrets(text, { env = process.env } = {}) {
+function findingFingerprint(detector, matchedValue) {
+  return createHash('sha256').update(`${detector}\0${matchedValue}`).digest('hex');
+}
+
+function scanTextForSecretsDetailed(text, { env = process.env } = {}) {
   const known = knownSecretValues(env);
   const findings = [];
   for (const [index, line] of String(text).split(/\r?\n/).entries()) {
     // Queue/ledger JSON encodes snippets and HTTP captures within one line.
     const decoded = line.replace(/\\"/g, '"').replace(/\\r\\n|\\n/g, '\n');
     for (const [detector, regex] of RULES) {
-      if (regex.test(decoded)) findings.push({ line: index + 1, detector });
+      const match = decoded.match(regex);
+      if (match) findings.push({ line: index + 1, detector,
+        fingerprint: findingFingerprint(detector, match[0]) });
     }
-    if (known.some((value) => line.includes(value) || decoded.includes(value))) {
-      findings.push({ line: index + 1, detector: 'configured_credential' });
+    for (const value of known) {
+      if (line.includes(value) || decoded.includes(value)) {
+        findings.push({ line: index + 1, detector: 'configured_credential',
+          fingerprint: findingFingerprint('configured_credential', value) });
+      }
     }
   }
   return findings;
+}
+
+/** Only detector names/line numbers leave this module, never matched values or
+ * internal fingerprints. This is a heuristic guard, not a comprehensive
+ * secret or PII classifier. */
+export function scanTextForSecrets(text, options = {}) {
+  return scanTextForSecretsDetailed(text, options)
+    .map(({ line, detector }) => ({ line, detector }));
 }
 
 function git(repoRoot, args, encoding = 'utf8') {
@@ -100,8 +116,27 @@ export function inspectStagedPublication(repoRoot, { env = process.env } = {}) {
         findings.push({ path: file, detector: 'binary_requires_review' });
         continue;
       }
+      // A generated JSONL export can rewrite a line while carrying forward a
+      // placeholder that already matched a heuristic in HEAD. Compare opaque
+      // fingerprints and counts per path: unchanged carried-forward material
+      // is not a new leak, while a different value or an extra occurrence is.
+      const existing = new Map();
+      try {
+        const baseBlob = git(repoRoot, ['cat-file', 'blob', `HEAD:${file}`], null);
+        if (!baseBlob.includes(0)) {
+          const baseText = new TextDecoder('utf-8', { fatal: true }).decode(baseBlob);
+          for (const hit of scanTextForSecretsDetailed(baseText, { env })) {
+            existing.set(hit.fingerprint, (existing.get(hit.fingerprint) || 0) + 1);
+          }
+        }
+      } catch { /* arquivo novo ou blob base não textual: nenhuma exceção */ }
       for (const added of addedLines(diff)) {
-        for (const hit of scanTextForSecrets(added.text, { env })) {
+        for (const hit of scanTextForSecretsDetailed(added.text, { env })) {
+          const carriedCount = existing.get(hit.fingerprint) || 0;
+          if (carriedCount > 0) {
+            existing.set(hit.fingerprint, carriedCount - 1);
+            continue;
+          }
           findings.push({ path: file, line: added.line, detector: hit.detector });
         }
       }

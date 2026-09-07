@@ -101,6 +101,28 @@ test('publicação inspeciona o índice mesmo se a cópia de trabalho tiver sido
   } finally { cleanup(root); }
 });
 
+test('publicação aceita match heurístico carregado de HEAD, mas bloqueia valor novo no mesmo JSONL', () => {
+  const { root, cloneADir } = initRepoWithRemote();
+  try {
+    const file = path.join(cloneADir, 'queue.jsonl');
+    const oldValue = 'A'.repeat(32);
+    const newValue = 'B'.repeat(32);
+    writeFileSync(file, `${JSON.stringify({ password: oldValue, impact: null })}\n`);
+    sh('git add queue.jsonl && git commit -m "legacy fixture"', cloneADir);
+
+    writeFileSync(file, `${JSON.stringify({ password: oldValue, impact: { reportable: false } })}\n`);
+    sh('git add queue.jsonl', cloneADir);
+    assert.equal(inspectStagedPublication(cloneADir, { env: {} }).ok, true);
+
+    writeFileSync(file, `${JSON.stringify({ password: newValue, impact: { reportable: false } })}\n`);
+    sh('git add queue.jsonl', cloneADir);
+    const changed = inspectStagedPublication(cloneADir, { env: {} });
+    assert.equal(changed.ok, false);
+    assert.ok(changed.findings.some((hit) => hit.detector === 'secret_assignment'));
+    assert.equal(JSON.stringify(changed).includes(newValue), false);
+  } finally { cleanup(root); }
+});
+
 test('commit automático retém arquivos compactados e binários para revisão', () => {
   const { root, cloneADir } = initRepoWithRemote();
   try {
