@@ -1404,3 +1404,47 @@ com `subtle.ConstantTimeCompare`). `deep-read-log.json` atualizado
 
 `export-queue` rodado ao final da rodada (sem mudança de estado nesta
 rodada em Mattermost).
+
+## Rodada 2026-09-07 #15 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Mattermost Public Bug Bounty
+Engagement "` conferidos no passo 0: `blocked:false`. `migrate-to-v2.mjs`
++ `research-plan` trouxeram de novo os mesmos 4 `actionable`/`verify_scope`
+(`-confluence`, `-msteams-meetings`, `-zoom` em `corroborated_static`,
+`-mscalendar` em `reproduced_local`) — 15ª vez consecutiva. Rodei
+`check-scope` ao vivo pros 4 de novo (não pulei por já saber o resultado):
+mesmo `snapshotCapturedAt`/`snapshotContentHash` das rodadas #12-#14
+(`2026-09-07T03:58:01.834Z`), `allowed=true` e `bountyEligible=null` nos
+4, sem mudança. Bloqueio estrutural (Bugcrowd sem `refresh-scope-live`,
+confirmado por leitura de código na rodada #13) continua válido — nenhuma
+evidência nova para reabrir. `list-pending` (sem `--include-held`) = 0
+confirmado.
+
+Leitura profunda proativa desta rodada: 3 arquivos novos em
+`mattermost/mattermost-plugin-msteams` (candidato com 5 arquivos já lidos
+antes desta rodada, empatado com `-zoom`/`-msteams-meetings` mas ainda
+sem cobertura recente): `server/middleware.go`, `server/handlers.go`,
+`server/plugin.go`. Nenhum nome bate literalmente com as palavras-chave
+de prioridade (auth/session/crypto/token/login/password/admin/permission/
+access), escolhidos por julgamento próprio — `handlers.go` por ser o
+consumidor da fila de activities do MS Graph (mesma classe de risco já
+explorada 2x nesta campanha: validação de webhook/ClientState) e
+`plugin.go` por conter `generateSecret()`/`onActivate`/gestão de token.
+Achados: nenhum. `middleware.go` é só instrumentação de métricas HTTP
+(sem lógica de auth). `handlers.go` resolve sempre o client MS Teams de
+um membro **já conectado** do chat (`GetClientForTeamsUser` a partir de
+`member.UserID` do próprio chat retornado pela Graph API, nunca de input
+de request externo) — a fila só é alimentada depois da validação de
+`ClientState` em `api.go` (já confirmada `subtle.ConstantTimeCompare`
+correta na rodada #13). `plugin.go`: `generateSecret()` usa o mesmo
+padrão de alta entropia (256 bytes `crypto/rand` → base64 → truncado a
+32 chars) já visto em `crypt.go`, tanto para `WebhookSecret` quanto
+`EncryptionKey`; `GetClientForUser` sempre resolve token pelo próprio
+`userID` passado (nunca aceita token de terceiro); `onActivate` exige
+licença Enterprise E20 antes de qualquer inicialização. Sem achado —
+repositório `-msteams` agora com 8 arquivos cobertos, nenhum com problema
+identificado até aqui.
+
+`deep-read-log.json` atualizado (edição programática via Python).
+`export-queue` rodado ao final da rodada (sem mudança de estado nesta
+rodada em Mattermost).
