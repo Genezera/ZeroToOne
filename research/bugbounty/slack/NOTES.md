@@ -346,3 +346,48 @@ pendurado em hostinfo já derrubado). Sem achado.
 no total para `slackhq/nebula`, já contando a atualização da sessão
 paralela). Clone temporário removido. `export-queue` rodado ao final da
 rodada.
+
+## Rodada 2026-09-07 #6 (rotina agendada, gatilho push)
+
+`program-policy.json`/`check-program "Slack"` conferidos no passo 0:
+`blocked:false`. `migrate-to-v2.mjs` + `research-plan` trouxeram
+`actionable: 0` de novo (`list-pending` global vazio) — os 60 candidatos
+retidos são de outros programas (Circle BBP bloqueado por escolha do
+usuário, duplicate history Kubernetes/Vercel, scope/impacto Mattermost/OKG),
+nada acionável em Slack nesta rodada.
+
+Leitura profunda proativa direcionada a `slackhq/nebula` (candidato
+liberado por `list-deep-read-candidates.mjs`, 15% coberto, maior
+superfície ainda não lida da lista permitida): 3 arquivos novos
+priorizados por proximidade com `crypto` no path — `cert/cert.go`
+(interface `Certificate` + `Recombine`, o dispatch de deserialização
+alcançado diretamente do handshake de rede), `cert/asn1.go` (helpers
+ASN.1 usados por `unmarshalDetails`) e `cert/pem.go` (parsing de
+PEM local — arquivos de config/CLI do operador, não input de peer
+remoto, já que certificados chegam pelo wire em binário via
+`Recombine`, não em PEM). Nenhum achado isolado nos três, mas
+`cert.go::Recombine` levou a reler `cert_v2.go::unmarshalCertificateV2`/
+`unmarshalDetails`/`validate` (arquivo já tinha entrada no log só para
+`CheckSignature`, de rodada anterior) com foco em alcançabilidade real:
+confirmei que `validate()` não confere o tamanho de `c.publicKey`
+contra o que a curva exige (32 bytes Curve25519 / 65 bytes P256
+descomprimido) — em tese um vetor pra acionar o panic conhecido do
+stdlib (`ed25519.Verify` panica com chave de tamanho errado). Rastreei
+todo call site de `c.PublicKey()`/`c.publicKey` no pacote: o único
+lugar em que uma chave pública vira argumento de uma função
+`Verify` é `CheckSignature`, e ali o argumento é a chave de
+**verificação da CA** (`key`, vinda do `ca_pool` já confiável), não
+`c.publicKey` (a chave DH do próprio certificado, que só entra como
+bytes concatenados dentro do hash assinado — nunca como argumento de
+`Verify`). `CheckSignature` já tem guarda explícita pra isso
+(`len(key) != ed25519.PublicKeySize -> return false // avoids a panic
+internal to ed25519`, comentário dos próprios devs) e usa
+`ecdsa.ParseUncompressedPublicKey` pro P256 (retorna erro, não
+panica). REFUTADO — não encontrei nenhum caminho onde
+`c.PublicKey()` de tamanho arbitrário alcance uma função de
+verificação criptográfica sem checagem prévia de tamanho. Sem achado
+novo nesta rodada.
+
+`deep-read-log.json` atualizado (+4 entradas em `slackhq/nebula` — os 3
+arquivos novos e a revisita anotada de `cert_v2.go` —, 26→30 no total).
+Clone temporário removido. `export-queue` rodado ao final da rodada.
