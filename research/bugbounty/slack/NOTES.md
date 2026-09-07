@@ -289,3 +289,60 @@ adjacência a handshake/crypto/key ainda não cobertos pelo log:
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (+3, 19
 no total para `slackhq/nebula`). Clone temporário removido. `export-queue`
 rodado ao final da rodada.
+
+## Rodada 2026-09-07 #2 (rotina agendada, gatilho push, sessão paralela)
+
+`program-policy.json` conferido no passo 0: `Block Open Source` e
+`Circle BBP` seguem bloqueados, nenhum repo desses tocado. `Slack` segue
+`roeReviewed:true`/`aiResearchBanned:false`, liberado. `list-pending`
+global não trouxe nenhum achado pendente em Slack. (Nota: `git push`
+revelou uma sessão paralela que rodou a mesma rotina quase
+simultaneamente e já tinha empurrado `okg/NOTES.md` rodada #8 cobrindo
+`slackhq/nebula/noiseutil/` — `git reset --hard origin/master` +
+`migrate-to-v2.mjs` adotados antes de continuar, pra não sobrescrever o
+trabalho dela.)
+
+Leitura profunda proativa desta rodada fechou especificamente a pista
+deixada em aberto na entrada de `handshake_manager.go` do log
+(`via.IsRelayed` pulando `lighthouse.remote_allow_list` em ~8 call
+sites, "anotado como avenida pra rodada futura, não investigado a
+fundo") — a sessão paralela não tocou nisso (foi para `noiseutil/`), a
+pista continuava genuinamente aberta.
+
+Clone raso público, leitura completa de `relay_manager.go` (605 linhas —
+`StartRelays`/`AddRelay`/`EstablishRelay`/`HandleControlMsg`/
+`handleCreateRelayRequest`/`handleCreateRelayResponse`) mais
+`allow_list.go:270-303` (`RemoteAllowList.Allow`/`AllowAll`/
+`getInsideAllowList`) pra confirmar a semântica exata do que
+`remote_allow_list` filtra. **Refutado**: `remote_allow_list` é um ACL de
+rede sobre o **endereço UDP de transporte** (`udpAddr`) do pacote
+recebido — controla de quais faixas de IP este nó aceita handshakes,
+documentado em `examples/config.yml:64-71` como filtro de segmentação de
+rede ("allow public IPs but only private IPs from a specific subnet"),
+não como mecanismo de autenticação de identidade do peer. Para tráfego
+relayed, `via.UdpAddr` é o endereço do **relay**, não do peer final —
+checar `remote_allow_list` contra o endereço do relay seria
+semanticamente incorreto (o relay já passou pelo próprio
+`remote_allow_list` quando este nó fez o handshake DIRETO com ele, um
+evento anterior e distinto). A identidade criptográfica do peer final
+continua validada em todos os casos pelo handshake Noise/certificado
+(`handshake/machine.go::validateCert`, já confirmado em rodada anterior:
+`bytes.Equal(rc.PublicKey(), m.hs.PeerStatic())`), independente de
+`IsRelayed` — `remote_allow_list` nunca foi a linha de defesa de
+identidade, só uma camada extra de política de rede sobre o hop de
+transporte imediato. Pular essa checagem pra tráfego relayed é portanto
+comportamento correto e intencional, não uma vulnerabilidade. Pista
+fechada, sem achado.
+
+`relay_manager.go` também revela bom tratamento defensivo em casos
+adversariais testados mentalmente: `handleCreateRelayRequest` rejeita
+`from == myVpnAddrs` ("Discarding relay request from myself"), valida
+que `existingRelay.RemoteIndex` não muda silenciosamente entre mensagens
+(early-return em vez de aceitar), e `AddRelay` confere
+`hm.unlockedMakePrimary` antes de registrar índice (evita relay
+pendurado em hostinfo já derrubado). Sem achado.
+
+`deep-read-log.json` atualizado (+1 entrada, `relay_manager.go`; 22→23
+no total para `slackhq/nebula`, já contando a atualização da sessão
+paralela). Clone temporário removido. `export-queue` rodado ao final da
+rodada.
