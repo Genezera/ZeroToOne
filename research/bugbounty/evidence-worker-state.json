@@ -130,6 +130,52 @@
         }
       },
       "finishedAt": "2026-09-07T12:43:52.076Z"
+    },
+    "evidence:v1:7a0fa1af9900d46ba43b64172d603d086ea52be7bad06fae896358aca2aef337": {
+      "taskId": "evidence:v1:7a0fa1af9900d46ba43b64172d603d086ea52be7bad06fae896358aca2aef337",
+      "inputDigest": "f96b662db3130e535e6efce2854a8bc67e6dd0a62a5bd6f14c758eff57f2207b",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiEd25519.go::MultiEd25519PublicKey.Verify::multied25519_bitmap_ignored_index_oob_panic",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-07T18:35:20.277Z",
+      "lastAttemptAt": "2026-09-07T18:35:20.278Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 318 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 318,
+          "commit": "71c47a3e62997e9df7cafae363bccb93cba87560"
+        }
+      },
+      "finishedAt": "2026-09-07T18:35:21.555Z"
+    },
+    "evidence:v1:a4cd71394613c0c160f1ef939543c2a9a029e708914f21cb726f740d11fd4e66": {
+      "taskId": "evidence:v1:a4cd71394613c0c160f1ef939543c2a9a029e708914f21cb726f740d11fd4e66",
+      "inputDigest": "db99373c9ca6a2450f710667c2ef3a323812f70b3b52370fe6cb40277ff32a66",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKeyBitmap.ContainsKey+MultiKey.Verify::multikey_bitmap_signature_verification_bypass",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-07T18:35:20.277Z",
+      "lastAttemptAt": "2026-09-07T18:35:21.555Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 318 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 318,
+          "commit": "71c47a3e62997e9df7cafae363bccb93cba87560"
+        }
+      },
+      "finishedAt": "2026-09-07T18:35:22.793Z"
     }
   },
   "runs": [
@@ -160,6 +206,16 @@
       "planned": 1,
       "claimed": 1,
       "completed": 1,
+      "needsHuman": 0,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:8c73430ef769d475fb6dc27caeee623dedc8cfdfdf21085e62331b75023b7ffb",
+      "startedAt": "2026-09-07T18:35:20.277Z",
+      "finishedAt": "2026-09-07T18:35:22.793Z",
+      "planned": 2,
+      "claimed": 2,
+      "completed": 2,
       "needsHuman": 0,
       "failed": 0
     }
