@@ -1696,3 +1696,36 @@ desabilitados propositalmente (SSRF já mitigado pelos próprios devs) —
 sem achado. `deep-read-log.json` atualizado com os 10 arquivos.
 
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-07 (push automático via GitHub webhook, sessão cloud)
+
+Passo 0: `migrate-to-v2.mjs` rodado. `research-plan` trouxe
+`actionable: 0` (60 candidatos, todos `held` — 38 `program_blocked`
+[Block Open Source/Circle BBP/Auth0], 9 `campaign_duplicate_history`,
+7 `below_campaign_impact`, 3 `scope_not_confirmed`, 2
+`outside_campaign_window`, 1 `previous_submission`). `list-pending`
+também vazio. `program-policy.json` conferido diretamente (não só via
+CLI) antes de qualquer leitura: `Block Open Source` (`aiResearchBanned`)
+e `Circle BBP` (`blocked`) continuam bloqueados; `Mattermost Public Bug
+Bounty Engagement ` segue `roeReviewed:true`/`aiResearchBanned:false`.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`
+(que já filtra pela política) direcionada a
+`mattermost/mattermost-plugin-msteams` (8 arquivos já lidos em rodadas
+anteriores — `crypt.go`, `connect.go`, `credentials.go`, `api.go`,
+`subscriptions.go`, `middleware.go`, `handlers.go`, `plugin.go`).
+4 arquivos novos: `server/store/sqlstore/store.go` (funções de
+token — `getTokenForMattermostUser`/`getTokenForMSTeamsUser`/
+`setUserInfo` — token OAuth2 sempre passa por `encrypt()`/`decrypt()`
+de `crypt.go` (AES-GCM, nonce aleatório via `crypto/rand`) antes de
+tocar o banco; todas as queries via squirrel query builder, zero
+concatenação de string SQL), `server/store/sqlstore/public_methods.go`
+(boilerplate gerado, só delega), `server/worker.go` (wrapper de
+goroutine com recover, sem lógica sensível) e `server/monitor.go`
+(job de cluster, `webhookSecret` só armazenado/repassado — comparação
+de fato já coberta em `api.go` em rodada anterior). Nenhum achado novo
+— repositório `mattermost-plugin-msteams` com boa cobertura de
+superfície auth/token/crypto agora. `deep-read-log.json` atualizado.
+
+Nenhuma transição de estado tentada (nada em `candidate`/`actionable`).
+`export-queue` rodado ao final da rodada.
