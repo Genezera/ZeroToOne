@@ -2105,3 +2105,47 @@ sem lógica perigosa, sem achado), `coins/solana/system/AuthorizeNonceAccount.go
 terceiros com header de licença, sem achado). Clone temporário (incluindo
 `zerotoone_poc_test.go`, nunca commitado ao repo real) removido do
 scratchpad ao final. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-08 (sessão cloud, push trigger, continuação da mesma data)
+
+`research-plan` reconfirmou o mesmo único item `actionable` (o achado
+aptos v2 acima, ação `verify_scope`) — revisei de novo o scope snapshot
+(`research/bugbounty/scope-snapshots/okg.json`, mesmo `contentHash`,
+ainda granularidade de repositório, não de arquivo) e nada mudou desde a
+rodada anterior; nenhuma nova transição tentada nele (correto, per
+CLAUDE.md: `verify_scope` autoriza só revisar fontes de escopo, não
+presumir confirmado).
+
+Leitura profunda proativa (3 arquivos, `okx/go-wallet-sdk`):
+`coins/stellar/xdr/decorated_signature.go` e `coins/stellar/xdr/signer_key.go`
+sem achado (`Address()` panica em tipo desconhecido mas `GetAddress()`
+não-panicante já existe como alternativa seringura, não é o mesmo padrão
+das famílias já confirmadas). **Novo achado**:
+`coins/helium/keypair/keypair.go::Keypair.Sign` retorna `(nil, nil)` —
+sucesso sem erro — para qualquer `version` diferente de `Ed25519Version`
+(em particular `NISTP256Version=0`, constante pública exportada), porque
+o branch NIST P256 está com o corpo inteiro comentado (`//todo`). Família
+distinta dos panics-on-malformed-input já catalogados aqui — CWE-393
+(retorno de sucesso mascarando funcionalidade não implementada), não
+CWE-476. Único caller interno (`coins/helium/helium.go`) usa
+`version=1` hardcoded, então o bug só é alcançável via API pública direta
+do pacote `keypair` (não pelas funções `Sign`/`NewAddress` de alto nível
+já cobertas). **PoC real**: `go test` confirmando explicitamente
+`err==nil` E `sig==nil` para `NewKeypairFromHex(NISTP256Version, ...).Sign(...)`
+— PASS. Avançado `candidate → corroborated_static → reproduced_local`.
+Tentativa de `scope_verified` recusada pelo mesmo motivo estrutural do
+achado aptos v2 irmão (asset não listado a nível de arquivo no scope
+snapshot + `deploymentEvidence.confidence=unverified` por falta de
+tags/releases neste repo) — nenhuma tentativa de contornar. Ver finding
+`OKG::okx/go-wallet-sdk/coins/helium/keypair/keypair.go::Keypair.Sign::silent_unsigned_result_unimplemented_curve`.
+
+Leitura adicional (`slackhq/nebula`, programa Slack, mesma rodada): 3
+arquivos CLI (`cmd/nebula-cert/verify.go`, `sign.go`, `ca.go`) — todos
+ferramentas offline de operador confiável, sem superfície de rede não
+autenticada alcançando o código; sem achado em nenhum. Ver
+`research/bugbounty/slack/NOTES.md` para detalhe.
+
+`deep-read-log.json` atualizado (+3 `slackhq/nebula`, +3 `okx/go-wallet-sdk`).
+Clones temporários (`/tmp/okx-wallet-sdk`, `/tmp/nebula`, incluindo o
+`zerotoone_poc_test.go` desta rodada) nunca commitados ao repo real.
+`export-queue` rodado ao final da rodada.

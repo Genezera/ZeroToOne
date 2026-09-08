@@ -654,3 +654,17 @@ Com o bug corrigido, `measure_code_age` rodou de verdade contra
 finding; ver `deploymentEvidence`/`codeAgeEvidence` atuais). Achado
 segue em `corroborated_static` — sem validador local pra
 Go/race-condition, teto real do sistema hoje, nada forçado.
+
+## Rodada 2026-09-08 (sessão cloud, push trigger)
+
+Leitura profunda proativa (3 arquivos, `slackhq/nebula`, ferramenta
+`cmd/nebula-cert/`, ainda não lida em rodadas anteriores que cobriram
+sobretudo `cert/`/handshake/rede): `verify.go`, `sign.go`, `ca.go`.
+Todas são orquestração de flags + I/O de arquivo local pro CLI offline
+do operador (gera/assina/verifica certificado), delegando a lógica
+criptográfica real pro pacote `cert/` já auditado em rodadas anteriores
+(`cert.VerifyPrivateKey`, `caPool.VerifyCertificate`, etc.). Sem input
+de rede não autenticado alcançando este código — fora do modelo de
+ameaça relevante pra um programa de bug bounty (o "atacante" seria o
+próprio operador rodando a CLI contra si mesmo). Sem achado em nenhum
+dos 3. `deep-read-log.json` atualizado.
