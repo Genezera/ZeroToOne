@@ -2821,3 +2821,40 @@ correta, garantindo que `ledger/ledger.research.jsonl` refletisse com
 integridade hash-encadeada as transições reais desta rodada.
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08n (push automático via GitHub webhook, sessão cloud)
+`program-policy.json` conferido antes de qualquer leitura (Block Open
+Source e Circle BBP confirmados bloqueados via `check-program`,
+nenhum repo desses dois tocado). `migrate-to-v2.mjs` + `research-plan`
+rodados: `actionable: []`, itens em `held` com a mesma composição de
+motivos das rodadas anteriores. `list-pending` global vazio.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` confirma o
+mesmo cenário (StackingDAO/Block Open Source repos filtrados como já
+descrito nas rodadas anteriores). Escolhidos 3 arquivos ainda não
+lidos em `okx/go-wallet-sdk` (121→124), voltando a crypto/sign core
+(nenhum arquivo novo com nome auth/session/token/login/password/
+admin/permission/access restava sem leitura entre os candidatos
+elegíveis): `crypto/btcd/v2/btcutil/psbt/signer.go`,
+`crypto/dcrec/secp256k1/ecdsa/signature.go` e
+`crypto/go-ethereum/crypto/crypto.go`. Os três são cópias vendorizadas
+verbatim de bibliotecas upstream amplamente auditadas (btcsuite BIP174
+PSBT signer, decred dcrec secp256k1 ECDSA sign/verify/recover, e
+go-ethereum crypto core) — conferidos linha a linha contra o
+comportamento upstream conhecido, sem nenhuma modificação introduzida
+pela OKX em nenhum dos três. Nenhuma lógica de autorização própria:
+`signer.go` delega a inserção de assinatura para `addPartialSignature`
+(não lido nesta rodada); `signature.go` implementa o algoritmo padrão
+RFC6979/BIP62 com todas as checagens de malleability/overflow/zero de
+R e S; `crypto.go` valida corretamente D<N e D>0 antes de derivar a
+chave pública. Nenhum achado novo. `deep-read-log.json` atualizado.
+
+Nota: uma tentativa anterior nesta mesma rodada colidiu com um push
+concorrente (`e5ddade`, achado Tron) que chegou ao remoto primeiro;
+em vez de mesclar manualmente os artefatos gerados
+(queue.jsonl/migration-log.json/ledger), a base local foi resetada
+para `origin/master` (`git fetch` + `git reset --hard`, nenhum commit
+próprio perdido) e todo o pipeline foi refeito do zero sobre a base
+atualizada, para não arriscar corromper o encadeamento de hash do
+ledger. Nenhum achado novo digno de nota nesta rodada — resultado
+normal e válido. `export-queue` rodado ao final.
