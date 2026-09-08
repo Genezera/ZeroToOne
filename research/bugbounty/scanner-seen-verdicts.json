@@ -797,5 +797,7 @@
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/server/plugin/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac": "confirmado",
   "OKG::okx/go-wallet-sdk/coins/zcash/address.go::ValidateAddress::address_validation_logic_error": "confirmado",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/confluence_server_v2.go::GetNotificationPost::markdown_link_injection": "inconclusivo",
-  "OKG::okx/go-wallet-sdk/coins/stellar/strkey/signed_payload.go::DecodeSignedPayload::ai_deep_read_finding": "confirmado"
+  "OKG::okx/go-wallet-sdk/coins/stellar/strkey/signed_payload.go::DecodeSignedPayload::ai_deep_read_finding": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/nervos/crypto/bech32.go::Bech32Decode::bech32_bech32m_encoding_detection_broken": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/client/client.go::checkPluginRequest+getToken::interplugin_token_disclosure_risk": "falso_positivo"
 }

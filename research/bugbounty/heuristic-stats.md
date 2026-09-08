@@ -10,7 +10,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 20 | 14 | 4 | 2 | 20% |
+| ai_deep_read_finding | go | 22 | 15 | 5 | 2 | 23% |
 | ai_deep_read_finding | js | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
@@ -77,8 +77,8 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Block Open Source | 6 | 1 | 3 | 2 | 50% |
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
 | ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 5 | 4 | 1 | 0 | 20% |
-| ai_deep_read_finding | OKG | 13 | 8 | 0 | 5 | 0% |
+| ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 6 | 4 | 2 | 0 | 33% |
+| ai_deep_read_finding | OKG | 14 | 9 | 0 | 5 | 0% |
 | ai_deep_read_finding | Slack | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
