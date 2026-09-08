@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-08T15:10:27.943Z",
+  "checkedAt": "2026-09-08T18:45:14.164Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -243,13 +243,13 @@
       ]
     },
     "kubernetes/kube-openapi": {
-      "sha": "9ab3195f2a7252f4224482e1756278e065d72d0d",
+      "sha": "c4db2bdfbfe686300282ac9c6c7c654f70625e81",
       "branch": "master",
-      "parentSha": "be32def86098a05c8a36333127c9b45300e7f33d",
-      "committedAt": "2026-09-04T17:06:22Z",
-      "url": "https://github.com/kubernetes/kube-openapi/commit/9ab3195f2a7252f4224482e1756278e065d72d0d",
-      "title": "Merge pull request #636 from liggitt/smdv7",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "9ab3195f2a7252f4224482e1756278e065d72d0d",
+      "committedAt": "2026-09-08T16:34:37Z",
+      "url": "https://github.com/kubernetes/kube-openapi/commit/c4db2bdfbfe686300282ac9c6c7c654f70625e81",
+      "title": "Merge pull request #635 from liggitt/go127",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Kubernetes"
       ],
@@ -423,13 +423,13 @@
       ]
     },
     "mattermost/mattermost-plugin-github": {
-      "sha": "cffa0db76d83d7b3b57744bc22170f60145db5d2",
+      "sha": "8ae7fa21cfc5f246f6de0a76965f5c338a0736ae",
       "branch": "master",
-      "parentSha": "65082e9d6bce47d29603495c0751d6b841f36d98",
-      "committedAt": "2026-09-08T10:21:28Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/cffa0db76d83d7b3b57744bc22170f60145db5d2",
-      "title": "Bump qs and express in /e2e/playwright (#1056)",
-      "observedAt": "2026-09-08T11:07:53.366Z",
+      "parentSha": "cffa0db76d83d7b3b57744bc22170f60145db5d2",
+      "committedAt": "2026-09-08T15:18:26Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/8ae7fa21cfc5f246f6de0a76965f5c338a0736ae",
+      "title": "Bump brace-expansion from 1.1.12 to 1.1.18 in /webapp (#1058)",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -438,13 +438,13 @@
       ]
     },
     "mattermost/mattermost-plugin-gitlab": {
-      "sha": "603b0d71609299587bc2a279e986b18195c90c24",
+      "sha": "18b9dbba738b95da8cbfa0088c4ce86d9717fd80",
       "branch": "master",
-      "parentSha": "05f796f1f6a127ff9da3d38ae30472ee35968228",
-      "committedAt": "2026-09-03T09:21:47Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/603b0d71609299587bc2a279e986b18195c90c24",
-      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /webapp (#708)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "603b0d71609299587bc2a279e986b18195c90c24",
+      "committedAt": "2026-09-08T15:46:23Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/18b9dbba738b95da8cbfa0088c4ce86d9717fd80",
+      "title": "Bump brace-expansion from 1.1.14 to 1.1.18 in /webapp (#706)",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -453,13 +453,13 @@
       ]
     },
     "mattermost/mattermost-plugin-jira": {
-      "sha": "d7341fef2664c97e0e8a817a8a37a70d9db1b9c4",
+      "sha": "199c3a883ccd0016e9ec2162ced4be8eb1090686",
       "branch": "master",
-      "parentSha": "d8206a2ed4f2122063952230e1d798c895a6c53f",
-      "committedAt": "2026-09-08T09:47:32Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/d7341fef2664c97e0e8a817a8a37a70d9db1b9c4",
-      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /webapp (#1349)",
-      "observedAt": "2026-09-08T11:07:53.366Z",
+      "parentSha": "d7341fef2664c97e0e8a817a8a37a70d9db1b9c4",
+      "committedAt": "2026-09-08T15:42:51Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/199c3a883ccd0016e9ec2162ced4be8eb1090686",
+      "title": "Bump google.golang.org/grpc from 1.82.1 to 1.83.1 (#1346)",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -573,13 +573,13 @@
       ]
     },
     "slackhq/nebula": {
-      "sha": "e50f8128f4373dd6d56568ec9b0b728e5a399a23",
+      "sha": "6a72e1c304562afb54bc908d0c54c0d3cabb39a8",
       "branch": "master",
-      "parentSha": "dd8f660c0ac37903ec4080ca4d3c861ba9342ceb",
-      "committedAt": "2026-09-04T15:26:08Z",
-      "url": "https://github.com/slackhq/nebula/commit/e50f8128f4373dd6d56568ec9b0b728e5a399a23",
-      "title": "Drop hostQueries to our overlay addresses (#1866)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "e50f8128f4373dd6d56568ec9b0b728e5a399a23",
+      "committedAt": "2026-09-08T17:50:27Z",
+      "url": "https://github.com/slackhq/nebula/commit/6a72e1c304562afb54bc908d0c54c0d3cabb39a8",
+      "title": "v1.11.1 Changelog (#1857)",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Slack"
       ],
@@ -603,13 +603,13 @@
       ]
     },
     "vercel-labs/skills": {
-      "sha": "213de5a2bc9db069bf465986a71987f048816252",
+      "sha": "80feb48868972d518436f26711509bc78595b5cb",
       "branch": "main",
-      "parentSha": "8c8d7661fc77dd4d79908961ecd2beef9a4be9ae",
-      "committedAt": "2026-09-08T14:40:16Z",
-      "url": "https://github.com/vercel-labs/skills/commit/213de5a2bc9db069bf465986a71987f048816252",
-      "title": "Merge pull request #2006 from doanbactam/feat/add-fx-agent",
-      "observedAt": "2026-09-08T15:10:27.943Z",
+      "parentSha": "7ffbeb96f012a63c0583a2e71e24385dc497566d",
+      "committedAt": "2026-09-08T17:31:59Z",
+      "url": "https://github.com/vercel-labs/skills/commit/80feb48868972d518436f26711509bc78595b5cb",
+      "title": "fix: preserve name/version/metadata in eve skill frontmatter (#1864)",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -663,13 +663,13 @@
       ]
     },
     "vercel/vercel": {
-      "sha": "e06cc643cec6a47bd9344af7f4589c736d95ed15",
+      "sha": "c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb",
       "branch": "main",
-      "parentSha": "17d9ebaf8e9b335d550dea1a243743a74edc772e",
-      "committedAt": "2026-08-19T23:02:24Z",
-      "url": "https://github.com/vercel/vercel/commit/e06cc643cec6a47bd9344af7f4589c736d95ed15",
-      "title": "[skills] Add vercel comments to the CLI skill (#17522)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "e06cc643cec6a47bd9344af7f4589c736d95ed15",
+      "committedAt": "2026-09-08T18:09:19Z",
+      "url": "https://github.com/vercel/vercel/commit/c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb",
+      "title": "chore: sync from internal (1df8ab80f226) [skip ci] (#17595)",
+      "observedAt": "2026-09-08T18:45:14.164Z",
       "programs": [
         "Vercel Open Source"
       ],
