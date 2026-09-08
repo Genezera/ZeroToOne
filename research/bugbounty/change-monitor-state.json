@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-08T01:06:47.543Z",
+  "checkedAt": "2026-09-08T11:07:53.366Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -108,13 +108,13 @@
       ]
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "17c0f4e1e7629bcce7f8def7668f65aaa6ead0d4",
+      "sha": "c36c84d72f08cf64fb2082d894195eb5877948cd",
       "branch": "master",
-      "parentSha": "3db62bf9b252059b1739f5f10f99a9feff8ed67f",
-      "committedAt": "2026-09-07T23:38:28Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/17c0f4e1e7629bcce7f8def7668f65aaa6ead0d4",
-      "title": "fix: preserve valid config on failed reload (#3159)",
-      "observedAt": "2026-09-08T01:06:47.543Z",
+      "parentSha": "17c0f4e1e7629bcce7f8def7668f65aaa6ead0d4",
+      "committedAt": "2026-09-08T05:56:29Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/c36c84d72f08cf64fb2082d894195eb5877948cd",
+      "title": "[cinder-csi-plugin] Allow setting parameters on chart-managed StorageClasses (#3173)",
+      "observedAt": "2026-09-08T11:07:53.366Z",
       "programs": [
         "Kubernetes"
       ],
@@ -333,13 +333,13 @@
       ]
     },
     "kubernetes/org": {
-      "sha": "788e9abf45e307137d58a1fe6e3e29047bb1c5f2",
+      "sha": "316b7f570be26ea1b032cfbac6c5df6086b04af8",
       "branch": "main",
-      "parentSha": "2394cf6fd2803870088999a95561281e4711d813",
-      "committedAt": "2026-09-07T19:08:27Z",
-      "url": "https://github.com/kubernetes/org/commit/788e9abf45e307137d58a1fe6e3e29047bb1c5f2",
-      "title": "Merge pull request #6615 from gnufied/add-gnufied-storage-leads",
-      "observedAt": "2026-09-07T20:47:37.939Z",
+      "parentSha": "788e9abf45e307137d58a1fe6e3e29047bb1c5f2",
+      "committedAt": "2026-09-08T08:44:30Z",
+      "url": "https://github.com/kubernetes/org/commit/316b7f570be26ea1b032cfbac6c5df6086b04af8",
+      "title": "Merge pull request #6618 from mrbobbytables/add-teams",
+      "observedAt": "2026-09-08T11:07:53.366Z",
       "programs": [
         "Kubernetes"
       ],
@@ -423,13 +423,13 @@
       ]
     },
     "mattermost/mattermost-plugin-github": {
-      "sha": "65082e9d6bce47d29603495c0751d6b841f36d98",
+      "sha": "cffa0db76d83d7b3b57744bc22170f60145db5d2",
       "branch": "master",
-      "parentSha": "4da873ece037a8a8cdf0ff6505f79e44cd0dd688",
-      "committedAt": "2026-09-04T17:13:13Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/65082e9d6bce47d29603495c0751d6b841f36d98",
-      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /e2e/playwright (#1055)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "65082e9d6bce47d29603495c0751d6b841f36d98",
+      "committedAt": "2026-09-08T10:21:28Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/cffa0db76d83d7b3b57744bc22170f60145db5d2",
+      "title": "Bump qs and express in /e2e/playwright (#1056)",
+      "observedAt": "2026-09-08T11:07:53.366Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -453,13 +453,13 @@
       ]
     },
     "mattermost/mattermost-plugin-jira": {
-      "sha": "46be9efeec82254b6ee9397f6db4c5a8c5d2c32c",
+      "sha": "d7341fef2664c97e0e8a817a8a37a70d9db1b9c4",
       "branch": "master",
-      "parentSha": "9a88304a2329fa1a2ba291a57d9ed803924ddf60",
-      "committedAt": "2026-08-24T14:49:05Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/46be9efeec82254b6ee9397f6db4c5a8c5d2c32c",
-      "title": "MM-69657 Added guards to prevent cases of replies sent on GM/DMs (#1338)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "d8206a2ed4f2122063952230e1d798c895a6c53f",
+      "committedAt": "2026-09-08T09:47:32Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/d7341fef2664c97e0e8a817a8a37a70d9db1b9c4",
+      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /webapp (#1349)",
+      "observedAt": "2026-09-08T11:07:53.366Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -468,13 +468,13 @@
       ]
     },
     "mattermost/mattermost-plugin-mscalendar": {
-      "sha": "a8aecdb6e2450a066562ed671810f68b5db6f4d4",
+      "sha": "52c68e491f46ef80b2f33b77d2bc70b1144d028e",
       "branch": "master",
-      "parentSha": "a720894d5e154bd700046042f2941050f4c7325d",
-      "committedAt": "2026-09-03T09:19:16Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/a8aecdb6e2450a066562ed671810f68b5db6f4d4",
-      "title": "Bump fast-uri from 3.1.5 to 3.1.7 in /webapp (#541)",
-      "observedAt": "2026-09-05T06:07:26.891Z",
+      "parentSha": "a8aecdb6e2450a066562ed671810f68b5db6f4d4",
+      "committedAt": "2026-09-08T09:51:24Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/52c68e491f46ef80b2f33b77d2bc70b1144d028e",
+      "title": "Bump the webapp-dependencies group in /webapp with 2 updates (#542)",
+      "observedAt": "2026-09-08T11:07:53.366Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
