@@ -2909,3 +2909,56 @@ próprio perdido) e todo o pipeline foi refeito do zero sobre a base
 atualizada, para não arriscar corromper o encadeamento de hash do
 ledger. Nenhum achado novo digno de nota nesta rodada — resultado
 normal e válido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08p (push automático via GitHub webhook, sessão cloud)
+`program-policy.json` conferido antes de qualquer leitura (Block Open
+Source e Circle BBP confirmados bloqueados). `migrate-to-v2.mjs` +
+`research-plan`: `actionable: []`, `list-pending` global vazio —
+mesmo cenário das rodadas anteriores.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`:
+escolhidos 2 candidatos explicitamente marcados como pendentes por
+rodadas anteriores (nota lateral em `eip712.go`/`keypair.go`), em vez
+de arquivos aleatórios, para fechar débito técnico de leitura já
+identificado:
+
+1. `coins/aptos/v2/crypto/singleKey.go` (leitura completa pela
+   primeira vez nesta campanha — rodada anterior só tinha lido
+   parcialmente, dirigida à PoC de outro achado). `SingleSigner`/
+   `AnyPublicKey`/`AnySignature`/`SingleKeyAuthenticator`: variant
+   desconhecido em `UnmarshalBCS` sempre cai em `des.SetError()`
+   (fail-closed) antes de tentar desserializar o payload interno —
+   não repete o padrão de panic-por-tamanho-não-checado da família
+   cardano/solana/elrond/helium já catalogada neste repo. Sem achado.
+
+2. `coins/helium/keypair/address.go` — **não é leitura nova**: ao
+   escrever PoC independente para `NewAddressable` (base58.Decode sem
+   checar erro + slice `data[1:len(data)-4]` sem checar
+   `len(data)>=5`, panic real via `go test` confirmado, cadeia
+   completa `helium.Sign()` → `NewPaymentV2Tx()` → `NewAddressable()`
+   rastreada e reproduzida de ponta a ponta), a consulta prévia via
+   `cli.mjs get` revelou que este EXATO finding já existe no ledger
+   desde 2026-09-05, já passou por `reproduced_local` e duplicate-check
+   (`noveltyStatus=private_unknown`), e já foi corretamente parado em
+   `inconclusive` pelo gate de regressão (código de 2023, sem caminho
+   de novidade que o preflight aceite). `cli.mjs upsert-finding` com
+   patch mínimo confirmado como NO-OP real (contagens de `status` e
+   `updatedAt` do finding inalterados antes/depois) — nenhuma tentativa
+   de reabrir ou forçar transição sem evidência nova. `deep-read-log.json`
+   atualizado com nota explícita para nenhuma rodada futura repetir esta
+   mesma investigação.
+
+Nenhum achado novo nesta rodada — resultado normal e válido.
+
+Nota operacional: `git push` original desta rodada colidiu com dois
+commits concorrentes que chegaram ao remoto primeiro (achado real em
+`coins/cardano/address.go` e investigação RSA-1024 do
+mattermost-plugin-jira). Resolvido do mesmo jeito já documentado em
+rodadas anteriores: `git fetch` + `git reset --hard origin/master`
+(nenhum commit próprio de estado perdido, já que a única operação
+desta rodada sobre um finding existente foi o no-op confirmado acima),
+banco local reidratado do zero via `migrate-to-v2.mjs` a partir do
+`queue.jsonl` mais recente, e as duas edições de documentação desta
+rodada (`deep-read-log.json`, este `NOTES.md`) reaplicadas sobre a
+base atualizada antes do commit final. `export-queue` rodado ao
+final.
