@@ -461,3 +461,56 @@ proximidade com `crypto`/`access`/`session`:
 `deep-read-log.json` atualizado (+3 entradas em `slackhq/nebula`,
 30→33 no total). Clone temporário removido. `export-queue` rodado ao
 final da rodada.
+
+## Rodada 2026-09-08 (push automático via GitHub webhook, sessão cloud)
+
+`research-plan` apontou exatamente 1 item `actionable` no sistema inteiro
+(todos os outros 4 programas ativos — StackingDAO, Vercel Open Source,
+Circle BBP, Block Open Source — sem candidatos elegíveis nesta rodada;
+Circle BBP e Block Open Source seguem bloqueados por `program-policy.json`,
+nenhum arquivo dos dois foi tocado): o achado `replay_window_toctou_race`
+(`connection_state.go`) da rodada anterior, ação indicada `verify_scope`,
+motivo "nenhum scope snapshot existe para este programa". Ação executada
+foi só a autorizada por essa indicação — revisar fontes de escopo, não
+presumir confirmação.
+
+Criado `research/bugbounty/scope-snapshots/slack.json` (não existia até
+agora) a partir do dataset comunitário estruturado
+(`arkadiyt/bounty-targets-data`, `hackerone_data.json`, handle `slack`, 19
+ativos), mesmo padrão já usado para Kubernetes/OKG/Kiwi.com/Mattermost
+neste sistema (`capture-scope-snapshots.mjs` estendido com o bloco Slack).
+`check-scope "Slack" "slackhq/nebula"` agora confirma `allowed=true`:
+`https://github.com/slackhq/nebula` está explicitamente em escopo
+(`SOURCE_CODE`), `eligible_for_bounty=true`, `eligible_for_submission=true`.
+
+**Achado de escopo relevante, registrado sem inflar severidade pra
+satisfazer nada**: a instrução anexada a esse ativo no dataset diz
+"Accepting Critical severity ONLY as of 2026-05-27. Refer to Out of Scope
+section for detailed guidance" — ou seja, o programa hoje só aceita
+submissões Critical para `slackhq/nebula`, e a avaliação honesta do TOCTOU
+de replay window continua Medium (pré-condições reais: `routines>1`
+não-default, spoofing de porta UDP, janela de timing estreita — não é
+comprometimento de chave nem RCE). Isso não muda a classificação do
+achado; só limita, por ora, a elegibilidade de submissão dele neste
+programa especificamente.
+
+Tentei formalmente as duas transições, pra deixar registrado: `record-
+validation type=go_race_poc result=not_applicable` (nenhum validador local
+existe pra achados Go/race-condition neste pipeline — não inventei nem
+simulei um), seguido de `corroborated_static->reproduced_local` (recusada,
+esperado) e `corroborated_static->scope_verified` (recusada — a máquina de
+estados não tem essa aresta direta; `scope_verified` só é alcançável a
+partir de `reproduced_local`). O achado fica em `corroborated_static`,
+teto real do sistema hoje pra esta classe. Nenhum rascunho de relatório
+escrito nesta rodada — não alcançou `scope_verified`.
+
+Leitura profunda proativa (passo 4) rodada via `list-deep-read-candidates.mjs`
+(13 candidatos permitidos pela política/histórico; `slackhq/nebula` seguia
+com mais superfície não coberta, 19%). 3 arquivos novos lidos (nenhum lido
+em rodadas anteriores desta campanha), priorizando tema
+`access`/parsing de input externo: `firewall/packet.go`, `firewall/cache.go`,
+`header/header.go`. Sem achado nos três — structs de dados simples, cache
+sem mutação compartilhada entre goroutines fora de `atomic.Uint64`, e
+parsing de header com bounds check (`len(b) < Len`) antes de indexar.
+`deep-read-log.json` atualizado (+3 entradas em `slackhq/nebula`, 33→36 no
+total). Clone temporário removido. `export-queue` rodado ao final.

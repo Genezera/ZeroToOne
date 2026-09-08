@@ -72,6 +72,7 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
   const okg = h1Raw.find((p) => p.handle === 'okg');
   const kubernetes = h1Raw.find((p) => p.handle === 'kubernetes');
   const kiwicom = h1Raw.find((p) => p.handle === 'kiwicom');
+  const slack = h1Raw.find((p) => p.handle === 'slack');
   const block = bcRaw.find((p) => (p.name || '').toLowerCase().includes('block open source'));
   const auth0 = bcRaw.find((p) => (p.name || '').toLowerCase().includes('auth0'));
   const mattermost = bcRaw.find((p) => (p.name || '').toLowerCase().includes('mattermost'));
@@ -160,6 +161,29 @@ export async function captureAllSnapshots({ fetchJsonFn = fetchJson } = {}) {
       confidence: 'medium',
       capturedAt,
       communitySourceNote: 'Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.',
+    }));
+  }
+  if (slack) {
+    // Programa liberado por RoE em program-policy.json (roeReviewed
+    // 2026-09-03, leitura real da página oficial do programa Slack no
+    // HackerOne). Achado corroborated_static em slackhq/nebula (TOCTOU de
+    // replay window, connection_state.go) ficou preso em `verify_scope`
+    // por falta deste snapshot -- criado especificamente para desbloqueá-lo.
+    // Confirmado ao vivo contra o dataset bruto: o ativo
+    // "https://github.com/slackhq/nebula" (asset_type SOURCE_CODE) tem
+    // eligible_for_bounty=true, eligible_for_submission=true,
+    // max_severity="critical".
+    snapshots.push(buildScopeSnapshot({
+      program: 'Slack',
+      platform: 'HackerOne',
+      officialUrl: 'https://hackerone.com/slack',
+      sourceType: 'community_dataset_structured',
+      sourceDetail: 'arkadiyt/bounty-targets-data, hackerone_data.json, handle slack',
+      rawSourceContent: slack,
+      assets: toAssetList(slack.targets && slack.targets.in_scope),
+      confidence: 'medium',
+      capturedAt,
+      communitySourceNote: 'Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada para a prosa completa de política (já lida manualmente e registrada em program-policy.json em 03/09/2026). Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.',
     }));
   }
   if (block) {

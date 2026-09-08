@@ -1,0 +1,173 @@
+{
+  "program": "Slack",
+  "platform": "HackerOne",
+  "officialUrl": "https://hackerone.com/slack",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle slack",
+  "contentHash": "402b10ae8bf6cff5f55745ef4910e7c63df517bce101503993fd923e3daee010",
+  "capturedAt": "2026-09-08T01:08:10.191Z",
+  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "ttlDays": 14,
+  "confidence": "medium",
+  "assets": [
+    {
+      "assetIdentifier": "*.quip.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Only accepting Critical reports as of 2023-12-01"
+    },
+    {
+      "assetIdentifier": "Slack Desktop Application",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "api.slack.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The Slack API"
+    },
+    {
+      "assetIdentifier": "app.slack.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "com.Slack",
+      "assetType": "GOOGLE_PLAY_APP_ID",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "com.slack.slackmdm",
+      "assetType": "APPLE_STORE_APP_ID",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Reports are accepted for vulnerabilities specific to the [Slack EMM/MDM version of the app](https://apps.apple.com/us/app/slack-for-emm/id1254292716).\n\nEMM client vulnerabilities in the absence of a valid MDM configuration via a supported MDM provider, (such as MobileIron), on an EMM-enabled Slack team are excluded."
+    },
+    {
+      "assetIdentifier": "com.tinyspeck.chatlyio",
+      "assetType": "APPLE_STORE_APP_ID",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The main Slack app is included: [Slack iOS App](https://apps.apple.com/us/app/slack/id618783545)\n\nOther versions of the app, such as the EMM and Intune versions, are not included."
+    },
+    {
+      "assetIdentifier": "edgeapi.slack.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "https://apps.apple.com/us/app/quip-docs-chat-sheets/id647922896",
+      "assetType": "APPLE_STORE_APP_ID",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Only accepting Critical reports as of 2023-12-01"
+    },
+    {
+      "assetIdentifier": "https://github.com/slackhq/nebula",
+      "assetType": "SOURCE_CODE",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Accepting Critical severity ONLY as of 2026-05-27. Refer to Out of Scope section for detailed guidance"
+    },
+    {
+      "assetIdentifier": "https://salesforce.quip.com/blog/desktop",
+      "assetType": "DOWNLOADABLE_EXECUTABLES",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "slack-imgs.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "slack-redir.net",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "slack-status.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "slack.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "The slack.com site and application."
+    },
+    {
+      "assetIdentifier": "slackatwork.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "slackb.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "spaces.pm",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "www.quip.com",
+      "assetType": "URL",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "Only accepting Critical reports as of 2023-12-01"
+    }
+  ],
+  "categoriesEligible": [],
+  "categoriesExcluded": [],
+  "prohibitedTechniques": [],
+  "pocRequirements": null,
+  "rateLimits": null,
+  "disclosurePolicy": null,
+  "communitySourceNote": "Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada para a prosa completa de política (já lida manualmente e registrada em program-policy.json em 03/09/2026). Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa."
+}

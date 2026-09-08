@@ -5,8 +5,8 @@
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Block Open Source\"",
   "contentHash": "7fe670d4eea193e8c2a451c1d607de459d07e3e22386ba10dac1f3b57e3a3514",
-  "capturedAt": "2026-09-07T03:58:01.834Z",
-  "expiresAt": "2026-09-21T03:58:01.834Z",
+  "capturedAt": "2026-09-08T01:08:10.191Z",
+  "expiresAt": "2026-09-22T01:08:10.191Z",
   "ttlDays": 14,
   "confidence": "low",
   "assets": [

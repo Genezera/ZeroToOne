@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/circle-bbp",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle circle-bbp",
-  "contentHash": "f8d108ff78fd90eac20b14239cd130bc9907efb33c9b486ce8a9f3637989b998",
-  "capturedAt": "2026-09-07T03:58:01.834Z",
-  "expiresAt": "2026-09-21T03:58:01.834Z",
+  "contentHash": "28c56788d8429ba5383b69c65461c92698376fcbd034dff6680ddd0708bc20e1",
+  "capturedAt": "2026-09-08T01:08:10.191Z",
+  "expiresAt": "2026-09-22T01:08:10.191Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
