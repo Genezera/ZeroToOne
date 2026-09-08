@@ -227,15 +227,15 @@
       "action": "verify_scope",
       "priority": 90,
       "status": "retry",
-      "attempts": 1,
+      "attempts": 2,
       "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:25:43.018Z",
-      "nextEligibleAt": "2026-09-08T01:30:43.019Z",
+      "lastAttemptAt": "2026-09-08T01:31:02.657Z",
+      "nextEligibleAt": "2026-09-08T01:41:02.658Z",
       "result": {
         "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
       },
-      "finishedAt": "2026-09-08T01:25:43.020Z"
+      "finishedAt": "2026-09-08T01:31:02.658Z"
     },
     "evidence:v1:ba5b07f5165940aca078e2b3ab132ed9aa004999f346e612bee51674c73266d3": {
       "taskId": "evidence:v1:ba5b07f5165940aca078e2b3ab132ed9aa004999f346e612bee51674c73266d3",
@@ -246,15 +246,15 @@
       "action": "verify_scope",
       "priority": 90,
       "status": "retry",
-      "attempts": 1,
+      "attempts": 2,
       "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:25:43.020Z",
-      "nextEligibleAt": "2026-09-08T01:30:43.020Z",
+      "lastAttemptAt": "2026-09-08T01:31:02.658Z",
+      "nextEligibleAt": "2026-09-08T01:41:02.658Z",
       "result": {
         "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
       },
-      "finishedAt": "2026-09-08T01:25:43.020Z"
+      "finishedAt": "2026-09-08T01:31:02.658Z"
     },
     "evidence:v1:00e1ea04489c04773eaf6842544577ff444d91268c7b1252662b726cdc63f46a": {
       "taskId": "evidence:v1:00e1ea04489c04773eaf6842544577ff444d91268c7b1252662b726cdc63f46a",
@@ -265,15 +265,15 @@
       "action": "verify_scope",
       "priority": 90,
       "status": "retry",
-      "attempts": 1,
+      "attempts": 2,
       "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:25:43.020Z",
-      "nextEligibleAt": "2026-09-08T01:30:43.021Z",
+      "lastAttemptAt": "2026-09-08T01:31:02.658Z",
+      "nextEligibleAt": "2026-09-08T01:41:02.658Z",
       "result": {
         "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
       },
-      "finishedAt": "2026-09-08T01:25:43.021Z"
+      "finishedAt": "2026-09-08T01:31:02.658Z"
     },
     "evidence:v1:8cbb330d9730149f10cca0575e9da1f250bae0de36b35e67a3bf2c24e5da39cc": {
       "taskId": "evidence:v1:8cbb330d9730149f10cca0575e9da1f250bae0de36b35e67a3bf2c24e5da39cc",
@@ -284,15 +284,15 @@
       "action": "measure_code_age",
       "priority": 80,
       "status": "retry",
-      "attempts": 1,
+      "attempts": 2,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:25:43.021Z",
-      "nextEligibleAt": "2026-09-08T01:30:44.230Z",
+      "lastAttemptAt": "2026-09-08T01:31:02.658Z",
+      "nextEligibleAt": "2026-09-08T01:41:03.634Z",
       "result": {
         "reason": "arquivo não encontrado no histórico da branch padrão"
       },
-      "finishedAt": "2026-09-08T01:25:44.230Z"
+      "finishedAt": "2026-09-08T01:31:03.634Z"
     }
   },
   "runs": [
@@ -350,6 +350,16 @@
       "runId": "evidence-run:v1:032016c9e475de20a93884a5635c3de84e2d2808dd725586220ec2c0db6e0f42",
       "startedAt": "2026-09-08T01:25:43.017Z",
       "finishedAt": "2026-09-08T01:25:44.231Z",
+      "planned": 4,
+      "claimed": 4,
+      "completed": 0,
+      "needsHuman": 0,
+      "failed": 4
+    },
+    {
+      "runId": "evidence-run:v1:f779d494e4afeb7b7fbca1c2b44f6d9af0637baac613c1f705910db58b4bf233",
+      "startedAt": "2026-09-08T01:31:02.656Z",
+      "finishedAt": "2026-09-08T01:31:03.635Z",
       "planned": 4,
       "claimed": 4,
       "completed": 0,
