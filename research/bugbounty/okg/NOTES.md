@@ -2675,3 +2675,52 @@ e utilitários já auditados, sem decode de seed bruto sem checagem.
 Nenhum achado novo. `deep-read-log.json` atualizado.
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08k (push automático via GitHub webhook, sessão cloud)
+Verificado `program-policy.json` antes de qualquer leitura (regra do
+CLAUDE.md). `research-plan` devolveu `actionable: []` (0 itens) —
+os achados `reproduced_local`/`corroborated_static` de
+`okx/go-wallet-sdk` continuam só em `held` (70 itens no total, cobrindo
+vários programas), sem evidência nova que justifique reabrir. `list-
+pending` vazio. Nenhuma ação de fila nesta rodada — sem novo
+`actionable` e sem candidate pendente, não há transição de estado a
+tentar.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` confirma os
+mesmos 13 repositórios liberados por política+histórico (Circle BBP e
+Block Open Source continuam bloqueados/fora da lista, conferido antes
+de escolher qualquer arquivo). Escolhidos 4 arquivos ainda não lidos em
+`okx/go-wallet-sdk` (111→115 arquivos), priorizando padrão
+crypto/sign/hash fora dos diretórios já exauridos:
+`coins/oracle/vrf/proof/key_v2.go` (VRF da Chainlink vendorizado, usado
+só para prova/geração VRF, não para assinatura de transação de usuário
+— sem lógica de derivação de chave exposta a input não confiável),
+`coins/kaspa/kaspad/domain/consensus/utils/txscript/sign.go` (wrapper
+de assinatura Schnorr/ECDSA, port fiel do padrão btcsuite/kaspad,
+delega pra libs `btcec`/`schnorr` sem lógica própria de
+derivação/comparação),
+`coins/kaspa/kaspad/domain/consensus/utils/consensushashing/
+calculate_signature_hash.go` (sighash de kaspad, ordem de campos
+hashados conferida contra a implementação upstream, bate) e
+`coins/starknet/v3/hash.go` (hash de tx Starknet V3 via
+`PoseidonArray`, ordem de campos conferida contra a spec SNIP-8 —
+prefix/version/sender/tip_and_resources_hash/paymaster_data_hash/
+chain_id/nonce/DA_mode/account_deployment_data_hash/calldata_hash —
+bate). Nenhum achado novo: todo o código lido nesta rodada é port fiel
+de referência upstream (btcsuite/kaspad, Chainlink VRF, SNIP-8) ou
+delega para libs de assinatura padrão, sem lógica de
+validação/derivação custom divergente do padrão de referência.
+`deep-read-log.json` atualizado.
+
+Nota operacional: esta rodada colidiu com uma rodada concorrente de
+outra sessão (`62c9901`, rodada j acima) que também fez leitura
+profunda em `okx/go-wallet-sdk` no mesmo commit-base; sem sobreposição
+de arquivos lidos (3 arquivos distintos dos 4 desta rodada) nem de
+achados. Push original desta rodada precisou ser refeito: reset para
+`origin/master`, `migrate-to-v2.mjs` reidratado a partir do
+`queue.jsonl` já atualizado pela rodada j, e só então reaplicadas as
+notas/deep-read-log desta rodada k por cima, antes de `export-queue` e
+commit.
+
+Nenhum achado novo digno de nota nesta rodada — resultado normal e
+válido. `export-queue` rodado ao final.
