@@ -2165,3 +2165,47 @@ Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
 atualizado (+3 entradas em `mattermost/mattermost-plugin-msteams-meetings`,
 agora 11). Clone temporário removido do scratch dir ao final.
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08m (push automático via GitHub webhook, sessão cloud, push 69659db->e5ddade)
+
+`program-policy.json` conferido como passo zero: `Block Open Source`
+segue `aiResearchBanned:true`, `Circle BBP` segue `blocked:true` (escolha
+do usuário); `Mattermost Public Bug Bounty Engagement ` segue
+`aiResearchBanned:false`. `migrate-to-v2.mjs` rodado (844 findings,
+mesma distribuição de estados de rodadas recentes); `list-pending` vazio;
+`research-plan` retornou `actionable: []`, 71 `held` (mesmos códigos de
+sempre — `program_blocked`, `campaign_duplicate_history`,
+`scope_not_confirmed`, `outside_campaign_window`,
+`below_campaign_impact`, `previous_submission`; nada novo em
+`StackingDAO` ou `Vercel Open Source`).
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` apontou
+`mattermost/mattermost-plugin-calls` (15 arquivos lidos, cobertura menor
+entre os plugins Mattermost ainda não esgotados). Clone raso público
+(`git clone --depth 1`), 3 arquivos novos ainda não listados em
+`deep-read-log.json`, priorizando nome de caminho com session/db:
+`server/db/calls_sessions_store.go`, `server/db/utils.go`,
+`server/client_message.go`.
+
+- `server/db/calls_sessions_store.go` — todo o CRUD de sessions usa o
+  query builder `squirrel` com placeholders parametrizados
+  (`sq.Eq`/`sq.And`) em Insert/Update/Delete/Select; nenhuma
+  concatenação de string SQL com input de usuário; IDs de sessão/call
+  são gerados internamente (`model.NewId()`), nunca vêm crus do body
+  HTTP direto pra query. Sem achado.
+- `server/db/utils.go` — `setupDBConn`/`hasBinaryParams`/
+  `getQueryBuilder`/`genLast12MonthsMap`: DSN de conexão só vem de
+  config de admin/env, sem input de rede; `getQueryBuilder` fixa
+  `PlaceholderFormat(Dollar)`, reforçando o padrão parametrizado visto
+  no arquivo anterior. Sem achado.
+- `server/client_message.go` — só struct/enum de tipos de mensagem
+  websocket (`Type` + `json.RawMessage Data`); `FromJSON` é
+  `json.Unmarshal` genérico sem lógica de autorização própria; validação
+  de tipo (`isValidClientMessageType`) e dispatch de cada tipo ficam em
+  outros arquivos (`websocket.go`/`api.go`), não neste. Sem achado neste
+  arquivo isoladamente.
+
+Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
+atualizado (+3 entradas em `mattermost/mattermost-plugin-calls`, agora
+18). Clone temporário removido do scratch dir ao final. `export-queue`
+rodado ao final.
