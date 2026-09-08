@@ -1,126 +1,142 @@
 {
   "program": "Mattermost Public Bug Bounty Engagement ",
-  "platform": "HackerOne",
-  "officialUrl": "https://hackerone.com/mattermost",
-  "sourceType": "hackerone_api_live",
-  "sourceDetail": "GET /v1/hackers/programs/mattermost/structured_scopes",
-  "contentHash": "e9cce1698a64f38596d80d3255913d6698bb566d9cdf309e448f994aaf5baeb6",
-  "capturedAt": "2026-09-07T12:32:46.103Z",
-  "expiresAt": "2026-09-10T12:32:46.103Z",
-  "ttlDays": 3,
-  "confidence": "alta",
+  "platform": "Bugcrowd",
+  "officialUrl": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Mattermost Public Bug Bounty Engagement \"",
+  "contentHash": "2d6b1ab831f635f139d86f56a550fd24de660db60e9280d32de917b68220930d",
+  "capturedAt": "2026-09-08T01:08:10.191Z",
+  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "ttlDays": 14,
+  "confidence": "low",
   "assets": [
     {
-      "assetIdentifier": "mattermost.(com/org)",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept reports for our website here."
-    },
-    {
-      "assetIdentifier": "h1-*your-own-instance*.cloud.mattermost.com",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "Create your own free instance by signing up at https://customers.mattermost.com/cloud/signup\n\n## Important Notes\n- Remember to prefix your instance name with `h1-` so that it’s easily identifiable. \n- Please use your own cloud instance for testing.\n- Never use any other cloud instances. \n- Please adhere to the Program Rules as mentioned in our Program Policy. "
-    },
-    {
-      "assetIdentifier": "*.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": true,
-      "maxSeverity": "medium",
+      "assetIdentifier": "https://play.google.com/store/search?q=mattermost&c=apps",
+      "assetType": "android",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
       "instruction": null
     },
     {
-      "assetIdentifier": "about.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept reports for our website here."
-    },
-    {
-      "assetIdentifier": "integrations.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept reports for our website here."
-    },
-    {
-      "assetIdentifier": "docs.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept reports for our website here."
-    },
-    {
-      "assetIdentifier": "Mattermost Source Code",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "[Server](https://github.com/mattermost/mattermost-server) | [Webapp](https://github.com/mattermost/mattermost-webapp) | [Mobile](https://github.com/mattermost/mattermost-mobile) \n\n\n### Deploy your self-hosted Mattermost instance\n[via Docker](https://mattermost.com/deploy/) | [via Tar](https://docs.mattermost.com/install/install-tar.html)\n \nDetailed setup instructions for individual components are available here:\n[Server](https://developers.mattermost.com/contribute/server/developer-setup/) | [Webapp](https://developers.mattermost.com/contribute/webapp/developer-setup/) | [Mobile](https://developers.mattermost.com/contribute/mobile/developer-setup/) \n"
-    },
-    {
-      "assetIdentifier": "Mattermost Plugins",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "- [Jira Plugin](https://github.com/mattermost/mattermost-plugin-jira) \n- [Zoom Plugin](https://github.com/mattermost/mattermost-plugin-zoom)\n- [GitHub Plugin](https://github.com/mattermost/mattermost-plugin-github)\n- [GitLab Plugin](https://github.com/mattermost/mattermost-plugin-gitlab)\n- [Calls Plugin](https://github.com/mattermost/mattermost-plugin-calls)\n- [Playbooks Plugin](https://github.com/mattermost/mattermost-plugin-playbooks)\n\nDocumentation and setup instructions are available in the README of the repository. General documentation: https://docs.mattermost.com\n"
-    },
-    {
-      "assetIdentifier": "com.mattermost.rn",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "The latest APK can be downloaded from here:\nhttps://github.com/mattermost/mattermost-mobile/releases\n\nThe public beta release containing the latest features is also in scope and can be accessed on the Play Store under the identifier [com.mattermost.rnbeta](https://play.google.com/store/apps/details?id=com.mattermost.rnbeta)"
-    },
-    {
-      "assetIdentifier": "978516833",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "Latest IPA can be downloaded from here:\nhttps://github.com/mattermost/mattermost-mobile/releases"
-    },
-    {
-      "assetIdentifier": "Mattermost Desktop",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "The [Mattermost Desktop App](https://developers.mattermost.com/contribute/desktop/) is an Electron wrapper around the web app project. The source code is available in [GitHub](https://github.com/mattermost/desktop). The desktop app runs on Windows, Linux, and macOS.\n\n[Installation instructions available here](https://docs.mattermost.com/install/desktop-app-install.html) "
-    },
-    {
-      "assetIdentifier": "Other publicly-released plugins",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "This asset is for plugins that Mattermost doesn't officially support.\n\nAs informational only, we accept reports about important security issues with community plugins. Mattermost will handle contacting the plugin author and will provide guidance for the community member to implement a fix.\n"
-    },
-    {
-      "assetIdentifier": "customers.mattermost.com",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
+      "assetIdentifier": "https://apps.apple.com/us/app/mattermost/id1257222717",
+      "assetType": "ios",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
       "instruction": null
     },
     {
-      "assetIdentifier": "academy.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept reports for our website here. "
+      "assetIdentifier": "https://mattermost.com/apps/",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
     },
     {
-      "assetIdentifier": "developers.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept report for our website here. "
+      "assetIdentifier": "https://bugcrowd-*your-own-instance*.cloud.mattermost.com/",
+      "assetType": "website",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
     },
     {
-      "assetIdentifier": "forum.mattermost.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": "We don't accept report for our website here. "
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-jira ",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-zoom",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-github",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-gitlab",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-calls",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-playbooks",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-boards",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-ai",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-mscalendar",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-msteams-meetings",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-confluence",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
+    },
+    {
+      "assetIdentifier": "https://github.com/mattermost/mattermost-plugin-msteams",
+      "assetType": "other",
+      "eligibleForBounty": null,
+      "eligibleForSubmission": null,
+      "maxSeverity": null,
+      "instruction": null
     }
   ],
   "categoriesEligible": [],
@@ -129,5 +145,5 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": null
+  "communitySourceNote": "Mesma limitação de Block Open Source/Auth0: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Repositórios dos 3 achados pendentes (mattermost-plugin-confluence, mattermost-plugin-msteams-meetings, mattermost-plugin-zoom) confirmados como alvos reais em escopo (\"Mattermost Confluence Plugin\", \"Mattermost Plugin for Microsoft Teams Meetings\", \"Mattermost Zoom Plugin\") -- elegibilidade de recompensa por severidade precisa confirmação manual na página oficial antes de qualquer submissão real."
 }

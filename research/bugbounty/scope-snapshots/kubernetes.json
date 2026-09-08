@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/kubernetes",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle kubernetes",
-  "contentHash": "e27fa985ed13f0d68c4b91fc799471945688a2020be1e3e17e540555814373ff",
-  "capturedAt": "2026-09-07T03:58:01.834Z",
-  "expiresAt": "2026-09-21T03:58:01.834Z",
+  "contentHash": "c62bf08bb1215b8dbe46fb6844953b593bde9bb32337fdfd9561c9ad8e4373ba",
+  "capturedAt": "2026-09-08T01:08:10.191Z",
+  "expiresAt": "2026-09-22T01:08:10.191Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
