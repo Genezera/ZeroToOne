@@ -2209,3 +2209,64 @@ Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
 atualizado (+3 entradas em `mattermost/mattermost-plugin-calls`, agora
 18). Clone temporário removido do scratch dir ao final. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-08 (push automático via GitHub webhook, sessão cloud, push e5ddade->e023eed, rebaseado sobre 794ba87)
+
+`program-policy.json` conferido como passo zero (`check-program`):
+`Block Open Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados;
+`Mattermost Public Bug Bounty Engagement ` segue liberado
+(`blocked:false`). `migrate-to-v2.mjs` rodado; `list-pending` vazio;
+`research-plan` retornou `actionable: []` (71 `held`, mesmos códigos —
+`program_blocked` agora inclui `Auth0 by Okta`, 30 itens; nada novo em
+`StackingDAO` ou `Vercel Open Source`).
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` (que já
+aplica o histórico da campanha e a política antes de qualquer clone)
+apontou os dois repositórios Plaid como menos cobertos (5/7 arquivos),
+mas ambos já estavam anotados como esgotados/sem caminho novo em
+`deep-read-log.json` (plaid-ruby 100% gerado por openapi-generator sem
+lógica própria; react-plaid-link só repassa token direto pro script
+oficial `cdn.plaid.com`, sem `dangerouslySetInnerHTML`). Segui pros
+próximos da lista: `mattermost/mattermost-plugin-gitlab` (10 lidos) e
+`mattermost/mattermost-plugin-jira` (10 lidos). Clone raso público
+(`git clone --depth 1`), 3 arquivos novos ainda não listados em
+`deep-read-log.json`:
+
+- `mattermost-plugin-gitlab/server/support_packet.go` —
+  `GenerateSupportData`/`getConnectedUserCount` só serializa versão do
+  plugin, contagem de usuários conectados e um bool
+  `IsOAuthConfigured` no `diagnostics.yaml` do Support Packet; nenhum
+  token/segredo exportado. Sem achado.
+- `mattermost-plugin-jira/server/kv.go` — **ACHADO criado e já
+  refutado nesta mesma rodada**: `EnsureRSAKey()` (linha 368) gera RSA
+  de **1024 bits** (`rsa.GenerateKey(rand.Reader, 1024) // #nosec
+  G403`), usado por `instance_server.go` (`getOAuth1Config`/
+  `oauth1.RSASigner`) para assinar o fluxo OAuth1.0a RSA-SHA1 contra
+  instâncias Jira Server on-prem (Application Links). CWE-326 real
+  (chave abaixo do mínimo atual de 2048 bits), mas: (a) fatorar RSA-1024
+  hoje custa dezenas/centenas de milhares de dólares de cômputo — fora
+  do modelo de ameaça típico de bug bounty e sem ferramenta disponível
+  neste pipeline pra demonstrar; (b) mesmo quebrada, exigiria também
+  infraestrutura de terceiro (instância Jira Server real de vítima)
+  fora do escopo de teste; (c) a supressão `#nosec G403` já no próprio
+  código indica que os mantenedores rodam gosec e aceitaram
+  conscientemente o risco, provavelmente por compatibilidade com
+  Application Links legados — reduz fortemente a novidade. Transição
+  `candidate -> false_positive` registrada com justificativa completa
+  (ver finding
+  `Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/kv.go::EnsureRSAKey::weak_rsa_key_size_oauth1_signing`
+  no `queue.jsonl`).
+- `mattermost-plugin-jira/server/client_cloud.go` — `jiraCloudClient` é
+  wrapper fino sobre a REST API v3 do Jira Cloud; `SearchIssues` passa
+  `jql` como query param via `client.RESTGet` (sem concatenação de
+  string insegura), execução sempre escopada pelo token OAuth2 do
+  usuário Jira já conectado (permissões aplicadas pelo próprio Jira).
+  Sem achado.
+
+`deep-read-log.json` atualizado (+1 entrada em
+`mattermost/mattermost-plugin-gitlab`, agora 11; +2 entradas em
+`mattermost/mattermost-plugin-jira`, agora 12). Clone temporário
+removido do scratch dir ao final. `export-queue` rodado ao final.
+Rebaseado localmente sobre `794ba87` (rodadas concorrentes
+mattermost-plugin-calls e nitrojs/nitro, sem sobreposição de arquivos)
+antes do push.
