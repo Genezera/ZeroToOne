@@ -668,3 +668,43 @@ de rede não autenticado alcançando este código — fora do modelo de
 ameaça relevante pra um programa de bug bounty (o "atacante" seria o
 próprio operador rodando a CLI contra si mesmo). Sem achado em nenhum
 dos 3. `deep-read-log.json` atualizado.
+
+## Rodada 2026-09-08 #2 (sessão cloud, push trigger, continuação da rodada acima)
+
+Antes de escolher alvo: `research-plan` rodado (Passo 0 + CLAUDE.md) —
+`list-pending` vazio; os 6 itens `actionable` (todos `OKG::okx/go-wallet-sdk`,
+ação `verify_scope`) já tinham sido plenamente processados no commit que
+disparou este push (`0cd5f12`, sessão anterior): `check-scope` a nível de
+repo confirma `allowed=true`, mas o gate de transição real do `state-machine`
+exige o **asset exato** (caminho do arquivo) no snapshot de escopo — que só
+lista o repositório, sem granularidade de arquivo — e `deploymentEvidence.
+confidence` nunca passa de `unverified` (SDK sem tags/releases Git). Ambos os
+motivos já registrados no `reasoning` de cada um dos 6 achados-irmãos; nenhuma
+tentativa de forçar/contornar. Nada de novo a fazer ali nesta rodada.
+
+Leitura profunda proativa (3 arquivos novos, `slackhq/nebula`, ainda não
+lidos): `dns_server.go`, `punchy.go`, `hostmap.go`.
+
+- `dns_server.go`: hipótese de disclosure de topologia interna / reflection
+  UDP via o listener DNS opt-in do lighthouse (`lighthouse.serve_dns`,
+  default `0.0.0.0` no `examples/config.yml` — bind em todas interfaces, não
+  só a VPN). Refutada: é a funcionalidade documentada e pretendida do recurso
+  ("can even be delegated to for resolution"), fator de amplificação baixo, e
+  a única parte potencialmente sensível (certificado via TXT/`QueryCert`) já é
+  gateada por `isSelfNebulaOrLocalhost` e não é segredo (chave pública
+  assinada pela CA).
+- `punchy.go`: hipótese de nó autenticado virar canhão de pacotes UDP pra IP
+  arbitrário via `handleHostPunchNotification` (função distinta da já
+  auditada `sendHostPunchNotification`). Refutada: só alcançável a partir de
+  um lighthouse já autenticado via Noise, cada alvo passa por
+  `remoteAllowList.Allow` antes do punch, payload de 1 byte sem amplificação
+  útil, e o modelo de confiança do lighthouse já concede poder equivalente ou
+  maior por outras vias já auditadas.
+- `hostmap.go`: hipótese de um hostinfo forjado sequestrar a posição primária
+  de outro peer no mapa (`unlockedInnerAddHostInfo` sempre promove o mais
+  recente). Refutada: só alcançável após handshake Noise completo com
+  certificado válido pela CA — o `vpnAddr` vem do próprio certificado
+  assinado, sem caminho de rede não autenticado até essa função.
+
+Sem achado novo nos 3. `deep-read-log.json` atualizado (48 entradas agora em
+`slackhq/nebula`, ~25%+ do repo coberto).
