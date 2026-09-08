@@ -2463,3 +2463,25 @@ confirmados). 4 arquivos lidos:
 
 `deep-read-log.json` atualizado (+4 entradas). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-08f (push automático via GitHub webhook, sessão cloud, push d6e9193->760b89a)
+
+`program-policy.json` conferido via `check-program`: `OKG` segue
+`blocked:false`. `research-plan` apontou de novo os mesmos 5
+`reproduced_local` com ação `verify_scope` (aptos v2 MultiEd25519,
+filecoin `SignedTx`, helium NIST P256 `GenerateKey`, helium
+`Keypair.Sign`, waves `Sign`) — revisei a fonte de escopo real
+(`scope-snapshots/okg.json`, `contentHash` idêntico ao das rodadas
+anteriores) e reconfirmei via `check-scope` que o gate se comporta
+corretamente: nível de repositório (`okx/go-wallet-sdk`) retorna
+`allowed:true`, mas o asset exato de cada finding (caminho de arquivo)
+não está listado no snapshot, que só lista o repo como um todo. Nenhuma
+evidência nova (`deploymentEvidence.confidence` segue `unverified` por
+falta de tags/releases). Nenhuma tentativa de transição repetida sem
+evidência nova — os 5 ficam em `reproduced_local`.
+
+Leitura profunda proativa desta rodada direcionada a
+`mattermost/mattermost-plugin-zoom` em vez de `go-wallet-sdk` (ver
+NOTES.md de Mattermost — achado `cipher.go` investigado e refutado como
+`false_positive` por falta de vetor de exploração real). Nenhuma
+transição de estado neste programa.

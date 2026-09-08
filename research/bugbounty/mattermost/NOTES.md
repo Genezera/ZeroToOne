@@ -1930,3 +1930,55 @@ Leitura profunda proativa (3 arquivos novos em
 `deep-read-log.json` atualizado com os 3 arquivos. Nenhum finding novo,
 nenhuma transição de estado nesta rodada. `export-queue` rodado ao final
 mesmo assim, por consistência.
+
+## Rodada 2026-09-08f (push automático via GitHub webhook, sessão cloud, push d6e9193->760b89a — commit da rodada anterior disparou este webhook)
+
+`program-policy.json` conferido como passo zero via `check-program`:
+`Block Open Source` e `Circle BBP` seguem bloqueados (nenhum arquivo
+desses dois clonado/lido/aberto nesta rodada); `Mattermost Public Bug
+Bounty Engagement`, `OKG`, `Plaid`, `StackingDAO`, `Vercel Open Source`
+confirmados `blocked:false`. `list-pending` vazio. `research-plan`
+apontou de novo só os 5 mesmos `OKG::okx/go-wallet-sdk`
+`reproduced_local` (`verify_scope`) — revisei a fonte de escopo real
+(`scope-snapshots/okg.json`, `contentHash` inalterado) e confirmei que a
+recusa é o gate funcionando corretamente (snapshot só lista o repo, não
+arquivos individuais; `deploymentEvidence.confidence` preso em
+`unverified` por falta de tags/releases) — mesmos dois motivos já
+documentados em rodadas anteriores de hoje, nenhuma tentativa de
+transição repetida sem evidência nova.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`: mesmo
+bucket de exclusão por política (`circlefin/*` Circle BBP,
+`auth0/auth0-java` Auth0). Escolhido `mattermost/mattermost-plugin-zoom`
+(só 5 arquivos lidos até então, menor cobertura entre os candidatos
+permitidos). 3 arquivos novos:
+- `server/cipher.go` — **investigado a fundo, REFUTADO**: `encrypt`/
+  `decrypt` usam AES-CFB com IV aleatório mas SEM MAC/tag de autenticação
+  (mesma classe já confirmada como achado real no repositório-irmão
+  `mattermost-plugin-github` e já refutada antes em
+  `mattermost-plugin-msteams-meetings` pelo mesmo motivo). Rastreei os 2
+  únicos call sites do repo inteiro (grep exaustivo, exclui `_test`):
+  `server/store.go:42` (`storeOAuthUserInfo`, escreve) e `:80`
+  (`fetchOAuthUserInfo`, lê) — ambos operam sobre a MESMA entrada do KV
+  Store do próprio plugin; o ciphertext que chega em `decrypt()` é
+  sempre exatamente o que `encrypt()` escreveu, nunca dado de
+  rede/webhook/usuário externo, e a chave do KV Store só é escrita
+  internamente após um OAuth2 completo (nenhuma rota HTTP aceita
+  userID/zoomID arbitrário para gravar nesse prefixo). Fraqueza
+  criptográfica de projeto real (CWE-326, ausência de autenticação no
+  esquema), mas sem vetor de exploração demonstrável — round-trip
+  inteiramente interno. Registrado como finding, `candidate` →
+  `false_positive` (refutação documentada, nenhuma tentativa de forçar
+  severidade para satisfazer o gate).
+- `server/store.go` — lido como contexto do achado acima; confirma
+  também que o token de superusuário (`zoomSuperUserTokenKey`) é
+  guardado SEM criptografia nenhuma, mas no mesmo trust boundary interno
+  (KV Store do plugin) — sem achado isolado.
+- `server/zoom/user.go` — só struct `User` (campos da API Zoom), sem
+  lógica. Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em
+`mattermost/mattermost-plugin-zoom`, agora 8). 1 finding novo criado e já
+fechado como `false_positive` na mesma rodada (nenhuma transição de
+estado pendente). Clone temporário removido do scratch dir ao final.
+`export-queue` rodado ao final.
