@@ -2129,3 +2129,39 @@ Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
 atualizado (+3 entradas em `mattermost/mattermost-plugin-zoom`, agora
 11). Clone temporário removido do scratch dir ao final. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-08j (push automático via GitHub webhook, sessão cloud, push ef37c1e->57de2dd)
+
+`program-policy.json` conferido como passo zero: `Block Open Source` e
+`Circle BBP` seguem `blocked:true`; `Mattermost Public Bug Bounty
+Engagement ` segue `blocked:false`. `migrate-to-v2.mjs` rodado;
+`list-pending` vazio; `research-plan` retornou `actionable: []` (70
+`held`, mesmos códigos de sempre — `program_blocked`,
+`campaign_duplicate_history`, `scope_not_confirmed`,
+`outside_campaign_window`, `below_campaign_impact`,
+`previous_submission`; nada novo em `StackingDAO` ou `Vercel Open
+Source`).
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` apontou
+`mattermost/mattermost-plugin-msteams-meetings` (8 arquivos lidos,
+empatado com `-zoom`, que já foi coberto na rodada anterior). Clone raso
+público (`git clone --depth 1`), 3 arquivos novos ainda não listados em
+`deep-read-log.json`: `server/plugin.go`, `server/utils.go`,
+`server/post.go`.
+
+- `server/plugin.go` — `OnActivate` só garante a conta do bot, registra
+  o comando `/mstmeetings` e inicia o cliente de telemetria; nenhuma
+  lógica de autenticação/segredo neste arquivo. Sem achado.
+- `server/utils.go` — `checkPreviousMessages` só lê posts recentes do
+  próprio canal (já autorizado pelo caller) pra dedupe de link de
+  reunião; `getPluginOauthURL`/`getSiteURL` são helpers sem lógica de
+  autorização. Sem achado.
+- `server/post.go` — `postMeetingWithDeps` confirma
+  `HasPermissionToChannel(PermissionCreatePost)` checado ANTES de criar
+  post/meeting; `postConnect`/`postConfirmCreateOrJoin` só montam
+  ephemeral post. Sem achado.
+
+Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
+atualizado (+3 entradas em `mattermost/mattermost-plugin-msteams-meetings`,
+agora 11). Clone temporário removido do scratch dir ao final.
+`export-queue` rodado ao final.
