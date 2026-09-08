@@ -2351,3 +2351,42 @@ arquivo, nem fonte de `confidence=high` para este SDK sem tags/releases),
 então **nenhuma tentativa de transição repetida** nos 4 findings. Leitura
 profunda proativa desta rodada foi em `mattermost/mattermost-plugin-jira`,
 não neste programa — ver `mattermost/NOTES.md` rodada 2026-09-08b.
+
+## Rodada 2026-09-08d (push automático via GitHub webhook, sessão cloud) — reconfirmação, sem ação nova
+
+`program-policy.json` conferido antes de qualquer leitura (`check-program`
+implícito via revisão do arquivo): `Block Open Source` e `Circle BBP`
+seguem bloqueados, nenhum arquivo desses dois tocado. `migrate-to-v2.mjs`
+(839 findings) e `list-pending` vazio, como esperado. `research-plan`
+apontou novamente os mesmos 4 achados `reproduced_local` deste programa
+(aptos v2 MultiEd25519, helium NIST P256 `GenerateKey`, helium
+`Keypair.Sign`, waves `Sign`) com ação `verify_scope`. Reconferido o
+`reasoning`/`deploymentEvidence` já salvo em cada um (idêntico às rodadas
+anteriores de hoje) e o snapshot `okg.json` (ainda válido até
+2026-09-22, ainda sem granularidade de arquivo — só lista
+`https://github.com/okx/go-wallet-sdk` a nível de repositório). Nenhuma
+evidência nova surgiu (nem snapshot com granularidade de arquivo, nem
+fonte de `confidence=high` para este SDK sem tags/releases) — **nenhuma
+tentativa de transição repetida** nos 4 findings, mesmo critério das
+rodadas 2026-09-08/b/c.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`: mesmo
+bucket de repositórios excluídos por política confirmado (`circlefin/*`
+Circle BBP, `auth0/auth0-java` Auth0). Escolhido novamente
+`okx/go-wallet-sdk` (maior histórico de achados confirmados, agora 94
+arquivos já lidos). 3 arquivos novos, todos sem achado:
+- `crypto/ronin/types/transaction_signing.go` — fork do go-ethereum com
+  suporte a `SponsoredTxType`/payer (Ronin). Comparado adversarialmente
+  contra `EIP155Signer` original em busca da mesma classe de bug já
+  encontrada no achado Waves (checagem de chainId omitida, V/S
+  malleability não validada, offset de V incorreto) — `MikoSigner`
+  preserva todas as checagens (chainId, `ValidateSignatureValues`,
+  offset de V consistente com `decodeSignature`). Sem achado.
+- `coins/aptos/v2/crypto/crypto.go` e
+  `coins/cosmos/okc/tx/tendermint/crypto.go` — ambos puras definições de
+  interface Go, sem lógica própria (implementações concretas já lidas em
+  rodadas anteriores). Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas). Nenhum finding novo,
+nenhuma transição de estado nesta rodada. `export-queue` rodado ao final
+por consistência.
