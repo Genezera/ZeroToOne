@@ -1439,7 +1439,15 @@
     "coins/helium/crypto/nist-p256/nist-p256.go (ACHADO: NISTP256Curve.GenerateKey serializa D/X/Y via big.Int.Bytes(), que remove bytes altos zero em vez de zero-paddar pra largura fixa de 32 bytes -- pub:=append(x,y...) sem padding desloca o layout X||Y quando X tem byte alto zero, corrompendo silenciosamente a chave publica; Keypair.CreateAddress nao valida tamanho, entao o endereco base58 derivado fica silenciosamente errado, sem qualquer erro. CWE-1240/CWE-704, familia distinta (corrupcao silenciosa de dado, nao panic nem no-op) dos achados-irmaos ja catalogados. PoC real (2 testes go, 4000 trials, taxa empirica ~0.35-1%% por trial) confirmou tanto o truncamento quanto a divergencia de endereco resultante. Avancou candidate->corroborated_static->reproduced_local; scope_verified recusado pelo mesmo motivo estrutural (asset nao listado a nivel de arquivo + deploymentEvidence unverified). Ver finding OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address.)",
     "coins/helium/crypto/ed25519/ed25519.go (rodada 2026-09-08 -- comparacao de controle pro achado acima: ed25519.GenerateKey sempre devolve priv.Seed()/pub de tamanho fixo (32/64 bytes), sem uso de big.Int, confirma que o problema de padding e especifico do lado NIST P256. Sem achado isolado.)",
     "coins/ton/signedtx.go (rodada 2026-09-08 -- SignedTx e so um container de dados (Code/Data/Tx/Hash/Address), FillInit/FillTx/Str sem logica de assinatura ou verificacao propria, delega pra wallet.GetStateInit/CalNormMsgHash. Sem achado)",
-    "coins/stellar/keypair/from_address.go (rodada 2026-09-08 -- FromAddress e keypair verify-only: Sign/SignBase64/SignDecorated/SignPayloadDecorated retornam ErrCannotSign de forma consistente (fail-closed), Verify usa ed25519.Verify padrao com length-check de sig previo, Equal trata nil corretamente dos dois lados. Sem achado)"
+    "coins/stellar/keypair/from_address.go (rodada 2026-09-08 -- FromAddress e keypair verify-only: Sign/SignBase64/SignDecorated/SignPayloadDecorated retornam ErrCannotSign de forma consistente (fail-closed), Verify usa ed25519.Verify padrao com length-check de sig previo, Equal trata nil corretamente dos dois lados. Sem achado)",
+    "coins/stellar/strkey/muxed_account.go",
+    "coins/tezos/types/key.go",
+    "coins/waves/crypto/edwards25519.go",
+    "coins/waves/crypto/crypto.go",
+    "coins/waves/crypto/crypto_test.go",
+    "coins/waves/account.go",
+    "coins/waves/transaction.go",
+    "coins/waves/types/transfer.go"
   ],
   "kubernetes/apiserver": [
     "pkg/authorization/union/union.go (unionAuthzHandler.Authorize/ConditionsAwareAuthorize/EvaluateConditions -- authorizer que encadeia multiplos sub-authorizers, retorna a primeira decisao Allow/Deny e propaga o err junto; short-circuit correto, NoOpinion sempre continua a cadeia. Achado em potencial investigado: linha 92-93 retorna `decision, reason, err` mesmo quando decision==Allow com err!=nil -- mas pkg/endpoints/filters/authorization.go:78-79 documenta e trata isso deliberadamente (\"an authorizer like RBAC could encounter evaluation errors and still allow the request, so authorizer decision is checked before error here\"), comportamento intencional e ja documentado no ponto de consumo, nao introduzido por union.go. Sem achado)",

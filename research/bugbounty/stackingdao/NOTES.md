@@ -1945,3 +1945,17 @@ otimização, sem achado). Nenhuma transição de estado neste programa.
 Mesmo bug operacional recorrente do `ledger.research.jsonl` ocorreu de
 novo nesta rodada (ver NOTES.md de Vercel Open Source pra detalhe da
 verificação) — descartado via `git checkout` antes do commit.
+
+## Rodada 2026-09-08b (scheduled routine, push automático via GitHub webhook, sessão cloud, push b5b4ff4->a1ba790)
+
+`program-policy.json` conferido via `check-program` como passo zero —
+`StackingDAO` confirmado `blocked:false`; `Block Open Source` e `Circle
+BBP` confirmados bloqueados, nenhum arquivo desses dois
+clonado/lido/aberto nesta rodada. `research-plan` confirma
+`actionable: 0` para este programa. Os 15 contratos `.clar` já lidos
+seguem cobrindo 100% dos 13 assets do `scope-snapshots/stackingdao.json`,
+sem contrato novo, nada a investigar aqui nesta rodada. Leitura
+profunda proativa desta rodada direcionada a `okx/go-wallet-sdk` (ver
+NOTES.md de OKG — novo achado de alta severidade em
+`coins/waves/crypto/crypto.go::Sign`). Nenhuma transição de estado
+neste programa.

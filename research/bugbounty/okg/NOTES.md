@@ -2202,3 +2202,100 @@ Clone temporário (`/tmp/go-wallet-sdk`, incluindo
 `zerotoone_nistp256_poc_test.go` desta rodada) nunca commitado ao repo
 real, removido do scratchpad ao final. `export-queue` rodado ao final da
 rodada.
+
+## Rodada 2026-09-08b (scheduled routine, push automático via GitHub webhook, sessão cloud, push b5b4ff4->a1ba790)
+
+Passo zero: `migrate-to-v2.mjs` (838 findings) e `program-policy.json`
+conferido via `check-program` antes de qualquer leitura — `Block Open
+Source` e `Circle BBP` confirmados bloqueados, nenhum arquivo desses
+dois clonado/lido/aberto nesta rodada. `list-pending` vazio (schema
+novo omite retidos); `research-plan` confirma `actionable: 3`, todos os
+3 do próprio `OKG` (os dois achados-irmãos aptos v2/helium
+`Keypair.Sign` já documentados em rodadas anteriores mais o achado
+`nist-p256.go::GenerateKey` desta mesma família, todos ação
+`verify_scope`) — nenhum novo, mesmo bloqueio estrutural já registrado
+(asset não listado a nível de arquivo no scope snapshot +
+`deploymentEvidence.confidence=unverified`), nenhuma tentativa de
+contornar, nenhuma transição repetida à toa. Os 4 programas originais
+desta missão (StackingDAO, Vercel Open Source, Block Open Source,
+Circle BBP) não têm nada acionável nesta rodada: StackingDAO com
+cobertura 100% já estabelecida, Vercel Open Source com todos os itens
+retidos por `campaign_duplicate_history`/`previous_submission`, e os
+outros dois bloqueados por política.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs` (aplica
+histórico da campanha antes de sugerir alvo): confirmado que
+`afterpay/sdk-android`, `afterpay/sdk-ios`, `cashapp/*` e `square/wire`
+aparecem no bucket "sem programa reconhecido no dataset público" da
+ferramenta, mas são ativos do `Block Open Source` (mesma marca
+Block/Square/Afterpay/Cash App já bloqueada nesta campanha, confirmado
+cruzando com o finding `Block Open Source::afterpay/sdk-ios/...` já
+existente na fila) — tratados como bloqueados por julgamento próprio
+mesmo sem rótulo automático, nenhum arquivo desses lido. Escolhido
+`okx/go-wallet-sdk` (maior histórico de achados confirmados desta
+campanha, 8% cobertura). 3 arquivos novos lidos priorizando padrão
+crypto/key/sign: `coins/stellar/strkey/muxed_account.go` (bounds-check
+correto, sem achado), `coins/tezos/types/key.go` (nota de baixo valor,
+não formalizada como achado: `GenerateKey`/`Public` para
+`KeyTypeBls12_381` retornam sucesso silencioso com `Data` vazio, mas
+`Sign()` para o mesmo tipo já retorna `ErrUnknownKeyType` explicitamente
+e há `// TODO` no código reconhecendo que BLS12-381 é incompleto —
+menor novidade/severidade que um bug não-intencional, não perseguido
+mais a fundo nesta rodada) e `coins/waves/crypto/edwards25519.go`.
+
+**Novo achado, severidade alta**: rastreando o arquivo-irmão
+`coins/waves/crypto/crypto.go::Sign`, encontrado que a função recalcula
+internamente um segundo valor de chave pública (`pkb`) via
+`GeScalarMultBase` usando o **secretKey bruto, sem nenhum clamp**
+(`hBytes`), e embute esse `pkb` (não a chave pública real) no hash de
+desafio EdDSA (`SHA512(R||pkb||mensagem)`) que determina o componente
+`S` final da assinatura — enquanto a chave pública real
+(`GeneratePublicKey`/`GenerateWavesKey`) é derivada corretamente do
+escalar **clampado**. Como multiplicar o ponto-base por um escalar
+clampado vs. não-clampado produz pontos diferentes (exceto
+probabilidade desprezível de coincidência), toda assinatura produzida
+por `Sign()` falha verificação EdDSA padrão contra a própria
+`PublicKey` que o SDK gera e que o consumidor declara na transação
+(`Transfer.SenderPK`, serializado no corpo antes de assinar) — quebra
+determinística e total (não probabilística) da funcionalidade de
+assinatura Waves deste SDK; qualquer transação assinada por este código
+seria rejeitada pela rede Waves real por assinatura inválida. Nenhuma
+função `Verify()` existe no pacote nem teste de round-trip
+sign→verify, o que explica por que nunca foi pego. **PoC real**: `go
+test ./crypto/... -run TestZeroToOne -v` (módulo `coins/waves`, `go mod
+tidy`) implementou a equação de verificação EdDSA padrão com as mesmas
+primitivas `edwards25519` já importadas pelo SDK — verificação contra a
+`PublicKey` real: **falha** (confirmando o bug); verificação de
+controle contra o `pkb` buggy recalculado manualmente da mesma forma
+que `Sign()` faz: **passa** (isolando a causa raiz no mismatch
+clampado/não-clampado); `PublicKey` real e `pkb` buggy confirmados
+diferentes. PASS nos dois casos. Avançado `candidate →
+corroborated_static → reproduced_local`. Tentativa de `scope_verified`
+recusada pelo mesmo motivo estrutural já documentado nos achados-irmãos
+desta campanha (asset não listado a nível de arquivo no scope snapshot
++ `deploymentEvidence.confidence=unverified`, mesmo commit HEAD
+`12fec6b0616347265efcc23bfc240c155da710eb`) — nenhuma tentativa de
+contornar. Ver finding
+`OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature`.
+
+`deep-read-log.json` atualizado (+8 entradas em `okx/go-wallet-sdk`,
+incluindo os arquivos de suporte lidos para rastrear a cadeia completa
+do achado Waves: `crypto.go`, `crypto_test.go`, `account.go`,
+`transaction.go`, `types/transfer.go`). Clone temporário (`/tmp/gws`,
+incluindo `zerotoone_poc_test.go` desta rodada) nunca commitado ao repo
+real. `export-queue` rodado ao final da rodada.
+
+Mesmo bug operacional recorrente do `ledger.research.jsonl` ocorreu de
+novo nesta rodada (128 linhas reapensadas ao final: verifiquei
+programaticamente por conteúdo normalizado — tudo exceto `hash`/`prevHash`
+— contra o `HEAD` anterior; 120 são duplicatas exatas de eventos já
+presentes, 8 são genuinamente novos: 4 `bugbounty_code_age` gerados pelo
+próprio `research-plan` sobre findings `Slack`/`Mattermost`/`OKG`
+pré-existentes, e os 4 eventos reais desta rodada — `state_transition` x2,
+`validation`, `deployment_evidence` — do achado Waves acima) —
+descartado via `git checkout -- ledger/ledger.research.jsonl` antes do
+commit, mesmo critério das rodadas anteriores (perder o registro de
+auditoria dos 8 eventos novos é custo baixo frente a acumular mais
+duplicatas a cada rodada; o estado real dos findings já está garantido
+via `queue.jsonl`, que não depende do ledger). Causa raiz permanece não
+investigada, fora do escopo desta rodada de triagem.

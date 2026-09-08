@@ -10485,3 +10485,16 @@ anterior, 2 eventos `bugbounty_code_age` genuinamente novos sobre
 findings `OKG`, fora desta missão) — descartado via `git checkout --
 ledger/ledger.research.jsonl` antes do commit, mesmo critério das
 rodadas anteriores.
+
+## Rodada 2026-09-08b (scheduled routine, push automático via GitHub webhook, sessão cloud, push b5b4ff4->a1ba790)
+
+`program-policy.json` conferido via `check-program` como passo zero —
+`Vercel Open Source` confirmado `blocked:false`. `research-plan` mostra
+todos os itens deste programa agora retidos por `campaign_duplicate_history`
+ou `previous_submission` (gate atual exige zero duplicates anteriores
+no programa/repositório) — nada acionável, nenhuma tentativa de
+reabrir. Leitura profunda proativa desta rodada direcionada a
+`okx/go-wallet-sdk` em vez de um repositório Vercel (ver NOTES.md de
+OKG — novo achado de alta severidade em
+`coins/waves/crypto/crypto.go::Sign`). Nenhuma transição de estado
+neste programa.
