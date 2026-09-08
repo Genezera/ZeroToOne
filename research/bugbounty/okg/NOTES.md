@@ -2390,3 +2390,58 @@ arquivos já lidos). 3 arquivos novos, todos sem achado:
 `deep-read-log.json` atualizado (+3 entradas). Nenhum finding novo,
 nenhuma transição de estado nesta rodada. `export-queue` rodado ao final
 por consistência.
+
+## Rodada 2026-09-08e (push automático via GitHub webhook, sessão cloud) — 1 achado novo (filecoin), 4 reconfirmações sem mudança
+
+`program-policy.json` conferido antes de qualquer leitura: `Block Open
+Source` e `Circle BBP` seguem bloqueados, nenhum arquivo desses dois
+tocado. `migrate-to-v2.mjs` (839 findings) e `list-pending` vazio, como
+esperado. `research-plan` apontou de novo os mesmos 4 `reproduced_local`
+com ação `verify_scope` (aptos v2 MultiEd25519, helium NIST P256
+`GenerateKey`, helium `Keypair.Sign`, waves `Sign`) — reconferi
+`check-scope` (snapshot `okg.json` inalterado, `snapshotContentHash`
+idêntico ao das rodadas anteriores de hoje) e `git ls-remote --tags` no
+repo real (ainda sem nenhuma tag) e tentei `transition ... scope_verified`
+nos 4: mesma recusa de sempre (asset exato não listado no snapshot de
+escopo), nenhuma tentativa de forçar/contornar.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`: mesmo
+bucket de exclusão por política (`circlefin/*`, `auth0/auth0-java`).
+Escolhido `okx/go-wallet-sdk` de novo (maior histórico de achados
+confirmados). 4 arquivos lidos:
+- `crypto/sign.go` (`SignCompact`/RFC6979 helpers, brute-force de
+  recovery-id no estilo bitcoind) e `crypto/ss58/ss58.go`
+  (`Encode`/`Decode`/`VerityAddress`) — sem achado.
+- `coins/near/transaction.go` — `SignTransaction` faz cast direto de
+  `pkBytes` pra `ed25519.PrivateKey` sem checar `len==64` (panic se
+  malformado), mas a chave privada é do próprio usuário/app, não dado de
+  terceiro; `CalTxHash(signed=true)` com dado curto retorna `("", nil)`
+  em vez de erro real — bug de tratamento de erro real, mas sem impacto
+  de segurança demonstrável (não é dado controlado por atacante externo)
+  — abaixo da barra de severidade da campanha, não virou achado.
+- `coins/filecoin/transaction.go` — **ACHADO NOVO**:
+  `SignedTx(message, signHex)` indexa `signData[0]`/`[1:33]`/`[33:65]`
+  sem checar `len(signData) >= 65` antes. `signHex` é uma assinatura
+  ECDSA/secp256k1 já pronta, recebida de um signer EXTERNO (HSM,
+  hardware wallet, serviço MPC/remoto — confirmado pelo teste existente
+  `transaction_test.go:TestNewTx`, que passa um `signHex` fixo já
+  calculado, nunca gerado dentro da própria função). Uma resposta
+  truncada/malformada do signer externo causa panic (index/slice
+  out-of-range) em vez de erro tratável — mesma classe de bug
+  (CWE-20, DoS por dado externo não validado antes de indexar) já
+  confirmada em ~8-9 achados-irmãos deste SDK em rodadas anteriores
+  (aptos v2, cardano, waves, helium), agora em superfície nova
+  (filecoin). PoC real: `go test` local (não commitado no fork) com
+  `signHex` de 5 bytes — panic confirmado (`slice bounds out of range
+  [:33] with capacity 5`). Findings: `corroborated_static` →
+  `reproduced_local` (via `record-validation go_test_poc pass`) →
+  tentativa de `scope_verified` **recusada** pelo mesmo motivo dos
+  achados-irmãos (asset exato não listado no snapshot de escopo,
+  `deploymentEvidence.confidence=unverified` por falta de
+  tags/releases) — nenhuma tentativa de forçar/contornar. Fica em
+  `reproduced_local`.
+- `coins/filecoin/account.go` — lido só como contexto de import (sem
+  achado isolado).
+
+`deep-read-log.json` atualizado (+4 entradas). `export-queue` rodado ao
+final.
