@@ -1,164 +1,129 @@
 {
-  "generatedAt": "2026-09-07T18:18:16.889Z",
+  "generatedAt": "2026-09-08T07:26:36.578Z",
   "totalActiveAutoPromoted": 43,
   "promotedThisRound": [],
   "skippedThisRound": {
     "blockedProgram": [],
     "unsupportedLanguage": [
       {
+        "owner": "plaid",
+        "repo": "plaid-ruby",
+        "githubLanguage": "Ruby"
+      },
+      {
         "owner": "kubernetes",
-        "repo": "security",
+        "repo": "community",
+        "githubLanguage": "Jupyter Notebook"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "examples",
         "githubLanguage": "Shell"
       },
       {
         "owner": "kubernetes",
-        "repo": "sig-release",
+        "repo": "git-sync",
         "githubLanguage": "Shell"
       },
       {
         "owner": "kubernetes",
-        "repo": "steering",
+        "repo": "k8s.io",
+        "githubLanguage": "HCL"
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "kubernetes-template-project",
         "githubLanguage": null
-      },
-      {
-        "owner": "kubernetes",
-        "repo": "website",
-        "githubLanguage": "HTML"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "kiwi-cache",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "vercel",
-        "repo": "turborepo",
-        "githubLanguage": "Rust"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "kiwi-json",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "kiwi-structlog-config",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "konfetti",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "pg2avro",
-        "githubLanguage": "Python"
-      },
-      {
-        "owner": "kiwicom",
-        "repo": "request-session",
-        "githubLanguage": "Python"
       }
     ],
     "tooLarge": [
       {
-        "owner": "kubernetes",
-        "repo": "test-infra",
-        "sizeKb": 262205
+        "owner": "plaid",
+        "repo": "plaid-link-ios",
+        "sizeKb": 1446370
       },
       {
-        "owner": "nitrojs",
-        "repo": "nitro",
-        "sizeKb": 27076
+        "owner": "plaid",
+        "repo": "react-native-plaid-link-sdk",
+        "sizeKb": 21564
       },
       {
-        "owner": "nuxt",
-        "repo": "nuxt",
-        "sizeKb": 151885
+        "owner": "mattermost",
+        "repo": "mattermost-plugin-calls",
+        "sizeKb": 80384
       },
       {
-        "owner": "sveltejs",
-        "repo": "svelte",
-        "sizeKb": 122543
+        "owner": "mattermost",
+        "repo": "mattermost-plugin-playbooks",
+        "sizeKb": 72303
       },
       {
-        "owner": "vercel",
-        "repo": "ai",
-        "sizeKb": 376669
-      },
-      {
-        "owner": "vercel",
-        "repo": "eve",
-        "sizeKb": 60649
-      },
-      {
-        "owner": "vercel",
-        "repo": "next.js",
-        "sizeKb": 2551677
-      },
-      {
-        "owner": "vercel",
-        "repo": "workflow",
-        "sizeKb": 92606
+        "owner": "mattermost",
+        "repo": "mattermost-plugin-boards",
+        "sizeKb": 49739
       },
       {
         "owner": "kubernetes",
-        "repo": "api",
-        "sizeKb": 84639
+        "repo": "cloud-provider-vsphere",
+        "sizeKb": 78815
       },
       {
         "owner": "kubernetes",
-        "repo": "apiextensions-apiserver",
-        "sizeKb": 29403
+        "repo": "dns",
+        "sizeKb": 51712
       },
       {
         "owner": "kubernetes",
-        "repo": "apiserver",
-        "sizeKb": 30261
+        "repo": "enhancements",
+        "sizeKb": 59227
       },
       {
         "owner": "kubernetes",
-        "repo": "autoscaler",
-        "sizeKb": 267911
+        "repo": "kompose",
+        "sizeKb": 45218
       },
       {
         "owner": "kubernetes",
-        "repo": "client-go",
-        "sizeKb": 32320
+        "repo": "kops",
+        "sizeKb": 502149
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-alibaba-cloud",
-        "sizeKb": 103761
+        "repo": "kube-aggregator",
+        "sizeKb": 24876
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-azure",
-        "sizeKb": 148778
+        "repo": "kube-state-metrics",
+        "sizeKb": 25919
       },
       {
         "owner": "kubernetes",
-        "repo": "cloud-provider-gcp",
-        "sizeKb": 192247
+        "repo": "kubectl",
+        "sizeKb": 43761
       },
       {
-        "owner": "kiwicom",
-        "repo": "orbit",
-        "sizeKb": 1568203
+        "owner": "kubernetes",
+        "repo": "kubernetes",
+        "sizeKb": 1517244
+      },
+      {
+        "owner": "kubernetes",
+        "repo": "minikube",
+        "sizeKb": 303758
       }
     ],
     "metadataFetchFailed": [],
     "insufficientSignal": [
       {
-        "owner": "vercel",
-        "repo": "async-sema",
-        "score": -6
+        "owner": "kubernetes",
+        "repo": "legacy-cloud-providers",
+        "score": 0
       },
       {
-        "owner": "vercel",
-        "repo": "ms",
-        "score": -6
+        "owner": "kubernetes",
+        "repo": "node-api",
+        "score": 0
       }
     ],
     "alreadyPromoted": 0,

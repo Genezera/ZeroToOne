@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T18:18:16.859Z",
+  "generatedAt": "2026-09-08T07:26:36.547Z",
   "totalCandidatesInDatasets": 189,
   "authorizedCandidatesInDatasets": 111,
   "policyBlockedCandidates": 78,
@@ -133,27 +133,195 @@
   "note": "AVISO: 36 candidato(s) novo(s) não tiveram metadado buscado nesta rodada (orçamento de API) — priorizados por rotação (quem nunca foi checado vem primeiro, programa mais novo primeiro dentro desses, ver discovery-metadata-seen.json); 0 desses ainda nunca foram checados nenhuma vez, aparecem primeiro na próxima rodada.",
   "discovered": [
     {
-      "owner": "kubernetes",
-      "repo": "security",
+      "owner": "plaid",
+      "repo": "plaid-link-ios",
       "programs": [
         {
-          "program": "Kubernetes",
+          "program": "Plaid",
           "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
+          "url": "https://hackerone.com/plaid",
+          "handle": "plaid"
         }
       ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Shell",
-      "sizeKb": 818,
-      "pushedAt": "2026-08-06T15:20:54Z",
-      "stars": 181,
+      "newestProgramStartedAt": "2016-11-09T23:27:24.376Z",
+      "language": "Swift",
+      "sizeKb": 1446370,
+      "pushedAt": "2026-08-04T20:39:27Z",
+      "stars": 159,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "plaid",
+      "repo": "plaid-ruby",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/plaid",
+          "handle": "plaid"
+        }
+      ],
+      "newestProgramStartedAt": "2016-11-09T23:27:24.376Z",
+      "language": "Ruby",
+      "sizeKb": 34324,
+      "pushedAt": "2026-09-01T19:56:39Z",
+      "stars": 247,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "plaid",
+      "repo": "react-native-plaid-link-sdk",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/plaid",
+          "handle": "plaid"
+        }
+      ],
+      "newestProgramStartedAt": "2016-11-09T23:27:24.376Z",
+      "language": "TypeScript",
+      "sizeKb": 21564,
+      "pushedAt": "2026-09-03T11:49:55Z",
+      "stars": 200,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-calls",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 80384,
+      "pushedAt": "2026-09-08T07:18:11Z",
+      "stars": 147,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-playbooks",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 72303,
+      "pushedAt": "2026-09-03T12:49:27Z",
+      "stars": 97,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-boards",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public",
+          "maxPayoutUsd": 2000
+        }
+      ],
+      "language": "TypeScript",
+      "sizeKb": 49739,
+      "pushedAt": "2026-08-27T12:48:33Z",
+      "stars": 143,
       "archived": false,
       "defaultBranch": "main"
     },
     {
       "owner": "kubernetes",
-      "repo": "sig-release",
+      "repo": "cloud-provider-vsphere",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 78815,
+      "pushedAt": "2026-09-01T08:22:21Z",
+      "stars": 276,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "community",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Jupyter Notebook",
+      "sizeKb": 99819,
+      "pushedAt": "2026-09-07T11:48:31Z",
+      "stars": 13000,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "dns",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 51712,
+      "pushedAt": "2026-08-17T11:44:27Z",
+      "stars": 1059,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "enhancements",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 59227,
+      "pushedAt": "2026-09-07T09:43:04Z",
+      "stars": 3937,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "examples",
       "programs": [
         {
           "program": "Kubernetes",
@@ -164,15 +332,167 @@
       ],
       "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
       "language": "Shell",
-      "sizeKb": 70349,
-      "pushedAt": "2026-09-03T23:16:22Z",
-      "stars": 637,
+      "sizeKb": 17462,
+      "pushedAt": "2026-03-03T17:55:19Z",
+      "stars": 6733,
       "archived": false,
       "defaultBranch": "master"
     },
     {
       "owner": "kubernetes",
-      "repo": "steering",
+      "repo": "git-sync",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Shell",
+      "sizeKb": 13085,
+      "pushedAt": "2026-07-28T01:47:59Z",
+      "stars": 2734,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "k8s.io",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "HCL",
+      "sizeKb": 1520916,
+      "pushedAt": "2026-09-07T22:48:29Z",
+      "stars": 978,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kompose",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 45218,
+      "pushedAt": "2026-09-07T14:23:31Z",
+      "stars": 10621,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kops",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 502149,
+      "pushedAt": "2026-09-08T03:58:27Z",
+      "stars": 16670,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-aggregator",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 24876,
+      "pushedAt": "2026-09-04T23:39:08Z",
+      "stars": 269,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-state-metrics",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 25919,
+      "pushedAt": "2026-09-08T00:24:28Z",
+      "stars": 6195,
+      "archived": false,
+      "defaultBranch": "main"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubectl",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 43761,
+      "pushedAt": "2026-09-07T19:32:24Z",
+      "stars": 3336,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubernetes",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "url": "https://hackerone.com/kubernetes",
+          "handle": "kubernetes"
+        }
+      ],
+      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
+      "language": "Go",
+      "sizeKb": 1517244,
+      "pushedAt": "2026-09-07T16:58:29Z",
+      "stars": 126898,
+      "archived": false,
+      "defaultBranch": "master"
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubernetes-template-project",
       "programs": [
         {
           "program": "Kubernetes",
@@ -183,15 +503,15 @@
       ],
       "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
       "language": null,
-      "sizeKb": 272,
-      "pushedAt": "2026-07-31T20:07:43Z",
-      "stars": 100,
+      "sizeKb": 51,
+      "pushedAt": "2023-05-30T00:59:56Z",
+      "stars": 229,
       "archived": false,
       "defaultBranch": "main"
     },
     {
       "owner": "kubernetes",
-      "repo": "test-infra",
+      "repo": "legacy-cloud-providers",
       "programs": [
         {
           "program": "Kubernetes",
@@ -202,243 +522,15 @@
       ],
       "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
       "language": "Go",
-      "sizeKb": 262205,
-      "pushedAt": "2026-09-07T14:10:34Z",
-      "stars": 4017,
+      "sizeKb": 6425,
+      "pushedAt": "2025-06-19T17:19:02Z",
+      "stars": 51,
       "archived": false,
       "defaultBranch": "master"
     },
     {
       "owner": "kubernetes",
-      "repo": "website",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "HTML",
-      "sizeKb": 564724,
-      "pushedAt": "2026-09-07T17:20:28Z",
-      "stars": 5379,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "kiwi-cache",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "Python",
-      "sizeKb": 103,
-      "pushedAt": "2024-09-27T13:37:17Z",
-      "stars": 3,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "nitrojs",
-      "repo": "nitro",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 27076,
-      "pushedAt": "2026-09-07T15:59:49Z",
-      "stars": 11187,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "nuxt",
-      "repo": "nuxt",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 151885,
-      "pushedAt": "2026-09-07T18:05:54Z",
-      "stars": 60825,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "sveltejs",
-      "repo": "svelte",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "JavaScript",
-      "sizeKb": 122543,
-      "pushedAt": "2026-09-07T00:37:58Z",
-      "stars": 88100,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "vercel",
-      "repo": "ai",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 376669,
-      "pushedAt": "2026-09-07T16:19:42Z",
-      "stars": 26624,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "vercel",
-      "repo": "async-sema",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 46,
-      "pushedAt": "2024-04-18T16:16:16Z",
-      "stars": 660,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "vercel",
-      "repo": "eve",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 60649,
-      "pushedAt": "2026-09-07T16:23:16Z",
-      "stars": 5002,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "vercel",
-      "repo": "ms",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 446,
-      "pushedAt": "2026-05-20T22:24:50Z",
-      "stars": 5546,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "vercel",
-      "repo": "next.js",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "JavaScript",
-      "sizeKb": 2551677,
-      "pushedAt": "2026-09-07T16:39:14Z",
-      "stars": 142191,
-      "archived": false,
-      "defaultBranch": "canary"
-    },
-    {
-      "owner": "vercel",
-      "repo": "turborepo",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "Rust",
-      "sizeKb": 832659,
-      "pushedAt": "2026-09-07T17:15:04Z",
-      "stars": 31067,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "vercel",
-      "repo": "workflow",
-      "programs": [
-        {
-          "program": "Vercel Open Source",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/vercel-open-source",
-          "handle": "vercel-open-source"
-        }
-      ],
-      "newestProgramStartedAt": "2025-08-15T22:52:00.381Z",
-      "language": "TypeScript",
-      "sizeKb": 92606,
-      "pushedAt": "2026-09-05T00:32:28Z",
-      "stars": 2378,
-      "archived": false,
-      "defaultBranch": "main"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "api",
+      "repo": "minikube",
       "programs": [
         {
           "program": "Kubernetes",
@@ -449,15 +541,15 @@
       ],
       "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
       "language": "Go",
-      "sizeKb": 84639,
-      "pushedAt": "2026-09-04T23:38:17Z",
-      "stars": 754,
+      "sizeKb": 303758,
+      "pushedAt": "2026-09-07T19:08:06Z",
+      "stars": 32107,
       "archived": false,
       "defaultBranch": "master"
     },
     {
       "owner": "kubernetes",
-      "repo": "apiextensions-apiserver",
+      "repo": "node-api",
       "programs": [
         {
           "program": "Kubernetes",
@@ -468,237 +560,9 @@
       ],
       "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
       "language": "Go",
-      "sizeKb": 29403,
-      "pushedAt": "2026-09-04T23:39:32Z",
-      "stars": 258,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "apiserver",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Go",
-      "sizeKb": 30261,
-      "pushedAt": "2026-09-04T23:39:01Z",
-      "stars": 725,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "autoscaler",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Go",
-      "sizeKb": 267911,
-      "pushedAt": "2026-09-07T15:36:28Z",
-      "stars": 8959,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "client-go",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Go",
-      "sizeKb": 32320,
-      "pushedAt": "2026-09-04T23:38:25Z",
-      "stars": 9878,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "cloud-provider-alibaba-cloud",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Go",
-      "sizeKb": 103761,
-      "pushedAt": "2026-08-27T11:23:48Z",
-      "stars": 378,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "cloud-provider-azure",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Go",
-      "sizeKb": 148778,
-      "pushedAt": "2026-09-07T17:28:56Z",
-      "stars": 294,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kubernetes",
-      "repo": "cloud-provider-gcp",
-      "programs": [
-        {
-          "program": "Kubernetes",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kubernetes",
-          "handle": "kubernetes"
-        }
-      ],
-      "newestProgramStartedAt": "2019-07-23T23:34:57.927Z",
-      "language": "Go",
-      "sizeKb": 192247,
-      "pushedAt": "2026-09-06T07:22:36Z",
-      "stars": 161,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "kiwi-json",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "Python",
-      "sizeKb": 186,
-      "pushedAt": "2024-10-01T20:22:21Z",
-      "stars": 3,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "kiwi-structlog-config",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "Python",
-      "sizeKb": 78,
-      "pushedAt": "2025-12-03T14:48:38Z",
-      "stars": 3,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "konfetti",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "Python",
-      "sizeKb": 144,
-      "pushedAt": "2023-12-15T05:40:49Z",
-      "stars": 27,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "orbit",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "TypeScript",
-      "sizeKb": 1568203,
-      "pushedAt": "2026-07-06T12:56:45Z",
-      "stars": 1435,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "pg2avro",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "Python",
-      "sizeKb": 29,
-      "pushedAt": "2024-07-09T17:28:28Z",
-      "stars": 17,
-      "archived": false,
-      "defaultBranch": "master"
-    },
-    {
-      "owner": "kiwicom",
-      "repo": "request-session",
-      "programs": [
-        {
-          "program": "Kiwi.com",
-          "platform": "HackerOne",
-          "url": "https://hackerone.com/kiwicom",
-          "handle": "kiwicom"
-        }
-      ],
-      "newestProgramStartedAt": "2016-12-28T16:47:44.144Z",
-      "language": "Python",
-      "sizeKb": 6155,
-      "pushedAt": "2026-07-21T14:30:37Z",
-      "stars": 9,
+      "sizeKb": 2034,
+      "pushedAt": "2023-04-26T14:13:55Z",
+      "stars": 16,
       "archived": false,
       "defaultBranch": "master"
     }
