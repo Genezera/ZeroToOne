@@ -567,3 +567,55 @@ chamador. Sem achado nos três arquivos. `deep-read-log.json` atualizado
 (+3, 36→39 no total). Clone temporário removido. Nenhuma mudança de
 estado tentada nesta rodada (nada novo em `actionable`/`candidate` além
 do já tratado pelas sessões paralelas).
+
+## Rodada 2026-09-08 #4 (push automático, sessão cloud) — deep-read pkclient/PKCS11 + correção de lost-update no log
+
+`research-plan` confirmou os 4 itens `actionable` da campanha (3 Mattermost
+`verify_scope` + 1 Slack `measure_code_age`) já tinham sido totalmente
+processados por rodadas anteriores no mesmo dia: os 3 Mattermost seguem
+travados em `corroborated_static`/`reproduced_local` por `EGRESS_BLOCKED`
+genuíno (WebFetch pra bugcrowd.com/engagements/mattermost-mbb-public
+bloqueado pelo proxy desta sessão) — sem evidência nova pra repetir; o
+achado Slack/nebula segue em `corroborated_static` pela mesma razão
+honesta já registrada (severidade real Medium, programa só aceita
+Critical). Nada reexecutado sem motivo.
+
+Ao preparar o push, `git fetch` mostrou que `origin/master` já tinha
+avançado (commits `f5d63bc` + `ad9ce83`, sessões paralelas). Rebase via
+cherry-pick teve conflito nos arquivos gerados (queue.jsonl,
+migration-log.json, deep-read-log.json); em vez de resolver conflito
+linha-a-linha num arquivo semi-estruturado, `git checkout -B master
+origin/master` pra partir da versão canônica + `migrate-to-v2.mjs` fresco
+(contagens de estado idênticas, confirma nada perdido na fila) e
+reaplicação manual só das minhas mudanças pontuais.
+
+Nesse processo, identificado um bug real de **lost update** em
+`deep-read-log.json`: o commit `f5d63bc` (sessão paralela) partiu de um
+checkout anterior ao commit `a7087f6` (que tinha adicionado
+`lighthouse.go`/`connection_manager.go`/`remote_list.go` à lista de
+`slackhq/nebula`) e, ao gravar suas próprias 3 entradas novas em
+`okx/go-wallet-sdk`, sobrescreveu a lista de nebula com a versão antiga
+(sem as 3 entradas), perdendo silenciosamente esse registro — não é bug
+do CLI (que só toca `queue.jsonl`/db), é `deep-read-log.json` sendo um
+arquivo hand-edited por sessões concorrentes sem lock nem merge
+estruturado, mesma classe de risco que o bug de `upsertFinding` corrigido
+em `ad9ce83` pro banco. Restaurado as 3 entradas perdidas nesta rodada
+antes de adicionar as minhas — sem isso, uma rodada futura poderia
+reler `lighthouse.go` como se fosse arquivo novo.
+
+Leitura profunda proativa (contribuição desta sessão): 3 arquivos novos em
+`slackhq/nebula`, superfície de manuseio de chave privada via PKCS11/HSM
+ainda não coberta (`pkclient/pkclient.go`, `noiseutil/pkcs11.go`,
+`pkclient/pkclient_cgo.go`). Achado potencial investigado e REFUTADO:
+`pkclient_cgo.go::DeriveNoise` faz `copy(secret[:], tmpKey[:NoiseKeySize])`
+sem checar `len(tmpKey)>=32` antes do slice — panicaria se o módulo PKCS11
+devolvesse segredo curto, mas esse módulo só vem de config local do
+operador (`pki.pkcs11` no yaml), nunca de payload de peer remoto; mesma
+classe `self_request_only`/`below_campaign_impact` já retida repetidamente
+nos achados-irmãos do OKG nesta campanha. Documentado como nota de
+robustez, sem finding novo aberto. `deep-read-log.json` atualizado (+3
+recuperadas +3 novas, 36→42 no total, refletindo tanto a correção quanto
+a contribuição desta rodada). Clone temporário removido. Nenhuma mudança
+de estado tentada (nada novo em `actionable`/`candidate`).
+
+`export-queue` rodado ao final.
