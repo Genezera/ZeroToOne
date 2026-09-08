@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-08T11:07:53.366Z",
+  "checkedAt": "2026-09-08T15:10:27.943Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -108,13 +108,13 @@
       ]
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "c36c84d72f08cf64fb2082d894195eb5877948cd",
+      "sha": "f3ef836cb9597ffe34d953e3c23fe20bd357b298",
       "branch": "master",
-      "parentSha": "17c0f4e1e7629bcce7f8def7668f65aaa6ead0d4",
-      "committedAt": "2026-09-08T05:56:29Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/c36c84d72f08cf64fb2082d894195eb5877948cd",
-      "title": "[cinder-csi-plugin] Allow setting parameters on chart-managed StorageClasses (#3173)",
-      "observedAt": "2026-09-08T11:07:53.366Z",
+      "parentSha": "c36c84d72f08cf64fb2082d894195eb5877948cd",
+      "committedAt": "2026-09-08T11:54:31Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/f3ef836cb9597ffe34d953e3c23fe20bd357b298",
+      "title": "[occm] Reduce caps of manifests, charts (#3191)",
+      "observedAt": "2026-09-08T15:10:27.943Z",
       "programs": [
         "Kubernetes"
       ],
@@ -333,13 +333,13 @@
       ]
     },
     "kubernetes/org": {
-      "sha": "316b7f570be26ea1b032cfbac6c5df6086b04af8",
+      "sha": "4669f4b3009c82d54f2904657a868219e95f935f",
       "branch": "main",
-      "parentSha": "788e9abf45e307137d58a1fe6e3e29047bb1c5f2",
-      "committedAt": "2026-09-08T08:44:30Z",
-      "url": "https://github.com/kubernetes/org/commit/316b7f570be26ea1b032cfbac6c5df6086b04af8",
-      "title": "Merge pull request #6618 from mrbobbytables/add-teams",
-      "observedAt": "2026-09-08T11:07:53.366Z",
+      "parentSha": "316b7f570be26ea1b032cfbac6c5df6086b04af8",
+      "committedAt": "2026-09-08T12:14:30Z",
+      "url": "https://github.com/kubernetes/org/commit/4669f4b3009c82d54f2904657a868219e95f935f",
+      "title": "Merge pull request #6620 from skl/skl/add-skl-k-mixins-admin",
+      "observedAt": "2026-09-08T15:10:27.943Z",
       "programs": [
         "Kubernetes"
       ],
@@ -603,13 +603,13 @@
       ]
     },
     "vercel-labs/skills": {
-      "sha": "1682051d48c34f5eb135e6475c1a965dce05e820",
+      "sha": "213de5a2bc9db069bf465986a71987f048816252",
       "branch": "main",
-      "parentSha": "038f9bfbadfeb943949318617c83ffe6a8681ca8",
-      "committedAt": "2026-09-06T22:47:51Z",
-      "url": "https://github.com/vercel-labs/skills/commit/1682051d48c34f5eb135e6475c1a965dce05e820",
-      "title": "v1.5.24",
-      "observedAt": "2026-09-06T23:14:07.194Z",
+      "parentSha": "8c8d7661fc77dd4d79908961ecd2beef9a4be9ae",
+      "committedAt": "2026-09-08T14:40:16Z",
+      "url": "https://github.com/vercel-labs/skills/commit/213de5a2bc9db069bf465986a71987f048816252",
+      "title": "Merge pull request #2006 from doanbactam/feat/add-fx-agent",
+      "observedAt": "2026-09-08T15:10:27.943Z",
       "programs": [
         "Vercel Open Source"
       ],
