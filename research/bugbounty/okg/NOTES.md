@@ -1832,3 +1832,48 @@ call-site não verificado encontrado na leitura pontual do arquivo em si.
 `deep-read-log.json` atualizado (+1 entrada em `okx/go-wallet-sdk`,
 63→64). Clone temporário removido do scratchpad ao final. `export-queue`
 rodado ao final da rodada.
+
+## Rodada 2026-09-08 #3 (push automático, sessão cloud) — 5 dirs de coin nunca tocados; ethereum sign/address/eip712 sem achado
+
+`list-deep-read-candidates.mjs` mostrou 64 arquivos já lidos, 6%
+cobertos de ~1183 `.go` no repo. Em vez de grep cego por palavra-chave
+(que bateria em 469 arquivos, quase todo o repo é "crypto/key/sign" por
+natureza), cruzei os diretórios de `coins/` já tocados pelo log contra
+os 32 existentes: 5 nunca foram abertos nesta campanha —
+`bitcoin`, `cosmos`, `ethereum`, `kaspa`, `tron`. Ethereum é o maior
+alvo de valor nunca revisado, então priorizei os 3 arquivos centrais de
+assinatura/endereço lá (orçamento de 3 arquivos/rodada):
+
+- `coins/ethereum/signature.go` + `crypto/sign.go` (`NewSignatureData`/
+  `SignCompact`): reconstrói o recovery-id V testando os 4 candidatos
+  via `ecdsa.RecoverCompact` e comparando X/Y contra o pubkey esperado;
+  se nenhum bate, erro explícito ("no valid solution for pubkey
+  found"), sem fallback silencioso pra V errado. Sem achado.
+- `coins/ethereum/address.go`: derivação padrão (Keccak256 do pubkey
+  descomprimido sem prefixo, últimos 20 bytes). Sem achado.
+- `coins/ethereum/eip712.go`: monta `\x19\x01 || domainSeparator ||
+  typedDataHash` corretamente conforme EIP-712, mas delega o encoding
+  de verdade (HashStruct, ordenação de tipos dependentes, array/bytesN)
+  pra `coins/ethereum/apitypes/types.go` — esse arquivo AINDA não foi
+  lido; é lá que bugs clássicos de EIP-712 costumam viver, não no
+  wrapper. **Candidato prioritário pra próxima rodada.**
+
+`bitcoin`, `cosmos`, `kaspa`, `tron` continuam 100% não lidos também —
+registrando pra priorização futura, não investigado ainda por
+orçamento.
+
+`deep-read-log.json` atualizado (+3 entradas em `okx/go-wallet-sdk`,
+64→67). Clone raso removido do scratchpad ao final. Nenhum finding novo
+criado (sem achado nos 3 arquivos). `export-queue` rodado ao final da
+rodada.
+
+Fila (`list-pending`) vazia. Plano (`research-plan`) trouxe 4 itens
+actionable: 3 Mattermost (`verify_scope`) e 1 Slack/nebula
+(`measure_code_age`) — todos já tinham sido re-verificados por uma
+rodada anterior no mesmo dia (mesmo push que provavelmente disparou
+esta sessão): scope confirmado, `bountyEligible=null` nos 3 Mattermost
+(WebFetch pra página oficial bloqueado pelo proxy de egress, mesma
+limitação já documentada), e o achado Slack/nebula permanece
+corretamente preso em `corroborated_static` (sem validador local pra
+achados Go/race-condition). Nada novo pra avançar nesses 4; nenhuma
+transição forçada.
