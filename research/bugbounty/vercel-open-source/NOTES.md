@@ -10498,3 +10498,57 @@ reabrir. Leitura profunda proativa desta rodada direcionada a
 OKG — novo achado de alta severidade em
 `coins/waves/crypto/crypto.go::Sign`). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-08 (scheduled routine, push automático via GitHub webhook, sessão cloud, push e023eed->6a7f6ea)
+
+`program-policy.json` conferido via `check-program` como passo zero —
+`Vercel Open Source` confirmado `blocked:false`. `list-pending` vazio;
+`research-plan` confirma `actionable: 0` — os candidatos deste
+programa continuam retidos por `campaign_duplicate_history`/
+`previous_submission`, sem item novo, nenhuma tentativa de reabrir.
+
+Leitura profunda proativa desta rodada: `vercel/async-sema` (1 arquivo
+já lido) e `vercel/ms` (1 arquivo já lido) descartados sem clonar
+arquivo novo — inspecionei a árvore de arquivos de ambos (clone raso)
+e confirmei que cada um é essencialmente um único módulo utilitário
+(`src/index.ts`, semáforo assíncrono / parser de string de tempo) já
+totalmente coberto pela leitura anterior, sem superfície de
+auth/sessão/rede restante. Troquei pra `nitrojs/nitro` (15 arquivos já
+lidos de 416 arquivos `.ts` não-teste no repo) — busca por nome
+sensível (auth/session/crypto/token/login/password/admin/permission/access)
+só achou 1 arquivo, já lido (`examples/middleware/server/middleware/auth.ts`,
+exemplo sem lógica real). Por julgamento próprio, dado que o repo já
+tem um achado prévio (`vfs.ts`, `corroborated_static`, retido por
+duplicate history) em código de dev tooling, ampliei a busca pra
+handlers do preset `vercel/runtime/` e `runtime/internal/` ainda não
+lidos, escolhendo 3 arquivos por proximidade com o achado anterior
+(handler gated por segredo) e com dado sensível (config de conexão):
+
+- `src/presets/vercel/runtime/queue-handler.ts` — `handleCallback` é
+  importado inteiro do pacote externo `@vercel/queue` (fora deste
+  repo); o arquivo só encaminha pro hook `vercel:queue` e captura
+  erro, sem lógica de autenticação/assinatura própria aqui. Sem achado.
+- `src/presets/vercel/runtime/isr.ts` (`isrRouteRewrite`) — extrai
+  pathname/query de `__isr_route`, do header `x-now-route-matches` OU,
+  na ausência dele, do próprio query string da requisição do cliente.
+  Rastreei o call site em `vercel.node.ts`/`vercel.web.ts`: o pathname
+  resultante só reescreve `req.url` quando
+  `getRouteRules('', isrURL[0]).routeRules?.isr` é true — ou seja,
+  mesmo vindo de query param 100% controlado pelo cliente (sem o
+  header do Vercel), só redireciona a requisição pra uma rota que o
+  próprio dono do site já declarou ISR em build-time; não serve
+  conteúdo arbitrário nem contorna autenticação, é indireção de
+  roteamento equivalente ao padrão documentado oficialmente pela
+  Vercel para ISR (confirmado por `test/unit/vercel-isr.test.ts`
+  existente no repo, cobrindo exatamente este comportamento). Sem
+  achado.
+- `src/runtime/internal/database.ts` (`useDatabase`) — `name` indexa
+  em `connectionConfigs`, virtual module compilado em build-time a
+  partir da config do próprio projeto (`db0`/conectores), nunca
+  alimentado por input de request neste arquivo; sem superfície de
+  injeção pra auditar aqui. Sem achado.
+
+`deep-read-log.json` atualizado (`nitrojs/nitro`: 15 → 18 arquivos).
+Nenhum achado novo, nenhuma transição de estado nesta rodada. Clones
+temporários (`async-sema`, `ms`, `nitro-tree` sparse) removidos do
+scratch dir ao final. `export-queue` rodado ao final.

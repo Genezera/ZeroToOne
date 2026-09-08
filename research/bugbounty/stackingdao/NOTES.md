@@ -1959,3 +1959,24 @@ profunda proativa desta rodada direcionada a `okx/go-wallet-sdk` (ver
 NOTES.md de OKG — novo achado de alta severidade em
 `coins/waves/crypto/crypto.go::Sign`). Nenhuma transição de estado
 neste programa.
+
+## Rodada 2026-09-08 (scheduled routine, push automático via GitHub webhook, sessão cloud, push e023eed->6a7f6ea)
+
+`migrate-to-v2.mjs` rodado (844 findings). `program-policy.json`
+conferido como passo zero via `check-program`:
+`StackingDAO` confirmado `blocked:false`, `Vercel Open Source`
+confirmado `blocked:false`; `Block Open Source` e `Circle BBP`
+confirmados bloqueados — nenhum arquivo desses dois clonado/lido/aberto
+nesta rodada, nem sequer indiretamente (excluídos da própria lista de
+candidatos por `list-deep-read-candidates.mjs`). `list-pending` vazio;
+`research-plan` confirma `actionable: 0`, `held: 71` (mesma composição
+das rodadas anteriores por natureza — programa bloqueado, duplicate
+history, escopo não confirmado, fora da janela, impacto abaixo do gate
+— nenhum item novo). Os 15 contratos `.clar` já lidos seguem cobrindo
+100% dos 13 assets do `scope-snapshots/stackingdao.json`, sem contrato
+novo publicado, nada a investigar aqui nesta rodada.
+
+Leitura profunda proativa desta rodada direcionada a `nitrojs/nitro`
+(ver NOTES.md de Vercel Open Source pra detalhe — 3 arquivos novos:
+`queue-handler.ts`, `isr.ts`, `database.ts`, sem achado). Nenhuma
+transição de estado neste programa.
