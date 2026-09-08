@@ -2724,3 +2724,40 @@ commit.
 
 Nenhum achado novo digno de nota nesta rodada — resultado normal e
 válido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08l (push automático via GitHub webhook, sessão cloud)
+`program-policy.json` conferido antes de qualquer leitura (Block Open
+Source e Circle BBP confirmados bloqueados via `check-program`,
+nenhum repo desses dois tocado). `migrate-to-v2.mjs` + `research-plan`
+rodados: `actionable: []`, 70 itens em `held` (mesma composição de
+motivos das rodadas anteriores — nenhuma evidência nova que justifique
+reabrir qualquer um). `list-pending` global vazio.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` confirma os
+mesmos repositórios liberados (StackingDAO e os repos Block Open
+Source — `afterpay/*`, `cashapp/*`, `square/wire` — aparecem na seção
+"sem programa reconhecido no dataset público atual", mas todos foram
+confirmados manualmente contra `block-open-source/NOTES.md` como Block
+Open Source e portanto excluídos; StackingDAO confirmado liberado via
+`check-program`, mas os 15 contratos Clarity já estão 100% cobertos
+desde rodadas anteriores). Escolhidos 3 arquivos ainda não lidos em
+`okx/go-wallet-sdk` (115→118), com prioridade estrita
+auth/session/token/login/password/admin/permission/access (não
+crypto/sign genérico desta vez): `coins/solana/token/SetAuthority.go`,
+`coins/solana/token/instruction.go` e `coins/solana/
+associated-token-account/create.go`. Os três são builders de instrução
+client-side do programa SPL Token/Associated Token Account
+(vendorizados de `gagliardetto/solana-go`): serializam parâmetros pra
+uma transação que o próprio usuário assina depois — a autorização real
+(quem pode `SetAuthority`, quem pode gastar tokens) é validada pelo
+programa on-chain no momento da execução, não por este SDK. `create.go`
+deriva o endereço da ATA via `base.FindAssociatedTokenAddress`, mas
+esse PDA também é recomputado e checado pelo programa on-chain — um
+valor forjado aqui só faria a transação falhar, não abriria caminho
+pra roubo de fundos. Mesmo padrão estrutural já visto em dezenas de
+arquivos deste SDK: biblioteca cliente de construção de transação, não
+superfície de decisão de autorização. Nenhum achado novo.
+`deep-read-log.json` atualizado.
+
+Nenhum achado novo digno de nota nesta rodada — resultado normal e
+válido. `export-queue` rodado ao final.
