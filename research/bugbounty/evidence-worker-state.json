@@ -185,15 +185,15 @@
       "repository": "slackhq/nebula",
       "action": "verify_scope",
       "priority": 90,
-      "status": "needs_human",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "nenhum scope snapshot existe para este programa",
       "createdAt": "2026-09-07T20:48:11.831Z",
       "lastAttemptAt": "2026-09-07T20:48:11.831Z",
       "result": {
-        "reason": "program handle oficial não configurado; nenhuma busca de escopo foi feita"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-07T20:48:11.832Z"
+      "finishedAt": "2026-09-08T01:25:43.017Z"
     },
     "evidence:v1:ce93a5021981b9537e1c37fcee3d991a5d7fde830f2cb00d8dd4e937aa60283a": {
       "taskId": "evidence:v1:ce93a5021981b9537e1c37fcee3d991a5d7fde830f2cb00d8dd4e937aa60283a",
@@ -217,6 +217,82 @@
         }
       },
       "finishedAt": "2026-09-07T20:48:13.160Z"
+    },
+    "evidence:v1:213a932c5dcb20b1471eb8bc30ae74bdf1f878c6666f80155919f30848188f21": {
+      "taskId": "evidence:v1:213a932c5dcb20b1471eb8bc30ae74bdf1f878c6666f80155919f30848188f21",
+      "inputDigest": "7ca16b087e9bba4634cb879e4f5323d0349b903d2bcac0812b05ceccffb423c0",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/user.go::CompleteOAuth2::oauth2_login_csrf_account_linking",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-confluence",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "retry",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-08T01:25:43.017Z",
+      "lastAttemptAt": "2026-09-08T01:25:43.018Z",
+      "nextEligibleAt": "2026-09-08T01:30:43.019Z",
+      "result": {
+        "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
+      },
+      "finishedAt": "2026-09-08T01:25:43.020Z"
+    },
+    "evidence:v1:ba5b07f5165940aca078e2b3ab132ed9aa004999f346e612bee51674c73266d3": {
+      "taskId": "evidence:v1:ba5b07f5165940aca078e2b3ab132ed9aa004999f346e612bee51674c73266d3",
+      "inputDigest": "a1144516b25fa70800090679b35741f95ea2ec9915126e1fb5b5ef5e14f6e356",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-mscalendar/calendar/engine/notification.go::processNotification::non_constant_time_hmac_comparison",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-mscalendar",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "retry",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-08T01:25:43.017Z",
+      "lastAttemptAt": "2026-09-08T01:25:43.020Z",
+      "nextEligibleAt": "2026-09-08T01:30:43.020Z",
+      "result": {
+        "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
+      },
+      "finishedAt": "2026-09-08T01:25:43.020Z"
+    },
+    "evidence:v1:00e1ea04489c04773eaf6842544577ff444d91268c7b1252662b726cdc63f46a": {
+      "taskId": "evidence:v1:00e1ea04489c04773eaf6842544577ff444d91268c7b1252662b726cdc63f46a",
+      "inputDigest": "793be1525d298027e2f728596dbd9fc38223957ccde26ede1fe158adf463de02",
+      "findingId": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams-meetings/server/http.go::completeUserOAuth::oauth2_login_csrf_account_linking",
+      "program": "Mattermost Public Bug Bounty Engagement ",
+      "repository": "mattermost/mattermost-plugin-msteams-meetings",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "retry",
+      "attempts": 1,
+      "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
+      "createdAt": "2026-09-08T01:25:43.017Z",
+      "lastAttemptAt": "2026-09-08T01:25:43.020Z",
+      "nextEligibleAt": "2026-09-08T01:30:43.021Z",
+      "result": {
+        "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
+      },
+      "finishedAt": "2026-09-08T01:25:43.021Z"
+    },
+    "evidence:v1:8cbb330d9730149f10cca0575e9da1f250bae0de36b35e67a3bf2c24e5da39cc": {
+      "taskId": "evidence:v1:8cbb330d9730149f10cca0575e9da1f250bae0de36b35e67a3bf2c24e5da39cc",
+      "inputDigest": "a65980b75fffb64f04f11101e64d5714ef7e23254f772b9275a1e17436804b39",
+      "findingId": "Slack::slackhq/nebula/connection_state.go::ConnectionState.Decrypt+VerifyRelay::replay_window_toctou_race",
+      "program": "Slack",
+      "repository": "slackhq/nebula",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "retry",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-08T01:25:43.017Z",
+      "lastAttemptAt": "2026-09-08T01:25:43.021Z",
+      "nextEligibleAt": "2026-09-08T01:30:44.230Z",
+      "result": {
+        "reason": "arquivo não encontrado no histórico da branch padrão"
+      },
+      "finishedAt": "2026-09-08T01:25:44.230Z"
     }
   },
   "runs": [
@@ -269,6 +345,16 @@
       "completed": 1,
       "needsHuman": 1,
       "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:032016c9e475de20a93884a5635c3de84e2d2808dd725586220ec2c0db6e0f42",
+      "startedAt": "2026-09-08T01:25:43.017Z",
+      "finishedAt": "2026-09-08T01:25:44.231Z",
+      "planned": 4,
+      "claimed": 4,
+      "completed": 0,
+      "needsHuman": 0,
+      "failed": 4
     }
   ]
 }
