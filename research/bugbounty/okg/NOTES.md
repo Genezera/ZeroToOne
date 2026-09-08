@@ -2337,3 +2337,17 @@ desta rodada):
 
 Nenhum finding novo, nenhuma transição de estado nesta rodada.
 `export-queue` rodado ao final mesmo assim, por consistência.
+
+## Rodada 2026-09-08c (push automático via GitHub webhook, sessão cloud) — reconfirmação, sem ação nova
+
+Sessão disparada pelo próprio push da rodada anterior (2026-09-08b acima).
+`research-plan` apontou novamente os mesmos 4 achados `reproduced_local`
+(`verify_scope`). Reconferido `check-scope("OKG", "okx/go-wallet-sdk")`
+(ainda `allowed: true`/`bountyEligible: true` a nível de repo, sem
+granularidade de arquivo no snapshot) e a `reasoning`/`deploymentEvidence`
+já salva em cada um dos 4 — idênticos aos registrados às ~07:41–08:08 UTC.
+Nenhuma evidência nova (nem novo snapshot de escopo com granularidade de
+arquivo, nem fonte de `confidence=high` para este SDK sem tags/releases),
+então **nenhuma tentativa de transição repetida** nos 4 findings. Leitura
+profunda proativa desta rodada foi em `mattermost/mattermost-plugin-jira`,
+não neste programa — ver `mattermost/NOTES.md` rodada 2026-09-08b.

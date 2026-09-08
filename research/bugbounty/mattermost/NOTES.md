@@ -1859,3 +1859,43 @@ conferindo a cada vez que nenhum achado pré-existente era removido do
 `queue.jsonl` — só o achado desta rodada foi adicionado.
 
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-08b (push automático via GitHub webhook, sessão cloud) — sem achado novo
+
+`program-policy.json` conferido como passo zero (Auth0 by Okta e Circle
+BBP seguem bloqueados; Mattermost segue liberado, `roeReviewed`,
+`nextReviewAt` 2026-10-03, não vencido). `list-pending` veio vazio;
+`research-plan` apontou só os 4 achados `OKG::okx/go-wallet-sdk`
+`reproduced_local` de uma rodada anterior no mesmo dia (~07:41–08:08 UTC)
+como `actionable: verify_scope` — reconferido `check-scope("OKG",
+"okx/go-wallet-sdk")` (ainda `allowed: true` a nível de repo) e a
+`reasoning`/`deploymentEvidence` já salva em cada um: nenhuma evidência
+nova desde então, então **não repeti a tentativa de transição**
+(já corretamente recusada e documentada pela rodada anterior — ver
+`okg/NOTES.md`). Nenhuma mudança de estado feita.
+
+Leitura profunda proativa (3 arquivos novos em
+`mattermost/mattermost-plugin-jira`, via `list-deep-read-candidates.mjs`
+→ clone raso temporário, nunca commitado):
+- `server/atlassian_connect.go` — fluxo de instalação do Atlassian
+  Connect app (Jira Cloud). Testado com ceticismo como possível install
+  não-autenticado (classe de CVE histórica conhecida em apps Connect):
+  `processACInstalled` aceita POST externo com `AtlassianSecurityContext`
+  contendo um `sharedSecret` novo, mas exige o path segment bater
+  (`subtle.ConstantTimeCompare`) contra `SetupRoutingSecret` — 32 bytes de
+  `crypto/rand`, gerado sempre em `kv.go::CreateInactiveCloudInstance`,
+  único caminho de criação de instância pendente. `SetupRoutingSecret ==
+  ""` só existiria em dado legado pré-migração, não alcançável por
+  nenhum endpoint atual. Mitigação completa e correta. Sem achado.
+- `server/utils/kvstore/hashed_key.go` — MD5 usado só para nome de chave
+  KV (namespacing), não como controle de segurança; `#nosec G401/G501`
+  já reconhece a escolha. Sem achado.
+- `server/webhook_jira.go` — formatação de payload de webhook (já
+  autenticado em `webhook_http.go`, lido em rodada anterior) para
+  markdown de post; sem vetor novo além do já esperado de qualquer
+  integração que renderiza dado de terceiro confiável como markdown. Sem
+  achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos. Nenhum finding novo,
+nenhuma transição de estado nesta rodada. `export-queue` rodado ao final
+mesmo assim, por consistência.
