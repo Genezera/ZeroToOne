@@ -2028,3 +2028,62 @@ zoom/msteams-meetings com 8). Clone raso local, 3 arquivos novos:
 `mattermost/mattermost-plugin-gitlab`, agora 10). 1 finding novo criado
 e já fechado como `false_positive` na mesma rodada. Clone temporário
 removido do scratch dir ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08h (push automático via GitHub webhook, sessão cloud, push d400002->6cc500a)
+
+`program-policy.json`/`check-program` conferido como passo zero antes de
+qualquer clone: `Mattermost Public Bug Bounty Engagement ` segue
+`blocked:false`; `Block Open Source` e `Circle BBP` seguem bloqueados —
+confirmado também que `list-deep-read-candidates.mjs` lista
+`afterpay/sdk-android`, `afterpay/sdk-ios`,
+`cashapp/cash-app-pay-android-sdk`, `cashapp/cash-app-pay-ios-sdk`,
+`cashapp/hermit`, `cashapp/misk` e `square/wire` sob "sem programa
+reconhecido no dataset público" em vez de excluídos explicitamente — são
+todos repositórios do `Block Open Source` (confirmado cruzando com
+`research/bugbounty/block-open-source/NOTES.md`), então o script tem uma
+lacuna de reconhecimento nesse ponto; nenhum arquivo desses repositórios
+foi tocado nesta rodada, aplicando a regra do CLAUDE.md diretamente em
+vez de confiar cegamente na saída do script.
+
+`list-pending` vazio. `research-plan` só retornou os mesmos 5
+`actionable` de sempre em `OKG` (`verify_scope`, ver NOTES.md daquele
+programa) — conferido que o scope snapshot de OKG não mudou desde a
+rodada anterior (mesmo `contentHash`, ainda granularidade de repositório
+só, sem listar arquivo individual) e nenhum dos 5 findings tem evidência
+nova, então nenhuma tentativa de reabrir/re-transicionar foi feita
+(sem evidência nova, `state-machine.mjs` recusaria do mesmo jeito).
+
+Leitura profunda proativa: `mattermost/mattermost-plugin-confluence`
+escolhido por ter a segunda menor cobertura entre os candidatos
+permitidos empatada com `mattermost-plugin-calls` (15 arquivos lidos),
+mas com achados mais recentes de auth/OAuth ainda não lidos (confluence
+já tinha 1 finding `inconclusive` de rodada anterior). Clone raso local
+(`git clone --depth 1` público, sem token), 3 arquivos novos, todos
+sobre elevação de escopo OAuth admin (`connection.IsAdmin`):
+
+- `server/instance_server.go` — `GetServerOAuth2Config` decide entre
+  scope `ADMIN` e `READ/WRITE` a partir de `connection.IsAdmin`
+  (parâmetro), sem lógica de decisão própria neste arquivo. Sem achado
+  isolado — rastreei a origem do valor a seguir.
+- `server/instance_cloud.go` — mesmo padrão para o fluxo Atlassian Cloud
+  3LO (`GetCloudOAuth2Config`); `resolveCloudID` só faz backfill de
+  `CloudID` já persistido a partir do próprio token OAuth emitido, sem
+  input de usuário controlável adicional. Sem achado.
+- `server/client_cloud.go` — REST client fino sobre a API Cloud
+  (`getJSON`), decodifica resposta upstream; `spaceKey`/`pageID` usados
+  na URL já são validados pelos callers antes de chegar aqui. Sem
+  achado.
+- Revisitei `server/controller.go::IsAdmin()` (já lido em rodada
+  anterior) para fechar a cadeia: `userID` vem de
+  `r.Header.Get(HeaderMattermostUserID)` — header setado pelo core do
+  Mattermost só após autenticação de sessão real (mesmo trust boundary
+  de `servePluginRequest` já confirmado cross-repo em rodada anterior
+  do gitlab/mcp.go), não de input direto do atacante — e decide
+  `IsAdmin` via `util.IsSystemAdmin(userID)` contra o role real do
+  usuário. Elevação de escopo OAuth `ADMIN` nos dois arquivos acima é
+  portanto gated corretamente na origem. Sem achado.
+
+Nenhum finding novo nesta rodada (resultado válido, não um problema).
+`deep-read-log.json` atualizado (+3 entradas em
+`mattermost/mattermost-plugin-confluence`, agora 18). Clone temporário
+removido do scratch dir ao final. `export-queue` rodado ao final.

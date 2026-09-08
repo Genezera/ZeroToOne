@@ -1670,7 +1670,11 @@
     "server/notification.go (SendConfluenceNotifications/SendGenericWHNotification -- so roteamento de post pra canais subscritos, delega a construcao da mensagem pra GetNotificationPost ja analisado acima. Sem achado isolado aqui)",
     "server/service/storage_xhtml.go (ExtractMentionAccountIDsFromStorage -- so regex de extracao de account-id do XHTML, sem risco. Sem achado)",
     "server/forge_reset.go + server/forge_poller.go (fluxo de rotacao/drain do Forge bridge -- gated por util.IsSystemAdmin, HMAC-SHA256 correto no envio, redirects desabilitados propositalmente para evitar SSRF/vazamento de secret documentado no proprio codigo. Sem achado)",
-    "server/command.go (dispatch de slash commands -- so parsing/roteamento, gates de IsSystemAdmin conferidos onde esperado. Sem achado)"
+    "server/command.go (dispatch de slash commands -- so parsing/roteamento, gates de IsSystemAdmin conferidos onde esperado. Sem achado)",
+    "server/instance_server.go (GetServerOAuth2Config/GetServerClient -- scope OAuth ADMIN vs READ/WRITE decidido por connection.IsAdmin, repassado como parametro; a elevacao de escopo em si depende de onde IsAdmin e setado -- ver user.go/controller.go abaixo. Sem achado isolado neste arquivo)",
+    "server/instance_cloud.go (GetCloudOAuth2Config/GetCloudClient/resolveCloudID -- mesmo padrao Server acima mas para Atlassian Cloud 3LO; resolveCloudID so faz backfill de CloudID persistido, sem input de usuario controlavel alem do proprio token OAuth ja emitido. Sem achado)",
+    "server/client_cloud.go (confluenceCloudClient -- REST client fino sobre a API Cloud, getJSON so decodifica resposta upstream, sem construcao de URL a partir de input de usuario alem de spaceKey/pageID ja validados pelos callers. Sem achado)",
+    "server/controller.go IsAdmin() (linha 94-102, revisitado a partir do uso em instance_server.go/instance_cloud.go: userID vem de r.Header.Get(HeaderMattermostUserID) -- header setado pelo core do Mattermost apos autenticacao de sessao, nao por input direto do request (mesmo trust boundary ja confirmado em outros plugins desta campanha via servePluginRequest) -- e decide IsAdmin via util.IsSystemAdmin(userID) contra o role real do usuario, nao um campo do body/query. Elevacao de escopo OAuth ADMIN em instance_server.go/instance_cloud.go e portanto gated corretamente. Sem achado)"
   ],
   "mattermost/mattermost-plugin-mscalendar": [
     "calendar/utils/oauth2connect/oauth2_connect.go",

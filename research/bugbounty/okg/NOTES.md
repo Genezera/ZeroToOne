@@ -2506,3 +2506,24 @@ nenhum arquivo novo de `go-wallet-sdk` lido nesta rodada. Nenhuma
 transição de estado neste programa.
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08h (push automático via GitHub webhook, sessão cloud, push d400002->6cc500a)
+
+`program-policy.json` conferido via `check-program` como passo zero:
+`OKG` segue `blocked:false`; `Block Open Source`/`Circle BBP` seguem
+bloqueados, nenhum arquivo deles tocado. `research-plan` apontou de novo
+os mesmos 5 `reproduced_local` (`verify_scope`) — conferi
+`scope-snapshots/okg.json` diretamente (`contentHash`
+`f2257e60139afc6fa2b069675c463c0e6ba5e2902feaa65cd643835d69ae1e09`,
+idêntico às rodadas anteriores, `git diff` confirma zero mudança) e
+nenhum dos 5 findings ganhou evidência nova de deployment. Nenhuma
+tentativa de transição repetida sem evidência nova (mesma regra do
+CLAUDE.md já aplicada nas rodadas g/f). Os 5 seguem em
+`reproduced_local`.
+
+Leitura profunda proativa desta rodada direcionada a
+`mattermost/mattermost-plugin-confluence` (ver NOTES.md de Mattermost) —
+nenhum arquivo novo de `go-wallet-sdk` lido nesta rodada. Nenhuma
+transição de estado neste programa.
+
+`export-queue` rodado ao final.
