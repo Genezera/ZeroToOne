@@ -432,6 +432,29 @@
       "result": {
         "reason": "o research-plan não pede mais esta ação"
       }
+    },
+    "evidence:v1:87138a85b42be0a3ba0f44f4be6567b9784075c5013e0166a4004a13e29a78e9": {
+      "taskId": "evidence:v1:87138a85b42be0a3ba0f44f4be6567b9784075c5013e0166a4004a13e29a78e9",
+      "inputDigest": "4ffd94bfb5055845e213f0ec7d51e0b14da9e2a11111db3ed2043fbef76ec898",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-08T15:51:09.679Z",
+      "lastAttemptAt": "2026-09-08T15:51:09.680Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 242 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 242,
+          "commit": "c0b7c8755766b8c5d61e15879a44fa0ecce21cf9"
+        }
+      },
+      "finishedAt": "2026-09-08T15:51:12.323Z"
     }
   },
   "runs": [
@@ -532,6 +555,16 @@
       "planned": 0,
       "claimed": 0,
       "completed": 0,
+      "needsHuman": 0,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:f89c3390e23e7d0ae9e462cf9a7a47b3141d822b368a9e695211d2a3638c763f",
+      "startedAt": "2026-09-08T15:51:09.679Z",
+      "finishedAt": "2026-09-08T15:51:12.323Z",
+      "planned": 1,
+      "claimed": 1,
+      "completed": 1,
       "needsHuman": 0,
       "failed": 0
     }
