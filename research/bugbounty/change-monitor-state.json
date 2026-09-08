@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-08T18:45:14.164Z",
+  "checkedAt": "2026-09-08T21:27:51.667Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -48,13 +48,13 @@
       ]
     },
     "kubernetes/apimachinery": {
-      "sha": "b16c9f2303a7e2c721286f12a45539a244fcaeca",
+      "sha": "5e936876967300d6e1fe519539db104c857caebb",
       "branch": "master",
-      "parentSha": "03c7be500e059be15dcde82769f8538845079df1",
-      "committedAt": "2026-09-04T21:48:32Z",
-      "url": "https://github.com/kubernetes/apimachinery/commit/b16c9f2303a7e2c721286f12a45539a244fcaeca",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "dda132ed457d7c4f6d411b42a7a529e623df3656",
+      "committedAt": "2026-09-08T17:48:50Z",
+      "url": "https://github.com/kubernetes/apimachinery/commit/5e936876967300d6e1fe519539db104c857caebb",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -63,13 +63,13 @@
       ]
     },
     "kubernetes/cli-runtime": {
-      "sha": "4c4e2fe8b17f4afafd1bceb052af9c65490a08a8",
+      "sha": "6742278b5e2a66158a438451a67477740662ae77",
       "branch": "master",
-      "parentSha": "21f66760145b079ca155269c54d93f437c71f9fb",
-      "committedAt": "2026-09-04T22:53:06Z",
-      "url": "https://github.com/kubernetes/cli-runtime/commit/4c4e2fe8b17f4afafd1bceb052af9c65490a08a8",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "d53c763e350f678c7e9f81c0cfc267cdbf7d3b56",
+      "committedAt": "2026-09-08T18:53:02Z",
+      "url": "https://github.com/kubernetes/cli-runtime/commit/6742278b5e2a66158a438451a67477740662ae77",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -78,13 +78,13 @@
       ]
     },
     "kubernetes/cloud-provider": {
-      "sha": "cddb7141ceb70f7f4bc308640f6ce1cfc566946a",
+      "sha": "8d5baa7b5ba2ed4140ef431bd27911ad7787e246",
       "branch": "master",
-      "parentSha": "1d5848a70dfe053e404486ea87e6362cd4aa2723",
-      "committedAt": "2026-09-04T23:11:41Z",
-      "url": "https://github.com/kubernetes/cloud-provider/commit/cddb7141ceb70f7f4bc308640f6ce1cfc566946a",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "6efac1a62d15fa99be19c73c2e0b73c4e011bc1d",
+      "committedAt": "2026-09-08T19:12:08Z",
+      "url": "https://github.com/kubernetes/cloud-provider/commit/8d5baa7b5ba2ed4140ef431bd27911ad7787e246",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -123,13 +123,13 @@
       ]
     },
     "kubernetes/cluster-bootstrap": {
-      "sha": "c33edcfddc6b4ee7aecfed60c8f32ab5cb52e92a",
+      "sha": "1cc0a9f5e90c3f6bc03526a1e4e95fefba3d5dde",
       "branch": "master",
-      "parentSha": "6df16566d15fb15804c9130a49e2716f6b25a3c9",
-      "committedAt": "2026-09-04T23:16:23Z",
-      "url": "https://github.com/kubernetes/cluster-bootstrap/commit/c33edcfddc6b4ee7aecfed60c8f32ab5cb52e92a",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "923754d7ac95b3c3e6c3805e9d7307e0fe1e58d7",
+      "committedAt": "2026-09-08T19:17:06Z",
+      "url": "https://github.com/kubernetes/cluster-bootstrap/commit/1cc0a9f5e90c3f6bc03526a1e4e95fefba3d5dde",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -138,13 +138,13 @@
       ]
     },
     "kubernetes/code-generator": {
-      "sha": "6392f11dc417da72c71ea9d9c2bc939756717c1e",
+      "sha": "cd9f41dc06616c7702687b8ef4232b80eb395d94",
       "branch": "master",
-      "parentSha": "625b86917109297f24d0859223db539a8c524763",
-      "committedAt": "2026-09-05T02:02:34Z",
-      "url": "https://github.com/kubernetes/code-generator/commit/6392f11dc417da72c71ea9d9c2bc939756717c1e",
-      "title": "Merge pull request #141866 from jpbetz/validation-gen-tag-prefix",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "a44750792359f7e84230a7ae202df3ecf7ce51d5",
+      "committedAt": "2026-09-08T18:11:24Z",
+      "url": "https://github.com/kubernetes/code-generator/commit/cd9f41dc06616c7702687b8ef4232b80eb395d94",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -153,13 +153,13 @@
       ]
     },
     "kubernetes/component-base": {
-      "sha": "f6eb7bda313f31bf67527e03610512e71d452116",
+      "sha": "c712462289897680eb01aa5b637113a0cf4f2310",
       "branch": "master",
-      "parentSha": "40e7c75c2c08d034200fe3c4faf787cf5f41f740",
-      "committedAt": "2026-09-04T22:14:22Z",
-      "url": "https://github.com/kubernetes/component-base/commit/f6eb7bda313f31bf67527e03610512e71d452116",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "7b37b030b3f6893bbc22e42bc23ea4b6ae4b94ce",
+      "committedAt": "2026-09-08T18:14:28Z",
+      "url": "https://github.com/kubernetes/component-base/commit/c712462289897680eb01aa5b637113a0cf4f2310",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -168,13 +168,13 @@
       ]
     },
     "kubernetes/cri-api": {
-      "sha": "b47fc37312c54caef1a68c8b4ac8e07158331a82",
+      "sha": "91195a302e7ee011296a4627d7a6ce841cb86960",
       "branch": "master",
-      "parentSha": "5055fee1b0f18bda2a82055a7933ba6cf0e40cdf",
-      "committedAt": "2026-09-04T19:00:43Z",
-      "url": "https://github.com/kubernetes/cri-api/commit/b47fc37312c54caef1a68c8b4ac8e07158331a82",
-      "title": "Merge pull request #141663 from liggitt/go127",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "4b033b475e32fd855a38e6de60286c5713b13539",
+      "committedAt": "2026-09-08T19:00:12Z",
+      "url": "https://github.com/kubernetes/cri-api/commit/91195a302e7ee011296a4627d7a6ce841cb86960",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -183,13 +183,13 @@
       ]
     },
     "kubernetes/csi-translation-lib": {
-      "sha": "cd85a6a11db4aa14a399604558408d08ebc41915",
+      "sha": "089b3f4b6e9dc98cb03619f7499ae41299e94af1",
       "branch": "master",
-      "parentSha": "263b85a82e1ad2e2d0cd62ce86fa0871fbea6a84",
-      "committedAt": "2026-09-04T23:18:44Z",
-      "url": "https://github.com/kubernetes/csi-translation-lib/commit/cd85a6a11db4aa14a399604558408d08ebc41915",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "bc79c66c4b48667c95046dbb71420c8afab668b1",
+      "committedAt": "2026-09-08T19:19:30Z",
+      "url": "https://github.com/kubernetes/csi-translation-lib/commit/089b3f4b6e9dc98cb03619f7499ae41299e94af1",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -228,13 +228,13 @@
       ]
     },
     "kubernetes/kube-controller-manager": {
-      "sha": "2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
+      "sha": "2f0b8e3269dcdc7b1aef9bd24b74799c5480b1f4",
       "branch": "master",
-      "parentSha": "637f66d233bf2878e90dbb1d3c0c418235558993",
-      "committedAt": "2026-09-04T23:14:08Z",
-      "url": "https://github.com/kubernetes/kube-controller-manager/commit/2b259bee4dddf87d9ca3ec00ef5ef364b64ea149",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "c25562d64698870f8d21d46efbd84afaf457b9a1",
+      "committedAt": "2026-09-08T19:14:41Z",
+      "url": "https://github.com/kubernetes/kube-controller-manager/commit/2f0b8e3269dcdc7b1aef9bd24b74799c5480b1f4",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -258,13 +258,13 @@
       ]
     },
     "kubernetes/kube-proxy": {
-      "sha": "e61739d3d987a5c0e9ad75ba48b9361fb489927e",
+      "sha": "3d53c78cbd4849ff86d3513b59b6107b70265bf2",
       "branch": "master",
-      "parentSha": "c9e2ee3d2d678f0c611a78b6b491a0538150564a",
-      "committedAt": "2026-09-04T22:57:55Z",
-      "url": "https://github.com/kubernetes/kube-proxy/commit/e61739d3d987a5c0e9ad75ba48b9361fb489927e",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "4d27ee2199730edf2a421e11c90467eb93a72067",
+      "committedAt": "2026-09-08T18:57:54Z",
+      "url": "https://github.com/kubernetes/kube-proxy/commit/3d53c78cbd4849ff86d3513b59b6107b70265bf2",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -273,13 +273,13 @@
       ]
     },
     "kubernetes/kube-scheduler": {
-      "sha": "3806b6ec9328ecd63a53b678b33612bcedcfc80a",
+      "sha": "3a7e36e49da5bd56351d85e55c31ae4b3f1ed177",
       "branch": "master",
-      "parentSha": "248168d94e7dd9fb7509f1a3effeee9c83807400",
-      "committedAt": "2026-09-07T19:24:13Z",
-      "url": "https://github.com/kubernetes/kube-scheduler/commit/3806b6ec9328ecd63a53b678b33612bcedcfc80a",
-      "title": "Merge pull request #141910 from macsko/move_genericpodgroup_to_staging",
-      "observedAt": "2026-09-07T20:47:37.939Z",
+      "parentSha": "3806b6ec9328ecd63a53b678b33612bcedcfc80a",
+      "committedAt": "2026-09-08T19:33:53Z",
+      "url": "https://github.com/kubernetes/kube-scheduler/commit/3a7e36e49da5bd56351d85e55c31ae4b3f1ed177",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -303,13 +303,13 @@
       ]
     },
     "kubernetes/kubelet": {
-      "sha": "3e70798dd099cf6e0b6eccb6f6ebfc2532d3c62d",
+      "sha": "5daec70b034801483eb5ca2d6dcf515872e023ac",
       "branch": "master",
-      "parentSha": "e4f70507af93759453201f4a1982421a93ba2cab",
-      "committedAt": "2026-09-04T23:06:26Z",
-      "url": "https://github.com/kubernetes/kubelet/commit/3e70798dd099cf6e0b6eccb6f6ebfc2532d3c62d",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "e02a01e7f49a1f902c9fae9d889b7c7e1325bdbe",
+      "committedAt": "2026-09-08T19:06:41Z",
+      "url": "https://github.com/kubernetes/kubelet/commit/5daec70b034801483eb5ca2d6dcf515872e023ac",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -318,13 +318,13 @@
       ]
     },
     "kubernetes/metrics": {
-      "sha": "cf435e17ef63478cd3033e9908e9c8a77d0d831a",
+      "sha": "e026c1c43dc575954a08c614cd869e8eae306bd8",
       "branch": "master",
-      "parentSha": "811d2e5c953e904191a28798f6c67acdde124735",
-      "committedAt": "2026-09-04T22:50:28Z",
-      "url": "https://github.com/kubernetes/metrics/commit/cf435e17ef63478cd3033e9908e9c8a77d0d831a",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "cd93b45d06fe3552cee980afd5badfea406c63ae",
+      "committedAt": "2026-09-08T18:50:24Z",
+      "url": "https://github.com/kubernetes/metrics/commit/e026c1c43dc575954a08c614cd869e8eae306bd8",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -333,13 +333,13 @@
       ]
     },
     "kubernetes/org": {
-      "sha": "4669f4b3009c82d54f2904657a868219e95f935f",
+      "sha": "3f483e538332a116ab8fc7bbb1c97dc944937dab",
       "branch": "main",
-      "parentSha": "316b7f570be26ea1b032cfbac6c5df6086b04af8",
-      "committedAt": "2026-09-08T12:14:30Z",
-      "url": "https://github.com/kubernetes/org/commit/4669f4b3009c82d54f2904657a868219e95f935f",
-      "title": "Merge pull request #6620 from skl/skl/add-skl-k-mixins-admin",
-      "observedAt": "2026-09-08T15:10:27.943Z",
+      "parentSha": "4669f4b3009c82d54f2904657a868219e95f935f",
+      "committedAt": "2026-09-08T20:16:35Z",
+      "url": "https://github.com/kubernetes/org/commit/3f483e538332a116ab8fc7bbb1c97dc944937dab",
+      "title": "Merge pull request #6617 from kernel-kun/remove-1.37-shadows-from-sig-docs-team",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -363,13 +363,13 @@
       ]
     },
     "kubernetes/sample-cli-plugin": {
-      "sha": "5414d9b64dc71107fa3b018a6eea3c5ec0fb9d58",
+      "sha": "42aac8c981dceb3019c1473f09dc4143c577d276",
       "branch": "master",
-      "parentSha": "4b59b2f44f1624427dd581899fbf59dfebbb6ddd",
-      "committedAt": "2026-09-04T22:55:30Z",
-      "url": "https://github.com/kubernetes/sample-cli-plugin/commit/5414d9b64dc71107fa3b018a6eea3c5ec0fb9d58",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "017433881d848d463a5e290d37a485bded025208",
+      "committedAt": "2026-09-08T18:55:26Z",
+      "url": "https://github.com/kubernetes/sample-cli-plugin/commit/42aac8c981dceb3019c1473f09dc4143c577d276",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
@@ -378,13 +378,13 @@
       ]
     },
     "kubernetes/sample-controller": {
-      "sha": "b18bc997d6c9af668569cf663caa3cb5fe89b09f",
+      "sha": "f5686faa1a536e49b784ad3f9b0290c4325732fb",
       "branch": "master",
-      "parentSha": "085f00d4dc31e7f30db8df4df8310274025b6711",
-      "committedAt": "2026-09-04T22:42:19Z",
-      "url": "https://github.com/kubernetes/sample-controller/commit/b18bc997d6c9af668569cf663caa3cb5fe89b09f",
-      "title": "Merge pull request #141664 from liggitt/smd-json-v2",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "44e5f6c10bb13e42f1c94c81faf544d77dba9427",
+      "committedAt": "2026-09-08T18:42:26Z",
+      "url": "https://github.com/kubernetes/sample-controller/commit/f5686faa1a536e49b784ad3f9b0290c4325732fb",
+      "title": "Merge pull request #141886 from AboEl3iz/fix-cve-2026-78662",
+      "observedAt": "2026-09-08T21:27:51.667Z",
       "programs": [
         "Kubernetes"
       ],
