@@ -6,6 +6,24 @@ data: 2026-08-31
 
 # OKG (okx/go-wallet-sdk) — triagem de 72 achados `known_vulnerable_dependency`
 
+## Rodada 2026-09-08 (push automático via GitHub webhook, sessão cloud)
+`research-plan` apontou 5 `actionable`/`verify_scope`, todos em
+`reproduced_local` (aptos v2 MultiEd25519, filecoin SignedTx, helium
+nist-p256, helium keypair, waves crypto.Sign) — todos já
+exaustivamente documentados em rodadas anteriores do mesmo dia:
+`check-scope "OKG" "okx/go-wallet-sdk"` confirma `allowed:true`/
+`bountyEligible:true` no nível de repositório, mas o gate de
+`scope_verified` exige o **arquivo exato** do finding no snapshot, e
+o snapshot (`community_dataset_structured`, sem granularidade de
+arquivo) nunca vai satisfazer isso. `deploymentEvidence.confidence`
+também segue travado em `unverified` (repo sem tags/releases Git).
+Nenhuma tentativa de forçar/contornar os dois gates; nenhuma releitura
+de código do repositório-alvo foi necessária (só `check-scope`,
+consulta de fonte de escopo, permitido por uma indicação
+`verify_scope`). Os 5 ficam permanentemente em `reproduced_local` até
+uma das duas condições mudar — mesma conclusão já registrada,
+reconfirmada sem novidade.
+
 ## Contexto
 Este programa não é um dos 4 alvos originais desta pesquisa
 (StackingDAO, Vercel Open Source, Block Open Source, Circle BBP), mas

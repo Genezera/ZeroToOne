@@ -1,5 +1,36 @@
 # Mattermost Public Bug Bounty Engagement (Bugcrowd) — notas de pesquisa
 
+## Rodada 2026-09-08 (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido como passo zero (nenhum arquivo de
+repositório-alvo tocado antes disso): `Auth0 by Okta` e `Circle BBP`
+seguem `blocked:true`; `OKG`/`Mattermost` seguem liberados.
+`list-pending` vazio (0 candidates); `research-plan` mostrou 5
+actionable, todos `verify_scope` em achados `reproduced_local` do
+programa OKG (ver `okg/NOTES.md`) — nenhum novo, mesma conclusão já
+documentada em rodadas anteriores do mesmo dia.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` confirmou
+que `plaid-ruby`/`react-plaid-link` estão esgotados e apontou
+`mattermost/mattermost-plugin-mscalendar` como tendo cobertura parcial
+(8 arquivos lidos). Clone raso público, 4 arquivos novos ainda não
+listados em `deep-read-log.json`, priorizando nome de caminho com
+auth/token/admin: `calendar/api/get_authorized.go`,
+`calendar/store/oauth2_store.go`, `msgraph/get_super_user_token.go`,
+`calendar/utils/bot/admin.go`. Nenhum achado novo — `get_authorized.go`
+é handler trivial sem lógica própria; `oauth2_store.go` confirma que a
+comparação `data != state` no `VerifyOAuth2State` não é
+security-sensitive (state é usado como a própria chave do KV, então é
+apenas checagem de existência, não segredo comparado por igualdade) e
+que o binding real contra CSRF já está em `engine/oauth2.go`
+(`CompleteOAuth2`, já lido em rodada anterior, confirma
+`mattermostUserID != authedUserID`); `get_super_user_token.go` é fluxo
+`client_credentials` padrão com client_id/secret vindo de config admin,
+não de rede; `admin.go` é allowlist simples contra
+`mattermostUserID` de sessão autenticada, não forjável por request.
+`deep-read-log.json` atualizado. Clone temporário removido.
+`export-queue` rodado ao final da rodada.
+
 ## Rodada 2026-09-06e (push automático via GitHub webhook, sessão cloud)
 
 `program-policy.json` conferido como passo zero: `Auth0 by Okta` e
