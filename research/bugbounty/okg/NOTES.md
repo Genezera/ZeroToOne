@@ -2962,3 +2962,57 @@ banco local reidratado do zero via `migrate-to-v2.mjs` a partir do
 rodada (`deep-read-log.json`, este `NOTES.md`) reaplicadas sobre a
 base atualizada antes do commit final. `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-08q (push automático via GitHub webhook, sessão cloud)
+`program-policy.json` conferido antes de qualquer leitura (Block Open
+Source e Circle BBP confirmados bloqueados; nenhum repositório desses
+dois programas foi clonado/lido nesta rodada). `migrate-to-v2.mjs` +
+`research-plan`: 1 item `actionable` — `measure_code_age` para
+`OKG::.../coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error`
+(mesmo achado real da rodada 2026-09-08p, já em `reproduced_local`
+com PoC executada).
+
+Rodado `system/bugbounty-scanner/evidence-worker.mjs` (o worker
+dedicado descrito no `CLAUDE.md` para medir idade de código via
+metadado Git) para processar esse work order: `git log --follow` no
+clone raso confirma que `coins/cardano/address.go` não é tocado há
+**242 dias** (commit `c0b7c875`) — muito acima da janela anti-duplicate
+de 48h exigida para tratar isso como regressão de campanha. O finding
+foi corretamente movido para `held/outside_campaign_window` pelo
+próprio `research-plan` na releitura seguinte; **nenhuma transição de
+estado foi forçada** — o achado permanece intacto em `reproduced_local`
+com o PoC real já registrado, só fica fora da fila de investimento
+adicional por enquanto. O worker fez seu próprio commit+push
+(`c53ed22`) antes de eu retomar o restante da rodada.
+
+`list-pending` global vazio após isso. Leitura profunda proativa via
+`list-deep-read-candidates.mjs`: `plaid/react-plaid-link` confirmado
+esgotado (último arquivo `.ts`/`.tsx` não-teste restante,
+`src/index.ts`, é só re-export, sem lógica). Preferi então
+`okx/go-wallet-sdk` (13% de cobertura, maior espaço restante) e li 3
+arquivos de parsing de endereço ainda não cobertos nesta campanha,
+testando deliberadamente a mesma classe de bug já confirmada em
+`cardano/address.go` (switch de tipo sem `default`, aceitando entrada
+malformada em silêncio):
+
+1. `coins/polkadot/address.go` — wrapper fino sobre `crypto/ss58` já
+   auditado; `ValidateAddress` rejeita corretamente pubkey decodificada
+   com tamanho != 32. Sem achado.
+2. `coins/tezos/address.go` + `coins/tezos/types/address.go` —
+   `ParseAddress` TEM `default` explícito (retorna erro pra
+   versão/tag desconhecida); o caso de string vazia (retorna
+   `InvalidAddress,nil` sem erro) é coberto corretamente a jusante por
+   `Address.IsValid()`, que checa `Type != AddressTypeInvalid` antes
+   de aceitar. Fail-closed confirmado — não é a mesma classe de bug do
+   Cardano. Sem achado.
+3. `coins/ton/address/addr.go` (pacote vendored de
+   `github.com/xssnick/tonutils-go`, distinto do `coins/ton/address.go`
+   já auditado) — `ParseAddr`/`ParseRawAddr` verificam checksum CRC16
+   e comprimento de dados antes de aceitar, sem tipo controlável por
+   atacante que contorne a validação. Sem achado.
+
+`deep-read-log.json` atualizado com os 3 arquivos e com a nota de
+esgotamento do `react-plaid-link`. Nenhum achado novo nesta rodada —
+resultado normal e válido; a busca deliberada pela mesma classe de bug
+em vizinhos do Cardano não encontrou recorrência. `export-queue`
+rodado ao final.

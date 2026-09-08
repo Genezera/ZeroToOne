@@ -184,3 +184,15 @@ repositórios com menos arquivos lidos no ranking de
 `deep-read-log.json` atualizado (edição programática via Python).
 `export-queue` rodado ao final da rodada — nenhum achado novo, nenhuma
 transição de estado neste programa nesta rodada.
+
+## Rodada 2026-09-08q (push automático via GitHub webhook, sessão cloud)
+Correção pequena à rodada anterior: o clone raso confirmou que ainda
+faltava `src/index.ts` (raiz de `src/`, arquivo de re-export do
+pacote inteiro — diferente de `src/types/index.ts`, já lido e citado
+na rodada anterior; a claim de "esgotado" ali foi prematura por
+confundir os dois arquivos de mesmo nome em diretórios diferentes).
+Lido agora: só reexporta `usePlaidLink`/`PlaidLink`/`PlaidEmbeddedLink`/
+`types`, nenhuma lógica própria. Sem achado. Com isso, `TODO`
+`src/*.ts(x)` não-teste de `plaid/react-plaid-link` está de fato
+coberto agora — repositório genuinamente esgotado. `deep-read-log.json`
+atualizado. Nenhuma outra ação neste programa nesta rodada.
