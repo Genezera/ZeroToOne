@@ -4548,7 +4548,7 @@
     "pkg/identity/keystone/authenticator.go": "b5c3953a39ccf1abb83e6b1e2f9a511ad83c67c8",
     "pkg/identity/keystone/authorizer.go": "799b158337991633b5b40d58eeab2f98f1c2be11",
     "pkg/identity/keystone/config.go": "78814d03e0c65bfc072af63c0b20cd906f41da68",
-    "pkg/identity/keystone/keystone.go": "6345d636bd978dafe72066d66a3cdce89af248ff",
+    "pkg/identity/keystone/keystone.go": "2a44a2ac899915ba9b7d55ec6e06975dafbca431",
     "pkg/identity/keystone/mock_IKeystone.go": "4478f23a9d7a23970c97b20684a6fe0d23a8f9a3",
     "pkg/identity/keystone/policy.go": "ca4a805100d407bd30a83c5a12443e170761645d",
     "pkg/identity/keystone/sync.go": "5ad936f5e7d76d380f851ea2c92b8a42350f7328",
