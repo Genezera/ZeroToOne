@@ -7669,7 +7669,7 @@
     "server/webhook_worker.go": "a43da22c7500b3f9ff0550a87299b58e060cf3a2",
     "go.mod": "0a2991c614675bdcbded0e66b2ff7c567d6cb34b",
     "package-lock.json": "7e72c7eba31b813f68cc31c254be6f800ea509eb",
-    "webapp/package-lock.json": "b46764397c93859ac8e0d8efe9b658712d6e0633"
+    "webapp/package-lock.json": "53161bc964a256847c39901b93e0f64fba35237e"
   },
   "mattermost/mattermost-plugin-zoom": {
     "server/cipher.go": "78063e9d745c2e4b512567286ef4ad8dfaa2c318",
@@ -7720,7 +7720,7 @@
     "server/plugin/webhook.go": "c169d1ab6aab9f7489e2ce73d7360aca6c1df521",
     "server/testutils/http.go": "5b20ab9c1111984e3c2a358a5a3d73dd54cc65e7",
     "e2e/playwright/mock_oauth_server/package-lock.json": "35deb8be298660ecd09b7a135d1c524e2304d494",
-    "e2e/playwright/package-lock.json": "897a6b79e22224f126bf1a6ac02fca9447123936",
+    "e2e/playwright/package-lock.json": "6340ee7c280884ccd94b26dcc732ce7655ba977c",
     "go.mod": "580b4bad80d107aaa707d709cd857e38f7419b27",
     "webapp/package-lock.json": "6bc843160939219719b76d70e4188b8a144d2334"
   },
@@ -8104,7 +8104,7 @@
     "server/jobs/mock_cluster/mock_cluster.go": "2136fd0b7a36e8d4f64fe64c530c643f4108220c",
     "server/main.go": "e54335cfb1dc6c236a53d33c239606bf0d9e41f5",
     "go.mod": "2e9c1acd619e02a45fecc706deb8ae754e26b1b4",
-    "webapp/package-lock.json": "0be6fed1359958854490006ed86356280a9d6026"
+    "webapp/package-lock.json": "d3364d61d2c647da6354fdca73d31e7fa615b4ad"
   },
   "mattermost/mattermost-plugin-msteams-meetings": {
     "server/authorization.go": "6014f3ac94cfb2bd8e5858377adbde70d7a9aa54",

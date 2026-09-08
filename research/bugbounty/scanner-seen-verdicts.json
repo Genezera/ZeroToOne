@@ -799,5 +799,14 @@
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/confluence_server_v2.go::GetNotificationPost::markdown_link_injection": "inconclusivo",
   "OKG::okx/go-wallet-sdk/coins/stellar/strkey/signed_payload.go::DecodeSignedPayload::ai_deep_read_finding": "confirmado",
   "OKG::okx/go-wallet-sdk/coins/nervos/crypto/bech32.go::Bech32Decode::bech32_bech32m_encoding_detection_broken": "confirmado",
-  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/client/client.go::checkPluginRequest+getToken::interplugin_token_disclosure_risk": "falso_positivo"
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/client/client.go::checkPluginRequest+getToken::interplugin_token_disclosure_risk": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKey.Verify::signature_verification_bypass": "confirmado",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac": "falso_positivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/cipher.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac": "falso_positivo",
+  "OKG::okx/go-wallet-sdk/coins/filecoin/transaction.go::SignedTx::unchecked_signature_length_panic": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/helium/keypair/keypair.go::Keypair.Sign::silent_unsigned_result_unimplemented_curve": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/aptos/v2/transactionAuthenticator.go::MultiEd25519TransactionAuthenticator.Verify::ai_deep_read_finding": "confirmado",
+  "OKG::okx/go-wallet-sdk/coins/bitcoin/multi_address.go::GenerateAddress::wrong_network_address_generation": "inconclusivo"
 }

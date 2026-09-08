@@ -10,7 +10,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 22 | 15 | 5 | 2 | 23% |
+| ai_deep_read_finding | go | 30 | 20 | 7 | 3 | 23% |
 | ai_deep_read_finding | js | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
@@ -67,6 +67,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ssrf_risk | js | 13 | 0 | 13 | 0 | 100% |
 | tainted_data_flow | js | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | solidity | 10 | 1 | 9 | 0 | 90% |
+| unclamped_scalar_pubkey_mismatch_invalid_signature | go | 1 | 1 | 0 | 0 | 0% |
 | unguarded_transfer | clarity | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | go | 1 | 0 | 1 | 0 | 100% |
 
@@ -77,8 +78,8 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Block Open Source | 6 | 1 | 3 | 2 | 50% |
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
 | ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 6 | 4 | 2 | 0 | 33% |
-| ai_deep_read_finding | OKG | 14 | 9 | 0 | 5 | 0% |
+| ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 8 | 4 | 4 | 0 | 50% |
+| ai_deep_read_finding | OKG | 20 | 14 | 0 | 6 | 0% |
 | ai_deep_read_finding | Slack | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
@@ -144,5 +145,6 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ssrf_risk | Vercel Open Source | 13 | 0 | 13 | 0 | 100% |
 | tainted_data_flow | Vercel Open Source | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | Circle BBP | 10 | 1 | 9 | 0 | 90% |
+| unclamped_scalar_pubkey_mismatch_invalid_signature | OKG | 1 | 1 | 0 | 0 | 0% |
 | unguarded_transfer | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | OKG | 1 | 0 | 1 | 0 | 100% |
