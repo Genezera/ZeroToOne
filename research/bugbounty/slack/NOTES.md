@@ -538,3 +538,32 @@ Critical) também não muda — não infla pra satisfazer o filtro "Critical
 only" do programa.
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08 #3 (push automático, sessão cloud) — leitura profunda adicional em nebula
+
+Sessão iniciada de um checkout anterior a #2 acima; ao tentar empurrar,
+`git push` mostrou que duas outras sessões desta mesma rotina já tinham
+corrigido o mesmo bug de metadado (`repository`, depois `file`/`asset`) e
+reconfirmado o `verify_scope` de Mattermost de forma independente
+(commits `7a0a50c`/`e8ab0bf`) — `git reset --hard origin/master` pra essa
+versão canônica em vez de empurrar um commit duplicado com reasoning
+redundante, mesma disciplina já registrada no adendo de 03/09.
+
+Contribuição incremental desta sessão, além do que já está documentado
+acima: 3 arquivos novos em `slackhq/nebula`, ainda não lidos em nenhuma
+rodada anterior (`lighthouse.go`, `connection_manager.go`,
+`remote_list.go`), escolhidos por serem a superfície de maior confiança
+do protocolo ainda não coberta (lighthouse é autoridade central de
+mapeamento vpnAddr↔endereço underlay). Em `lighthouse.go`: confirmado que
+`handleHostUpdateNotification` só aceita atualizar o `RemoteList` da
+própria identidade autenticada pelo transporte (`fromVpnAddrs`, não
+spoofável via payload), e `handleHostQueryReply` só é aceito de
+lighthouses configurados (`IsAnyLighthouseAddr`); `sendHostPunchNotification`
+não é vetor de amplificação de terceiro porque o alvo do punch é sempre a
+identidade autenticada de quem perguntou, nunca um IP arbitrário do
+payload. `connection_manager.go` e `remote_list.go` operam só sobre
+hostinfo já estabelecido/endereços já filtrados pelo allow list do
+chamador. Sem achado nos três arquivos. `deep-read-log.json` atualizado
+(+3, 36→39 no total). Clone temporário removido. Nenhuma mudança de
+estado tentada nesta rodada (nada novo em `actionable`/`candidate` além
+do já tratado pelas sessões paralelas).
