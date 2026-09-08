@@ -2761,3 +2761,63 @@ superfície de decisão de autorização. Nenhum achado novo.
 
 Nenhum achado novo digno de nota nesta rodada — resultado normal e
 válido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08m (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido antes de qualquer leitura (checagem
+explícita nos 4 programas citados na tarefa: `Block Open Source`
+`blocked:true` e `Circle BBP` `blocked:true` -- nenhum arquivo desses
+dois tocado, nem clone nem leitura, em nenhum momento da rodada;
+`StackingDAO` e `Vercel Open Source` `blocked:false`). `list-pending`
+vazio + `research-plan` confirmou `actionable:0`. `Vercel Open Source`
+sem candidatos actionable (tudo held por `campaign_duplicate_history`/
+`previous_submission`, sem evidência nova). `StackingDAO` sem
+candidate/pending no dataset atual (só aparece em "sem programa
+reconhecido" no `list-deep-read-candidates.mjs`).
+
+Leitura profunda proativa: `okx/go-wallet-sdk`. Diff entre
+`deep-read-log.json` e a árvore real do repo mostrou que `coins/tron/`
+era o único diretório de coin em todo o SDK sem nenhum arquivo lido em
+rodadas anteriores -- prioridade sobre reler diretórios já bem
+cobertos. Lidos os 3 arquivos com lógica própria do pacote (excluindo
+`pb/tron_minimal.pb.go` gerado e `storage.go`/`type_urls.go`/
+`tokenabi.go` triviais): `tron.go`, `encoder/encoder.go`, `token/token.go`.
+
+Achado novo: `VerifyMessage`/`VerifyMessageWithAddress`/`VerifyMessageV1`
+em `tron.go` (linhas 493-585) indexam a assinatura hex decodificada
+(`sigTemp[64]`, `sigTemp[:64]`/`[:32]`/`[32:64]`) sem checar
+`len(sigTemp)>=65` antes -- panic em vez de erro tratável se um
+chamador passar assinatura de terceiro não confiável curta/malformada.
+Mesma classe de bug (CWE-20, dado externo de tamanho variável indexado
+sem validação prévia) já confirmada em achados-irmãos anteriores desta
+campanha (filecoin `SignedTx`, waves `crypto.Sign`, helium
+nist-p256 `GenerateKey`, aptos `MultiEd25519`), agora também na
+superfície Tron, nunca antes lida. Criado
+`OKG::okx/go-wallet-sdk/coins/tron/tron.go::VerifyMessage+VerifyMessageWithAddress+VerifyMessageV1::unchecked_signature_length_panic`,
+avançado `candidate->corroborated_static` (reasoning + filesRead
+suficientes). Tentativa `corroborated_static->reproduced_local`
+corretamente recusada (`record-validation ... --result=not_applicable`
+documentando que não existe validador automatizado pra achados Go
+neste pipeline -- limitação real do sistema, não simulei um validador
+pra contornar). Fica em `corroborated_static`, mesmo destino dos
+achados-irmãos (impacto limitado a self-DoS do integrador que chama a
+função de verificação com dado não saneado, sem vítima terceira clara
+-- consistente com o padrão `below_campaign_impact` já observado nos
+achados-irmãos). `encoder/encoder.go` e `token/token.go`: sem achado
+(detalhes no `deep-read-log.json`).
+
+Nota operacional: mais uma rodada nesta campanha colidiu com sessões
+concorrentes fazendo leitura profunda no mesmo `okx/go-wallet-sdk` no
+mesmo intervalo (rodadas k e l já documentadas acima, ambas sem
+sobreposição de arquivos ou achados com esta). Push original desta
+rodada foi rejeitado duas vezes (`fetch first`); resolvido do mesmo
+jeito documentado na rodada l: `git fetch` + `git reset --hard
+origin/master` (sem commit local perdido -- nenhum push anterior desta
+rodada havia sido aceito pelo remoto), banco local (`zerotoone.db`,
+não versionado) apagado e `migrate-to-v2.mjs` reidratado do zero a
+partir do `queue.jsonl` mais recente, achado desta rodada recriado do
+zero (upsert/update/transition/record-validation) sobre a base
+correta, garantindo que `ledger/ledger.research.jsonl` refletisse com
+integridade hash-encadeada as transições reais desta rodada.
+
+`export-queue` rodado ao final.
