@@ -3061,3 +3061,51 @@ corretamente todos os campos `*big.Int`/bytes) e o do Ronin é só a
 declaração de tipo sem lógica nenhuma. `deep-read-log.json` atualizado.
 
 Nenhum achado novo nesta rodada. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08s (push automático via GitHub webhook, sessão cloud)
+`check-program`/`program-policy.json` conferidos antes de qualquer
+clone (Block Open Source e Circle BBP seguem bloqueados, não tocados).
+`migrate-to-v2.mjs` rodado; `list-pending` vazio; `research-plan`
+`actionable:0` (72 `held`, mesmos motivos já documentados em rodadas
+anteriores — nada novo). Passo de leitura profunda proativa via
+`list-deep-read-candidates.mjs`: repositório com mais espaço não lido
+continua sendo `okx/go-wallet-sdk`. Clone público raso (`git clone
+--depth 1`, sem conta/token) para escolher 3 arquivos ainda não lidos
+priorizando palavras-chave de auth/crypto/sign/key (julgamento próprio,
+não regex) — sem sobreposição com os arquivos das rodadas `q`/`r`
+concorrentes, que só apareceram no histórico remoto depois do push
+desta rodada colidir duas vezes e exigir `git reset --hard
+origin/master` + reidratação a cada colisão:
+
+1. `crypto/base58/base58check.go` — `checksum()` (double-SHA256) usado
+   por `CheckEncode`/`CheckDecode` está correto. `C58Encode`/
+   `CheckDecodeWithCheckSumLast` (single-SHA256, formato CB58) não têm
+   nenhum call site real neste pacote — `coins/avax/avax.go` define
+   cópias locais próprias dessas duas funções (usadas de fato por
+   `avax/tx.go` e `avax/avax.go`), então as versões do pacote
+   `crypto/base58` são código morto duplicado, não um mismatch
+   encode/decode explorável. Sem achado.
+2. `crypto/bech32/bech32.go` — cópia exata de `btcsuite/btcd`;
+   `bech32Polymod`/`bech32VerifyChecksum`/`decodeNoLimit` corretos e
+   batem com BIP-173/350. Único bug notado é cosmético: no branch de
+   erro de checksum em `decodeNoLimit`, o cálculo do checksum esperado
+   para `VersionM` reusa o mesmo `strings.Builder` (`expectedBldr`) em
+   vez de um builder novo (variável `b` declarada e nunca usada), então
+   `ErrInvalidChecksum.ExpectedM` sai concatenado com
+   `ExpectedVersion0` na mensagem de erro — afeta só o texto de debug,
+   não a lógica real de `bech32VerifyChecksum` que decide aceitar/
+   rejeitar o checksum. Sem achado de segurança.
+3. `coins/tezos/types/crypto.go` — cópia de `blockwatch/tzgo`;
+   `ecPrivateKeyFromBytes` valida `k < curveOrder` antes de derivar
+   chave pública, `ecSign` normaliza `S mod n` corretamente,
+   `decryptPrivateKey` usa nonce fixo all-zero com `secretbox` mas isso
+   é o formato oficial de encrypted-key do Tezos (unicidade vem do
+   salt aleatório de 8 bytes no `pbkdf2`, não do nonce) — padrão
+   conhecido e correto da lib upstream, não introduzido pelo OKX. Sem
+   achado.
+
+Nenhum achado novo nesta rodada — resultado normal e válido, três
+arquivos de biblioteca criptográfica copiados de projetos upstream já
+estabelecidos (btcsuite, blockwatch/tzgo), sem lógica própria do OKX
+introduzindo desvio. `deep-read-log.json` atualizado com as 3 entradas.
+`export-queue` rodado ao final.
