@@ -2044,3 +2044,64 @@ documentada, sem repetir a investigação técnica.
 71→72: `coins/bitcoin/multi_address.go`). Clone temporário (incluindo
 `wrongnet_poc_test.go`, nunca commitado ao repo real) removido do
 scratchpad ao final. `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-08 #2 (push automático via GitHub webhook, sessão cloud) — 9º achado da família panic/DoS, superfície aptos v2
+
+`program-policy.json` conferido antes de qualquer clone (passo 0):
+`Block Open Source`/`Circle BBP`/`Auth0 by Okta` seguem bloqueados.
+`research-plan` retornou `actionable: []` (todos os 34 `candidate`
+globais da fila estão `held` — a maioria por `program_blocked`, o resto
+por duplicate/regression-window/impact/scope da campanha); `list-pending`
+vazio. Fui para leitura profunda proativa (`list-deep-read-candidates.mjs`)
+e escolhi `okx/go-wallet-sdk` (72 arquivos já lidos, só 7% de cobertura —
+repo enorme, ~1000 arquivos `.go`, muito espaço fresco), priorizando
+caminhos com `auth` no nome.
+
+Novo arquivo: `coins/aptos/v2/transactionAuthenticator.go`
+(`MultiEd25519TransactionAuthenticator.Verify`). `TransactionAuthenticator`
+é o wrapper que a API Aptos v2 usa para verificar assinatura de uma
+`SignedTransaction` (5 variantes). Para a variante `MultiEd25519` (1), o
+método `UnmarshalBCS` (linha 158-163) tem o corpo inteiro **comentado** —
+não popula o campo `Sender`, que fica `nil`. `SignedTransaction.Verify()`
+desserializa bytes externos (esse é o propósito do método — parsear
+transações vindas de rede/contraparte, ex.: fluxos multi-agent/fee-payer
+onde a wallet recebe uma transação parcialmente assinada por outra parte)
+e chama `Authenticator.Verify()`, que para essa variante acessa
+`ea.Sender.Verify()` com `Sender` nil → nil pointer dereference dentro de
+`crypto.AccountAuthenticator.Verify` (que desreferencia o próprio
+receptor `nil` para ler `ea.Auth`). Confirmei que a construção local
+(`NewTransactionAuthenticator`) sempre popula `Sender` corretamente — o
+bug só se manifesta no caminho de desserialização de bytes externos.
+Mesmo padrão da família de 8 achados-irmãos já confirmados neste
+repositório (panic em vez de erro para input malformado), agora numa
+superfície de código nova (aptos v2, não coberta antes). **PoC real**:
+`go test` local (clone raso do commit HEAD `12fec6b0...`, nunca
+committado) serializa 1 byte (`Uleb128(1)`), desserializa via
+`TransactionAuthenticator.UnmarshalBCS`, confirma parse aceito sem erro,
+então chama `.Verify()` dentro de `recover()` — panic real confirmado
+("runtime error: invalid memory address or nil pointer dereference").
+`go test -run TestZeroToOne_MultiEd25519AuthenticatorNilPanic -v`: PASS.
+
+Avançado `candidate → corroborated_static → reproduced_local`
+(validação `go_test_poc`, resultado `pass`). Tentativa de
+`scope_verified` **corretamente recusada** por dois motivos
+independentes, nenhum contornado: (1) o gate interno da transição
+verifica o *asset exato* do finding (caminho do arquivo) contra o
+snapshot de escopo, não o repositório — o arquivo específico não está
+listado, mesmo com `check-scope` no nível de repo confirmando
+`allowed=true`/`bountyEligible=true`; (2) `deploymentEvidence.confidence`
+registrada como `"unverified"` de propósito, seguindo o precedente já
+estabelecido nos achados-irmãos deste mesmo SDK (sem tags/releases Git,
+pseudo-versão presa a branch default mutável não é checkpoint imutável
+citável) — o gate exige `confidence="high"` explícito, então bloquearia
+sozinho de qualquer forma. Nenhuma tentativa de forçar/contornar
+qualquer um dos dois gates; nenhum relatório escrito.
+
+`deep-read-log.json` atualizado (+3 entradas em `okx/go-wallet-sdk`,
+72→75: `coins/aptos/v2/transactionAuthenticator.go` — achado acima —,
+`coins/cosmos/okc/tx/auth/types/stdsignmsg.go` (struct de dados simples,
+sem lógica perigosa, sem achado), `coins/solana/system/AuthorizeNonceAccount.go`
+(builder de instrução Solana boilerplate, biblioteca upstream de
+terceiros com header de licença, sem achado). Clone temporário (incluindo
+`zerotoone_poc_test.go`, nunca commitado ao repo real) removido do
+scratchpad ao final. `export-queue` rodado ao final da rodada.
