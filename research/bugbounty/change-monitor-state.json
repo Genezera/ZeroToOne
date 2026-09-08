@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-08T21:27:51.667Z",
+  "checkedAt": "2026-09-08T23:36:55.529Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -93,13 +93,13 @@
       ]
     },
     "kubernetes/cloud-provider-aws": {
-      "sha": "6eee3694428ea7b3f2536e700c40da938363518c",
+      "sha": "853eb04fe424c579570906beed15fbb6cb61668d",
       "branch": "master",
-      "parentSha": "6eef6d8cf5e10ed0348dd88de9c99bc5307cb43a",
-      "committedAt": "2026-08-31T18:06:19Z",
-      "url": "https://github.com/kubernetes/cloud-provider-aws/commit/6eee3694428ea7b3f2536e700c40da938363518c",
-      "title": "Merge pull request #1482 from joshuakguo/1-37-deps-ga",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "6eee3694428ea7b3f2536e700c40da938363518c",
+      "committedAt": "2026-09-08T21:36:35Z",
+      "url": "https://github.com/kubernetes/cloud-provider-aws/commit/853eb04fe424c579570906beed15fbb6cb61668d",
+      "title": "Merge pull request #1484 from miyadav/upstream-k-ocpbugs115250",
+      "observedAt": "2026-09-08T23:36:55.529Z",
       "programs": [
         "Kubernetes"
       ],
@@ -573,13 +573,13 @@
       ]
     },
     "slackhq/nebula": {
-      "sha": "6a72e1c304562afb54bc908d0c54c0d3cabb39a8",
+      "sha": "89178f45baf13226fba39ec8fb21393738db5551",
       "branch": "master",
-      "parentSha": "e50f8128f4373dd6d56568ec9b0b728e5a399a23",
-      "committedAt": "2026-09-08T17:50:27Z",
-      "url": "https://github.com/slackhq/nebula/commit/6a72e1c304562afb54bc908d0c54c0d3cabb39a8",
-      "title": "v1.11.1 Changelog (#1857)",
-      "observedAt": "2026-09-08T18:45:14.164Z",
+      "parentSha": "6a72e1c304562afb54bc908d0c54c0d3cabb39a8",
+      "committedAt": "2026-09-08T23:30:16Z",
+      "url": "https://github.com/slackhq/nebula/commit/89178f45baf13226fba39ec8fb21393738db5551",
+      "title": "windows: Fix NLMTU for ipv6 (#1871)",
+      "observedAt": "2026-09-08T23:36:55.529Z",
       "programs": [
         "Slack"
       ],
