@@ -407,10 +407,14 @@
       "repository": "okx/go-wallet-sdk",
       "action": "verify_scope",
       "priority": 90,
-      "status": "pending",
+      "status": "obsolete",
       "attempts": 0,
       "reason": "ativo \"okx/go-wallet-sdk/coins/helium/keypair/keypair.go\" não encontrado no snapshot de escopo do programa",
-      "createdAt": "2026-09-08T11:09:00.079Z"
+      "createdAt": "2026-09-08T11:09:00.079Z",
+      "finishedAt": "2026-09-08T11:22:12.938Z",
+      "result": {
+        "reason": "o research-plan não pede mais esta ação"
+      }
     },
     "evidence:v1:5ce501b2a5dda4c832d424709cde6a8ea93ed98a6ef353639b56a853128cd286": {
       "taskId": "evidence:v1:5ce501b2a5dda4c832d424709cde6a8ea93ed98a6ef353639b56a853128cd286",
@@ -420,10 +424,14 @@
       "repository": "okx/go-wallet-sdk",
       "action": "verify_scope",
       "priority": 90,
-      "status": "pending",
+      "status": "obsolete",
       "attempts": 0,
       "reason": "ativo \"okx/go-wallet-sdk/coins/waves/crypto/crypto.go\" não encontrado no snapshot de escopo do programa",
-      "createdAt": "2026-09-08T11:09:00.079Z"
+      "createdAt": "2026-09-08T11:09:00.079Z",
+      "finishedAt": "2026-09-08T11:22:12.938Z",
+      "result": {
+        "reason": "o research-plan não pede mais esta ação"
+      }
     }
   },
   "runs": [
@@ -514,6 +522,16 @@
       "planned": 6,
       "claimed": 4,
       "completed": 4,
+      "needsHuman": 0,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:22def663cd4721d012ea8a2aa21b10d605a8202274c0250b12a38745ecabd69a",
+      "startedAt": "2026-09-08T11:22:12.938Z",
+      "finishedAt": "2026-09-08T11:22:12.938Z",
+      "planned": 0,
+      "claimed": 0,
+      "completed": 0,
       "needsHuman": 0,
       "failed": 0
     }
