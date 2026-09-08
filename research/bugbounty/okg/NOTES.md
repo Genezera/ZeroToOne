@@ -1777,3 +1777,34 @@ derivação/assinatura de chave nesses diretórios novos:
 56→59). Clone raso e módulo Go temporário (`go test` local, dependências
 via proxy público sem credencial) removidos do scratchpad ao final.
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-08 #1 (rotina agendada, gatilho push) — leitura profunda proativa em crypto/go-bip32 e crypto/go-bip39, sem achado novo
+
+`list-pending` vazio (só o item `verify_scope` de Slack, tratado por
+sessão paralela nesta mesma rodada — ver NOTES.md do programa Slack).
+Leitura profunda proativa priorizou `okx/go-wallet-sdk` (59 arquivos já
+lidos, 6% coberto) por ainda não cobrir a biblioteca compartilhada de
+derivação de chave/mnemônico usada por praticamente todas as moedas do
+SDK — maior superfície de impacto por arquivo do que mais um
+`coins/<chain>` individual.
+
+Lidos 4 arquivos: `crypto/go-bip39/bip39.go`, `crypto/go-bip32/bip32.go`,
+`crypto/go-bip32/utils.go`, `crypto/go-bip32/extendedkey.go`. Ambos são
+portas fiéis de bibliotecas Go já amplamente auditadas/usadas
+(tyler-smith/go-bip39, FactomProject/go-bip32) — sem desvio do
+comportamento de referência encontrado: `NewEntropy` usa `crypto/rand`
+corretamente (não `math/rand`); `NewSeed` usa PBKDF2-HMAC-SHA512 com os
+parâmetros oficiais do BIP39 (2048 iterações, salt `"mnemonic"+password`);
+`validatePrivateKey` rejeita corretamente chave zero e chave ≥ ordem da
+curva secp256k1 (string de comparação conferida byte a byte, tem os 64
+chars hex certos — não é off-by-something); derivação endurecida vs.
+não-endurecida usa a chave certa (privada vs. pública do pai) nos dois
+sentidos CKDpriv/CKDpub, na ordem correta. Nenhum caminho alcançável a
+partir de input externo/de rede chega em `expandPublicKey`/`ModSqrt`
+com bytes arbitrários não validados (só com pontos já resultantes de
+multiplicação escalar interna). Sem achado — resultado normal e válido,
+não inventei problema pra satisfazer a rodada.
+
+`deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
+59→63). Clone raso (`go-wallet-sdk`) removido do scratchpad ao final.
+`export-queue` rodado ao final da rodada.
