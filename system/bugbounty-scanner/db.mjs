@@ -281,6 +281,17 @@ export function backfillSemanticFingerprints(db) {
   return rows.length;
 }
 
+// Bug real descoberto em 08/09/2026: o ON CONFLICT abaixo não incluía
+// program/platform/asset/type/language/file/fn/line -- update-finding
+// (cmdUpdateFinding -> upsertFinding) gravava o patch correto em
+// raw_json, mas rowToFinding() lê essas 8 colunas achatadas (não
+// raw_json) via SELECT, então um --patch tocando qualquer uma delas
+// era silenciosamente descartado do valor lido de volta em qualquer
+// achado JÁ EXISTENTE (só funcionava no INSERT inicial). Pego ao vivo
+// tentando corrigir file/asset de um achado Slack com prefixo
+// owner/repo indevido: o patch "colava" na resposta imediata do CLI
+// (raw_json), mas sumia depois de um migrate-to-v2 (que passa pelo
+// mesmo upsertFinding).
 export function upsertFinding(db, finding) {
   const now = finding.updatedAt || new Date().toISOString();
   const existing = getFinding(db, finding.id);
@@ -291,6 +302,8 @@ export function upsertFinding(db, finding) {
     VALUES (@id, @exact_fingerprint, @semantic_fingerprint, @program, @platform, @asset, @type, @language, @file, @fn, @line, @state, @confidence, @historical_confidence, @reasoning, @files_read_json, @poc_run, @poc_result, @created_at, @updated_at, @raw_json)
     ON CONFLICT(id) DO UPDATE SET
       semantic_fingerprint=excluded.semantic_fingerprint,
+      program=excluded.program, platform=excluded.platform, asset=excluded.asset,
+      type=excluded.type, language=excluded.language, file=excluded.file, fn=excluded.fn, line=excluded.line,
       state=excluded.state, confidence=excluded.confidence, historical_confidence=excluded.historical_confidence,
       reasoning=excluded.reasoning, files_read_json=excluded.files_read_json, poc_run=excluded.poc_run,
       poc_result=excluded.poc_result, updated_at=excluded.updated_at, raw_json=excluded.raw_json

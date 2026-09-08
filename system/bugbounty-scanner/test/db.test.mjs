@@ -100,6 +100,27 @@ test('upsertFinding é idempotente (mesmo id não duplica linha)', () => {
   });
 });
 
+test('upsertFinding sobre id já existente também atualiza as colunas achatadas (file/asset/program/platform/type/language/fn/line), não só raw_json', () => {
+  withTempEnv((dbPath) => {
+    const db = openDb(dbPath);
+    upsertFinding(db, SAMPLE);
+    upsertFinding(db, {
+      ...SAMPLE, program: 'Outro Programa', platform: 'Bugcrowd', asset: 'novo/caminho.go',
+      type: 'ai_deep_read_finding', language: 'go', file: 'novo/caminho.go', function: 'NovaFn', line: 42,
+    });
+    const back = getFinding(db, SAMPLE.id);
+    assert.equal(back.program, 'Outro Programa');
+    assert.equal(back.platform, 'Bugcrowd');
+    assert.equal(back.asset, 'novo/caminho.go');
+    assert.equal(back.type, 'ai_deep_read_finding');
+    assert.equal(back.language, 'go');
+    assert.equal(back.file, 'novo/caminho.go');
+    assert.equal(back.function, 'NovaFn');
+    assert.equal(back.line, '42');
+    closeDb(db);
+  });
+});
+
 test('changeContext do monitor faz round-trip sem coluna paralela', () => {
   withTempEnv((dbPath) => {
     const db = openDb(dbPath);
