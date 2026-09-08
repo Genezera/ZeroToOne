@@ -2962,3 +2962,48 @@ banco local reidratado do zero via `migrate-to-v2.mjs` a partir do
 rodada (`deep-read-log.json`, este `NOTES.md`) reaplicadas sobre a
 base atualizada antes do commit final. `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-08r (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido antes de qualquer clone/leitura (passo
+0 do CLAUDE.md): `Block Open Source`/`Circle BBP` seguem bloqueados via
+`check-program`, nenhum repo desses dois tocado. `migrate-to-v2.mjs` +
+`list-pending` global vazio.
+
+`research-plan` apontou inicialmente 1 `actionable`: `measure_code_age`
+no achado `coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error`
+(já em `reproduced_local`). Medi via a mesma lógica real do Evidence
+Worker (`inspectGitFileAge` — `git clone --filter=blob:none` do repo
+público + `git log --follow`, não a rota REST `code-age` de
+`api.github.com`, que devolveu 401/403 nesta sessão cloud porque
+`okx/go-wallet-sdk` está fora do escopo de repositório do proxy desta
+sessão): 242 dias desde o único commit que tocou o arquivo, fora da
+janela anti-duplicate de 48h. Ao tentar publicar, o push colidiu duas
+vezes seguidas com trabalho concorrente no remoto: primeiro a rodada
+`p` (leitura profunda independente, sem sobreposição de arquivo), e
+depois, após `git reset --hard`+reidratação, o **Evidence Worker
+automatizado de verdade** (commit `c53ed22`, "Bug bounty evidence: 1
+concluída(s)") já tinha rodado essa MESMA ação (`measure_code_age`)
+sobre o MESMO finding, com resultado idêntico (242 dias, mesmo commit
+`c0b7c875`) — registrado em `evidence-worker-state.json`/
+`code_age_evidence` antes que esta sessão conseguisse publicar o seu.
+`research-plan` reexecutado sobre a base já reidratada confirma
+`actionable: 0` sem eu precisar registrar nada de novo — trabalho
+duplicado descartado, não reenviado, para não competir com o próprio
+pipeline automatizado por uma prova que já existe.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` (mesmo
+cenário de sempre — Circle BBP/Auth0 Java excluídos por política,
+StackingDAO e repos de marca Block tratados como não-seguros por
+cautela). Escolhidos 3 arquivos ainda não lidos em `okx/go-wallet-sdk`,
+priorizando authority/access/crypto: `coins/solana/nft-candy-machine-v2/UpdateAuthority.go`,
+`crypto/go-ethereum/types/access_list_tx.go`,
+`crypto/ronin/types/access_list_tx.go`. Todos sem achado: o primeiro é
+código gerado por Anchor (`Validate()` só checa contas obrigatórias
+não-nil, sem lógica de autorização própria); os outros dois são
+definições de tipo EIP-2930 (`AccessList`/`AccessTuple`), o do
+go-ethereum vendorizado fielmente do upstream (`copy()` clona
+corretamente todos os campos `*big.Int`/bytes) e o do Ronin é só a
+declaração de tipo sem lógica nenhuma. `deep-read-log.json` atualizado.
+
+Nenhum achado novo nesta rodada. `export-queue` rodado ao final.
