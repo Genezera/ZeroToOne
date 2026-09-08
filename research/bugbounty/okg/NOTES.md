@@ -2485,3 +2485,24 @@ Leitura profunda proativa desta rodada direcionada a
 NOTES.md de Mattermost — achado `cipher.go` investigado e refutado como
 `false_positive` por falta de vetor de exploração real). Nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-08g (push automático via GitHub webhook, sessão cloud, push 760b89a->d400002 — commit da rodada anterior disparou este webhook)
+
+`program-policy.json` conferido via `check-program` como passo zero:
+`Block Open Source` e `Circle BBP` seguem bloqueados (nenhum arquivo
+desses clonado/lido nesta rodada); `OKG`, Mattermost, Plaid, StackingDAO,
+Vercel Open Source confirmados `blocked:false`. `list-pending` vazio.
+`research-plan` apontou de novo os mesmos 5 `OKG::okx/go-wallet-sdk`
+`reproduced_local` (`verify_scope`) — reconfirmado `check-scope("OKG",
+"okx/go-wallet-sdk")`: `snapshotContentHash` idêntico ao de todas as
+rodadas anteriores de hoje (`f2257e60...`), nenhuma evidência nova.
+Nenhuma tentativa de transição repetida (regra do CLAUDE.md: não reabrir
+investigação retida sem evidência nova que resolva o motivo já
+registrado). Os 5 ficam em `reproduced_local`.
+
+Leitura profunda proativa desta rodada direcionada a
+`mattermost/mattermost-plugin-gitlab` (ver NOTES.md de Mattermost) —
+nenhum arquivo novo de `go-wallet-sdk` lido nesta rodada. Nenhuma
+transição de estado neste programa.
+
+`export-queue` rodado ao final.

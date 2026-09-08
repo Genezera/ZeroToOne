@@ -1982,3 +1982,49 @@ permitidos). 3 arquivos novos:
 fechado como `false_positive` na mesma rodada (nenhuma transição de
 estado pendente). Clone temporário removido do scratch dir ao final.
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08g (push automático via GitHub webhook, sessão cloud, push 760b89a->d400002)
+
+`program-policy.json`/`check-program` confirmado como passo zero:
+`Mattermost Public Bug Bounty Engagement ` `blocked:false` (Block Open
+Source e Circle BBP seguem bloqueados, nenhum arquivo deles tocado).
+`list-pending` vazio; `research-plan` sem novos `actionable` deste
+programa (só os 5 `OKG` de sempre, ver NOTES.md daquele programa).
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`:
+`mattermost/mattermost-plugin-gitlab` escolhido por ter a menor
+cobertura entre os candidatos permitidos (7 arquivos lidos, abaixo de
+zoom/msteams-meetings com 8). Clone raso local, 3 arquivos novos:
+
+- `server/utils.go` — **achado investigado e refutado**:
+  `encrypt`/`decrypt` usa AES-CFB com IV aleatório mas SEM MAC/tag de
+  autenticação (CWE-353/CWE-326), mesma classe já vista 2x nesta
+  campanha (`mattermost-plugin-github`: `corroborated_static`;
+  `mattermost-plugin-zoom`: `false_positive`, rodada anterior no mesmo
+  dia). Rastreei TODOS os call sites de `encrypt(`/`decrypt(` no repo
+  inteiro (`server/plugin.go`: `storeGitlabUserToken`,
+  `getGitlabUserTokenByMattermostID`, `migrateGitlabToken`,
+  `reEncryptUserData`) — todos operam sobre a mesma entrada do KV Store
+  por `userID`, nunca sobre ciphertext vindo de requisição HTTP externa
+  ou de outro usuário; `reEncryptUserData` só dispara quando um System
+  Admin troca `EncryptionKey` na config (`configuration.go:226`). Sem
+  handler HTTP que escreva bytes arbitrários na chave do token
+  (conferido em `api.go`). Mesmo critério do achado-irmão mais recente
+  (`zoom/cipher.go`, refutado horas antes nesta mesma campanha):
+  fraqueza criptográfica real de design, mas sem vetor de exploração
+  demonstrável (round-trip inteiramente interno). Registrado, ciclo
+  completo `candidate` → `false_positive` na mesma rodada (reasoning +
+  filesRead documentados, nenhuma tentativa de forçar).
+- `server/plugin.go` — lido como contexto do achado acima (confirma
+  todos os call sites e o gatilho admin-only de `reEncryptUserData`).
+  Sem achado isolado.
+- `server/subscriptions.go` — `GetSubscribedChannelsForProject`
+  revalida em tempo de entrega (via `permissionToProject`,
+  `webhook.go:323`) se o `CreatorID` da subscription ainda tem acesso
+  ao projeto antes de repassar evento de webhook confidencial/privado
+  pro canal — design de controle de acesso correto, sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em
+`mattermost/mattermost-plugin-gitlab`, agora 10). 1 finding novo criado
+e já fechado como `false_positive` na mesma rodada. Clone temporário
+removido do scratch dir ao final. `export-queue` rodado ao final.
