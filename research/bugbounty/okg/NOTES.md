@@ -2527,3 +2527,58 @@ nenhum arquivo novo de `go-wallet-sdk` lido nesta rodada. Nenhuma
 transição de estado neste programa.
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08i (push automático via GitHub webhook, sessão cloud, push 6cc500a->46974f4)
+
+`program-policy.json` conferido via `check-program` como passo zero:
+`OKG` `blocked:false`; `Block Open Source`/`Circle BBP` seguem
+bloqueados, nenhum arquivo deles tocado. `research-plan` apontou de novo
+os mesmos 5 `reproduced_local` (`verify_scope`) — `check-scope("OKG",
+"okx/go-wallet-sdk")` reconfirmado `allowed:true`/`bountyEligible:true`,
+`scope-snapshots/okg.json` com `contentHash` idêntico
+(`f2257e60139afc6fa2b069675c463c0e6ba5e2902feaa65cd643835d69ae1e09`) ao
+de todas as rodadas anteriores de hoje. Nenhuma evidência nova para
+nenhum dos 5 → nenhuma tentativa de transição repetida (mesma regra já
+aplicada nas rodadas anteriores). Os 5 seguem em `reproduced_local`.
+
+Leitura profunda proativa desta rodada (`list-deep-read-candidates.mjs`,
+13 repositórios liberados por política+histórico): escolhidos 3 arquivos
+ainda não lidos em `okx/go-wallet-sdk` (101→104 arquivos, 10% cobertura),
+priorizando padrão crypto/auth: `coins/aptos/v2/crypto/multiKey.go`,
+`coins/oracle/vrf/proof/crypto.go`, `coins/starknet/juno_core/crypto/poseidon_hash.go`.
+
+**Achado novo, mais grave que o padrão usual desta campanha neste repo**:
+`multiKey.go` — `MultiKeyBitmap.ContainsKey` testa
+`(byte & (128>>numBit)) == 1` em vez de `!= 0`; a máscara só vale 1
+quando `numBit==7`, então `ContainsKey`/`Bitmap.Indices()` reportam
+"não assinado" para bits genuinamente setados em 28 das 32 posições
+possíveis (todas exceto índices 7/15/23/31). Efeito em
+`MultiKey.Verify`: o laço que verifica cada assinatura individual pode
+rodar ZERO vezes mesmo com o portão de contagem
+(`SignaturesRequired<=len(Signatures)`) satisfeito, caindo direto em
+`return true` — **bypass de verificação de assinatura (CWE-347)**, não
+o padrão usual de panic/DoS (CWE-476) dos 5 achados-irmãos já
+catalogados neste mesmo repo. Cadeia de alcance confirmada por leitura
+direta: `MultiKeyAuthenticator` é um variante que
+`AccountAuthenticator.UnmarshalBCS` desserializa de bytes BCS externos
+não confiáveis, usado por todos os variantes de `TransactionAuthenticator`
+(inclusive como secondary/fee-payer signer), até `SignedTransaction.Verify()`.
+PROVA EXECUTÁVEL REAL (go test local, mesmo commit HEAD
+`12fec6b0616347265efcc23bfc240c155da710eb` dos achados-irmãos, não
+commitado no fork): confirmado `ContainsKey(0)==false` logo após
+`AddKey(0)` (bit fisicamente setado), e `MultiKey.Verify` retornando
+`true` para uma assinatura vazia/forjada. Severidade registrada como
+`alta` (não elevada a crítica sem confirmar que algum serviço OKX real
+de fato usa este `Verify()` Go como gate de autorização em vez de
+delegar ao nó Aptos on-chain — pergunta em aberto para revisão humana,
+não presumida).
+`corroborated_static` e `reproduced_local` alcançados normalmente
+(PoC real passou). `scope_verified` tentado por completude e recusado
+pelo mesmo motivo estrutural dos 5 achados-irmãos (asset em granularidade
+de arquivo não listado no snapshot; `deploymentEvidence.confidence`
+obrigatoriamente `unverified` por falta de tags/releases Git) — nenhuma
+tentativa de forçar/contornar. Fica em `reproduced_local`, mas marcado
+para destaque de revisão humana pela severidade potencialmente maior que
+os achados-irmãos.
+
+`export-queue` rodado ao final.
