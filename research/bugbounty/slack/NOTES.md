@@ -514,3 +514,27 @@ sem mutação compartilhada entre goroutines fora de `atomic.Uint64`, e
 parsing de header com bounds check (`len(b) < Len`) antes de indexar.
 `deep-read-log.json` atualizado (+3 entradas em `slackhq/nebula`, 33→36 no
 total). Clone temporário removido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08 #2 (push automático, sessão cloud) — fix do bug de metadado que ainda bloqueava check-scope
+
+A rodada anterior (acima) criou o scope-snapshot e confirmou
+`check-scope "Slack" "slackhq/nebula"` (owner/repo) → `allowed=true`. Mas
+o finding em si continuava sem o campo `repository` gravado
+explicitamente — mesmo bug de causa raiz já documentado pro achado irmão
+`mattermost-plugin-confluence`: `assetRefForFinding` (`scope-registry.mjs`)
+só reduz `owner/repo/caminho/arquivo.go` pra `owner/repo` quando o valor
+vem de `finding.file` (heurística de comprimento de path); quando vem de
+`finding.asset` (como aqui, `"slackhq/nebula/connection_state.go"`), o
+valor é devolvido bruto, sem reduzir. Corrigido nesta rodada com
+`update-finding --patch='{"repository":"slackhq/nebula"}'`.
+
+Sem mudança de estado: o achado segue corretamente em
+`corroborated_static` — `corroborated_static->reproduced_local` continua
+recusado porque não existe validador local pra achados Go/race-condition
+neste pipeline (`record-validation type=go_race_poc result=not_applicable`
+já registrado em rodada anterior); teto real do sistema hoje pra esta
+classe, nada forçado. A avaliação honesta de severidade (Medium, não
+Critical) também não muda — não infla pra satisfazer o filtro "Critical
+only" do programa.
+
+`export-queue` rodado ao final.

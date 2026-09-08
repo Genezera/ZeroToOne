@@ -1808,3 +1808,27 @@ não inventei problema pra satisfazer a rodada.
 `deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
 59→63). Clone raso (`go-wallet-sdk`) removido do scratchpad ao final.
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-08 #2 (push automático, sessão cloud) — 1 arquivo adicional em crypto/, confirma causa raiz da família
+
+Sessão paralela nesta mesma rodada (ver entrada #1 acima) já cobriu
+`crypto/go-bip39/bip39.go`, `crypto/go-bip32/bip32.go`,
+`crypto/go-bip32/utils.go` e `crypto/go-bip32/extendedkey.go` — sem
+achado, portas fiéis de bibliotecas já auditadas.
+
+Contribuição própria desta sessão, sem duplicar o que já foi lido: 1
+arquivo adicional ainda não coberto, `crypto/dcrec/secp256k1/privkey.go`.
+`PrivKeyFromBytes` **confirma a causa raiz estrutural** por trás da
+família de ~10 achados já registrados nesta campanha
+(cardano/solana/elrond/helium/waves/polkadot/ed25519/ton/oasis/near) — a
+própria documentação da função admite que bytes truncados são aceitos e
+reduzidos mod N sem erro, delegando ao chamador a responsabilidade de
+checar o comprimento (comportamento herdado do upstream btcsuite/decred,
+não introduzido por este fork; consistente com `validatePrivateKey` da
+entrada #1, que só valida chave zero/chave≥N, não comprimento truncado
+antes de chegar aqui). Não é um achado novo isolado — nenhum novo
+call-site não verificado encontrado na leitura pontual do arquivo em si.
+
+`deep-read-log.json` atualizado (+1 entrada em `okx/go-wallet-sdk`,
+63→64). Clone temporário removido do scratchpad ao final. `export-queue`
+rodado ao final da rodada.

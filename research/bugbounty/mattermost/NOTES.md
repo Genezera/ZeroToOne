@@ -1771,3 +1771,31 @@ evento interno server-to-server, não alcançável por HTTP externo).
 `deep-read-log.json` atualizado com os 4 arquivos novos.
 
 `export-queue` rodado ao final da rodada.
+
+## Rodada 08/09/2026 (push automático, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan` executados (Passo 0). `list-pending`
+vazio; `research-plan` apontou 3 achados `actionable` deste programa, todos
+`action=verify_scope`: `mattermost-plugin-confluence::CompleteOAuth2`
+(corroborated_static), `mattermost-plugin-mscalendar::processNotification`
+(reproduced_local), `mattermost-plugin-msteams-meetings::completeUserOAuth`
+(corroborated_static) — os 3 já bem documentados em rodadas anteriores,
+mesmo bloqueio estrutural nos 3: `bountyEligible=null` no scope-snapshot
+comunitário (Bugcrowd não expõe elegibilidade de recompensa por ativo).
+
+Reconfirmado ao vivo nesta rodada (sem mudança): `check-scope` pros 3
+ativos continua `allowed=true`, `bountyEligible=null`. Tentei `WebFetch`
+direto na página oficial (`bugcrowd.com/engagements/mattermost-mbb-public`)
+pra tentar resolver a elegibilidade de recompensa manualmente — bloqueado
+pelo proxy de egress desta sessão (`EGRESS_BLOCKED`, domínio `bugcrowd.com`
+não está na allowlist). Mesma limitação de rede já documentada em rodadas
+anteriores para este programa; nenhuma transição de estado tentada além
+das já registradas, nada forçado. Os 3 achados permanecem no teto correto
+(`corroborated_static`/`reproduced_local`) até uma sessão com acesso à
+página oficial confirmar elegibilidade real.
+
+Leitura profunda proativa desta rodada foi direcionada a outro programa
+(`OKG::okx/go-wallet-sdk`, ver NOTES.md daquele programa) — nenhum arquivo
+novo de Mattermost lido nesta rodada.
+
+`export-queue` rodado ao final.
