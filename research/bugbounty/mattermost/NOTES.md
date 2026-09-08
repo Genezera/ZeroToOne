@@ -2087,3 +2087,45 @@ Nenhum finding novo nesta rodada (resultado válido, não um problema).
 `deep-read-log.json` atualizado (+3 entradas em
 `mattermost/mattermost-plugin-confluence`, agora 18). Clone temporário
 removido do scratch dir ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08i (push automático via GitHub webhook, sessão cloud, push aafd40e->ef37c1e)
+
+`program-policy.json` conferido como passo zero: `Block Open Source` e
+`Circle BBP` seguem `blocked:true`; `Mattermost Public Bug Bounty
+Engagement ` segue `blocked:false` (`check-program` confirmou antes de
+qualquer clone). `migrate-to-v2.mjs` rodado; `list-pending` vazio (0
+candidates); `research-plan` retornou `actionable: []` — os 70 `held`
+de sempre (mesmos códigos: `program_blocked`, `campaign_duplicate_history`,
+`scope_not_confirmed`, `outside_campaign_window`, `below_campaign_impact`,
+`previous_submission`), nenhum novo em `StackingDAO` ou `Vercel Open
+Source` especificamente (0 e 8 registros respectivamente, todos os 8 de
+Vercel já em `held`, nenhum `actionable`).
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` apontou
+`mattermost/mattermost-plugin-zoom` como o candidato de menor cobertura
+entre os permitidos (8 arquivos lidos, empatado com
+`-msteams-meetings`, já mais explorado em rodada anterior). Clone raso
+público (`git clone --depth 1`), 3 arquivos novos ainda não listados em
+`deep-read-log.json`: `server/plugin.go`, `server/command.go`,
+`server/zoom/client.go`.
+
+- `server/plugin.go` — `getActiveClient` distingue corretamente
+  Account-Level app (mensagem genérica pra não-admin, prompt de OAuth
+  só pra `IsSystemAdmin()`) de User-Level OAuth (busca token do próprio
+  usuário via `fetchOAuthUserInfo`); nenhum caminho retorna
+  token/segredo de outro usuário. Sem achado.
+- `server/command.go` — dispatch de `/zoom`: toda ação mutante
+  verificada — `runSubscribeCommand`/`runUnsubscribeCommand` exigem
+  `HasPermissionToChannel(PermissionCreatePost)` e, além disso,
+  ownership real do host (`meeting.HostID != zoomUser.ID`) ou
+  `IsSystemAdmin()` antes de permitir subscribe/unsubscribe cross-user;
+  `runEditChannelSettingsCommand` exige `PermissionManageChannelRoles`;
+  `runChannelSettingsListCommand` exige `PermissionManageSystem`.
+  Nenhum bypass de autorização encontrado. Sem achado.
+- `server/zoom/client.go` — só define as interfaces `Client`/`PluginAPI`
+  e o tipo `AuthError`, sem lógica executável própria. Sem achado.
+
+Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
+atualizado (+3 entradas em `mattermost/mattermost-plugin-zoom`, agora
+11). Clone temporário removido do scratch dir ao final. `export-queue`
+rodado ao final.

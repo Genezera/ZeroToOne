@@ -1556,7 +1556,10 @@
     "server/configuration.go (IsValid -- confirma que WebhookSecret e OBRIGATORIO (erro explicito se vazio), suportando a analise de que a comparacao vulneravel do achado acima e sempre a segunda camada, nunca a unica. Sem achado isolado aqui)",
     "server/cipher.go (encrypt/decrypt AES-CFB sem MAC -- ACHADO investigado e REFUTADO: unico consumidor e o round-trip interno storeOAuthUserInfo/fetchOAuthUserInfo no proprio KV Store do plugin, sem caminho de dado externo alcancando o ciphertext decodificado; fraqueza criptografica real mas sem vetor de exploracao demonstravel. Ver finding false_positive registrado)",
     "server/store.go (KVStore: storeOAuthUserInfo/fetchOAuthUserInfo, meeting/channel subscription index com CAS atomico, superuser token sem criptografia -- mesmo trust boundary interno, sem achado isolado alem do cipher.go acima)",
-    "server/zoom/user.go (so struct User, campos da API Zoom, sem logica; sem achado)"
+    "server/zoom/user.go (so struct User, campos da API Zoom, sem logica; sem achado)",
+    "server/plugin.go (OnActivate/getActiveClient/getOAuthConfig -- getActiveClient distingue corretamente Account-Level app (retorna mensagem generica pra nao-admin, prompt de OAuth so pra IsSystemAdmin) de User-Level OAuth (busca token do proprio usuario via fetchOAuthUserInfo); nenhum caminho retorna token/segredo de outro usuario; sem achado)",
+    "server/command.go (dispatch de /zoom -- toda acao mutante checada: runSubscribeCommand/runUnsubscribeCommand exigem HasPermissionToChannel(PermissionCreatePost) e, alem disso, ownership real do host (meeting.HostID != zoomUser.ID) ou IsSystemAdmin antes de permitir subscribe; runEditChannelSettingsCommand exige PermissionManageChannelRoles; runChannelSettingsListCommand exige PermissionManageSystem; nenhum bypass de autorizacao encontrado; sem achado)",
+    "server/zoom/client.go (so define as interfaces Client/PluginAPI e AuthError -- sem logica executavel propria; sem achado)"
   ],
   "plaid/react-plaid-link": [
     "src/usePlaidLink.ts (hook central -- so passa token/config direto pro window.Plaid.create do script oficial cdn.plaid.com; sem achado)",
