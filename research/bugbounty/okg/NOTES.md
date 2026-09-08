@@ -24,6 +24,57 @@ consulta de fonte de escopo, permitido por uma indicação
 uma das duas condições mudar — mesma conclusão já registrada,
 reconfirmada sem novidade.
 
+## Rodada 2026-09-08 (push automático via GitHub webhook, sessão cloud — 2ª rodada do dia)
+`list-pending` vazio (0 candidatos) e `research-plan` com `actionable:0`
+(71 `held`, todos os motivos já documentados em rodadas anteriores —
+`program_blocked` 38 [Block Open Source/Circle BBP, confirmados
+bloqueados via `check-program` antes de qualquer leitura],
+`campaign_duplicate_history` 9, `scope_not_confirmed` 10,
+`outside_campaign_window` 4, `below_campaign_impact` 9,
+`previous_submission` 1). Sem candidato acionável na fila, segui pra
+leitura profunda proativa (passo 4).
+
+`list-deep-read-candidates.mjs` autorizou 13 repositórios (política +
+histórico da campanha já aplicados); escolhi 3 arquivos ainda não lidos
+em `okx/go-wallet-sdk` (124→127 no log), priorizando address/crypto:
+`coins/cardano/address.go`, `coins/bitcoin/address.go`,
+`coins/waves/types/address.go`. Nota lateral de segurança: a mesma
+listagem colocou `StackingDAO` e vários repos de marca Block
+(`square/wire`, `cashapp/*`, `afterpay/*`) no balde "sem programa
+reconhecido — revise à mão antes de ler"; dado que Block Inc. é
+justamente o dono do programa bloqueado "Block Open Source" e o
+scope-snapshot desse programa vem com os `assetIdentifier` redigidos
+(███, propositalmente ilegíveis), tratei esse balde inteiro como
+não-seguro e não abri nenhum desses arquivos nesta rodada — cautela
+deliberada, não limitação da ferramenta.
+
+**Achado novo confirmado por execução real:** `coins/cardano/address.go`
+`NewAddressFromBytes` — o `switch addr.Type` (nibble alto do 1º byte)
+não tem `default`; nibble fora do range válido 0-7 cai direto em
+`return addr, nil`, aceitando endereço malformado com credenciais
+Payment/Stake zero-value sem erro (herdado por `NewAddress` bech32 e
+`UnmarshalCBOR`). PoC Go real (`go test`, módulo local `coins/cardano`
+com deps resolvidas via proxy, sem rede/conta) confirmou:
+`NewAddressFromBytes` com byte de tipo `0xF0` retorna `err=nil` e
+serializa até um endereço bech32 sintético (`addr_test17quewweg`) sem
+KeyHash/ScriptHash real. Mesma classe já documentada 7x neste programa
+(elrond/helium/oasis/polkadot/stellar-strkey/zcash) — todas capadas em
+`below_campaign_impact`/`self_request_only` por falta de evidência de
+consumidor multi-tenant real. Finding
+`OKG::okx/go-wallet-sdk/coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error`
+avançou `candidate → corroborated_static → reproduced_local` (PoC
+`go_test_poc` pass) mas `scope_verified` foi recusado corretamente:
+`deploymentEvidence.confidence="medium"` (mesmo commit `12fec6b0`,
+HEAD de `origin/main`, sem tag/release) não satisfaz a exigência de
+`confidence="high"` do modo profissional — mesma barreira estrutural já
+vista no achado-irmão `zcash/address.go` desta mesma janela de
+campanha. Nenhuma tentativa de forçar/contornar o gate.
+
+`coins/bitcoin/address.go` e `coins/waves/types/address.go`: sem
+achado — ambos delegam a validação real para libs auditadas
+(`btcutil.DecodeAddress`+`IsForNet`, checksum `SecureHash` próprio do
+Waves implementado corretamente com propagação de erro).
+
 ## Contexto
 Este programa não é um dos 4 alvos originais desta pesquisa
 (StackingDAO, Vercel Open Source, Block Open Source, Circle BBP), mas
