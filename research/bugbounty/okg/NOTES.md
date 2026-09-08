@@ -1877,3 +1877,95 @@ limitação já documentada), e o achado Slack/nebula permanece
 corretamente preso em `corroborated_static` (sem validador local pra
 achados Go/race-condition). Nada novo pra avançar nesses 4; nenhuma
 transição forçada.
+
+## Rodada 2026-09-08 #4 (push automático, rotina agendada) — ACHADO real em `coins/nervos` (deteccao bech32/bech32m quebrada) + bug real de infraestrutura em `upsertFinding`
+
+`program-policy.json` conferido no passo 0 (`check-program`):
+`Auth0 by Okta`/`Block Open Source`/`Circle BBP` seguem bloqueados,
+nenhum arquivo desses tocado. `research-plan` trouxe os mesmos 4 itens
+`actionable` já documentados na rodada anterior (3 Mattermost
+`verify_scope`, 1 Slack `measure_code_age`) — rodei o Evidence Worker
+(`evidence-worker.mjs`) pra tentar avançá-los de verdade em vez de só
+reconfirmar manualmente.
+
+**Bug de infraestrutura real encontrado e corrigido (não específico
+deste programa, mas descoberto tentando corrigir um achado Slack)**:
+o Evidence Worker falhou `measure_code_age` no achado
+`Slack::.../connection_state.go` com "arquivo não encontrado no
+histórico da branch padrão" — o campo `file` desse finding guardava
+`slackhq/nebula/connection_state.go` (prefixo owner/repo indevido, em
+vez do caminho relativo `connection_state.go`). Corrigi via
+`update-finding`, mas o valor **voltava sozinho** depois de um
+`migrate-to-v2`/`get` novo. Causa raiz real, em `db.mjs::upsertFinding`:
+o `ON CONFLICT(id) DO UPDATE SET` só atualizava
+`semantic_fingerprint/state/confidence/historical_confidence/reasoning/
+files_read_json/poc_run/poc_result/updated_at/raw_json` — nunca
+`program/platform/asset/type/language/file/fn/line`. Um patch tocando
+qualquer uma dessas 8 colunas ficava gravado certo em `raw_json` (por
+isso a resposta imediata do CLI parecia correta), mas `rowToFinding()`
+lê as colunas achatadas via SQL, não `raw_json` — então o patch sumia
+no próximo `get`/`list`/`migrate-to-v2` pra QUALQUER achado já
+existente (só funcionava no INSERT inicial de um finding novo). Isso
+provavelmente já afetou silenciosamente as correções de `repository`
+feitas em rodadas anteriores nos achados Mattermost -confluence/
+-msteams-meetings — só não quebrou visivelmente porque `repository`
+não é uma coluna achatada (só existe dentro de `raw_json`, lido
+corretamente por `assetRefForFinding`). Corrigido o SQL, adicionado
+teste de regressão em `db.test.mjs`, suíte completa rodada (613 testes,
+8 falhas pré-existentes e não-relacionadas por ferramenta externa
+ausente neste ambiente — semgrep/osv-scanner/codeql). Reaplicado o fix
+do achado Slack (agora persistente de verdade). Outra sessão cloud
+pushou trabalho concorrente enquanto eu investigava (`a7087f6`/
+`f5d63bc`) — rebaseei sobre o HEAD novo antes de commitar.
+
+Com o Evidence Worker funcionando, os 3 Mattermost `verify_scope`
+continuam falhando (`HACKERONE_USERNAME`/`HACKERONE_API_TOKEN` não
+configurados nesta sessão — limitação de ambiente real, não bug de
+código) e o Slack `measure_code_age` agora roda de verdade contra
+`git log --follow -- connection_state.go` (aguardando resultado no
+fim desta rodada).
+
+**Achado novo** (leitura profunda proativa, `coins/nervos`, dir nunca
+tocado nesta campanha — clone raso, commit
+`12fec6b0616347265efcc23bfc240c155da710eb`, mesmo HEAD sem tags/releases
+já usado nos achados-irmãos): `crypto/bech32.go::Bech32Decode` tenta
+redescobrir se um endereço é BECH32 ou BECH32M recomputando o polymod
+BCH localmente, mas usa `decoded` de `bech32.DecodeNoLimit` (já **sem**
+os 6 bytes de checksum, removidos pela própria lib) — sem esses bytes o
+polymod nunca converge pra `1` (constante BIP-173 do BECH32 clássico),
+então a condição `if i == 1` é inalcançável e TODO endereço válido é
+sempre classificado como BECH32M. **Confirmado empiricamente** com
+`go test` comparando contra `bech32.DecodeGeneric` (ground-truth da
+própria lib): o vetor oficial BIP-173 `bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4`
+(BECH32 clássico de verdade, ground-truth `version=0`) é classificado
+como BECH32M por este código — errado, prova a quebra.
+
+Cadeia de alcançabilidade real: `builder.go::TransactionBuilder.AddOutput`
+(API pública de construção de transação) chama `address.go::Parse`, que
+usa o `encoding` quebrado pra exigir BECH32 nos tipos de payload
+0x01/0x02/0x04 (sempre rejeitados agora, mesmo com checksum correto) e
+BECH32M no tipo 0x00 (sempre aceito, mesmo se o checksum real foi
+calculado como BECH32 clássico — violação da separação de variante que
+o RFC-0021/BIP-350 exige). Avaliação honesta de impacto (tentando
+refutar a hipótese mais severa primeiro): os bytes de `CodeHash`/`Args`
+extraídos vêm do mesmo `decoded` já verificado pela lib oficial
+independente da classificação — o destino da transação nunca diverge
+do que a string realmente codifica, só o rótulo de variante aceito por
+tipo está errado. `impactAssessment` registrado com honestidade
+(`reportable=false`, `impactScope=self_request_only`, severidade low) —
+mesma calibração já usada nos 6+ achados-irmãos deste programa/SDK.
+Avançado `candidate → corroborated_static → reproduced_local` (PoC real
+via `go test`, resultado `pass`, salvo com `record-validation`).
+`check-scope` confirma `allowed=true`/`bountyEligible=true`;
+`record-deployment-evidence` registrado com `confidence="unverified"`
+(sem tags/releases Git pra ancorar contra build de produção real —
+mesma lacuna de todos os achados-irmãos deste SDK). Tentativa de
+`scope_verified` corretamente recusada pela máquina de estados
+(`confidence="unverified"` não é suficiente) — teto real desta rodada.
+
+`deep-read-log.json` atualizado (+4 entradas em `okx/go-wallet-sdk`,
+67→71: `bech32.go`, `address.go`, `builder.go` do achado, mais
+`aptos_types/authenticator.go` do sweep proativo, sem achado — só
+serialização BCS de saída, sem lógica de verificação). Clone temporário
+removido do scratchpad ao final. `export-queue` rodado ao final da
+rodada.

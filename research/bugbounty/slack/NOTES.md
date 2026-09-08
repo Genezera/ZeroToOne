@@ -619,3 +619,38 @@ a contribuição desta rodada). Clone temporário removido. Nenhuma mudança
 de estado tentada (nada novo em `actionable`/`candidate`).
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08 #5 (rotina agendada) — bug real de infraestrutura corrigido (`upsertFinding` não persistia file/asset), evidence worker rodado até o fim
+
+Rodei o Evidence Worker (`evidence-worker.mjs`) pra tentar avançar de
+verdade o `measure_code_age` do achado `connection_state.go` (ação
+`actionable` indicada pelo `research-plan`). Primeira tentativa falhou
+com "arquivo não encontrado no histórico da branch padrão": o campo
+`file` do finding ainda guardava `slackhq/nebula/connection_state.go`
+(prefixo owner/repo indevido — mesma classe de bug já corrigida pro
+campo `repository` nos achados-irmãos Mattermost). Corrigi via
+`update-finding --patch='{"file":"connection_state.go","asset":"connection_state.go"}'`,
+mas o valor **voltava sozinho** a cada `migrate-to-v2`/`get` novo.
+
+**Causa raiz real, em `system/bugbounty-scanner/db.mjs::upsertFinding`**:
+o `ON CONFLICT(id) DO UPDATE SET` do SQL só atualizava
+`semantic_fingerprint/state/confidence/historical_confidence/reasoning/
+files_read_json/poc_run/poc_result/updated_at/raw_json` — nunca
+`program/platform/asset/type/language/file/fn/line`. Um `update-finding`
+tocando qualquer uma dessas 8 colunas gravava certo em `raw_json` (por
+isso a resposta imediata do CLI parecia correta), mas `rowToFinding()`
+lê as colunas achatadas via SQL, não `raw_json` — o patch sumia no
+próximo `get`/`list`/`migrate-to-v2` pra QUALQUER finding já existente
+(só funcionava no INSERT inicial). Corrigido o SQL, adicionado teste de
+regressão em `db.test.mjs`, suíte completa validada (613 testes, só as
+8 falhas pré-existentes de ferramenta externa ausente neste ambiente
+seguem vermelhas — semgrep/osv-scanner/codeql, nada relacionado).
+Reaplicado o fix do achado `connection_state.go` (agora persistente de
+verdade). Detalhe completo em `research/bugbounty/okg/NOTES.md`
+("Rodada 2026-09-08 #4"), commit `ad9ce83`.
+
+Com o bug corrigido, `measure_code_age` rodou de verdade contra
+`git log --follow -- connection_state.go` (resultado registrado no
+finding; ver `deploymentEvidence`/`codeAgeEvidence` atuais). Achado
+segue em `corroborated_static` — sem validador local pra
+Go/race-condition, teto real do sistema hoje, nada forçado.
