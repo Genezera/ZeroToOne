@@ -2299,3 +2299,41 @@ auditoria dos 8 eventos novos é custo baixo frente a acumular mais
 duplicatas a cada rodada; o estado real dos findings já está garantido
 via `queue.jsonl`, que não depende do ledger). Causa raiz permanece não
 investigada, fora do escopo desta rodada de triagem.
+
+---
+
+## Rodada 2026-09-08 (sessão cloud, disparada por push no repo) — sem achado novo
+
+`research-plan` apontou os 4 achados `reproduced_local` desta mesma data
+(aptos v2 MultiEd25519, helium NIST P256, helium `Keypair.Sign`, waves
+`Sign`) como `actionable: verify_scope`. Ao abrir cada um, confirmei que a
+sessão anterior (mesma data, ~07:41–08:08 UTC) já havia executado
+exatamente esse passo — `check-scope` a nível de repositório (`allowed:
+true`), `record-deployment-evidence` (`confidence: "unverified"`, sem
+tags/releases Git) e a tentativa de `transition ... scope_verified` — e
+documentado a recusa correta do gate (asset do finding é caminho de
+arquivo, não listado individualmente no snapshot; `confidence` exige
+`"high"` explícito). Não havia nenhuma evidência nova que resolvesse
+esses dois motivos, então **não repeti a tentativa** (evitando duplicar
+uma transição já corretamente recusada e documentada) — os 4 ficam
+retidos em `reproduced_local` pelas mesmas duas condições já registradas.
+
+Leitura profunda proativa (3 arquivos, todos novos no `deep-read-log.json`
+desta rodada):
+- `coins/ethereum/apitypes/types.go` — candidato prioritário marcado na
+  rodada anterior (EIP-712 encode/hash). O cabeçalho do próprio arquivo já
+  documenta um fork com hardening local sobre o `go-ethereum` upstream
+  (regex de reference-type, normalização bare int/uint, range assinado
+  correto, validação recursiva de array fixo, rejeição de leading
+  zeros). Revisão adversarial dirigida a type-confusion clássico de
+  EIP-712 (campo ausente, array mismatch, bytesN mal dimensionado,
+  self-reference) não encontrou bypass — todo caminho de dado
+  incompatível falha fechado via `dataMismatchError`. Sem achado.
+- `coins/nervos/crypto/blake160.go` — blake2b personalizado + truncamento
+  de 20 bytes, conforme spec CKB, sem decode de input externo. Sem achado.
+- `crypto/vrf/secp256k1/public_key.go` — vendored Chainlink VRF; valida
+  `len==33` explicitamente antes de aceitar bytes de chave pública, sem
+  panic em input malformado. Sem achado.
+
+Nenhum finding novo, nenhuma transição de estado nesta rodada.
+`export-queue` rodado ao final mesmo assim, por consistência.
