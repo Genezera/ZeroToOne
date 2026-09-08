@@ -2270,3 +2270,48 @@ removido do scratch dir ao final. `export-queue` rodado ao final.
 Rebaseado localmente sobre `794ba87` (rodadas concorrentes
 mattermost-plugin-calls e nitrojs/nitro, sem sobreposição de arquivos)
 antes do push.
+
+## Rodada 2026-09-08s (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json` conferido no passo 0 (`check-program`): `Block
+Open Source`, `Circle BBP` e `Auth0 by Okta` seguem bloqueados;
+`Mattermost Public Bug Bounty Engagement ` segue liberado. `migrate-to-v2.mjs`
+rodado (846 findings); `list-pending` vazio; `research-plan` retornou
+`actionable: 0` (72 `held`, mesmos códigos de sempre). Confirmado nos
+detalhes do `held`: os 3 achados non-constant-time-hmac já conhecidos
+neste programa (zoom/webhook.go, gitlab/webhook.go — este último já
+`known_duplicate` —, mscalendar/notification.go) seguem retidos por
+motivo já registrado (`scope_not_confirmed` ou `below_campaign_impact`);
+nenhuma evidência nova que resolva esses motivos, então nenhum reaberto
+— conforme a regra de não reiniciar investigação retida sem evidência
+nova.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` apontou
+`mattermost/mattermost-plugin-zoom`/`-gitlab`/`-msteams-meetings`
+empatados (11 arquivos lidos cada; Plaid confirmado esgotado em rodadas
+anteriores, pulado). Escolhido `-gitlab`. Clone raso público, 3 arquivos
+novos ainda não listados em `deep-read-log.json`; nenhum path com
+auth/session/crypto/token/login/password/admin/permission/access no
+nome disponível entre os que restavam — critério de julgamento próprio
+aplicado (arquivos com maior chance de lógica de controle de acesso
+entre os restantes):
+
+- `server/gitlab/webhook.go` — só `WebhookInfo`/`AddWebhookOptions`,
+  structs de metadados/opções de webhook GitLab, sem lógica executável.
+  Sem achado.
+- `server/audit.go` — structs `Auditable` (create_issue,
+  attach_comment_to_issue, add_webhook, reEncryptUserData) só serializam
+  campos para o audit log; nenhum controle de acesso próprio aqui. Sem
+  achado.
+- `server/mcp_tools.go` — `registerTools` define schema/descrição/
+  anotações (ReadOnly vs. Destructive) dos 10 tools MCP expostos ao
+  plugin Agents; toda validação de acesso real fica nos handlers de
+  `mcp_handlers.go` (já revisados em rodada anterior, `resolveCaller`
+  confirmado). Sem achado neste arquivo isoladamente.
+
+Nenhum finding novo nesta rodada (resultado válido). `deep-read-log.json`
+atualizado (+3 entradas em `mattermost/mattermost-plugin-gitlab`, agora
+14). Clone temporário removido do scratch dir ao final. `export-queue`
+rodado ao final. Rebaseado localmente sobre `b493980` (rodada
+concorrente de leitura profunda em `okx/go-wallet-sdk`/OKG, sem
+sobreposição de arquivos) antes do push.
