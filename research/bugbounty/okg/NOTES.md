@@ -2149,3 +2149,56 @@ autenticada alcançando o código; sem achado em nenhum. Ver
 Clones temporários (`/tmp/okx-wallet-sdk`, `/tmp/nebula`, incluindo o
 `zerotoone_poc_test.go` desta rodada) nunca commitados ao repo real.
 `export-queue` rodado ao final da rodada.
+
+## Rodada 2026-09-08 (sessão cloud, push trigger, terceira rodada da mesma data)
+
+`research-plan` reconfirmou os 2 itens `actionable` já existentes (aptos
+v2 `MultiEd25519TransactionAuthenticator.Verify` e helium
+`Keypair.Sign`, ambos ação `verify_scope`) — ambos já em
+`reproduced_local` com o mesmo bloqueio estrutural documentado em rodadas
+anteriores (asset não listado a nível de arquivo no scope snapshot +
+`deploymentEvidence.confidence=unverified` por falta de tags/releases);
+nada novo a fazer neles, nenhuma transição tentada.
+
+Leitura profunda proativa (3 arquivos/clusters, `okx/go-wallet-sdk`,
+mesmo cluster `coins/helium/crypto` do achado `Keypair.Sign` da rodada
+anterior): `coins/helium/crypto/crypto.go` (dispatcher `NewCurve`, sem
+achado isolado) e `coins/helium/crypto/ed25519/ed25519.go` (comparação de
+controle, sem achado — sempre serializa tamanho fixo). **Novo achado**:
+`coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey`
+serializa `D`/`X`/`Y` via `big.Int.Bytes()`, que remove bytes altos zero
+em vez de zero-paddar para largura fixa de 32 bytes — `pub := append(x,
+y...)` sem padding desloca o layout `X||Y` quando `X` tem byte alto zero,
+corrompendo silenciosamente a chave pública devolvida;
+`Keypair.CreateAddress` (mesmo pacote) não valida tamanho em nenhum
+ponto da cadeia, então o endereço base58 derivado fica silenciosamente
+**diferente** do correto, sem qualquer erro em lugar nenhum. Família
+distinta tanto do panic-on-malformed-input (CWE-476) quanto do
+no-op-de-sucesso (CWE-393) já catalogados neste repo — aqui é corrupção
+silenciosa de dado (CWE-1240/CWE-704), categoria nova nesta campanha.
+**PoC real**: dois testes Go (`go test ./keypair/... -run TestZeroToOne
+-v`, módulo `coins/helium` com `go mod tidy`) — 4000 gerações de chave
+via `kp.GenerateKey()` confirmaram empiricamente `shortPriv=14` (chave
+privada de 31 bytes em vez de 32) e `shortPub=39` (pubkey de 63 bytes em
+vez de 64), taxa consistente com a previsão teórica (~1/256 por
+componente); segundo teste confirmou que `CreateAddress()` aceita uma
+pubkey truncada de 63 bytes sem erro e produz um endereço base58 válido
+mas **diferente** do gerado pela pubkey de 64 bytes corretamente
+paddada — ambos PASS. Avançado `candidate → corroborated_static →
+reproduced_local`. Tentativa de `scope_verified` recusada pelo mesmo
+motivo estrutural dos dois achados-irmãos desta mesma família (asset não
+listado a nível de arquivo no scope snapshot +
+`deploymentEvidence.confidence=unverified` por falta de tags/releases
+neste repo) — nenhuma tentativa de contornar. Ver finding
+`OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address`.
+
+Leitura adicional de controle (mesma rodada, sem achado):
+`coins/ton/signedtx.go` (container de dados, sem lógica de assinatura
+própria) e `coins/stellar/keypair/from_address.go` (keypair verify-only,
+`Sign*` sempre retorna `ErrCannotSign` de forma consistente, fail-closed).
+
+`deep-read-log.json` atualizado (+6 entradas em `okx/go-wallet-sdk`).
+Clone temporário (`/tmp/go-wallet-sdk`, incluindo
+`zerotoone_nistp256_poc_test.go` desta rodada) nunca commitado ao repo
+real, removido do scratchpad ao final. `export-queue` rodado ao final da
+rodada.
