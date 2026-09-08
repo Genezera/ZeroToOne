@@ -2625,3 +2625,53 @@ atualizado.
 
 Nenhum achado novo digno de nota nesta rodada — resultado normal e
 válido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-08j (push automático via GitHub webhook, sessão cloud)
+
+`program-policy.json`/`check-program` conferido antes de qualquer leitura:
+`OKG` `blocked:false`. `list-pending` vazio; `research-plan` confirmou
+`actionable:0` -- os 16 achados held em `okx/go-wallet-sdk` (multiKey,
+multiEd25519, filecoin SignedTx, helium nist-p256/keypair, waves crypto.Sign,
+cardano/oasis/polkadot/stellar/ton/zcash/ed25519 `ai_deep_read_finding`)
+seguem retidos pelos mesmos motivos de campanha já registrados
+(`scope_not_confirmed`/`below_campaign_impact`/`outside_campaign_window`),
+sem evidência nova -- nenhuma tentativa de transição repetida.
+
+Nota metodológica (erro próprio corrigido antes do commit, não uma
+lacuna real do sistema): rodei `check-program "Mattermost Public Bug
+Bounty Engagement"` (sem o espaço final) e recebi `blocked:true`
+("programa sem decisão explícita de RoE no registro local"), o que
+pareceu contradizer `list-deep-read-candidates.mjs` listando os plugins
+Mattermost como liberados. Investigando antes de escrever qualquer nota
+de incidente: a chave real em `program-policy.json` é
+`"Mattermost Public Bug Bounty Engagement "` (com espaço final, mesmo
+valor usado no campo `program` do `queue.jsonl`) -- `check-program` faz
+match exato de string, então minha consulta sem o espaço não encontrou o
+registro e caiu no default `blocked`. Repetindo com o nome exato:
+`check-program "Mattermost Public Bug Bounty Engagement "` devolve
+corretamente `blocked:false` (o programa foi revisado e liberado em
+03/09/2026, `aiResearchBanned:false`, ver `program-policy.json`). Sem
+discrepância real entre as ferramentas -- foi erro de digitação nesta
+sessão, capturado antes de qualquer leitura de arquivo Mattermost
+(nenhum foi lido nesta rodada, por escolha de foco em `okx/go-wallet-sdk`,
+não por bloqueio real). Documentado aqui só como lembrete: `check-program`
+exige o nome do programa exatamente como armazenado, espaço final
+incluso.
+
+Leitura profunda proativa: clonado `okx/go-wallet-sdk` no mesmo commit
+`12fec6b0616347265efcc23bfc240c155da710eb` das rodadas anteriores (sem
+mudança). Escolhidos 3 arquivos ainda não lidos (108→111 arquivos),
+priorizando padrão privateKey/address já produtivo nesta campanha:
+`coins/zil/account.go`, `coins/kaspa/address.go`,
+`coins/starknet/account.go`. Todos os três reconfirmam padrões já
+catalogados como não-exploráveis: `zil/account.go` e `kaspa/address.go`
+usam `secp256k1.PrivKeyFromBytes`/`btcec.PrivKeyFromBytes` sem checar
+comprimento antes, mas essas duas implementações (`dcrec` e `btcec`) só
+truncam/reduzem mod N via `SetByteSlice` -- não panicam, ao contrário da
+família `ed25519.NewKeyFromSeed` (cardano/solana/elrond/helium/polkadot/
+aptos/oasis/near, 8 achados-irmãos já registrados) que exige exatamente
+32 bytes. `starknet/account.go` delega toda derivação para `StarkCurve`
+e utilitários já auditados, sem decode de seed bruto sem checagem.
+Nenhum achado novo. `deep-read-log.json` atualizado.
+
+`export-queue` rodado ao final.
