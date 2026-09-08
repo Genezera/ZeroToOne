@@ -1799,3 +1799,63 @@ Leitura profunda proativa desta rodada foi direcionada a outro programa
 novo de Mattermost lido nesta rodada.
 
 `export-queue` rodado ao final.
+
+## Rodada 08/09/2026 (segunda, push automático, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan` (Passo 0) reconfirmam os mesmos 4
+`actionable` já documentados na rodada anterior de hoje (3 Mattermost
+`verify_scope` + 1 Slack `measure_code_age`) — todos já bateram no mesmo
+teto nesta mesma data (egress bloqueado pro Bugcrowd oficial nos 3
+Mattermost; Slack já com escopo corrigido e severidade honesta abaixo do
+piso "Critical only" do programa). Sem evidência nova que resolva o
+motivo registrado — não reaberto (regra do CLAUDE.md: "não reinicie uma
+investigação retida sem nova evidência").
+
+Leitura profunda proativa: clone raso de `mattermost/mattermost-plugin-github`
+(10 arquivos já cobertos em rodadas anteriores). 3 arquivos novos, prioridade
+por keyword `token`/`access`: `client/client.go`, `server/plugin/permalinks.go`,
+`server/plugin/support_packet.go`.
+
+**Suspeita inicial forte, REFUTADA por rastreio até o core do servidor**:
+`server/plugin/api.go:187` expõe `GET /token` sob `checkPluginRequest`
+(api.go:289), cujo único gate é header `Mattermost-Plugin-ID` não-vazio
+(comentário do próprio código: "All other plugins are allowed" — sem
+checar qual plugin, sem checar se o `userID` da query bate com quem
+chama). `getToken` devolve `p.getGitHubUserInfo(userID).Token` — token
+OAuth JÁ DESCRIPTOGRAFADO (`plugin.go::getGitHubUserInfo` chama
+`decrypt()` antes de retornar), não um blob cifrado. Parecia IDOR grave
+(qualquer chamador com esse header pega o token GitHub de QUALQUER
+usuário Mattermost conectado). Clonei `mattermost/mattermost` (core
+server, sparse-checkout de `server/channels/app`) pra confirmar quem
+pode de fato setar esse header: `plugin_requests.go::servePluginRequest`
+(rota pública real `/plugins/<id>/*`, por onde chega TODA requisição de
+rede) faz `r.Header.Del("Mattermost-Plugin-ID")` (linha 191) com
+comentário explícito no próprio server: "Mattermost-Plugin-ID can only
+be set by inter-plugin requests". O header só é setado de verdade dentro
+de `ServeInternalPluginRequest`/`ServeInterPluginRequest` — chamada Go
+interna ao processo do servidor (`PluginHTTP` de um plugin chamando
+outro), nunca alcançável por requisição HTTP externa. Conclusão: o
+endpoint só é alcançável (com header verdadeiro) por outro plugin JÁ
+INSTALADO no mesmo servidor — instalar plugin exige System Admin, que já
+tem controle equivalente ou maior por outras vias da própria Plugin API.
+Sem escalação de fronteira de confiança real, sem alcançabilidade não
+autenticada — `false_positive` (registrado como
+`interplugin_token_disclosure_risk`, ciclo completo
+candidate→false_positive na mesma rodada, reasoning + filesRead + trace
+até o mattermost-server documentados).
+
+`permalinks.go` e `support_packet.go` sem achado (permalink preview usa
+sempre o token do próprio autor da mensagem e pula repo privado por
+padrão, exceto opt-in explícito de admin `EnableCodePreview=privateAndPublic`;
+support packet só exporta contagem agregada + booleano de config, nenhum
+segredo). `deep-read-log.json` atualizado com os 3 arquivos novos.
+
+Nota de concorrência: durante esta rodada, `origin/master` avançou 4
+vezes com commits de sessões paralelas (fix real em `upsertFinding`/ON
+CONFLICT, leitura em `OKG::okx/go-wallet-sdk`, leitura e correção de
+lost-update em `Slack::slackhq/nebula`). Rebaseado sobre `origin/master`
+duas vezes (a cada novo push concorrente) antes de exportar/commitar,
+conferindo a cada vez que nenhum achado pré-existente era removido do
+`queue.jsonl` — só o achado desta rodada foi adicionado.
+
+`export-queue` rodado ao final da rodada.
