@@ -310,6 +310,120 @@
         }
       },
       "finishedAt": "2026-09-08T04:39:06.279Z"
+    },
+    "evidence:v1:3715cc9d13547af987ed580f5acf9b1d7e0a2a85bd6b9551f04010137b52dee3": {
+      "taskId": "evidence:v1:3715cc9d13547af987ed580f5acf9b1d7e0a2a85bd6b9551f04010137b52dee3",
+      "inputDigest": "530f5729a752a5fc4509e12a5012322670d392f042244d1055d15cf5ece2fac9",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKey.Verify::signature_verification_bypass",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo \"okx/go-wallet-sdk/coins/aptos/v2/crypto/multikey.go\" não encontrado no snapshot de escopo do programa",
+      "createdAt": "2026-09-08T11:09:00.079Z",
+      "lastAttemptAt": "2026-09-08T11:09:00.079Z",
+      "result": {
+        "reason": "ativo \"okx/go-wallet-sdk/coins/aptos/v2/crypto/multikey.go\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/okg",
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-08T11:09:00.600Z"
+    },
+    "evidence:v1:938ff277e76be1b29b2b2d52dc8a869ec9c39039f22e99f7056791996b61441d": {
+      "taskId": "evidence:v1:938ff277e76be1b29b2b2d52dc8a869ec9c39039f22e99f7056791996b61441d",
+      "inputDigest": "779eb62b130b01488ec18ac29c783099f42f295424ef5af29ec0df952322db5b",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/aptos/v2/transactionAuthenticator.go::MultiEd25519TransactionAuthenticator.Verify::ai_deep_read_finding",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo \"okx/go-wallet-sdk/coins/aptos/v2/transactionauthenticator.go\" não encontrado no snapshot de escopo do programa",
+      "createdAt": "2026-09-08T11:09:00.079Z",
+      "lastAttemptAt": "2026-09-08T11:09:00.600Z",
+      "result": {
+        "reason": "ativo \"okx/go-wallet-sdk/coins/aptos/v2/transactionauthenticator.go\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/okg",
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-08T11:09:00.600Z"
+    },
+    "evidence:v1:7dfaa4e2c2a022672490a02b0d6b1d3c1fc3f21400465d2365a4eb5d8145e741": {
+      "taskId": "evidence:v1:7dfaa4e2c2a022672490a02b0d6b1d3c1fc3f21400465d2365a4eb5d8145e741",
+      "inputDigest": "a311b6ce8e3a3fe36b6101d873ae11e6574f2a0bd9df709229307ba675f34e19",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/filecoin/transaction.go::SignedTx::unchecked_signature_length_panic",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo \"okx/go-wallet-sdk/coins/filecoin/transaction.go\" não encontrado no snapshot de escopo do programa",
+      "createdAt": "2026-09-08T11:09:00.079Z",
+      "lastAttemptAt": "2026-09-08T11:09:00.600Z",
+      "result": {
+        "reason": "ativo \"okx/go-wallet-sdk/coins/filecoin/transaction.go\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/okg",
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-08T11:09:00.601Z"
+    },
+    "evidence:v1:ca49d6bb74a39458f4459a35a28d709ec910e2e86567649e50f6a8acfd41167d": {
+      "taskId": "evidence:v1:ca49d6bb74a39458f4459a35a28d709ec910e2e86567649e50f6a8acfd41167d",
+      "inputDigest": "840f04984ade6d53dcdbf116c69788db13727d7c473f218ec397dd97b2d15680",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "ativo \"okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go\" não encontrado no snapshot de escopo do programa",
+      "createdAt": "2026-09-08T11:09:00.079Z",
+      "lastAttemptAt": "2026-09-08T11:09:00.601Z",
+      "result": {
+        "reason": "ativo \"okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/okg",
+          "bountyEligible": null
+        }
+      },
+      "finishedAt": "2026-09-08T11:09:00.601Z"
+    },
+    "evidence:v1:b4ac3f6220ae9e19bacaf467c4b63f8db4f6241be6e082af5a7cc4abf63f53a7": {
+      "taskId": "evidence:v1:b4ac3f6220ae9e19bacaf467c4b63f8db4f6241be6e082af5a7cc4abf63f53a7",
+      "inputDigest": "adac63df607f5ea9ba16cafc63dbf269592120c961a1cc9097b291f49dcce870",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/helium/keypair/keypair.go::Keypair.Sign::silent_unsigned_result_unimplemented_curve",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "pending",
+      "attempts": 0,
+      "reason": "ativo \"okx/go-wallet-sdk/coins/helium/keypair/keypair.go\" não encontrado no snapshot de escopo do programa",
+      "createdAt": "2026-09-08T11:09:00.079Z"
+    },
+    "evidence:v1:5ce501b2a5dda4c832d424709cde6a8ea93ed98a6ef353639b56a853128cd286": {
+      "taskId": "evidence:v1:5ce501b2a5dda4c832d424709cde6a8ea93ed98a6ef353639b56a853128cd286",
+      "inputDigest": "021b2e37d4db1e3f0222565e5fe03b124f2f2242af0977b7c6c0c31015a8f0d1",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "verify_scope",
+      "priority": 90,
+      "status": "pending",
+      "attempts": 0,
+      "reason": "ativo \"okx/go-wallet-sdk/coins/waves/crypto/crypto.go\" não encontrado no snapshot de escopo do programa",
+      "createdAt": "2026-09-08T11:09:00.079Z"
     }
   },
   "runs": [
@@ -388,6 +502,16 @@
       "startedAt": "2026-09-08T04:39:05.051Z",
       "finishedAt": "2026-09-08T04:39:06.280Z",
       "planned": 4,
+      "claimed": 4,
+      "completed": 4,
+      "needsHuman": 0,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:eac3bfd37104afa9f5b566faf37ff5f8b48550dc585110c498433e3692bf8b95",
+      "startedAt": "2026-09-08T11:09:00.079Z",
+      "finishedAt": "2026-09-08T11:09:00.601Z",
+      "planned": 6,
       "claimed": 4,
       "completed": 4,
       "needsHuman": 0,
