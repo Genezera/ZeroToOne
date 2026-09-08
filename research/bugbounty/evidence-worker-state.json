@@ -226,16 +226,20 @@
       "repository": "mattermost/mattermost-plugin-confluence",
       "action": "verify_scope",
       "priority": 90,
-      "status": "retry",
-      "attempts": 2,
+      "status": "completed",
+      "attempts": 3,
       "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:31:02.657Z",
+      "lastAttemptAt": "2026-09-08T04:39:05.051Z",
       "nextEligibleAt": "2026-09-08T01:41:02.658Z",
       "result": {
-        "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
+        "reason": "ativo \"mattermost/mattermost-plugin-confluence\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/mattermost",
+          "bountyEligible": null
+        }
       },
-      "finishedAt": "2026-09-08T01:31:02.658Z"
+      "finishedAt": "2026-09-08T04:39:05.583Z"
     },
     "evidence:v1:ba5b07f5165940aca078e2b3ab132ed9aa004999f346e612bee51674c73266d3": {
       "taskId": "evidence:v1:ba5b07f5165940aca078e2b3ab132ed9aa004999f346e612bee51674c73266d3",
@@ -245,16 +249,20 @@
       "repository": "mattermost/mattermost-plugin-mscalendar",
       "action": "verify_scope",
       "priority": 90,
-      "status": "retry",
-      "attempts": 2,
+      "status": "completed",
+      "attempts": 3,
       "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:31:02.658Z",
+      "lastAttemptAt": "2026-09-08T04:39:05.583Z",
       "nextEligibleAt": "2026-09-08T01:41:02.658Z",
       "result": {
-        "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
+        "reason": "ativo \"mattermost/mattermost-plugin-mscalendar\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/mattermost",
+          "bountyEligible": null
+        }
       },
-      "finishedAt": "2026-09-08T01:31:02.658Z"
+      "finishedAt": "2026-09-08T04:39:05.584Z"
     },
     "evidence:v1:00e1ea04489c04773eaf6842544577ff444d91268c7b1252662b726cdc63f46a": {
       "taskId": "evidence:v1:00e1ea04489c04773eaf6842544577ff444d91268c7b1252662b726cdc63f46a",
@@ -264,16 +272,20 @@
       "repository": "mattermost/mattermost-plugin-msteams-meetings",
       "action": "verify_scope",
       "priority": 90,
-      "status": "retry",
-      "attempts": 2,
+      "status": "completed",
+      "attempts": 3,
       "reason": "ativo em escopo, mas esta fonte não informa elegibilidade de recompensa — confirmar manualmente antes de human_ready",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:31:02.658Z",
+      "lastAttemptAt": "2026-09-08T04:39:05.584Z",
       "nextEligibleAt": "2026-09-08T01:41:02.658Z",
       "result": {
-        "reason": "HACKERONE_USERNAME e/ou HACKERONE_API_TOKEN não estão setados nas variáveis de ambiente. Rode: setx HACKERONE_USERNAME \"...\" e setx HACKERONE_API_TOKEN \"...\" (uma janela nova de terminal depois disso)."
+        "reason": "ativo \"mattermost/mattermost-plugin-msteams-meetings\" não encontrado no snapshot de escopo do programa",
+        "evidence": {
+          "officialUrl": "https://hackerone.com/mattermost",
+          "bountyEligible": null
+        }
       },
-      "finishedAt": "2026-09-08T01:31:02.658Z"
+      "finishedAt": "2026-09-08T04:39:05.585Z"
     },
     "evidence:v1:8cbb330d9730149f10cca0575e9da1f250bae0de36b35e67a3bf2c24e5da39cc": {
       "taskId": "evidence:v1:8cbb330d9730149f10cca0575e9da1f250bae0de36b35e67a3bf2c24e5da39cc",
@@ -283,16 +295,21 @@
       "repository": "slackhq/nebula",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
-      "attempts": 2,
+      "status": "completed",
+      "attempts": 3,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-08T01:25:43.017Z",
-      "lastAttemptAt": "2026-09-08T01:31:02.658Z",
+      "lastAttemptAt": "2026-09-08T04:39:05.585Z",
       "nextEligibleAt": "2026-09-08T01:41:03.634Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o caminho não recebe alteração há 17 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 17,
+          "commit": "edc3c5e0188659711b86413ed143c23af0384e3e"
+        }
       },
-      "finishedAt": "2026-09-08T01:31:03.634Z"
+      "finishedAt": "2026-09-08T04:39:06.279Z"
     }
   },
   "runs": [
@@ -365,6 +382,16 @@
       "completed": 0,
       "needsHuman": 0,
       "failed": 4
+    },
+    {
+      "runId": "evidence-run:v1:0307715c7b1b0f62d5b071c564f6b056345d46f0aa84cacc058a5fc92ee13a1e",
+      "startedAt": "2026-09-08T04:39:05.051Z",
+      "finishedAt": "2026-09-08T04:39:06.280Z",
+      "planned": 4,
+      "claimed": 4,
+      "completed": 4,
+      "needsHuman": 0,
+      "failed": 0
     }
   ]
 }
