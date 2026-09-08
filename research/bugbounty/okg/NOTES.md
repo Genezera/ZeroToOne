@@ -2582,3 +2582,46 @@ para destaque de revisão humana pela severidade potencialmente maior que
 os achados-irmãos.
 
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-08b (push automático via GitHub webhook, sessão cloud, segunda rodada do dia)
+Verificado `program-policy.json` antes de qualquer leitura (regra do
+CLAUDE.md), confirmando `Block Open Source` e `Circle BBP` bloqueados.
+`research-plan` repetiu os mesmos 6 `actionable`/`verify_scope` da
+rodada anterior (mesmo dia) — todos `reproduced_local` em
+`okx/go-wallet-sdk` (aptos MultiKey signature-bypass, aptos
+MultiEd25519, filecoin SignedTx, helium nist-p256, helium keypair,
+waves crypto.Sign). Reconfirmado o mesmo gate: `check-scope "OKG"
+"okx/go-wallet-sdk"` ainda `allowed:true`/`bountyEligible:true` no
+nível de repositório (snapshot `okg.json` só lista o asset
+`https://github.com/okx/go-wallet-sdk` inteiro, sem granularidade de
+arquivo), mas a transição `scope_verified` continua recusada
+corretamente pelo gate de asset exato (testado 1x em
+`multiKey.go::MultiKey.Verify` para confirmar que nada mudou desde a
+rodada anterior — mesma mensagem de recusa, sem tentativa de
+forçar/contornar). HEAD do repo confirmado igual à rodada anterior
+(`12fec6b0616347265efcc23bfc240c155da710eb`), sem novos commits — não
+há evidência nova que justifique reprocessar os 6 achados além de
+reconfirmar o estado. Nenhuma mudança de estado nesta seção.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` lista 13
+repositórios liberados por política+histórico; `afterpay/*`,
+`cashapp/*`, `square/wire` aparecem na lista "sem programa
+reconhecido" da própria ferramenta, mas confirmado manualmente via
+`queue.jsonl` que são todos `Block Open Source` (Bugcrowd, IA
+proibida) — excluídos por checagem própria, não pela ferramenta.
+Escolhidos 4 arquivos ainda não lidos em `okx/go-wallet-sdk`
+(104→108, ~10%→11% cobertura), priorizando padrão crypto/sign/verify:
+`coins/ethereum/signature.go`, `coins/stellar/keypair/{main,
+from_address,full}.go`, `coins/zksync/signer.go`,
+`coins/stellar/txnbuild/signer_summary.go`. Nenhum achado: Ethereum
+`signature.go` só serializa R/S/V a partir de `crypto.SignCompact`
+(sem lógica de verificação); Stellar `Full.Verify`/`FromAddress.Verify`
+usam `ed25519.Verify` da stdlib diretamente com checagem correta de
+`len(sig)!=64`, sem bitmap/multi-sig customizado (diferente do bug
+Aptos MultiKey da rodada anterior); zksync `signer` só delega para
+`core.ZkSigner`/`core.OkEthSigner` sem lógica própria;
+`signer_summary.go` é só um type alias trivial. `deep-read-log.json`
+atualizado.
+
+Nenhum achado novo digno de nota nesta rodada — resultado normal e
+válido. `export-queue` rodado ao final.
