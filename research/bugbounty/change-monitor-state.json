@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T19:21:13.767Z",
+  "checkedAt": "2026-09-09T19:31:02.199Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "22b5f48e3767f6574f8a6843a251678693d2f950",
+      "sha": "efbdc213a0a70f8be2a147a0af195a4d9d82f0fe",
       "branch": "main",
-      "parentSha": "855b4e92e628ef3f3a69c54fa9e29cdca7110a21",
-      "committedAt": "2026-09-09T19:18:43Z",
-      "url": "https://github.com/vercel/workflow/commit/22b5f48e3767f6574f8a6843a251678693d2f950",
-      "title": "[ci] Print opencode's server log in the backport job (#4056)",
-      "observedAt": "2026-09-09T19:21:13.767Z",
+      "parentSha": "22b5f48e3767f6574f8a6843a251678693d2f950",
+      "committedAt": "2026-09-09T19:26:28Z",
+      "url": "https://github.com/vercel/workflow/commit/efbdc213a0a70f8be2a147a0af195a4d9d82f0fe",
+      "title": "[core] Make `hook.metadata` a lazy Promise getter (#3988)",
+      "observedAt": "2026-09-09T19:31:02.199Z",
       "programs": [
         "Vercel Open Source"
       ],
