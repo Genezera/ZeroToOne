@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T10:00:58.022Z",
+  "checkedAt": "2026-09-09T11:01:26.390Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "bea9b4681aa7928045674199f23c9e80745b3320",
+      "sha": "216383484c6f5bf382ef5df1561b7ceefe959c9d",
       "branch": "master",
-      "parentSha": "21fa70dc8748abc457d2e22527ac9655f7cbace5",
-      "committedAt": "2026-09-09T08:44:33Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/bea9b4681aa7928045674199f23c9e80745b3320",
-      "title": "[occm] test: fix servicemonitor test after label reduction (#3200)",
-      "observedAt": "2026-09-09T08:50:33.927Z",
+      "parentSha": "bea9b4681aa7928045674199f23c9e80745b3320",
+      "committedAt": "2026-09-09T10:56:34Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/216383484c6f5bf382ef5df1561b7ceefe959c9d",
+      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#3199)",
+      "observedAt": "2026-09-09T11:01:26.390Z",
       "programs": [
         "Kubernetes"
       ],
