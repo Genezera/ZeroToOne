@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T17:01:00.600Z",
+  "checkedAt": "2026-09-09T17:20:45.678Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
+      "sha": "1dcc675249e5b4817ea1beb3709b657f595c619f",
       "branch": "master",
-      "parentSha": "877cd6cec41a451bceeee6311bab205df98809df",
-      "committedAt": "2026-09-09T16:38:36Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
-      "title": "Merge pull request #37829 from pohly/kind-script-usage",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
+      "committedAt": "2026-09-09T17:18:34Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/1dcc675249e5b4817ea1beb3709b657f595c619f",
+      "title": "Merge pull request #37847 from sbueringer/pr-ct-pre",
+      "observedAt": "2026-09-09T17:20:45.678Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "c595e6e35388c14b9f7d71e5f0ddf2ae8952cffd",
+      "sha": "aa4cc14fbfee8c1936d9e7b37349eb468fa71c64",
       "branch": "main",
-      "parentSha": "f102e410b5b29f1252723375438796cf67224125",
-      "committedAt": "2026-09-09T16:42:14Z",
-      "url": "https://github.com/vercel/ai/commit/c595e6e35388c14b9f7d71e5f0ddf2ae8952cffd",
-      "title": "fix(ai): call atob without a receiver (#20541)",
-      "observedAt": "2026-09-09T16:50:54.532Z",
+      "parentSha": "c595e6e35388c14b9f7d71e5f0ddf2ae8952cffd",
+      "committedAt": "2026-09-09T17:19:09Z",
+      "url": "https://github.com/vercel/ai/commit/aa4cc14fbfee8c1936d9e7b37349eb468fa71c64",
+      "title": "fix(gateway): preserve image result retryability (#20548)",
+      "observedAt": "2026-09-09T17:20:45.678Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1411,13 +1411,13 @@
       "languages": []
     },
     "vercel/chat": {
-      "sha": "056d8830b26eea46b9ef0ea50d055f33d4516739",
+      "sha": "ea025af7ac2bd2d88fd95ac85b91213055af2ab9",
       "branch": "main",
-      "parentSha": "85a37c896f86611c23b024afc8325183e6f1ec99",
-      "committedAt": "2026-09-06T05:27:47Z",
-      "url": "https://github.com/vercel/chat/commit/056d8830b26eea46b9ef0ea50d055f33d4516739",
-      "title": "feat(history): support uncapped per-user retention (#904)",
-      "observedAt": "2026-09-06T08:50:22.131Z",
+      "parentSha": "056d8830b26eea46b9ef0ea50d055f33d4516739",
+      "committedAt": "2026-09-09T17:18:11Z",
+      "url": "https://github.com/vercel/chat/commit/ea025af7ac2bd2d88fd95ac85b91213055af2ab9",
+      "title": "feat(postgres): allow migration-managed schemas (#913)",
+      "observedAt": "2026-09-09T17:20:45.678Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "fdeb6422705afe70da5749057905dfc2027bd049",
+      "sha": "4547e1a7a95f273f3166edf45344dc827f1935fa",
       "branch": "main",
-      "parentSha": "9a5660fbd64165e41f6b346407b1c0a099a8123b",
-      "committedAt": "2026-09-09T16:48:08Z",
-      "url": "https://github.com/vercel/workflow/commit/fdeb6422705afe70da5749057905dfc2027bd049",
-      "title": "feat(streams): add WebSocket capability gate (#3764)",
-      "observedAt": "2026-09-09T16:50:54.532Z",
+      "parentSha": "51a181af91773a288e6d6342a180e926ace97dda",
+      "committedAt": "2026-09-09T17:20:08Z",
+      "url": "https://github.com/vercel/workflow/commit/4547e1a7a95f273f3166edf45344dc827f1935fa",
+      "title": "feat(streams): add writer session seam (#3832)",
+      "observedAt": "2026-09-09T17:20:45.678Z",
       "programs": [
         "Vercel Open Source"
       ],
