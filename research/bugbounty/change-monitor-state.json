@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T04:31:30.735Z",
+  "checkedAt": "2026-09-09T05:21:27.401Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -277,13 +277,13 @@
       ]
     },
     "kubernetes/cloud-provider-azure": {
-      "sha": "ebe4087386a67e294c7efcbc7de3fbd8d8572943",
+      "sha": "af02e24ad56582af57a5e0e1242bfddec4953d50",
       "branch": "master",
-      "parentSha": "e36646c4e36fced1acc747693e05e66ad4f49618",
-      "committedAt": "2026-09-08T23:16:24Z",
-      "url": "https://github.com/kubernetes-sigs/cloud-provider-azure/commit/ebe4087386a67e294c7efcbc7de3fbd8d8572943",
-      "title": "build(deps): bump oss/go/microsoft/golang (#10908)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "ebe4087386a67e294c7efcbc7de3fbd8d8572943",
+      "committedAt": "2026-09-09T05:16:33Z",
+      "url": "https://github.com/kubernetes-sigs/cloud-provider-azure/commit/af02e24ad56582af57a5e0e1242bfddec4953d50",
+      "title": "build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#10958)",
+      "observedAt": "2026-09-09T05:21:27.401Z",
       "programs": [
         "Kubernetes"
       ],
