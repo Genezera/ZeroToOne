@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T16:00:59.423Z",
+  "checkedAt": "2026-09-09T16:10:44.004Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -471,13 +471,13 @@
       "languages": []
     },
     "kubernetes/enhancements": {
-      "sha": "618c5969eeafd0c2a41b04a6170fea84fdbd18c3",
+      "sha": "4683520fa7ab7e16a4e01e2e68a7388203ad7061",
       "branch": "master",
-      "parentSha": "18d300d91f6eea75a93397915a11244c5788cd7f",
-      "committedAt": "2026-09-09T13:52:37Z",
-      "url": "https://github.com/kubernetes/enhancements/commit/618c5969eeafd0c2a41b04a6170fea84fdbd18c3",
-      "title": "Merge pull request #6244 from helayoty/helayoty/update-kep-6089",
-      "observedAt": "2026-09-09T14:01:01.558Z",
+      "parentSha": "618c5969eeafd0c2a41b04a6170fea84fdbd18c3",
+      "committedAt": "2026-09-09T16:06:40Z",
+      "url": "https://github.com/kubernetes/enhancements/commit/4683520fa7ab7e16a4e01e2e68a7388203ad7061",
+      "title": "Merge pull request #6310 from stlaz/implemented-ctb-pc",
+      "observedAt": "2026-09-09T16:10:44.004Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1099,13 +1099,13 @@
       ]
     },
     "mattermost/mattermost-plugin-github": {
-      "sha": "192abb376ab6ab94b27ff06267116c4e23cc22da",
+      "sha": "c10f09bbeb04434cba59ed4f4ec7d86eea16874c",
       "branch": "master",
-      "parentSha": "8ae7fa21cfc5f246f6de0a76965f5c338a0736ae",
-      "committedAt": "2026-09-09T08:53:14Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/192abb376ab6ab94b27ff06267116c4e23cc22da",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#1059)",
-      "observedAt": "2026-09-09T09:00:55.407Z",
+      "parentSha": "192abb376ab6ab94b27ff06267116c4e23cc22da",
+      "committedAt": "2026-09-09T16:01:55Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/c10f09bbeb04434cba59ed4f4ec7d86eea16874c",
+      "title": "Bump js-yaml in /webapp (#1060)",
+      "observedAt": "2026-09-09T16:10:44.004Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "e0966df11438b1f82e06d6f650a2a044b84457c3",
+      "sha": "dea82ba4ee65606672a3648165da79dc0e792fc6",
       "branch": "canary",
-      "parentSha": "6caa786072d99c570bb93bd2a3c4e6fb061dda6d",
-      "committedAt": "2026-09-09T15:25:36Z",
-      "url": "https://github.com/vercel/next.js/commit/e0966df11438b1f82e06d6f650a2a044b84457c3",
-      "title": "test: migrate caching deploy exclusions to force gates (#98154)",
-      "observedAt": "2026-09-09T15:30:49.079Z",
+      "parentSha": "de356c6d84c38b3743c08fba8dce59015dbe27f1",
+      "committedAt": "2026-09-09T16:06:38Z",
+      "url": "https://github.com/vercel/next.js/commit/dea82ba4ee65606672a3648165da79dc0e792fc6",
+      "title": "v16.4.0-canary.24",
+      "observedAt": "2026-09-09T16:10:44.004Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "77f6232815140b62ea27fba7093d9af14c6aadf5",
+      "sha": "90fd2d6624b61faa4f4052ceab559ea3222e6dbc",
       "branch": "main",
-      "parentSha": "ba822e158c90b2638574e6a8edf810405d54441c",
-      "committedAt": "2026-09-09T15:47:28Z",
-      "url": "https://github.com/vercel/turborepo/commit/77f6232815140b62ea27fba7093d9af14c6aadf5",
-      "title": "perf: Cache LSP task index and dedupe identities in constant time (#14008)",
-      "observedAt": "2026-09-09T15:50:44.071Z",
+      "parentSha": "77f6232815140b62ea27fba7093d9af14c6aadf5",
+      "committedAt": "2026-09-09T16:04:41Z",
+      "url": "https://github.com/vercel/turborepo/commit/90fd2d6624b61faa4f4052ceab559ea3222e6dbc",
+      "title": "perf: Deduplicate recursive glob prefixes before walking (#14004)",
+      "observedAt": "2026-09-09T16:10:44.004Z",
       "programs": [
         "Vercel Open Source"
       ],
