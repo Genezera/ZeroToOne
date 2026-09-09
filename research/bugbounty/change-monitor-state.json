@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:20:42.419Z",
+  "checkedAt": "2026-09-09T20:30:55.022Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -471,13 +471,13 @@
       "languages": []
     },
     "kubernetes/enhancements": {
-      "sha": "4683520fa7ab7e16a4e01e2e68a7388203ad7061",
+      "sha": "861cbafd9776e41109ebf931b035a6d8ff985f7b",
       "branch": "master",
-      "parentSha": "618c5969eeafd0c2a41b04a6170fea84fdbd18c3",
-      "committedAt": "2026-09-09T16:06:40Z",
-      "url": "https://github.com/kubernetes/enhancements/commit/4683520fa7ab7e16a4e01e2e68a7388203ad7061",
-      "title": "Merge pull request #6310 from stlaz/implemented-ctb-pc",
-      "observedAt": "2026-09-09T16:10:44.004Z",
+      "parentSha": "4683520fa7ab7e16a4e01e2e68a7388203ad7061",
+      "committedAt": "2026-09-09T20:26:34Z",
+      "url": "https://github.com/kubernetes/enhancements/commit/861cbafd9776e41109ebf931b035a6d8ff985f7b",
+      "title": "Merge pull request #6334 from SergeyKanzhelev/138assignedapprovers",
+      "observedAt": "2026-09-09T20:30:55.022Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "24b42489c62d65ddb3ffa6b2a67fa25ccbf3dea1",
+      "sha": "48b734ae063edbfb38591cd747262d8b70cbf742",
       "branch": "master",
-      "parentSha": "db10cb4b80e57c4492d2baf446ba2b4f89abf466",
-      "committedAt": "2026-09-09T19:12:31Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/24b42489c62d65ddb3ffa6b2a67fa25ccbf3dea1",
-      "title": "Merge pull request #140888 from Jefftree/openapi-v2-request-metric",
-      "observedAt": "2026-09-09T19:21:13.767Z",
+      "parentSha": "8f09e098025dbf52df356cb5d2b9a5660359c428",
+      "committedAt": "2026-09-09T20:30:52Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/48b734ae063edbfb38591cd747262d8b70cbf742",
+      "title": "kubectl: disallow label and annotate modifications when --list is set (#141589)",
+      "observedAt": "2026-09-09T20:30:55.022Z",
       "programs": [
         "Kubernetes"
       ],
