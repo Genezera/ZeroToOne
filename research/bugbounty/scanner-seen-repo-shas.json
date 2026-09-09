@@ -7155,7 +7155,7 @@
     "webapp/src/utils/user_utils.js": "5811a0d6a594eab0f12d119ef9b782f914d4e027",
     "webapp/src/websocket/index.js": "732da624d51407876726cdef2cefd3f1be866e88",
     "webapp/webpack.config.js": "f311d4b7839bcedc54dea9cb63297df8e3142120",
-    "go.mod": "90a79e45c6dc1d1dd6d901376b68a0e6c4361345",
+    "go.mod": "3ac293e8ce4fbf94a87e36eca864fcfac0d61c9a",
     "webapp/package-lock.json": "0d15237883715af5e4b516c671c7e8c8fc69c29d"
   },
   "kubernetes/kube-controller-manager": {
@@ -7867,7 +7867,7 @@
     "server/zoom/oauth.go": "d7d7584af911499bc0237705faf36bcb748b978f",
     "server/zoom/user.go": "f714235a07aa55f60278a945951dd0a6c6c3d32f",
     "server/zoom/webhook.go": "cfdf9c844bb9bcc57fe8d0e555a90ecc06f978e5",
-    "go.mod": "d4bd1f65cf235800b7260ec3b3cce65e72e4197b",
+    "go.mod": "134fd6e91428f805f90fdbc61e6c09b892c1f238",
     "webapp/package-lock.json": "e73c59836f2e3cf819aa96a6a981cd1728d17a57"
   },
   "mattermost/mattermost-plugin-github": {
@@ -7902,7 +7902,7 @@
     "server/testutils/http.go": "5b20ab9c1111984e3c2a358a5a3d73dd54cc65e7",
     "e2e/playwright/mock_oauth_server/package-lock.json": "35deb8be298660ecd09b7a135d1c524e2304d494",
     "e2e/playwright/package-lock.json": "6340ee7c280884ccd94b26dcc732ce7655ba977c",
-    "go.mod": "580b4bad80d107aaa707d709cd857e38f7419b27",
+    "go.mod": "d3e6982a5ed9a8018ee9774cd343db6408b7fabe",
     "webapp/package-lock.json": "4e9d022ca1960ef9b30d41dc774dd9d7b416c5a5"
   },
   "slackhq/nebula": {
@@ -8284,7 +8284,7 @@
     "msgraph/subscription.go": "ec842b9e60e970699d0c8b9b0bec1498515a62be",
     "server/jobs/mock_cluster/mock_cluster.go": "2136fd0b7a36e8d4f64fe64c530c643f4108220c",
     "server/main.go": "e54335cfb1dc6c236a53d33c239606bf0d9e41f5",
-    "go.mod": "2e9c1acd619e02a45fecc706deb8ae754e26b1b4",
+    "go.mod": "13048cb49f891ccde60bc6afa4966be70a51bfe1",
     "webapp/package-lock.json": "d3364d61d2c647da6354fdca73d31e7fa615b4ad"
   },
   "mattermost/mattermost-plugin-msteams-meetings": {
