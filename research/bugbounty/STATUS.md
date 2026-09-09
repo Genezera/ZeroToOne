@@ -1,11 +1,12 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T05:21:43.453Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T06:11:30.033Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
+| go | Kubernetes | HackerOne | kubernetes/cloud-provider-openstack |
 
 ## Fila de bug bounty
 
