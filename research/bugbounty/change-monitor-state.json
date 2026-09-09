@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T18:40:58.616Z",
+  "checkedAt": "2026-09-09T18:50:22.479Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "f0a0d7752fd5331bff83d657c63b64f18a56fdfd",
+      "sha": "5223bd6eb8903134d8084e353aa0050311594b95",
       "branch": "main",
-      "parentSha": "470ffb9a7b7dad8824d2bc46ea5cfa54198057a6",
-      "committedAt": "2026-09-09T18:14:33Z",
-      "url": "https://github.com/vercel/turborepo/commit/f0a0d7752fd5331bff83d657c63b64f18a56fdfd",
-      "title": "perf: Build cache archives once for local and remote writes (#14012)",
-      "observedAt": "2026-09-09T18:20:46.909Z",
+      "parentSha": "96712c91919cb74273c0ed75dbaa7d1f90574aa9",
+      "committedAt": "2026-09-09T18:49:52Z",
+      "url": "https://github.com/vercel/turborepo/commit/5223bd6eb8903134d8084e353aa0050311594b95",
+      "title": "perf: Share source text across boundaries diagnostics instead of copying it per error (#14014)",
+      "observedAt": "2026-09-09T18:50:22.479Z",
       "programs": [
         "Vercel Open Source"
       ],
