@@ -238,7 +238,10 @@ Important transitions are guarded:
 
 - `candidate -> corroborated_static`: multiple relevant files and substantive
   reasoning.
-- `corroborated_static -> reproduced_local`: recorded supporting validation.
+- `corroborated_static -> reproduced_local`: a recorded executable PoC, test,
+  reproduction, benchmark, harness, or regression supports the behavior. A
+  supporting prior-art search, manual review, or specification check is not a
+  reproduction and cannot advance this gate or inflate the evidence grade.
 - `reproduced_local -> scope_verified`: current exact scope plus strong
   deployment evidence.
 - `scope_verified -> human_ready`: report draft, Medium+ cross-boundary impact,

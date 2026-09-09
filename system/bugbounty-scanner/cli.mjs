@@ -28,7 +28,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { buildResearchPlan } from './research-plan.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
 import { localRootCauseCollisions } from './finding-identity.mjs';
-import { validationSupports } from './validation-semantics.mjs';
+import { validationProvesLocalReproduction, validationSupports } from './validation-semantics.mjs';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
 // acesso MCP ao banco) uma forma estruturada de mudar estado — em vez de
@@ -231,7 +231,7 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
         break;
       case 'corroborated_static': {
         const validations = listValidations(db, f.id);
-        if (validations.some(validationSupports)) blocker = 'PoC sustenta a hipótese -- pronto pra tentar reproduced_local';
+        if (validations.some(validationProvesLocalReproduction)) blocker = 'PoC sustenta a hipótese -- pronto pra tentar reproduced_local';
         else if (validations.some((v) => v.result === 'not_applicable')) blocker = `sem validador local pra tipo/linguagem "${f.language}" -- bloqueio estrutural (não falta de esforço), ver README`;
         else blocker = 'PoC ainda não foi rodada pra este achado';
         break;

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeEvidenceGrade, explainGrade } from '../evidence-grade.mjs';
+import { computeEvidenceGrade, explainGrade, getEvidenceGrade } from '../evidence-grade.mjs';
 
 test('E0 quando não há arquivo lido nem validação nem estado avançado', () => {
   assert.equal(computeEvidenceGrade({ state: 'candidate', filesReadCount: 0 }), 'E0');
@@ -20,6 +20,15 @@ test('E2 quando o estado é corroborated_static, mesmo com só 1 arquivo lido', 
 
 test('E3 quando existe validação real com result=pass, mesmo em estado anterior', () => {
   assert.equal(computeEvidenceGrade({ state: 'corroborated_static', filesReadCount: 5, hasPassingValidation: true }), 'E3');
+});
+
+test('prior-art supports não infla grau para E3 sem reprodução executável', () => {
+  const grade = getEvidenceGrade({}, 'f1', {
+    getFinding: () => ({ id: 'f1', state: 'corroborated_static', filesRead: ['a.go'] }),
+    listValidations: () => [{ type: 'prior_art_search', result: 'pass', conclusion: 'supports' }],
+    latestPlatformOutcome: () => null,
+  });
+  assert.equal(grade, 'E2');
 });
 
 test('E4 exige validação end-to-end isolada; sandbox de componente continua E3', () => {

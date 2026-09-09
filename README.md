@@ -34,6 +34,9 @@ deliberate human action; the automation never files a report by itself.
    or an isolated replica environment when testing the real target's
    infrastructure directly isn't allowed. Findings that can't survive
    this step are marked false positive rather than shipped.
+   Evidence types are separated: a clean prior-art search or supporting
+   specification review can never be mistaken for an executable PoC or promote
+   a finding to the reproduced state.
 4. **Review and submit** — a corroborated finding becomes a report draft
    (call chain, evidence, PoC, suggested fix), passes fail-closed impact,
    scope, non-expired program-policy, E4 end-to-end regression,

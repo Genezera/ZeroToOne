@@ -9,7 +9,7 @@
 // | E0   | Só padrão textual, nenhum arquivo lido                  |
 // | E1   | 1 arquivo lido, confirma condição suspeita isolada      |
 // | E2   | 2+ arquivos lidos (cadeia cross-file) OU corroborated_static |
-// | E3   | Validação real com conclusion="supports" OU reproduced_local+ |
+// | E3   | PoC/test/reprodução executável que sustenta OU reproduced_local+ |
 // | E4   | Regressão end-to-end em sandbox isolado, com imagem e     |
 // |      | baseline/candidate registrados                            |
 // | E5   | Resultado real de plataforma: triaged/paid/resolved      |
@@ -23,7 +23,7 @@
 // duplicate) came back E2 before this fix, even though it has a real
 // passing Go-test PoC -- its CURRENT state ("duplicate") just wasn't in
 // the set, so the check silently fell through to the file-count rule.
-import { validationSupports } from './validation-semantics.mjs';
+import { validationProvesLocalReproduction, validationSupports } from './validation-semantics.mjs';
 
 const E3_PLUS_STATES = new Set([
   'reproduced_local', 'scope_verified', 'human_ready', 'submitted',
@@ -77,7 +77,7 @@ export function explainGrade(grade) {
     E0: 'Só padrão textual — nenhum arquivo real lido ainda.',
     E1: 'Um arquivo real lido, confirma condição suspeita isolada.',
     E2: 'Cadeia cross-file confirmada (2+ arquivos) ou marcado corroborated_static.',
-    E3: 'Reprodução determinística local real (validação com conclusion=supports) ou avançado além disso.',
+    E3: 'Reprodução determinística local real (PoC/test/benchmark/harness executável que sustenta) ou avançado além disso.',
     E4: 'Regressão reproduzida end-to-end em sandbox isolado, com imagem, baseline e candidate registrados.',
     E5: 'Validado por resultado real de plataforma (triaged, paid ou resolved).',
   };
@@ -90,7 +90,7 @@ export function getEvidenceGrade(db, findingId, { getFinding, listValidations, l
   const finding = getFinding(db, findingId);
   if (!finding) return null;
   const validations = listValidations(db, findingId) || [];
-  const hasPassingValidation = validations.some(validationSupports);
+  const hasPassingValidation = validations.some(validationProvesLocalReproduction);
   const hasIsolatedEndToEndValidation = validations.some((validation) => isIsolatedEndToEndValidation(validation));
   const outcome = latestPlatformOutcome(db, findingId);
   return computeEvidenceGrade({

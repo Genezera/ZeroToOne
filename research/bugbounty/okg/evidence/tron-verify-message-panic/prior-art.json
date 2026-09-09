@@ -1,0 +1,9 @@
+{
+  "repository": "okx/go-wallet-sdk",
+  "programHandle": "okg",
+  "queries": [
+    "VerifyMessage short signature panic",
+    "VerifyMessageWithAddress index out of range",
+    "tron signature length validation"
+  ]
+}

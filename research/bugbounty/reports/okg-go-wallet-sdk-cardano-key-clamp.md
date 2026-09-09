@@ -1,4 +1,23 @@
-# ⚠️ RASCUNHO — REVISÃO HUMANA OBRIGATÓRIA ANTES DE ENVIAR
+# ⛔ NÃO ENVIAR — FALSO POSITIVO REFUTADO PELA ESPECIFICAÇÃO
+
+Uma nova revisão independente em 2026-09-09 confirmou que a hipótese central
+deste rascunho estava errada. A especificação oficial CIP-3/Icarus exige
+explicitamente `data[31] &= 0b0001_1111` e depois
+`data[31] |= 0b0100_0000`. Portanto, a máscara `0x1f` usada pelo SDK está
+correta. A proposta anterior de trocar `0x1f` por `0x7f` é que viola a
+especificação.
+
+Fonte normativa: https://cips.cardano.org/cip/CIP-3/annex/Icarus
+
+O PoC histórico abaixo somente demonstrou que alterar uma implementação correta
+para outra incorreta muda as chaves e os endereços. Ele não comprovou uma
+vulnerabilidade. O registro foi encerrado como `false_positive`; este conteúdo é
+mantido apenas como trilha de auditoria e exemplo de por que divergência de saída
+não substitui validação contra a especificação primária.
+
+---
+
+# Rascunho histórico refutado — não usar para submissão
 
 Este relatório foi gerado por IA a partir de análise de código-fonte
 público (e, quando aplicável, prova de conceito executada localmente

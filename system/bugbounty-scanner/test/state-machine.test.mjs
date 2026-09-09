@@ -180,6 +180,8 @@ test('corroborated_static -> reproduced_local exige validação com result=pass,
   assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'foundry_poc', result: 'pass', ts: '2026-08-30' }] }).ok, true);
   assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'negative_test', result: 'pass', conclusion: 'refutes' }] }).ok, false);
   assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'expected_failure_harness', result: 'fail', conclusion: 'supports' }] }).ok, true);
+  assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'prior_art_search', result: 'pass', conclusion: 'supports' }] }).ok, false);
+  assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'specification_recheck', result: 'pass', conclusion: 'supports' }] }).ok, false);
 });
 
 test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E deploymentEvidence high', () => {

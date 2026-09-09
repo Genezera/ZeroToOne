@@ -1,0 +1,13 @@
+=== RUN   TestZeroToOneShortSignaturePanics
+=== RUN   TestZeroToOneShortSignaturePanics/VerifyMessage
+    zz_zerotoone_short_signature_test.go:11: VerifyMessage panic confirmed: runtime error: index out of range [64] with length 0
+=== RUN   TestZeroToOneShortSignaturePanics/VerifyMessageWithAddress
+    zz_zerotoone_short_signature_test.go:11: VerifyMessageWithAddress panic confirmed: runtime error: slice bounds out of range [:64] with capacity 0
+=== RUN   TestZeroToOneShortSignaturePanics/VerifyMessageV1
+    zz_zerotoone_short_signature_test.go:11: VerifyMessageV1 panic confirmed: runtime error: slice bounds out of range [:64] with capacity 0
+--- PASS: TestZeroToOneShortSignaturePanics (0.00s)
+    --- PASS: TestZeroToOneShortSignaturePanics/VerifyMessage (0.00s)
+    --- PASS: TestZeroToOneShortSignaturePanics/VerifyMessageWithAddress (0.00s)
+    --- PASS: TestZeroToOneShortSignaturePanics/VerifyMessageV1 (0.00s)
+PASS
+ok  github.com/okx/go-wallet-sdk/coins/tron  0.532s

@@ -16,7 +16,7 @@
 // caçar contexto em outro lugar.
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { validationSupports } from './validation-semantics.mjs';
+import { validationProvesLocalReproduction } from './validation-semantics.mjs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { getFinding, listValidations, latestDeploymentEvidence, latestDuplicateCheck, latestImpactAssessment, recordReport } from './db.mjs';
@@ -55,7 +55,7 @@ export function assembleReportContext(db, findingId) {
   }
   const validations = listValidations(db, findingId);
   const rawPassingValidation = [...validations].reverse().find((v) => isIsolatedEndToEndValidation(v))
-    || [...validations].reverse().find(validationSupports) || null;
+    || [...validations].reverse().find(validationProvesLocalReproduction) || null;
   // listValidations devolve linha crua do SQLite (raw_output, snake_case)
   // -- normaliza aqui pra renderReportDraft nunca precisar saber disso.
   const passingValidation = rawPassingValidation

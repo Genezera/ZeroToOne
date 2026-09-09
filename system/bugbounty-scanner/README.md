@@ -1141,13 +1141,19 @@ fonte de dado nova: deriva do que já está gravado (`filesRead`,
 | E0 | Só padrão textual, nenhum arquivo lido |
 | E1 | 1 arquivo lido, confirma condição suspeita isolada |
 | E2 | 2+ arquivos lidos (cadeia cross-file) ou `corroborated_static` |
-| E3 | Validação real com `result=pass`, ou avançou até `reproduced_local`/`scope_verified`/`human_ready`/`submitted`, ou chegou a qualquer terminal pós-submissão (`triaged`/`duplicate`/`informative`/`rejected`/`paid`/`resolved`) |
+| E3 | PoC/test/reprodução/benchmark/harness executável que sustenta a hipótese, ou avançou até `reproduced_local`/`scope_verified`/`human_ready`/`submitted`, ou chegou a qualquer terminal pós-submissão (`triaged`/`duplicate`/`informative`/`rejected`/`paid`/`resolved`) |
 | E4 | Validação `end_to_end` no regression sandbox, com image id e isolamento sem rede registrados; sandbox apenas de componente permanece E3 |
 | E5 | Resultado real de plataforma: `triaged`/`paid`/`resolved` |
 
 Um outcome negativo real (`duplicate`/`informative`/`rejected`) **não
 rebaixa** o grau já alcançado — grau de evidência mede "quão bem
 provado o comportamento está", não "quão pagável ficou depois".
+
+Uma validação `supports` de prior art, revisão manual ou especificação não
+conta como reprodução. Somente tipos explicitamente executáveis (`poc`,
+`test`, `repro`, `benchmark`, `harness` ou `regression`) podem promover E3 ou
+autorizar `corroborated_static -> reproduced_local`. Isso impede uma busca
+pública limpa de ser confundida com prova de comportamento.
 
 **Bug real pego ao testar ao vivo antes de commitar** (motivo de existir
 uma versão "certa" documentada aqui em vez de só a primeira que

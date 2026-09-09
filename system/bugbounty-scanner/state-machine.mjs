@@ -16,7 +16,7 @@ import { reportabilityGate } from './impact-assessment.mjs';
 import { duplicateCheckGate } from './novelty-risk.mjs';
 import { isIsolatedEndToEndValidation } from './evidence-grade.mjs';
 import { findingIdentityQuality } from './finding-identity.mjs';
-import { validationSupports } from './validation-semantics.mjs';
+import { validationProvesLocalReproduction } from './validation-semantics.mjs';
 
 export const STATES = [
   'candidate',
@@ -87,7 +87,7 @@ function lowCompetitionReadinessGate(finding, ctx, impact, identity) {
   if (identitySignals.localRootCauseCollisionIds.length > 0) {
     return fail(`causa raiz colide com finding(s) local(is): ${identitySignals.localRootCauseCollisionIds.join(', ')}`);
   }
-  const reproduced = (ctx.validations || []).some(validationSupports);
+  const reproduced = (ctx.validations || []).some(validationProvesLocalReproduction);
   if (!reproduced) {
     return fail('envio de baixa competição exige ao menos uma validação com conclusion="supports" (reprodução real, não só leitura)');
   }
@@ -194,7 +194,7 @@ const PRECONDITIONS = {
     return ok('source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)');
   },
   'corroborated_static->reproduced_local': (f, ctx = {}) => {
-    const pass = (ctx.validations || []).find(validationSupports);
+    const pass = (ctx.validations || []).find(validationProvesLocalReproduction);
     if (pass) return ok(`reprodução determinística local com sucesso (${pass.type}, ${pass.ts || 'sem timestamp'})`);
     const notApplicable = (ctx.validations || []).find((v) => v.result === 'not_applicable');
     if (notApplicable) {
