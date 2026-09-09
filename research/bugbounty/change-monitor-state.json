@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T12:00:56.679Z",
+  "checkedAt": "2026-09-09T12:30:54.284Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "82b6b6d3b2fc1b9882ea500b54fca32c8d862e68",
+      "sha": "6bb42350227f0a714f4730165e7ba622c69bd99e",
       "branch": "master",
-      "parentSha": "b3a755401b2b3654e7f494b8f1ec51307ba0c911",
-      "committedAt": "2026-09-09T07:52:42Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/82b6b6d3b2fc1b9882ea500b54fca32c8d862e68",
-      "title": "Merge pull request #141896 from richabanker/add-watchevent-watcher-queue-latency",
-      "observedAt": "2026-09-09T08:00:50.803Z",
+      "parentSha": "82b6b6d3b2fc1b9882ea500b54fca32c8d862e68",
+      "committedAt": "2026-09-09T12:22:32Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/6bb42350227f0a714f4730165e7ba622c69bd99e",
+      "title": "Merge pull request #135870 from dims/kubelet-static-binary",
+      "observedAt": "2026-09-09T12:30:54.284Z",
       "programs": [
         "Kubernetes"
       ],
