@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:58:09.435Z",
+  "checkedAt": "2026-09-09T21:00:59.483Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -165,13 +165,13 @@
       "languages": []
     },
     "kubernetes/apimachinery": {
-      "sha": "c6991bb000a2a4c7138fcb75ea5efb91a32fe856",
+      "sha": "4c16d07a1af55193fb5806601a5000c24b1124d9",
       "branch": "master",
-      "parentSha": "8ed99eb9a4bd5e371d83b9f12f2d4b5805a04887",
-      "committedAt": "2026-09-09T15:27:01Z",
-      "url": "https://github.com/kubernetes/apimachinery/commit/c6991bb000a2a4c7138fcb75ea5efb91a32fe856",
-      "title": "Merge pull request #141938 from jpbetz/resource-mustparse-maxint64-fork",
-      "observedAt": "2026-09-09T19:01:01.675Z",
+      "parentSha": "fd7334a9ed0c0ed4ca5537c5e3e56f333d6e835b",
+      "committedAt": "2026-09-09T17:28:33Z",
+      "url": "https://github.com/kubernetes/apimachinery/commit/4c16d07a1af55193fb5806601a5000c24b1124d9",
+      "title": "Merge pull request #141305 from thc1006/quantity-checked-accessors",
+      "observedAt": "2026-09-09T21:00:59.483Z",
       "programs": [
         "Kubernetes"
       ],
