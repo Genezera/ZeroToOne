@@ -4,6 +4,16 @@ on:
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
+  # GitHub's cron is best-effort and was observed delaying this nominal
+  # 15-minute schedule by 2-5 hours. These non-circular completions add
+  # fresh polling opportunities without creating monitor->evidence loops.
+  workflow_run:
+    workflows:
+      - Bug bounty - static scan
+      - Bug bounty - HackerOne outcome sync
+      - Bug bounty - target discovery
+    types: [completed]
+    branches: [master]
 
 permissions:
   contents: write
@@ -14,6 +24,7 @@ concurrency:
 
 jobs:
   monitor:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 100
     steps:

@@ -482,6 +482,13 @@ bounty que passaram pela allowlist local de RoE, inclusive os grandes ou de
 linguagem ainda não suportada pelos scanners. A policy é revalidada em cada
 poll; o registro não autoriza execução de código de terceiro.
 
+O cron do GitHub é best-effort: em 08/09/2026 houve atrasos observados de
+2–5 horas mesmo com quatro expressões por hora. Por isso o workflow também
+é acionado após conclusões bem-sucedidas de scan, sync de reports e discovery.
+Não há gatilho após o evidence worker nem após o health monitor, pois isso
+criaria ciclos infinitos. Sem um scheduler cloud externo, 15 minutos é meta,
+não SLA; a auditoria mantém atraso acima de uma hora como estado unhealthy.
+
 Um HEAD novo é resolvido pelo compare do GitHub para uma lista exata de
 `changedFiles`; compare ausente, caminho inválido ou o limite de 300 arquivos
 faz a rodada falhar fechado sem avançar o cursor. Árvore, arquivo bruto e
