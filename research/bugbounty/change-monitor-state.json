@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T14:10:37.452Z",
+  "checkedAt": "2026-09-09T14:20:35.643Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -814,13 +814,13 @@
       ]
     },
     "kubernetes/minikube": {
-      "sha": "63d44ac59714f4d82f8ece48c5fa6a1d8d5547b2",
+      "sha": "c48769b9f5b8b45e1e44df3dfbf2051083bc97c5",
       "branch": "master",
-      "parentSha": "effc271038434957462e5c4469ea366e8514c065",
-      "committedAt": "2026-09-09T11:56:35Z",
-      "url": "https://github.com/kubernetes/minikube/commit/63d44ac59714f4d82f8ece48c5fa6a1d8d5547b2",
-      "title": "Merge pull request #23677 from SinghAman21/fix/node-status-on-deleting",
-      "observedAt": "2026-09-09T12:00:56.679Z",
+      "parentSha": "63d44ac59714f4d82f8ece48c5fa6a1d8d5547b2",
+      "committedAt": "2026-09-09T14:12:33Z",
+      "url": "https://github.com/kubernetes/minikube/commit/c48769b9f5b8b45e1e44df3dfbf2051083bc97c5",
+      "title": "Merge pull request #23685 from minikube-bot/auto_bump_buildkit_version-effc271",
+      "observedAt": "2026-09-09T14:20:35.643Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1114,13 +1114,13 @@
       ]
     },
     "mattermost/mattermost-plugin-gitlab": {
-      "sha": "cbf1b73039a9975acc1eaf563860f130f405cdac",
+      "sha": "82b25da19c82e4450966e1857465dd8c47315bfd",
       "branch": "master",
-      "parentSha": "18b9dbba738b95da8cbfa0088c4ce86d9717fd80",
-      "committedAt": "2026-09-09T08:52:52Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/cbf1b73039a9975acc1eaf563860f130f405cdac",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#710)",
-      "observedAt": "2026-09-09T09:00:55.407Z",
+      "parentSha": "cbf1b73039a9975acc1eaf563860f130f405cdac",
+      "committedAt": "2026-09-09T14:16:36Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/82b25da19c82e4450966e1857465dd8c47315bfd",
+      "title": "Bump js-yaml from 3.14.2 to 3.15.2 in /webapp (#711)",
+      "observedAt": "2026-09-09T14:20:35.643Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1144,13 +1144,13 @@
       ]
     },
     "mattermost/mattermost-plugin-mscalendar": {
-      "sha": "42aeea1f50580fa69568fc7719582c6c7156faa0",
+      "sha": "4ff0ae9a277d5520ff2096dec09ee11fd05d6b70",
       "branch": "master",
-      "parentSha": "52c68e491f46ef80b2f33b77d2bc70b1144d028e",
-      "committedAt": "2026-09-09T08:53:18Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/42aeea1f50580fa69568fc7719582c6c7156faa0",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#543)",
-      "observedAt": "2026-09-09T09:00:55.407Z",
+      "parentSha": "42aeea1f50580fa69568fc7719582c6c7156faa0",
+      "committedAt": "2026-09-09T14:19:07Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/4ff0ae9a277d5520ff2096dec09ee11fd05d6b70",
+      "title": "Bump js-yaml in /webapp (#544)",
+      "observedAt": "2026-09-09T14:20:35.643Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1202,13 +1202,13 @@
       "languages": []
     },
     "mattermost/mattermost-plugin-zoom": {
-      "sha": "e3881bfa0ba18807b71215ff41d4a8afdc1cb607",
+      "sha": "1edae5d8c77fca92795b0d0078721488a98ebfd2",
       "branch": "master",
-      "parentSha": "e244b6391ae96ccd8a5a0e3d7d4136e9bab960f6",
-      "committedAt": "2026-09-09T08:53:11Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-zoom/commit/e3881bfa0ba18807b71215ff41d4a8afdc1cb607",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#490)",
-      "observedAt": "2026-09-09T09:00:55.407Z",
+      "parentSha": "e3881bfa0ba18807b71215ff41d4a8afdc1cb607",
+      "committedAt": "2026-09-09T14:20:41Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-zoom/commit/1edae5d8c77fca92795b0d0078721488a98ebfd2",
+      "title": "Bump js-yaml from 3.14.2 to 3.15.2 in /webapp (#491)",
+      "observedAt": "2026-09-09T14:20:35.643Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "596ea4c073793c6798327020bee1c787f156de05",
+      "sha": "ebfc80892af1663e0821c5548707059cc9f347f7",
       "branch": "main",
-      "parentSha": "3fec2fe5f3f93e119101790123df8bb919aa4dd2",
-      "committedAt": "2026-09-09T14:10:41Z",
-      "url": "https://github.com/vercel/turborepo/commit/596ea4c073793c6798327020bee1c787f156de05",
-      "title": "perf: Reuse resolver inference during file tracing (#13999)",
-      "observedAt": "2026-09-09T14:10:37.452Z",
+      "parentSha": "596ea4c073793c6798327020bee1c787f156de05",
+      "committedAt": "2026-09-09T14:15:43Z",
+      "url": "https://github.com/vercel/turborepo/commit/ebfc80892af1663e0821c5548707059cc9f347f7",
+      "title": "chore: Release Turborepo 2.10.13-canary.2 (#14000)",
+      "observedAt": "2026-09-09T14:20:35.643Z",
       "programs": [
         "Vercel Open Source"
       ],
