@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T07:30:43.660Z",
+  "checkedAt": "2026-09-09T07:34:59.164Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -372,13 +372,13 @@
       "languages": []
     },
     "kubernetes/code-generator": {
-      "sha": "c04c07972931fe941600310fb7e1b7a3451a21c0",
+      "sha": "d65beb1a8303b69b5bb3a5c816314ca233ad3d7c",
       "branch": "master",
-      "parentSha": "ef3a3b4e6e06161f61d1e49af13a5cf332cf1398",
-      "committedAt": "2026-09-08T22:11:30Z",
-      "url": "https://github.com/kubernetes/code-generator/commit/c04c07972931fe941600310fb7e1b7a3451a21c0",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "c04c07972931fe941600310fb7e1b7a3451a21c0",
+      "committedAt": "2026-09-09T06:10:35Z",
+      "url": "https://github.com/kubernetes/code-generator/commit/d65beb1a8303b69b5bb3a5c816314ca233ad3d7c",
+      "title": "Merge pull request #141874 from yongruilin/dv-nearest-resolution",
+      "observedAt": "2026-09-09T07:34:59.164Z",
       "programs": [
         "Kubernetes"
       ],
