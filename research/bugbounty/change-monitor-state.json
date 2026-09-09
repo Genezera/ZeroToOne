@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T18:20:46.909Z",
+  "checkedAt": "2026-09-09T18:30:46.571Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -853,13 +853,13 @@
       "languages": []
     },
     "kubernetes/org": {
-      "sha": "2e0966ec48cec36b2b7db05bda884d2f32d93381",
+      "sha": "cc7d0bdb0475e19c805b82650c75473822d8e8e6",
       "branch": "main",
-      "parentSha": "d1118f90c2acc1a470ff65f033ec3e6729993860",
-      "committedAt": "2026-09-09T16:46:37Z",
-      "url": "https://github.com/kubernetes/org/commit/2e0966ec48cec36b2b7db05bda884d2f32d93381",
-      "title": "Merge pull request #6607 from sreeram-venkitesh/update-v1.38-release-team",
-      "observedAt": "2026-09-09T16:50:54.532Z",
+      "parentSha": "2e0966ec48cec36b2b7db05bda884d2f32d93381",
+      "committedAt": "2026-09-09T18:26:36Z",
+      "url": "https://github.com/kubernetes/org/commit/cc7d0bdb0475e19c805b82650c75473822d8e8e6",
+      "title": "Merge pull request #6622 from aramase/aramase/c/rm_ritazh_csi",
+      "observedAt": "2026-09-09T18:30:46.571Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
+      "sha": "6028ed402a5e731cc550a51c8522a2504caac15e",
       "branch": "main",
-      "parentSha": "1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
-      "committedAt": "2026-09-09T18:05:53Z",
-      "url": "https://github.com/vercel/eve/commit/3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
-      "title": "fix(eve): group queued deliveries by auth context (#3172)",
-      "observedAt": "2026-09-09T18:10:41.184Z",
+      "parentSha": "3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
+      "committedAt": "2026-09-09T18:25:11Z",
+      "url": "https://github.com/vercel/eve/commit/6028ed402a5e731cc550a51c8522a2504caac15e",
+      "title": "Refresh the chat template manifest (#3181)",
+      "observedAt": "2026-09-09T18:30:46.571Z",
       "programs": [
         "Vercel Open Source"
       ],
