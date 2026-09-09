@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T21:00:59.483Z",
+  "checkedAt": "2026-09-09T21:10:34.443Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -605,13 +605,13 @@
       "languages": []
     },
     "kubernetes/kube-aggregator": {
-      "sha": "815eff718e1df95830d140149fafa64b5da67cfb",
+      "sha": "74217b153a528ed2f6220cff8fa98a8da0c3bfc3",
       "branch": "master",
-      "parentSha": "9b9fa91f9445cf117057d6f67d0d3be85b651591",
-      "committedAt": "2026-09-08T22:30:35Z",
-      "url": "https://github.com/kubernetes/kube-aggregator/commit/815eff718e1df95830d140149fafa64b5da67cfb",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "6c633a1ec0ede99edf65e935dd455eadacebd8b9",
+      "committedAt": "2026-09-09T20:07:08Z",
+      "url": "https://github.com/kubernetes/kube-aggregator/commit/74217b153a528ed2f6220cff8fa98a8da0c3bfc3",
+      "title": "Merge pull request #140888 from Jefftree/openapi-v2-request-metric",
+      "observedAt": "2026-09-09T21:10:34.443Z",
       "programs": [
         "Kubernetes"
       ],
