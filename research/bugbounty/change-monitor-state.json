@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T14:47:42.680Z",
+  "checkedAt": "2026-09-09T14:50:39.227Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "f367ab342665555035822853f6975f89a6555df3",
+      "sha": "42779fe73a0739ceead3af98b7753930b8da4fd0",
       "branch": "canary",
-      "parentSha": "f8657de16c5f51a2526d6dc7cbd5347ce3b0809e",
-      "committedAt": "2026-09-09T14:46:27Z",
-      "url": "https://github.com/vercel/next.js/commit/f367ab342665555035822853f6975f89a6555df3",
-      "title": "Turbopack: fix require handling with alternative (#98258)",
-      "observedAt": "2026-09-09T14:47:42.680Z",
+      "parentSha": "f367ab342665555035822853f6975f89a6555df3",
+      "committedAt": "2026-09-09T14:48:47Z",
+      "url": "https://github.com/vercel/next.js/commit/42779fe73a0739ceead3af98b7753930b8da4fd0",
+      "title": "v16.4.0-canary.23",
+      "observedAt": "2026-09-09T14:50:39.227Z",
       "programs": [
         "Vercel Open Source"
       ],
