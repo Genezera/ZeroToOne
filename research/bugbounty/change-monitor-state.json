@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T13:00:57.261Z",
+  "checkedAt": "2026-09-09T13:10:37.303Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "26b2bbe024b681176d433c384148fb5468e821ab",
+      "sha": "56b95f41a232bc393467693f6ce00baafd2d72c7",
       "branch": "canary",
-      "parentSha": "3c8e9c385524359309d775f3fc39b6c2c0cedb6e",
-      "committedAt": "2026-09-09T12:42:25Z",
-      "url": "https://github.com/vercel/next.js/commit/26b2bbe024b681176d433c384148fb5468e821ab",
-      "title": "example: Use a Redis cacheHandler w/o dependencies (#95346)",
-      "observedAt": "2026-09-09T12:50:50.905Z",
+      "parentSha": "26b2bbe024b681176d433c384148fb5468e821ab",
+      "committedAt": "2026-09-09T13:03:46Z",
+      "url": "https://github.com/vercel/next.js/commit/56b95f41a232bc393467693f6ce00baafd2d72c7",
+      "title": "test: stabilize error recovery snapshot timing (#98414)",
+      "observedAt": "2026-09-09T13:10:37.303Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "efbe558dfc240ac818a049197da8573a4238fb6d",
+      "sha": "996a0bb50acd63e607d85ace82cf6e95cc8d4d56",
       "branch": "main",
-      "parentSha": "a6b88eefa867457c8eab806515628bbfe882ebf5",
-      "committedAt": "2026-09-09T13:00:40Z",
-      "url": "https://github.com/vercel/turborepo/commit/efbe558dfc240ac818a049197da8573a4238fb6d",
-      "title": "perf: Copy shared file dependencies once per destination during prune (#13995)",
-      "observedAt": "2026-09-09T13:00:57.261Z",
+      "parentSha": "efbe558dfc240ac818a049197da8573a4238fb6d",
+      "committedAt": "2026-09-09T13:09:06Z",
+      "url": "https://github.com/vercel/turborepo/commit/996a0bb50acd63e607d85ace82cf6e95cc8d4d56",
+      "title": "perf: Index npm workspace links during subgraph extraction (#13997)",
+      "observedAt": "2026-09-09T13:10:37.303Z",
       "programs": [
         "Vercel Open Source"
       ],
