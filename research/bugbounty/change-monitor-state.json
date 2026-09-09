@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T13:31:05.443Z",
+  "checkedAt": "2026-09-09T13:40:47.171Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "45f2b6a5bc06bdb40a847ea961f8d7ca7cd86563",
+      "sha": "b7670d962df00061607467a9e3d6ccc63c573825",
       "branch": "main",
-      "parentSha": "27f6d7afbe1113adfadb550e3ec48cf80971f2b9",
-      "committedAt": "2026-09-08T23:54:17Z",
-      "url": "https://github.com/vercel/ai/commit/45f2b6a5bc06bdb40a847ea961f8d7ca7cd86563",
-      "title": "fix: report tool-calls finish reason for OpenAI apply_patch calls (#20429)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "45f2b6a5bc06bdb40a847ea961f8d7ca7cd86563",
+      "committedAt": "2026-09-09T13:38:47Z",
+      "url": "https://github.com/vercel/ai/commit/b7670d962df00061607467a9e3d6ccc63c573825",
+      "title": "Version Packages (#20486)",
+      "observedAt": "2026-09-09T13:40:47.171Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "56b95f41a232bc393467693f6ce00baafd2d72c7",
+      "sha": "59b76e42ba93e5323484283ee5d1b81176c83d2d",
       "branch": "canary",
-      "parentSha": "26b2bbe024b681176d433c384148fb5468e821ab",
-      "committedAt": "2026-09-09T13:03:46Z",
-      "url": "https://github.com/vercel/next.js/commit/56b95f41a232bc393467693f6ce00baafd2d72c7",
-      "title": "test: stabilize error recovery snapshot timing (#98414)",
-      "observedAt": "2026-09-09T13:10:37.303Z",
+      "parentSha": "56b95f41a232bc393467693f6ce00baafd2d72c7",
+      "committedAt": "2026-09-09T13:39:15Z",
+      "url": "https://github.com/vercel/next.js/commit/59b76e42ba93e5323484283ee5d1b81176c83d2d",
+      "title": "[cd] Update `peerDependencies` in prereleases to accept the current prerelease (#98411)",
+      "observedAt": "2026-09-09T13:40:47.171Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "ead0e190f85340a001a061f5bb3338d4a1169745",
+      "sha": "3fec2fe5f3f93e119101790123df8bb919aa4dd2",
       "branch": "main",
-      "parentSha": "c02f97ef2bbfb2e1179fba6197fa44bc825f5d10",
-      "committedAt": "2026-09-09T13:27:40Z",
-      "url": "https://github.com/vercel/turborepo/commit/ead0e190f85340a001a061f5bb3338d4a1169745",
-      "title": "perf: Scope untracked-file discovery to filtered runs (#13991)",
-      "observedAt": "2026-09-09T13:31:05.443Z",
+      "parentSha": "2258541540671a97b72f4e26351918f773776d16",
+      "committedAt": "2026-09-09T13:38:31Z",
+      "url": "https://github.com/vercel/turborepo/commit/3fec2fe5f3f93e119101790123df8bb919aa4dd2",
+      "title": "perf: Coalesce glob-watcher invalidation snapshots (#13996)",
+      "observedAt": "2026-09-09T13:40:47.171Z",
       "programs": [
         "Vercel Open Source"
       ],
