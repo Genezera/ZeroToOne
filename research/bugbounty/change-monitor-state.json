@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T05:21:27.401Z",
+  "checkedAt": "2026-09-09T06:11:17.328Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "f3ef836cb9597ffe34d953e3c23fe20bd357b298",
+      "sha": "21fa70dc8748abc457d2e22527ac9655f7cbace5",
       "branch": "master",
-      "parentSha": "c36c84d72f08cf64fb2082d894195eb5877948cd",
-      "committedAt": "2026-09-08T11:54:31Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/f3ef836cb9597ffe34d953e3c23fe20bd357b298",
-      "title": "[occm] Reduce caps of manifests, charts (#3191)",
-      "observedAt": "2026-09-08T15:10:27.943Z",
+      "parentSha": "f3ef836cb9597ffe34d953e3c23fe20bd357b298",
+      "committedAt": "2026-09-09T06:04:33Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/21fa70dc8748abc457d2e22527ac9655f7cbace5",
+      "title": "[occm] test: add loadbalancer servicemonitor regression (#3171)",
+      "observedAt": "2026-09-09T06:11:17.328Z",
       "programs": [
         "Kubernetes"
       ],
