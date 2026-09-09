@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T09:00:55.407Z",
+  "checkedAt": "2026-09-09T09:10:39.435Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1230,13 +1230,13 @@
       "languages": []
     },
     "nuxt/nuxt": {
-      "sha": "8ca2314f9a5ba430f893f2f4e87899ee9a175d7c",
+      "sha": "1c20ad96e5cda30be9931b410ccc9d333920bec9",
       "branch": "main",
-      "parentSha": "436df0ae9fa54ec8a9ea15acf266729037f9c5a8",
-      "committedAt": "2026-09-09T08:17:17Z",
-      "url": "https://github.com/nuxt/nuxt/commit/8ca2314f9a5ba430f893f2f4e87899ee9a175d7c",
-      "title": "refactor(vite-server): answer a redirect rule without h3",
-      "observedAt": "2026-09-09T08:21:13.885Z",
+      "parentSha": "8ca2314f9a5ba430f893f2f4e87899ee9a175d7c",
+      "committedAt": "2026-09-09T08:53:24Z",
+      "url": "https://github.com/nuxt/nuxt/commit/1c20ad96e5cda30be9931b410ccc9d333920bec9",
+      "title": "fix(nuxt): use a throttle approach for hint prefetching (#36324)",
+      "observedAt": "2026-09-09T09:10:39.435Z",
       "programs": [
         "Vercel Open Source"
       ],
