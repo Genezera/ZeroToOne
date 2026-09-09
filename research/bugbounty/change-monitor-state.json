@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T01:14:19.711Z",
+  "checkedAt": "2026-09-09T03:10:59.200Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -896,13 +896,13 @@
       ]
     },
     "kubernetes/release": {
-      "sha": "7403be8165d12b660772a9eb674e972e2161cf3f",
+      "sha": "e3cbf93a5eccfe48e4ab5d862755f5b5dbf79306",
       "branch": "master",
-      "parentSha": "53d7b711a590f447b99e6082ba57111e9b31f011",
-      "committedAt": "2026-09-08T21:46:34Z",
-      "url": "https://github.com/kubernetes/release/commit/7403be8165d12b660772a9eb674e972e2161cf3f",
-      "title": "Merge pull request #4521 from cpanato/update-go",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "902c4be59a0b5776ff37dc38b70ebac8348d31d0",
+      "committedAt": "2026-09-09T03:00:31Z",
+      "url": "https://github.com/kubernetes/release/commit/e3cbf93a5eccfe48e4ab5d862755f5b5dbf79306",
+      "title": "Merge pull request #4523 from kubernetes/dependabot/go_modules/google.golang.org/grpc-1.83.2",
+      "observedAt": "2026-09-09T03:10:59.200Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "02a429ae7c79f5e680e618ec32aa5a9edd4450cb",
+      "sha": "4cb547213b5303b7f01675a7502b84ce960fd19e",
       "branch": "canary",
-      "parentSha": "705b326902b55994dc78319d1b6b727d62b7799a",
-      "committedAt": "2026-09-09T01:03:03Z",
-      "url": "https://github.com/vercel/next.js/commit/02a429ae7c79f5e680e618ec32aa5a9edd4450cb",
-      "title": "Dev server: More aggresively scold users for deleting .next when we detect it while dev is running (#98253)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "2b11d01a8c07e346bdd726c064d41f7a613a8b6c",
+      "committedAt": "2026-09-09T02:41:08Z",
+      "url": "https://github.com/vercel/next.js/commit/4cb547213b5303b7f01675a7502b84ce960fd19e",
+      "title": "test: support deploy exclusions with force gates (#98149)",
+      "observedAt": "2026-09-09T03:10:59.200Z",
       "programs": [
         "Vercel Open Source"
       ],
