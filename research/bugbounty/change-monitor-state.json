@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T21:20:35.586Z",
+  "checkedAt": "2026-09-09T21:30:41.413Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "fd85debf897fa30763442fae65b5c1543fd52af0",
+      "sha": "6737adf59793fd79cb4a0c65ef36340b66f4643e",
       "branch": "master",
-      "parentSha": "fb7cf88e48beb80c7ff371b2c452c7e0cb15287c",
-      "committedAt": "2026-09-09T20:31:35Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/fd85debf897fa30763442fae65b5c1543fd52af0",
-      "title": "Merge pull request #141975 from siyuanfoundation/emu-test",
-      "observedAt": "2026-09-09T20:40:42.526Z",
+      "parentSha": "fd85debf897fa30763442fae65b5c1543fd52af0",
+      "committedAt": "2026-09-09T21:30:33Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/6737adf59793fd79cb4a0c65ef36340b66f4643e",
+      "title": "Merge pull request #141207 from Jefftree/remove-locked-ga-gates-1.38",
+      "observedAt": "2026-09-09T21:30:41.413Z",
       "programs": [
         "Kubernetes"
       ],
