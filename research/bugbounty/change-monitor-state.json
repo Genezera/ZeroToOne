@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T21:15:37.177Z",
+  "checkedAt": "2026-09-09T21:20:35.586Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -290,13 +290,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-gcp": {
-      "sha": "230455622dbeadf9f4fc7e797c8973439323b3f6",
+      "sha": "925ccfe0a9ea52e48ab2a372e59280731005b9d4",
       "branch": "master",
-      "parentSha": "11ef62ccbc0a4c7bb795634addc931124aefea30",
-      "committedAt": "2026-09-04T19:26:20Z",
-      "url": "https://github.com/kubernetes/cloud-provider-gcp/commit/230455622dbeadf9f4fc7e797c8973439323b3f6",
-      "title": "refactor: update network check (#1342)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "230455622dbeadf9f4fc7e797c8973439323b3f6",
+      "committedAt": "2026-09-09T21:16:35Z",
+      "url": "https://github.com/kubernetes/cloud-provider-gcp/commit/925ccfe0a9ea52e48ab2a372e59280731005b9d4",
+      "title": "chore: bump golangci-lint to v2.13.2 for Go 1.27 compatibility (#1346)",
+      "observedAt": "2026-09-09T21:20:35.586Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "9a98e64d4834338b6009bf0f7b32a83ed2025c85",
+      "sha": "f6214c8fafb71224c79d271e66f1abd1a06476fe",
       "branch": "main",
-      "parentSha": "c6eac093dc7ff5c954bebeb4714b036821696f5e",
-      "committedAt": "2026-09-09T20:52:53Z",
-      "url": "https://github.com/vercel/turborepo/commit/9a98e64d4834338b6009bf0f7b32a83ed2025c85",
-      "title": "perf: Replace repeated deferred-hash scans with dependency-driven readiness (#14025)",
-      "observedAt": "2026-09-09T20:58:09.435Z",
+      "parentSha": "9a98e64d4834338b6009bf0f7b32a83ed2025c85",
+      "committedAt": "2026-09-09T21:19:57Z",
+      "url": "https://github.com/vercel/turborepo/commit/f6214c8fafb71224c79d271e66f1abd1a06476fe",
+      "title": "perf: Read child output in bounded chunks instead of per-line (#14026)",
+      "observedAt": "2026-09-09T21:20:35.586Z",
       "programs": [
         "Vercel Open Source"
       ],
