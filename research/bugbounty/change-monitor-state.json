@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T19:50:47.577Z",
+  "checkedAt": "2026-09-09T20:00:49.698Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
+      "sha": "ef3bac4c174f4650bb03aca0b5783fcfa6232a3b",
       "branch": "main",
-      "parentSha": "ab6e9f9a3ab03062dec1f622e65a25351f5aad28",
-      "committedAt": "2026-09-09T18:58:40Z",
-      "url": "https://github.com/vercel/ai/commit/4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
-      "title": "feat(xai): add batch cancellation and listing (#20558)",
-      "observedAt": "2026-09-09T19:01:01.675Z",
+      "parentSha": "4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
+      "committedAt": "2026-09-09T20:00:43Z",
+      "url": "https://github.com/vercel/ai/commit/ef3bac4c174f4650bb03aca0b5783fcfa6232a3b",
+      "title": "fix: forward video callback URLs for caller-managed receivers (#20561)",
+      "observedAt": "2026-09-09T20:00:49.698Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "6028ed402a5e731cc550a51c8522a2504caac15e",
+      "sha": "a24b68c5774bffeb0e4e762c3aab3ec7ab64a179",
       "branch": "main",
-      "parentSha": "3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
-      "committedAt": "2026-09-09T18:25:11Z",
-      "url": "https://github.com/vercel/eve/commit/6028ed402a5e731cc550a51c8522a2504caac15e",
-      "title": "Refresh the chat template manifest (#3181)",
-      "observedAt": "2026-09-09T18:30:46.571Z",
+      "parentSha": "71fbdb832740eacce66f30e8318d99b6a438298c",
+      "committedAt": "2026-09-09T19:56:36Z",
+      "url": "https://github.com/vercel/eve/commit/a24b68c5774bffeb0e4e762c3aab3ec7ab64a179",
+      "title": "fix(eve): export durable callback helper (#2981)",
+      "observedAt": "2026-09-09T20:00:49.698Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "f7b030bd8a6c11679fe03a354fccf94e43336114",
+      "sha": "f3ae66f7261bcb928b50bf19967d6788a3d5411d",
       "branch": "main",
-      "parentSha": "d21277ead6e836e864ceedaee7305617ee4ace20",
-      "committedAt": "2026-09-09T19:44:45Z",
-      "url": "https://github.com/vercel/turborepo/commit/f7b030bd8a6c11679fe03a354fccf94e43336114",
-      "title": "perf: Run the docs MDX generator once per quality task graph (#14019)",
-      "observedAt": "2026-09-09T19:50:47.577Z",
+      "parentSha": "f7b030bd8a6c11679fe03a354fccf94e43336114",
+      "committedAt": "2026-09-09T19:53:25Z",
+      "url": "https://github.com/vercel/turborepo/commit/f3ae66f7261bcb928b50bf19967d6788a3d5411d",
+      "title": "perf: Keep package bundling inside a cacheable build boundary (#14020)",
+      "observedAt": "2026-09-09T20:00:49.698Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "32a74e3941da0670cf42d2a335f92be1ebcdc7e4",
+      "sha": "c477cfa3d32bfd9101c751d7b3cff976d6646760",
       "branch": "main",
-      "parentSha": "efbdc213a0a70f8be2a147a0af195a4d9d82f0fe",
-      "committedAt": "2026-09-09T19:40:45Z",
-      "url": "https://github.com/vercel/workflow/commit/32a74e3941da0670cf42d2a335f92be1ebcdc7e4",
-      "title": "Version Packages (beta) (#4062)",
-      "observedAt": "2026-09-09T19:40:41.419Z",
+      "parentSha": "32a74e3941da0670cf42d2a335f92be1ebcdc7e4",
+      "committedAt": "2026-09-09T19:51:48Z",
+      "url": "https://github.com/vercel/workflow/commit/c477cfa3d32bfd9101c751d7b3cff976d6646760",
+      "title": "Keep one failed publish from taking down the release, and verify what actually reached npm (#3967)",
+      "observedAt": "2026-09-09T20:00:49.698Z",
       "programs": [
         "Vercel Open Source"
       ],
