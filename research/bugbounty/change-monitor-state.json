@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T03:10:59.200Z",
+  "checkedAt": "2026-09-09T03:20:59.911Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "8e95f865da7ca021ac3b39d41da9469df5ce9ed3",
+      "sha": "cf7bfb2dca32e5cb9e5379c004a3ff7cd62603ae",
       "branch": "master",
-      "parentSha": "5261422c0c345347c1469d16148fd8539d7e60f4",
-      "committedAt": "2026-09-08T23:52:34Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/8e95f865da7ca021ac3b39d41da9469df5ce9ed3",
-      "title": "Merge pull request #137030 from darshansreenivas/dtumkur-DRA-certificate-usage",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "b9865ed4a051995bbbca2e07aafa7446666819f6",
+      "committedAt": "2026-09-09T03:16:41Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/cf7bfb2dca32e5cb9e5379c004a3ff7cd62603ae",
+      "title": "Merge pull request #141874 from yongruilin/dv-nearest-resolution",
+      "observedAt": "2026-09-09T03:20:59.911Z",
       "programs": [
         "Kubernetes"
       ],
