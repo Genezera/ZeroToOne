@@ -1,5 +1,19 @@
 {
   "byTypeLanguage": {
+    "unclamped_scalar_pubkey_mismatch_invalid_signature::go": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
+    },
+    "ai_deep_read_finding::go": {
+      "reviewed": 33,
+      "confirmed": 13,
+      "falsePositive": 11,
+      "other": 9,
+      "fpRate": 0.3333333333333333
+    },
     "known_vulnerable_dependency::js": {
       "reviewed": 223,
       "confirmed": 0,
@@ -97,13 +111,6 @@
       "falsePositive": 2,
       "other": 0,
       "fpRate": 1
-    },
-    "ai_deep_read_finding::go": {
-      "reviewed": 33,
-      "confirmed": 22,
-      "falsePositive": 8,
-      "other": 3,
-      "fpRate": 0.24242424242424243
     },
     "ai_deep_read_finding::clarity": {
       "reviewed": 2,
@@ -329,13 +336,6 @@
       "other": 0,
       "fpRate": 1
     },
-    "unclamped_scalar_pubkey_mismatch_invalid_signature::go": {
-      "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
-    },
     "markdown_link_injection::go": {
       "reviewed": 1,
       "confirmed": 0,
@@ -345,10 +345,10 @@
     },
     "multikey_bitmap_signature_verification_bypass::go": {
       "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
+      "confirmed": 0,
+      "falsePositive": 1,
       "other": 0,
-      "fpRate": 0
+      "fpRate": 1
     },
     "non_constant_time_hmac_comparison::go": {
       "reviewed": 3,
@@ -450,6 +450,20 @@
     }
   },
   "byTypeProgram": {
+    "unclamped_scalar_pubkey_mismatch_invalid_signature::OKG": {
+      "reviewed": 1,
+      "confirmed": 0,
+      "falsePositive": 0,
+      "other": 1,
+      "fpRate": 0
+    },
+    "ai_deep_read_finding::OKG": {
+      "reviewed": 22,
+      "confirmed": 7,
+      "falsePositive": 3,
+      "other": 12,
+      "fpRate": 0.13636363636363635
+    },
     "known_vulnerable_dependency::Mattermost Public Bug Bounty Engagement ": {
       "reviewed": 38,
       "confirmed": 0,
@@ -793,26 +807,12 @@
       "other": 0,
       "fpRate": 1
     },
-    "ai_deep_read_finding::OKG": {
-      "reviewed": 22,
-      "confirmed": 16,
-      "falsePositive": 0,
-      "other": 6,
-      "fpRate": 0
-    },
     "ai_deep_read_finding::Mattermost Public Bug Bounty Engagement ": {
       "reviewed": 9,
       "confirmed": 4,
       "falsePositive": 5,
       "other": 0,
       "fpRate": 0.5555555555555556
-    },
-    "unclamped_scalar_pubkey_mismatch_invalid_signature::OKG": {
-      "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
-      "other": 0,
-      "fpRate": 0
     },
     "ai_deep_read_finding::Slack": {
       "reviewed": 1,
@@ -830,10 +830,10 @@
     },
     "multikey_bitmap_signature_verification_bypass::OKG": {
       "reviewed": 1,
-      "confirmed": 1,
-      "falsePositive": 0,
+      "confirmed": 0,
+      "falsePositive": 1,
       "other": 0,
-      "fpRate": 0
+      "fpRate": 1
     },
     "non_constant_time_hmac_comparison::Mattermost Public Bug Bounty Engagement ": {
       "reviewed": 2,

@@ -10,7 +10,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Rust | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | TypeScript | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | clarity | 2 | 0 | 2 | 0 | 100% |
-| ai_deep_read_finding | go | 33 | 22 | 8 | 3 | 24% |
+| ai_deep_read_finding | go | 33 | 13 | 11 | 9 | 33% |
 | ai_deep_read_finding | js | 1 | 0 | 1 | 0 | 100% |
 | ai_deep_read_finding | kotlin | 4 | 0 | 2 | 2 | 50% |
 | ai_deep_read_finding | move | 1 | 0 | 1 | 0 | 100% |
@@ -30,7 +30,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | known_vulnerable_dependency | jvm | 4 | 0 | 4 | 0 | 100% |
 | known_vulnerable_dependency | unknown | 2 | 0 | 2 | 0 | 100% |
 | markdown_link_injection | go | 1 | 0 | 0 | 1 | 0% |
-| multikey_bitmap_signature_verification_bypass | go | 1 | 1 | 0 | 0 | 0% |
+| multikey_bitmap_signature_verification_bypass | go | 1 | 0 | 1 | 0 | 100% |
 | non_constant_time_hmac_comparison | go | 3 | 2 | 1 | 0 | 33% |
 | path_traversal_arbitrary_file_read_risk | javascript | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | go | 1 | 0 | 1 | 0 | 100% |
@@ -67,7 +67,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ssrf_risk | js | 13 | 0 | 13 | 0 | 100% |
 | tainted_data_flow | js | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | solidity | 10 | 1 | 9 | 0 | 90% |
-| unclamped_scalar_pubkey_mismatch_invalid_signature | go | 1 | 1 | 0 | 0 | 0% |
+| unclamped_scalar_pubkey_mismatch_invalid_signature | go | 1 | 0 | 0 | 1 | 0% |
 | unguarded_transfer | clarity | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | go | 1 | 0 | 1 | 0 | 100% |
 
@@ -79,7 +79,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ai_deep_read_finding | Circle BBP | 11 | 4 | 7 | 0 | 64% |
 | ai_deep_read_finding | Kubernetes | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Mattermost Public Bug Bounty Engagement  | 9 | 4 | 5 | 0 | 56% |
-| ai_deep_read_finding | OKG | 22 | 16 | 0 | 6 | 0% |
+| ai_deep_read_finding | OKG | 22 | 7 | 3 | 12 | 14% |
 | ai_deep_read_finding | Slack | 1 | 1 | 0 | 0 | 0% |
 | ai_deep_read_finding | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | ai_deep_read_finding | Vercel Open Source | 8 | 3 | 4 | 1 | 50% |
@@ -100,7 +100,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | known_vulnerable_dependency | Plaid | 48 | 0 | 48 | 0 | 100% |
 | known_vulnerable_dependency | Vercel Open Source | 82 | 0 | 82 | 0 | 100% |
 | markdown_link_injection | Mattermost Public Bug Bounty Engagement  | 1 | 0 | 0 | 1 | 0% |
-| multikey_bitmap_signature_verification_bypass | OKG | 1 | 1 | 0 | 0 | 0% |
+| multikey_bitmap_signature_verification_bypass | OKG | 1 | 0 | 1 | 0 | 100% |
 | non_constant_time_hmac_comparison | Kubernetes | 1 | 1 | 0 | 0 | 0% |
 | non_constant_time_hmac_comparison | Mattermost Public Bug Bounty Engagement  | 2 | 1 | 1 | 0 | 50% |
 | path_traversal_arbitrary_file_read_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
@@ -145,6 +145,6 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ssrf_risk | Vercel Open Source | 13 | 0 | 13 | 0 | 100% |
 | tainted_data_flow | Vercel Open Source | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | Circle BBP | 10 | 1 | 9 | 0 | 90% |
-| unclamped_scalar_pubkey_mismatch_invalid_signature | OKG | 1 | 1 | 0 | 0 | 0% |
+| unclamped_scalar_pubkey_mismatch_invalid_signature | OKG | 1 | 0 | 0 | 1 | 0% |
 | unguarded_transfer | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | OKG | 1 | 0 | 1 | 0 | 100% |
