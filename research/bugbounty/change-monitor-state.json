@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T19:31:02.199Z",
+  "checkedAt": "2026-09-09T19:40:41.419Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "5223bd6eb8903134d8084e353aa0050311594b95",
+      "sha": "23ee440df30f8fb819ee501a55a1b574b2d79b36",
       "branch": "main",
-      "parentSha": "96712c91919cb74273c0ed75dbaa7d1f90574aa9",
-      "committedAt": "2026-09-09T18:49:52Z",
-      "url": "https://github.com/vercel/turborepo/commit/5223bd6eb8903134d8084e353aa0050311594b95",
-      "title": "perf: Share source text across boundaries diagnostics instead of copying it per error (#14014)",
-      "observedAt": "2026-09-09T18:50:22.479Z",
+      "parentSha": "5223bd6eb8903134d8084e353aa0050311594b95",
+      "committedAt": "2026-09-09T19:34:51Z",
+      "url": "https://github.com/vercel/turborepo/commit/23ee440df30f8fb819ee501a55a1b574b2d79b36",
+      "title": "perf: Parse the lockfile once when opening a native Workspace with its graph (#14017)",
+      "observedAt": "2026-09-09T19:40:41.419Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "efbdc213a0a70f8be2a147a0af195a4d9d82f0fe",
+      "sha": "32a74e3941da0670cf42d2a335f92be1ebcdc7e4",
       "branch": "main",
-      "parentSha": "22b5f48e3767f6574f8a6843a251678693d2f950",
-      "committedAt": "2026-09-09T19:26:28Z",
-      "url": "https://github.com/vercel/workflow/commit/efbdc213a0a70f8be2a147a0af195a4d9d82f0fe",
-      "title": "[core] Make `hook.metadata` a lazy Promise getter (#3988)",
-      "observedAt": "2026-09-09T19:31:02.199Z",
+      "parentSha": "efbdc213a0a70f8be2a147a0af195a4d9d82f0fe",
+      "committedAt": "2026-09-09T19:40:45Z",
+      "url": "https://github.com/vercel/workflow/commit/32a74e3941da0670cf42d2a335f92be1ebcdc7e4",
+      "title": "Version Packages (beta) (#4062)",
+      "observedAt": "2026-09-09T19:40:41.419Z",
       "programs": [
         "Vercel Open Source"
       ],
