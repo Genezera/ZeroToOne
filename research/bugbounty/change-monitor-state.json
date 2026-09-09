@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T08:50:33.927Z",
+  "checkedAt": "2026-09-09T09:00:55.407Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -277,13 +277,13 @@
       ]
     },
     "kubernetes/cloud-provider-azure": {
-      "sha": "af02e24ad56582af57a5e0e1242bfddec4953d50",
+      "sha": "4cc9f1029687d2112a3f0293c22547c07257ea36",
       "branch": "master",
-      "parentSha": "ebe4087386a67e294c7efcbc7de3fbd8d8572943",
-      "committedAt": "2026-09-09T05:16:33Z",
-      "url": "https://github.com/kubernetes-sigs/cloud-provider-azure/commit/af02e24ad56582af57a5e0e1242bfddec4953d50",
-      "title": "build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#10958)",
-      "observedAt": "2026-09-09T05:21:27.401Z",
+      "parentSha": "af02e24ad56582af57a5e0e1242bfddec4953d50",
+      "committedAt": "2026-09-09T08:54:33Z",
+      "url": "https://github.com/kubernetes-sigs/cloud-provider-azure/commit/4cc9f1029687d2112a3f0293c22547c07257ea36",
+      "title": "chore: fix cves for master (#10929)",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Kubernetes"
       ],
@@ -868,13 +868,13 @@
       ]
     },
     "kubernetes/perf-tests": {
-      "sha": "f49fa41e188a139ac7a57bd071e01ba916cb5103",
+      "sha": "6d049e752c247e8bc254b44f52f73c92563c7263",
       "branch": "master",
-      "parentSha": "b4a89f89d23a566150fa9696b117f783cfad7eb5",
-      "committedAt": "2026-09-08T14:20:31Z",
-      "url": "https://github.com/kubernetes/perf-tests/commit/f49fa41e188a139ac7a57bd071e01ba916cb5103",
-      "title": "Merge pull request #4359 from serathius/write-throughput-report-watch-errors",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "f49fa41e188a139ac7a57bd071e01ba916cb5103",
+      "committedAt": "2026-09-09T08:56:33Z",
+      "url": "https://github.com/kubernetes/perf-tests/commit/6d049e752c247e8bc254b44f52f73c92563c7263",
+      "title": "Merge pull request #4344 from p0lyn0mial/benchmark-list-informer-migration",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1099,13 +1099,13 @@
       ]
     },
     "mattermost/mattermost-plugin-github": {
-      "sha": "8ae7fa21cfc5f246f6de0a76965f5c338a0736ae",
+      "sha": "192abb376ab6ab94b27ff06267116c4e23cc22da",
       "branch": "master",
-      "parentSha": "cffa0db76d83d7b3b57744bc22170f60145db5d2",
-      "committedAt": "2026-09-08T15:18:26Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/8ae7fa21cfc5f246f6de0a76965f5c338a0736ae",
-      "title": "Bump brace-expansion from 1.1.12 to 1.1.18 in /webapp (#1058)",
-      "observedAt": "2026-09-08T18:45:14.164Z",
+      "parentSha": "8ae7fa21cfc5f246f6de0a76965f5c338a0736ae",
+      "committedAt": "2026-09-09T08:53:14Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/192abb376ab6ab94b27ff06267116c4e23cc22da",
+      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#1059)",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1114,13 +1114,13 @@
       ]
     },
     "mattermost/mattermost-plugin-gitlab": {
-      "sha": "18b9dbba738b95da8cbfa0088c4ce86d9717fd80",
+      "sha": "cbf1b73039a9975acc1eaf563860f130f405cdac",
       "branch": "master",
-      "parentSha": "603b0d71609299587bc2a279e986b18195c90c24",
-      "committedAt": "2026-09-08T15:46:23Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/18b9dbba738b95da8cbfa0088c4ce86d9717fd80",
-      "title": "Bump brace-expansion from 1.1.14 to 1.1.18 in /webapp (#706)",
-      "observedAt": "2026-09-08T18:45:14.164Z",
+      "parentSha": "18b9dbba738b95da8cbfa0088c4ce86d9717fd80",
+      "committedAt": "2026-09-09T08:52:52Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/cbf1b73039a9975acc1eaf563860f130f405cdac",
+      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#710)",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1144,13 +1144,13 @@
       ]
     },
     "mattermost/mattermost-plugin-mscalendar": {
-      "sha": "52c68e491f46ef80b2f33b77d2bc70b1144d028e",
+      "sha": "42aeea1f50580fa69568fc7719582c6c7156faa0",
       "branch": "master",
-      "parentSha": "a8aecdb6e2450a066562ed671810f68b5db6f4d4",
-      "committedAt": "2026-09-08T09:51:24Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/52c68e491f46ef80b2f33b77d2bc70b1144d028e",
-      "title": "Bump the webapp-dependencies group in /webapp with 2 updates (#542)",
-      "observedAt": "2026-09-08T11:07:53.366Z",
+      "parentSha": "52c68e491f46ef80b2f33b77d2bc70b1144d028e",
+      "committedAt": "2026-09-09T08:53:18Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/42aeea1f50580fa69568fc7719582c6c7156faa0",
+      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#543)",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1202,13 +1202,13 @@
       "languages": []
     },
     "mattermost/mattermost-plugin-zoom": {
-      "sha": "e244b6391ae96ccd8a5a0e3d7d4136e9bab960f6",
+      "sha": "e3881bfa0ba18807b71215ff41d4a8afdc1cb607",
       "branch": "master",
-      "parentSha": "1457fb0a117f76e2cebe7e3cc69d92614e073d52",
-      "committedAt": "2026-09-03T17:18:48Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-zoom/commit/e244b6391ae96ccd8a5a0e3d7d4136e9bab960f6",
-      "title": "Bump fast-uri from 3.1.4 to 3.1.7 in /webapp (#489)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "e244b6391ae96ccd8a5a0e3d7d4136e9bab960f6",
+      "committedAt": "2026-09-09T08:53:11Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-zoom/commit/e3881bfa0ba18807b71215ff41d4a8afdc1cb607",
+      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#490)",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1342,13 +1342,13 @@
       ]
     },
     "sveltejs/svelte": {
-      "sha": "5895c637b04dc8667020c8d326807c3f3a984472",
+      "sha": "d16099ef0fa666f3610ef75ad9fca3252b0b47d0",
       "branch": "main",
-      "parentSha": "9e695442380a7c3bec5bf90d6c7341c3e1ae9bac",
-      "committedAt": "2026-09-03T14:31:52Z",
-      "url": "https://github.com/sveltejs/svelte/commit/5895c637b04dc8667020c8d326807c3f3a984472",
-      "title": "fix: recognise `aria-braillelabel` and `aria-brailleroledescription` as known ARIA attributes (#18765)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "5895c637b04dc8667020c8d326807c3f3a984472",
+      "committedAt": "2026-09-09T08:58:29Z",
+      "url": "https://github.com/sveltejs/svelte/commit/d16099ef0fa666f3610ef75ad9fca3252b0b47d0",
+      "title": "fix: remove `WAS_MARKED` flag in favor of `Set` (#18127)",
+      "observedAt": "2026-09-09T09:00:55.407Z",
       "programs": [
         "Vercel Open Source"
       ],
