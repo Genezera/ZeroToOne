@@ -8673,7 +8673,7 @@
     "packages/adapter-teams/vitest.config.ts": "18e0de9aeaa5aa84b9e7482283018ac5fde47f36",
     "packages/adapter-telegram/src/cards.ts": "f2daadde0849ddb7491b6796185240b5a263aae9",
     "packages/adapter-telegram/src/index.ts": "1e55fa41c8ed97f517741a8fa27dd55f8eb5eab1",
-    "packages/adapter-telegram/src/markdown.ts": "7561fc6a2c6bcc27716783909a93533d4d976041",
+    "packages/adapter-telegram/src/markdown.ts": "618758926d4e0d6c80746f55904e334f7b57fe59",
     "packages/adapter-telegram/src/rich.ts": "77c1359dc11628fddb39de0b28c11dff13d9abcc",
     "packages/adapter-telegram/src/types.ts": "cfb70b53782fc14b57e73519ff62b7a9aeeed630",
     "packages/adapter-telegram/tsup.config.ts": "fb359b66a345165a846dee7c30addb131fbeece0",
