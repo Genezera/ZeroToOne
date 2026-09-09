@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T08:00:50.803Z",
+  "checkedAt": "2026-09-09T08:10:39.289Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "0980ca1c50f485da69acc391ef2b8db70dae065e",
+      "sha": "30cebdee830c3cc432fc8e1e0adabff46a2792bd",
       "branch": "master",
-      "parentSha": "869714db075953768e902f128d1fcbe1ec75ee1a",
-      "committedAt": "2026-09-08T23:28:30Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/0980ca1c50f485da69acc391ef2b8db70dae065e",
-      "title": "Merge pull request #37838 from kannon92/update-golang-1-27-jobset",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "0980ca1c50f485da69acc391ef2b8db70dae065e",
+      "committedAt": "2026-09-09T08:06:37Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/30cebdee830c3cc432fc8e1e0adabff46a2792bd",
+      "title": "Merge pull request #37841 from Amulyam24/capibm",
+      "observedAt": "2026-09-09T08:10:39.289Z",
       "programs": [
         "Kubernetes"
       ],
