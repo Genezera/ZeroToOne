@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T14:01:01.558Z",
+  "checkedAt": "2026-09-09T14:10:37.452Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -592,13 +592,13 @@
       "languages": []
     },
     "kubernetes/kops": {
-      "sha": "2baf20707486907c42f5a4a325d8d2255a60c74c",
+      "sha": "fb9753c3a75552cb1c12986d96859d9e45f8b763",
       "branch": "master",
-      "parentSha": "4735ee027b77a013a8d69e6d92510ecd0b58da8e",
-      "committedAt": "2026-09-09T11:12:33Z",
-      "url": "https://github.com/kubernetes/kops/commit/2baf20707486907c42f5a4a325d8d2255a60c74c",
-      "title": "Merge pull request #18788 from hakman/codex/go-1.27-x-modules",
-      "observedAt": "2026-09-09T11:20:40.094Z",
+      "parentSha": "2baf20707486907c42f5a4a325d8d2255a60c74c",
+      "committedAt": "2026-09-09T14:06:27Z",
+      "url": "https://github.com/kubernetes/kops/commit/fb9753c3a75552cb1c12986d96859d9e45f8b763",
+      "title": "Merge pull request #18784 from moshevayner/aws-cni-1.23.1",
+      "observedAt": "2026-09-09T14:10:37.452Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "3fec2fe5f3f93e119101790123df8bb919aa4dd2",
+      "sha": "596ea4c073793c6798327020bee1c787f156de05",
       "branch": "main",
-      "parentSha": "2258541540671a97b72f4e26351918f773776d16",
-      "committedAt": "2026-09-09T13:38:31Z",
-      "url": "https://github.com/vercel/turborepo/commit/3fec2fe5f3f93e119101790123df8bb919aa4dd2",
-      "title": "perf: Coalesce glob-watcher invalidation snapshots (#13996)",
-      "observedAt": "2026-09-09T13:40:47.171Z",
+      "parentSha": "3fec2fe5f3f93e119101790123df8bb919aa4dd2",
+      "committedAt": "2026-09-09T14:10:41Z",
+      "url": "https://github.com/vercel/turborepo/commit/596ea4c073793c6798327020bee1c787f156de05",
+      "title": "perf: Reuse resolver inference during file tracing (#13999)",
+      "observedAt": "2026-09-09T14:10:37.452Z",
       "programs": [
         "Vercel Open Source"
       ],
