@@ -1,0 +1,1327 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-09T01:14:06.160Z",
+  "source": "arkadiyt/bounty-targets-data + local program-policy allowlist",
+  "repositories": [
+    {
+      "owner": "kiwicom",
+      "repo": "js-iam-middleware",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "k8s-vault-operator",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "kiwi-cache",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "kiwi-json",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "kiwi-structlog-config",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "konfetti",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "navigation-compose-typed",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "orbit",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "pg2avro",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kiwicom",
+      "repo": "request-session",
+      "programs": [
+        {
+          "program": "Kiwi.com",
+          "platform": "HackerOne",
+          "handle": "kiwicom",
+          "url": "https://hackerone.com/kiwicom"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "api",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "apiextensions-apiserver",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "apimachinery",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "apiserver",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "autoscaler",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cli-runtime",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "client-go",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-alibaba-cloud",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-aws",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-azure",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-gcp",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-openstack",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-sample",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cloud-provider-vsphere",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cluster-bootstrap",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cluster-registry",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "code-generator",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "community",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "component-base",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "cri-api",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "csi-api",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "csi-translation-lib",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "dns",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "enhancements",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "examples",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "frakti",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "funding",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "gengo",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "git-sync",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "k8s.io",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "klog",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kompose",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kops",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-aggregator",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-controller-manager",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-deploy",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-openapi",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-proxy",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-scheduler",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kube-state-metrics",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubeadm",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubectl",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubelet",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubernetes",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubernetes-anywhere",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "kubernetes-template-project",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "legacy-cloud-providers",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "metrics",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "minikube",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "node-api",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "node-problem-detector",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "org",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "perf-tests",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "publishing-bot",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "release",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "repo-infra",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "sample-apiserver",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "sample-cli-plugin",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "sample-controller",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "security",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "sig-release",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "steering",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "test-infra",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "utils",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "kubernetes",
+      "repo": "website",
+      "programs": [
+        {
+          "program": "Kubernetes",
+          "platform": "HackerOne",
+          "handle": "kubernetes",
+          "url": "https://hackerone.com/kubernetes"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-ai",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-boards",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-calls",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-confluence",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-github",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-gitlab",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-jira",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-mscalendar",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-msteams",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-msteams-meetings",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-playbooks",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "mattermost",
+      "repo": "mattermost-plugin-zoom",
+      "programs": [
+        {
+          "program": "Mattermost Public Bug Bounty Engagement ",
+          "platform": "Bugcrowd",
+          "url": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+        }
+      ]
+    },
+    {
+      "owner": "nitrojs",
+      "repo": "nitro",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "nuxt",
+      "repo": "nuxt",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "okx",
+      "repo": "go-wallet-sdk",
+      "programs": [
+        {
+          "program": "OKG",
+          "platform": "HackerOne",
+          "handle": "okg",
+          "url": "https://hackerone.com/okg"
+        }
+      ]
+    },
+    {
+      "owner": "plaid",
+      "repo": "plaid-link-android",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "handle": "plaid",
+          "url": "https://hackerone.com/plaid"
+        }
+      ]
+    },
+    {
+      "owner": "plaid",
+      "repo": "plaid-link-ios",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "handle": "plaid",
+          "url": "https://hackerone.com/plaid"
+        }
+      ]
+    },
+    {
+      "owner": "plaid",
+      "repo": "plaid-ruby",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "handle": "plaid",
+          "url": "https://hackerone.com/plaid"
+        }
+      ]
+    },
+    {
+      "owner": "plaid",
+      "repo": "react-native-plaid-link-sdk",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "handle": "plaid",
+          "url": "https://hackerone.com/plaid"
+        }
+      ]
+    },
+    {
+      "owner": "plaid",
+      "repo": "react-plaid-link",
+      "programs": [
+        {
+          "program": "Plaid",
+          "platform": "HackerOne",
+          "handle": "plaid",
+          "url": "https://hackerone.com/plaid"
+        }
+      ]
+    },
+    {
+      "owner": "slackhq",
+      "repo": "nebula",
+      "programs": [
+        {
+          "program": "Slack",
+          "platform": "HackerOne",
+          "handle": "slack",
+          "url": "https://hackerone.com/slack"
+        }
+      ]
+    },
+    {
+      "owner": "sveltejs",
+      "repo": "svelte",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel-labs",
+      "repo": "agent-skills",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel-labs",
+      "repo": "skills",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "ai",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "async-sema",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "chat",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "eve",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "flags",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "ms",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "next.js",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "swr",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "turborepo",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "vercel",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    },
+    {
+      "owner": "vercel",
+      "repo": "workflow",
+      "programs": [
+        {
+          "program": "Vercel Open Source",
+          "platform": "HackerOne",
+          "handle": "vercel-open-source",
+          "url": "https://hackerone.com/vercel-open-source"
+        }
+      ]
+    }
+  ]
+}
