@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T17:20:45.678Z",
+  "checkedAt": "2026-09-09T17:30:45.665Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "22e7d73585b308db5a60520140876b986ac5e965",
+      "sha": "7d532614e7f7bf7b7c0ede253204e3a0910afc78",
       "branch": "master",
-      "parentSha": "cb252f9f946c417bd430498eb8927f3647bd08f7",
-      "committedAt": "2026-09-09T16:32:34Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/22e7d73585b308db5a60520140876b986ac5e965",
-      "title": "make: Add lint-charts target (#3208)",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "22e7d73585b308db5a60520140876b986ac5e965",
+      "committedAt": "2026-09-09T17:22:33Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/7d532614e7f7bf7b7c0ede253204e3a0910afc78",
+      "title": "fix(manila-csi-plugin): revert to setting cluster id from environment variable (#3157)",
+      "observedAt": "2026-09-09T17:30:45.665Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
+      "sha": "4266156f63e27d86b224211cb9eb1e02a58f4bc9",
       "branch": "master",
-      "parentSha": "e9c9800767fa620ffb698e1a68bd9454bd911133",
-      "committedAt": "2026-09-09T15:27:01Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
-      "title": "Merge pull request #141938 from jpbetz/resource-mustparse-maxint64-fork",
-      "observedAt": "2026-09-09T15:30:49.079Z",
+      "parentSha": "81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
+      "committedAt": "2026-09-09T17:28:33Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/4266156f63e27d86b224211cb9eb1e02a58f4bc9",
+      "title": "Merge pull request #141305 from thc1006/quantity-checked-accessors",
+      "observedAt": "2026-09-09T17:30:45.665Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "aa4cc14fbfee8c1936d9e7b37349eb468fa71c64",
+      "sha": "d7fc51843553e17231225971ce7407143215093f",
       "branch": "main",
-      "parentSha": "c595e6e35388c14b9f7d71e5f0ddf2ae8952cffd",
-      "committedAt": "2026-09-09T17:19:09Z",
-      "url": "https://github.com/vercel/ai/commit/aa4cc14fbfee8c1936d9e7b37349eb468fa71c64",
-      "title": "fix(gateway): preserve image result retryability (#20548)",
-      "observedAt": "2026-09-09T17:20:45.678Z",
+      "parentSha": "aa4cc14fbfee8c1936d9e7b37349eb468fa71c64",
+      "committedAt": "2026-09-09T17:23:50Z",
+      "url": "https://github.com/vercel/ai/commit/d7fc51843553e17231225971ce7407143215093f",
+      "title": "ci: raise Anthropic load time threshold (#20532)",
+      "observedAt": "2026-09-09T17:30:45.665Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1411,13 +1411,13 @@
       "languages": []
     },
     "vercel/chat": {
-      "sha": "ea025af7ac2bd2d88fd95ac85b91213055af2ab9",
+      "sha": "2e2426d17e97f545b758962dc7496b199f4d3230",
       "branch": "main",
-      "parentSha": "056d8830b26eea46b9ef0ea50d055f33d4516739",
-      "committedAt": "2026-09-09T17:18:11Z",
-      "url": "https://github.com/vercel/chat/commit/ea025af7ac2bd2d88fd95ac85b91213055af2ab9",
-      "title": "feat(postgres): allow migration-managed schemas (#913)",
-      "observedAt": "2026-09-09T17:20:45.678Z",
+      "parentSha": "ea025af7ac2bd2d88fd95ac85b91213055af2ab9",
+      "committedAt": "2026-09-09T17:30:10Z",
+      "url": "https://github.com/vercel/chat/commit/2e2426d17e97f545b758962dc7496b199f4d3230",
+      "title": "feat(teams): add installation lifecycle events (#914)",
+      "observedAt": "2026-09-09T17:30:45.665Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "f01afa9ad4de3697ed63c4237b545aa1b8740992",
+      "sha": "470ffb9a7b7dad8824d2bc46ea5cfa54198057a6",
       "branch": "main",
-      "parentSha": "3862f3e9c430e175f73f915a687233cc37719bd0",
-      "committedAt": "2026-09-09T16:43:19Z",
-      "url": "https://github.com/vercel/turborepo/commit/f01afa9ad4de3697ed63c4237b545aa1b8740992",
-      "title": "perf: Reuse archive anchor during cache creation (#14010)",
-      "observedAt": "2026-09-09T16:50:54.532Z",
+      "parentSha": "f01afa9ad4de3697ed63c4237b545aa1b8740992",
+      "committedAt": "2026-09-09T17:30:03Z",
+      "url": "https://github.com/vercel/turborepo/commit/470ffb9a7b7dad8824d2bc46ea5cfa54198057a6",
+      "title": "perf: Bound remote-cache transfer memory instead of retaining whole artifacts (#14011)",
+      "observedAt": "2026-09-09T17:30:45.665Z",
       "programs": [
         "Vercel Open Source"
       ],
