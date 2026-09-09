@@ -1,12 +1,12 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T17:01:24.335Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T17:21:11.952Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
-| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-jira |
+| js | Vercel Open Source | HackerOne | vercel/chat |
 
 ## Fila de bug bounty
 
