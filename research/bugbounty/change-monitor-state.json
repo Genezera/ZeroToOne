@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T18:51:02.813Z",
+  "checkedAt": "2026-09-09T19:01:01.675Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -139,13 +139,13 @@
       "languages": []
     },
     "kubernetes/api": {
-      "sha": "baf48de52220941c0253fe70ff07b1e38576b86a",
+      "sha": "73e57b223dd9234bf1ff636031913e692dec7e94",
       "branch": "master",
-      "parentSha": "af6be35874c3d671d273412b599e57becf26b4b5",
-      "committedAt": "2026-09-09T05:53:18Z",
-      "url": "https://github.com/kubernetes/api/commit/baf48de52220941c0253fe70ff07b1e38576b86a",
-      "title": "Merge pull request #141086 from mohitdebian/fix-eventseries-atomic-openapi",
-      "observedAt": "2026-09-09T07:30:43.660Z",
+      "parentSha": "baf48de52220941c0253fe70ff07b1e38576b86a",
+      "committedAt": "2026-09-09T15:47:34Z",
+      "url": "https://github.com/kubernetes/api/commit/73e57b223dd9234bf1ff636031913e692dec7e94",
+      "title": "Merge pull request #141881 from liyuerich/commentstartcertificate",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -165,13 +165,13 @@
       "languages": []
     },
     "kubernetes/apimachinery": {
-      "sha": "ae6b8e23cfd0d910ac224f3bfa15bfc3c1df444f",
+      "sha": "c6991bb000a2a4c7138fcb75ea5efb91a32fe856",
       "branch": "master",
-      "parentSha": "f999f921d8301f4746552cfd091dee6d9b266706",
-      "committedAt": "2026-09-08T21:48:49Z",
-      "url": "https://github.com/kubernetes/apimachinery/commit/ae6b8e23cfd0d910ac224f3bfa15bfc3c1df444f",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "8ed99eb9a4bd5e371d83b9f12f2d4b5805a04887",
+      "committedAt": "2026-09-09T15:27:01Z",
+      "url": "https://github.com/kubernetes/apimachinery/commit/c6991bb000a2a4c7138fcb75ea5efb91a32fe856",
+      "title": "Merge pull request #141938 from jpbetz/resource-mustparse-maxint64-fork",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -221,13 +221,13 @@
       ]
     },
     "kubernetes/client-go": {
-      "sha": "0a0bbf644072718686bd0753cbad889919f073ba",
+      "sha": "e00b95407b94a3f9d108d676444510e07c6f9a7e",
       "branch": "master",
-      "parentSha": "606fbc4789101e1a19f0c8ab780ac8ae71448bb0",
-      "committedAt": "2026-09-09T05:59:30Z",
-      "url": "https://github.com/kubernetes/client-go/commit/0a0bbf644072718686bd0753cbad889919f073ba",
-      "title": "Merge pull request #141086 from mohitdebian/fix-eventseries-atomic-openapi",
-      "observedAt": "2026-09-09T07:30:43.660Z",
+      "parentSha": "0a0bbf644072718686bd0753cbad889919f073ba",
+      "committedAt": "2026-09-09T15:58:59Z",
+      "url": "https://github.com/kubernetes/client-go/commit/e00b95407b94a3f9d108d676444510e07c6f9a7e",
+      "title": "Merge pull request #141881 from liyuerich/commentstartcertificate",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -719,13 +719,13 @@
       ]
     },
     "kubernetes/kubectl": {
-      "sha": "20cb0eb96d6bc4399e7d8e1f234bce6ab80da92c",
+      "sha": "c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
       "branch": "master",
-      "parentSha": "f3b3b1e2245469724fbc5d28d8b51dd57b5d33e9",
-      "committedAt": "2026-09-08T23:26:29Z",
-      "url": "https://github.com/kubernetes/kubectl/commit/20cb0eb96d6bc4399e7d8e1f234bce6ab80da92c",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "89fc081d54e43adcf39a3809a701e072be27b83f",
+      "committedAt": "2026-09-09T18:28:55Z",
+      "url": "https://github.com/kubernetes/kubectl/commit/c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
+      "title": "refactor flags and options in kubectl exec cmd (#141918)",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1045,13 +1045,13 @@
       "languages": []
     },
     "mattermost/mattermost-plugin-ai": {
-      "sha": "ce9703b2000623925ee2acaea0a794ef2763a5b2",
+      "sha": "4a40ad7a7fab25d6b157b4f61d2a26209c620d3e",
       "branch": "master",
-      "parentSha": "200d2395a543725052c6c0ed62c2cb47e58f3fe6",
-      "committedAt": "2026-09-09T11:49:03Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/ce9703b2000623925ee2acaea0a794ef2763a5b2",
-      "title": "Add SearXNG web search provider (#923)",
-      "observedAt": "2026-09-09T11:50:40.563Z",
+      "parentSha": "8a4eda3d2dd63a4a680ac8523a5bdea67e1a3284",
+      "committedAt": "2026-09-09T18:59:09Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/4a40ad7a7fab25d6b157b4f61d2a26209c620d3e",
+      "title": "feat(abac): wire ABAC policy editor to agents, services, and MCP (#973)",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "99421961221a46f9267080717eacb0109cb9f22d",
+      "sha": "4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
       "branch": "main",
-      "parentSha": "65eb52b767008e1dd6a074fbc2e9223ae50a8739",
-      "committedAt": "2026-09-09T18:36:36Z",
-      "url": "https://github.com/vercel/ai/commit/99421961221a46f9267080717eacb0109cb9f22d",
-      "title": "feat(openai): add batch cancellation and listing (#20551)",
-      "observedAt": "2026-09-09T18:40:58.616Z",
+      "parentSha": "ab6e9f9a3ab03062dec1f622e65a25351f5aad28",
+      "committedAt": "2026-09-09T18:58:40Z",
+      "url": "https://github.com/vercel/ai/commit/4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
+      "title": "feat(xai): add batch cancellation and listing (#20558)",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Vercel Open Source"
       ],
