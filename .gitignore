@@ -36,3 +36,10 @@ logs/bugbounty-runtime-events.jsonl
 
 # config local de preview (dashboard etc.), específico da máquina
 .claude/launch.json
+
+# Cloudflare Worker (watchdog): a config real com IDs de deploy específicos
+# do ambiente (KV namespace, nome do worker) fica local; o template versionado
+# é wrangler.example.jsonc. Segredos nunca entram aqui — são setados via
+# `wrangler secret`. .wrangler/ é cache/estado local do CLI.
+cloud/bugbounty-watchdog/wrangler.jsonc
+cloud/bugbounty-watchdog/.wrangler/
