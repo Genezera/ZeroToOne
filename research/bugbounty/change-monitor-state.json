@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T09:50:41.663Z",
+  "checkedAt": "2026-09-09T10:00:58.022Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "e44c5f192c22c68ee4206ccabe9e14453cb67ae6",
+      "sha": "aad56b54f3ce4eb1cb92e81dbd7473d85ecbf0f9",
       "branch": "canary",
-      "parentSha": "73a26bfc8484f34b6ab44d400d6b1b87ade2aa3f",
-      "committedAt": "2026-09-09T08:25:45Z",
-      "url": "https://github.com/vercel/next.js/commit/e44c5f192c22c68ee4206ccabe9e14453cb67ae6",
-      "title": "ci: check that Turbopack compiles for wasm (#97588)",
-      "observedAt": "2026-09-09T08:30:38.228Z",
+      "parentSha": "e44c5f192c22c68ee4206ccabe9e14453cb67ae6",
+      "committedAt": "2026-09-09T09:59:51Z",
+      "url": "https://github.com/vercel/next.js/commit/aad56b54f3ce4eb1cb92e81dbd7473d85ecbf0f9",
+      "title": "fix: preserve repeated --require/--import flags when forking workers (#96651)",
+      "observedAt": "2026-09-09T10:00:58.022Z",
       "programs": [
         "Vercel Open Source"
       ],
