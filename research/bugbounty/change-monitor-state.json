@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T15:40:46.746Z",
+  "checkedAt": "2026-09-09T15:50:44.071Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -814,13 +814,13 @@
       ]
     },
     "kubernetes/minikube": {
-      "sha": "c48769b9f5b8b45e1e44df3dfbf2051083bc97c5",
+      "sha": "67d5853be3cc64f1de11071c3a1a66d968c3bbcd",
       "branch": "master",
-      "parentSha": "63d44ac59714f4d82f8ece48c5fa6a1d8d5547b2",
-      "committedAt": "2026-09-09T14:12:33Z",
-      "url": "https://github.com/kubernetes/minikube/commit/c48769b9f5b8b45e1e44df3dfbf2051083bc97c5",
-      "title": "Merge pull request #23685 from minikube-bot/auto_bump_buildkit_version-effc271",
-      "observedAt": "2026-09-09T14:20:35.643Z",
+      "parentSha": "c48769b9f5b8b45e1e44df3dfbf2051083bc97c5",
+      "committedAt": "2026-09-09T15:42:37Z",
+      "url": "https://github.com/kubernetes/minikube/commit/67d5853be3cc64f1de11071c3a1a66d968c3bbcd",
+      "title": "Merge pull request #23680 from kubernetes/dependabot/go_modules/hack/jenkins/test-flake-chart/report_flakes/google.golang.org/grpc-1.83.2",
+      "observedAt": "2026-09-09T15:50:44.071Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "ba822e158c90b2638574e6a8edf810405d54441c",
+      "sha": "77f6232815140b62ea27fba7093d9af14c6aadf5",
       "branch": "main",
-      "parentSha": "06f59004ba50fabd4c582230ed076ee909fb85fc",
-      "committedAt": "2026-09-09T15:04:50Z",
-      "url": "https://github.com/vercel/turborepo/commit/ba822e158c90b2638574e6a8edf810405d54441c",
-      "title": "perf: Borrow workspace entries during dependency lookup (#14002)",
-      "observedAt": "2026-09-09T15:10:43.291Z",
+      "parentSha": "ba822e158c90b2638574e6a8edf810405d54441c",
+      "committedAt": "2026-09-09T15:47:28Z",
+      "url": "https://github.com/vercel/turborepo/commit/77f6232815140b62ea27fba7093d9af14c6aadf5",
+      "title": "perf: Cache LSP task index and dedupe identities in constant time (#14008)",
+      "observedAt": "2026-09-09T15:50:44.071Z",
       "programs": [
         "Vercel Open Source"
       ],
