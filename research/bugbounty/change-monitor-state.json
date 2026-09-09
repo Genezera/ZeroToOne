@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T14:30:58.858Z",
+  "checkedAt": "2026-09-09T14:40:37.215Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "64358119bef50c9216e8117d6b9aa5b0859558c1",
+      "sha": "38c8776e8e897202108a6dc494e2f54eca0cc0b1",
       "branch": "main",
-      "parentSha": "dc73dee2b52dd34da64a600bd5787279dc87e82e",
-      "committedAt": "2026-09-09T13:44:04Z",
-      "url": "https://github.com/vercel/eve/commit/64358119bef50c9216e8117d6b9aa5b0859558c1",
-      "title": "Make /eves the primary event page URL (#3171)",
-      "observedAt": "2026-09-09T13:50:35.986Z",
+      "parentSha": "64358119bef50c9216e8117d6b9aa5b0859558c1",
+      "committedAt": "2026-09-09T14:31:45Z",
+      "url": "https://github.com/vercel/eve/commit/38c8776e8e897202108a6dc494e2f54eca0cc0b1",
+      "title": "Version Packages (#3161)",
+      "observedAt": "2026-09-09T14:40:37.215Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "59b76e42ba93e5323484283ee5d1b81176c83d2d",
+      "sha": "f8657de16c5f51a2526d6dc7cbd5347ce3b0809e",
       "branch": "canary",
-      "parentSha": "56b95f41a232bc393467693f6ce00baafd2d72c7",
-      "committedAt": "2026-09-09T13:39:15Z",
-      "url": "https://github.com/vercel/next.js/commit/59b76e42ba93e5323484283ee5d1b81176c83d2d",
-      "title": "[cd] Update `peerDependencies` in prereleases to accept the current prerelease (#98411)",
-      "observedAt": "2026-09-09T13:40:47.171Z",
+      "parentSha": "59b76e42ba93e5323484283ee5d1b81176c83d2d",
+      "committedAt": "2026-09-09T14:34:25Z",
+      "url": "https://github.com/vercel/next.js/commit/f8657de16c5f51a2526d6dc7cbd5347ce3b0809e",
+      "title": "docs: clarify ISR with Suspense params (#98210)",
+      "observedAt": "2026-09-09T14:40:37.215Z",
       "programs": [
         "Vercel Open Source"
       ],
