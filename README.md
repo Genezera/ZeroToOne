@@ -45,6 +45,34 @@ deliberate human action; the automation never files a report by itself.
    append-only ledger — nothing gets silently dropped or rewritten
    after the fact.
 
+### Target selection and the low-competition path
+
+Scoring targets by popularity steers the scanner toward heavily-audited
+repositories, where independent researchers are likely to have already
+filed the same finding — and a bounty platform never lets you see another
+researcher's private report, so that collision is invisible until your own
+report is closed as a duplicate. Requiring a verified sub-48h regression
+proof as the sole novelty filter compounds this: it holds every finding in
+long-standing code indefinitely, which for some bug classes guarantees
+nothing is ever submitted.
+
+A program may therefore be marked `competitionLevel: "low"` in
+`program-policy.json` — a deliberate, per-program, human-audited decision,
+never an automatic dataset heuristic. For such a program a finding can
+reach human review on its own merits — Medium+ impact, exact scope and
+bounty eligibility, structured identity with no local root-cause
+collision, an attested and coverage-checked public prior-art search that
+came back clean with zero prior duplicate submissions, and a real executed
+reproduction — **without** a fresh regression proof, since that program's
+duplicate risk has already been judged low and its risk-score proxies
+(code age, repo popularity) no longer apply. Every one of those real
+protections stays enforced; only the regression-specific interlocks are
+lifted, and the finding is labelled so the consciously-accepted duplicate
+risk is explicit. The human-approval gate before submission is unchanged —
+nothing is ever auto-submitted. The relaxation is additive and dormant
+until a program carries the flag, so every other program behaves
+identically.
+
 GitHub Actions is the primary runtime. Scheduled cloud workflows own the
 15-minute change monitor, daily target discovery/promotion, six-hour
 safety scan, two-hour evidence worker, half-hour operations metrics and health
@@ -57,9 +85,13 @@ worker from silently overwriting shared state.
 `mission-control` joins those components into one live health view: it checks
 the latest real GitHub Actions outcomes against each cadence,
 repository/policy invariants, pipeline state counts, and submission outcomes.
-Cloud health runs every 30 minutes and after operational workflows. A separate
-external supervisor is still required to detect a GitHub-wide scheduler
-outage from outside GitHub itself.
+Cloud health runs every 30 minutes and after operational workflows. Because
+a GitHub-wide scheduler outage cannot be detected from inside GitHub itself,
+a separate external supervisor runs as a Cloudflare Worker
+(`cloud/bugbounty-watchdog/`) on its own 10-minute cron: it independently
+checks pipeline health and alerts over Telegram when the primary runtime
+goes quiet. Its deployment config stays local; the versioned template is
+`wrangler.example.jsonc`, and its secrets live only in the Worker.
 
 ## Where to look
 

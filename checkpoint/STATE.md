@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-08-23T00:00:00Z (sessão de início)
+last_updated: 2026-09-09T03:10:00Z (pivô estratégico: relaxar gate + mira nova)
 veredito_atual: RESEARCH_IN_PROGRESS
 ---
 
@@ -1041,3 +1041,114 @@ mesmo repositório confirma que o ruído some e o achado genuíno
 (incluindo achado real de `command_injection_risk` em código de
 aplicação de verdade da própria Vercel) continua passando. `npm test`:
 394/394. Ver seção própria em `system/bugbounty-scanner/README.md`.
+
+## Continuação do trabalho do Codex + fix de concorrência SQLite (2026-09-08/09)
+
+Reconciliei o trabalho que a IA paralela (Codex, dir separado
+`E:\ZeroToOne-automation`, mesmo repo) tinha deixado pela metade quando
+bateu no limite de uso: as 5 melhorias dela (scheduler/watchdog externo
+no Cloudflare Worker, CodeQL com filtro de delta, propostas de harness de
+regressão, adaptadores de release/deploy, métricas de cobertura/latência/
+precisão) já estavam commitadas; o que ficou no meio do caminho foi um bug
+de concorrência SQLite. **Completei o fix**: `db.mjs` agora emite
+`PRAGMA busy_timeout = 10000` antes do `PRAGMA journal_mode = WAL` no
+`openDb` — sem isso, dois processos escrevendo no mesmo `.db` (scanner
+local + evidence worker, ou rodadas concorrentes) davam `database is
+locked`. Provado com harness real (scratchpad): controle com
+`busy_timeout=0` reproduz a falha (5/6 workers concorrentes falham);
+com o fix, 6/6 passam e todas as escritas persistem. Commit cc5afb2.
+
+## Diagnóstico estratégico: por que 843 achados = US$0 (2026-09-09)
+
+`mission-control` deixou a causa raiz explícita: o pipeline pontua alvo
+por popularidade (estrelas do GitHub) → seleciona repositório CONTESTADO
+→ armadilha estrutural de duplicata (a plataforma não deixa ver report
+privado de terceiro, confirmado antes com HTTP 403); e o gate
+anti-duplicata só aceita PROVA DE REGRESSÃO ≤48h, que quase nenhum achado
+de código antigo tem → tudo fica preso, garantindo US$0. As 6 submissões
+reais da missão fecharam 6/6 como duplicata, confirmando o diagnóstico.
+
+Decisão do usuário: **"As duas: mira nova + relaxar gate."** Mais mandato
+de autonomia total: "vou deixar você trabalhando, testando, decidindo,
+implementando, melhorando automaticamente sem precisar de mim... monte um
+relatório, atualize o README em inglês, faça os commits e desligue o
+computador."
+
+## Parte 1 — Relaxar o gate (caminho ADITIVO de baixa competição)
+
+Implementado como ramo puramente aditivo, guardado por
+`programPolicy[program].competitionLevel === 'low'` + `duplicateCheck.
+noveltyStatus === 'low_competition_reviewed'`, de forma que **todos os 8
+programas existentes continuam byte-idênticos** e o caminho fica dormente
+até um programa ser explicitamente marcado. Três arquivos:
+- `novelty-risk.mjs::duplicateCheckGate` — novo ramo que dispensa a prova
+  de regressão E o `riskScore` (cujos fatores — idade do código, estrelas,
+  submissões anteriores — são proxies de COMPETIÇÃO, já julgada baixa),
+  mas MANTÉM as proteções reais: métodos plurais, ≥3 consultas, busca
+  pública limpa + atestada + coberta, zero duplicatas anteriores,
+  timestamp fresco.
+- `state-machine.mjs::lowCompetitionReadinessGate` — exige impacto Medium+,
+  escopo/bounty, identidade + colisão local, reprodução real (validação
+  `conclusion=supports`) e DeploymentEvidence (confidence relaxado de
+  `high` pra `low`, mas ainda obrigatório). Só dispensa os interlocks
+  específicos de regressão/E4. Rotula o achado
+  `[BAIXA COMPETIÇÃO: revisão humana criteriosa obrigatória]`.
+- `research-plan.mjs` — bypassa os holds de janela-de-48h/regressão pra
+  programa low-competition, roteando o achado pro fluxo investigativo real
+  (structure_identity → verify_prior_art → human_review) em vez de
+  `outside_campaign_window`.
+
+**O gate de aprovação humana antes de `submitted` NÃO muda — nada
+auto-envia.** Testes provam isso explicitamente
+(`human_ready -> submitted` continua recusado sem aprovação). Suíte:
+676 testes, 0 falhas (novos testes cobrindo o caminho em novelty-risk e
+state-machine). Commit e0ddd08.
+
+## Parte 2 — Mira nova: OKG onboardado como primeiro low-competition
+
+Escolha guiada por dado real do banco (não palpite): o escopo produtivo
+do OKG neste pipeline é `okx/go-wallet-sdk` (SDK criptográfico em Go) e os
+achados são bugs de CORRETUDE criptográfica (malleabilidade de assinatura,
+escalar não-clampado, derivação de chave, verificação de multisig) em ~10
+chains. Três bases pra `competitionLevel:'low'`: (1) classe de bug rara
+que exige expertise específica; (2) prova de regressão ≤48h é o filtro
+ERRADO (são defeitos inerentes ao design, não regressões — e é por isso
+que 16 achados ficaram presos em `reproduced_local` e 1 em
+`scope_verified`, o achado mais avançado do sistema inteiro); (3)
+evidência empírica de não-duplicata (OKG tem 0 `known_duplicate` no banco,
+contra Plaid 48/48 e Vercel 82). RoE já revisado em 2026-09-04 (IA
+permitida com divulgação, validação manual obrigatória, scanner-only
+inelegível) — compatível com o gate relaxado.
+
+**Distinção importante vs. rodada anterior**: em 2026-09-01 rejeitei o
+proxy AUTOMÁTICO `average_time_to_bounty_awarded === null` justamente por
+misturar programa novo com programa antigo-porém-difícil. Este flag é o
+oposto: decisão MANUAL, por-programa, auditável, com reasoning gravado no
+`program-policy.json` e reversível removendo um campo — não um proxy
+automático aplicado em massa.
+
+Efeito verificado ao vivo (`cli.mjs research-plan`): 10 achados OKG antes
+presos na janela de regressão agora aparecem como ACIONÁVEIS (fluxo
+investigativo), enquanto 8 seguem corretamente segurados em
+`below_campaign_impact` (proteção real preservada). Commit ac8f27f.
+
+## Watchdog externo no Cloudflare (deploy real, 2026-09-08)
+
+Worker `zerotoone-bugbounty-watchdog` no ar em
+`https://zerotoone-bugbounty-watchdog.renanap24.workers.dev`, cron
+`*/10 * * * *`, KV `a58c166f008e47348163cfb675088cba`, 4 segredos setados
+pelo usuário no terminal dele (nunca passaram por mim). Watchdog externo,
+independente da máquina, que verifica a saúde do pipeline e alerta via
+Telegram — a peça que faltava pra "sistema se vigia sozinho". Config real
+`wrangler.jsonc` fica local (gitignored, sem segredos); template versionado
+é `wrangler.example.jsonc`.
+
+## Estado ao fim desta sessão
+- 3 sistemas de automação local seguem como tarefas do Windows (o usuário
+  escolheu "deixar rodando" depois do "pare tudo" anterior).
+- Pipeline: 848 achados, agora 10 acionáveis (OKG) rumo à revisão humana,
+  em vez de 0 submetíveis com tudo preso. Nenhum auto-envio possível.
+- Próximo passo humano natural: revisar os achados cripto do OKG que
+  chegarem a `human_ready`, fazer a busca de prior-art atestada, e decidir
+  envio (com divulgação de uso de IA, exigida pelo RoE do OKG).
+- Tudo commitado e enviado ao GitHub. Máquina desligada ao fim, a pedido.

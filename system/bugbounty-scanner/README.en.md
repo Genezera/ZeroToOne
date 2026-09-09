@@ -133,6 +133,24 @@ scanner:
 
 These controls lower risk; they do not make a guarantee about private reports.
 
+### Low-competition programs
+
+A program explicitly marked `competitionLevel: "low"` in `program-policy.json`
+relaxes exactly two of the controls above — the sub-48h regression window and
+the regression-proof novelty requirement — because for that program the
+duplicate risk has been judged low by human review, and the risk-score inputs
+(code age, repo popularity, prior submissions) are competition proxies that no
+longer apply. Everything else stays fully enforced: the plural attested public
+prior-art search must still come back clean with zero prior duplicate
+submissions, impact must still be Medium+, scope/bounty eligibility and
+structured identity with no local collision still hold, a real executed
+reproduction is still required, and DeploymentEvidence is still required
+(confidence relaxed from high to low). The finding is labelled so the
+consciously-accepted duplicate risk is explicit, and the human-approval gate
+before submission is unchanged. This path is additive and guarded end-to-end by
+the flag plus a `low_competition_reviewed` novelty status, so every program
+without the flag behaves exactly as before.
+
 ## Detection engines
 
 The scanner combines purpose-built parsers with established tools:
