@@ -926,13 +926,18 @@
       "repository": "okx/go-wallet-sdk",
       "action": "structure_identity",
       "priority": 88,
-      "status": "pending",
-      "attempts": 0,
+      "status": "needs_human",
+      "attempts": 1,
       "reason": "identidade mecânica incompleta: faltam weakness, rootCause, attackerInput, securitySink, missingControl, expectedFix; preencher campos estruturados, sem extrair automaticamente da prosa",
       "recentExactChange": false,
       "introducedAt": null,
       "introducedCommit": null,
-      "createdAt": "2026-09-09T03:11:59.250Z"
+      "createdAt": "2026-09-09T03:11:59.250Z",
+      "lastAttemptAt": "2026-09-09T03:31:40.401Z",
+      "result": {
+        "reason": "ação structure_identity ainda não possui executor seguro registrado"
+      },
+      "finishedAt": "2026-09-09T03:31:40.402Z"
     },
     "evidence:v4:17f37a63a45bf2e93d2592d5c282d95c7b69bcb1f3e6bbaa187b1a70ba8162d2": {
       "taskId": "evidence:v4:17f37a63a45bf2e93d2592d5c282d95c7b69bcb1f3e6bbaa187b1a70ba8162d2",
@@ -942,13 +947,18 @@
       "repository": "okx/go-wallet-sdk",
       "action": "structure_identity",
       "priority": 88,
-      "status": "pending",
-      "attempts": 0,
+      "status": "needs_human",
+      "attempts": 1,
       "reason": "identidade mecânica incompleta: faltam rootCause, attackerInput, securitySink, missingControl, expectedFix; preencher campos estruturados, sem extrair automaticamente da prosa",
       "recentExactChange": false,
       "introducedAt": null,
       "introducedCommit": null,
-      "createdAt": "2026-09-09T03:11:59.250Z"
+      "createdAt": "2026-09-09T03:11:59.250Z",
+      "lastAttemptAt": "2026-09-09T03:31:40.402Z",
+      "result": {
+        "reason": "ação structure_identity ainda não possui executor seguro registrado"
+      },
+      "finishedAt": "2026-09-09T03:31:40.402Z"
     }
   },
   "runs": [
@@ -1100,6 +1110,16 @@
       "claimed": 4,
       "completed": 0,
       "needsHuman": 4,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:a7197479c960c1b1a60b16dd20565fd0b4f2d8bf21803b8a68852a7208a74470",
+      "startedAt": "2026-09-09T03:31:40.401Z",
+      "finishedAt": "2026-09-09T03:31:40.402Z",
+      "planned": 10,
+      "claimed": 2,
+      "completed": 0,
+      "needsHuman": 2,
       "failed": 0
     }
   ]
