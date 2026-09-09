@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T19:01:01.675Z",
+  "checkedAt": "2026-09-09T19:21:13.767Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "db10cb4b80e57c4492d2baf446ba2b4f89abf466",
+      "sha": "24b42489c62d65ddb3ffa6b2a67fa25ccbf3dea1",
       "branch": "master",
-      "parentSha": "4266156f63e27d86b224211cb9eb1e02a58f4bc9",
-      "committedAt": "2026-09-09T18:18:38Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/db10cb4b80e57c4492d2baf446ba2b4f89abf466",
-      "title": "Merge pull request #141070 from AutuSnow/AutuSnow/fix-memory-manager-pod-hint-restore",
-      "observedAt": "2026-09-09T18:20:46.909Z",
+      "parentSha": "db10cb4b80e57c4492d2baf446ba2b4f89abf466",
+      "committedAt": "2026-09-09T19:12:31Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/24b42489c62d65ddb3ffa6b2a67fa25ccbf3dea1",
+      "title": "Merge pull request #140888 from Jefftree/openapi-v2-request-metric",
+      "observedAt": "2026-09-09T19:21:13.767Z",
       "programs": [
         "Kubernetes"
       ],
@@ -814,13 +814,13 @@
       ]
     },
     "kubernetes/minikube": {
-      "sha": "67d5853be3cc64f1de11071c3a1a66d968c3bbcd",
+      "sha": "ab501b3ec60116ed09fbd9b1a731e4e628b568ba",
       "branch": "master",
-      "parentSha": "c48769b9f5b8b45e1e44df3dfbf2051083bc97c5",
-      "committedAt": "2026-09-09T15:42:37Z",
-      "url": "https://github.com/kubernetes/minikube/commit/67d5853be3cc64f1de11071c3a1a66d968c3bbcd",
-      "title": "Merge pull request #23680 from kubernetes/dependabot/go_modules/hack/jenkins/test-flake-chart/report_flakes/google.golang.org/grpc-1.83.2",
-      "observedAt": "2026-09-09T15:50:44.071Z",
+      "parentSha": "67d5853be3cc64f1de11071c3a1a66d968c3bbcd",
+      "committedAt": "2026-09-09T19:20:34Z",
+      "url": "https://github.com/kubernetes/minikube/commit/ab501b3ec60116ed09fbd9b1a731e4e628b568ba",
+      "title": "Merge pull request #23679 from kubernetes/dependabot/go_modules/google.golang.org/grpc-1.83.2",
+      "observedAt": "2026-09-09T19:21:13.767Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "2354301f39d5740b33ffbbb4dc8573108006619a",
+      "sha": "22b5f48e3767f6574f8a6843a251678693d2f950",
       "branch": "main",
-      "parentSha": "4547e1a7a95f273f3166edf45344dc827f1935fa",
-      "committedAt": "2026-09-09T18:50:37Z",
-      "url": "https://github.com/vercel/workflow/commit/2354301f39d5740b33ffbbb4dc8573108006619a",
-      "title": "[world-vercel] Bound the queue client's requests (#4049)",
-      "observedAt": "2026-09-09T18:51:02.813Z",
+      "parentSha": "855b4e92e628ef3f3a69c54fa9e29cdca7110a21",
+      "committedAt": "2026-09-09T19:18:43Z",
+      "url": "https://github.com/vercel/workflow/commit/22b5f48e3767f6574f8a6843a251678693d2f950",
+      "title": "[ci] Print opencode's server log in the backport job (#4056)",
+      "observedAt": "2026-09-09T19:21:13.767Z",
       "programs": [
         "Vercel Open Source"
       ],
