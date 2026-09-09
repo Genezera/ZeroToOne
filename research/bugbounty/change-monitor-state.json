@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T09:20:42.349Z",
+  "checkedAt": "2026-09-09T09:30:45.956Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1439,13 +1439,13 @@
       "languages": []
     },
     "vercel/flags": {
-      "sha": "e0eebe6fbc296636761eb3dc31f2c4be01a398bf",
+      "sha": "6444210ee954e1a8db1b21ab37e640a36a2235f9",
       "branch": "main",
-      "parentSha": "c9d28116ebca661f4e3c73f301d4b2d35310c823",
-      "committedAt": "2026-09-09T09:16:11Z",
-      "url": "https://github.com/vercel/flags/commit/e0eebe6fbc296636761eb3dc31f2c4be01a398bf",
-      "title": "fix(flags-core): request identity on the stream so Bun receives the first datafile (#494)",
-      "observedAt": "2026-09-09T09:20:42.349Z",
+      "parentSha": "e0eebe6fbc296636761eb3dc31f2c4be01a398bf",
+      "committedAt": "2026-09-09T09:26:12Z",
+      "url": "https://github.com/vercel/flags/commit/6444210ee954e1a8db1b21ab37e640a36a2235f9",
+      "title": "Version Packages (#493)",
+      "observedAt": "2026-09-09T09:30:45.956Z",
       "programs": [
         "Vercel Open Source"
       ],
