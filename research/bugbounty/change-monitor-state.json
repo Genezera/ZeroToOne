@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T16:50:54.532Z",
+  "checkedAt": "2026-09-09T17:01:00.600Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1129,13 +1129,13 @@
       ]
     },
     "mattermost/mattermost-plugin-jira": {
-      "sha": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
+      "sha": "0e5b7423fe406e69ef668d301ecfbc7fefc8f710",
       "branch": "master",
-      "parentSha": "199c3a883ccd0016e9ec2162ced4be8eb1090686",
-      "committedAt": "2026-09-09T08:49:52Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#1350)",
-      "observedAt": "2026-09-09T08:50:33.927Z",
+      "parentSha": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
+      "committedAt": "2026-09-09T16:58:58Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/0e5b7423fe406e69ef668d301ecfbc7fefc8f710",
+      "title": "Bump js-yaml in /webapp (#1351)",
+      "observedAt": "2026-09-09T17:01:00.600Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
