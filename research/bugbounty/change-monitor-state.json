@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T07:40:40.637Z",
+  "checkedAt": "2026-09-09T08:00:50.803Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "1aed8c30340613c919f334f190f170c5dde7de79",
+      "sha": "82b6b6d3b2fc1b9882ea500b54fca32c8d862e68",
       "branch": "master",
-      "parentSha": "cf7bfb2dca32e5cb9e5379c004a3ff7cd62603ae",
-      "committedAt": "2026-09-09T04:14:33Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/1aed8c30340613c919f334f190f170c5dde7de79",
-      "title": "Merge pull request #141576 from macsko/optimize_isentityworthrequeueing_efficiency",
-      "observedAt": "2026-09-09T04:21:25.337Z",
+      "parentSha": "b3a755401b2b3654e7f494b8f1ec51307ba0c911",
+      "committedAt": "2026-09-09T07:52:42Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/82b6b6d3b2fc1b9882ea500b54fca32c8d862e68",
+      "title": "Merge pull request #141896 from richabanker/add-watchevent-watcher-queue-latency",
+      "observedAt": "2026-09-09T08:00:50.803Z",
       "programs": [
         "Kubernetes"
       ],
