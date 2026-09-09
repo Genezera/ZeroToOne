@@ -19,6 +19,7 @@ import { verifyRegression } from './regression-sandbox.mjs';
 import { acquireLease, replaceFileAtomic } from './runtime-state.mjs';
 import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { validationConclusion } from './validation-semantics.mjs';
+import { escapeHtml, sendTelegramMessage } from './telegram.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -29,7 +30,7 @@ export const DEFAULT_EVIDENCE_STATE_PATH = path.join(BUGBOUNTY_DIR, 'evidence-wo
 export const DEFAULT_EVIDENCE_RECIPES_PATH = path.join(BUGBOUNTY_DIR, 'evidence-recipes.json');
 export const DEFAULT_EVIDENCE_LOCK_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-evidence-worker.lock');
 export const EVIDENCE_STATE_SCHEMA_VERSION = 1;
-export const EVIDENCE_EXECUTOR_SCHEMA_VERSION = 2;
+export const EVIDENCE_EXECUTOR_SCHEMA_VERSION = 3;
 
 const DAY_MS = 86400000;
 const MAX_RUN_HISTORY = 50;
@@ -92,6 +93,9 @@ function taskIdentity(item) {
     findingId: item.id, state: item.state, action: item.action,
     reason: item.reason, missingEvidence: item.missingEvidence || null,
     evidenceRecipeDigest: item.evidenceRecipeDigest || null,
+    recentExactChange: item.recentExactChange === true,
+    introducedAt: item.introducedAt || null,
+    introducedCommit: item.introducedCommit || null,
   });
   return {
     taskId: `evidence:v${EVIDENCE_EXECUTOR_SCHEMA_VERSION}:${digest([item.id, item.action, inputDigest])}`,
@@ -125,7 +129,9 @@ export function reconcileWorkOrders(state, plan, now = new Date().toISOString())
       next.workOrders[identity.taskId] = {
         ...identity, findingId: item.id, program: item.program, repository: item.repository,
         action: item.action, priority: item.priority, status: 'pending', attempts: 0,
-        reason: item.reason, createdAt: now,
+        reason: item.reason, recentExactChange: item.recentExactChange === true,
+        introducedAt: item.introducedAt || null, introducedCommit: item.introducedCommit || null,
+        createdAt: now,
       };
     }
   }
@@ -161,6 +167,7 @@ export async function runEvidenceCycle({ state, plan, executor, maxTasks = 4, no
   const summary = { planned: plan?.actionable?.length || 0, claimed: selected.length, completed: 0, needsHuman: 0, failed: 0 };
   let evidenceMutated = false;
   let queueMutated = false;
+  const attention = [];
   for (const order of selected) {
     const attemptedAt = now();
     order.status = 'running';
@@ -181,6 +188,16 @@ export async function runEvidenceCycle({ state, plan, executor, maxTasks = 4, no
       } else if (result?.status === 'needs_human') {
         order.status = 'needs_human';
         summary.needsHuman += 1;
+        if (order.action === 'human_review' || order.recentExactChange === true) {
+          attention.push({
+            taskId: order.taskId, findingId: order.findingId, program: order.program,
+            repository: order.repository, action: order.action,
+            recentExactChange: order.recentExactChange === true,
+            introducedAt: order.introducedAt || null,
+            introducedCommit: order.introducedCommit || null,
+            reason: order.result.reason,
+          });
+        }
       } else {
         throw new Error(`status inválido do executor: ${result?.status || 'ausente'}`);
       }
@@ -200,7 +217,65 @@ export async function runEvidenceCycle({ state, plan, executor, maxTasks = 4, no
       startedAt: started.toISOString(), finishedAt: now().toISOString(), ...summary,
     }].slice(-MAX_RUN_HISTORY);
   }
-  return { state: next, summary, changed: JSON.stringify(next) !== JSON.stringify(state || emptyEvidenceState()), evidenceMutated, queueMutated };
+  return { state: next, summary, attention, changed: JSON.stringify(next) !== JSON.stringify(state || emptyEvidenceState()), evidenceMutated, queueMutated };
+}
+
+export function formatAttentionMessage(items) {
+  const selected = (items || []).slice(0, 5);
+  if (selected.length === 0) return null;
+  const lines = [
+    '🚨 <b>ZeroToOne — ATENÇÃO HUMANA NECESSÁRIA</b>',
+    `${items.length} candidato(s) novo(s) merece(m) atenção.`,
+    '',
+  ];
+  for (const item of selected) {
+    const label = item.action === 'human_review'
+      ? 'PRONTO PARA REVISÃO FINAL'
+      : 'DELTA RECENTE BLOQUEADO';
+    lines.push(`<b>${label}</b> — ${escapeHtml(String(item.program || 'programa desconhecido').slice(0, 120))}`);
+    lines.push(`<code>${escapeHtml(String(item.repository || item.findingId).slice(0, 240))}</code>`);
+    lines.push(`Ação: <b>${escapeHtml(String(item.action).slice(0, 80))}</b>`);
+    lines.push(escapeHtml(String(item.reason || '').slice(0, 320)));
+    lines.push('');
+  }
+  if (items.length > selected.length) lines.push(`+ ${items.length - selected.length} item(ns) no painel.`);
+  lines.push('Nenhum relatório foi enviado automaticamente. Reports privados continuam invisíveis.');
+  return lines.join('\n');
+}
+
+export function pendingAttentionItems(state) {
+  return Object.values(state?.workOrders || {})
+    .filter((order) => order.status === 'needs_human'
+      && !order.attentionNotifiedAt
+      && (order.action === 'human_review' || order.recentExactChange === true))
+    .sort((a, b) => Number(b.priority || 0) - Number(a.priority || 0))
+    .map((order) => ({
+      taskId: order.taskId, findingId: order.findingId, program: order.program,
+      repository: order.repository, action: order.action,
+      recentExactChange: order.recentExactChange === true,
+      introducedAt: order.introducedAt || null, introducedCommit: order.introducedCommit || null,
+      reason: order.result?.reason || order.reason,
+    }));
+}
+
+export async function notifyPendingAttention(state, {
+  notify = sendTelegramMessage, now = () => new Date(), log = console.log,
+} = {}) {
+  const items = pendingAttentionItems(state);
+  const message = formatAttentionMessage(items);
+  if (!message) return { items, changed: false, notification: { attempted: false, ok: true } };
+  let notification;
+  try {
+    const result = await notify(message);
+    notification = { attempted: true, ...result };
+  } catch (error) {
+    notification = { attempted: true, ok: false, reason: String(error.message || error) };
+    log(`[evidence-worker] falha não fatal no alerta de atenção: ${notification.reason}`);
+  }
+  if (!notification.ok) return { items, changed: false, notification };
+  const notifiedAt = now().toISOString();
+  for (const item of items) state.workOrders[item.taskId].attentionNotifiedAt = notifiedAt;
+  return { items, changed: true, notification };
 }
 
 function command(gitExe, args, options = {}) {
@@ -421,7 +496,8 @@ export async function runEvidenceWorker({
   repoRoot = REPO_ROOT, statePath = DEFAULT_EVIDENCE_STATE_PATH,
   recipesPath = DEFAULT_EVIDENCE_RECIPES_PATH, lockPath = DEFAULT_EVIDENCE_LOCK_PATH,
   dbPath = DB_PATH, queuePath = QUEUE_PATH, maxTasks = Number(process.env.ZERO2ONE_EVIDENCE_MAX_TASKS || 4),
-  pull = pullLatest, publish = commitAndPush, log = console.log, now = () => new Date(),
+  pull = pullLatest, publish = commitAndPush, notify = sendTelegramMessage,
+  log = console.log, now = () => new Date(),
 } = {}) {
   const lease = acquireLease(lockPath, { now: now().getTime() });
   if (!lease.ok) return { ok: false, skipped: true, reason: lease.reason };
@@ -439,16 +515,21 @@ export async function runEvidenceWorker({
     const executor = createEvidenceExecutor({ db, recipes, policy, repoRoot, now });
     const cycle = await runEvidenceCycle({ state: initial, plan: boundPlan, executor, maxTasks, now });
     if (cycle.queueMutated) exportFindingsToQueueJsonl(db, queuePath);
-    if (cycle.changed || cycle.evidenceMutated) saveEvidenceState(statePath, cycle.state);
     closeDb(db);
     db = null;
+    const attentionDelivery = await notifyPendingAttention(cycle.state, { notify, now, log });
+    const pendingAttention = attentionDelivery.items;
+    const attentionNotification = attentionDelivery.notification;
+    if (attentionDelivery.changed) cycle.changed = true;
+    if (cycle.changed || cycle.evidenceMutated) saveEvidenceState(statePath, cycle.state);
     let publication = { ok: true, committed: false };
     if (cycle.changed || cycle.evidenceMutated) {
       publication = publish(repoRoot,
         `Bug bounty evidence: ${cycle.summary.completed} concluída(s), ${cycle.summary.needsHuman} humana(s), ${cycle.summary.failed} falha(s)`, log);
       if (!publication.ok) throw new Error(`evidence worker não publicou: ${publication.reason}`);
     }
-    return { ok: true, plan: plan.summary, ...cycle.summary, publication };
+    return { ok: true, plan: plan.summary, ...cycle.summary,
+      attention: pendingAttention.length, attentionNotification, publication };
   } finally {
     if (db) closeDb(db);
     lease.release();

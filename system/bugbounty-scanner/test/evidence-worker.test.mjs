@@ -10,6 +10,7 @@ import {
 } from '../db.mjs';
 import {
   bindRecipesToPlan, createEvidenceExecutor, emptyEvidenceState, inspectGitFileAge,
+  formatAttentionMessage, notifyPendingAttention, pendingAttentionItems,
   reconcileWorkOrders, runEvidenceCycle,
 } from '../evidence-worker.mjs';
 import { repositoryRelativePathForFinding } from '../outcome-intelligence.mjs';
@@ -70,6 +71,66 @@ test('runEvidenceCycle aplica limite, persiste needs_human e não repete tarefa 
   assert.equal(second.summary.claimed, 0);
   assert.equal(second.changed, false);
   assert.equal(calls.length, 1);
+});
+
+test('delta exato recente gera um único alerta de atenção ao parar em needs_human', async () => {
+  const recentPlan = { actionable: [{ ...PLAN.actionable[0], recentExactChange: true,
+    introducedAt: '2026-09-07T11:00:00Z', introducedCommit: 'a'.repeat(40) }] };
+  const first = await runEvidenceCycle({
+    state: emptyEvidenceState(), plan: recentPlan, now: () => new Date(NOW),
+    executor: async () => ({ status: 'needs_human', reason: 'impacto exige duas contas' }),
+  });
+  assert.equal(first.attention.length, 1);
+  assert.equal(first.attention[0].recentExactChange, true);
+  assert.equal(pendingAttentionItems(first.state).length, 1);
+  first.state.workOrders[first.attention[0].taskId].attentionNotifiedAt = NOW.toISOString();
+  assert.equal(pendingAttentionItems(first.state).length, 0);
+  const second = await runEvidenceCycle({
+    state: first.state, plan: recentPlan, now: () => new Date(NOW),
+    executor: async () => { throw new Error('não deve repetir'); },
+  });
+  assert.deepEqual(second.attention, []);
+});
+
+test('pendência sem delta recente não interrompe o Telegram; revisão final sempre interrompe', async () => {
+  const stale = await runEvidenceCycle({
+    state: emptyEvidenceState(), plan: PLAN, now: () => new Date(NOW),
+    executor: async () => ({ status: 'needs_human', reason: 'pendência histórica' }),
+  });
+  assert.deepEqual(stale.attention, []);
+  const reviewPlan = { actionable: [{ ...PLAN.actionable[0], action: 'human_review', priority: 100 }] };
+  const review = await runEvidenceCycle({
+    state: emptyEvidenceState(), plan: reviewPlan, now: () => new Date(NOW),
+    executor: async () => ({ status: 'needs_human', reason: 'decisão de envio' }),
+  });
+  assert.equal(review.attention.length, 1);
+  assert.match(formatAttentionMessage(review.attention), /PRONTO PARA REVISÃO FINAL/);
+  assert.match(formatAttentionMessage([{ ...review.attention[0], program: '<P&>' }]), /&lt;P&amp;&gt;/);
+});
+
+test('entrega de atenção confirma sucesso uma vez e tenta novamente depois de falha', async () => {
+  const plan = { actionable: [{ ...PLAN.actionable[0], recentExactChange: true }] };
+  const cycle = await runEvidenceCycle({
+    state: emptyEvidenceState(), plan, now: () => new Date(NOW),
+    executor: async () => ({ status: 'needs_human', reason: 'prova manual necessária' }),
+  });
+  const failed = await notifyPendingAttention(cycle.state, {
+    notify: async () => ({ ok: false, reason: 'Telegram indisponível' }), now: () => new Date(NOW),
+  });
+  assert.equal(failed.notification.ok, false);
+  assert.equal(failed.changed, false);
+  assert.equal(pendingAttentionItems(cycle.state).length, 1);
+  let sends = 0;
+  const delivered = await notifyPendingAttention(cycle.state, {
+    notify: async () => { sends += 1; return { ok: true }; }, now: () => new Date(NOW),
+  });
+  assert.equal(delivered.changed, true);
+  assert.equal(pendingAttentionItems(cycle.state).length, 0);
+  const repeated = await notifyPendingAttention(cycle.state, {
+    notify: async () => { sends += 1; return { ok: true }; }, now: () => new Date(NOW),
+  });
+  assert.equal(repeated.notification.attempted, false);
+  assert.equal(sends, 1);
 });
 
 test('runEvidenceCycle registra falha com backoff em vez de perder a tarefa', async () => {

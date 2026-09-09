@@ -100,6 +100,14 @@ export function buildResearchPlan(findings, {
     const hasRecentExactChange = change?.directSingleCommit === true
       && Number.isFinite(introducedMs) && introducedMs <= now
       && now - introducedMs <= MAX_VERIFIED_REGRESSION_AGE_MS;
+    // Propaga somente a proveniencia minima necessaria para o Evidence Worker
+    // distinguir uma pendencia historica de um delta novo que pode perder a
+    // janela anti-duplicate. Isto e prioridade de atencao, nao prova de bug.
+    const attentionContext = hasRecentExactChange ? {
+      recentExactChange: true,
+      introducedAt,
+      introducedCommit: duplicate?.noveltyProof?.introducedCommit || change?.introducedCommit || null,
+    } : {};
     let scope;
     try { scope = scopeFor(finding, new Date(now).toISOString()); }
     catch { scope = null; }
@@ -116,7 +124,7 @@ export function buildResearchPlan(findings, {
       continue;
     }
     if (!scope?.allowed || scope.bountyEligible == null) {
-      task('verify_scope', scope?.reason || 'confirmar ativo exato e recompensa na fonte oficial antes de aprofundar pesquisa', 90 + freshnessPriority);
+      task('verify_scope', scope?.reason || 'confirmar ativo exato e recompensa na fonte oficial antes de aprofundar pesquisa', 90 + freshnessPriority, attentionContext);
       continue;
     }
     if (!duplicate?.noveltyProof && measuredCodeAgeDays === null && !hasRecentExactChange) {
@@ -126,6 +134,7 @@ export function buildResearchPlan(findings, {
     const identity = identities.get(finding.id);
     if (!identity.ok) {
       task('structure_identity', `${identity.reason}; preencher campos estruturados, sem extrair automaticamente da prosa`, 88 + freshnessPriority, {
+        ...attentionContext,
         missingFields: identity.missing,
       });
       continue;
@@ -146,27 +155,28 @@ export function buildResearchPlan(findings, {
     const impactGate = reportabilityGate(impact);
     if (!impactGate.ok) {
       task('assess_impact', 'estabelecer controle pelo atacante, vítima, efeito observável e severidade justificada antes de construir outra PoC', 70 + freshnessPriority, {
+        ...attentionContext,
         missingEvidence: impactGate.reason,
       });
       continue;
     }
     if (!duplicate?.noveltyProof) {
-      task('establish_novelty', 'localizar a introdução no histórico e um baseline; um commit recente ou pesquisa pública vazia não prova novidade', 60 + freshnessPriority);
+      task('establish_novelty', 'localizar a introdução no histórico e um baseline; um commit recente ou pesquisa pública vazia não prova novidade', 60 + freshnessPriority, attentionContext);
       continue;
     }
     const priorArt = duplicateCheckGate(duplicate, { now, repository: item.repository });
     if (!priorArt.ok) {
-      task('verify_prior_art', priorArt.reason, 55 + freshnessPriority);
+      task('verify_prior_art', priorArt.reason, 55 + freshnessPriority, attentionContext);
       continue;
     }
     const readiness = submissionReadinessGate(finding, {
       ...context, scopeGateResult: scope, programPolicy, now,
     });
     if (!readiness.ok) {
-      task('complete_validation', readiness.reason, 50 + freshnessPriority);
+      task('complete_validation', readiness.reason, 50 + freshnessPriority, attentionContext);
       continue;
     }
-    task('human_review', 'preflight satisfeito; revisão e decisão humana ainda obrigatórias', 100);
+    task('human_review', 'preflight satisfeito; revisão e decisão humana ainda obrigatórias', 100, attentionContext);
   }
   actionable.sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
   held.sort((a, b) => a.id.localeCompare(b.id));

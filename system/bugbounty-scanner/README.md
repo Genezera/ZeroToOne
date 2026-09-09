@@ -61,6 +61,12 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   nunca pode aprovar impacto positivo. Alterar uma receita cria um novo work
   order, portanto uma pendência humana antiga não fica congelada. Uma tarefa
   sem executor conclusivo vira `needs_human`, nunca aprovação implícita.
+  Quando uma ordem de um delta exato com no máximo 48 horas para em
+  `needs_human`, o Telegram recebe uma única mensagem explícita
+  `ATENÇÃO HUMANA NECESSÁRIA`; `human_review` também alerta mesmo sem esse
+  contexto. Pendências históricas comuns não notificam, e a mesma ordem
+  encerrada não é reenviada. O aviso diferencia `DELTA RECENTE BLOQUEADO` de
+  `PRONTO PARA REVISÃO FINAL` e nunca representa envio automático.
 - GitHub Actions é o runtime primário versionado. O Windows fica em modo
   `manual_only`: não há tarefa, serviço, gatilho de logon/boot ou dependência
   de heartbeat local. O SQLite é uma materialized view local; `mission-control`

@@ -106,9 +106,11 @@ test('toque recente do caminho permite avaliar impacto, mas não prova regressã
   assert.equal(result.actionable[0].action, 'assess_impact');
 
   const exactRecent = buildResearchPlan([{ ...finding, changeContext: {
-    introducedAt: '2026-09-07T02:00:00Z', directSingleCommit: true,
+    introducedAt: '2026-09-07T02:00:00Z', introducedCommit: 'a'.repeat(40), directSingleCommit: true,
   } }], options);
   assert.equal(exactRecent.actionable[0].action, 'assess_impact');
+  assert.equal(exactRecent.actionable[0].recentExactChange, true);
+  assert.equal(exactRecent.actionable[0].introducedCommit, 'a'.repeat(40));
 
   const rangeHead = buildResearchPlan([{ ...finding, changeContext: {
     introducedAt: '2026-09-07T02:00:00Z', directSingleCommit: false,
