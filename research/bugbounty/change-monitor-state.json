@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T11:01:26.390Z",
+  "checkedAt": "2026-09-09T11:20:40.094Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -592,13 +592,13 @@
       "languages": []
     },
     "kubernetes/kops": {
-      "sha": "4735ee027b77a013a8d69e6d92510ecd0b58da8e",
+      "sha": "2baf20707486907c42f5a4a325d8d2255a60c74c",
       "branch": "master",
-      "parentSha": "045c5777300daff8d9f2a329a76416d215224e71",
-      "committedAt": "2026-09-08T03:58:27Z",
-      "url": "https://github.com/kubernetes/kops/commit/4735ee027b77a013a8d69e6d92510ecd0b58da8e",
-      "title": "Merge pull request #18746 from moshevayner/akamai-firewall-task",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "4735ee027b77a013a8d69e6d92510ecd0b58da8e",
+      "committedAt": "2026-09-09T11:12:33Z",
+      "url": "https://github.com/kubernetes/kops/commit/2baf20707486907c42f5a4a325d8d2255a60c74c",
+      "title": "Merge pull request #18788 from hakman/codex/go-1.27-x-modules",
+      "observedAt": "2026-09-09T11:20:40.094Z",
       "programs": [
         "Kubernetes"
       ],
