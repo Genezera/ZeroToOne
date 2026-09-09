@@ -5,8 +5,8 @@
   "sourceType": "hackerone_api_live",
   "sourceDetail": "GET /v1/hackers/programs/mattermost/structured_scopes",
   "contentHash": "e9cce1698a64f38596d80d3255913d6698bb566d9cdf309e448f994aaf5baeb6",
-  "capturedAt": "2026-09-08T04:39:05.582Z",
-  "expiresAt": "2026-09-11T04:39:05.582Z",
+  "capturedAt": "2026-09-09T19:35:05.389Z",
+  "expiresAt": "2026-09-12T19:35:05.389Z",
   "ttlDays": 3,
   "confidence": "alta",
   "assets": [
@@ -129,5 +129,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": null
+  "communitySourceNote": null,
+  "programSubmissionState": "disabled",
+  "programSubmissionStateCheckedAt": "2026-09-09T19:35:05.388Z"
 }

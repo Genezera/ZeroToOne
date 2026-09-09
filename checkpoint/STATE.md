@@ -1152,3 +1152,171 @@ Telegram — a peça que faltava pra "sistema se vigia sozinho". Config real
   chegarem a `human_ready`, fazer a busca de prior-art atestada, e decidir
   envio (com divulgação de uso de IA, exigida pelo RoE do OKG).
 - Tudo commitado e enviado ao GitHub. Máquina desligada ao fim, a pedido.
+
+## Verificação adversarial dos achados OKG + correções (2026-09-09, sessão retomada)
+
+O usuário voltou ("tem algum resultado para verificar?"). Rodei um workflow de
+verificação adversarial (6 agentes, 3 lentes × 2 achados reportáveis) lendo o
+SOURCE real de `okx/go-wallet-sdk`. Depois o Codex (IA paralela) revisou minha
+análise e apontou erros reais — reconciliados abaixo. **Decisão final mantida:
+não enviar nada agora.**
+
+**Finding multiKey bypass (Aptos `MultiKey.Verify`)** — bug REAL e confirmado
+(ContainsKey usa `(inner[b] & (128>>bit)) == 1`, verdadeiro só p/ bit 7, então
+`Indices()` subconta e `Verify()` pode retornar true sem verificar assinatura; o
+próprio teste da OKX comenta "ContainsKey implementation has issues" e desativa
+asserts). MAS: é helper client-side (verificação autoritativa é on-chain no VM
+Aptos), e é port do upstream `aptos-labs/aptos-go-sdk` (funcionalmente idêntico
+após normalizar imports — NÃO "byte-for-byte", correção do Codex). Novidade
+praticamente destruída → alto risco duplicate/informative. Correção do Codex
+aceita: não está provado que o único chamador seja self-verify (SignedTransaction.
+Verify é exportado; nenhum chamador produtivo achado no repo; consumidores
+externos/internos da OKX desconhecidos). Mantido em reproduced_local; disposição
+= não enviar. (Decisão de estado pendente de revisão: known_duplicate vs manter.)
+
+**Finding multiEd25519 panic** — eu tinha proposto false_positive; ERRO meu, o
+Codex corrigiu. O panic é tecnicamente REAL: `for i := range key.PubKeys {
+pubKey.Verify(msg, sig.Signatures[i]) }` com `sig.Signatures[i]` estourando se
+`len(Signatures) < len(PubKeys)` (o bitmap é ignorado — literal "TODO: Verify
+with bitmap"). Rebaixado **reproduced_local → inconclusive** (panic real,
+reportabilidade não provada: sem consumidor OKX remoto sem recover; HTTP Go
+recupera panic por request → Low/self-DoS; upstream já endureceu).
+
+**Finding Cardano `NewXPrvKeyFromEntropy`** — o Codex apontou FALSO POSITIVO e
+**confirmei contra a fonte primária**: CIP-0003/Icarus.md especifica
+`data[31] &= 0b0001_1111; data[31] |= 0b0100_0000` (= `& 0x1f | 0x40`), exatamente
+o que o código faz. O achado original afirmou erradamente que CIP-3 usa `0x7f`
+(clamp Ed25519 padrão) e tratou o clamp Cardano correto como bug; a PoC de ~50%
+de endereços divergentes só comparou o código CORRETO contra um patch ERRADO
+(0x7f). Transicionado **scope_verified → false_positive** (era o achado mais
+avançado do sistema — meu workflow anterior nem o examinou; crédito ao Codex).
+
+**Finding Tron `VerifyMessage`/`VerifyMessageWithAddress`/`VerifyMessageV1`**
+(corroborated_static) — gate de alcance feito: panic REAL confirmado nas três
+(decodificam `signature` hex externo e indexam `sigTemp[64]`/`sigTemp[:64]` sem
+checar `len>=65`). É código AUTORAL da OKX (não vendored) e a função verifica
+assinatura de TERCEIRO por propósito — estruturalmente melhor que os aptos. MAS
+nenhum chamador produtivo no repo; alcance a backend OKX não provado; HTTP Go
+recupera panic por request → provável Low/self-DoS. Mantido em
+corroborated_static; sem relatório até haver chamador real provado.
+
+**Lição estratégica reforçada**: boa parte de `coins/*` do go-wallet-sdk é código
+VENDORED/portado de upstream (aptos-go-sdk, go-ethereum, btcd) — armadilha de
+duplicata mesmo dentro de um programa "baixa competição". O valor real está no
+código AUTORAL da OKX (ex.: tron.go). Refinamento recomendado pelo Codex (não
+feito ainda): detecção por PROVENIÊNCIA pra separar copiado de autoral, em vez de
+excluir `coins/*` inteiro.
+
+**Disciplina de evidência (Codex, aceita)**: não aceitar "N agentes confirmaram"
+sem PoC/SHA/logs/outputs persistidos. Os testes de PoC das sessões cloud não
+foram persistidos no repo — fragilidade a corrigir.
+
+Mudanças desta rodada: 2 transições no ledger `research` + 2 linhas corrigidas em
+`queue.jsonl` (splice cirúrgico, 846 linhas intactas). Nada enviado a nenhum
+programa.
+
+**Correção do parágrafo acima (achada só ao reconciliar com o remoto)**: entre
+eu escrever esta seção e commitá-la, o agente de nuvem avançou o repositório
+compartilhado em 97 commits e já tinha aplicado exatamente as mesmas correções
+(Cardano→false_positive, multiEd25519→known_duplicate, multiKey→known_duplicate)
+de forma equivalente ou melhor (ele escolheu known_duplicate onde eu tinha
+inconclusive). Descartei minha splice local redundante e sincronizei com a dele
+via fast-forward — nada foi perdido, as duas análises convergiram
+independentemente. Essa nota nunca chegou a ser commitada na hora certa (ficou só
+em memória/arquivo de rascunho) — recuperada e commitada agora, 09/09/2026 à
+noite, junto com o resto desta sessão.
+
+## Mira nova nos plugins Mattermost + achado OAuth2 CSRF no Jira (2026-09-09)
+
+Usuário pediu "siga pelo melhor caminho... encontrar o primeiro relatório pra
+enviar". Varredura sistemática dos 4 plugins Mattermost oficialmente elegíveis a
+recompensa (Jira/GitLab/GitHub/Calls/Playbooks — confirmados via
+`hackerone.com/mattermost`, asset "Mattermost Plugins", `eligibleForBounty:true,
+maxSeverity:critical`) pelo MESMO padrão de CSRF de vinculação de conta OAuth já
+achado em `mattermost-plugin-confluence` (que não é elegível, "Other
+publicly-released plugins", `eligibleForBounty:false`) e `mattermost-plugin-
+msteams-meetings` (esse, ao reexaminar, estava CORRETAMENTE defendido — 3
+guardas). Resultado: GitLab e GitHub confirmados defendidos; Calls/Playbooks sem
+fluxo OAuth nenhum; **Jira confirmado vulnerável**.
+
+**Achado**: `httpOAuth2Complete` (server/user_cloud_oauth.go) nunca valida a
+sessão que completa o fluxo contra o id embutido em `state` — a rota
+(`routeOAuth2Complete`, server/http.go) não tem o wrapper `checkAuth` que sua
+irmã OAuth1 tem no MESMO arquivo. Atacante autenticado como si mesmo consegue
+vincular o token Jira real de uma vítima à PRÓPRIA conta Mattermost do atacante.
+Verificado em duas rodadas independentes: (1) workflow adversarial de 4 lentes
+(4/4 confirmado, 0 refutado); (2) eu mesmo clonei de novo, li cada linha, e
+escrevi/rodei um teste Go real contra a função verdadeira (não reimplementação),
+persistido em `research/bugbounty/mattermost-plugin-jira/evidence/
+oauth2-account-linking-csrf/`. Busca de anterioridade honesta: zero cobertura
+pública deste caminho específico, mas 3 CVEs reais e distintas já divulgadas
+neste mesmo plugin pra mesma classe geral de bug (reforça que a OKX/Mattermost
+leva a sério essa classe, sem confirmar que ESTA instância já foi vista).
+
+Registrado no pipeline até `scope_verified`; `human_ready` recusado
+honestamente pelo gate anti-duplicata (bug de ~agosto/2023, não regressão de
+48h, programa não é low-competition) — mesmo padrão já visto no OKG, não
+contornado. Relatório de submissão rascunhado
+(`research/bugbounty/reports/mattermost-plugin-jira-oauth2-account-linking-
+csrf.md`), inglês, primeiro pessoa, com nota de confiança em português no topo
+explicando exatamente o que está provado e o que não está.
+
+**Merge real com o agente de nuvem durante este trabalho**: o remoto avançou
+mais 2 vezes (81 + 40 commits) enquanto eu registrava o achado. Um conflito
+real no hash-chain do ledger (`ledger.research.jsonl` — ambos os lados
+anexaram entradas partindo do mesmo hash-pai) resolvido com a ferramenta já
+existente pra isso (`ledger.mjs::repairChainFile`/`rechainEntries`) — nenhum
+fato perdido de nenhum dos dois lados, cadeia re-verificada íntegra depois.
+
+## Descoberta crítica: programa Mattermost não aceita submissões agora + lacuna estrutural corrigida (2026-09-09)
+
+Usuário perguntou "isso é legítimo, alta chance de não ser duplicata, tem tudo
+provado?" — respondi com calibração honesta (achado tecnicamente sólido, mas
+"alta chance de não-duplicata" seria exagero; histórico real da missão é 5/5
+relatórios fechados sem pagamento). Usuário então mandou screenshot REAL da
+página do programa Mattermost no HackerOne mostrando o banner **"Mattermost is
+not accepting submissions at this time."**
+
+Confirmei ao vivo via API (`h1-api.mjs::getProgram('mattermost')`):
+`submissionState:"disabled"` (`state:"public_mode"`, `offersBounties:true` —
+o programa continua público/paga bounty normalmente, só não recebe report
+novo agora). Isso NÃO tinha nada a ver com a qualidade do achado do Jira.
+
+**Lacuna estrutural real descoberta**: `getProgram()`/`submissionState` já
+existia em `h1-api.mjs` há tempos, mas só era consumido por
+`discovery-runner.mjs` (pontuação de idade de alvo) — NUNCA por nenhum gate de
+submissão (`check-scope`, `scopeGate`, `duplicateCheckGate`,
+`submissionReadinessGate`). Ou seja: um programa pode pausar submissões
+inteiramente com todo ativo ainda marcado `eligibleForSubmission=true` no
+`structured_scopes`, e nada no pipeline notaria isso antes de hoje. Checagem
+ao vivo dos outros 6 programas HackerOne ativos confirmou que NÃO é um
+problema generalizado (slack/plaid/vercel-open-source/kiwicom/kubernetes/okg
+todos `submissionState:"open"`) — específico do Mattermost agora.
+
+**Correção aplicada nos dois níveis**:
+1. `program-policy.json`: Mattermost marcado `blocked:true` com motivo
+   detalhado + instrução de como reverificar antes de desbloquear. ERRO
+   pego a tempo pela própria suíte de testes: eu tinha deixado
+   `roeReviewed:true` coexistindo com `blocked:true`, que
+   `loadProgramPolicyStrict` rejeita explicitamente como contraditório —
+   isso quebrou 30 testes em cascata (qualquer coisa que carregasse a
+   política real) até eu rodar a suíte completa e pegar o erro antes de
+   commitar. Corrigido removendo `roeReviewed` (mesmo padrão do Circle BBP:
+   só `blocked:true` + `reason`).
+2. `scope-registry.mjs`: novo campo aditivo `programSubmissionState` em
+   `buildScopeSnapshot`/`scopeGate` — bloqueia quando `!= null && != 'open'`,
+   nunca bloqueia por ausência do campo (compatível com todo snapshot já
+   existente). `cli.mjs::cmdRefreshScopeLive` agora busca `getProgram()`
+   além de `getStructuredScope()` e persiste o campo no snapshot; falha
+   aberta se essa chamada específica der erro (não quebra o refresh
+   principal). Teste novo cobrindo o caso real. Suíte completa: 679/679,
+   0 falhas.
+3. Relatório do Jira atualizado com aviso no topo: **NÃO ENVIAR AGORA**,
+   com o comando exato pra reverificar quando o programa reabrir.
+
+**Nada foi perdido nem descartado** — o achado do Jira continua registrado
+íntegro em `scope_verified`, só a decisão de enviar fica suspensa até o
+programa reabrir. Este é exatamente o tipo de verificação que só um humano
+olhando a página real (não a API sozinha, que só resolve `structured_scopes`
+por padrão neste pipeline) pega — reforça o valor de "olhar a página de
+verdade antes de decidir enviar", já presente na metodologia de relatórios.

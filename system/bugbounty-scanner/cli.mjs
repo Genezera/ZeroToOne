@@ -1,6 +1,6 @@
 import { openDb, upsertFinding, getFinding, listFindings, recordTransition, recordValidation, recordDeploymentEvidence, latestDeploymentEvidence, recordDuplicateCheck, recordReport, latestReport, latestDuplicateCheck, recordPlatformOutcome, latestPlatformOutcome, listValidations, stateCounts, exportFindingsToQueueJsonl, closeDb, recordImpactAssessment, latestImpactAssessment, listSubmissions, getSubmission, recordSubmission, latestSubmissionForFinding, recordCodeAgeEvidence, latestCodeAgeEvidence } from './db.mjs';
 import { loadSnapshot, saveSnapshot, buildScopeSnapshot, scopeGate, assetRefForFinding } from './scope-registry.mjs';
-import { getStructuredScope, getReport, getMyReports } from './h1-api.mjs';
+import { getStructuredScope, getProgram, getReport, getMyReports } from './h1-api.mjs';
 import { getEvidenceGrade, explainGrade } from './evidence-grade.mjs';
 import { loadProgramPolicyStrict, getBlockReason } from './program-policy.mjs';
 import { loadSubmissionBudget, getSubmissionBudget } from './program-submission-budget.mjs';
@@ -595,6 +595,20 @@ export async function cmdRefreshScopeLive(program, programHandle) {
     maxSeverity: a.maxSeverity,
     instruction: a.instruction,
   }));
+  // Estado de aceitação de submissões do PROGRAMA inteiro -- endpoint
+  // diferente de structured_scopes (achado real 09/09/2026: um programa
+  // pode pausar submissões com todo ativo ainda marcado
+  // eligibleForSubmission=true). Falha aberta e não quebra o refresh se
+  // este endpoint específico falhar (rate limit, mudança de API) --
+  // scopeGate já trata programSubmissionState=null como "sem checagem
+  // extra", mantendo o comportamento anterior.
+  let programSubmissionState = null;
+  let programSubmissionStateCheckedAt = null;
+  try {
+    const prog = await getProgram(programHandle);
+    programSubmissionState = prog?.submissionState ?? null;
+    programSubmissionStateCheckedAt = new Date().toISOString();
+  } catch { /* ver comentário acima -- refresh de escopo não deve falhar por isso */ }
   const snapshot = buildScopeSnapshot({
     program,
     platform: 'HackerOne',
@@ -604,9 +618,11 @@ export async function cmdRefreshScopeLive(program, programHandle) {
     rawSourceContent: assetsRaw,
     assets,
     confidence: 'alta',
+    programSubmissionState,
+    programSubmissionStateCheckedAt,
   });
   const file = saveSnapshot(snapshot);
-  return { savedTo: file, assetCount: assets.length };
+  return { savedTo: file, assetCount: assets.length, programSubmissionState };
 }
 
 /** Status ao vivo de um report específico, direto da Hacker API. */

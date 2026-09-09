@@ -50,6 +50,17 @@ export function buildScopeSnapshot({
   confidence,
   capturedAt,
   ttlDaysOverride,
+  // Estado de aceitação de submissões do PROGRAMA (não do ativo) --
+  // independente de eligibleForBounty/eligibleForSubmission por ativo, que
+  // continuam existindo mesmo quando o programa pausa novos reports (ex.:
+  // achado real 09/09/2026: Mattermost com todos os ativos marcados
+  // eligibleForSubmission=true, mas o programa inteiro com
+  // submissionState="disabled" -- só visível via GET /hackers/programs/
+  // {handle}, um endpoint diferente do structured_scopes). null = fonte não
+  // informa (mantém o gate anterior sem checagem extra, nunca bloqueia por
+  // ausência de dado).
+  programSubmissionState = null,
+  programSubmissionStateCheckedAt = null,
 }) {
   if (!TTL_DAYS_BY_SOURCE[sourceType]) {
     throw new Error(`sourceType inválido: "${sourceType}". Válidos: ${Object.keys(TTL_DAYS_BY_SOURCE).join(', ')}`);
@@ -76,6 +87,8 @@ export function buildScopeSnapshot({
     rateLimits,
     disclosurePolicy,
     communitySourceNote,
+    programSubmissionState,
+    programSubmissionStateCheckedAt,
   };
 }
 
@@ -221,6 +234,19 @@ export function scopeGate(snapshot, assetRef, now = new Date().toISOString()) {
   }
   if (isSnapshotExpired(snapshot, now)) {
     return { allowed: false, reason: `scope snapshot expirado em ${snapshot.expiresAt} (capturado ${snapshot.capturedAt}, fonte ${snapshot.sourceType})` };
+  }
+  // Estado do PROGRAMA inteiro, independente de qualquer flag por ativo --
+  // um programa pode pausar novos reports sem tocar eligibleForBounty/
+  // eligibleForSubmission de nenhum ativo (achado real 09/09/2026, ver
+  // buildScopeSnapshot). null = fonte não informa, nunca bloqueia sozinho.
+  if (snapshot.programSubmissionState != null && snapshot.programSubmissionState !== 'open') {
+    return {
+      allowed: false,
+      reason: `programa não está aceitando submissões no momento (submissionState="${snapshot.programSubmissionState}")`,
+      programSubmissionState: snapshot.programSubmissionState,
+      programSubmissionStateCheckedAt: snapshot.programSubmissionStateCheckedAt,
+      officialUrl: snapshot.officialUrl,
+    };
   }
   const evidence = {
     snapshotCapturedAt: snapshot.capturedAt,

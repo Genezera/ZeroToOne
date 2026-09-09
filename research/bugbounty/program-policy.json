@@ -20,14 +20,16 @@
     "policyUrl": "https://hackerone.com/slack"
   },
   "Mattermost Public Bug Bounty Engagement ": {
-    "roeReviewed": true,
-    "aiResearchBanned": false,
-    "reason": "Lacuna do registro anterior (roeReviewNeeded) RESOLVIDA (03/09/2026): li a página real do engagement 'mattermost-mbb-public' no Bugcrowd inteira (Overview, Targets, Exclusions, Known Issues, Safe Harbor) via navegador real -- nenhuma menção a IA/ChatGPT/ferramentas de IA em lugar nenhum. Ao contrário, a própria descrição do programa cita 'AI assistance' como recurso do produto e lista o Mattermost Copilot Plugin (IA) como alvo em escopo -- tom claramente não-hostil a IA. Programa liberado pra pesquisa.",
+    "blocked": true,
+    "reason": "BLOQUEIO OPERACIONAL (09/09/2026, não é questão de RoE -- a revisão de RoE abaixo continua válida): o usuário reportou (screenshot real da própria página do programa no HackerOne) o banner \"Mattermost is not accepting submissions at this time.\" Confirmado ao vivo via API (h1-api.mjs::getProgram('mattermost')): submissionState=\"disabled\" (state=\"public_mode\", offersBounties=true -- ou seja, o programa segue público e paga bounty normalmente, só não está aceitando NOVOS reports agora). Gap estrutural descoberto neste exato momento: getProgram()/submissionState nunca tinha sido checado em nenhum gate de submissão deste pipeline (só usado em discovery-runner.mjs pra pontuação de idade de alvo) -- nenhum achado de nenhum programa teria essa condição pega automaticamente antes disso. Os outros 6 programas HackerOne ativos (slack, plaid, vercel-open-source, kiwicom, kubernetes, okg) foram checados ao vivo na mesma rodada e confirmados submissionState=\"open\" -- não é um problema generalizado, é específico deste programa agora. RE-VERIFICAR antes de desbloquear: rodar `node -e 'import(\"./system/bugbounty-scanner/h1-api.mjs\").then(m=>m.getProgram(\"mattermost\").then(p=>console.log(p)))'` a partir da raiz do repo, ou reabrir https://hackerone.com/mattermost -- só remover este bloqueio quando submissionState voltar a \"open\". A revisão de RoE original abaixo (03/09/2026) permanece correta e não precisa ser refeita quando isso for revertido.",
+    "roeOriginalReason": "Lacuna do registro anterior (roeReviewNeeded) RESOLVIDA (03/09/2026): li a página real do engagement 'mattermost-mbb-public' no Bugcrowd inteira (Overview, Targets, Exclusions, Known Issues, Safe Harbor) via navegador real -- nenhuma menção a IA/ChatGPT/ferramentas de IA em lugar nenhum. Ao contrário, a própria descrição do programa cita 'AI assistance' como recurso do produto e lista o Mattermost Copilot Plugin (IA) como alvo em escopo -- tom claramente não-hostil a IA. Programa liberado pra pesquisa.",
     "flaggedAt": "2026-09-03",
     "reviewedAt": "2026-09-03",
     "nextReviewAt": "2026-10-03",
     "reviewMethod": "official_program_page_full_browser_read",
-    "policyUrl": "https://bugcrowd.com/engagements/mattermost-mbb-public"
+    "policyUrl": "https://hackerone.com/mattermost",
+    "submissionStateCheckedAt": "2026-09-09T16:28:00.000Z",
+    "submissionStateCheckedVia": "user screenshot (live HackerOne UI) + h1-api.mjs getProgram('mattermost') live call, both confirming submissionState=disabled"
   },
   "Plaid": {
     "roeReviewed": true,

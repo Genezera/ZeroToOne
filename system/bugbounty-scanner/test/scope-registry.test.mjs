@@ -99,6 +99,20 @@ test('snapshot com validade inválida ou flags não booleanas bloqueia autoriza�
   assert.equal(scopeGate(malformed, 'acme/api', BASE.capturedAt).allowed, false);
 });
 
+test('programSubmissionState="disabled" bloqueia mesmo com todo ativo eligibleForSubmission=true (achado real Mattermost 09/09/2026)', () => {
+  const paused = buildScopeSnapshot({ ...BASE, programSubmissionState: 'disabled', programSubmissionStateCheckedAt: '2026-09-09T16:28:00.000Z' });
+  const result = scopeGate(paused, 'circlefin/malachite', BASE.capturedAt);
+  assert.equal(result.allowed, false);
+  assert.match(result.reason, /não está aceitando submissões/);
+  assert.equal(result.programSubmissionState, 'disabled');
+  // "open" e ausência de dado (snapshot antigo/fonte que não informa) nunca bloqueiam por isto sozinhos.
+  const open = buildScopeSnapshot({ ...BASE, programSubmissionState: 'open' });
+  assert.equal(scopeGate(open, 'circlefin/malachite', BASE.capturedAt).allowed, true);
+  const legacy = buildScopeSnapshot(BASE); // sem o campo, snapshot no formato anterior
+  assert.equal(legacy.programSubmissionState, null);
+  assert.equal(scopeGate(legacy, 'circlefin/malachite', BASE.capturedAt).allowed, true);
+});
+
 test('identificadores opacos, app URLs e organizações preservam igualdade sem expandir escopo', () => {
   const snap = buildScopeSnapshot({...BASE,assets:[
     {assetIdentifier:'OKX Android APK'},
