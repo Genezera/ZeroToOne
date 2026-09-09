@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T14:20:35.643Z",
+  "checkedAt": "2026-09-09T14:30:58.858Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "6bb42350227f0a714f4730165e7ba622c69bd99e",
+      "sha": "b1856e29a9c992113d5db00096082ddcc3a55d8a",
       "branch": "master",
-      "parentSha": "82b6b6d3b2fc1b9882ea500b54fca32c8d862e68",
-      "committedAt": "2026-09-09T12:22:32Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/6bb42350227f0a714f4730165e7ba622c69bd99e",
-      "title": "Merge pull request #135870 from dims/kubelet-static-binary",
-      "observedAt": "2026-09-09T12:30:54.284Z",
+      "parentSha": "529848d1769f95b4cfbe3e96ab00b7f18e62bbdb",
+      "committedAt": "2026-09-09T14:22:46Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/b1856e29a9c992113d5db00096082ddcc3a55d8a",
+      "title": "Merge pull request #141968 from thc1006/kubeadm-getent-preflight",
+      "observedAt": "2026-09-09T14:30:58.858Z",
       "programs": [
         "Kubernetes"
       ],
