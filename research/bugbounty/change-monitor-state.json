@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T17:50:41.651Z",
+  "checkedAt": "2026-09-09T18:10:41.184Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "912fb015dd599871940e7adc3791b56fb4516374",
+      "sha": "65eb52b767008e1dd6a074fbc2e9223ae50a8739",
       "branch": "main",
-      "parentSha": "d7fc51843553e17231225971ce7407143215093f",
-      "committedAt": "2026-09-09T17:49:10Z",
-      "url": "https://github.com/vercel/ai/commit/912fb015dd599871940e7adc3791b56fb4516374",
-      "title": "feat: add batch cancel and list APIs (#20543)",
-      "observedAt": "2026-09-09T17:50:41.651Z",
+      "parentSha": "912fb015dd599871940e7adc3791b56fb4516374",
+      "committedAt": "2026-09-09T18:08:40Z",
+      "url": "https://github.com/vercel/ai/commit/65eb52b767008e1dd6a074fbc2e9223ae50a8739",
+      "title": "Version Packages (#20524)",
+      "observedAt": "2026-09-09T18:10:41.184Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
+      "sha": "3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
       "branch": "main",
-      "parentSha": "d630b218af24df0e22d9ec1dd4550662f472bbb0",
-      "committedAt": "2026-09-09T15:59:45Z",
-      "url": "https://github.com/vercel/eve/commit/1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
-      "title": "fix(eve): persist framework prompt announcements (#3131)",
-      "observedAt": "2026-09-09T16:00:59.423Z",
+      "parentSha": "1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
+      "committedAt": "2026-09-09T18:05:53Z",
+      "url": "https://github.com/vercel/eve/commit/3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
+      "title": "fix(eve): group queued deliveries by auth context (#3172)",
+      "observedAt": "2026-09-09T18:10:41.184Z",
       "programs": [
         "Vercel Open Source"
       ],
