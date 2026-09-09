@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T17:30:45.665Z",
+  "checkedAt": "2026-09-09T17:40:42.550Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1411,13 +1411,13 @@
       "languages": []
     },
     "vercel/chat": {
-      "sha": "2e2426d17e97f545b758962dc7496b199f4d3230",
+      "sha": "f893470e1963cda3bc21a801a1f312b1208eb126",
       "branch": "main",
-      "parentSha": "ea025af7ac2bd2d88fd95ac85b91213055af2ab9",
-      "committedAt": "2026-09-09T17:30:10Z",
-      "url": "https://github.com/vercel/chat/commit/2e2426d17e97f545b758962dc7496b199f4d3230",
-      "title": "feat(teams): add installation lifecycle events (#914)",
-      "observedAt": "2026-09-09T17:30:45.665Z",
+      "parentSha": "2e2426d17e97f545b758962dc7496b199f4d3230",
+      "committedAt": "2026-09-09T17:39:41Z",
+      "url": "https://github.com/vercel/chat/commit/f893470e1963cda3bc21a801a1f312b1208eb126",
+      "title": "fix(telegram): preserve links during truncation (#915)",
+      "observedAt": "2026-09-09T17:40:42.550Z",
       "programs": [
         "Vercel Open Source"
       ],
