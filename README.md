@@ -27,8 +27,9 @@ deliberate human action; the automation never files a report by itself.
    use a commit-versioned identity, so a past false positive in the same
    function cannot hide a real regression. Raw findings are noisy by design
    at this stage.
-3. **Corroborate** — every candidate finding gets a manual code-reading
-   pass tracing the actual call chain end to end, then, wherever
+3. **Corroborate** — candidates that survive the policy, freshness, scope,
+   identity, and impact gates require a manual code-reading pass tracing the
+   actual call chain end to end, then, wherever
    feasible, a real, executed proof of concept — a local reproduction,
    or an isolated replica environment when testing the real target's
    infrastructure directly isn't allowed. Findings that can't survive
@@ -44,20 +45,21 @@ deliberate human action; the automation never files a report by itself.
    append-only ledger — nothing gets silently dropped or rewritten
    after the fact.
 
-It runs in complementary roles: scheduled cloud workflows own the
+GitHub Actions is the primary runtime. Scheduled cloud workflows own the
 15-minute change monitor, daily target discovery/promotion, six-hour
-safety scan and hourly HackerOne outcome sync, while the local Windows
-service owns heavier analyzer runs, diagnostics and watchdog duties.
-Both exchange the same version-controlled `queue.jsonl`, submissions and
-ledger; fail-closed Git preflight prevents a stale or dirty worker from
-silently overwriting shared state.
+safety scan, two-hour evidence worker, half-hour health check, and hourly
+HackerOne outcome sync. The local Windows environment is manual-only: no
+service, boot trigger, login task, or local heartbeat is required. Both
+manual and cloud runs use the same version-controlled `queue.jsonl`,
+submissions, and ledger; fail-closed Git preflight prevents a stale or dirty
+worker from silently overwriting shared state.
 
 `mission-control` joins those components into one live health view: it checks
-the latest real GitHub Actions outcomes against each cadence, the local
-service heartbeat, repository/policy invariants, pipeline state counts and
-submission outcomes. The Windows service repeats the cloud-health check every
-30 minutes and routes failures/recovery through its existing backoff and
-Telegram notification path.
+the latest real GitHub Actions outcomes against each cadence,
+repository/policy invariants, pipeline state counts, and submission outcomes.
+Cloud health runs every 30 minutes and after operational workflows. A separate
+external supervisor is still required to detect a GitHub-wide scheduler
+outage from outside GitHub itself.
 
 ## Where to look
 
@@ -65,6 +67,9 @@ Telegram notification path.
   the pipeline itself: scanners, target discovery, the state machine,
   report generation, and the CLI bridge both runtimes use. Its README
   is the detailed, continuously-updated technical reference.
+- [`system/bugbounty-scanner/README.en.md`](system/bugbounty-scanner/README.en.md)
+  — detailed English architecture, cloud operations, alert behavior,
+  anti-duplicate controls, failure modes, and roadmap.
 - [`docs/zerotoone-v2/IMPLEMENTATION_STATE.md`](docs/zerotoone-v2/IMPLEMENTATION_STATE.md)
   — the target architecture and an honest account of what's actually
   built versus deferred, and why.

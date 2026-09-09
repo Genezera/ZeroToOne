@@ -1,5 +1,7 @@
 # bugbounty-scanner/ — pipeline de bug bounty com custo mínimo
 
+English architecture and operator guide: [README.en.md](README.en.md).
+
 Dois estágios, custo bem diferente, ligados por um repositório GitHub
 compartilhado (`https://github.com/Genezera/ZeroToOne`, privado). O
 Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
