@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T12:40:39.716Z",
+  "checkedAt": "2026-09-09T12:50:50.905Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "fa621caf7dbde417d2f588ab672d291302dca98e",
+      "sha": "a09da7967edb0b5c03d88c87d34d08b7f577daa1",
       "branch": "master",
-      "parentSha": "30cebdee830c3cc432fc8e1e0adabff46a2792bd",
-      "committedAt": "2026-09-09T08:46:33Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/fa621caf7dbde417d2f588ab672d291302dca98e",
-      "title": "Merge pull request #37792 from Nordix/lentzi90/capo-release-0.15",
-      "observedAt": "2026-09-09T08:50:33.927Z",
+      "parentSha": "fa621caf7dbde417d2f588ab672d291302dca98e",
+      "committedAt": "2026-09-09T12:46:36Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/a09da7967edb0b5c03d88c87d34d08b7f577daa1",
+      "title": "Merge pull request #37840 from dims/add-kubelet-cgo-override",
+      "observedAt": "2026-09-09T12:50:50.905Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1032,13 +1032,13 @@
       ]
     },
     "kubernetes/website": {
-      "sha": "5fcb15cb74ddf18ebaa5aea5a4d91e25093980bc",
+      "sha": "4e842ff3d93874d8046d818dbb7c3bef606034c3",
       "branch": "main",
-      "parentSha": "ea639c1d22a60365d07b78692b1b1a2eb866bd15",
-      "committedAt": "2026-09-08T23:12:34Z",
-      "url": "https://github.com/kubernetes/website/commit/5fcb15cb74ddf18ebaa5aea5a4d91e25093980bc",
-      "title": "Merge pull request #57143 from jmakk0301/fix/ephemeral-container-glossary-wording",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "5fcb15cb74ddf18ebaa5aea5a4d91e25093980bc",
+      "committedAt": "2026-09-09T12:42:35Z",
+      "url": "https://github.com/kubernetes/website/commit/4e842ff3d93874d8046d818dbb7c3bef606034c3",
+      "title": "Merge pull request #57468 from opsmon/refactor/cluster",
+      "observedAt": "2026-09-09T12:50:50.905Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "f85de0d165ec52f3437f861ad4ed1c03210b89fc",
+      "sha": "dc73dee2b52dd34da64a600bd5787279dc87e82e",
       "branch": "main",
-      "parentSha": "a46edbd7bbf1ea349a1d6838f1fba84c0030cca5",
-      "committedAt": "2026-09-09T12:40:44Z",
-      "url": "https://github.com/vercel/eve/commit/f85de0d165ec52f3437f861ad4ed1c03210b89fc",
-      "title": "feat(eve): authorize workflow tool steps (#3073)",
-      "observedAt": "2026-09-09T12:40:39.716Z",
+      "parentSha": "22046b243f476d3d60b2b5432c1f07bbc4e3a007",
+      "committedAt": "2026-09-09T12:50:18Z",
+      "url": "https://github.com/vercel/eve/commit/dc73dee2b52dd34da64a600bd5787279dc87e82e",
+      "title": "fix(eve): preserve bootstrap sandbox keys without seed files (#3170)",
+      "observedAt": "2026-09-09T12:50:50.905Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "f593b6c80a8ac4e3b6f41b71efc04dc49efb912a",
+      "sha": "26b2bbe024b681176d433c384148fb5468e821ab",
       "branch": "canary",
-      "parentSha": "aad56b54f3ce4eb1cb92e81dbd7473d85ecbf0f9",
-      "committedAt": "2026-09-09T11:30:37Z",
-      "url": "https://github.com/vercel/next.js/commit/f593b6c80a8ac4e3b6f41b71efc04dc49efb912a",
-      "title": "Upgrade React from `f4e439e1-20260902` to `6c0e1047-20260908` (#98363)",
-      "observedAt": "2026-09-09T11:31:10.576Z",
+      "parentSha": "3c8e9c385524359309d775f3fc39b6c2c0cedb6e",
+      "committedAt": "2026-09-09T12:42:25Z",
+      "url": "https://github.com/vercel/next.js/commit/26b2bbe024b681176d433c384148fb5468e821ab",
+      "title": "example: Use a Redis cacheHandler w/o dependencies (#95346)",
+      "observedAt": "2026-09-09T12:50:50.905Z",
       "programs": [
         "Vercel Open Source"
       ],
