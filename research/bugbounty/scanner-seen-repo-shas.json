@@ -7851,7 +7851,7 @@
     "server/webhook_worker.go": "a43da22c7500b3f9ff0550a87299b58e060cf3a2",
     "go.mod": "962affbb26c5e5a881660bcd9fb94e522d3484ca",
     "package-lock.json": "7e72c7eba31b813f68cc31c254be6f800ea509eb",
-    "webapp/package-lock.json": "53161bc964a256847c39901b93e0f64fba35237e"
+    "webapp/package-lock.json": "254e01c1bd97fc0f4d281185c9d10bc1db696fc5"
   },
   "mattermost/mattermost-plugin-zoom": {
     "server/cipher.go": "78063e9d745c2e4b512567286ef4ad8dfaa2c318",

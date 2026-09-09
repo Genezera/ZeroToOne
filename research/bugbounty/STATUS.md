@@ -1,12 +1,12 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T16:51:11.933Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T17:01:24.335Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
-| go | Kubernetes | HackerOne | kubernetes/org |
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-jira |
 
 ## Fila de bug bounty
 
