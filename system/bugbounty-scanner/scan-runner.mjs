@@ -197,7 +197,7 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
           quarantinedCount++;
           continue;
         }
-        const historicalConfidence = historicalConfidenceFor(priorStats, f.type, language);
+        const historicalConfidence = historicalConfidenceFor(priorStats, f.type, language, 5, target.program);
         newFindings.push(buildQueuedFinding(f, { changeContext, historicalConfidence }));
       }
     }
@@ -380,7 +380,7 @@ export async function runScan() {
           quarantinedTotal++;
           continue;
         }
-        const historicalConfidence = historicalConfidenceFor(priorStats, f.type, 'clarity');
+        const historicalConfidence = historicalConfidenceFor(priorStats, f.type, 'clarity', 5, target.program);
         newFindings.push(buildQueuedFinding(f, { historicalConfidence }));
       }
     }
@@ -417,7 +417,7 @@ export async function runScan() {
       quarantinedTotal++;
       continue;
     }
-    const historicalConfidence = historicalConfidenceFor(priorStats, f.type, f.language);
+    const historicalConfidence = historicalConfidenceFor(priorStats, f.type, f.language, 5, f.program);
     newFindings.push(buildQueuedFinding(f, { changeContext, historicalConfidence }));
   }
 

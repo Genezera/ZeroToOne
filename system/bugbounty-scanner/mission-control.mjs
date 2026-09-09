@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openDb, closeDb, stateCounts, listFindings, listSubmissions, latestImpactAssessment, latestDuplicateCheck, latestReport, latestDeploymentEvidence, latestCodeAgeEvidence, listValidations } from './db.mjs';
@@ -17,7 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const DEFAULT_DB_PATH = path.join(REPO_ROOT, 'research', 'bugbounty', 'zerotoone.db');
 
-export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts = {}, outcomeStats = {}, researchPlan = null, profile = loadOperationProfile() }) {
+export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts = {}, outcomeStats = {}, researchPlan = null, operationsMetrics = null, profile = loadOperationProfile() }) {
   const attention = [];
   for (const item of readiness.checks || []) {
     if (!item.ok && item.severity !== 'limitation') attention.push(`audit:${item.name}: ${item.detail}`);
@@ -28,6 +28,7 @@ export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, c
   if (profile.local.requiredForOperation) {
     for (const reason of runtimeHealth.reasons || []) attention.push(`local:${reason}`);
   }
+  for (const alert of operationsMetrics?.activeAlerts || []) attention.push(`metrics:${alert}`);
   const operational = readiness.fullyOperational === true && cloud.ok === true
     && (!profile.local.requiredForOperation || runtimeHealth.healthy === true);
   return {
@@ -49,6 +50,7 @@ export function buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, c
         ? researchPlan.actionable.filter((item) => item.action === 'human_review').length
         : Number(counts.human_ready || 0),
       researchWork: researchPlan?.summary || null,
+      operationsMetrics,
     },
     outcomes: {
       submissions: Number(outcomeStats.totalSubmissions || 0),
@@ -83,6 +85,12 @@ export async function runMissionControl({
   let counts = {};
   let outcomeStats = {};
   let researchPlan = null;
+  let operationsMetrics = null;
+  const metricsPath = path.join(REPO_ROOT, 'research', 'bugbounty', 'operations-metrics.json');
+  if (existsSync(metricsPath)) {
+    try { operationsMetrics = JSON.parse(readFileSync(metricsPath, 'utf8')); }
+    catch { operationsMetrics = { activeAlerts: ['metrics_file_invalid'] }; }
+  }
   if (existsSync(dbPath)) {
     const db = openDb(dbPath);
     try {
@@ -103,7 +111,7 @@ export async function runMissionControl({
       });
     } finally { closeDb(db); }
   }
-  return buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts, outcomeStats, researchPlan, profile });
+  return buildMissionControlSnapshot({ readiness, cloud, runtimeHealth, counts, outcomeStats, researchPlan, operationsMetrics, profile });
 }
 
 const isMain = process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);

@@ -5,6 +5,22 @@ Rastreia o progresso do plano descrito em
 mestre, recebido do usuário em 29/08/2026). Atualizado ao final de cada
 fase concluída.
 
+## Ampliação operacional — 2026-09-08
+
+- Adicionado workflow cloud de métricas com cobertura exata do registro,
+  atraso do monitor, latência de detecção P50/P95, retries e entrega de alertas.
+- Mission Control e health monitor agora incluem o workflow de métricas.
+- Adicionado Worker Cloudflare independente, com cron de 10 minutos, dispatch
+  do monitor, health externo, estado deduplicado em KV e Telegram. O código e
+  testes estão completos; o deploy depende de autenticação externa e criação
+  do namespace KV, portanto não é alegado como ativo.
+- CodeQL passou a filtrar SARIF por arquivos do delta e ganhou perfis Java
+  sem build e Go fail-closed. Build automático Go/Kotlin continua proibido sem
+  receita isolada aprovada, evitando execução genérica de código de terceiros.
+- Evidence Worker gera proposta de regressão presa ao parent/candidate e aceita
+  adapters de release para npm, GitHub Releases e Go proxy. Somente igualdade
+  exata do commit produz deployment evidence `high`.
+
 ## Estado operacional consolidado — 2026-09-05
 
 O sistema opera com descoberta diária, scan de segurança a cada 6 horas,

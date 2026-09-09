@@ -8,10 +8,11 @@ const HOUR = 60 * 60 * 1000;
 const expectation = { file: 'workflow.yml', label: 'workflow', maxSuccessAgeMs: HOUR };
 
 test('Mission Control verifica o supervisor; o supervisor só exclui a própria execução', () => {
-  assert.equal(workflowExpectations().length,6);
+  assert.equal(workflowExpectations().length,7);
   assert.equal(workflowExpectations().some((item)=>item.label==='health_monitor'),true);
   assert.equal(workflowExpectations().some((item)=>item.label==='evidence_worker'),true);
-  assert.equal(workflowExpectations({operationalOnly:true}).length,5);
+  assert.equal(workflowExpectations({operationalOnly:true}).length,6);
+  assert.equal(workflowExpectations().some((item)=>item.label==='operations_metrics'),true);
   assert.equal(workflowExpectations({operationalOnly:true}).some((item)=>item.label==='change_monitor'),true);
 });
 

@@ -63,7 +63,12 @@ export function computeStats(queueEntries) {
 /** Confiança histórica pra anexar num achado NOVO do mesmo tipo/linguagem —
  * null se não houver amostra suficiente ainda (padrão: mínimo 5 revisados),
  * pra não sugerir confiança com base em 1-2 pontos de dado. */
-export function historicalConfidenceFor(stats, type, language, minSample = 5) {
+export function historicalConfidenceFor(stats, type, language, minSample = 5, program = null) {
+  const programBucket = program ? stats?.byTypeProgram?.[`${type}::${program}`] : null;
+  if (programBucket && programBucket.reviewed >= minSample) {
+    return { fpRate: programBucket.fpRate, sampleSize: programBucket.reviewed,
+      basis: 'type_program', program };
+  }
   const bucket = stats?.byTypeLanguage?.[`${type}::${language}`];
   if (!bucket || bucket.reviewed < minSample) return null;
   return { fpRate: bucket.fpRate, sampleSize: bucket.reviewed };

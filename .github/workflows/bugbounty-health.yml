@@ -11,6 +11,7 @@ on:
       - Bug bounty - static scan
       - Bug bounty - target discovery
       - Bug bounty - evidence worker
+      - Bug bounty - operations metrics
     types: [completed]
     branches: [master]
 

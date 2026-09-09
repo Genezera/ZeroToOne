@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "zerotoone-bugbounty-watchdog",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-09-08",
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "triggers": { "crons": ["*/10 * * * *"] },
+  "vars": {
+    "GITHUB_OWNER": "Genezera",
+    "GITHUB_REPO": "ZeroToOne",
+    "GITHUB_REF": "master",
+    "HEALTH_MAX_AGE_MINUTES": "75"
+  },
+  "kv_namespaces": [
+    { "binding": "ALERT_STATE", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+  ]
+}
+

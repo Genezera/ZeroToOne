@@ -26,6 +26,22 @@ test('parseCodeqlSarif filtra severidade e caminhos não produtivos', () => {
   assert.equal(findings[0].line, 7);
 });
 
+test('parseCodeqlSarif can require a result location to intersect the exact delta', () => {
+  const sarif = { runs: [{ tool: { driver: { rules: [{ id: 'x', properties: { 'security-severity': '9.0' } }] } }, results: [
+    { ruleId: 'x', locations: [{ physicalLocation: { artifactLocation: { uri: 'old/a.js' } } }] },
+    { ruleId: 'x', locations: [{ physicalLocation: { artifactLocation: { uri: 'changed/b.js' } } }] },
+  ] }] };
+  const findings = parseCodeqlSarif(sarif, { changedFiles: new Set(['changed/b.js']) });
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].file, 'changed/b.js');
+});
+
+test('Go CodeQL fails closed without an approved build recipe', () => {
+  const result = runCodeqlOnRepo('.', { language: 'go' });
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /approved isolated build recipe/);
+});
+
 test('toQueueFindings usa identidade determinística e mantém provenance', () => {
   const target = { owner: 'acme', repo: 'api', program: 'P', platform: 'HackerOne' };
   const [finding] = toQueueFindings(target, [{ ruleId: 'js/command-line-injection', file: 'src/a.js', line: 3, message: 'x', securitySeverity: 9.8, precision: 'high', cwe: 'CWE-078' }]);

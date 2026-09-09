@@ -53,3 +53,14 @@ test('Mission Control não chama human_ready legado de pronto quando o plano atu
   assert.equal(result.pipeline.readyForHumanReview,0);
   assert.equal(result.pipeline.researchWork.held,1);
 });
+
+test('Mission Control surfaces operations-metrics alerts', () => {
+  const result = buildMissionControlSnapshot({
+    readiness:{fullyOperational:true,checks:[]}, cloud:{ok:true,checks:[]},
+    runtimeHealth:{healthy:false,reasons:[]}, profile:CLOUD_PRIMARY_PROFILE,
+    operationsMetrics:{activeAlerts:['monitor_stale'],coverage:{ratio:1}},
+  });
+  assert.equal(result.operational,true);
+  assert.match(result.attention.join('\n'),/metrics:monitor_stale/);
+  assert.equal(result.pipeline.operationsMetrics.coverage.ratio,1);
+});

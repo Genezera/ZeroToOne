@@ -47,8 +47,8 @@ deliberate human action; the automation never files a report by itself.
 
 GitHub Actions is the primary runtime. Scheduled cloud workflows own the
 15-minute change monitor, daily target discovery/promotion, six-hour
-safety scan, two-hour evidence worker, half-hour health check, and hourly
-HackerOne outcome sync. The local Windows environment is manual-only: no
+safety scan, two-hour evidence worker, half-hour operations metrics and health
+checks, and hourly HackerOne outcome sync. The local Windows environment is manual-only: no
 service, boot trigger, login task, or local heartbeat is required. Both
 manual and cloud runs use the same version-controlled `queue.jsonl`,
 submissions, and ledger; fail-closed Git preflight prevents a stale or dirty

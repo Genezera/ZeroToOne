@@ -28,13 +28,16 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   mudança do escopo ou revisão humana explícita, sem gerar verificação
   automática repetida.
 - `bugbounty-health.yml` executa o health check na nuvem por agendamento
-  de 30 minutos e ao concluir um dos cinco jobs operacionais. Tem somente
+  de 30 minutos e ao concluir um dos seis jobs operacionais. Tem somente
   permissões de leitura, timeout de três minutos e não usa o writer lock.
   O Mission Control verifica também se esse supervisor está ativo e recente;
   o job usa `--operational-only` para não depender do próprio sucesso atual.
   Falha aparece no resultado/log do Actions; a entrega de notificação
   depende das preferências do GitHub. Ainda não substitui um supervisor
-  externo capaz de avisar durante indisponibilidade geral do GitHub.
+  externo capaz de avisar durante indisponibilidade geral do GitHub. O Worker
+  dependency-free em `cloud/bugbounty-watchdog/` implementa esse supervisor e
+  o dispatch externo a cada 10 minutos; o deploy aguarda credenciais e KV da
+  conta Cloudflare, que nunca são commitados.
 - Agendamentos são intenções, não garantias de frequência. O health check
   consulta execuções reais, rejeita estado administrativo desconhecido e
   limita cada consulta HTTP a 15 segundos. O Mission Control separa
@@ -48,7 +51,7 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   descoberta/promoção de novos alvos roda diariamente na nuvem em modo
   `--metadata-only`, sem executar código de terceiros; a varredura de
   segurança continua a cada 6 horas como rede de proteção e a sincronização
-  de outcomes da HackerOne roda a cada hora. Os cinco workflows escritores usam o mesmo grupo de concorrência,
+  de outcomes da HackerOne roda a cada hora. Os seis workflows escritores usam o mesmo grupo de concorrência,
   permissões mínimas explícitas e actions pinadas por SHA.
 - `bugbounty-evidence.yml` roda a cada duas horas e depois de scans bem
   sucedidos. Ele transforma `research-plan` em work orders idempotentes,
@@ -69,6 +72,10 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   contexto. Pendências históricas comuns não notificam, e a mesma ordem
   encerrada não é reenviada. O aviso diferencia `DELTA RECENTE BLOQUEADO` de
   `PRONTO PARA REVISÃO FINAL` e nunca representa envio automático.
+- `bugbounty-metrics.yml` mede cobertura do registro autorizado, atraso do
+  monitor, deltas, latência P50/P95, retries e alertas humanos não entregues.
+  Mudança para falha/recuperação operacional gera Telegram deduplicado e o
+  snapshot entra no Mission Control.
 - GitHub Actions é o runtime primário versionado. O Windows fica em modo
   `manual_only`: não há tarefa, serviço, gatilho de logon/boot ou dependência
   de heartbeat local. O SQLite é uma materialized view local; `mission-control`
@@ -76,8 +83,9 @@ Estágio 1 cobre múltiplos programas e cinco linguagens com o mesmo desenho.
   eventos duplicados nem reescrever os arquivos compartilhados.
 - A descoberta pesada integra Slither, OSV-Scanner, Semgrep e CodeQL. O CodeQL
   roda JS/TS buildless, sem executar scripts do repositório analisado, em
-  rotação persistente; builds de Go/JVM continuam fora do CodeQL até terem
-  isolamento descartável equivalente.
+  rotação persistente e agora filtra resultados pelo conjunto exato do delta.
+  Java-only aceita modo `none`; Go/Kotlin falham fechado sem receita explícita
+  de build isolado, pois seus builds executam código de terceiros.
 - `search-prior-art` cobre issues/PRs, commits, advisories e, quando recebe
   `programHandle`, pagina o feed público recente de Hacktivity. Cobertura
   truncada não é marcada como método concluído.

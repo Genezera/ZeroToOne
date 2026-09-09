@@ -64,6 +64,16 @@ test('historicalConfidenceFor retorna null pra combinação inexistente', () => 
   assert.equal(historicalConfidenceFor(stats, 'a', 'go'), null);
 });
 
+test('historicalConfidenceFor prefers sufficiently sampled program-specific outcomes', () => {
+  const stats = {
+    byTypeLanguage: { 'a::go': { reviewed: 20, fpRate: 0.5 } },
+    byTypeProgram: { 'a::Program A': { reviewed: 6, fpRate: 1 } },
+  };
+  assert.deepEqual(historicalConfidenceFor(stats, 'a', 'go', 5, 'Program A'), {
+    fpRate: 1, sampleSize: 6, basis: 'type_program', program: 'Program A',
+  });
+});
+
 test('renderStatsMarkdown produz markdown não-vazio com os cabeçalhos esperados', () => {
   const stats = computeStats([
     { type: 'hardcoded_secret', language: 'go', program: 'Block', status: 'reviewed', verdict: 'confirmado' },

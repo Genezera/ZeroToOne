@@ -51,6 +51,7 @@ GitHub Actions is the primary runtime. The local Windows environment is
 | Target discovery | Daily | Refresh metadata-only bounty repository candidates |
 | HackerOne outcome sync | Hourly | Import real report status and duplicate outcomes |
 | Evidence worker | Every 2 hours and after successful upstream jobs | Execute authorized evidence work orders |
+| Operations metrics | Every 30 minutes and after monitor/evidence jobs | Measure coverage, latency, retries, and alert delivery |
 | Cloud health | Every 30 minutes and after operational jobs | Verify workflow freshness and administrative state |
 
 The change monitor also runs after successful static scan, outcome sync, and
@@ -364,50 +365,56 @@ Desktop instance does not stop the cloud pipeline.
 - GitHub-wide scheduler outage: visible only to an external supervisor; this
   cannot be solved by another workflow inside the same platform.
 
-## Highest-value roadmap
+## Advanced capabilities and remaining deployment work
 
 The next improvements should increase evidence quality and detection latency,
 not raw alert volume.
 
-### 1. Independent cloud scheduler and watchdog
+### 1. Independent cloud scheduler and watchdog — implemented, deployment pending
 
-Use an external scheduler to dispatch the change monitor and observe GitHub
-Actions from outside GitHub. This is the only way to turn the nominal
-15-minute cadence into a measurable service objective and to alert when GitHub
-itself stops scheduling workflows.
+`cloud/bugbounty-watchdog` contains a dependency-free Cloudflare Worker. Its
+ten-minute Cron Trigger dispatches the change monitor, checks GitHub from an
+independent provider, stores alert state in Workers KV, and sends one Telegram
+failure/recovery notification per state transition. Deployment is necessarily
+pending until a Cloudflare account, KV namespace, and fine-grained GitHub token
+are supplied outside the repository.
 
-### 2. Diff-aware semantic scanning for additional languages
+### 2. Diff-aware semantic scanning for additional languages — safety layer implemented
 
-Add isolated CodeQL/build pipelines for Go and JVM projects and prioritize
-queries whose source or sink intersects the exact changed-file set. Require
-container/network restrictions equivalent to the existing sandbox before
-executing any target build.
+The CodeQL adapter now filters SARIF to findings with a location in the exact
+changed-file set and supports Java `none` mode. Go refuses to run without an
+explicit approved build recipe. Automatic Go/Kotlin builds remain deliberately
+disabled: their build systems execute third-party code and cannot be made
+generically safe without target-specific dependency and build recipes.
 
-### 3. Taint-guided proof recipes
+### 3. Commit-bound proof proposals — implemented
 
-Generate a proposed, finding-specific regression harness from the observed
-source-to-sink path, but require review before execution. The executor should
-run the identical harness against the parent and candidate commits and emit an
-explicit safe/vulnerable marker.
+`proof-recipe-proposer.mjs` generates a deterministic proposal bound to the
+exact parent, candidate, runtime, changed files, expected markers, and harness
+path. It never invents exploit logic: a human must implement and review the
+finding-specific harness before the existing sandbox runs the same test on both
+commits.
 
-### 4. Deployment and reachability evidence adapters
+### 4. Deployment and release evidence adapters — implemented
 
-Add ecosystem-specific adapters that connect a source commit to a released
-package, image, binary, or documented production component. This prevents a
-real source bug in unused code from being presented as deployed impact.
+Evidence recipes can verify npm `gitHead`, GitHub release tags including
+annotated tags, and Go module proxy `Origin.Hash`. Only an exact 40-character
+commit match produces `confidence=high`; mismatch or missing provenance fails
+closed at `needs_human`.
 
-### 5. Better outcome-calibrated detector ranking
+### 5. Better outcome-calibrated detector ranking — foundation operational
 
 Track precision by detector, language, program, boundary type, and evidence
 grade. Use real duplicate/informative/false-positive outcomes to allocate
 expensive analysis, while preserving hard safety and evidence gates.
 
-### 6. Coverage and latency metrics
+### 6. Coverage and latency metrics — implemented
 
-Measure authorized repositories polled, deltas observed, time-to-detection,
-files scanned, candidates rejected per gate, time-to-human-attention, and
-notification delivery. Alert on coverage regressions rather than interpreting
-an empty candidate queue as success.
+`operations-metrics.mjs` and `bugbounty-metrics.yml` measure authorized monitor
+coverage, monitor lag, 24-hour and seven-day deltas, P50/P95 detection latency,
+evidence retries, undelivered attention, and new findings. New and recovered
+operational failures are deduplicated and sent to Telegram; Mission Control
+includes the persisted metric snapshot.
 
 ## Responsible-use rule
 

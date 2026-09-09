@@ -4,8 +4,8 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
-  closeDb, latestCodeAgeEvidence, latestImpactAssessment, listValidations,
-  openDb, recordCodeAgeEvidence, recordImpactAssessment, recordValidation,
+  closeDb, latestCodeAgeEvidence, latestDeploymentEvidence, latestImpactAssessment, listValidations,
+  openDb, recordCodeAgeEvidence, recordDeploymentEvidence, recordImpactAssessment, recordValidation,
   upsertFinding, withoutLedgerWrites,
 } from '../db.mjs';
 import {
@@ -256,6 +256,20 @@ test('receita registrada executa regressão isolada e grava validação reservad
   const validations = listValidations(db, FINDING.id);
   assert.equal(validations[0].type, 'isolated_regression');
   assert.equal(validations[0].evidence.provenance, 'regression-sandbox');
+}));
+
+test('deployment adapter records high-confidence exact release evidence', async () => withDb(async (db) => {
+  const executor = createEvidenceExecutor({
+    db, policy: POLICY, now: () => new Date(NOW),
+    recipes: { findings: { [FINDING.id]: { deployment: { kind: 'npm_registry', package: '@acme/api', version: '1.0.0' } } } },
+    verifyDeployment: async () => ({ ok: true, confidence: 'high', repo: 'acme/api',
+      commit: 'a'.repeat(40), branchOrTag: '1.0.0', packageOrContract: '@acme/api@1.0.0', notes: 'exact gitHead' }),
+    recordDeployment: (...args) => withoutLedgerWrites(() => recordDeploymentEvidence(...args)),
+  });
+  const result = await executor({ findingId: FINDING.id, action: 'complete_validation' });
+  assert.equal(result.status, 'completed');
+  assert.equal(latestDeploymentEvidence(db, FINDING.id).confidence, 'high');
+  assert.equal(latestDeploymentEvidence(db, FINDING.id).commit_sha, 'a'.repeat(40));
 }));
 
 test('receita negativa exige conclusão refutes específica e registra impacto não-reportável', async () => withDb(async (db) => {

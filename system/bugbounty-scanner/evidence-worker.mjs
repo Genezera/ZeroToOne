@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   closeDb, exportFindingsToQueueJsonl, getFinding, latestCodeAgeEvidence,
   listFindings, listValidations, openDb, recordCodeAgeEvidence,
-  recordImpactAssessment, recordValidation,
+  recordDeploymentEvidence, recordImpactAssessment, recordValidation,
 } from './db.mjs';
 import { cmdRefreshScopeLive, cmdResearchPlan, cmdSearchPriorArt } from './cli.mjs';
 import { pullLatest, commitAndPush } from './git-sync.mjs';
@@ -20,6 +20,8 @@ import { acquireLease, replaceFileAtomic } from './runtime-state.mjs';
 import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
 import { validationConclusion } from './validation-semantics.mjs';
 import { escapeHtml, sendTelegramMessage } from './telegram.mjs';
+import { proposeRegressionRecipe } from './proof-recipe-proposer.mjs';
+import { verifyDeploymentRecipe } from './deployment-evidence-adapters.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -30,7 +32,7 @@ export const DEFAULT_EVIDENCE_STATE_PATH = path.join(BUGBOUNTY_DIR, 'evidence-wo
 export const DEFAULT_EVIDENCE_RECIPES_PATH = path.join(BUGBOUNTY_DIR, 'evidence-recipes.json');
 export const DEFAULT_EVIDENCE_LOCK_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-evidence-worker.lock');
 export const EVIDENCE_STATE_SCHEMA_VERSION = 1;
-export const EVIDENCE_EXECUTOR_SCHEMA_VERSION = 3;
+export const EVIDENCE_EXECUTOR_SCHEMA_VERSION = 4;
 
 const DAY_MS = 86400000;
 const MAX_RUN_HISTORY = 50;
@@ -359,10 +361,12 @@ export function createEvidenceExecutor({
   refreshScope = cmdRefreshScopeLive,
   readSnapshot = loadSnapshot,
   verifyRegressionFn = verifyRegression,
+  verifyDeployment = verifyDeploymentRecipe,
   inspectAge = inspectGitFileAge,
   searchPriorArt = cmdSearchPriorArt,
   recordAge = recordCodeAgeEvidence,
   recordImpact = recordImpactAssessment,
+  recordDeployment = recordDeploymentEvidence,
   recordValidationFn = recordValidation,
   now = () => new Date(),
 } = {}) {
@@ -373,6 +377,18 @@ export function createEvidenceExecutor({
     const blocked = getBlockReason(finding.program, policy, { now: now().getTime() });
     if (blocked) return { status: 'completed', reason: `programa bloqueado antes da execução: ${blocked}` };
     const recipe = recipes.findings?.[finding.id] || {};
+
+    if (order.action === 'complete_validation' && recipe.deployment) {
+      const deployment = await verifyDeployment(recipe.deployment, finding);
+      if (!deployment.ok) {
+        return { status: 'needs_human', reason: `deployment adapter could not prove the exact release: ${deployment.reason}` };
+      }
+      recordDeployment(db, finding.id, deployment);
+      return { status: 'completed', evidenceMutated: true, queueMutated: true,
+        reason: 'release/deployment metadata independently matches the exact observed commit',
+        evidence: { kind: recipe.deployment.kind, confidence: deployment.confidence,
+          commit: deployment.commit, packageOrContract: deployment.packageOrContract } };
+    }
 
     if (order.action === 'verify_scope') {
       const before = readSnapshot(finding.program);
@@ -467,6 +483,12 @@ export function createEvidenceExecutor({
         return { status: 'completed', evidenceMutated: true, queueMutated: true,
           reason: `último toque do caminho medido em ${age.codeAgeDays} dia(s); isso permite avaliar impacto, mas não prova a introdução exata da falha`,
           evidence: { method: age.method, codeAgeDays: age.codeAgeDays, commit: age.lastCommitSha } };
+      }
+      const proposal = proposeRegressionRecipe(finding);
+      if (proposal.ok) {
+        return { status: 'needs_human',
+          reason: 'a commit-bound regression recipe was proposed; a person must implement and review the finding-specific harness before execution',
+          evidence: { proposal: proposal.proposal } };
       }
       return { status: 'needs_human', evidenceMutated: true, queueMutated: true,
         reason: 'o caminho foi tocado recentemente, mas falta receita de regressão que compare parent e commit introdutor com o mesmo teste' };
