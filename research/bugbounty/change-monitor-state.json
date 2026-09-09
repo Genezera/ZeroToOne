@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T11:50:40.563Z",
+  "checkedAt": "2026-09-09T12:00:56.679Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -814,13 +814,13 @@
       ]
     },
     "kubernetes/minikube": {
-      "sha": "effc271038434957462e5c4469ea366e8514c065",
+      "sha": "63d44ac59714f4d82f8ece48c5fa6a1d8d5547b2",
       "branch": "master",
-      "parentSha": "9ae0e68a148b89ff4aad326391077ef0487d3102",
-      "committedAt": "2026-09-08T18:41:08Z",
-      "url": "https://github.com/kubernetes/minikube/commit/effc271038434957462e5c4469ea366e8514c065",
-      "title": "Merge pull request #23676 from minikube-bot/gendocs",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "effc271038434957462e5c4469ea366e8514c065",
+      "committedAt": "2026-09-09T11:56:35Z",
+      "url": "https://github.com/kubernetes/minikube/commit/63d44ac59714f4d82f8ece48c5fa6a1d8d5547b2",
+      "title": "Merge pull request #23677 from SinghAman21/fix/node-status-on-deleting",
+      "observedAt": "2026-09-09T12:00:56.679Z",
       "programs": [
         "Kubernetes"
       ],
