@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T15:20:40.169Z",
+  "checkedAt": "2026-09-09T15:30:49.079Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "b1856e29a9c992113d5db00096082ddcc3a55d8a",
+      "sha": "81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
       "branch": "master",
-      "parentSha": "529848d1769f95b4cfbe3e96ab00b7f18e62bbdb",
-      "committedAt": "2026-09-09T14:22:46Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/b1856e29a9c992113d5db00096082ddcc3a55d8a",
-      "title": "Merge pull request #141968 from thc1006/kubeadm-getent-preflight",
-      "observedAt": "2026-09-09T14:30:58.858Z",
+      "parentSha": "e9c9800767fa620ffb698e1a68bd9454bd911133",
+      "committedAt": "2026-09-09T15:27:01Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
+      "title": "Merge pull request #141938 from jpbetz/resource-mustparse-maxint64-fork",
+      "observedAt": "2026-09-09T15:30:49.079Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "6caa786072d99c570bb93bd2a3c4e6fb061dda6d",
+      "sha": "e0966df11438b1f82e06d6f650a2a044b84457c3",
       "branch": "canary",
-      "parentSha": "b145ad6f3fc13547e44db042ea6f3857c812206d",
-      "committedAt": "2026-09-09T15:08:14Z",
-      "url": "https://github.com/vercel/next.js/commit/6caa786072d99c570bb93bd2a3c4e6fb061dda6d",
-      "title": "Typecheck the Turbopack ECMAScript runtime in CI (#98422)",
-      "observedAt": "2026-09-09T15:10:43.291Z",
+      "parentSha": "6caa786072d99c570bb93bd2a3c4e6fb061dda6d",
+      "committedAt": "2026-09-09T15:25:36Z",
+      "url": "https://github.com/vercel/next.js/commit/e0966df11438b1f82e06d6f650a2a044b84457c3",
+      "title": "test: migrate caching deploy exclusions to force gates (#98154)",
+      "observedAt": "2026-09-09T15:30:49.079Z",
       "programs": [
         "Vercel Open Source"
       ],
