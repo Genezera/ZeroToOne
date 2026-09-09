@@ -117,12 +117,13 @@ test('toque recente do caminho permite avaliar impacto, mas não prova regressã
 });
 
 test('identidade incompleta vira tarefa explícita antes de PoC e colisão local fica retida', () => {
-  const incomplete = buildResearchPlan([{ ...finding, rootCause: undefined }], options);
+  const recent = { changeContext: { introducedAt:'2026-09-07T02:00:00Z', directSingleCommit:true } };
+  const incomplete = buildResearchPlan([{ ...finding, ...recent, rootCause: undefined }], options);
   assert.equal(incomplete.actionable[0].action, 'structure_identity');
   assert.ok(incomplete.actionable[0].missingFields.includes('rootCause'));
 
-  const sibling = { ...finding, id: 'P::acme/api/src/a.go::other::same-root', function: 'other' };
-  const collided = buildResearchPlan([finding, sibling], options);
+  const sibling = { ...finding, ...recent, id: 'P::acme/api/src/a.go::other::same-root', function: 'other' };
+  const collided = buildResearchPlan([{ ...finding, ...recent }, sibling], options);
   assert.equal(collided.actionable.length, 1);
   assert.equal(collided.held[0].code, 'local_root_cause_collision');
   assert.notEqual(collided.actionable[0].id, collided.held[0].id);

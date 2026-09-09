@@ -191,7 +191,7 @@ test('receita registrada executa regressão isolada e grava validação reservad
   assert.equal(validations[0].evidence.provenance, 'regression-sandbox');
 }));
 
-test('receita negativa exige validação fail específica e registra impacto não-reportável', async () => withDb(async (db) => {
+test('receita negativa exige conclusão refutes específica e registra impacto não-reportável', async () => withDb(async (db) => {
   withoutLedgerWrites(() => recordValidation(db, FINDING.id, {
     type: 'timing_benchmark', result: 'fail', rawOutput: 'nenhum sinal distinguível',
   }));
@@ -208,7 +208,7 @@ test('receita negativa exige validação fail específica e registra impacto nã
     recordImpact: (...args) => withoutLedgerWrites(() => recordImpactAssessment(...args)),
     recipes: { findings: { [FINDING.id]: {
       impactAssessment: { kind: 'validated_negative_assessment',
-        requiresValidation: { type: 'timing_benchmark', result: 'fail' }, assessment },
+        requiresValidation: { type: 'timing_benchmark', conclusion: 'refutes' }, assessment },
     } } },
   });
   const result = await executor({ findingId: FINDING.id, action: 'assess_impact' });
@@ -223,7 +223,7 @@ test('receita negativa sem a validação exigida falha fechado', async () => wit
     db, policy: POLICY, now: () => new Date(NOW),
     recipes: { findings: { [FINDING.id]: {
       impactAssessment: { kind: 'validated_negative_assessment',
-        requiresValidation: { type: 'timing_benchmark', result: 'fail' },
+        requiresValidation: { type: 'timing_benchmark', conclusion: 'refutes' },
         assessment: { reportable: false } },
     } } },
   });

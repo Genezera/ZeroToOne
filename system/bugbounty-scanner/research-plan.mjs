@@ -66,14 +66,6 @@ export function buildResearchPlan(findings, {
       continue;
     }
 
-    const identity = identities.get(finding.id);
-    if (!identity.ok) {
-      task('structure_identity', `${identity.reason}; preencher campos estruturados, sem extrair automaticamente da prosa`, 88, {
-        missingFields: identity.missing,
-      });
-      continue;
-    }
-
     const context = contextFor(finding) || {};
     const impact = context.impactAssessment;
     if (impact && (impact.reportable === false || impact.severityRating === 'low'
@@ -86,20 +78,6 @@ export function buildResearchPlan(findings, {
       hold('known_public_match', 'pesquisa anterior registrou correspondência pública; não repetir investigação sem evidência que a diferencie');
       continue;
     }
-    const localIdentity = localRootCauseCollisions(finding, findings);
-    if (localIdentity.collisionIds.length > 0) {
-      const owners = rootCauseOwners.get(identity.rootCauseFingerprint) || [];
-      const terminalOwnerExists = owners.some((candidate) => isTerminal(candidate.state) || candidate.state === 'submitted');
-      const activePrimaryId = owners.filter((candidate) => ACTIVE_STATES.has(candidate.state)).map((candidate) => candidate.id).sort()[0];
-      if (terminalOwnerExists || finding.id !== activePrimaryId) {
-        hold('local_root_cause_collision', 'outro finding local tem a mesma causa raiz estruturada; consolidar ou provar mecanicamente a diferença antes de continuar', {
-          rootCauseFingerprint: identity.rootCauseFingerprint,
-          collisionFindingIds: localIdentity.collisionIds,
-        });
-        continue;
-      }
-    }
-
     // Só métodos que medem o último toque do caminho sustentam este corte.
     // O antigo "oldest path commit" e sinais legados sem proveniência podem
     // dizer há quanto tempo o arquivo existe, não quando ele mudou por último.
@@ -144,6 +122,26 @@ export function buildResearchPlan(findings, {
     if (!duplicate?.noveltyProof && measuredCodeAgeDays === null && !hasRecentExactChange) {
       task('measure_code_age', 'medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão', 80 + freshnessPriority);
       continue;
+    }
+    const identity = identities.get(finding.id);
+    if (!identity.ok) {
+      task('structure_identity', `${identity.reason}; preencher campos estruturados, sem extrair automaticamente da prosa`, 88 + freshnessPriority, {
+        missingFields: identity.missing,
+      });
+      continue;
+    }
+    const localIdentity = localRootCauseCollisions(finding, findings);
+    if (localIdentity.collisionIds.length > 0) {
+      const owners = rootCauseOwners.get(identity.rootCauseFingerprint) || [];
+      const terminalOwnerExists = owners.some((candidate) => isTerminal(candidate.state) || candidate.state === 'submitted');
+      const activePrimaryId = owners.filter((candidate) => ACTIVE_STATES.has(candidate.state)).map((candidate) => candidate.id).sort()[0];
+      if (terminalOwnerExists || finding.id !== activePrimaryId) {
+        hold('local_root_cause_collision', 'outro finding local tem a mesma causa raiz estruturada; consolidar ou provar mecanicamente a diferença antes de continuar', {
+          rootCauseFingerprint: identity.rootCauseFingerprint,
+          collisionFindingIds: localIdentity.collisionIds,
+        });
+        continue;
+      }
     }
     const impactGate = reportabilityGate(impact);
     if (!impactGate.ok) {

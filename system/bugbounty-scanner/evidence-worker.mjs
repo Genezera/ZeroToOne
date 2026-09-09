@@ -18,6 +18,7 @@ import { repositoryFromFinding } from './outcome-intelligence.mjs';
 import { verifyRegression } from './regression-sandbox.mjs';
 import { acquireLease, replaceFileAtomic } from './runtime-state.mjs';
 import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
+import { validationConclusion } from './validation-semantics.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -324,19 +325,19 @@ export function createEvidenceExecutor({
       if (impactRecipe.assessment?.reportable !== false) {
         return { status: 'needs_human', reason: 'receita negativa só pode registrar reportable=false' };
       }
-      if (typeof required.type !== 'string' || required.result !== 'fail') {
-        return { status: 'needs_human', reason: 'receita negativa exige uma validação específica com result=fail' };
+      if (typeof required.type !== 'string' || required.conclusion !== 'refutes') {
+        return { status: 'needs_human', reason: 'receita negativa exige uma validação específica com conclusion=refutes' };
       }
       const validation = listValidations(db, finding.id)
-        .find((item) => item.type === required.type && item.result === required.result);
+        .find((item) => item.type === required.type && validationConclusion(item) === required.conclusion);
       if (!validation) {
-        return { status: 'needs_human', reason: `validação negativa ${required.type}/fail não encontrada; nenhuma conclusão foi inferida` };
+        return { status: 'needs_human', reason: `validação negativa ${required.type}/refutes não encontrada; nenhuma conclusão foi inferida` };
       }
       const assessment = recordImpact(db, finding.id, {
         ...impactRecipe.assessment,
         evidenceBasis: {
           kind: 'recorded_negative_validation', validationType: validation.type,
-          validationResult: validation.result, validationTimestamp: validation.ts,
+          validationResult: validation.result, validationConclusion: validationConclusion(validation), validationTimestamp: validation.ts,
         },
       });
       return {

@@ -10,7 +10,7 @@
         "kind": "validated_negative_assessment",
         "requiresValidation": {
           "type": "go_timing_benchmark",
-          "result": "fail"
+          "conclusion": "refutes"
         },
         "assessment": {
           "technicalValidity": "confirmed",
