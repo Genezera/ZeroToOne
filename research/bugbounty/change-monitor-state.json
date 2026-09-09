@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T19:40:41.419Z",
+  "checkedAt": "2026-09-09T19:50:47.577Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "4d621240c38ebceeac693951d7c6b04636632adc",
+      "sha": "b879776299fd5bd0a88c7a8f93eec836c258af9c",
       "branch": "canary",
-      "parentSha": "9c8b238ac19cb032aa126fe9339d789daceffeaa",
-      "committedAt": "2026-09-09T18:39:37Z",
-      "url": "https://github.com/vercel/next.js/commit/4d621240c38ebceeac693951d7c6b04636632adc",
-      "title": "test(evals): validate delegated error boundary components (#98387)",
-      "observedAt": "2026-09-09T18:40:58.616Z",
+      "parentSha": "4d621240c38ebceeac693951d7c6b04636632adc",
+      "committedAt": "2026-09-09T19:46:24Z",
+      "url": "https://github.com/vercel/next.js/commit/b879776299fd5bd0a88c7a8f93eec836c258af9c",
+      "title": "Adds this.target for webpack loaders (#98436)",
+      "observedAt": "2026-09-09T19:50:47.577Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "23ee440df30f8fb819ee501a55a1b574b2d79b36",
+      "sha": "f7b030bd8a6c11679fe03a354fccf94e43336114",
       "branch": "main",
-      "parentSha": "5223bd6eb8903134d8084e353aa0050311594b95",
-      "committedAt": "2026-09-09T19:34:51Z",
-      "url": "https://github.com/vercel/turborepo/commit/23ee440df30f8fb819ee501a55a1b574b2d79b36",
-      "title": "perf: Parse the lockfile once when opening a native Workspace with its graph (#14017)",
-      "observedAt": "2026-09-09T19:40:41.419Z",
+      "parentSha": "d21277ead6e836e864ceedaee7305617ee4ace20",
+      "committedAt": "2026-09-09T19:44:45Z",
+      "url": "https://github.com/vercel/turborepo/commit/f7b030bd8a6c11679fe03a354fccf94e43336114",
+      "title": "perf: Run the docs MDX generator once per quality task graph (#14019)",
+      "observedAt": "2026-09-09T19:50:47.577Z",
       "programs": [
         "Vercel Open Source"
       ],
