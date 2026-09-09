@@ -32,6 +32,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | markdown_link_injection | go | 1 | 0 | 0 | 1 | 0% |
 | multikey_bitmap_signature_verification_bypass | go | 1 | 0 | 1 | 0 | 100% |
 | non_constant_time_hmac_comparison | go | 3 | 2 | 1 | 0 | 33% |
+| oauth2_account_linking_csrf | go | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_arbitrary_file_read_risk | javascript | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | go | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | js | 2 | 0 | 2 | 0 | 100% |
@@ -103,6 +104,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | multikey_bitmap_signature_verification_bypass | OKG | 1 | 0 | 1 | 0 | 100% |
 | non_constant_time_hmac_comparison | Kubernetes | 1 | 1 | 0 | 0 | 0% |
 | non_constant_time_hmac_comparison | Mattermost Public Bug Bounty Engagement  | 2 | 1 | 1 | 0 | 50% |
+| oauth2_account_linking_csrf | Mattermost Public Bug Bounty Engagement  | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_arbitrary_file_read_risk | Vercel Open Source | 1 | 1 | 0 | 0 | 0% |
 | path_traversal_risk | Kubernetes | 1 | 0 | 1 | 0 | 100% |
 | path_traversal_risk | Vercel Open Source | 2 | 0 | 2 | 0 | 100% |

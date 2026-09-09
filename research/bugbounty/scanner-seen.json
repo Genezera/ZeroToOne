@@ -580,6 +580,7 @@
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/kv.go::EnsureRSAKey::weak_rsa_key_size_oauth1_signing",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/kv.go::line:101::semgrep_use_of_md5",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/kv.go::line:95::semgrep_use_of_md5",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/user_cloud_oauth.go::httpOAuth2Complete::oauth2_account_linking_csrf",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/utils/kvstore/hashed_key.go::line:76::semgrep_use_of_md5",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::@babel/plugin-transform-modules-systemjs@7.27.1::known_vulnerable_dependency",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::brace-expansion@1.1.12::known_vulnerable_dependency",
