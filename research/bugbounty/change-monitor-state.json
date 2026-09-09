@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T12:50:50.905Z",
+  "checkedAt": "2026-09-09T13:00:57.261Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "8059b91ed7080988941508154102de80eb0b2f67",
+      "sha": "efbe558dfc240ac818a049197da8573a4238fb6d",
       "branch": "main",
-      "parentSha": "b74be2235565e133ed3ee487bdb07bc5e9145ab8",
-      "committedAt": "2026-09-09T12:31:44Z",
-      "url": "https://github.com/vercel/turborepo/commit/8059b91ed7080988941508154102de80eb0b2f67",
-      "title": "perf: Fast-path package-only filter selectors with --only (#13990)",
-      "observedAt": "2026-09-09T12:40:39.716Z",
+      "parentSha": "a6b88eefa867457c8eab806515628bbfe882ebf5",
+      "committedAt": "2026-09-09T13:00:40Z",
+      "url": "https://github.com/vercel/turborepo/commit/efbe558dfc240ac818a049197da8573a4238fb6d",
+      "title": "perf: Copy shared file dependencies once per destination during prune (#13995)",
+      "observedAt": "2026-09-09T13:00:57.261Z",
       "programs": [
         "Vercel Open Source"
       ],
