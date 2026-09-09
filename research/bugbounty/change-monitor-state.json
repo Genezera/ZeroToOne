@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T03:40:56.833Z",
+  "checkedAt": "2026-09-09T04:01:03.264Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "249048038587495275430eee2767ff785fb3ccb3",
+      "sha": "b343096c3f26a4c126921924e66fcb2f9066a83e",
       "branch": "main",
-      "parentSha": "97fccacfe4c79b4435273b1d177d21a2df29e22a",
-      "committedAt": "2026-09-09T03:39:21Z",
-      "url": "https://github.com/vercel/eve/commit/249048038587495275430eee2767ff785fb3ccb3",
-      "title": "feat(self-modification): prepare production proposal workspaces (#2871)",
-      "observedAt": "2026-09-09T03:40:56.833Z",
+      "parentSha": "249048038587495275430eee2767ff785fb3ccb3",
+      "committedAt": "2026-09-09T03:54:00Z",
+      "url": "https://github.com/vercel/eve/commit/b343096c3f26a4c126921924e66fcb2f9066a83e",
+      "title": "feat(self-modification): publish agent edits as draft pull requests (#2872)",
+      "observedAt": "2026-09-09T04:01:03.264Z",
       "programs": [
         "Vercel Open Source"
       ],
