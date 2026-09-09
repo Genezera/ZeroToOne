@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T08:10:39.289Z",
+  "checkedAt": "2026-09-09T08:21:13.885Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1230,13 +1230,13 @@
       "languages": []
     },
     "nuxt/nuxt": {
-      "sha": "84261aa37770d871cc862a83e9ff28ca2533af88",
+      "sha": "8ca2314f9a5ba430f893f2f4e87899ee9a175d7c",
       "branch": "main",
-      "parentSha": "2923df843d4350693d2c78a51fc11120095fb7b3",
-      "committedAt": "2026-09-08T21:20:00Z",
-      "url": "https://github.com/nuxt/nuxt/commit/84261aa37770d871cc862a83e9ff28ca2533af88",
-      "title": "feat(nitro): nitro v2 compatibility layer + `nitroLegacy` (#36318)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "436df0ae9fa54ec8a9ea15acf266729037f9c5a8",
+      "committedAt": "2026-09-09T08:17:17Z",
+      "url": "https://github.com/nuxt/nuxt/commit/8ca2314f9a5ba430f893f2f4e87899ee9a175d7c",
+      "title": "refactor(vite-server): answer a redirect rule without h3",
+      "observedAt": "2026-09-09T08:21:13.885Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "8946bd592e355c4014b65b59c88f3ebddd835d50",
+      "sha": "a46edbd7bbf1ea349a1d6838f1fba84c0030cca5",
       "branch": "main",
-      "parentSha": "b343096c3f26a4c126921924e66fcb2f9066a83e",
-      "committedAt": "2026-09-09T04:30:59Z",
-      "url": "https://github.com/vercel/eve/commit/8946bd592e355c4014b65b59c88f3ebddd835d50",
-      "title": "feat(self-modification): activate production file editing (#2873)",
-      "observedAt": "2026-09-09T04:31:30.735Z",
+      "parentSha": "8946bd592e355c4014b65b59c88f3ebddd835d50",
+      "committedAt": "2026-09-09T08:15:50Z",
+      "url": "https://github.com/vercel/eve/commit/a46edbd7bbf1ea349a1d6838f1fba84c0030cca5",
+      "title": "feat(docs): add eve changelog (#3153)",
+      "observedAt": "2026-09-09T08:21:13.885Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "49dc4c84b4f949c9fc54737e7ae31023a9d4820a",
+      "sha": "8b037a6748d6b09b040efd3354a15bc58fcf6830",
       "branch": "canary",
-      "parentSha": "4cb547213b5303b7f01675a7502b84ce960fd19e",
-      "committedAt": "2026-09-09T07:39:19Z",
-      "url": "https://github.com/vercel/next.js/commit/49dc4c84b4f949c9fc54737e7ae31023a9d4820a",
-      "title": "Turbopack: fix output tracing include glob traversal (#98382)",
-      "observedAt": "2026-09-09T07:40:40.637Z",
+      "parentSha": "49dc4c84b4f949c9fc54737e7ae31023a9d4820a",
+      "committedAt": "2026-09-09T08:13:05Z",
+      "url": "https://github.com/vercel/next.js/commit/8b037a6748d6b09b040efd3354a15bc58fcf6830",
+      "title": "Add CSP nonce to script tags of loading and template files (#98398)",
+      "observedAt": "2026-09-09T08:21:13.885Z",
       "programs": [
         "Vercel Open Source"
       ],
