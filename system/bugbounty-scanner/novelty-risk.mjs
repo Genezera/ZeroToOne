@@ -133,7 +133,19 @@ export function verifiedRegressionGate(proof, {
   return { ok: true, reason: `regressão verificada no commit ${proof.introducedCommit.slice(0, 12)} contra o parent ${proof.parentCommit.slice(0, 12)}` };
 }
 
-export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS, repository = null } = {}) {
+// Caminho relaxado, ADITIVO, para programas explicitamente revisados como
+// baixa competição (program-policy.competitionLevel === 'low'). Racional:
+// o requisito de "regressão recente" foi calibrado para programas
+// DISPUTADOS (repos famosos onde report privado anterior é provável). Num
+// programa genuinamente pouco disputado, uma busca pública ATESTADA e
+// limpa é base aceitável para deixar o achado PRONTO PARA REVISÃO HUMANA
+// (human_ready) -- o gate de aprovação humana antes de `submitted`
+// continua intacto. O risco de duplicata é conscientemente aceito e
+// rotulado, nunca escondido. Só ativa quando o chamador passa
+// lowCompetition=true (derivado da política) E o achado declara
+// noveltyStatus='low_competition_reviewed' -- programas sem esse flag
+// seguem 100% no caminho estrito abaixo, inalterado.
+export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DUPLICATE_CHECK_MAX_AGE_MS, repository = null, lowCompetition = false } = {}) {
   if (!check || typeof check !== 'object' || Array.isArray(check)) check = {};
   if (!Array.isArray(check.methods) || check.methods.length === 0) {
     return { ok: false, reason: 'duplicateCheck sem métodos rastreáveis' };
@@ -161,6 +173,23 @@ export function duplicateCheckGate(check = {}, { now = Date.now(), maxAgeMs = DU
   const age = now - ts;
   if (age < -5 * 60 * 1000) return { ok: false, reason: 'duplicateCheck tem timestamp no futuro' };
   if (age > maxAgeMs) return { ok: false, reason: `duplicateCheck expirou (${Math.floor(age / 3600000)}h; máximo ${Math.floor(maxAgeMs / 3600000)}h)` };
+
+  // Caminho relaxado de baixa competição: mantém a proteção REAL (busca
+  // pública atestada + cobertura + zero duplicatas anteriores), dispensa a
+  // prova de regressão. Não gateia por riskScore porque seus fatores
+  // (idade do código, popularidade) são proxies de COMPETIÇÃO -- que já
+  // foi explicitamente julgada baixa para este programa.
+  if (lowCompetition === true && check.noveltyStatus === 'low_competition_reviewed') {
+    if (check.signals?.priorDuplicateSubmissions !== 0) {
+      return { ok: false, reason: 'mesmo em baixa competição, exige zero submissões duplicate anteriores no mesmo programa/repositório' };
+    }
+    const attestationLC = verifyPriorArtSearchAttestation(check, { repository });
+    if (!attestationLC.ok) return attestationLC;
+    const coverageLC = priorArtCoverageGate(check, { repository });
+    if (!coverageLC.ok) return coverageLC;
+    return { ok: true, reason: `programa de baixa competição: ${attestationLC.reason}; SEM prova de regressão -- risco de duplicata conscientemente aceito, exige revisão humana criteriosa antes de enviar` };
+  }
+
   if (check.noveltyStatus !== 'regression') {
     return { ok: false, reason: 'modo anti-duplicate exige noveltyStatus=regression; exposição antiga aumenta o risco de duplicata e não prova novidade; private_unknown não é suficiente para envio' };
   }

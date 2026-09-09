@@ -21,6 +21,30 @@ const CLEAN = withPriorArtAttestation({
   ts: '2026-09-03T17:00:00Z',
 });
 
+const LOW_COMP = withPriorArtAttestation({
+  methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
+  queries: ['panic malformed input', 'missing length validation', 'signature verification bypass'],
+  evidence: publicSearchEvidence(['panic malformed input', 'missing length validation', 'signature verification bypass']),
+  foundExisting: false, noveltyStatus: 'low_competition_reviewed', riskScore: 70,
+  signals: { priorDuplicateSubmissions: 0 },
+  ts: '2026-09-03T17:00:00Z',
+});
+
+test('caminho de baixa competição: aceito só com lowCompetition=true, sem exigir regressão nem riskScore baixo', () => {
+  // Sem o flag do programa: cai no caminho estrito e é recusado (não é regression).
+  assert.equal(duplicateCheckGate(LOW_COMP, { now: NOW, repository: 'acme/api' }).ok, false);
+  // Com o flag: aceito mesmo SEM noveltyProof e com riskScore alto (70) —
+  // os fatores de risco são proxies de competição, que já foi julgada baixa.
+  const relaxed = duplicateCheckGate(LOW_COMP, { now: NOW, repository: 'acme/api', lowCompetition: true });
+  assert.equal(relaxed.ok, true);
+  assert.match(relaxed.reason, /baixa competição/);
+  // Mesmo relaxado, mantém as proteções REAIS: busca pública limpa e zero duplicatas anteriores.
+  assert.equal(duplicateCheckGate({ ...LOW_COMP, foundExisting: true }, { now: NOW, repository: 'acme/api', lowCompetition: true }).ok, false);
+  assert.equal(duplicateCheckGate({ ...LOW_COMP, signals: { priorDuplicateSubmissions: 1 } }, { now: NOW, repository: 'acme/api', lowCompetition: true }).ok, false);
+  // noveltyStatus errado não passa nem com o flag.
+  assert.equal(duplicateCheckGate({ ...LOW_COMP, noveltyStatus: 'private_unknown' }, { now: NOW, repository: 'acme/api', lowCompetition: true }).ok, false);
+});
+
 test('match público domina qualquer outro sinal e bloqueia', () => {
   const risk = assessNoveltyRisk({ foundPublicMatch: true, regressionAfterVerifiedFix: true });
   assert.equal(risk.riskScore, 100);

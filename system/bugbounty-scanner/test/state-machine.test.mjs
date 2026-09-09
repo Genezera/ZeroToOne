@@ -55,6 +55,25 @@ const GOOD_DEPLOYMENT = {
   confidence: 'high', repo: 'acme/api', commit_sha: INTRODUCED,
   package_or_contract: '@acme/api@1.2.3',
 };
+// Programa de baixa competição: sem noveltyProof/regressão, sem E4, deployment
+// confidence apenas "low" — o que o caminho estrito recusaria.
+const LOW_COMP_POLICY = { 'Test Program': { roeReviewed: true, reviewedAt: '2026-09-04', nextReviewAt: '2099-12-31', competitionLevel: 'low' } };
+const LOW_COMP_DEPLOYMENT = { confidence: 'low', repo: 'acme/api', commit_sha: INTRODUCED, package_or_contract: '@acme/api@1.2.3' };
+function lowCompDuplicateCheck(overrideSignals = {}) {
+  return withPriorArtAttestation({
+    methods: ['github_issues', 'github_commits', 'github_advisories', 'hacktivity'],
+    queries: ['função endpoint IDOR', 'missing ownership check', 'source sink sem guard'],
+    evidence: publicSearchEvidence(['função endpoint IDOR', 'missing ownership check', 'source sink sem guard']),
+    foundExisting: false, noveltyStatus: 'low_competition_reviewed', riskScore: 70,
+    signals: {
+      priorDuplicateSubmissions: 0,
+      localRootCauseFingerprint: findingIdentityQuality(finding('scope_verified')).rootCauseFingerprint,
+      localRootCauseCollisionIds: [],
+      ...overrideSignals,
+    },
+    ts: '2026-09-03T17:00:00Z',
+  });
+}
 
 function readyContext(overrides = {}) {
   return {
@@ -69,6 +88,40 @@ function readyContext(overrides = {}) {
     ...overrides,
   };
 }
+
+test('scope_verified -> human_ready: caminho de baixa competição aceita sem regressão nem E4, com deployment "low" e reprodução real; mantém prior-art limpo e reprodução', () => {
+  const f = finding('scope_verified');
+  const lowCtx = (over = {}) => readyContext({
+    programPolicy: LOW_COMP_POLICY,
+    duplicateCheck: lowCompDuplicateCheck(),
+    deploymentEvidence: LOW_COMP_DEPLOYMENT,
+    validations: [{ type: 'foundry_poc', result: 'pass' }],
+    ...over,
+  });
+
+  // Sem o flag competitionLevel:'low' na política, o MESMO contexto (sem
+  // regressão, deployment só "low") cai no caminho estrito e é recusado.
+  assert.equal(transition(f, 'human_ready', lowCtx({ programPolicy: readyContext().programPolicy })).ok, false);
+
+  // Com o flag + noveltyStatus low_competition_reviewed: aceito, rotulado.
+  const relaxed = transition(f, 'human_ready', lowCtx());
+  assert.equal(relaxed.ok, true);
+  assert.match(relaxed.reason, /BAIXA COMPETIÇÃO/);
+
+  // Mesmo relaxado, exige reprodução real: validação que não sustenta -> recusa.
+  assert.equal(transition(f, 'human_ready', lowCtx({ validations: [{ type: 'foundry_poc', result: 'fail' }] })).ok, false);
+  assert.equal(transition(f, 'human_ready', lowCtx({ validations: [] })).ok, false);
+
+  // Exige prior-art limpo: uma duplicata anterior no programa derruba.
+  assert.equal(transition(f, 'human_ready', lowCtx({ duplicateCheck: lowCompDuplicateCheck({ priorDuplicateSubmissions: 1 }) })).ok, false);
+
+  // Exige DeploymentEvidence: 'unverified' (código não confirmado no HEAD) recusa.
+  assert.equal(transition(f, 'human_ready', lowCtx({ deploymentEvidence: { ...LOW_COMP_DEPLOYMENT, confidence: 'unverified' } })).ok, false);
+
+  // A aprovação humana antes de `submitted` continua obrigatória: human_ready
+  // NÃO é submitted — nenhum caminho de baixa competição auto-envia.
+  assert.equal(transition({ ...f, state: 'human_ready' }, 'submitted', lowCtx()).ok, false);
+});
 
 test('todos os 14 estados do prompt mestre existem, mais known_duplicate (extensão desta sessão)', () => {
   assert.deepEqual([...STATES].sort(), [

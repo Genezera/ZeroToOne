@@ -51,6 +51,49 @@ function repositoryKey(value) {
   return parts.length >= 2 ? `${parts[0]}/${parts[1]}`.toLowerCase() : normalized.toLowerCase();
 }
 
+// Caminho ADITIVO de prontidão para programas de baixa competição
+// (program-policy.competitionLevel === 'low' + noveltyStatus
+// 'low_competition_reviewed'). Mantém as proteções que importam
+// (escopo/impacto/identidade/colisão local/busca pública atestada +
+// reprodução real) mas dispensa os interlocks específicos de regressão
+// (deployment confidence=high, commit_sha===introducedCommit, E4 do
+// noveltyProof, casamento com o change monitor). Deixa o achado
+// human_ready com rótulo explícito de "sem regressão, revisão humana
+// obrigatória" -- a aprovação humana antes de `submitted` NÃO muda.
+function lowCompetitionReadinessGate(finding, ctx, impact, identity) {
+  const deployment = ctx.deploymentEvidence;
+  if (!deployment || !['low', 'medium', 'high'].includes(deployment.confidence)) {
+    return fail('envio de baixa competição exige DeploymentEvidence com confidence >= "low" (código presente/alcançável no HEAD público consumido)');
+  }
+  if (!deployment.repo || !deployment.commit_sha) {
+    return fail('DeploymentEvidence precisa registrar repo e commit_sha');
+  }
+  if (!deployment.package_or_contract && !deployment.deployed_address) {
+    return fail('DeploymentEvidence precisa identificar package_or_contract ou deployed_address afetado');
+  }
+  const duplicate = duplicateCheckGate(ctx.duplicateCheck, {
+    now: ctx.now ? new Date(ctx.now).getTime() : Date.now(),
+    repository: repositoryKey(deployment.repo),
+    lowCompetition: true,
+  });
+  if (!duplicate.ok) return fail(duplicate.reason);
+  const identitySignals = ctx.duplicateCheck?.signals || {};
+  if (identitySignals.localRootCauseFingerprint !== identity.rootCauseFingerprint) {
+    return fail('checagem de duplicata precisa ser refeita depois da identidade de causa raiz atual');
+  }
+  if (!Array.isArray(identitySignals.localRootCauseCollisionIds)) {
+    return fail('checagem de duplicata não contém busca estruturada por colisões locais');
+  }
+  if (identitySignals.localRootCauseCollisionIds.length > 0) {
+    return fail(`causa raiz colide com finding(s) local(is): ${identitySignals.localRootCauseCollisionIds.join(', ')}`);
+  }
+  const reproduced = (ctx.validations || []).some(validationSupports);
+  if (!reproduced) {
+    return fail('envio de baixa competição exige ao menos uma validação com conclusion="supports" (reprodução real, não só leitura)');
+  }
+  return ok(`${impact.reason}; ${duplicate.reason} [BAIXA COMPETIÇÃO: sem prova de regressão nem E4 -- revisão humana criteriosa obrigatória antes de enviar]`);
+}
+
 export function submissionReadinessGate(finding, ctx = {}) {
   const blockReason = getBlockReason(finding.program, ctx.programPolicy || {});
   if (blockReason) return fail(`programa "${finding.program}" está bloqueado para envio: ${blockReason}`);
@@ -66,6 +109,12 @@ export function submissionReadinessGate(finding, ctx = {}) {
 
   const impact = reportabilityGate(ctx.impactAssessment);
   if (!impact.ok) return fail(impact.reason);
+
+  // Caminho aditivo: programa explicitamente de baixa competição.
+  if ((ctx.programPolicy || {})[finding.program]?.competitionLevel === 'low'
+      && ctx.duplicateCheck?.noveltyStatus === 'low_competition_reviewed') {
+    return lowCompetitionReadinessGate(finding, ctx, impact, identity);
+  }
 
   const deployment = ctx.deploymentEvidence;
   if (!deployment || deployment.confidence !== 'high') {

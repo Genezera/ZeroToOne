@@ -48,6 +48,12 @@ export function buildResearchPlan(findings, {
     const task = (action, reason, priority, extra = {}) => actionable.push({ ...item, action, reason, priority, ...extra });
     const blocked = getBlockReason(finding.program, programPolicy, { now });
     if (blocked) { hold('program_blocked', blocked); continue; }
+    // Programas marcados como baixa competição não exigem prova de regressão
+    // recente: a competição (proxy de duplicata) já foi julgada baixa na
+    // política. Ainda exigem impacto, escopo, identidade, prior-art limpo,
+    // atestação e revisão humana — só relaxam a janela de 48h e a exigência de
+    // regressão. Dormante enquanto nenhum programa tiver competitionLevel:'low'.
+    const lowCompetitionProgram = ((programPolicy || {})[finding.program] || {}).competitionLevel === 'low';
 
     const linked = submissions.filter((submission) => (submission.findingIds || []).includes(finding.id));
     const related = submissions.filter((submission) => finding.semanticFingerprint
@@ -82,7 +88,7 @@ export function buildResearchPlan(findings, {
     // O antigo "oldest path commit" e sinais legados sem proveniência podem
     // dizer há quanto tempo o arquivo existe, não quando ele mudou por último.
     const measuredCodeAgeDays = trustedPathTouchAge(context.codeAgeEvidence);
-    if (!duplicate?.noveltyProof && measuredCodeAgeDays !== null
+    if (!lowCompetitionProgram && !duplicate?.noveltyProof && measuredCodeAgeDays !== null
         && measuredCodeAgeDays * 86400000 > MAX_VERIFIED_REGRESSION_AGE_MS) {
       hold('outside_campaign_window', `o caminho não recebe alteração há ${measuredCodeAgeDays} dias; ele não pode conter regressão de caminho introduzida na janela exigida de 48h`);
       continue;
@@ -91,7 +97,7 @@ export function buildResearchPlan(findings, {
     const change = finding.changeContext || finding.raw?.changeContext;
     const introducedAt = duplicate?.noveltyProof?.introducedAt || change?.introducedAt;
     const introducedMs = Date.parse(introducedAt);
-    if (Number.isFinite(introducedMs) && now - introducedMs > MAX_VERIFIED_REGRESSION_AGE_MS) {
+    if (!lowCompetitionProgram && Number.isFinite(introducedMs) && now - introducedMs > MAX_VERIFIED_REGRESSION_AGE_MS) {
       hold('outside_campaign_window', 'a introdução/delta registrado excede a janela de 48h da campanha; aguardar mudança nova em vez de repetir o mesmo caso');
       continue;
     }
@@ -127,7 +133,7 @@ export function buildResearchPlan(findings, {
       task('verify_scope', scope?.reason || 'confirmar ativo exato e recompensa na fonte oficial antes de aprofundar pesquisa', 90 + freshnessPriority, attentionContext);
       continue;
     }
-    if (!duplicate?.noveltyProof && measuredCodeAgeDays === null && !hasRecentExactChange) {
+    if (!lowCompetitionProgram && !duplicate?.noveltyProof && measuredCodeAgeDays === null && !hasRecentExactChange) {
       task('measure_code_age', 'medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão', 80 + freshnessPriority);
       continue;
     }
@@ -160,11 +166,11 @@ export function buildResearchPlan(findings, {
       });
       continue;
     }
-    if (!duplicate?.noveltyProof) {
+    if (!lowCompetitionProgram && !duplicate?.noveltyProof) {
       task('establish_novelty', 'localizar a introdução no histórico e um baseline; um commit recente ou pesquisa pública vazia não prova novidade', 60 + freshnessPriority, attentionContext);
       continue;
     }
-    const priorArt = duplicateCheckGate(duplicate, { now, repository: item.repository });
+    const priorArt = duplicateCheckGate(duplicate, { now, repository: item.repository, lowCompetition: lowCompetitionProgram });
     if (!priorArt.ok) {
       task('verify_prior_art', priorArt.reason, 55 + freshnessPriority, attentionContext);
       continue;
