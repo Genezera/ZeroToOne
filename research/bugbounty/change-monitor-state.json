@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T18:50:22.479Z",
+  "checkedAt": "2026-09-09T18:51:02.813Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "4547e1a7a95f273f3166edf45344dc827f1935fa",
+      "sha": "2354301f39d5740b33ffbbb4dc8573108006619a",
       "branch": "main",
-      "parentSha": "51a181af91773a288e6d6342a180e926ace97dda",
-      "committedAt": "2026-09-09T17:20:08Z",
-      "url": "https://github.com/vercel/workflow/commit/4547e1a7a95f273f3166edf45344dc827f1935fa",
-      "title": "feat(streams): add writer session seam (#3832)",
-      "observedAt": "2026-09-09T17:20:45.678Z",
+      "parentSha": "4547e1a7a95f273f3166edf45344dc827f1935fa",
+      "committedAt": "2026-09-09T18:50:37Z",
+      "url": "https://github.com/vercel/workflow/commit/2354301f39d5740b33ffbbb4dc8573108006619a",
+      "title": "[world-vercel] Bound the queue client's requests (#4049)",
+      "observedAt": "2026-09-09T18:51:02.813Z",
       "programs": [
         "Vercel Open Source"
       ],
