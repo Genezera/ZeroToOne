@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T13:50:35.986Z",
+  "checkedAt": "2026-09-09T14:01:01.558Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -471,13 +471,13 @@
       "languages": []
     },
     "kubernetes/enhancements": {
-      "sha": "18d300d91f6eea75a93397915a11244c5788cd7f",
+      "sha": "618c5969eeafd0c2a41b04a6170fea84fdbd18c3",
       "branch": "master",
-      "parentSha": "e849163ac4a0a5241ba626bd9a99820bf1dcd279",
-      "committedAt": "2026-09-08T16:08:42Z",
-      "url": "https://github.com/kubernetes/enhancements/commit/18d300d91f6eea75a93397915a11244c5788cd7f",
-      "title": "Merge pull request #6085 from mortent/Update4816AsImplemented",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "18d300d91f6eea75a93397915a11244c5788cd7f",
+      "committedAt": "2026-09-09T13:52:37Z",
+      "url": "https://github.com/kubernetes/enhancements/commit/618c5969eeafd0c2a41b04a6170fea84fdbd18c3",
+      "title": "Merge pull request #6244 from helayoty/helayoty/update-kep-6089",
+      "observedAt": "2026-09-09T14:01:01.558Z",
       "programs": [
         "Kubernetes"
       ],
