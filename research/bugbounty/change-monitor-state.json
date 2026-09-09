@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T11:31:10.576Z",
+  "checkedAt": "2026-09-09T11:50:40.563Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1045,13 +1045,13 @@
       "languages": []
     },
     "mattermost/mattermost-plugin-ai": {
-      "sha": "200d2395a543725052c6c0ed62c2cb47e58f3fe6",
+      "sha": "ce9703b2000623925ee2acaea0a794ef2763a5b2",
       "branch": "master",
-      "parentSha": "fcb81159c26bec3a8c29ed558cd0fea3dd872ab7",
-      "committedAt": "2026-09-02T20:40:10Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/200d2395a543725052c6c0ed62c2cb47e58f3fe6",
-      "title": "Parallelize and bound MCP connection and tool discovery (#993)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "200d2395a543725052c6c0ed62c2cb47e58f3fe6",
+      "committedAt": "2026-09-09T11:49:03Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/ce9703b2000623925ee2acaea0a794ef2763a5b2",
+      "title": "Add SearXNG web search provider (#923)",
+      "observedAt": "2026-09-09T11:50:40.563Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
