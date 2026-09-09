@@ -447,6 +447,13 @@
       "falsePositive": 1,
       "other": 0,
       "fpRate": 1
+    },
+    "oauth2_account_linking_csrf::go": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
     }
   },
   "byTypeProgram": {
@@ -960,6 +967,13 @@
       "falsePositive": 1,
       "other": 0,
       "fpRate": 1
+    },
+    "oauth2_account_linking_csrf::Mattermost Public Bug Bounty Engagement ": {
+      "reviewed": 1,
+      "confirmed": 1,
+      "falsePositive": 0,
+      "other": 0,
+      "fpRate": 0
     }
   }
 }

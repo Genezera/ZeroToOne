@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T16:40:50.556Z",
+  "checkedAt": "2026-09-09T19:01:01.675Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -139,13 +139,13 @@
       "languages": []
     },
     "kubernetes/api": {
-      "sha": "baf48de52220941c0253fe70ff07b1e38576b86a",
+      "sha": "73e57b223dd9234bf1ff636031913e692dec7e94",
       "branch": "master",
-      "parentSha": "af6be35874c3d671d273412b599e57becf26b4b5",
-      "committedAt": "2026-09-09T05:53:18Z",
-      "url": "https://github.com/kubernetes/api/commit/baf48de52220941c0253fe70ff07b1e38576b86a",
-      "title": "Merge pull request #141086 from mohitdebian/fix-eventseries-atomic-openapi",
-      "observedAt": "2026-09-09T07:30:43.660Z",
+      "parentSha": "baf48de52220941c0253fe70ff07b1e38576b86a",
+      "committedAt": "2026-09-09T15:47:34Z",
+      "url": "https://github.com/kubernetes/api/commit/73e57b223dd9234bf1ff636031913e692dec7e94",
+      "title": "Merge pull request #141881 from liyuerich/commentstartcertificate",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -165,13 +165,13 @@
       "languages": []
     },
     "kubernetes/apimachinery": {
-      "sha": "ae6b8e23cfd0d910ac224f3bfa15bfc3c1df444f",
+      "sha": "c6991bb000a2a4c7138fcb75ea5efb91a32fe856",
       "branch": "master",
-      "parentSha": "f999f921d8301f4746552cfd091dee6d9b266706",
-      "committedAt": "2026-09-08T21:48:49Z",
-      "url": "https://github.com/kubernetes/apimachinery/commit/ae6b8e23cfd0d910ac224f3bfa15bfc3c1df444f",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "8ed99eb9a4bd5e371d83b9f12f2d4b5805a04887",
+      "committedAt": "2026-09-09T15:27:01Z",
+      "url": "https://github.com/kubernetes/apimachinery/commit/c6991bb000a2a4c7138fcb75ea5efb91a32fe856",
+      "title": "Merge pull request #141938 from jpbetz/resource-mustparse-maxint64-fork",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -221,13 +221,13 @@
       ]
     },
     "kubernetes/client-go": {
-      "sha": "0a0bbf644072718686bd0753cbad889919f073ba",
+      "sha": "e00b95407b94a3f9d108d676444510e07c6f9a7e",
       "branch": "master",
-      "parentSha": "606fbc4789101e1a19f0c8ab780ac8ae71448bb0",
-      "committedAt": "2026-09-09T05:59:30Z",
-      "url": "https://github.com/kubernetes/client-go/commit/0a0bbf644072718686bd0753cbad889919f073ba",
-      "title": "Merge pull request #141086 from mohitdebian/fix-eventseries-atomic-openapi",
-      "observedAt": "2026-09-09T07:30:43.660Z",
+      "parentSha": "0a0bbf644072718686bd0753cbad889919f073ba",
+      "committedAt": "2026-09-09T15:58:59Z",
+      "url": "https://github.com/kubernetes/client-go/commit/e00b95407b94a3f9d108d676444510e07c6f9a7e",
+      "title": "Merge pull request #141881 from liyuerich/commentstartcertificate",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "22e7d73585b308db5a60520140876b986ac5e965",
+      "sha": "7d532614e7f7bf7b7c0ede253204e3a0910afc78",
       "branch": "master",
-      "parentSha": "cb252f9f946c417bd430498eb8927f3647bd08f7",
-      "committedAt": "2026-09-09T16:32:34Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/22e7d73585b308db5a60520140876b986ac5e965",
-      "title": "make: Add lint-charts target (#3208)",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "22e7d73585b308db5a60520140876b986ac5e965",
+      "committedAt": "2026-09-09T17:22:33Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/7d532614e7f7bf7b7c0ede253204e3a0910afc78",
+      "title": "fix(manila-csi-plugin): revert to setting cluster id from environment variable (#3157)",
+      "observedAt": "2026-09-09T17:30:45.665Z",
       "programs": [
         "Kubernetes"
       ],
@@ -719,13 +719,13 @@
       ]
     },
     "kubernetes/kubectl": {
-      "sha": "20cb0eb96d6bc4399e7d8e1f234bce6ab80da92c",
+      "sha": "c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
       "branch": "master",
-      "parentSha": "f3b3b1e2245469724fbc5d28d8b51dd57b5d33e9",
-      "committedAt": "2026-09-08T23:26:29Z",
-      "url": "https://github.com/kubernetes/kubectl/commit/20cb0eb96d6bc4399e7d8e1f234bce6ab80da92c",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "89fc081d54e43adcf39a3809a701e072be27b83f",
+      "committedAt": "2026-09-09T18:28:55Z",
+      "url": "https://github.com/kubernetes/kubectl/commit/c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
+      "title": "refactor flags and options in kubectl exec cmd (#141918)",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
+      "sha": "db10cb4b80e57c4492d2baf446ba2b4f89abf466",
       "branch": "master",
-      "parentSha": "e9c9800767fa620ffb698e1a68bd9454bd911133",
-      "committedAt": "2026-09-09T15:27:01Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
-      "title": "Merge pull request #141938 from jpbetz/resource-mustparse-maxint64-fork",
-      "observedAt": "2026-09-09T15:30:49.079Z",
+      "parentSha": "4266156f63e27d86b224211cb9eb1e02a58f4bc9",
+      "committedAt": "2026-09-09T18:18:38Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/db10cb4b80e57c4492d2baf446ba2b4f89abf466",
+      "title": "Merge pull request #141070 from AutuSnow/AutuSnow/fix-memory-manager-pod-hint-restore",
+      "observedAt": "2026-09-09T18:20:46.909Z",
       "programs": [
         "Kubernetes"
       ],
@@ -853,13 +853,13 @@
       "languages": []
     },
     "kubernetes/org": {
-      "sha": "d1118f90c2acc1a470ff65f033ec3e6729993860",
+      "sha": "cc7d0bdb0475e19c805b82650c75473822d8e8e6",
       "branch": "main",
-      "parentSha": "83b06f7a57a57c2648e6bf363f3b6e7af4ae9af1",
-      "committedAt": "2026-09-09T08:32:33Z",
-      "url": "https://github.com/kubernetes/org/commit/d1118f90c2acc1a470ff65f033ec3e6729993860",
-      "title": "Merge pull request #6621 from macsko/sync_sig_scheduling_reivers_and_approvers",
-      "observedAt": "2026-09-09T08:40:33.937Z",
+      "parentSha": "2e0966ec48cec36b2b7db05bda884d2f32d93381",
+      "committedAt": "2026-09-09T18:26:36Z",
+      "url": "https://github.com/kubernetes/org/commit/cc7d0bdb0475e19c805b82650c75473822d8e8e6",
+      "title": "Merge pull request #6622 from aramase/aramase/c/rm_ritazh_csi",
+      "observedAt": "2026-09-09T18:30:46.571Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
+      "sha": "1dcc675249e5b4817ea1beb3709b657f595c619f",
       "branch": "master",
-      "parentSha": "877cd6cec41a451bceeee6311bab205df98809df",
-      "committedAt": "2026-09-09T16:38:36Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
-      "title": "Merge pull request #37829 from pohly/kind-script-usage",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
+      "committedAt": "2026-09-09T17:18:34Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/1dcc675249e5b4817ea1beb3709b657f595c619f",
+      "title": "Merge pull request #37847 from sbueringer/pr-ct-pre",
+      "observedAt": "2026-09-09T17:20:45.678Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1045,13 +1045,13 @@
       "languages": []
     },
     "mattermost/mattermost-plugin-ai": {
-      "sha": "ce9703b2000623925ee2acaea0a794ef2763a5b2",
+      "sha": "4a40ad7a7fab25d6b157b4f61d2a26209c620d3e",
       "branch": "master",
-      "parentSha": "200d2395a543725052c6c0ed62c2cb47e58f3fe6",
-      "committedAt": "2026-09-09T11:49:03Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/ce9703b2000623925ee2acaea0a794ef2763a5b2",
-      "title": "Add SearXNG web search provider (#923)",
-      "observedAt": "2026-09-09T11:50:40.563Z",
+      "parentSha": "8a4eda3d2dd63a4a680ac8523a5bdea67e1a3284",
+      "committedAt": "2026-09-09T18:59:09Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/4a40ad7a7fab25d6b157b4f61d2a26209c620d3e",
+      "title": "feat(abac): wire ABAC policy editor to agents, services, and MCP (#973)",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1129,13 +1129,13 @@
       ]
     },
     "mattermost/mattermost-plugin-jira": {
-      "sha": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
+      "sha": "0e5b7423fe406e69ef668d301ecfbc7fefc8f710",
       "branch": "master",
-      "parentSha": "199c3a883ccd0016e9ec2162ced4be8eb1090686",
-      "committedAt": "2026-09-09T08:49:52Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#1350)",
-      "observedAt": "2026-09-09T08:50:33.927Z",
+      "parentSha": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
+      "committedAt": "2026-09-09T16:58:58Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/0e5b7423fe406e69ef668d301ecfbc7fefc8f710",
+      "title": "Bump js-yaml in /webapp (#1351)",
+      "observedAt": "2026-09-09T17:01:00.600Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "f102e410b5b29f1252723375438796cf67224125",
+      "sha": "4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
       "branch": "main",
-      "parentSha": "90a4e1183f57ae055b45b3dcca0dd01b1f4fa027",
-      "committedAt": "2026-09-09T16:35:06Z",
-      "url": "https://github.com/vercel/ai/commit/f102e410b5b29f1252723375438796cf67224125",
-      "title": "chore(provider/gateway): update gateway model settings files (#20540)",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "ab6e9f9a3ab03062dec1f622e65a25351f5aad28",
+      "committedAt": "2026-09-09T18:58:40Z",
+      "url": "https://github.com/vercel/ai/commit/4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
+      "title": "feat(xai): add batch cancellation and listing (#20558)",
+      "observedAt": "2026-09-09T19:01:01.675Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1411,13 +1411,13 @@
       "languages": []
     },
     "vercel/chat": {
-      "sha": "056d8830b26eea46b9ef0ea50d055f33d4516739",
+      "sha": "6adca3617e3b4f4bdda553c7afba0529ab1fec4c",
       "branch": "main",
-      "parentSha": "85a37c896f86611c23b024afc8325183e6f1ec99",
-      "committedAt": "2026-09-06T05:27:47Z",
-      "url": "https://github.com/vercel/chat/commit/056d8830b26eea46b9ef0ea50d055f33d4516739",
-      "title": "feat(history): support uncapped per-user retention (#904)",
-      "observedAt": "2026-09-06T08:50:22.131Z",
+      "parentSha": "f893470e1963cda3bc21a801a1f312b1208eb126",
+      "committedAt": "2026-09-09T17:46:53Z",
+      "url": "https://github.com/vercel/chat/commit/6adca3617e3b4f4bdda553c7afba0529ab1fec4c",
+      "title": "feat(slack): support egress proxies (#916)",
+      "observedAt": "2026-09-09T17:50:41.651Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
+      "sha": "6028ed402a5e731cc550a51c8522a2504caac15e",
       "branch": "main",
-      "parentSha": "d630b218af24df0e22d9ec1dd4550662f472bbb0",
-      "committedAt": "2026-09-09T15:59:45Z",
-      "url": "https://github.com/vercel/eve/commit/1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
-      "title": "fix(eve): persist framework prompt announcements (#3131)",
-      "observedAt": "2026-09-09T16:00:59.423Z",
+      "parentSha": "3bbf8e5c0d54b384095d8d855bec056c16d2da5d",
+      "committedAt": "2026-09-09T18:25:11Z",
+      "url": "https://github.com/vercel/eve/commit/6028ed402a5e731cc550a51c8522a2504caac15e",
+      "title": "Refresh the chat template manifest (#3181)",
+      "observedAt": "2026-09-09T18:30:46.571Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "dea82ba4ee65606672a3648165da79dc0e792fc6",
+      "sha": "4d621240c38ebceeac693951d7c6b04636632adc",
       "branch": "canary",
-      "parentSha": "de356c6d84c38b3743c08fba8dce59015dbe27f1",
-      "committedAt": "2026-09-09T16:06:38Z",
-      "url": "https://github.com/vercel/next.js/commit/dea82ba4ee65606672a3648165da79dc0e792fc6",
-      "title": "v16.4.0-canary.24",
-      "observedAt": "2026-09-09T16:10:44.004Z",
+      "parentSha": "9c8b238ac19cb032aa126fe9339d789daceffeaa",
+      "committedAt": "2026-09-09T18:39:37Z",
+      "url": "https://github.com/vercel/next.js/commit/4d621240c38ebceeac693951d7c6b04636632adc",
+      "title": "test(evals): validate delegated error boundary components (#98387)",
+      "observedAt": "2026-09-09T18:40:58.616Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "3862f3e9c430e175f73f915a687233cc37719bd0",
+      "sha": "5223bd6eb8903134d8084e353aa0050311594b95",
       "branch": "main",
-      "parentSha": "90fd2d6624b61faa4f4052ceab559ea3222e6dbc",
-      "committedAt": "2026-09-09T16:33:02Z",
-      "url": "https://github.com/vercel/turborepo/commit/3862f3e9c430e175f73f915a687233cc37719bd0",
-      "title": "perf: Batch boundaries progress updates (#14009)",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "96712c91919cb74273c0ed75dbaa7d1f90574aa9",
+      "committedAt": "2026-09-09T18:49:52Z",
+      "url": "https://github.com/vercel/turborepo/commit/5223bd6eb8903134d8084e353aa0050311594b95",
+      "title": "perf: Share source text across boundaries diagnostics instead of copying it per error (#14014)",
+      "observedAt": "2026-09-09T18:50:22.479Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "9a5660fbd64165e41f6b346407b1c0a099a8123b",
+      "sha": "2354301f39d5740b33ffbbb4dc8573108006619a",
       "branch": "main",
-      "parentSha": "8a91d18d0dfdb142c68b0635bc7e5446a5b08403",
-      "committedAt": "2026-09-09T15:01:25Z",
-      "url": "https://github.com/vercel/workflow/commit/9a5660fbd64165e41f6b346407b1c0a099a8123b",
-      "title": "fix(world-local): retry JSON reads on Windows (#4051)",
-      "observedAt": "2026-09-09T15:10:43.291Z",
+      "parentSha": "4547e1a7a95f273f3166edf45344dc827f1935fa",
+      "committedAt": "2026-09-09T18:50:37Z",
+      "url": "https://github.com/vercel/workflow/commit/2354301f39d5740b33ffbbb4dc8573108006619a",
+      "title": "[world-vercel] Bound the queue client's requests (#4049)",
+      "observedAt": "2026-09-09T18:51:02.813Z",
       "programs": [
         "Vercel Open Source"
       ],

@@ -811,5 +811,6 @@
   "OKG::okx/go-wallet-sdk/coins/bitcoin/multi_address.go::GenerateAddress::wrong_network_address_generation": "inconclusivo",
   "OKG::okx/go-wallet-sdk/coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error": "inconclusivo",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/kv.go::EnsureRSAKey::weak_rsa_key_size_oauth1_signing": "falso_positivo",
-  "OKG::okx/go-wallet-sdk/coins/tron/tron.go::VerifyMessage+VerifyMessageWithAddress+VerifyMessageV1::unchecked_signature_length_panic": "inconclusivo"
+  "OKG::okx/go-wallet-sdk/coins/tron/tron.go::VerifyMessage+VerifyMessageWithAddress+VerifyMessageV1::unchecked_signature_length_panic": "inconclusivo",
+  "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/user_cloud_oauth.go::httpOAuth2Complete::oauth2_account_linking_csrf": "confirmado"
 }
