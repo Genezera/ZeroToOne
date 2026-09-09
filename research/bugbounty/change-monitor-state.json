@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:30:55.022Z",
+  "checkedAt": "2026-09-09T20:40:42.526Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "7d98d8615d7d6470c21943daec1187f59f99abce",
+      "sha": "bc57a174372d901df2e23916dacb8d5298de8f39",
       "branch": "main",
-      "parentSha": "cbb08839f9dbd6dbdbe39cdadda207ed85ae6ad2",
-      "committedAt": "2026-09-09T15:56:37Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/7d98d8615d7d6470c21943daec1187f59f99abce",
-      "title": "Merge pull request #9913 from benjaminapetersen/sig-auth/members/secrets-subprojects",
-      "observedAt": "2026-09-09T16:00:59.423Z",
+      "parentSha": "7d98d8615d7d6470c21943daec1187f59f99abce",
+      "committedAt": "2026-09-09T20:36:34Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/bc57a174372d901df2e23916dacb8d5298de8f39",
+      "title": "Merge pull request #9914 from pmengelbert/pmengelbert/promote-csi-secrets-store-1.6.1/1",
+      "observedAt": "2026-09-09T20:40:42.526Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "48b734ae063edbfb38591cd747262d8b70cbf742",
+      "sha": "fd85debf897fa30763442fae65b5c1543fd52af0",
       "branch": "master",
-      "parentSha": "8f09e098025dbf52df356cb5d2b9a5660359c428",
-      "committedAt": "2026-09-09T20:30:52Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/48b734ae063edbfb38591cd747262d8b70cbf742",
-      "title": "kubectl: disallow label and annotate modifications when --list is set (#141589)",
-      "observedAt": "2026-09-09T20:30:55.022Z",
+      "parentSha": "fb7cf88e48beb80c7ff371b2c452c7e0cb15287c",
+      "committedAt": "2026-09-09T20:31:35Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/fd85debf897fa30763442fae65b5c1543fd52af0",
+      "title": "Merge pull request #141975 from siyuanfoundation/emu-test",
+      "observedAt": "2026-09-09T20:40:42.526Z",
       "programs": [
         "Kubernetes"
       ],
