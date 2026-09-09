@@ -112,6 +112,26 @@ export function partitionCandidatesByProgramPolicy(candidates, policy = {}) {
   return { authorized, blocked };
 }
 
+/** Minimal, code-free watch registry used by the change monitor.  It keeps
+ * every GitHub repository whose bounty program passed the explicit local RoE
+ * allowlist, including repositories that are too large or use an unsupported
+ * language for the regular scanners.  This is metadata only: inclusion here
+ * authorizes HEAD/compare polling, never execution of target code. */
+export function buildAuthorizedMonitorCandidates(candidates = []) {
+  return [...candidates]
+    .map((candidate) => ({
+      owner: candidate.owner,
+      repo: candidate.repo,
+      programs: (candidate.programs || []).map((program) => ({
+        program: program.program,
+        platform: program.platform,
+        ...(program.handle ? { handle: program.handle } : {}),
+        ...(program.url ? { url: program.url } : {}),
+      })).sort((a, b) => `${a.platform}:${a.program}`.localeCompare(`${b.platform}:${b.program}`)),
+    }))
+    .sort((a, b) => `${a.owner}/${a.repo}`.toLowerCase().localeCompare(`${b.owner}/${b.repo}`.toLowerCase()));
+}
+
 /** Ordena candidatos pra priorizar quem NUNCA teve metadado buscado —
  * sem isso, um orçamento de API fixo (MAX_METADATA_LOOKUPS) sempre pega
  * os mesmos primeiros N candidatos da lista, toda rodada, pra sempre (bug
@@ -310,6 +330,7 @@ export async function runTargetDiscovery(knownTargetLists, seenMap = {}, getProg
     programAgeErrors,
     programAgeSkippedReason,
     programsWithAgeFound: Object.keys(ageByHandle).length,
+    authorizedMonitorCandidates: buildAuthorizedMonitorCandidates(policyPartition.authorized),
     discovered: enriched,
     checkedKeys,
   };

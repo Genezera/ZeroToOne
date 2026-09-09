@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { collectMonitoredRepositories, pollRepositoryChanges } from '../change-monitor.mjs';
-import { buildDeltaScanEnvironment, runChangeMonitor } from '../change-monitor-runner.mjs';
+import { collectMonitoredRepositories, fetchRepositoryChangedFiles, pollRepositoryChanges } from '../change-monitor.mjs';
+import { buildDeltaScanEnvironment, loadAuthorizedMonitorTargets, runChangeMonitor } from '../change-monitor-runner.mjs';
 
 const A = 'a'.repeat(40);
 const B = 'b'.repeat(40);
@@ -12,12 +12,27 @@ const B = 'b'.repeat(40);
 test('buildDeltaScanEnvironment entrega repositórios e contexto completo ao scanner', () => {
   const changes = [{
     repository: 'acme/api', previousSha: A, introducedCommit: B,
-    parentCommit: A, detectedAt: '2026-09-05T12:01:00Z',
+    parentCommit: A, detectedAt: '2026-09-05T12:01:00Z', changedFiles: ['src/auth.js'],
   }];
   const env = buildDeltaScanEnvironment(changes, { KEEP: 'yes' });
   assert.equal(env.KEEP, 'yes');
   assert.deepEqual(JSON.parse(env.ZERO2ONE_CHANGED_REPOSITORIES), ['acme/api']);
   assert.deepEqual(JSON.parse(env.ZERO2ONE_CHANGE_CONTEXT), changes);
+});
+
+test('fetchRepositoryChangedFiles preserva somente caminhos ativos e falha fechado no limite', async () => {
+  const target = { owner: 'acme', repo: 'api' };
+  const result = await fetchRepositoryChangedFiles(target, A, B, { fetchImpl: async () => ({
+    ok: true, json: async () => ({ html_url: 'https://github.com/acme/api/compare/a...b', files: [
+      { filename: 'src/auth.js', status: 'modified' },
+      { filename: 'src/old.js', status: 'removed' },
+    ] }),
+  }) });
+  assert.deepEqual(result.changedFiles, ['src/auth.js']);
+  assert.deepEqual(result.removedFiles, ['src/old.js']);
+  await assert.rejects(() => fetchRepositoryChangedFiles(target, A, B, { fetchImpl: async () => ({
+    ok: true, json: async () => ({ files: Array.from({ length: 300 }, (_, i) => ({ filename: `f${i}.js`, status: 'modified' })) }),
+  }) }), /limite de 300/);
 });
 
 test('collectMonitoredRepositories deduplica e exclui programa bloqueado antes da rede', () => {
@@ -58,13 +73,53 @@ test('pollRepositoryChanges registra delta direto com parent e instante de detec
   const previous = { schemaVersion: 1, repos: { 'acme/api': { sha: A } } };
   const result = await pollRepositoryChanges(repos, previous, {
     fetchHead: async () => ({ sha: B, parentSha: A, branch: 'main', committedAt: '2026-09-04T12:00:00Z', title: 'auth change' }),
+    fetchChangedFiles: async () => ({ changedFiles: ['src/auth.js'], removedFiles: [], compareUrl: 'https://example/compare' }),
     now: () => new Date('2026-09-04T12:01:00Z'),
   });
   assert.equal(result.changes.length, 1);
   assert.equal(result.changes[0].directSingleCommit, true);
   assert.equal(result.changes[0].parentCommit, A);
   assert.equal(result.changes[0].introducedCommit, B);
+  assert.deepEqual(result.changes[0].changedFiles, ['src/auth.js']);
   assert.equal(result.stateChanged, true);
+});
+
+test('collectMonitoredRepositories inclui radar metadata-only e revalida todos os programas', () => {
+  const policy = {
+    Allowed: { roeReviewed: true, reviewedAt: '2026-09-01', nextReviewAt: '2099-01-01' },
+    Blocked: { blocked: true, reason: 'fora de escopo' },
+  };
+  const repos = collectMonitoredRepositories({ monitor: [
+    { owner: 'large', repo: 'unknown-language', programs: [{ program: 'Allowed', platform: 'HackerOne' }] },
+    { owner: 'shared', repo: 'unsafe', programs: [{ program: 'Allowed' }, { program: 'Blocked' }] },
+  ] }, policy);
+  assert.deepEqual(repos.map((item) => `${item.owner}/${item.repo}`), ['large/unknown-language']);
+  assert.deepEqual(repos[0].programs, ['Allowed']);
+  assert.deepEqual(repos[0].languages, []);
+});
+
+test('loadAuthorizedMonitorTargets falha fechado em arquivo corrompido', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'zto-monitor-registry-'));
+  const filePath = path.join(dir, 'registry.json');
+  try {
+    writeFileSync(filePath, '{broken', 'utf8');
+    assert.throws(() => loadAuthorizedMonitorTargets(filePath), /inválido/);
+    writeFileSync(filePath, JSON.stringify({ schemaVersion: 1, repositories: [{ owner: 'acme', repo: 'api', programs: [{ program: 'P' }] }] }), 'utf8');
+    assert.equal(loadAuthorizedMonitorTargets(filePath).length, 1);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('pollRepositoryChanges não avança quando a lista exata do diff falha', async () => {
+  const repos = [{ owner: 'acme', repo: 'api', programs: ['P'], languages: ['js'] }];
+  const previous = { schemaVersion: 1, repos: { 'acme/api': { sha: A } } };
+  const result = await pollRepositoryChanges(repos, previous, {
+    fetchHead: async () => ({ sha: B, parentSha: A, branch: 'main', committedAt: '2026-09-04T12:00:00Z' }),
+    fetchChangedFiles: async () => { throw new Error('compare indisponível'); },
+  });
+  assert.equal(result.ok, false);
+  assert.match(result.failures[0].reason, /compare indisponível/);
 });
 
 test('pollRepositoryChanges mantém estado byte-estável quando o head não mudou', async () => {
@@ -119,7 +174,7 @@ test('runner só avança cursor depois que scan orientado à mudança passa', as
     nextState: { schemaVersion: 1, repos: { 'acme/api': { sha: B } } },
   });
   const base = {
-    statePath, eventsPath, poll,
+    statePath, eventsPath, poll, authorizedMonitorTargetsPath: path.join(dir, 'absent-registry.json'),
     policy: { P: { roeReviewed: true, reviewedAt: '2026-09-01', nextReviewAt: '2099-01-01' } },
     targetLists: { js: [{ owner: 'acme', repo: 'api', program: 'P', language: 'js' }] },
     pull: () => ({ ok: true }), publish: () => ({ ok: true }), log: () => {},
@@ -153,6 +208,7 @@ test('runner sem mudança não reescreve nem publica o estado', async () => {
   try {
     const result = await runChangeMonitor({
       statePath, eventsPath,
+      authorizedMonitorTargetsPath: path.join(dir, 'absent-registry.json'),
       policy: { P: { roeReviewed: true, reviewedAt: '2026-09-01', nextReviewAt: '2099-01-01' } },
       targetLists: { js: [{ owner: 'acme', repo: 'api', program: 'P', language: 'js' }] },
       pull: () => ({ ok: true }),

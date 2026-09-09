@@ -28,6 +28,7 @@ import { isQuarantined, computeQuarantinedRules, renderQuarantineMarkdown } from
 import { generateStatusDashboard } from './status-dashboard.mjs';
 import { generateDashboard } from './generate-dashboard.mjs';
 import { runDependencyScan } from './dep-scanner.mjs';
+import { filterFilesToChangedPaths, immutableRefForScan } from './delta-file-selection.mjs';
 import { appendEntry, readLedger } from '../ledger/ledger.mjs';
 import { openDb, upsertFinding, closeDb, stateCounts, listFindings, listSubmissions } from './db.mjs';
 import { sendTelegramMessage } from './telegram.mjs';
@@ -127,9 +128,12 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
   let quarantinedCount = 0;
 
   for (const target of targets) {
+    const repoKey = `${target.owner}/${target.repo}`;
+    const changeContext = changeContexts?.get(repoKey.toLowerCase()) || null;
+    const scanRef = immutableRefForScan(target, changeContext);
     let files;
     try {
-      files = await listRepoFiles(target.owner, target.repo, target.branch, target.pathPrefixes);
+      files = await listRepoFiles(target.owner, target.repo, scanRef, target.pathPrefixes);
     } catch (err) {
       log(`ERRO listando árvore de ${target.owner}/${target.repo}: ${err.message}`);
       fetchErrors++;
@@ -137,8 +141,9 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
     }
     files = files.filter((f) => isScannable(f.path));
 
-    const repoKey = `${target.owner}/${target.repo}`;
-    const changeContext = changeContexts?.get(repoKey.toLowerCase()) || null;
+    if (changeContext) {
+      files = filterFilesToChangedPaths(files, changeContext.changedFiles);
+    }
     repoShas[repoKey] = repoShas[repoKey] || {};
 
     if (files.length > MAX_FILES_PER_TARGET) {
@@ -159,7 +164,7 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       // sinal extra pra este alvo desta vez.
       let recentlyChanged = null;
       try {
-        recentlyChanged = await listRecentlyChangedFiles(target.owner, target.repo, target.branch);
+        recentlyChanged = await listRecentlyChangedFiles(target.owner, target.repo, scanRef);
       } catch (err) {
         log(`AVISO: não consegui buscar arquivos recentes de ${repoKey} (${err.message}) -- priorizando só por nunca-visto desta vez.`);
       }
@@ -172,7 +177,7 @@ async function runLanguageScan(targets, isScannable, scanFn, seen, newFindings, 
       if (repoShas[repoKey][file.path] === file.sha) continue; // sem mudança desde a última rodada
       let source;
       try {
-        source = await fetchRawFile(target.owner, target.repo, target.branch, file.path);
+        source = await fetchRawFile(target.owner, target.repo, scanRef, file.path);
       } catch (err) {
         log(`ERRO buscando ${repoKey}/${file.path}: ${err.message}`);
         fetchErrors++;
@@ -251,9 +256,15 @@ export function parseChangeContexts(value) {
       throw new Error('ZERO2ONE_CHANGE_CONTEXT exige previousSha e introducedCommit completos');
     }
     if (parentCommit !== null && !/^[0-9a-f]{40}$/.test(parentCommit)) throw new Error('ZERO2ONE_CHANGE_CONTEXT contém parentCommit inválido');
+    if (!Array.isArray(item.changedFiles)) throw new Error('ZERO2ONE_CHANGE_CONTEXT exige changedFiles do compare GitHub');
+    const changedFiles = item.changedFiles.map((file) => String(file || '').replaceAll('\\', '/'));
+    if (changedFiles.some((file) => !file || file.startsWith('/') || file.split('/').includes('..') || /[\u0000\r\n]/.test(file))) {
+      throw new Error('ZERO2ONE_CHANGE_CONTEXT contém caminho inválido em changedFiles');
+    }
     if (contexts.has(repository)) throw new Error(`ZERO2ONE_CHANGE_CONTEXT repete o repositório ${repository}`);
     contexts.set(repository, {
       repository, previousSha, introducedCommit, parentCommit,
+      changedFiles: [...new Set(changedFiles)],
       introducedAt: item.introducedAt || null,
       detectedAt: item.detectedAt || null,
       branch: item.branch || null,
@@ -387,7 +398,16 @@ export async function runScan() {
   // nos mesmos alvos JS/Go/JVM já rastreados (reusa pathPrefixes e
   // repoShas, sem alvo/cache novo). Swift fica de fora: CocoaPods/SwiftPM
   // não são ecossistemas suportados pelo OSV.dev (confirmado ao vivo).
-  const depResult = await runDependencyScan([...targetLists.js, ...targetLists.go, ...targetLists.jvm], repoShas);
+  const changedFilesByRepo = changeContexts
+    ? new Map([...changeContexts].map(([repository, context]) => [repository, new Set(context.changedFiles)]))
+    : null;
+  const immutableRefsByRepo = changeContexts
+    ? new Map([...changeContexts].map(([repository, context]) => [repository, context.introducedCommit]))
+    : null;
+  const depResult = await runDependencyScan(
+    [...targetLists.js, ...targetLists.go, ...targetLists.jvm], repoShas,
+    { changedFilesByRepo, immutableRefsByRepo },
+  );
   for (const f of depResult.findings) {
     const changeContext = changeContexts?.get(repositoryFromFinding(f)) || null;
     const fp = findingIdentity(f, changeContext);

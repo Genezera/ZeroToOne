@@ -22,6 +22,23 @@ que resolva o motivo registrado. Para seleção proativa, use
 `list-deep-read-candidates.mjs`, que também aplica o histórico da campanha
 antes de buscar arquivos/metadados dos alvos.
 
+Se `actionable` estiver vazio, **não substitua trabalho novo por leitura
+histórica arbitrária**. Nesta campanha, só escolha um novo alvo a partir de
+`research/bugbounty/change-events.jsonl` quando o evento contiver
+`changedFiles`, `introducedCommit` completo e `directSingleCommit=true`, a
+mudança tiver no máximo 48 horas e o programa continuar liberado na policy.
+Leia apenas os caminhos em `changedFiles` e sempre pelo SHA imutável; um HEAD
+de repositório não prova que arquivos antigos mudaram. Eventos legados sem
+lista exata servem apenas como histórico.
+
+Antes de avançar um finding criado por leitura humana/IA, preencha campos
+estruturados separados da prosa: `repository`, `file`, `weakness`,
+`rootCause`, `attackerInput`, `securitySink`, `missingControl` e
+`expectedFix`. `research-plan` devolve `structure_identity` quando faltarem.
+Nunca os extraia automaticamente do `reasoning`: duas redações diferentes
+podem ser a mesma causa raiz. A checagem local por fingerprint precisa estar
+sem colisões antes de um relatório ficar pronto.
+
 Medium/High/Critical precisam de impacto demonstrado e justificativa; não
 aumente a severidade para satisfazer o gate. As regras atuais de janela de
 regressão e histórico de duplicates continuam válidas. O plano é uma
@@ -33,6 +50,13 @@ falha a contornar. Só adicione receita vinculada ao finding exato; nunca use
 um comando genérico ou resultado de outro finding como prova. Nenhum worker
 está autorizado a preencher impacto, deployment ou aprovação humana por
 inferência, nem a enviar relatório.
+
+Em validações, `result` descreve a execução (`pass`, `fail` ou
+`not_applicable`) e `conclusion` descreve a hipótese (`supports`, `refutes`
+ou `inconclusive`). Um teste escrito para falhar pode ter `result=fail` e
+`conclusion=supports`; sem `conclusion`, dados legados são interpretados de
+modo conservador (`fail` refuta). Nunca chame um erro de processo de prova
+sem declarar e justificar essa conclusão separadamente.
 
 **Isto vale pra QUALQUER sessão Claude neste repositório — local ou na
 nuvem, rotina agendada ou pedido manual do usuário.** Foi escrito depois

@@ -4,6 +4,7 @@ import { duplicateHistoryForFinding, repositoryFromFinding } from './outcome-int
 import { MAX_VERIFIED_REGRESSION_AGE_MS, duplicateCheckGate } from './novelty-risk.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { isTerminal, submissionReadinessGate } from './state-machine.mjs';
+import { findingIdentityQuality, localRootCauseCollisions } from './finding-identity.mjs';
 
 const ACTIVE_STATES = new Set(['candidate', 'corroborated_static', 'reproduced_local', 'scope_verified', 'human_ready']);
 const TRUSTED_PATH_TOUCH_METHODS = new Set([
@@ -27,6 +28,15 @@ export function buildResearchPlan(findings, {
 } = {}) {
   const actionable = [];
   const held = [];
+  const identities = new Map(findings.map((finding) => [finding.id, findingIdentityQuality(finding)]));
+  const rootCauseOwners = new Map();
+  for (const finding of findings) {
+    const fingerprint = identities.get(finding.id)?.rootCauseFingerprint;
+    if (!fingerprint) continue;
+    const owners = rootCauseOwners.get(fingerprint) || [];
+    owners.push(finding);
+    rootCauseOwners.set(fingerprint, owners);
+  }
   let historical = 0;
   for (const finding of findings) {
     if (isTerminal(finding.state) || !ACTIVE_STATES.has(finding.state)) { historical++; continue; }
@@ -56,6 +66,14 @@ export function buildResearchPlan(findings, {
       continue;
     }
 
+    const identity = identities.get(finding.id);
+    if (!identity.ok) {
+      task('structure_identity', `${identity.reason}; preencher campos estruturados, sem extrair automaticamente da prosa`, 88, {
+        missingFields: identity.missing,
+      });
+      continue;
+    }
+
     const context = contextFor(finding) || {};
     const impact = context.impactAssessment;
     if (impact && (impact.reportable === false || impact.severityRating === 'low'
@@ -67,6 +85,19 @@ export function buildResearchPlan(findings, {
     if (duplicate?.foundExisting === true) {
       hold('known_public_match', 'pesquisa anterior registrou correspondência pública; não repetir investigação sem evidência que a diferencie');
       continue;
+    }
+    const localIdentity = localRootCauseCollisions(finding, findings);
+    if (localIdentity.collisionIds.length > 0) {
+      const owners = rootCauseOwners.get(identity.rootCauseFingerprint) || [];
+      const terminalOwnerExists = owners.some((candidate) => isTerminal(candidate.state) || candidate.state === 'submitted');
+      const activePrimaryId = owners.filter((candidate) => ACTIVE_STATES.has(candidate.state)).map((candidate) => candidate.id).sort()[0];
+      if (terminalOwnerExists || finding.id !== activePrimaryId) {
+        hold('local_root_cause_collision', 'outro finding local tem a mesma causa raiz estruturada; consolidar ou provar mecanicamente a diferença antes de continuar', {
+          rootCauseFingerprint: identity.rootCauseFingerprint,
+          collisionFindingIds: localIdentity.collisionIds,
+        });
+        continue;
+      }
     }
 
     // Só métodos que medem o último toque do caminho sustentam este corte.
@@ -88,7 +119,8 @@ export function buildResearchPlan(findings, {
     }
     const freshnessPriority = Number.isFinite(introducedMs) && introducedMs <= now
       ? Math.max(0, 5 - Math.floor((now - introducedMs) / 3600000)) : 0;
-    const hasRecentExactChange = Number.isFinite(introducedMs) && introducedMs <= now
+    const hasRecentExactChange = change?.directSingleCommit === true
+      && Number.isFinite(introducedMs) && introducedMs <= now
       && now - introducedMs <= MAX_VERIFIED_REGRESSION_AGE_MS;
     let scope;
     try { scope = scopeFor(finding, new Date(now).toISOString()); }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseGithubUrl, extractGithubCandidates, diffAgainstKnownTargets, prioritizeCandidates, distinctHackerOneHandles, attachProgramAge, mapWithConcurrency, partitionCandidatesByProgramPolicy } from '../discover-targets.mjs';
+import { parseGithubUrl, extractGithubCandidates, diffAgainstKnownTargets, prioritizeCandidates, distinctHackerOneHandles, attachProgramAge, mapWithConcurrency, partitionCandidatesByProgramPolicy, buildAuthorizedMonitorCandidates } from '../discover-targets.mjs';
 
 test('parseGithubUrl extrai owner/repo de URL simples', () => {
   assert.deepEqual(parseGithubUrl('https://github.com/vercel/flags'), { owner: 'vercel', repo: 'flags' });
@@ -77,6 +77,17 @@ test('partitionCandidatesByProgramPolicy é conservador para repo compartilhado 
   assert.equal(result.authorized.length, 0);
   assert.equal(result.blocked.length, 1);
   assert.equal(result.blocked[0].policyBlocks[0].program, 'Bloqueado');
+});
+
+test('buildAuthorizedMonitorCandidates preserva todos os autorizados sem metadado ou código', () => {
+  const result = buildAuthorizedMonitorCandidates([
+    { owner: 'Zed', repo: 'Large', language: 'Unknown', programs: [{ program: 'P2', platform: 'HackerOne', handle: 'p2', url: 'https://hackerone.com/p2' }] },
+    { owner: 'acme', repo: 'api', programs: [{ program: 'P1', platform: 'Bugcrowd', url: 'https://bugcrowd.com/p1', maxPayoutUsd: 5000 }] },
+  ]);
+  assert.deepEqual(result.map((item) => `${item.owner}/${item.repo}`), ['acme/api', 'Zed/Large']);
+  assert.equal(result[0].language, undefined);
+  assert.equal(result[0].programs[0].program, 'P1');
+  assert.equal(result[1].programs[0].handle, 'p2');
 });
 
 test('diffAgainstKnownTargets remove repo já rastreado (case-insensitive)', () => {

@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { buildResearchPlan } from '../research-plan.mjs';
 
 const NOW = Date.parse('2026-09-07T03:00:00Z');
-const finding = { id: 'P::acme/api/src/a.go::run::risk', program: 'P', state: 'candidate', asset:'acme/api', file:'src/a.go' };
+const finding = {
+  id: 'P::acme/api/src/a.go::run::risk', program: 'P', state: 'candidate', asset:'acme/api', repository:'acme/api', file:'src/a.go',
+  weakness:'authorization_bypass', rootCause:'ownership result ignored', attackerInput:'request object id',
+  securitySink:'record returned to caller', missingControl:'owner equality check', expectedFix:'reject mismatched owner',
+};
 const policy = { P: { roeReviewed: true, nextReviewAt:'2026-10-01' } };
 const options = { now: NOW, programPolicy: policy, scopeFor: () => ({ allowed:true, bountyEligible:true }) };
 const impact = {
@@ -101,8 +105,28 @@ test('toque recente do caminho permite avaliar impacto, mas não prova regressã
   }) });
   assert.equal(result.actionable[0].action, 'assess_impact');
 
-  const exactRecent = buildResearchPlan([{ ...finding, changeContext: { introducedAt: '2026-09-07T02:00:00Z' } }], options);
+  const exactRecent = buildResearchPlan([{ ...finding, changeContext: {
+    introducedAt: '2026-09-07T02:00:00Z', directSingleCommit: true,
+  } }], options);
   assert.equal(exactRecent.actionable[0].action, 'assess_impact');
+
+  const rangeHead = buildResearchPlan([{ ...finding, changeContext: {
+    introducedAt: '2026-09-07T02:00:00Z', directSingleCommit: false,
+  } }], options);
+  assert.equal(rangeHead.actionable[0].action, 'measure_code_age');
+});
+
+test('identidade incompleta vira tarefa explícita antes de PoC e colisão local fica retida', () => {
+  const incomplete = buildResearchPlan([{ ...finding, rootCause: undefined }], options);
+  assert.equal(incomplete.actionable[0].action, 'structure_identity');
+  assert.ok(incomplete.actionable[0].missingFields.includes('rootCause'));
+
+  const sibling = { ...finding, id: 'P::acme/api/src/a.go::other::same-root', function: 'other' };
+  const collided = buildResearchPlan([finding, sibling], options);
+  assert.equal(collided.actionable.length, 1);
+  assert.equal(collided.held[0].code, 'local_root_cause_collision');
+  assert.notEqual(collided.actionable[0].id, collided.held[0].id);
+  assert.deepEqual(collided.held[0].collisionFindingIds, [collided.actionable[0].id]);
 });
 
 test('terminal e inconclusive continuam históricos; correspondência pública bloqueia novo trabalho', () => {

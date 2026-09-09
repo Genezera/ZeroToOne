@@ -157,7 +157,19 @@ function repositoryFromFindingId(finding = {}) {
   // repository named packages/next.
   for (const value of [finding.file, finding.asset]) {
     const suffix = normalizeAssetKey(value).replace(/^github\.com\//, '');
-    if (!suffix || location === suffix || !location.endsWith(`/${suffix}`)) continue;
+    if (!suffix) continue;
+    if (location === suffix) {
+      // Some agent-created findings store owner/repo/path in both `asset`
+      // and `file`, but omit the flattened repository field.  Recover only
+      // a GitHub-shaped owner/repo prefix with a remaining file path.  A
+      // hostname such as api.example.com/v1/x is deliberately excluded by
+      // the stricter owner grammar, so this does not widen URL scope.
+      const parts = location.split('/').filter(Boolean);
+      if (parts.length >= 3 && /^[a-z0-9-]+$/i.test(parts[0])
+          && /^[a-z0-9_.-]+$/i.test(parts[1])) return `${parts[0]}/${parts[1]}`;
+      continue;
+    }
+    if (!location.endsWith(`/${suffix}`)) continue;
     const prefix = location.slice(0, -(suffix.length + 1));
     if (prefix.split('/').filter(Boolean).length === 2) return prefix;
   }

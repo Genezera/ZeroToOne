@@ -15,6 +15,8 @@ import { getBlockReason } from './program-policy.mjs';
 import { reportabilityGate } from './impact-assessment.mjs';
 import { duplicateCheckGate } from './novelty-risk.mjs';
 import { isIsolatedEndToEndValidation } from './evidence-grade.mjs';
+import { findingIdentityQuality } from './finding-identity.mjs';
+import { validationSupports } from './validation-semantics.mjs';
 
 export const STATES = [
   'candidate',
@@ -53,6 +55,8 @@ export function submissionReadinessGate(finding, ctx = {}) {
   const blockReason = getBlockReason(finding.program, ctx.programPolicy || {});
   if (blockReason) return fail(`programa "${finding.program}" está bloqueado para envio: ${blockReason}`);
   if (!ctx.report || !ctx.report.path) return fail('nenhum rascunho de relatório foi gerado ainda');
+  const identity = findingIdentityQuality(finding);
+  if (!identity.ok) return fail(identity.reason);
 
   if (!ctx.scopeGateResult) return fail('preflight final exige nova consulta ao scope snapshot vigente');
   if (!ctx.scopeGateResult.allowed) return fail(`scope gate final recusou: ${ctx.scopeGateResult.reason}`);
@@ -79,6 +83,16 @@ export function submissionReadinessGate(finding, ctx = {}) {
     repository: repositoryKey(deployment.repo),
   });
   if (!duplicate.ok) return fail(duplicate.reason);
+  const identitySignals = ctx.duplicateCheck?.signals || {};
+  if (identitySignals.localRootCauseFingerprint !== identity.rootCauseFingerprint) {
+    return fail('checagem de duplicata precisa ser refeita depois da identidade de causa raiz atual');
+  }
+  if (!Array.isArray(identitySignals.localRootCauseCollisionIds)) {
+    return fail('checagem de duplicata não contém busca estruturada por colisões locais');
+  }
+  if (identitySignals.localRootCauseCollisionIds.length > 0) {
+    return fail(`causa raiz colide com finding(s) local(is): ${identitySignals.localRootCauseCollisionIds.join(', ')}`);
+  }
   const changeContext = finding.changeContext || finding.raw?.changeContext || null;
   if (changeContext?.introducedCommit
     && String(changeContext.introducedCommit).toLowerCase() !== ctx.duplicateCheck.noveltyProof.introducedCommit.toLowerCase()) {
@@ -131,13 +145,13 @@ const PRECONDITIONS = {
     return ok('source/sink ou condição perigosa confirmada em código real, com arquivo(s) citado(s)');
   },
   'corroborated_static->reproduced_local': (f, ctx = {}) => {
-    const pass = (ctx.validations || []).find((v) => v.result === 'pass');
+    const pass = (ctx.validations || []).find(validationSupports);
     if (pass) return ok(`reprodução determinística local com sucesso (${pass.type}, ${pass.ts || 'sem timestamp'})`);
     const notApplicable = (ctx.validations || []).find((v) => v.result === 'not_applicable');
     if (notApplicable) {
       return fail('nenhum validador local existe ainda para este tipo de achado (PoC not_applicable) — fica em corroborated_static até Fase 2/4 do plano adicionar um validador de verdade, não simular um');
     }
-    return fail('precisa de pelo menos uma validação com result="pass" (ex.: forge test) — sem isso não é reproduzido, é só lido');
+    return fail('precisa de pelo menos uma validação com conclusion="supports" — sem isso não é reproduzido, é só lido');
   },
   'reproduced_local->scope_verified': (f, ctx = {}) => {
     if (!ctx.scopeGateResult) return fail('nenhum scope snapshot foi consultado para este ativo');

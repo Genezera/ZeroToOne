@@ -476,15 +476,37 @@ seguros; nas outras 4 linguagens, roda contra o código real de
 ### Operação contínua, recuperação e observabilidade
 
 O workflow `bugbounty-change-monitor.yml` consulta somente metadados de HEAD
-dos repositórios permitidos a cada 15 minutos. Um HEAD novo passa a lista
-exata de `owner/repo` e o contexto completo (base observada, commit novo,
-parent e timestamps) para `scan-runner.mjs`; alvos estáveis não são
+dos repositórios permitidos a cada 15 minutos. A descoberta diária publica
+`authorized-monitor-targets.json` com **todos** os repositórios GitHub de
+bounty que passaram pela allowlist local de RoE, inclusive os grandes ou de
+linguagem ainda não suportada pelos scanners. A policy é revalidada em cada
+poll; o registro não autoriza execução de código de terceiro.
+
+Um HEAD novo é resolvido pelo compare do GitHub para uma lista exata de
+`changedFiles`; compare ausente, caminho inválido ou o limite de 300 arquivos
+faz a rodada falhar fechado sem avançar o cursor. Árvore, arquivo bruto e
+manifestos são lidos pelo `introducedCommit` imutável, nunca pela branch que
+pode avançar durante a execução. Apenas esses caminhos chegam ao scan delta;
+um arquivo antigo ainda ausente do cache não pode herdar proveniência nova.
+O contexto completo (base observada, commit novo, parent, lista de arquivos e
+timestamps) segue para `scan-runner.mjs`; alvos estáveis não são
 reprocessados e a seleção delta ignora o filtro `monitor-only` para não perder
 uma regressão fresca. O cursor só avança depois que esse scan termina com
 sucesso, portanto falha ou timeout é tentado novamente na próxima rodada.
 Cada delta fica em `research/bugbounty/change-events.jsonl` com SHA anterior,
 commit novo, parent, data e indicação de mudança direta. O evento é sinal de
 prioridade temporal, nunca uma alegação de vulnerabilidade.
+
+Findings só podem chegar ao preflight com identidade mecânica estruturada
+(`weakness`, `rootCause`, entrada, sink, controle ausente e correção). Um
+fingerprint de causa raiz ignora título/função/prosa; `record-duplicate-check`
+procura colisões em todo o banco e o gate final exige que essa busca tenha
+sido refeita depois da última identidade. Colisão local impede relatório até
+consolidação ou demonstração estruturada de que as causas são diferentes.
+
+Validação separa `result` (estado da execução) de `conclusion` (`supports`,
+`refutes` ou `inconclusive`). Isso impede que um `go test` propositalmente
+encerrado com FAIL seja contado automaticamente como confirmação de bug.
 
 Finding criado nessa via guarda `changeContext` e recebe identidade terminada
 em `::commit:<SHA>`. Isso impede o cache `scanner-seen.json` de esconder uma

@@ -9,6 +9,7 @@ import { deriveSemanticFingerprint } from './semantic-fingerprint.mjs';
 import { validateImpactAssessment } from './impact-assessment.mjs';
 import { investigationIdFor } from './investigation-id.mjs';
 import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
+import { VALIDATION_CONCLUSIONS, VALIDATION_RESULTS, validationConclusion } from './validation-semantics.mjs';
 
 // Estado operacional local (SQLite/WAL) — substitui queue.jsonl como
 // fonte de verdade para leitura/escrita concorrente (seção 6.5 da
@@ -94,6 +95,7 @@ CREATE TABLE IF NOT EXISTS validations (
   type TEXT NOT NULL,
   command TEXT,
   result TEXT NOT NULL,
+  conclusion TEXT,
   raw_output TEXT,
   evidence_json TEXT,
   ts TEXT NOT NULL
@@ -264,6 +266,7 @@ export function openDb(dbPath) {
     ['duplicate_checks', 'risk_level', 'TEXT'],
     ['submissions', 'repository', 'TEXT'],
     ['validations', 'evidence_json', 'TEXT'],
+    ['validations', 'conclusion', 'TEXT'],
   ]) ensureColumn(db, table, column, definition);
   importSubmissionsFromJsonl(db, path.join(dir, 'submissions.jsonl'));
   backfillSemanticFingerprints(db);
@@ -467,10 +470,13 @@ export function recordTransition(db, findingId, toState, { actor, context = {}, 
   return { ...result, correlationId: investigationIdFor(findingId), ts, ledgerHash: ledgerEntry.hash };
 }
 
-export function recordValidation(db, findingId, { type, command, result, rawOutput, evidence = null, ts: suppliedTs }) {
+export function recordValidation(db, findingId, { type, command, result, conclusion, rawOutput, evidence = null, ts: suppliedTs }) {
+  if (!VALIDATION_RESULTS.has(result)) throw new Error('validation.result precisa ser pass, fail ou not_applicable');
+  const effectiveConclusion = conclusion || validationConclusion({ result });
+  if (!VALIDATION_CONCLUSIONS.has(effectiveConclusion)) throw new Error('validation.conclusion precisa ser supports, refutes ou inconclusive');
   const ts = suppliedTs || new Date().toISOString();
-  db.prepare('INSERT INTO validations (finding_id, type, command, result, raw_output, evidence_json, ts) VALUES (?, ?, ?, ?, ?, ?, ?)')
-    .run(findingId, type, command || null, result, rawOutput || null, evidence ? JSON.stringify(evidence) : null, ts);
+  db.prepare('INSERT INTO validations (finding_id, type, command, result, conclusion, raw_output, evidence_json, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(findingId, type, command || null, result, effectiveConclusion, rawOutput || null, evidence ? JSON.stringify(evidence) : null, ts);
   // Ledger backing (02/09/2026): recordTransition sempre anexou evento
   // real; as outras 4 funções record* nunca tocaram o ledger, então essa
   // evidência só sobrevivia no stdout do momento ou em prosa que uma
@@ -480,7 +486,7 @@ export function recordValidation(db, findingId, { type, command, result, rawOutp
   // "Bug real encontrado (2026-09-02)", item (c).
   const execution = evidence?.noveltyProof?.execution;
   const ledgerEntry = appendFindingLedger(findingId, {
-    type: 'bugbounty_validation', validationType: type, result,
+    type: 'bugbounty_validation', validationType: type, result, conclusion: effectiveConclusion,
     evidence: evidence ? {
       provenance: evidence.provenance || null,
       validationScope: execution?.validationScope || null,
@@ -493,12 +499,13 @@ export function recordValidation(db, findingId, { type, command, result, rawOutp
     } : null,
     ts,
   });
-  return { findingId, correlationId: investigationIdFor(findingId), type, result, ts, ledgerHash: ledgerEntry.hash };
+  return { findingId, correlationId: investigationIdFor(findingId), type, result, conclusion: effectiveConclusion, ts, ledgerHash: ledgerEntry.hash };
 }
 
 export function listValidations(db, findingId) {
   return db.prepare('SELECT * FROM validations WHERE finding_id = ? ORDER BY ts ASC').all(findingId).map((row) => ({
     ...row,
+    conclusion: validationConclusion(row),
     evidence: row.evidence_json ? JSON.parse(row.evidence_json) : null,
   }));
 }
@@ -924,7 +931,7 @@ function deploymentEvidenceToExport(row) {
 }
 
 function validationToExport(row) {
-  return { type: row.type, command: row.command, result: row.result, rawOutput: row.raw_output, evidence: row.evidence || null, ts: row.ts };
+  return { type: row.type, command: row.command, result: row.result, conclusion: validationConclusion(row), rawOutput: row.raw_output, evidence: row.evidence || null, ts: row.ts };
 }
 
 function reportToExport(row) {

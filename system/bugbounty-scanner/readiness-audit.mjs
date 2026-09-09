@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openDb, closeDb, listFindings } from './db.mjs';
-import { getReviewValidityReason, loadProgramPolicyStrict } from './program-policy.mjs';
+import { getBlockReason, getReviewValidityReason, loadProgramPolicyStrict } from './program-policy.mjs';
 import { runToolchainDoctor } from './toolchain-doctor.mjs';
 import { verifyChain } from '../ledger/ledger.mjs';
 import { TARGETS } from './targets.mjs';
@@ -90,6 +90,7 @@ export function runReadinessAudit({
   const queuePath = path.join(repoRoot, 'research', 'bugbounty', 'queue.jsonl');
   const dbPath = path.join(repoRoot, 'research', 'bugbounty', 'zerotoone.db');
   const policyPath = path.join(repoRoot, 'research', 'bugbounty', 'program-policy.json');
+  const monitorRegistryPath = path.join(repoRoot, 'research', 'bugbounty', 'authorized-monitor-targets.json');
 
   const queue = existsSync(queuePath) ? auditQueueText(readFileSync(queuePath, 'utf8')) : null;
   checks.push(check('queue_parse', !!queue && queue.invalidLines.length === 0, 'critical', queue ? `${queue.invalidLines.length} linha(s) inválida(s)` : 'queue.jsonl ausente'));
@@ -135,6 +136,39 @@ export function runReadinessAudit({
     expiredReviews.length > 0
       ? expiredReviews.map((item) => `${item.program}: ${item.reason}`).join('; ')
       : 'todas as liberações de pesquisa têm revisão de RoE vigente',
+  ));
+
+  let monitorRegistryIssue = null;
+  let monitorRegistryCount = 0;
+  try {
+    if (!existsSync(monitorRegistryPath)) throw new Error('authorized-monitor-targets.json ausente; rode a descoberta');
+    const registry = JSON.parse(readFileSync(monitorRegistryPath, 'utf8'));
+    if (registry?.schemaVersion !== 1 || !Array.isArray(registry.repositories)) throw new Error('schemaVersion=1 e repositories[] são obrigatórios');
+    const generatedMs = Date.parse(registry.generatedAt);
+    const nowMs = now instanceof Date ? now.getTime() : Number(now);
+    if (!Number.isFinite(generatedMs) || !Number.isFinite(nowMs) || generatedMs > nowMs + 300000 || nowMs - generatedMs > 48 * 3600000) {
+      throw new Error('registro sem timestamp válido ou mais velho que 48 horas');
+    }
+    const keys = new Set();
+    for (const repository of registry.repositories) {
+      const key = `${repository?.owner || ''}/${repository?.repo || ''}`.toLowerCase();
+      if (!/^[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(key) || keys.has(key) || !Array.isArray(repository.programs) || repository.programs.length === 0) {
+        throw new Error(`entrada inválida ou duplicada: ${key}`);
+      }
+      keys.add(key);
+      for (const item of repository.programs) {
+        const program = typeof item === 'string' ? item : item?.program;
+        const reason = getBlockReason(program, policy || {}, { now });
+        if (reason) throw new Error(`${key}: programa ${program || '(ausente)'} não está autorizado: ${reason}`);
+      }
+    }
+    monitorRegistryCount = keys.size;
+  } catch (error) {
+    monitorRegistryIssue = error.message;
+  }
+  checks.push(check(
+    'authorized_monitor_registry', !monitorRegistryIssue, 'critical',
+    monitorRegistryIssue || `${monitorRegistryCount} repositório(s) autorizado(s), registro vigente e sem duplicatas`,
   ));
 
   try {

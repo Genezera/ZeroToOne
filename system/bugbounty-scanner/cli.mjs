@@ -27,6 +27,8 @@ import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { buildResearchPlan } from './research-plan.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
+import { localRootCauseCollisions } from './finding-identity.mjs';
+import { validationSupports } from './validation-semantics.mjs';
 
 // CLI que dá ao agente de nuvem (só Bash/Read/Write/Edit/Glob/Grep, sem
 // acesso MCP ao banco) uma forma estruturada de mudar estado — em vez de
@@ -132,12 +134,12 @@ export function cmdTransition(db, id, toState, actor, context, {
   return recordTransition(db, id, toState, { actor, context });
 }
 
-export function cmdRecordValidation(db, id, { type, result, command, output, evidence = null }) {
+export function cmdRecordValidation(db, id, { type, result, conclusion, command, output, evidence = null }) {
   if (type === 'isolated_regression' || evidence?.provenance === 'regression-sandbox'
       || type === 'prior_art_search' || evidence?.provenance === 'prior-art-search') {
     throw new Error('evidência reservada de executor; use verify-regression ou search-prior-art --finding-id=... para executar e registrar a evidência');
   }
-  return recordValidation(db, id, { type, result, command, rawOutput: output, evidence });
+  return recordValidation(db, id, { type, result, conclusion, command, rawOutput: output, evidence });
 }
 
 export async function cmdSearchPriorArt(db, id, config, {
@@ -229,7 +231,7 @@ export function cmdPipelineStatus(db, { programPolicy = loadProgramPolicyStrict(
         break;
       case 'corroborated_static': {
         const validations = listValidations(db, f.id);
-        if (validations.some((v) => v.result === 'pass')) blocker = 'PoC já passou -- pronto pra tentar reproduced_local';
+        if (validations.some(validationSupports)) blocker = 'PoC sustenta a hipótese -- pronto pra tentar reproduced_local';
         else if (validations.some((v) => v.result === 'not_applicable')) blocker = `sem validador local pra tipo/linguagem "${f.language}" -- bloqueio estrutural (não falta de esforço), ver README`;
         else blocker = 'PoC ainda não foi rodada pra este achado';
         break;
@@ -290,13 +292,14 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   const learned = duplicateHistoryForFinding(finding, submissions);
   const portfolio = computeStatsFromSubmissions(submissions);
   const recordedCodeAge = latestCodeAgeEvidence(db, id);
+  const localIdentity = localRootCauseCollisions(finding, listFindings(db));
   const requestedProof = patch.noveltyProof?.kind === 'verified_regression'
     ? patch.noveltyProof
     : null;
   const regressionAttestation = requestedProof
     ? [...listValidations(db, id)].reverse().find((validation) => (
         validation.type === 'isolated_regression'
-        && validation.result === 'pass'
+        && validationSupports(validation)
         && validation.evidence?.provenance === 'regression-sandbox'
         && isDeepStrictEqual(validation.evidence?.noveltyProof, requestedProof)
       )) || null
@@ -304,7 +307,7 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
   const attestedNoveltyProof = regressionAttestation ? requestedProof : null;
   const priorArtValidation = [...listValidations(db, id)].reverse().find((validation) => (
     validation.type === 'prior_art_search'
-    && validation.result === 'pass'
+    && validationSupports(validation)
     && validation.evidence?.provenance === 'prior-art-search'
     && validation.evidence?.attestation
   )) || null;
@@ -328,6 +331,9 @@ export function cmdRecordDuplicateCheck(db, id, patch) {
     portfolioDuplicateRate: portfolio.duplicateRate,
     foundPublicMatch: patch.foundExisting === true,
     regressionAfterVerifiedFix: Boolean(regressionAttestation),
+    localRootCauseFingerprint: localIdentity.rootCauseFingerprint,
+    localRootCauseIdentityComplete: localIdentity.ok,
+    localRootCauseCollisionIds: localIdentity.collisionIds,
     ...(recordedCodeAge ? {
       codeAgeDays: recordedCodeAge.codeAgeDays,
       codeAgeCommitSha: recordedCodeAge.lastCommitSha,
@@ -824,7 +830,7 @@ async function main() {
         printJson(cmdTransition(db, positional[0], positional[1], flags.actor || 'unknown', parseJsonFlag(flags, 'context')));
         break;
       case 'record-validation':
-        printJson(cmdRecordValidation(db, positional[0], { type: flags.type, result: flags.result, command: flags.command, output: flags.output, evidence: flags.evidence ? JSON.parse(flags.evidence) : null }));
+        printJson(cmdRecordValidation(db, positional[0], { type: flags.type, result: flags.result, conclusion: flags.conclusion, command: flags.command, output: flags.output, evidence: flags.evidence ? JSON.parse(flags.evidence) : null }));
         break;
       case 'record-deployment-evidence':
         printJson(cmdRecordDeploymentEvidence(db, positional[0], parseJsonFlag(flags, 'patch')));

@@ -58,6 +58,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 const DISCOVERED_PATH = path.join(BUGBOUNTY_DIR, 'discovered-targets.json');
+export const AUTHORIZED_MONITOR_TARGETS_PATH = path.join(BUGBOUNTY_DIR, 'authorized-monitor-targets.json');
 const SEEN_METADATA_PATH = path.join(BUGBOUNTY_DIR, 'discovery-metadata-seen.json');
 const AUTO_PROMOTED_MODULE_PATH = path.join(__dirname, 'targets-auto-promoted.mjs');
 const PROMOTION_LOG_PATH = path.join(BUGBOUNTY_DIR, 'targets-auto-promoted-log.json');
@@ -127,6 +128,21 @@ export async function runDiscovery({ metadataOnly = false } = {}) {
       null,
       2
     ),
+    'utf8'
+  );
+
+  // Separate from `discovered-targets.json`: that file is intentionally
+  // capped by the metadata-enrichment budget.  The monitor registry must not
+  // inherit that cap or we would miss recent regressions in large/unsupported
+  // but explicitly authorized repositories.
+  writeFileSync(
+    AUTHORIZED_MONITOR_TARGETS_PATH,
+    `${JSON.stringify({
+      schemaVersion: 1,
+      generatedAt: new Date().toISOString(),
+      source: 'arkadiyt/bounty-targets-data + local program-policy allowlist',
+      repositories: result.authorizedMonitorCandidates,
+    }, null, 2)}\n`,
     'utf8'
   );
 

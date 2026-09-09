@@ -9,7 +9,7 @@
 // | E0   | Só padrão textual, nenhum arquivo lido                  |
 // | E1   | 1 arquivo lido, confirma condição suspeita isolada      |
 // | E2   | 2+ arquivos lidos (cadeia cross-file) OU corroborated_static |
-// | E3   | Validação real com result="pass" OU reproduced_local+   |
+// | E3   | Validação real com conclusion="supports" OU reproduced_local+ |
 // | E4   | Regressão end-to-end em sandbox isolado, com imagem e     |
 // |      | baseline/candidate registrados                            |
 // | E5   | Resultado real de plataforma: triaged/paid/resolved      |
@@ -23,6 +23,8 @@
 // duplicate) came back E2 before this fix, even though it has a real
 // passing Go-test PoC -- its CURRENT state ("duplicate") just wasn't in
 // the set, so the check silently fell through to the file-count rule.
+import { validationSupports } from './validation-semantics.mjs';
+
 const E3_PLUS_STATES = new Set([
   'reproduced_local', 'scope_verified', 'human_ready', 'submitted',
   'triaged', 'duplicate', 'informative', 'rejected', 'paid', 'resolved',
@@ -51,7 +53,7 @@ export function computeEvidenceGrade({ state, filesReadCount = 0, hasPassingVali
 export function isIsolatedEndToEndValidation(validation, { expectedNoveltyProof = null } = {}) {
   const proof = validation?.evidence?.noveltyProof;
   const execution = proof?.execution;
-  if (!(validation?.result === 'pass'
+  if (!(validationSupports(validation)
     && validation?.type === 'isolated_regression'
     && validation?.evidence?.provenance === 'regression-sandbox'
     && execution?.validationScope === 'end_to_end'
@@ -75,7 +77,7 @@ export function explainGrade(grade) {
     E0: 'Só padrão textual — nenhum arquivo real lido ainda.',
     E1: 'Um arquivo real lido, confirma condição suspeita isolada.',
     E2: 'Cadeia cross-file confirmada (2+ arquivos) ou marcado corroborated_static.',
-    E3: 'Reprodução determinística local real (validação com result=pass) ou avançado além disso.',
+    E3: 'Reprodução determinística local real (validação com conclusion=supports) ou avançado além disso.',
     E4: 'Regressão reproduzida end-to-end em sandbox isolado, com imagem, baseline e candidate registrados.',
     E5: 'Validado por resultado real de plataforma (triaged, paid ou resolved).',
   };
@@ -88,7 +90,7 @@ export function getEvidenceGrade(db, findingId, { getFinding, listValidations, l
   const finding = getFinding(db, findingId);
   if (!finding) return null;
   const validations = listValidations(db, findingId) || [];
-  const hasPassingValidation = validations.some((v) => v.result === 'pass');
+  const hasPassingValidation = validations.some(validationSupports);
   const hasIsolatedEndToEndValidation = validations.some((validation) => isIsolatedEndToEndValidation(validation));
   const outcome = latestPlatformOutcome(db, findingId);
   return computeEvidenceGrade({

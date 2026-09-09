@@ -15,6 +15,7 @@
 // da fonte de dado — documentado, não escondido.
 
 import { listRepoFiles, fetchRawFile, isDependencyManifest } from './fetch-repo.mjs';
+import { filterFilesToChangedPaths } from './delta-file-selection.mjs';
 
 const OSV_BATCH_URL = 'https://api.osv.dev/v1/querybatch';
 const OSV_VULN_URL = 'https://api.osv.dev/v1/vulns/';
@@ -124,12 +125,16 @@ export function buildDependencyFinding(dep, vulnDetail, filePath, extraVulnCount
  * OSV.dev em lote, e retorna achados prontos pra entrar na fila. Reusa o
  * MESMO dict repoShas que o scan de código-fonte já usa — sem cache novo,
  * chave é o caminho do arquivo (manifesto e código-fonte nunca colidem). */
-export async function runDependencyScan(targets, repoShas) {
+export async function runDependencyScan(targets, repoShas, {
+  changedFilesByRepo = null, immutableRefsByRepo = null,
+} = {}) {
   let filesChecked = 0;
   let fetchErrors = 0;
   const findings = [];
 
   for (const target of targets) {
+    const repoKey = `${target.owner}/${target.repo}`;
+    const scanRef = immutableRefsByRepo?.get(repoKey.toLowerCase()) || target.branch;
     let files;
     try {
       // Propositalmente SEM target.pathPrefixes: manifesto de dependência
@@ -138,14 +143,17 @@ export async function runDependencyScan(targets, repoShas) {
       // no vercel/flags) — reusar o mesmo prefixo estreito perderia quase
       // todo manifesto real. O filtro por nome de arquivo logo abaixo já
       // mantém isso barato (só busca conteúdo do que bate no nome).
-      files = await listRepoFiles(target.owner, target.repo, target.branch);
+      files = await listRepoFiles(target.owner, target.repo, scanRef);
     } catch (err) {
       fetchErrors++;
       continue;
     }
     files = files.filter((f) => isDependencyManifest(f.path));
 
-    const repoKey = `${target.owner}/${target.repo}`;
+    if (changedFilesByRepo) {
+      const changedPaths = changedFilesByRepo.get(repoKey.toLowerCase()) || new Set();
+      files = filterFilesToChangedPaths(files, changedPaths);
+    }
     repoShas[repoKey] = repoShas[repoKey] || {};
 
     const depsWithSource = [];
@@ -153,7 +161,7 @@ export async function runDependencyScan(targets, repoShas) {
       if (repoShas[repoKey][file.path] === file.sha) continue; // sem mudança
       let source;
       try {
-        source = await fetchRawFile(target.owner, target.repo, target.branch, file.path);
+        source = await fetchRawFile(target.owner, target.repo, scanRef, file.path);
       } catch (err) {
         fetchErrors++;
         continue;

@@ -43,7 +43,12 @@ function withTempEnv(fn) {
   }
 }
 
-const SAMPLE = { id: 'p::f::fn::type', program: 'Circle BBP', type: 'reentrancy_risk', state: 'candidate', reasoning: 'achado inicial do scanner, ainda não investigado a fundo' };
+const SAMPLE = {
+  id: 'p::f::fn::type', program: 'Circle BBP', type: 'reentrancy_risk', state: 'candidate', repository:'acme/api', file:'src/Vault.sol',
+  weakness:'reentrancy', rootCause:'external call precedes state update', attackerInput:'withdraw amount', securitySink:'ether transfer',
+  missingControl:'checks effects interactions', expectedFix:'update balance before external call',
+  reasoning: 'achado inicial do scanner, ainda não investigado a fundo',
+};
 const INTRODUCED = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const PARENT = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const REGRESSION_PROOF = {

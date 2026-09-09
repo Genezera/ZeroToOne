@@ -2,9 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { transition, validTransitionsFrom, isTerminal, STATES, deriveStatesFromLedger } from '../state-machine.mjs';
 import { publicSearchEvidence, withPriorArtAttestation } from './fixtures/prior-art-evidence.mjs';
+import { findingIdentityQuality } from '../finding-identity.mjs';
 
 function finding(state, overrides = {}) {
-  return { id: 'x', program: 'Test Program', state, reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides };
+  return {
+    id: 'x', program: 'Test Program', state, repository:'acme/api', file:'src/auth.js', type:'authorization_bypass',
+    weakness:'authorization_bypass', rootCause:'ownership result ignored', attackerInput:'request object id',
+    securitySink:'record returned to caller', missingControl:'owner equality check', expectedFix:'reject mismatched owner',
+    reasoning: 'A função X faz Y sem checar Z, confirmado lendo o arquivo inteiro.', ...overrides,
+  };
 }
 
 const NOW = '2026-09-03T18:00:00Z';
@@ -34,7 +40,11 @@ const GOOD_DUPLICATE_CHECK = withPriorArtAttestation({
   queries: ['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR'],
   evidence: publicSearchEvidence(['função endpoint IDOR', 'missing ownership check', 'commit regression IDOR']),
   foundExisting: false, noveltyStatus: 'regression', riskScore: 20,
-  signals: { priorDuplicateSubmissions: 0 }, noveltyProof: REGRESSION_PROOF,
+  signals: {
+    priorDuplicateSubmissions: 0,
+    localRootCauseFingerprint: findingIdentityQuality(finding('scope_verified')).rootCauseFingerprint,
+    localRootCauseCollisionIds: [],
+  }, noveltyProof: REGRESSION_PROOF,
   ts: '2026-09-03T17:00:00Z',
 });
 const GOOD_E4_VALIDATION = {
@@ -115,6 +125,8 @@ test('corroborated_static -> reproduced_local exige validação com result=pass,
   assert.equal(naResult.ok, false);
   assert.match(naResult.reason, /Fase 2\/4/);
   assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'foundry_poc', result: 'pass', ts: '2026-08-30' }] }).ok, true);
+  assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'negative_test', result: 'pass', conclusion: 'refutes' }] }).ok, false);
+  assert.equal(transition(f, 'reproduced_local', { validations: [{ type: 'expected_failure_harness', result: 'fail', conclusion: 'supports' }] }).ok, true);
 });
 
 test('reproduced_local -> scope_verified exige scopeGateResult.allowed=true E deploymentEvidence high', () => {

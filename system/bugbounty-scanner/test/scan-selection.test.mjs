@@ -33,12 +33,14 @@ test('parseChangeContexts preserva proveniência verificável e recusa SHA incom
   const context = {
     repository: 'Vercel/Chat', previousSha: 'a'.repeat(40), introducedCommit: 'b'.repeat(40),
     parentCommit: 'a'.repeat(40), introducedAt: '2026-09-05T12:00:00Z', detectedAt: '2026-09-05T12:01:00Z',
-    branch: 'main', directSingleCommit: true, title: 'auth regression',
+    branch: 'main', directSingleCommit: true, title: 'auth regression', changedFiles: ['src/auth.js'],
   };
   const parsed = parseChangeContexts(JSON.stringify([context]));
   assert.equal(parsed.get('vercel/chat').introducedCommit, 'b'.repeat(40));
   assert.equal(parsed.get('vercel/chat').directSingleCommit, true);
+  assert.deepEqual(parsed.get('vercel/chat').changedFiles, ['src/auth.js']);
   assert.throws(() => parseChangeContexts(JSON.stringify([{ ...context, introducedCommit: 'short' }])), /completos/);
+  assert.throws(() => parseChangeContexts(JSON.stringify([{ ...context, changedFiles: undefined }])), /changedFiles/);
 });
 
 test('findingIdentity mantém scan rotineiro estável e versiona delta pelo commit', () => {
@@ -54,6 +56,7 @@ test('buildQueuedFinding carrega contexto completo e identidade versionada para 
   const finding = { program: 'P', file: 'owner/repo/a.js', function: 'handler', type: 'ssrf' };
   const changeContext = {
     repository: 'owner/repo', previousSha: 'a'.repeat(40), introducedCommit: 'b'.repeat(40),
+    changedFiles: ['a.js'],
   };
   const queued = buildQueuedFinding(finding, {
     changeContext, foundAt: '2026-09-05T12:02:00Z', historicalConfidence: { sample: 5 },

@@ -15,6 +15,12 @@ function writeHealthFixture(root) {
   ].join('\n'));
 }
 
+function writeMonitorRegistry(root, repositories = []) {
+  writeFileSync(path.join(root, 'research', 'bugbounty', 'authorized-monitor-targets.json'), JSON.stringify({
+    schemaVersion: 1, generatedAt: new Date().toISOString(), repositories,
+  }), 'utf8');
+}
+
 test('auditQueueText detecta JSON inválido, id ausente e duplicata', () => {
   const result = auditQueueText('{"id":"a"}\n{"id":"a"}\n{}\n{não-json\n');
   assert.deepEqual(result.duplicateIds, ['a']);
@@ -40,6 +46,7 @@ test('readiness audit consolida invariantes e mantém reports privados como limi
   mkdirSync(path.join(root, '.github', 'workflows'), { recursive: true });
   writeFileSync(path.join(root, 'research', 'bugbounty', 'queue.jsonl'), '', 'utf8');
   writeFileSync(path.join(root, 'research', 'bugbounty', 'program-policy.json'), '{}', 'utf8');
+  writeMonitorRegistry(root);
   const db = openDb(path.join(root, 'research', 'bugbounty', 'zerotoone.db'));
   closeDb(db);
   const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';
@@ -69,6 +76,7 @@ test('readiness cloud-primary passa ao doctor somente os requisitos realmente ob
   mkdirSync(path.join(root, '.github', 'workflows'), { recursive: true });
   writeFileSync(path.join(root, 'research', 'bugbounty', 'queue.jsonl'), '', 'utf8');
   writeFileSync(path.join(root, 'research', 'bugbounty', 'program-policy.json'), '{}', 'utf8');
+  writeMonitorRegistry(root);
   const db = openDb(path.join(root, 'research', 'bugbounty', 'zerotoone.db'));
   closeDb(db);
   const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';
@@ -110,6 +118,7 @@ test('readiness audit bloqueia uma liberação de pesquisa com revisão de RoE e
       policyUrl: 'https://example.test/program', reviewMethod: 'fixture_test',
     },
   }), 'utf8');
+  writeMonitorRegistry(root);
   const db = openDb(path.join(root, 'research', 'bugbounty', 'zerotoone.db'));
   closeDb(db);
   const workflow = 'on:\n  schedule:\n  workflow_dispatch:\npermissions:\n  contents: write\nconcurrency:\n  group: zerotoone-bugbounty-writer\n  cancel-in-progress: false\nsteps:\n  - uses: actions/checkout@' + 'a'.repeat(40) + '\n';

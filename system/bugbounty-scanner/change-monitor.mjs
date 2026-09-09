@@ -1,5 +1,5 @@
 import { githubFetch } from './github-auth.mjs';
-import { filterBannedTargets } from './program-policy.mjs';
+import { getBlockReason } from './program-policy.mjs';
 
 export const CHANGE_MONITOR_SCHEMA_VERSION = 1;
 
@@ -9,20 +9,26 @@ function repoKey(target) {
 
 /** Build one policy-safe repository list from all language target lists. */
 export function collectMonitoredRepositories(targetLists, programPolicy) {
-  const allowed = filterBannedTargets(Object.values(targetLists || {}).flat(), programPolicy);
   const byRepo = new Map();
-  for (const target of allowed) {
+  for (const target of Object.values(targetLists || {}).flat()) {
     if (!target?.owner || !target?.repo) continue;
+    const programNames = Array.isArray(target.programs)
+      ? target.programs.map((entry) => typeof entry === 'string' ? entry : entry?.program).filter(Boolean)
+      : [target.program].filter(Boolean);
+    // Fail closed for malformed/no-program entries and shared repositories:
+    // every associated program must still be allowed by today's policy.
+    if (programNames.length === 0 || programNames.some((program) => getBlockReason(program, programPolicy))) continue;
     const key = repoKey(target);
     const current = byRepo.get(key);
     if (!current) {
       byRepo.set(key, {
         owner: target.owner, repo: target.repo, branch: target.branch || null,
-        programs: [target.program], languages: [target.language].filter(Boolean),
+        programs: [...new Set(programNames)].sort(), languages: [target.language].filter(Boolean),
       });
       continue;
     }
-    if (target.program && !current.programs.includes(target.program)) current.programs.push(target.program);
+    for (const program of programNames) if (!current.programs.includes(program)) current.programs.push(program);
+    current.programs.sort();
     if (target.language && !current.languages.includes(target.language)) current.languages.push(target.language);
   }
   return [...byRepo.values()].sort((a, b) => repoKey(a).localeCompare(repoKey(b)));
@@ -56,10 +62,42 @@ export async function fetchRepositoryHead(target, { fetchImpl = fetch } = {}) {
   };
 }
 
+/** Resolve the actual paths changed between the last observed head and the
+ * new head.  A repository-level head change is not evidence that every
+ * uncached file changed.  GitHub caps the file list at 300; hitting that cap
+ * fails closed so an incomplete diff can never be labelled as a delta. */
+export async function fetchRepositoryChangedFiles(target, baseSha, headSha, { fetchImpl = fetch } = {}) {
+  if (!/^[0-9a-f]{40}$/i.test(baseSha || '') || !/^[0-9a-f]{40}$/i.test(headSha || '')) {
+    throw new Error('compare exige baseSha e headSha completos');
+  }
+  const url = `https://api.github.com/repos/${target.owner}/${target.repo}/compare/${baseSha}...${headSha}`;
+  const comparison = await githubJson(url, { fetchImpl });
+  if (!Array.isArray(comparison.files)) throw new Error('GitHub compare não devolveu lista de arquivos');
+  if (comparison.files.length >= 300) {
+    throw new Error('GitHub compare atingiu o limite de 300 arquivos; diff completo não comprovado');
+  }
+  const changedFiles = [];
+  const removedFiles = [];
+  for (const file of comparison.files) {
+    const filename = String(file?.filename || '').replaceAll('\\', '/');
+    if (!filename || filename.startsWith('/') || filename.split('/').includes('..') || /[\u0000\r\n]/.test(filename)) {
+      throw new Error('GitHub compare devolveu caminho inválido');
+    }
+    if (file.status === 'removed') removedFiles.push(filename);
+    else changedFiles.push(filename);
+  }
+  return {
+    changedFiles: [...new Set(changedFiles)].sort(),
+    removedFiles: [...new Set(removedFiles)].sort(),
+    compareUrl: comparison.html_url || null,
+  };
+}
+
 /** Poll only metadata. A changed head is not called a vulnerability; it is a
  * time-sensitive signal that tells the normal scanner to inspect the delta. */
 export async function pollRepositoryChanges(repositories, previousState = {}, {
   fetchHead = fetchRepositoryHead,
+  fetchChangedFiles = fetchRepositoryChangedFiles,
   now = () => new Date(),
   concurrency = 4,
 } = {}) {
@@ -81,6 +119,7 @@ export async function pollRepositoryChanges(repositories, previousState = {}, {
           ? { ...previous, programs: target.programs, languages: target.languages }
           : { ...head, observedAt, programs: target.programs, languages: target.languages };
         if (previous?.sha && previous.sha !== head.sha) {
+          const diff = await fetchChangedFiles(target, previous.sha, head.sha);
           changes.push({
             repository: key,
             programs: target.programs,
@@ -92,6 +131,9 @@ export async function pollRepositoryChanges(repositories, previousState = {}, {
             branch: head.branch,
             commitUrl: head.url,
             title: head.title,
+            changedFiles: diff.changedFiles,
+            removedFiles: diff.removedFiles,
+            compareUrl: diff.compareUrl,
             directSingleCommit: head.parentSha === previous.sha,
             detectedAt: observedAt,
           });

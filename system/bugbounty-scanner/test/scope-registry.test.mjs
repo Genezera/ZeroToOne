@@ -139,6 +139,18 @@ test('assetRefForFinding recupera owner/repo do ID quando asset e file são cami
   assert.equal(assetRefForFinding(finding), 'okx/go-wallet-sdk');
 });
 
+test('assetRefForFinding recupera owner/repo quando asset e file repetem o caminho qualificado do ID', () => {
+  const qualified = 'okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go';
+  assert.equal(assetRefForFinding({
+    id: `OKG::${qualified}::MultiKey.Verify::signature_verification_bypass`,
+    asset: qualified, file: qualified,
+  }), 'okx/go-wallet-sdk');
+  assert.equal(assetRefForFinding({
+    id: 'P::api.example.com/v1/handler.js::handler::risk',
+    asset: 'api.example.com/v1/handler.js', file: 'api.example.com/v1/handler.js',
+  }), 'api.example.com/v1/handler.js');
+});
+
 test('assetRefForFinding não inventa repositório quando o ID contém apenas o caminho relativo', () => {
   assert.equal(assetRefForFinding({
     id: 'Circle BBP::src/Vault.sol::withdraw::static_finding',

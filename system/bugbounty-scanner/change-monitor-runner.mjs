@@ -16,10 +16,27 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BUGBOUNTY_DIR = path.join(REPO_ROOT, 'research', 'bugbounty');
 export const DEFAULT_CHANGE_STATE_PATH = path.join(BUGBOUNTY_DIR, 'change-monitor-state.json');
 export const DEFAULT_CHANGE_EVENTS_PATH = path.join(BUGBOUNTY_DIR, 'change-events.jsonl');
+export const DEFAULT_AUTHORIZED_MONITOR_TARGETS_PATH = path.join(BUGBOUNTY_DIR, 'authorized-monitor-targets.json');
 
 function loadJson(filePath, fallback) {
   if (!existsSync(filePath)) return fallback;
   try { return JSON.parse(readFileSync(filePath, 'utf8')); } catch { return fallback; }
+}
+
+export function loadAuthorizedMonitorTargets(filePath = DEFAULT_AUTHORIZED_MONITOR_TARGETS_PATH) {
+  if (!existsSync(filePath)) return [];
+  let parsed;
+  try { parsed = JSON.parse(readFileSync(filePath, 'utf8')); }
+  catch (error) { throw new Error(`registro de monitoramento autorizado inválido: ${error.message}`); }
+  if (parsed?.schemaVersion !== 1 || !Array.isArray(parsed.repositories)) {
+    throw new Error('registro de monitoramento autorizado precisa de schemaVersion=1 e repositories[]');
+  }
+  for (const entry of parsed.repositories) {
+    if (!/^[A-Za-z0-9._-]+$/.test(entry?.owner || '') || !/^[A-Za-z0-9._-]+$/.test(entry?.repo || '') || !Array.isArray(entry.programs)) {
+      throw new Error('registro de monitoramento autorizado contém repositório inválido');
+    }
+  }
+  return parsed.repositories;
 }
 
 export function buildDeltaScanEnvironment(changes = [], baseEnv = process.env) {
@@ -44,6 +61,7 @@ function defaultScan(changes = []) {
 export async function runChangeMonitor({
   statePath = DEFAULT_CHANGE_STATE_PATH,
   eventsPath = DEFAULT_CHANGE_EVENTS_PATH,
+  authorizedMonitorTargetsPath = DEFAULT_AUTHORIZED_MONITOR_TARGETS_PATH,
   pull = pullLatest,
   publish = commitAndPush,
   scan = defaultScan,
@@ -60,7 +78,8 @@ export async function runChangeMonitor({
 } = {}) {
   const synced = pull(REPO_ROOT, log);
   if (!synced.ok) throw new Error(`preflight do change monitor falhou: ${synced.reason}`);
-  const repositories = collectMonitoredRepositories(targetLists, policy);
+  const authorizedMonitorTargets = loadAuthorizedMonitorTargets(authorizedMonitorTargetsPath);
+  const repositories = collectMonitoredRepositories({ ...targetLists, authorizedMonitorTargets }, policy);
   const previousState = loadJson(statePath, { schemaVersion: 1, repos: {} });
   const result = await poll(repositories, previousState);
   if (!result.ok) {
