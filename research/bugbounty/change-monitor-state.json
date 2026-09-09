@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T15:00:54.292Z",
+  "checkedAt": "2026-09-09T15:10:43.291Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "9db9b8eff110535e814496d659943ee3bfa59af1",
+      "sha": "6caa786072d99c570bb93bd2a3c4e6fb061dda6d",
       "branch": "canary",
-      "parentSha": "f17979b00d9634a27684fb7bcf2c6c1456001c3f",
-      "committedAt": "2026-09-09T14:57:10Z",
-      "url": "https://github.com/vercel/next.js/commit/9db9b8eff110535e814496d659943ee3bfa59af1",
-      "title": "Remove `tsec` (#98423)",
-      "observedAt": "2026-09-09T15:00:54.292Z",
+      "parentSha": "b145ad6f3fc13547e44db042ea6f3857c812206d",
+      "committedAt": "2026-09-09T15:08:14Z",
+      "url": "https://github.com/vercel/next.js/commit/6caa786072d99c570bb93bd2a3c4e6fb061dda6d",
+      "title": "Typecheck the Turbopack ECMAScript runtime in CI (#98422)",
+      "observedAt": "2026-09-09T15:10:43.291Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "ef4677219f6d31911aff5a0c5aa953c53e12c40b",
+      "sha": "ba822e158c90b2638574e6a8edf810405d54441c",
       "branch": "main",
-      "parentSha": "4db9ca09bdac8cc0f8ece533cc480c10947f7bc1",
-      "committedAt": "2026-09-09T15:00:21Z",
-      "url": "https://github.com/vercel/turborepo/commit/ef4677219f6d31911aff5a0c5aa953c53e12c40b",
-      "title": "perf: Compute Devtools graph depths without rescanning every edge (#14001)",
-      "observedAt": "2026-09-09T15:00:54.292Z",
+      "parentSha": "06f59004ba50fabd4c582230ed076ee909fb85fc",
+      "committedAt": "2026-09-09T15:04:50Z",
+      "url": "https://github.com/vercel/turborepo/commit/ba822e158c90b2638574e6a8edf810405d54441c",
+      "title": "perf: Borrow workspace entries during dependency lookup (#14002)",
+      "observedAt": "2026-09-09T15:10:43.291Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1523,13 +1523,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "8a91d18d0dfdb142c68b0635bc7e5446a5b08403",
+      "sha": "9a5660fbd64165e41f6b346407b1c0a099a8123b",
       "branch": "main",
-      "parentSha": "9a9af618f7e5e9d5a27fb8682860c736c7980dae",
-      "committedAt": "2026-09-08T22:19:32Z",
-      "url": "https://github.com/vercel/workflow/commit/8a91d18d0dfdb142c68b0635bc7e5446a5b08403",
-      "title": "[core] Add the wake-loop scenario to the event log race repro (#4017)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "8a91d18d0dfdb142c68b0635bc7e5446a5b08403",
+      "committedAt": "2026-09-09T15:01:25Z",
+      "url": "https://github.com/vercel/workflow/commit/9a5660fbd64165e41f6b346407b1c0a099a8123b",
+      "title": "fix(world-local): retry JSON reads on Windows (#4051)",
+      "observedAt": "2026-09-09T15:10:43.291Z",
       "programs": [
         "Vercel Open Source"
       ],
