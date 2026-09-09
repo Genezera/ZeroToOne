@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T03:20:59.911Z",
+  "checkedAt": "2026-09-09T03:31:00.219Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -139,13 +139,13 @@
       "languages": []
     },
     "kubernetes/api": {
-      "sha": "6ea44dd2d228bf2efe3f68bd9fbeabc496af9d28",
+      "sha": "af6be35874c3d671d273412b599e57becf26b4b5",
       "branch": "master",
-      "parentSha": "8546a82b981b3fe1dc69100f02c8404f5c1a16f6",
-      "committedAt": "2026-09-08T21:53:30Z",
-      "url": "https://github.com/kubernetes/api/commit/6ea44dd2d228bf2efe3f68bd9fbeabc496af9d28",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "6ea44dd2d228bf2efe3f68bd9fbeabc496af9d28",
+      "committedAt": "2026-09-09T01:53:32Z",
+      "url": "https://github.com/kubernetes/api/commit/af6be35874c3d671d273412b599e57becf26b4b5",
+      "title": "Merge pull request #137030 from darshansreenivas/dtumkur-DRA-certificate-usage",
+      "observedAt": "2026-09-09T03:31:00.219Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "adefdf084620a8fb36d66f476e514958ba9abb51",
+      "sha": "8e3ccfcb32417864b3e139ccdff1c76abfa91d94",
       "branch": "main",
-      "parentSha": "d74fdb46c4886e36227c21717c73655fc7761242",
-      "committedAt": "2026-09-09T00:31:12Z",
-      "url": "https://github.com/vercel/eve/commit/adefdf084620a8fb36d66f476e514958ba9abb51",
-      "title": "Add related resources to integration pages (#3013)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "adefdf084620a8fb36d66f476e514958ba9abb51",
+      "committedAt": "2026-09-09T03:22:22Z",
+      "url": "https://github.com/vercel/eve/commit/8e3ccfcb32417864b3e139ccdff1c76abfa91d94",
+      "title": "feat(self-modification): configure production proposals (#2870)",
+      "observedAt": "2026-09-09T03:31:00.219Z",
       "programs": [
         "Vercel Open Source"
       ],
