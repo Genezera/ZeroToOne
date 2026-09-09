@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T06:11:17.328Z",
+  "checkedAt": "2026-09-09T07:30:43.660Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -139,13 +139,13 @@
       "languages": []
     },
     "kubernetes/api": {
-      "sha": "af6be35874c3d671d273412b599e57becf26b4b5",
+      "sha": "baf48de52220941c0253fe70ff07b1e38576b86a",
       "branch": "master",
-      "parentSha": "6ea44dd2d228bf2efe3f68bd9fbeabc496af9d28",
-      "committedAt": "2026-09-09T01:53:32Z",
-      "url": "https://github.com/kubernetes/api/commit/af6be35874c3d671d273412b599e57becf26b4b5",
-      "title": "Merge pull request #137030 from darshansreenivas/dtumkur-DRA-certificate-usage",
-      "observedAt": "2026-09-09T03:31:00.219Z",
+      "parentSha": "af6be35874c3d671d273412b599e57becf26b4b5",
+      "committedAt": "2026-09-09T05:53:18Z",
+      "url": "https://github.com/kubernetes/api/commit/baf48de52220941c0253fe70ff07b1e38576b86a",
+      "title": "Merge pull request #141086 from mohitdebian/fix-eventseries-atomic-openapi",
+      "observedAt": "2026-09-09T07:30:43.660Z",
       "programs": [
         "Kubernetes"
       ],
@@ -221,13 +221,13 @@
       ]
     },
     "kubernetes/client-go": {
-      "sha": "606fbc4789101e1a19f0c8ab780ac8ae71448bb0",
+      "sha": "0a0bbf644072718686bd0753cbad889919f073ba",
       "branch": "master",
-      "parentSha": "ef913e2920bb9a9442349b270f2c8fee782845d6",
-      "committedAt": "2026-09-08T21:59:33Z",
-      "url": "https://github.com/kubernetes/client-go/commit/606fbc4789101e1a19f0c8ab780ac8ae71448bb0",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "606fbc4789101e1a19f0c8ab780ac8ae71448bb0",
+      "committedAt": "2026-09-09T05:59:30Z",
+      "url": "https://github.com/kubernetes/client-go/commit/0a0bbf644072718686bd0753cbad889919f073ba",
+      "title": "Merge pull request #141086 from mohitdebian/fix-eventseries-atomic-openapi",
+      "observedAt": "2026-09-09T07:30:43.660Z",
       "programs": [
         "Kubernetes"
       ],
@@ -853,13 +853,13 @@
       "languages": []
     },
     "kubernetes/org": {
-      "sha": "3f483e538332a116ab8fc7bbb1c97dc944937dab",
+      "sha": "83b06f7a57a57c2648e6bf363f3b6e7af4ae9af1",
       "branch": "main",
-      "parentSha": "4669f4b3009c82d54f2904657a868219e95f935f",
-      "committedAt": "2026-09-08T20:16:35Z",
-      "url": "https://github.com/kubernetes/org/commit/3f483e538332a116ab8fc7bbb1c97dc944937dab",
-      "title": "Merge pull request #6617 from kernel-kun/remove-1.37-shadows-from-sig-docs-team",
-      "observedAt": "2026-09-08T21:27:51.667Z",
+      "parentSha": "3f483e538332a116ab8fc7bbb1c97dc944937dab",
+      "committedAt": "2026-09-09T07:22:35Z",
+      "url": "https://github.com/kubernetes/org/commit/83b06f7a57a57c2648e6bf363f3b6e7af4ae9af1",
+      "title": "Merge pull request #6527 from tiny-li/patch-1",
+      "observedAt": "2026-09-09T07:30:43.660Z",
       "programs": [
         "Kubernetes"
       ],
