@@ -27,13 +27,13 @@ CWE-352-adjacent (Cross-Site Request Forgery) applied to an OAuth2 authorization
 
 ## Prerequisites
 - Attacker: any ordinary, already-authenticated Mattermost user — no special privilege, admin role, or existing Jira connection required.
-- Victim: any Mattermost user who has (or is willing to set up) a Jira Cloud connection via this plugin, and who can be persuaded to click a link while logged into Mattermost.
+- Victim: any Mattermost user willing to click a link and complete an OAuth consent screen believing they are connecting their own Jira account. Notably, the victim does **not** need an active Mattermost session at the time — `httpOAuth2Complete` never checks any Mattermost identity or cookie, so the click can happen from any browser, logged into Mattermost or not.
 - No access to any secret, token, or credential belonging to the victim is needed at any point.
 
 ## Steps to reproduce (real-world scenario)
 1. The attacker, authenticated as themselves, triggers the plugin's normal "connect your Jira account" flow (`/user/connect`). This mints a `state` value of the form `<randomSecret>_<attackerMattermostId>` and returns an Atlassian authorization URL carrying that `state`.
 2. The attacker does **not** complete the flow themselves. Instead, they send that Atlassian authorization URL to the victim (e.g., "click here to connect your Jira account to Mattermost").
-3. The victim, logged into Mattermost, clicks the link and lands on Atlassian's real, genuine OAuth consent screen. Believing they are connecting their own account, they authorize with their own real Jira account.
+3. The victim clicks the link and lands on Atlassian's real, genuine OAuth consent screen. Believing they are connecting their own account, they authorize with their own real Jira account. No active Mattermost session is required at this step — the click can happen from any browser.
 4. Atlassian redirects the victim's browser back to Mattermost's `.../oauth2/complete.html?code=<victim-authorized-code>&state=<attacker's unchanged state>`.
 5. Because this endpoint requires no session and never reads the `state`'s embedded id against anything but its own one-time-secret store, it exchanges the victim-authorized `code` for a real token and links the resulting Jira identity — the victim's real account — under the **attacker's** Mattermost id.
 6. The attacker's Mattermost account can now run `/jira` slash commands (search, comment, create, transition, share-publicly) that execute against Jira using the victim's real, live token and permissions.
