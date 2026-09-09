@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T03:31:00.219Z",
+  "checkedAt": "2026-09-09T03:40:56.833Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "8e3ccfcb32417864b3e139ccdff1c76abfa91d94",
+      "sha": "249048038587495275430eee2767ff785fb3ccb3",
       "branch": "main",
-      "parentSha": "adefdf084620a8fb36d66f476e514958ba9abb51",
-      "committedAt": "2026-09-09T03:22:22Z",
-      "url": "https://github.com/vercel/eve/commit/8e3ccfcb32417864b3e139ccdff1c76abfa91d94",
-      "title": "feat(self-modification): configure production proposals (#2870)",
-      "observedAt": "2026-09-09T03:31:00.219Z",
+      "parentSha": "97fccacfe4c79b4435273b1d177d21a2df29e22a",
+      "committedAt": "2026-09-09T03:39:21Z",
+      "url": "https://github.com/vercel/eve/commit/249048038587495275430eee2767ff785fb3ccb3",
+      "title": "feat(self-modification): prepare production proposal workspaces (#2871)",
+      "observedAt": "2026-09-09T03:40:56.833Z",
       "programs": [
         "Vercel Open Source"
       ],
