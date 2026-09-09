@@ -12,6 +12,7 @@ import {
   bindRecipesToPlan, createEvidenceExecutor, emptyEvidenceState, inspectGitFileAge,
   reconcileWorkOrders, runEvidenceCycle,
 } from '../evidence-worker.mjs';
+import { repositoryRelativePathForFinding } from '../outcome-intelligence.mjs';
 
 const NOW = new Date('2026-09-07T12:00:00Z');
 const POLICY = { P: { roeReviewed: true, nextReviewAt: '2099-01-01' } };
@@ -102,6 +103,11 @@ test('inspectGitFileAge usa somente metadado git e mede o último toque do camin
     assert.equal(result.method, 'git_log_follow_latest_path_commit');
     assert.equal(calls.some((args) => args.includes('--follow')), true);
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('caminho legado qualificado vira relativo ao checkout sem alterar caminho moderno', () => {
+  assert.equal(repositoryRelativePathForFinding({ repository:'okx/go-wallet-sdk', file:'okx/go-wallet-sdk/coins/aptos/key.go' }), 'coins/aptos/key.go');
+  assert.equal(repositoryRelativePathForFinding({ repository:'okx/go-wallet-sdk', file:'coins/aptos/key.go' }), 'coins/aptos/key.go');
 });
 
 test('executor revalida política e atualiza escopo oficial antes de concluir', async () => withDb(async (db) => {

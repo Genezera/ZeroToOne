@@ -6,6 +6,16 @@ export function repositoryFromFinding(finding = {}) {
   return parts.length >= 2 ? `${parts[0]}/${parts[1]}`.toLowerCase() : value.toLowerCase();
 }
 
+/** Convert legacy qualified files (`owner/repo/path`) to the path expected
+ * inside a checkout while leaving already-relative paths unchanged. */
+export function repositoryRelativePathForFinding(finding = {}) {
+  const repository = repositoryFromFinding(finding);
+  let file = String(finding.file || finding.raw?.file || '').replaceAll('\\', '/').replace(/^\/+/, '');
+  if (file.toLowerCase().startsWith('github.com/')) file = file.slice('github.com/'.length);
+  const prefix = `${repository}/`;
+  return file.toLowerCase().startsWith(prefix) ? file.slice(prefix.length) : file;
+}
+
 export function programKey(value) {
   return String(value || 'unknown').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }

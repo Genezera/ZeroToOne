@@ -14,7 +14,7 @@ import { pullLatest, commitAndPush } from './git-sync.mjs';
 import { getBlockReason, loadProgramPolicyStrict } from './program-policy.mjs';
 import { migrateAll } from './migrate-to-v2.mjs';
 import { MAX_VERIFIED_REGRESSION_AGE_MS } from './novelty-risk.mjs';
-import { repositoryFromFinding } from './outcome-intelligence.mjs';
+import { repositoryFromFinding, repositoryRelativePathForFinding } from './outcome-intelligence.mjs';
 import { verifyRegression } from './regression-sandbox.mjs';
 import { acquireLease, replaceFileAtomic } from './runtime-state.mjs';
 import { assetRefForFinding, loadSnapshot, scopeGate } from './scope-registry.mjs';
@@ -29,6 +29,7 @@ export const DEFAULT_EVIDENCE_STATE_PATH = path.join(BUGBOUNTY_DIR, 'evidence-wo
 export const DEFAULT_EVIDENCE_RECIPES_PATH = path.join(BUGBOUNTY_DIR, 'evidence-recipes.json');
 export const DEFAULT_EVIDENCE_LOCK_PATH = path.join(REPO_ROOT, 'logs', 'bugbounty-evidence-worker.lock');
 export const EVIDENCE_STATE_SCHEMA_VERSION = 1;
+export const EVIDENCE_EXECUTOR_SCHEMA_VERSION = 2;
 
 const DAY_MS = 86400000;
 const MAX_RUN_HISTORY = 50;
@@ -87,12 +88,13 @@ export function loadEvidenceRecipes(recipesPath = DEFAULT_EVIDENCE_RECIPES_PATH)
 
 function taskIdentity(item) {
   const inputDigest = digest({
+    executorSchemaVersion: EVIDENCE_EXECUTOR_SCHEMA_VERSION,
     findingId: item.id, state: item.state, action: item.action,
     reason: item.reason, missingEvidence: item.missingEvidence || null,
     evidenceRecipeDigest: item.evidenceRecipeDigest || null,
   });
   return {
-    taskId: `evidence:v1:${digest([item.id, item.action, inputDigest])}`,
+    taskId: `evidence:v${EVIDENCE_EXECUTOR_SCHEMA_VERSION}:${digest([item.id, item.action, inputDigest])}`,
     inputDigest,
   };
 }
@@ -372,7 +374,7 @@ export function createEvidenceExecutor({
     if (order.action === 'measure_code_age' || order.action === 'establish_novelty') {
       let age = latestCodeAgeEvidence(db, finding.id);
       if (!isTrustedPathTouchEvidence(age)) {
-        const inspected = inspectAge({ repository: repositoryFromFinding(finding), file: finding.file });
+        const inspected = inspectAge({ repository: repositoryFromFinding(finding), file: repositoryRelativePathForFinding(finding) });
         age = recordAge(db, finding.id, {
           repository: inspected.repository, path: inspected.file, ref: null,
           lastCommitSha: inspected.latestTouchCommit, lastCommitDate: inspected.latestTouchAt,
