@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T16:10:44.004Z",
+  "checkedAt": "2026-09-09T16:30:56.630Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "216383484c6f5bf382ef5df1561b7ceefe959c9d",
+      "sha": "cb252f9f946c417bd430498eb8927f3647bd08f7",
       "branch": "master",
-      "parentSha": "bea9b4681aa7928045674199f23c9e80745b3320",
-      "committedAt": "2026-09-09T10:56:34Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/216383484c6f5bf382ef5df1561b7ceefe959c9d",
-      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#3199)",
-      "observedAt": "2026-09-09T11:01:26.390Z",
+      "parentSha": "216383484c6f5bf382ef5df1561b7ceefe959c9d",
+      "committedAt": "2026-09-09T16:24:32Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/cb252f9f946c417bd430498eb8927f3647bd08f7",
+      "title": "Change Chart release process (#3195)",
+      "observedAt": "2026-09-09T16:30:56.630Z",
       "programs": [
         "Kubernetes"
       ],
