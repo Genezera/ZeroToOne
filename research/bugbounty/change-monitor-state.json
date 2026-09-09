@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T11:20:40.094Z",
+  "checkedAt": "2026-09-09T11:26:13.291Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -180,13 +180,13 @@
       ]
     },
     "kubernetes/apiserver": {
-      "sha": "ed7191e948773c5a2f1e99453739cb13f07b946f",
+      "sha": "44b52574aca5af381e805e11546c352e93bc4524",
       "branch": "master",
-      "parentSha": "7f77725d73d3b024d3ba2d23a6104f6be3ba1984",
-      "committedAt": "2026-09-08T22:26:56Z",
-      "url": "https://github.com/kubernetes/apiserver/commit/ed7191e948773c5a2f1e99453739cb13f07b946f",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "ed7191e948773c5a2f1e99453739cb13f07b946f",
+      "committedAt": "2026-09-09T10:20:13Z",
+      "url": "https://github.com/kubernetes/apiserver/commit/44b52574aca5af381e805e11546c352e93bc4524",
+      "title": "Merge pull request #141896 from richabanker/add-watchevent-watcher-queue-latency",
+      "observedAt": "2026-09-09T11:26:13.291Z",
       "programs": [
         "Kubernetes"
       ],
