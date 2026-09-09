@@ -1,11 +1,12 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T16:01:11.966Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T16:10:59.898Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
+| go | Mattermost Public Bug Bounty Engagement  | Bugcrowd | mattermost/mattermost-plugin-github |
 
 ## Fila de bug bounty
 

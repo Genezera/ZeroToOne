@@ -7904,7 +7904,7 @@
     "e2e/playwright/mock_oauth_server/package-lock.json": "35deb8be298660ecd09b7a135d1c524e2304d494",
     "e2e/playwright/package-lock.json": "6340ee7c280884ccd94b26dcc732ce7655ba977c",
     "go.mod": "d3e6982a5ed9a8018ee9774cd343db6408b7fabe",
-    "webapp/package-lock.json": "4e9d022ca1960ef9b30d41dc774dd9d7b416c5a5"
+    "webapp/package-lock.json": "e639c36899709f4abd20a15ccc7bb0c00af7343c"
   },
   "slackhq/nebula": {
     "allow_list.go": "cba56fcea1613399ca819d93372c374c9a9ec44f",
