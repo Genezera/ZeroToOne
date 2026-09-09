@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T08:30:38.228Z",
+  "checkedAt": "2026-09-09T08:40:33.937Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -853,13 +853,13 @@
       "languages": []
     },
     "kubernetes/org": {
-      "sha": "83b06f7a57a57c2648e6bf363f3b6e7af4ae9af1",
+      "sha": "d1118f90c2acc1a470ff65f033ec3e6729993860",
       "branch": "main",
-      "parentSha": "3f483e538332a116ab8fc7bbb1c97dc944937dab",
-      "committedAt": "2026-09-09T07:22:35Z",
-      "url": "https://github.com/kubernetes/org/commit/83b06f7a57a57c2648e6bf363f3b6e7af4ae9af1",
-      "title": "Merge pull request #6527 from tiny-li/patch-1",
-      "observedAt": "2026-09-09T07:30:43.660Z",
+      "parentSha": "83b06f7a57a57c2648e6bf363f3b6e7af4ae9af1",
+      "committedAt": "2026-09-09T08:32:33Z",
+      "url": "https://github.com/kubernetes/org/commit/d1118f90c2acc1a470ff65f033ec3e6729993860",
+      "title": "Merge pull request #6621 from macsko/sync_sig_scheduling_reivers_and_approvers",
+      "observedAt": "2026-09-09T08:40:33.937Z",
       "programs": [
         "Kubernetes"
       ],
