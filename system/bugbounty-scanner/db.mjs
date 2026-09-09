@@ -245,6 +245,11 @@ export function openDb(dbPath) {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   const db = new DatabaseSync(dbPath);
   DB_PATHS.set(db, path.resolve(dbPath));
+  // Cloud workflows and operator commands can overlap briefly. Let SQLite
+  // wait for the current writer instead of failing immediately with
+  // SQLITE_BUSY; WAL still permits concurrent readers. Set before the WAL
+  // switch so that pragma itself waits on any lock too.
+  db.exec('PRAGMA busy_timeout = 10000;');
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);

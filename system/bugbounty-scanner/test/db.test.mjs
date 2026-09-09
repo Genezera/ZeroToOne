@@ -17,6 +17,18 @@ import {
 } from '../db.mjs';
 import { verifyChain, readLedger } from '../../ledger/ledger.mjs';
 
+test('openDb configures a bounded SQLite busy timeout for overlapping workers', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'bb-db-timeout-'));
+  const db = openDb(path.join(dir, 'test.db'));
+  try {
+    const row = db.prepare('PRAGMA busy_timeout').get();
+    assert.equal(Object.values(row)[0], 10_000);
+  } finally {
+    closeDb(db);
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 function withTempEnv(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), 'zto-db-test-'));
   const prevLedgerDir = process.env.ZERO2ONE_LEDGER_DIR;
