@@ -464,16 +464,16 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:18:55.897Z",
       "nextEligibleAt": "2026-09-09T01:23:56.836Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:18:56.836Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
     },
     "evidence:v1:65bd71e76109c19c7d10f301b1fe516705521d1d75a2c4f66fa7f85180de8b8f": {
       "taskId": "evidence:v1:65bd71e76109c19c7d10f301b1fe516705521d1d75a2c4f66fa7f85180de8b8f",
@@ -483,16 +483,16 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:18:56.836Z",
       "nextEligibleAt": "2026-09-09T01:23:57.744Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:18:57.744Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
     },
     "evidence:v1:93b99bd49cc6522be91c41affcfd58a1fce3992e01ae73cfe07586e0e35ee0c3": {
       "taskId": "evidence:v1:93b99bd49cc6522be91c41affcfd58a1fce3992e01ae73cfe07586e0e35ee0c3",
@@ -502,16 +502,16 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:18:57.744Z",
       "nextEligibleAt": "2026-09-09T01:23:58.652Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:18:58.652Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
     },
     "evidence:v1:bc47186b7202cf8448636ebeae434d89c424e6e801de4094c99e3b93cb24ad34": {
       "taskId": "evidence:v1:bc47186b7202cf8448636ebeae434d89c424e6e801de4094c99e3b93cb24ad34",
@@ -521,16 +521,16 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:18:58.652Z",
       "nextEligibleAt": "2026-09-09T01:24:00.008Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:19:00.008Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
     },
     "evidence:v1:2bf56dff37e16604c4e95229c407dd57031bc7b03c3fedae94b4ba3267ab291e": {
       "taskId": "evidence:v1:2bf56dff37e16604c4e95229c407dd57031bc7b03c3fedae94b4ba3267ab291e",
@@ -540,16 +540,16 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:19:00.008Z",
       "nextEligibleAt": "2026-09-09T01:24:00.951Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:19:00.951Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
     },
     "evidence:v1:a2be8086f6667f00129d18a9bc5aea6e378650e751be7d3761e4174b2ac5bafa": {
       "taskId": "evidence:v1:a2be8086f6667f00129d18a9bc5aea6e378650e751be7d3761e4174b2ac5bafa",
@@ -559,16 +559,16 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:19:00.951Z",
       "nextEligibleAt": "2026-09-09T01:24:01.933Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:19:01.933Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
     },
     "evidence:v1:8394ef6e060be9af2dfa2d9bdf220c1fe0ac3927276a80a96a8a6ebb6ea9eeae": {
       "taskId": "evidence:v1:8394ef6e060be9af2dfa2d9bdf220c1fe0ac3927276a80a96a8a6ebb6ea9eeae",
@@ -578,16 +578,177 @@
       "repository": "okx/go-wallet-sdk",
       "action": "measure_code_age",
       "priority": 80,
-      "status": "retry",
+      "status": "obsolete",
       "attempts": 1,
       "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
       "createdAt": "2026-09-09T01:18:55.897Z",
       "lastAttemptAt": "2026-09-09T01:19:01.933Z",
       "nextEligibleAt": "2026-09-09T01:24:03.242Z",
       "result": {
-        "reason": "arquivo não encontrado no histórico da branch padrão"
+        "reason": "o research-plan não pede mais esta ação"
       },
-      "finishedAt": "2026-09-09T01:19:03.242Z"
+      "finishedAt": "2026-09-09T01:20:12.063Z"
+    },
+    "evidence:v2:cc81d49f8e37a98dcddd52825e2cbc2a4fe47084f83f2660a7388b22d0791a49": {
+      "taskId": "evidence:v2:cc81d49f8e37a98dcddd52825e2cbc2a4fe47084f83f2660a7388b22d0791a49",
+      "inputDigest": "bfb21d03d6037e471b01311059bca3566406b2cc97922195cd89051c6c81125a",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKey.Verify::signature_verification_bypass",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:12.063Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 319 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 319,
+          "commit": "71c47a3e62997e9df7cafae363bccb93cba87560"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:14.720Z"
+    },
+    "evidence:v2:34a9116fb9af2aa41087c9382a6b269b75a72636c931dad477011266588fa854": {
+      "taskId": "evidence:v2:34a9116fb9af2aa41087c9382a6b269b75a72636c931dad477011266588fa854",
+      "inputDigest": "f3c06b40e3b516cd644904ef46b850f5bffbf5e91dceabc8bc638d11684ec2f9",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/aptos/v2/transactionAuthenticator.go::MultiEd25519TransactionAuthenticator.Verify::ai_deep_read_finding",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:14.720Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 383 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 383,
+          "commit": "f46b3311dbd2d5d6282d32dd15c0379bf6dcb0fd"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:17.566Z"
+    },
+    "evidence:v2:01476c6b655e586d83b5caf9f91a6c0770436d0fab77516684512b6d0af84f9f": {
+      "taskId": "evidence:v2:01476c6b655e586d83b5caf9f91a6c0770436d0fab77516684512b6d0af84f9f",
+      "inputDigest": "000d40a2495b08140553f35ff057414a6298899bedffa3cc3ada35022fa5d565",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/filecoin/transaction.go::SignedTx::unchecked_signature_length_panic",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:17.566Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 571 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 571,
+          "commit": "278d9907dc4ea2217116676e3edc10548f978921"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:19.169Z"
+    },
+    "evidence:v2:978f079a8f3d8abc27f522f49c552c1d72995bd3bdfca90cdd91684b5fe9065e": {
+      "taskId": "evidence:v2:978f079a8f3d8abc27f522f49c552c1d72995bd3bdfca90cdd91684b5fe9065e",
+      "inputDigest": "688db23c0637e996549cc2ad7402a1411456789f0ec67af884ba3067c096aad7",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:19.169Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 1036 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 1036,
+          "commit": "5cd6c132d6382bfbcaa53af013efeacfd88d30f5"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:20.916Z"
+    },
+    "evidence:v2:29438768b3379e4434de07ca5f4d59d6dbd1015a469827ceeb5b91b686f30ecd": {
+      "taskId": "evidence:v2:29438768b3379e4434de07ca5f4d59d6dbd1015a469827ceeb5b91b686f30ecd",
+      "inputDigest": "f3f5284e9863fe709a8dabcd3b0f82f53fe7ab54686d6fe08145be4b5a2cffc5",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/helium/keypair/keypair.go::Keypair.Sign::silent_unsigned_result_unimplemented_curve",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:20.916Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 1027 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 1027,
+          "commit": "13ace430a7878f27816869b8abaf1f6b05502c2a"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:22.710Z"
+    },
+    "evidence:v2:fac63fcd7a6ae48785fae08c9cf88a841dd5da9aac35e2ea5c054bb6c4c1f973": {
+      "taskId": "evidence:v2:fac63fcd7a6ae48785fae08c9cf88a841dd5da9aac35e2ea5c054bb6c4c1f973",
+      "inputDigest": "e12d4aadc0ff1809e30b76107efc4610c8b34f19c9da192889db69e050e6b595",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/tron/tron.go::VerifyMessage+VerifyMessageWithAddress+VerifyMessageV1::unchecked_signature_length_panic",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:22.710Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 110 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 110,
+          "commit": "5b7ade5c2a7995c240b12c028c39abba32b3cb65"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:24.329Z"
+    },
+    "evidence:v2:3e6d27eb43961009cb349611ac920407bcabda6a01986603d7c9ec47c9e70a6d": {
+      "taskId": "evidence:v2:3e6d27eb43961009cb349611ac920407bcabda6a01986603d7c9ec47c9e70a6d",
+      "inputDigest": "8fcc361d0eb29c782b998e14cc95c65287f817695f43ef962eef0d786b79c9c9",
+      "findingId": "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature",
+      "program": "OKG",
+      "repository": "okx/go-wallet-sdk",
+      "action": "measure_code_age",
+      "priority": 80,
+      "status": "completed",
+      "attempts": 1,
+      "reason": "medir o último commit que tocou o caminho antes de investir em PoC; idade do arquivo ou busca pública vazia não provam regressão",
+      "createdAt": "2026-09-09T01:20:12.063Z",
+      "lastAttemptAt": "2026-09-09T01:20:24.329Z",
+      "result": {
+        "reason": "o caminho não recebe alteração há 1027 dias; está fora da janela anti-duplicate de 48h para uma regressão de caminho",
+        "evidence": {
+          "method": "git_log_follow_latest_path_commit",
+          "codeAgeDays": 1027,
+          "commit": "13ace430a7878f27816869b8abaf1f6b05502c2a"
+        }
+      },
+      "finishedAt": "2026-09-09T01:20:26.017Z"
     }
   },
   "runs": [
@@ -710,6 +871,16 @@
       "completed": 0,
       "needsHuman": 0,
       "failed": 7
+    },
+    {
+      "runId": "evidence-run:v1:a82c00e3d11c4f1f9a95c109910c748426827d9b678f988df44ed793c906aefe",
+      "startedAt": "2026-09-09T01:20:12.063Z",
+      "finishedAt": "2026-09-09T01:20:26.019Z",
+      "planned": 7,
+      "claimed": 7,
+      "completed": 7,
+      "needsHuman": 0,
+      "failed": 0
     }
   ]
 }
