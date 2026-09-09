@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T21:10:34.443Z",
+  "checkedAt": "2026-09-09T21:15:37.177Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "9486750ff26ed20da13b15da229da5f1746bdfa0",
+      "sha": "57a8476086173b1ac88e3595fef99578ed965e96",
       "branch": "canary",
-      "parentSha": "a8905ddfc2c2e6b19adbab884a42c37cc7eba349",
-      "committedAt": "2026-09-09T20:19:32Z",
-      "url": "https://github.com/vercel/next.js/commit/9486750ff26ed20da13b15da229da5f1746bdfa0",
-      "title": "[evals] Cover focused Cache Components and Partial Prefetching cases (#97813)",
-      "observedAt": "2026-09-09T20:20:42.419Z",
+      "parentSha": "9486750ff26ed20da13b15da229da5f1746bdfa0",
+      "committedAt": "2026-09-09T21:11:28Z",
+      "url": "https://github.com/vercel/next.js/commit/57a8476086173b1ac88e3595fef99578ed965e96",
+      "title": "bundle-analyzer: record historical snapshots on each analyze run (#93520)",
+      "observedAt": "2026-09-09T21:15:37.177Z",
       "programs": [
         "Vercel Open Source"
       ],
