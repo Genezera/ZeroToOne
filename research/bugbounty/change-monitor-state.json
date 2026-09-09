@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T15:30:49.079Z",
+  "checkedAt": "2026-09-09T15:40:46.746Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "a09da7967edb0b5c03d88c87d34d08b7f577daa1",
+      "sha": "877cd6cec41a451bceeee6311bab205df98809df",
       "branch": "master",
-      "parentSha": "fa621caf7dbde417d2f588ab672d291302dca98e",
-      "committedAt": "2026-09-09T12:46:36Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/a09da7967edb0b5c03d88c87d34d08b7f577daa1",
-      "title": "Merge pull request #37840 from dims/add-kubelet-cgo-override",
-      "observedAt": "2026-09-09T12:50:50.905Z",
+      "parentSha": "a09da7967edb0b5c03d88c87d34d08b7f577daa1",
+      "committedAt": "2026-09-09T15:38:35Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/877cd6cec41a451bceeee6311bab205df98809df",
+      "title": "Merge pull request #37843 from skl/skl/kubernetes-mixin-squash",
+      "observedAt": "2026-09-09T15:40:46.746Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "ccb8952ab73b604b84660a692cb95d972f176fd9",
+      "sha": "90a4e1183f57ae055b45b3dcca0dd01b1f4fa027",
       "branch": "main",
-      "parentSha": "b7670d962df00061607467a9e3d6ccc63c573825",
-      "committedAt": "2026-09-09T14:40:55Z",
-      "url": "https://github.com/vercel/ai/commit/ccb8952ab73b604b84660a692cb95d972f176fd9",
-      "title": "fix: handle empty non-streaming chat completion choices as invalid provider responses (#20513)",
-      "observedAt": "2026-09-09T14:47:42.680Z",
+      "parentSha": "ccb8952ab73b604b84660a692cb95d972f176fd9",
+      "committedAt": "2026-09-09T15:38:31Z",
+      "url": "https://github.com/vercel/ai/commit/90a4e1183f57ae055b45b3dcca0dd01b1f4fa027",
+      "title": "revert: remove Synthorai provider documentation (#20527)",
+      "observedAt": "2026-09-09T15:40:46.746Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "ee02527b121701d2c9f7bef957d68b650d342505",
+      "sha": "d630b218af24df0e22d9ec1dd4550662f472bbb0",
       "branch": "main",
-      "parentSha": "38c8776e8e897202108a6dc494e2f54eca0cc0b1",
-      "committedAt": "2026-09-09T15:14:38Z",
-      "url": "https://github.com/vercel/eve/commit/ee02527b121701d2c9f7bef957d68b650d342505",
-      "title": "feat(eve): log eval workflow run IDs (#3177)",
-      "observedAt": "2026-09-09T15:20:40.169Z",
+      "parentSha": "ee02527b121701d2c9f7bef957d68b650d342505",
+      "committedAt": "2026-09-09T15:35:24Z",
+      "url": "https://github.com/vercel/eve/commit/d630b218af24df0e22d9ec1dd4550662f472bbb0",
+      "title": "fix(eve): deflake workflow and fixture tests (#3165)",
+      "observedAt": "2026-09-09T15:40:46.746Z",
       "programs": [
         "Vercel Open Source"
       ],
