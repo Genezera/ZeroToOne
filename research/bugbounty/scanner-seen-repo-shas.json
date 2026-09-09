@@ -90,7 +90,7 @@
     "packages/vercel-flags-core/src/controller/index.ts": "5f55c126509e8669a0f63fade4c45be92ab9a35a",
     "packages/vercel-flags-core/src/controller/normalized-options.ts": "9cb30632d281ff6042c6af34fb846e819068c1ac",
     "packages/vercel-flags-core/src/controller/polling-source.ts": "e39cd191547ad91057af55b38ad47bedf7f36f60",
-    "packages/vercel-flags-core/src/controller/stream-connection.ts": "4dd1cebc023dd4760d704280315ffbbad201b9cd",
+    "packages/vercel-flags-core/src/controller/stream-connection.ts": "0ed6437a838a152f310e2476b268332466b91a08",
     "packages/vercel-flags-core/src/controller/stream-source.ts": "b0d63912a4dec9db676ed5901aa852d14e962a70",
     "packages/vercel-flags-core/src/controller/tagged-data.ts": "d86d76abe6b41495a040bf15f52c3514f0fa2abc",
     "packages/vercel-flags-core/src/controller/typed-emitter.ts": "9c3a59d1d0dde8adee62d886860b337182959f6f",
@@ -120,7 +120,8 @@
     "packages/vercel-flags-core/src/utils/usage/flags-config-read.ts": "c9657343197e7046a5e10eeb87ea63c7f60b59f7",
     "packages/vercel-flags-core/src/utils/usage/flags-evaluation.ts": "c0498b4580e6db69730586cf0137ff43ad1715e5",
     "packages/vercel-flags-core/tsup.config.js": "0febc10241b0a416cb4b457155fb71c7fdfa6fb1",
-    "packages/vercel-flags-core/vitest.config.ts": "0702825321896f7d9432e50821fb1726b51421c7"
+    "packages/vercel-flags-core/vitest.config.ts": "0702825321896f7d9432e50821fb1726b51421c7",
+    "packages/vercel-flags-core/src/utils/runtime.ts": "d41d63fc87c0334dc11e474dd24ff68189d7adca"
   },
   "cashapp/hermit": {
     "app/activate_cmd.go": "b7738607b724c30a85c80c4aa7f2ecb741ce2387",

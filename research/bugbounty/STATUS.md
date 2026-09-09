@@ -1,11 +1,12 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T09:10:52.896Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-09T09:21:07.789Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
+| js | Vercel Open Source | HackerOne | vercel/flags |
 
 ## Fila de bug bounty
 
