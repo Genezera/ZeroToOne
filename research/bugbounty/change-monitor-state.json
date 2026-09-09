@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T07:34:59.164Z",
+  "checkedAt": "2026-09-09T07:40:40.637Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "4cb547213b5303b7f01675a7502b84ce960fd19e",
+      "sha": "49dc4c84b4f949c9fc54737e7ae31023a9d4820a",
       "branch": "canary",
-      "parentSha": "2b11d01a8c07e346bdd726c064d41f7a613a8b6c",
-      "committedAt": "2026-09-09T02:41:08Z",
-      "url": "https://github.com/vercel/next.js/commit/4cb547213b5303b7f01675a7502b84ce960fd19e",
-      "title": "test: support deploy exclusions with force gates (#98149)",
-      "observedAt": "2026-09-09T03:10:59.200Z",
+      "parentSha": "4cb547213b5303b7f01675a7502b84ce960fd19e",
+      "committedAt": "2026-09-09T07:39:19Z",
+      "url": "https://github.com/vercel/next.js/commit/49dc4c84b4f949c9fc54737e7ae31023a9d4820a",
+      "title": "Turbopack: fix output tracing include glob traversal (#98382)",
+      "observedAt": "2026-09-09T07:40:40.637Z",
       "programs": [
         "Vercel Open Source"
       ],
