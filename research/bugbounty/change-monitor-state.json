@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T09:10:39.435Z",
+  "checkedAt": "2026-09-09T09:20:42.349Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1230,13 +1230,13 @@
       "languages": []
     },
     "nuxt/nuxt": {
-      "sha": "1c20ad96e5cda30be9931b410ccc9d333920bec9",
+      "sha": "03e9df01a1256d214ac5c5c14514f95803ecb244",
       "branch": "main",
-      "parentSha": "8ca2314f9a5ba430f893f2f4e87899ee9a175d7c",
-      "committedAt": "2026-09-09T08:53:24Z",
-      "url": "https://github.com/nuxt/nuxt/commit/1c20ad96e5cda30be9931b410ccc9d333920bec9",
-      "title": "fix(nuxt): use a throttle approach for hint prefetching (#36324)",
-      "observedAt": "2026-09-09T09:10:39.435Z",
+      "parentSha": "1c20ad96e5cda30be9931b410ccc9d333920bec9",
+      "committedAt": "2026-09-09T09:15:03Z",
+      "url": "https://github.com/nuxt/nuxt/commit/03e9df01a1256d214ac5c5c14514f95803ecb244",
+      "title": "docs: strip version prefixes",
+      "observedAt": "2026-09-09T09:20:42.349Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1439,13 +1439,13 @@
       "languages": []
     },
     "vercel/flags": {
-      "sha": "c9d28116ebca661f4e3c73f301d4b2d35310c823",
+      "sha": "e0eebe6fbc296636761eb3dc31f2c4be01a398bf",
       "branch": "main",
-      "parentSha": "752a05f9ad3e31a252f5dae0cf028cf90faf320f",
-      "committedAt": "2026-09-04T12:21:17Z",
-      "url": "https://github.com/vercel/flags/commit/c9d28116ebca661f4e3c73f301d4b2d35310c823",
-      "title": "Experiments (#486)",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "c9d28116ebca661f4e3c73f301d4b2d35310c823",
+      "committedAt": "2026-09-09T09:16:11Z",
+      "url": "https://github.com/vercel/flags/commit/e0eebe6fbc296636761eb3dc31f2c4be01a398bf",
+      "title": "fix(flags-core): request identity on the stream so Bun receives the first datafile (#494)",
+      "observedAt": "2026-09-09T09:20:42.349Z",
       "programs": [
         "Vercel Open Source"
       ],
