@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T08:40:33.937Z",
+  "checkedAt": "2026-09-09T08:50:33.927Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "21fa70dc8748abc457d2e22527ac9655f7cbace5",
+      "sha": "bea9b4681aa7928045674199f23c9e80745b3320",
       "branch": "master",
-      "parentSha": "f3ef836cb9597ffe34d953e3c23fe20bd357b298",
-      "committedAt": "2026-09-09T06:04:33Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/21fa70dc8748abc457d2e22527ac9655f7cbace5",
-      "title": "[occm] test: add loadbalancer servicemonitor regression (#3171)",
-      "observedAt": "2026-09-09T06:11:17.328Z",
+      "parentSha": "21fa70dc8748abc457d2e22527ac9655f7cbace5",
+      "committedAt": "2026-09-09T08:44:33Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/bea9b4681aa7928045674199f23c9e80745b3320",
+      "title": "[occm] test: fix servicemonitor test after label reduction (#3200)",
+      "observedAt": "2026-09-09T08:50:33.927Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "30cebdee830c3cc432fc8e1e0adabff46a2792bd",
+      "sha": "fa621caf7dbde417d2f588ab672d291302dca98e",
       "branch": "master",
-      "parentSha": "0980ca1c50f485da69acc391ef2b8db70dae065e",
-      "committedAt": "2026-09-09T08:06:37Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/30cebdee830c3cc432fc8e1e0adabff46a2792bd",
-      "title": "Merge pull request #37841 from Amulyam24/capibm",
-      "observedAt": "2026-09-09T08:10:39.289Z",
+      "parentSha": "30cebdee830c3cc432fc8e1e0adabff46a2792bd",
+      "committedAt": "2026-09-09T08:46:33Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/fa621caf7dbde417d2f588ab672d291302dca98e",
+      "title": "Merge pull request #37792 from Nordix/lentzi90/capo-release-0.15",
+      "observedAt": "2026-09-09T08:50:33.927Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1129,13 +1129,13 @@
       ]
     },
     "mattermost/mattermost-plugin-jira": {
-      "sha": "199c3a883ccd0016e9ec2162ced4be8eb1090686",
+      "sha": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
       "branch": "master",
-      "parentSha": "d7341fef2664c97e0e8a817a8a37a70d9db1b9c4",
-      "committedAt": "2026-09-08T15:42:51Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/199c3a883ccd0016e9ec2162ced4be8eb1090686",
-      "title": "Bump google.golang.org/grpc from 1.82.1 to 1.83.1 (#1346)",
-      "observedAt": "2026-09-08T18:45:14.164Z",
+      "parentSha": "199c3a883ccd0016e9ec2162ced4be8eb1090686",
+      "committedAt": "2026-09-09T08:49:52Z",
+      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
+      "title": "Bump google.golang.org/grpc from 1.83.1 to 1.83.2 (#1350)",
+      "observedAt": "2026-09-09T08:50:33.927Z",
       "programs": [
         "Mattermost Public Bug Bounty Engagement "
       ],
