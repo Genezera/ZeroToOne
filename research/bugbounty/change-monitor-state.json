@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T14:50:39.227Z",
+  "checkedAt": "2026-09-09T15:00:54.292Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "42779fe73a0739ceead3af98b7753930b8da4fd0",
+      "sha": "9db9b8eff110535e814496d659943ee3bfa59af1",
       "branch": "canary",
-      "parentSha": "f367ab342665555035822853f6975f89a6555df3",
-      "committedAt": "2026-09-09T14:48:47Z",
-      "url": "https://github.com/vercel/next.js/commit/42779fe73a0739ceead3af98b7753930b8da4fd0",
-      "title": "v16.4.0-canary.23",
-      "observedAt": "2026-09-09T14:50:39.227Z",
+      "parentSha": "f17979b00d9634a27684fb7bcf2c6c1456001c3f",
+      "committedAt": "2026-09-09T14:57:10Z",
+      "url": "https://github.com/vercel/next.js/commit/9db9b8eff110535e814496d659943ee3bfa59af1",
+      "title": "Remove `tsec` (#98423)",
+      "observedAt": "2026-09-09T15:00:54.292Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "ebfc80892af1663e0821c5548707059cc9f347f7",
+      "sha": "ef4677219f6d31911aff5a0c5aa953c53e12c40b",
       "branch": "main",
-      "parentSha": "596ea4c073793c6798327020bee1c787f156de05",
-      "committedAt": "2026-09-09T14:15:43Z",
-      "url": "https://github.com/vercel/turborepo/commit/ebfc80892af1663e0821c5548707059cc9f347f7",
-      "title": "chore: Release Turborepo 2.10.13-canary.2 (#14000)",
-      "observedAt": "2026-09-09T14:20:35.643Z",
+      "parentSha": "4db9ca09bdac8cc0f8ece533cc480c10947f7bc1",
+      "committedAt": "2026-09-09T15:00:21Z",
+      "url": "https://github.com/vercel/turborepo/commit/ef4677219f6d31911aff5a0c5aa953c53e12c40b",
+      "title": "perf: Compute Devtools graph depths without rescanning every edge (#14001)",
+      "observedAt": "2026-09-09T15:00:54.292Z",
       "programs": [
         "Vercel Open Source"
       ],
