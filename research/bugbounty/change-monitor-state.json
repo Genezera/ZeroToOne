@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:50:46.079Z",
+  "checkedAt": "2026-09-09T20:58:09.435Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "0cb6d58a73ac8303dcfcdb69533af2c567d3811c",
+      "sha": "9a98e64d4834338b6009bf0f7b32a83ed2025c85",
       "branch": "main",
-      "parentSha": "05f16eb059fbd32a3e21b837db1912a41ffac27a",
-      "committedAt": "2026-09-09T20:41:23Z",
-      "url": "https://github.com/vercel/turborepo/commit/0cb6d58a73ac8303dcfcdb69533af2c567d3811c",
-      "title": "perf: Bound TUI raw-output retention independently of scrollback (#14024)",
-      "observedAt": "2026-09-09T20:50:46.079Z",
+      "parentSha": "c6eac093dc7ff5c954bebeb4714b036821696f5e",
+      "committedAt": "2026-09-09T20:52:53Z",
+      "url": "https://github.com/vercel/turborepo/commit/9a98e64d4834338b6009bf0f7b32a83ed2025c85",
+      "title": "perf: Replace repeated deferred-hash scans with dependency-driven readiness (#14025)",
+      "observedAt": "2026-09-09T20:58:09.435Z",
       "programs": [
         "Vercel Open Source"
       ],
