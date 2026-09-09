@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T13:20:46.274Z",
+  "checkedAt": "2026-09-09T13:31:05.443Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "c02f97ef2bbfb2e1179fba6197fa44bc825f5d10",
+      "sha": "ead0e190f85340a001a061f5bb3338d4a1169745",
       "branch": "main",
-      "parentSha": "996a0bb50acd63e607d85ace82cf6e95cc8d4d56",
-      "committedAt": "2026-09-09T13:11:37Z",
-      "url": "https://github.com/vercel/turborepo/commit/c02f97ef2bbfb2e1179fba6197fa44bc825f5d10",
-      "title": "perf: Cache Turbo config reads across ESLint rule invocations (#13998)",
-      "observedAt": "2026-09-09T13:20:46.274Z",
+      "parentSha": "c02f97ef2bbfb2e1179fba6197fa44bc825f5d10",
+      "committedAt": "2026-09-09T13:27:40Z",
+      "url": "https://github.com/vercel/turborepo/commit/ead0e190f85340a001a061f5bb3338d4a1169745",
+      "title": "perf: Scope untracked-file discovery to filtered runs (#13991)",
+      "observedAt": "2026-09-09T13:31:05.443Z",
       "programs": [
         "Vercel Open Source"
       ],
