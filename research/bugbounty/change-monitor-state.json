@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:10:39.276Z",
+  "checkedAt": "2026-09-09T20:20:42.419Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "ef3bac4c174f4650bb03aca0b5783fcfa6232a3b",
+      "sha": "e9795abf6185594ecdde53226c8149f8ea8b288d",
       "branch": "main",
-      "parentSha": "4b8c4fa34fe87d500d98747c378cbd4f46b4ea18",
-      "committedAt": "2026-09-09T20:00:43Z",
-      "url": "https://github.com/vercel/ai/commit/ef3bac4c174f4650bb03aca0b5783fcfa6232a3b",
-      "title": "fix: forward video callback URLs for caller-managed receivers (#20561)",
-      "observedAt": "2026-09-09T20:00:49.698Z",
+      "parentSha": "ef3bac4c174f4650bb03aca0b5783fcfa6232a3b",
+      "committedAt": "2026-09-09T20:18:21Z",
+      "url": "https://github.com/vercel/ai/commit/e9795abf6185594ecdde53226c8149f8ea8b288d",
+      "title": "Version Packages (#20555)",
+      "observedAt": "2026-09-09T20:20:42.419Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "a8905ddfc2c2e6b19adbab884a42c37cc7eba349",
+      "sha": "9486750ff26ed20da13b15da229da5f1746bdfa0",
       "branch": "canary",
-      "parentSha": "b879776299fd5bd0a88c7a8f93eec836c258af9c",
-      "committedAt": "2026-09-09T20:04:01Z",
-      "url": "https://github.com/vercel/next.js/commit/a8905ddfc2c2e6b19adbab884a42c37cc7eba349",
-      "title": "Deflake gc_interrupt_is_self_healing (#98445)",
-      "observedAt": "2026-09-09T20:10:39.276Z",
+      "parentSha": "a8905ddfc2c2e6b19adbab884a42c37cc7eba349",
+      "committedAt": "2026-09-09T20:19:32Z",
+      "url": "https://github.com/vercel/next.js/commit/9486750ff26ed20da13b15da229da5f1746bdfa0",
+      "title": "[evals] Cover focused Cache Components and Partial Prefetching cases (#97813)",
+      "observedAt": "2026-09-09T20:20:42.419Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "a8b4ac2ba68c59f54c304fa7e098b7b7d37ac11d",
+      "sha": "05f16eb059fbd32a3e21b837db1912a41ffac27a",
       "branch": "main",
-      "parentSha": "f3ae66f7261bcb928b50bf19967d6788a3d5411d",
-      "committedAt": "2026-09-09T20:09:35Z",
-      "url": "https://github.com/vercel/turborepo/commit/a8b4ac2ba68c59f54c304fa7e098b7b7d37ac11d",
-      "title": "perf: Skip speculative content hashing for size-changed unnormalized tracked files (#14021)",
-      "observedAt": "2026-09-09T20:10:39.276Z",
+      "parentSha": "22b6577a6c148491132ec0052c4f60afda0b42a4",
+      "committedAt": "2026-09-09T20:16:52Z",
+      "url": "https://github.com/vercel/turborepo/commit/05f16eb059fbd32a3e21b837db1912a41ffac27a",
+      "title": "perf: Index package directories for changed-file ownership lookups (#14022)",
+      "observedAt": "2026-09-09T20:20:42.419Z",
       "programs": [
         "Vercel Open Source"
       ],
