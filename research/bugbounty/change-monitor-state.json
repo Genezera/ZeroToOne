@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T16:30:56.630Z",
+  "checkedAt": "2026-09-09T16:40:50.556Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "cb252f9f946c417bd430498eb8927f3647bd08f7",
+      "sha": "22e7d73585b308db5a60520140876b986ac5e965",
       "branch": "master",
-      "parentSha": "216383484c6f5bf382ef5df1561b7ceefe959c9d",
-      "committedAt": "2026-09-09T16:24:32Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/cb252f9f946c417bd430498eb8927f3647bd08f7",
-      "title": "Change Chart release process (#3195)",
-      "observedAt": "2026-09-09T16:30:56.630Z",
+      "parentSha": "cb252f9f946c417bd430498eb8927f3647bd08f7",
+      "committedAt": "2026-09-09T16:32:34Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/22e7d73585b308db5a60520140876b986ac5e965",
+      "title": "make: Add lint-charts target (#3208)",
+      "observedAt": "2026-09-09T16:40:50.556Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "877cd6cec41a451bceeee6311bab205df98809df",
+      "sha": "b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
       "branch": "master",
-      "parentSha": "a09da7967edb0b5c03d88c87d34d08b7f577daa1",
-      "committedAt": "2026-09-09T15:38:35Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/877cd6cec41a451bceeee6311bab205df98809df",
-      "title": "Merge pull request #37843 from skl/skl/kubernetes-mixin-squash",
-      "observedAt": "2026-09-09T15:40:46.746Z",
+      "parentSha": "877cd6cec41a451bceeee6311bab205df98809df",
+      "committedAt": "2026-09-09T16:38:36Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
+      "title": "Merge pull request #37829 from pohly/kind-script-usage",
+      "observedAt": "2026-09-09T16:40:50.556Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1032,13 +1032,13 @@
       ]
     },
     "kubernetes/website": {
-      "sha": "4e842ff3d93874d8046d818dbb7c3bef606034c3",
+      "sha": "61ad3bbfabe1e07a613ef691fba85d811df05536",
       "branch": "main",
-      "parentSha": "5fcb15cb74ddf18ebaa5aea5a4d91e25093980bc",
-      "committedAt": "2026-09-09T12:42:35Z",
-      "url": "https://github.com/kubernetes/website/commit/4e842ff3d93874d8046d818dbb7c3bef606034c3",
-      "title": "Merge pull request #57468 from opsmon/refactor/cluster",
-      "observedAt": "2026-09-09T12:50:50.905Z",
+      "parentSha": "4e842ff3d93874d8046d818dbb7c3bef606034c3",
+      "committedAt": "2026-09-09T16:36:34Z",
+      "url": "https://github.com/kubernetes/website/commit/61ad3bbfabe1e07a613ef691fba85d811df05536",
+      "title": "[ja] Translate content/en/docs/reference/glossary/resource-quota.md into Japanese (#57076)",
+      "observedAt": "2026-09-09T16:40:50.556Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "90a4e1183f57ae055b45b3dcca0dd01b1f4fa027",
+      "sha": "f102e410b5b29f1252723375438796cf67224125",
       "branch": "main",
-      "parentSha": "ccb8952ab73b604b84660a692cb95d972f176fd9",
-      "committedAt": "2026-09-09T15:38:31Z",
-      "url": "https://github.com/vercel/ai/commit/90a4e1183f57ae055b45b3dcca0dd01b1f4fa027",
-      "title": "revert: remove Synthorai provider documentation (#20527)",
-      "observedAt": "2026-09-09T15:40:46.746Z",
+      "parentSha": "90a4e1183f57ae055b45b3dcca0dd01b1f4fa027",
+      "committedAt": "2026-09-09T16:35:06Z",
+      "url": "https://github.com/vercel/ai/commit/f102e410b5b29f1252723375438796cf67224125",
+      "title": "chore(provider/gateway): update gateway model settings files (#20540)",
+      "observedAt": "2026-09-09T16:40:50.556Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "90fd2d6624b61faa4f4052ceab559ea3222e6dbc",
+      "sha": "3862f3e9c430e175f73f915a687233cc37719bd0",
       "branch": "main",
-      "parentSha": "77f6232815140b62ea27fba7093d9af14c6aadf5",
-      "committedAt": "2026-09-09T16:04:41Z",
-      "url": "https://github.com/vercel/turborepo/commit/90fd2d6624b61faa4f4052ceab559ea3222e6dbc",
-      "title": "perf: Deduplicate recursive glob prefixes before walking (#14004)",
-      "observedAt": "2026-09-09T16:10:44.004Z",
+      "parentSha": "90fd2d6624b61faa4f4052ceab559ea3222e6dbc",
+      "committedAt": "2026-09-09T16:33:02Z",
+      "url": "https://github.com/vercel/turborepo/commit/3862f3e9c430e175f73f915a687233cc37719bd0",
+      "title": "perf: Batch boundaries progress updates (#14009)",
+      "observedAt": "2026-09-09T16:40:50.556Z",
       "programs": [
         "Vercel Open Source"
       ],
