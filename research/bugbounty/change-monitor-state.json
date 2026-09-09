@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:40:42.526Z",
+  "checkedAt": "2026-09-09T20:50:46.079Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "05f16eb059fbd32a3e21b837db1912a41ffac27a",
+      "sha": "0cb6d58a73ac8303dcfcdb69533af2c567d3811c",
       "branch": "main",
-      "parentSha": "22b6577a6c148491132ec0052c4f60afda0b42a4",
-      "committedAt": "2026-09-09T20:16:52Z",
-      "url": "https://github.com/vercel/turborepo/commit/05f16eb059fbd32a3e21b837db1912a41ffac27a",
-      "title": "perf: Index package directories for changed-file ownership lookups (#14022)",
-      "observedAt": "2026-09-09T20:20:42.419Z",
+      "parentSha": "05f16eb059fbd32a3e21b837db1912a41ffac27a",
+      "committedAt": "2026-09-09T20:41:23Z",
+      "url": "https://github.com/vercel/turborepo/commit/0cb6d58a73ac8303dcfcdb69533af2c567d3811c",
+      "title": "perf: Bound TUI raw-output retention independently of scrollback (#14024)",
+      "observedAt": "2026-09-09T20:50:46.079Z",
       "programs": [
         "Vercel Open Source"
       ],
