@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T20:00:49.698Z",
+  "checkedAt": "2026-09-09T20:10:39.276Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "b879776299fd5bd0a88c7a8f93eec836c258af9c",
+      "sha": "a8905ddfc2c2e6b19adbab884a42c37cc7eba349",
       "branch": "canary",
-      "parentSha": "4d621240c38ebceeac693951d7c6b04636632adc",
-      "committedAt": "2026-09-09T19:46:24Z",
-      "url": "https://github.com/vercel/next.js/commit/b879776299fd5bd0a88c7a8f93eec836c258af9c",
-      "title": "Adds this.target for webpack loaders (#98436)",
-      "observedAt": "2026-09-09T19:50:47.577Z",
+      "parentSha": "b879776299fd5bd0a88c7a8f93eec836c258af9c",
+      "committedAt": "2026-09-09T20:04:01Z",
+      "url": "https://github.com/vercel/next.js/commit/a8905ddfc2c2e6b19adbab884a42c37cc7eba349",
+      "title": "Deflake gc_interrupt_is_self_healing (#98445)",
+      "observedAt": "2026-09-09T20:10:39.276Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "f3ae66f7261bcb928b50bf19967d6788a3d5411d",
+      "sha": "a8b4ac2ba68c59f54c304fa7e098b7b7d37ac11d",
       "branch": "main",
-      "parentSha": "f7b030bd8a6c11679fe03a354fccf94e43336114",
-      "committedAt": "2026-09-09T19:53:25Z",
-      "url": "https://github.com/vercel/turborepo/commit/f3ae66f7261bcb928b50bf19967d6788a3d5411d",
-      "title": "perf: Keep package bundling inside a cacheable build boundary (#14020)",
-      "observedAt": "2026-09-09T20:00:49.698Z",
+      "parentSha": "f3ae66f7261bcb928b50bf19967d6788a3d5411d",
+      "committedAt": "2026-09-09T20:09:35Z",
+      "url": "https://github.com/vercel/turborepo/commit/a8b4ac2ba68c59f54c304fa7e098b7b7d37ac11d",
+      "title": "perf: Skip speculative content hashing for size-changed unnormalized tracked files (#14021)",
+      "observedAt": "2026-09-09T20:10:39.276Z",
       "programs": [
         "Vercel Open Source"
       ],
