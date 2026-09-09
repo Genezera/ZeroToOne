@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T18:10:41.184Z",
+  "checkedAt": "2026-09-09T18:20:46.909Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "4266156f63e27d86b224211cb9eb1e02a58f4bc9",
+      "sha": "db10cb4b80e57c4492d2baf446ba2b4f89abf466",
       "branch": "master",
-      "parentSha": "81b21d46dd908d03ab73dbd913b8b29710c7ccd9",
-      "committedAt": "2026-09-09T17:28:33Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/4266156f63e27d86b224211cb9eb1e02a58f4bc9",
-      "title": "Merge pull request #141305 from thc1006/quantity-checked-accessors",
-      "observedAt": "2026-09-09T17:30:45.665Z",
+      "parentSha": "4266156f63e27d86b224211cb9eb1e02a58f4bc9",
+      "committedAt": "2026-09-09T18:18:38Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/db10cb4b80e57c4492d2baf446ba2b4f89abf466",
+      "title": "Merge pull request #141070 from AutuSnow/AutuSnow/fix-memory-manager-pod-hint-restore",
+      "observedAt": "2026-09-09T18:20:46.909Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1495,13 +1495,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "470ffb9a7b7dad8824d2bc46ea5cfa54198057a6",
+      "sha": "f0a0d7752fd5331bff83d657c63b64f18a56fdfd",
       "branch": "main",
-      "parentSha": "f01afa9ad4de3697ed63c4237b545aa1b8740992",
-      "committedAt": "2026-09-09T17:30:03Z",
-      "url": "https://github.com/vercel/turborepo/commit/470ffb9a7b7dad8824d2bc46ea5cfa54198057a6",
-      "title": "perf: Bound remote-cache transfer memory instead of retaining whole artifacts (#14011)",
-      "observedAt": "2026-09-09T17:30:45.665Z",
+      "parentSha": "470ffb9a7b7dad8824d2bc46ea5cfa54198057a6",
+      "committedAt": "2026-09-09T18:14:33Z",
+      "url": "https://github.com/vercel/turborepo/commit/f0a0d7752fd5331bff83d657c63b64f18a56fdfd",
+      "title": "perf: Build cache archives once for local and remote writes (#14012)",
+      "observedAt": "2026-09-09T18:20:46.909Z",
       "programs": [
         "Vercel Open Source"
       ],
