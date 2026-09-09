@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T17:40:42.550Z",
+  "checkedAt": "2026-09-09T17:50:41.651Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "d7fc51843553e17231225971ce7407143215093f",
+      "sha": "912fb015dd599871940e7adc3791b56fb4516374",
       "branch": "main",
-      "parentSha": "aa4cc14fbfee8c1936d9e7b37349eb468fa71c64",
-      "committedAt": "2026-09-09T17:23:50Z",
-      "url": "https://github.com/vercel/ai/commit/d7fc51843553e17231225971ce7407143215093f",
-      "title": "ci: raise Anthropic load time threshold (#20532)",
-      "observedAt": "2026-09-09T17:30:45.665Z",
+      "parentSha": "d7fc51843553e17231225971ce7407143215093f",
+      "committedAt": "2026-09-09T17:49:10Z",
+      "url": "https://github.com/vercel/ai/commit/912fb015dd599871940e7adc3791b56fb4516374",
+      "title": "feat: add batch cancel and list APIs (#20543)",
+      "observedAt": "2026-09-09T17:50:41.651Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1411,13 +1411,13 @@
       "languages": []
     },
     "vercel/chat": {
-      "sha": "f893470e1963cda3bc21a801a1f312b1208eb126",
+      "sha": "6adca3617e3b4f4bdda553c7afba0529ab1fec4c",
       "branch": "main",
-      "parentSha": "2e2426d17e97f545b758962dc7496b199f4d3230",
-      "committedAt": "2026-09-09T17:39:41Z",
-      "url": "https://github.com/vercel/chat/commit/f893470e1963cda3bc21a801a1f312b1208eb126",
-      "title": "fix(telegram): preserve links during truncation (#915)",
-      "observedAt": "2026-09-09T17:40:42.550Z",
+      "parentSha": "f893470e1963cda3bc21a801a1f312b1208eb126",
+      "committedAt": "2026-09-09T17:46:53Z",
+      "url": "https://github.com/vercel/chat/commit/6adca3617e3b4f4bdda553c7afba0529ab1fec4c",
+      "title": "feat(slack): support egress proxies (#916)",
+      "observedAt": "2026-09-09T17:50:41.651Z",
       "programs": [
         "Vercel Open Source"
       ],
