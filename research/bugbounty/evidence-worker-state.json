@@ -842,13 +842,18 @@
       "repository": "okx/go-wallet-sdk",
       "action": "structure_identity",
       "priority": 88,
-      "status": "pending",
-      "attempts": 0,
+      "status": "needs_human",
+      "attempts": 1,
       "reason": "identidade mecânica incompleta: faltam weakness, rootCause, attackerInput, securitySink, missingControl, expectedFix; preencher campos estruturados, sem extrair automaticamente da prosa",
       "recentExactChange": false,
       "introducedAt": null,
       "introducedCommit": null,
-      "createdAt": "2026-09-09T03:11:59.250Z"
+      "createdAt": "2026-09-09T03:11:59.250Z",
+      "lastAttemptAt": "2026-09-09T03:21:38.245Z",
+      "result": {
+        "reason": "ação structure_identity ainda não possui executor seguro registrado"
+      },
+      "finishedAt": "2026-09-09T03:21:38.246Z"
     },
     "evidence:v4:611480e74d6f47fa732104a56227ab4703384bb233cce05aac83d01db5ce8f82": {
       "taskId": "evidence:v4:611480e74d6f47fa732104a56227ab4703384bb233cce05aac83d01db5ce8f82",
@@ -858,13 +863,18 @@
       "repository": "okx/go-wallet-sdk",
       "action": "structure_identity",
       "priority": 88,
-      "status": "pending",
-      "attempts": 0,
+      "status": "needs_human",
+      "attempts": 1,
       "reason": "identidade mecânica incompleta: faltam weakness, rootCause, attackerInput, securitySink, missingControl, expectedFix; preencher campos estruturados, sem extrair automaticamente da prosa",
       "recentExactChange": false,
       "introducedAt": null,
       "introducedCommit": null,
-      "createdAt": "2026-09-09T03:11:59.250Z"
+      "createdAt": "2026-09-09T03:11:59.250Z",
+      "lastAttemptAt": "2026-09-09T03:21:38.246Z",
+      "result": {
+        "reason": "ação structure_identity ainda não possui executor seguro registrado"
+      },
+      "finishedAt": "2026-09-09T03:21:38.246Z"
     },
     "evidence:v4:87b6487334d85538d9bb6188926a002cfc35a5c9ac2a5737293268edaff5abd8": {
       "taskId": "evidence:v4:87b6487334d85538d9bb6188926a002cfc35a5c9ac2a5737293268edaff5abd8",
@@ -874,13 +884,18 @@
       "repository": "okx/go-wallet-sdk",
       "action": "structure_identity",
       "priority": 88,
-      "status": "pending",
-      "attempts": 0,
+      "status": "needs_human",
+      "attempts": 1,
       "reason": "identidade mecânica incompleta: faltam weakness, rootCause, attackerInput, securitySink, missingControl, expectedFix; preencher campos estruturados, sem extrair automaticamente da prosa",
       "recentExactChange": false,
       "introducedAt": null,
       "introducedCommit": null,
-      "createdAt": "2026-09-09T03:11:59.250Z"
+      "createdAt": "2026-09-09T03:11:59.250Z",
+      "lastAttemptAt": "2026-09-09T03:21:38.246Z",
+      "result": {
+        "reason": "ação structure_identity ainda não possui executor seguro registrado"
+      },
+      "finishedAt": "2026-09-09T03:21:38.246Z"
     },
     "evidence:v4:2c6e7f7a2389b665128f3b14df790dc200c5a0b929efc121844c5b6b59f1126e": {
       "taskId": "evidence:v4:2c6e7f7a2389b665128f3b14df790dc200c5a0b929efc121844c5b6b59f1126e",
@@ -890,13 +905,18 @@
       "repository": "okx/go-wallet-sdk",
       "action": "structure_identity",
       "priority": 88,
-      "status": "pending",
-      "attempts": 0,
+      "status": "needs_human",
+      "attempts": 1,
       "reason": "identidade mecânica incompleta: faltam weakness, rootCause, attackerInput, securitySink, missingControl, expectedFix; preencher campos estruturados, sem extrair automaticamente da prosa",
       "recentExactChange": false,
       "introducedAt": null,
       "introducedCommit": null,
-      "createdAt": "2026-09-09T03:11:59.250Z"
+      "createdAt": "2026-09-09T03:11:59.250Z",
+      "lastAttemptAt": "2026-09-09T03:21:38.246Z",
+      "result": {
+        "reason": "ação structure_identity ainda não possui executor seguro registrado"
+      },
+      "finishedAt": "2026-09-09T03:21:38.246Z"
     },
     "evidence:v4:fb8056f0fa3da53c66326685800bad424a8a921da34f0408993d5aa91f97c815": {
       "taskId": "evidence:v4:fb8056f0fa3da53c66326685800bad424a8a921da34f0408993d5aa91f97c815",
@@ -1066,6 +1086,16 @@
       "runId": "evidence-run:v1:867b35cba78d0fbe0bdbbc9fea96197c0b4fc77f7e75b0c4fc4dd97b7a64ecb1",
       "startedAt": "2026-09-09T03:11:59.250Z",
       "finishedAt": "2026-09-09T03:11:59.252Z",
+      "planned": 10,
+      "claimed": 4,
+      "completed": 0,
+      "needsHuman": 4,
+      "failed": 0
+    },
+    {
+      "runId": "evidence-run:v1:54e578fb82e1160f30c13eb6c4e60bcce5cff34e273ffc1aa358a51a4acf4eea",
+      "startedAt": "2026-09-09T03:21:38.245Z",
+      "finishedAt": "2026-09-09T03:21:38.246Z",
       "planned": 10,
       "claimed": 4,
       "completed": 0,
