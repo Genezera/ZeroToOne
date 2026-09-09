@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T18:30:46.571Z",
+  "checkedAt": "2026-09-09T18:40:58.616Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1385,13 +1385,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "65eb52b767008e1dd6a074fbc2e9223ae50a8739",
+      "sha": "99421961221a46f9267080717eacb0109cb9f22d",
       "branch": "main",
-      "parentSha": "912fb015dd599871940e7adc3791b56fb4516374",
-      "committedAt": "2026-09-09T18:08:40Z",
-      "url": "https://github.com/vercel/ai/commit/65eb52b767008e1dd6a074fbc2e9223ae50a8739",
-      "title": "Version Packages (#20524)",
-      "observedAt": "2026-09-09T18:10:41.184Z",
+      "parentSha": "65eb52b767008e1dd6a074fbc2e9223ae50a8739",
+      "committedAt": "2026-09-09T18:36:36Z",
+      "url": "https://github.com/vercel/ai/commit/99421961221a46f9267080717eacb0109cb9f22d",
+      "title": "feat(openai): add batch cancellation and listing (#20551)",
+      "observedAt": "2026-09-09T18:40:58.616Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1467,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "9c8b238ac19cb032aa126fe9339d789daceffeaa",
+      "sha": "4d621240c38ebceeac693951d7c6b04636632adc",
       "branch": "canary",
-      "parentSha": "dea82ba4ee65606672a3648165da79dc0e792fc6",
-      "committedAt": "2026-09-09T16:43:17Z",
-      "url": "https://github.com/vercel/next.js/commit/9c8b238ac19cb032aa126fe9339d789daceffeaa",
-      "title": "test: stabilize deferred entries HMR assertions (#98418)",
-      "observedAt": "2026-09-09T16:50:54.532Z",
+      "parentSha": "9c8b238ac19cb032aa126fe9339d789daceffeaa",
+      "committedAt": "2026-09-09T18:39:37Z",
+      "url": "https://github.com/vercel/next.js/commit/4d621240c38ebceeac693951d7c6b04636632adc",
+      "title": "test(evals): validate delegated error boundary components (#98387)",
+      "observedAt": "2026-09-09T18:40:58.616Z",
       "programs": [
         "Vercel Open Source"
       ],
