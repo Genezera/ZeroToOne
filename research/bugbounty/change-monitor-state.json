@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T15:50:44.071Z",
+  "checkedAt": "2026-09-09T16:00:59.423Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "cbb08839f9dbd6dbdbe39cdadda207ed85ae6ad2",
+      "sha": "7d98d8615d7d6470c21943daec1187f59f99abce",
       "branch": "main",
-      "parentSha": "1dc8f40340ca4d1be9acba653ec5dad4e1b561cd",
-      "committedAt": "2026-09-08T17:52:35Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/cbb08839f9dbd6dbdbe39cdadda207ed85ae6ad2",
-      "title": "Merge pull request #9912 from Huang-Wei/sched-plugins-0.35.7",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "cbb08839f9dbd6dbdbe39cdadda207ed85ae6ad2",
+      "committedAt": "2026-09-09T15:56:37Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/7d98d8615d7d6470c21943daec1187f59f99abce",
+      "title": "Merge pull request #9913 from benjaminapetersen/sig-auth/members/secrets-subprojects",
+      "observedAt": "2026-09-09T16:00:59.423Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1426,13 +1426,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "d630b218af24df0e22d9ec1dd4550662f472bbb0",
+      "sha": "1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
       "branch": "main",
-      "parentSha": "ee02527b121701d2c9f7bef957d68b650d342505",
-      "committedAt": "2026-09-09T15:35:24Z",
-      "url": "https://github.com/vercel/eve/commit/d630b218af24df0e22d9ec1dd4550662f472bbb0",
-      "title": "fix(eve): deflake workflow and fixture tests (#3165)",
-      "observedAt": "2026-09-09T15:40:46.746Z",
+      "parentSha": "d630b218af24df0e22d9ec1dd4550662f472bbb0",
+      "committedAt": "2026-09-09T15:59:45Z",
+      "url": "https://github.com/vercel/eve/commit/1a9556ca5e368561f87b44ef96bcf713bd25cbf9",
+      "title": "fix(eve): persist framework prompt announcements (#3131)",
+      "observedAt": "2026-09-09T16:00:59.423Z",
       "programs": [
         "Vercel Open Source"
       ],
