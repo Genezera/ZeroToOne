@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T16:40:46.612Z",
+  "checkedAt": "2026-09-10T16:50:47.094Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1295,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "dcbfff7789b84f39388228e6dab11456c446e269",
+      "sha": "da6e8b65fa1444c4df0b1b0efb6cc8e0ac4a0fbc",
       "branch": "canary",
-      "parentSha": "ac55fd99655e29abdabfeec93dec69f7cf8c7aab",
-      "committedAt": "2026-09-10T16:40:17Z",
-      "url": "https://github.com/vercel/next.js/commit/dcbfff7789b84f39388228e6dab11456c446e269",
-      "title": "fix(next/image): don't share the requester's socket with the internal image response (#98168)",
-      "observedAt": "2026-09-10T16:40:46.612Z",
+      "parentSha": "dcbfff7789b84f39388228e6dab11456c446e269",
+      "committedAt": "2026-09-10T16:42:56Z",
+      "url": "https://github.com/vercel/next.js/commit/da6e8b65fa1444c4df0b1b0efb6cc8e0ac4a0fbc",
+      "title": "[testmode] Stop using deprecated `url.parse` (#98194)",
+      "observedAt": "2026-09-10T16:50:47.094Z",
       "programs": [
         "Vercel Open Source"
       ],
