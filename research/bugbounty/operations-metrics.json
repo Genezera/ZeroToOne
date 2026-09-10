@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-10T16:11:37.595Z",
+  "generatedAt": "2026-09-10T16:21:59.607Z",
   "coverage": {
     "authorizedRepositories": 99,
     "monitoredRepositories": 99,
@@ -9,11 +9,11 @@
     "extra": []
   },
   "latency": {
-    "monitorCheckedAt": "2026-09-10T16:00:59.505Z",
-    "monitorLagMinutes": 10,
-    "observedDeltas7d": 261,
-    "observedDeltas24h": 109,
-    "directSingleCommit24h": 68,
+    "monitorCheckedAt": "2026-09-10T16:20:51.679Z",
+    "monitorLagMinutes": 1,
+    "observedDeltas7d": 263,
+    "observedDeltas24h": 111,
+    "directSingleCommit24h": 69,
     "detectionMinutesP50": 8,
     "detectionMinutesP95": 348
   },
