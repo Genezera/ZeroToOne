@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T17:51:04.823Z",
+  "checkedAt": "2026-09-10T18:01:01.548Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "e1dabc2ad97a6b110e28812f72c78395f42c4b5c",
+      "sha": "09df32cab308641e5a609a86f706b5036b9752c1",
       "branch": "main",
-      "parentSha": "05d2047f6cab6f2b71cc07b19a7cde4d09a49a22",
-      "committedAt": "2026-09-10T17:40:59Z",
-      "url": "https://github.com/vercel/eve/commit/e1dabc2ad97a6b110e28812f72c78395f42c4b5c",
-      "title": "feat(eve): emit multi-agent deployment summaries (#3000)",
-      "observedAt": "2026-09-10T17:40:54.836Z",
+      "parentSha": "e1dabc2ad97a6b110e28812f72c78395f42c4b5c",
+      "committedAt": "2026-09-10T18:00:38Z",
+      "url": "https://github.com/vercel/eve/commit/09df32cab308641e5a609a86f706b5036b9752c1",
+      "title": "[eve] Add experimental.workflow.retention (#3236)",
+      "observedAt": "2026-09-10T18:01:01.548Z",
       "programs": [
         "Vercel Open Source"
       ],
