@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T19:01:14.462Z",
+  "checkedAt": "2026-09-10T19:10:57.021Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "5661100ef7f997c6ca15b8d507ac12d871bdd4cf",
+      "sha": "ddae754a74981d7410fa225895725e34af03b016",
       "branch": "master",
-      "parentSha": "a1beeffb9444ad2fc1ecb8a5a965da335520069b",
-      "committedAt": "2026-09-10T17:06:43Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/5661100ef7f997c6ca15b8d507ac12d871bdd4cf",
-      "title": "Merge pull request #37846 from shiftstack/cpo-chart-lints",
-      "observedAt": "2026-09-10T17:10:50.712Z",
+      "parentSha": "5661100ef7f997c6ca15b8d507ac12d871bdd4cf",
+      "committedAt": "2026-09-10T19:04:35Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/ddae754a74981d7410fa225895725e34af03b016",
+      "title": "Merge pull request #37858 from dims/unwanted-dep-canary",
+      "observedAt": "2026-09-10T19:10:57.021Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "09df32cab308641e5a609a86f706b5036b9752c1",
+      "sha": "11320e127013d391f1dd67ac4f4ae50915752440",
       "branch": "main",
-      "parentSha": "e1dabc2ad97a6b110e28812f72c78395f42c4b5c",
-      "committedAt": "2026-09-10T18:00:38Z",
-      "url": "https://github.com/vercel/eve/commit/09df32cab308641e5a609a86f706b5036b9752c1",
-      "title": "[eve] Add experimental.workflow.retention (#3236)",
-      "observedAt": "2026-09-10T18:01:01.548Z",
+      "parentSha": "09df32cab308641e5a609a86f706b5036b9752c1",
+      "committedAt": "2026-09-10T19:06:27Z",
+      "url": "https://github.com/vercel/eve/commit/11320e127013d391f1dd67ac4f4ae50915752440",
+      "title": "fix(eve): enable Agent Runs for previews (#3244)",
+      "observedAt": "2026-09-10T19:10:57.021Z",
       "programs": [
         "Vercel Open Source"
       ],
