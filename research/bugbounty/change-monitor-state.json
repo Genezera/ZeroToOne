@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T19:10:57.021Z",
+  "checkedAt": "2026-09-10T19:40:47.871Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "ddae754a74981d7410fa225895725e34af03b016",
+      "sha": "e5c79607f07c9988be7aa25a46a60328bdc970a9",
       "branch": "master",
-      "parentSha": "5661100ef7f997c6ca15b8d507ac12d871bdd4cf",
-      "committedAt": "2026-09-10T19:04:35Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/ddae754a74981d7410fa225895725e34af03b016",
-      "title": "Merge pull request #37858 from dims/unwanted-dep-canary",
-      "observedAt": "2026-09-10T19:10:57.021Z",
+      "parentSha": "ddae754a74981d7410fa225895725e34af03b016",
+      "committedAt": "2026-09-10T19:32:36Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/e5c79607f07c9988be7aa25a46a60328bdc970a9",
+      "title": "Merge pull request #37859 from tenzen-y/kueue-dra-e2e-fix",
+      "observedAt": "2026-09-10T19:40:47.871Z",
       "programs": [
         "Kubernetes"
       ],
