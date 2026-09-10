@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T16:00:59.505Z",
+  "checkedAt": "2026-09-10T16:20:51.679Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "f87bf07ebe466217464770ee37abe32bda3f2697",
+      "sha": "72d9e05780a6f6c35bc71d9aefdbe389af00d845",
       "branch": "main",
-      "parentSha": "81ba84cb9e541983d595108c94196586836ebcac",
-      "committedAt": "2026-09-10T15:04:09Z",
-      "url": "https://github.com/vercel/ai/commit/f87bf07ebe466217464770ee37abe32bda3f2697",
-      "title": "fix: rerank() returns undefined documents for invalid provider ranking indices (#20423)",
-      "observedAt": "2026-09-10T15:10:51.018Z",
+      "parentSha": "f87bf07ebe466217464770ee37abe32bda3f2697",
+      "committedAt": "2026-09-10T16:18:12Z",
+      "url": "https://github.com/vercel/ai/commit/72d9e05780a6f6c35bc71d9aefdbe389af00d845",
+      "title": "fix: Replay provider-executed tool results correctly across WorkflowAgent steps (#20443)",
+      "observedAt": "2026-09-10T16:20:51.679Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "86e13ffdc230ffe3f8ed9b90e2ae934e9dbedcfc",
+      "sha": "8c8888e67bdf0f8a94573c6dc1c90a72a61a8776",
       "branch": "main",
-      "parentSha": "0f8caf4e0e88f07d0f0f1022d79b44e85c314149",
-      "committedAt": "2026-09-10T15:54:31Z",
-      "url": "https://github.com/vercel/eve/commit/86e13ffdc230ffe3f8ed9b90e2ae934e9dbedcfc",
-      "title": "fix(eve): support lazy metadata in Workflow beta update (#3233)",
-      "observedAt": "2026-09-10T16:00:59.505Z",
+      "parentSha": "04aa2f8ae1fe6f9263d3d7c4bd2dbb2582d8743c",
+      "committedAt": "2026-09-10T16:16:24Z",
+      "url": "https://github.com/vercel/eve/commit/8c8888e67bdf0f8a94573c6dc1c90a72a61a8776",
+      "title": "fix(eve): normalize mixed provider tool history (#3204)",
+      "observedAt": "2026-09-10T16:20:51.679Z",
       "programs": [
         "Vercel Open Source"
       ],
