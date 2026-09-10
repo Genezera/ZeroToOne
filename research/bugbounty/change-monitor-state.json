@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T15:50:48.376Z",
+  "checkedAt": "2026-09-10T16:00:59.505Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "0f8caf4e0e88f07d0f0f1022d79b44e85c314149",
+      "sha": "86e13ffdc230ffe3f8ed9b90e2ae934e9dbedcfc",
       "branch": "main",
-      "parentSha": "da6b9945ef12300387e5a9a015cba3bd9d124ebb",
-      "committedAt": "2026-09-10T15:40:35Z",
-      "url": "https://github.com/vercel/eve/commit/0f8caf4e0e88f07d0f0f1022d79b44e85c314149",
-      "title": "Simplify workflow agent calls (#3230)",
-      "observedAt": "2026-09-10T15:40:48.514Z",
+      "parentSha": "0f8caf4e0e88f07d0f0f1022d79b44e85c314149",
+      "committedAt": "2026-09-10T15:54:31Z",
+      "url": "https://github.com/vercel/eve/commit/86e13ffdc230ffe3f8ed9b90e2ae934e9dbedcfc",
+      "title": "fix(eve): support lazy metadata in Workflow beta update (#3233)",
+      "observedAt": "2026-09-10T16:00:59.505Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1295,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "e674165f365590225f61bf80e29a278fcd6fee73",
+      "sha": "c1156571cd64944d0321b57c697cca7096a4061c",
       "branch": "canary",
-      "parentSha": "dea15ec6036ab6f487adf25d7f58622bbe0b22e0",
-      "committedAt": "2026-09-10T15:02:34Z",
-      "url": "https://github.com/vercel/next.js/commit/e674165f365590225f61bf80e29a278fcd6fee73",
-      "title": "Report incompatible parallel route slots (#97430)",
-      "observedAt": "2026-09-10T15:10:51.018Z",
+      "parentSha": "e674165f365590225f61bf80e29a278fcd6fee73",
+      "committedAt": "2026-09-10T15:59:49Z",
+      "url": "https://github.com/vercel/next.js/commit/c1156571cd64944d0321b57c697cca7096a4061c",
+      "title": "Turbopack: Deduplicate project options documentation (#98465)",
+      "observedAt": "2026-09-10T16:00:59.505Z",
       "programs": [
         "Vercel Open Source"
       ],
