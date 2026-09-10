@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T19:40:47.871Z",
+  "checkedAt": "2026-09-10T19:50:54.043Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "d51dbfb68d61c3ec62a5bd8b2ce8a192c6c3d178",
+      "sha": "704ad3fca237ec55717842f9e3626a39278c73dd",
       "branch": "main",
-      "parentSha": "88c0bbb1dadc19ebb863dacbecb5d780a9c6b415",
-      "committedAt": "2026-09-10T18:56:38Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/d51dbfb68d61c3ec62a5bd8b2ce8a192c6c3d178",
-      "title": "Merge pull request #9920 from geewynn/bump-datadog-3.244.0",
-      "observedAt": "2026-09-10T19:01:14.462Z",
+      "parentSha": "d51dbfb68d61c3ec62a5bd8b2ce8a192c6c3d178",
+      "committedAt": "2026-09-10T19:46:35Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/704ad3fca237ec55717842f9e3626a39278c73dd",
+      "title": "Merge pull request #9918 from saschagrunert/sp-operator-deny-chmod-image-promotion",
+      "observedAt": "2026-09-10T19:50:54.043Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "47c9a4e78d0b8aec7d4bc78bcf13c1f217213101",
+      "sha": "40f11e7981d9f5b3d284b22ef5248ced7b78b2c9",
       "branch": "master",
-      "parentSha": "1a1344d7f8256aa6f35267576a1f84f93b7c2080",
-      "committedAt": "2026-09-10T18:54:34Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/47c9a4e78d0b8aec7d4bc78bcf13c1f217213101",
-      "title": "Merge pull request #141519 from pohly/ktesting-graduation",
-      "observedAt": "2026-09-10T19:01:14.462Z",
+      "parentSha": "47c9a4e78d0b8aec7d4bc78bcf13c1f217213101",
+      "committedAt": "2026-09-10T19:44:36Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/40f11e7981d9f5b3d284b22ef5248ced7b78b2c9",
+      "title": "Merge pull request #141591 from gaurab-khanal/limit",
+      "observedAt": "2026-09-10T19:50:54.043Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1295,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "da6e8b65fa1444c4df0b1b0efb6cc8e0ac4a0fbc",
+      "sha": "6fbba169cd7f46cafeaf334a6a0fb3eebba20d2c",
       "branch": "canary",
-      "parentSha": "dcbfff7789b84f39388228e6dab11456c446e269",
-      "committedAt": "2026-09-10T16:42:56Z",
-      "url": "https://github.com/vercel/next.js/commit/da6e8b65fa1444c4df0b1b0efb6cc8e0ac4a0fbc",
-      "title": "[testmode] Stop using deprecated `url.parse` (#98194)",
-      "observedAt": "2026-09-10T16:50:47.094Z",
+      "parentSha": "0bdea6782d7761f2684c38158ee5acc280d3e842",
+      "committedAt": "2026-09-10T19:47:56Z",
+      "url": "https://github.com/vercel/next.js/commit/6fbba169cd7f46cafeaf334a6a0fb3eebba20d2c",
+      "title": "bundle-analyzer: add table view to single-build analyzer (#93523)",
+      "observedAt": "2026-09-10T19:50:54.043Z",
       "programs": [
         "Vercel Open Source"
       ],
