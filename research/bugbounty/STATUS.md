@@ -1,6 +1,6 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-10T16:01:11.696Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-10T16:21:04.043Z.
 
 ## Alvos ativos
 
