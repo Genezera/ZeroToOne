@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T20:01:04.515Z",
+  "checkedAt": "2026-09-10T20:10:52.535Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "7469a3bc5daf0fd8c535c903f883d730a39de191",
+      "sha": "813bb36f958052c5e5d4718de83cdff0068eeef3",
       "branch": "main",
-      "parentSha": "0de88864f70b6f02cf89d1625aeb3fece0648a7f",
-      "committedAt": "2026-09-10T19:00:28Z",
-      "url": "https://github.com/vercel/ai/commit/7469a3bc5daf0fd8c535c903f883d730a39de191",
-      "title": "feat: support image generation requests in batches (#20594)",
-      "observedAt": "2026-09-10T19:01:14.462Z",
+      "parentSha": "7469a3bc5daf0fd8c535c903f883d730a39de191",
+      "committedAt": "2026-09-10T20:07:17Z",
+      "url": "https://github.com/vercel/ai/commit/813bb36f958052c5e5d4718de83cdff0068eeef3",
+      "title": "fix(provider-utils): avoid detecting plain text prefixes as BMP or GIF images (#20603)",
+      "observedAt": "2026-09-10T20:10:52.535Z",
       "programs": [
         "Vercel Open Source"
       ],
