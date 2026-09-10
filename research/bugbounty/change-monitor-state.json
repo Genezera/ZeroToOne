@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T20:10:52.535Z",
+  "checkedAt": "2026-09-10T20:30:59.670Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -290,13 +290,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-gcp": {
-      "sha": "925ccfe0a9ea52e48ab2a372e59280731005b9d4",
+      "sha": "7b05a6434e61a5607d34fd7ff16a68d93f75bb4e",
       "branch": "master",
-      "parentSha": "230455622dbeadf9f4fc7e797c8973439323b3f6",
-      "committedAt": "2026-09-09T21:16:35Z",
-      "url": "https://github.com/kubernetes/cloud-provider-gcp/commit/925ccfe0a9ea52e48ab2a372e59280731005b9d4",
-      "title": "chore: bump golangci-lint to v2.13.2 for Go 1.27 compatibility (#1346)",
-      "observedAt": "2026-09-09T21:20:35.586Z",
+      "parentSha": "925ccfe0a9ea52e48ab2a372e59280731005b9d4",
+      "committedAt": "2026-09-10T20:22:35Z",
+      "url": "https://github.com/kubernetes/cloud-provider-gcp/commit/7b05a6434e61a5607d34fd7ff16a68d93f75bb4e",
+      "title": "fix(metis): extract IPAMEngine to pkg/ipam and apply release cooldown in fallback mode (#1345)",
+      "observedAt": "2026-09-10T20:30:59.670Z",
       "programs": [
         "Kubernetes"
       ],
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "704ad3fca237ec55717842f9e3626a39278c73dd",
+      "sha": "b64ea53d366b71b5e19e31bd254c9423b174bd90",
       "branch": "main",
-      "parentSha": "d51dbfb68d61c3ec62a5bd8b2ce8a192c6c3d178",
-      "committedAt": "2026-09-10T19:46:35Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/704ad3fca237ec55717842f9e3626a39278c73dd",
-      "title": "Merge pull request #9918 from saschagrunert/sp-operator-deny-chmod-image-promotion",
-      "observedAt": "2026-09-10T19:50:54.043Z",
+      "parentSha": "704ad3fca237ec55717842f9e3626a39278c73dd",
+      "committedAt": "2026-09-10T20:26:35Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/b64ea53d366b71b5e19e31bd254c9423b174bd90",
+      "title": "Merge pull request #9923 from geewynn/exclude-prow-logs",
+      "observedAt": "2026-09-10T20:30:59.670Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1295,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "6fbba169cd7f46cafeaf334a6a0fb3eebba20d2c",
+      "sha": "393de1ebe0993c57e1ddd4d3f4d66a03c7fb1077",
       "branch": "canary",
-      "parentSha": "0bdea6782d7761f2684c38158ee5acc280d3e842",
-      "committedAt": "2026-09-10T19:47:56Z",
-      "url": "https://github.com/vercel/next.js/commit/6fbba169cd7f46cafeaf334a6a0fb3eebba20d2c",
-      "title": "bundle-analyzer: add table view to single-build analyzer (#93523)",
-      "observedAt": "2026-09-10T19:50:54.043Z",
+      "parentSha": "6fbba169cd7f46cafeaf334a6a0fb3eebba20d2c",
+      "committedAt": "2026-09-10T20:27:36Z",
+      "url": "https://github.com/vercel/next.js/commit/393de1ebe0993c57e1ddd4d3f4d66a03c7fb1077",
+      "title": "skill: add Partial Prefetching optimizer (#96471)",
+      "observedAt": "2026-09-10T20:30:59.670Z",
       "programs": [
         "Vercel Open Source"
       ],
