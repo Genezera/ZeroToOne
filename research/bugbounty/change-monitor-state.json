@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T18:01:01.548Z",
+  "checkedAt": "2026-09-10T18:18:38.444Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -853,13 +853,13 @@
       "languages": []
     },
     "kubernetes/org": {
-      "sha": "cc7d0bdb0475e19c805b82650c75473822d8e8e6",
+      "sha": "e1e3eff857fad842d31e35bcd9e12dd04edff511",
       "branch": "main",
-      "parentSha": "2e0966ec48cec36b2b7db05bda884d2f32d93381",
-      "committedAt": "2026-09-09T18:26:36Z",
-      "url": "https://github.com/kubernetes/org/commit/cc7d0bdb0475e19c805b82650c75473822d8e8e6",
-      "title": "Merge pull request #6622 from aramase/aramase/c/rm_ritazh_csi",
-      "observedAt": "2026-09-09T18:30:46.571Z",
+      "parentSha": "cc7d0bdb0475e19c805b82650c75473822d8e8e6",
+      "committedAt": "2026-09-10T18:16:35Z",
+      "url": "https://github.com/kubernetes/org/commit/e1e3eff857fad842d31e35bcd9e12dd04edff511",
+      "title": "Merge pull request #6632 from spowelljr/patch-1",
+      "observedAt": "2026-09-10T18:18:38.444Z",
       "programs": [
         "Kubernetes"
       ],
