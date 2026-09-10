@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T19:50:54.043Z",
+  "checkedAt": "2026-09-10T20:01:04.515Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1058,13 +1058,13 @@
       "languages": []
     },
     "nuxt/nuxt": {
-      "sha": "667c2d563927ac6e89ec4d9eb9b6770d5dd8de46",
+      "sha": "7ab63d4b24a6a93c6d71e40a7fa6320f57bdb3bd",
       "branch": "main",
-      "parentSha": "03e9df01a1256d214ac5c5c14514f95803ecb244",
-      "committedAt": "2026-09-10T15:11:25Z",
-      "url": "https://github.com/nuxt/nuxt/commit/667c2d563927ac6e89ec4d9eb9b6770d5dd8de46",
-      "title": "perf(nitro): use `flru` for prerender cache (#36340)",
-      "observedAt": "2026-09-10T15:30:55.243Z",
+      "parentSha": "667c2d563927ac6e89ec4d9eb9b6770d5dd8de46",
+      "committedAt": "2026-09-10T19:44:34Z",
+      "url": "https://github.com/nuxt/nuxt/commit/7ab63d4b24a6a93c6d71e40a7fa6320f57bdb3bd",
+      "title": "fix(nuxt): widen `nuxt/server` helper event types (#36335)",
+      "observedAt": "2026-09-10T20:01:04.515Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "11320e127013d391f1dd67ac4f4ae50915752440",
+      "sha": "f60c64b18689d1a1a3bef538bb23994ff7c1ca4c",
       "branch": "main",
-      "parentSha": "09df32cab308641e5a609a86f706b5036b9752c1",
-      "committedAt": "2026-09-10T19:06:27Z",
-      "url": "https://github.com/vercel/eve/commit/11320e127013d391f1dd67ac4f4ae50915752440",
-      "title": "fix(eve): enable Agent Runs for previews (#3244)",
-      "observedAt": "2026-09-10T19:10:57.021Z",
+      "parentSha": "eed4f3bcdfe8675515822f21deaf37d35eb9ced7",
+      "committedAt": "2026-09-10T19:56:05Z",
+      "url": "https://github.com/vercel/eve/commit/f60c64b18689d1a1a3bef538bb23994ff7c1ca4c",
+      "title": "feat(eve): add semantic model message kinds (#3155)",
+      "observedAt": "2026-09-10T20:01:04.515Z",
       "programs": [
         "Vercel Open Source"
       ],
