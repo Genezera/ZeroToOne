@@ -804,7 +804,7 @@
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac": "falso_positivo",
   "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/cipher.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/filecoin/transaction.go::SignedTx::unchecked_signature_length_panic": "inconclusivo",
-  "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature": "inconclusivo",
+  "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature": "falso_positivo",
   "OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address": "inconclusivo",
   "OKG::okx/go-wallet-sdk/coins/helium/keypair/keypair.go::Keypair.Sign::silent_unsigned_result_unimplemented_curve": "inconclusivo",
   "OKG::okx/go-wallet-sdk/coins/aptos/v2/transactionAuthenticator.go::MultiEd25519TransactionAuthenticator.Verify::ai_deep_read_finding": "inconclusivo",

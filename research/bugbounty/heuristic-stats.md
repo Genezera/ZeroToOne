@@ -68,7 +68,7 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ssrf_risk | js | 13 | 0 | 13 | 0 | 100% |
 | tainted_data_flow | js | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | solidity | 10 | 1 | 9 | 0 | 90% |
-| unclamped_scalar_pubkey_mismatch_invalid_signature | go | 1 | 0 | 0 | 1 | 0% |
+| unclamped_scalar_pubkey_mismatch_invalid_signature | go | 1 | 0 | 1 | 0 | 100% |
 | unguarded_transfer | clarity | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | go | 1 | 0 | 1 | 0 | 100% |
 
@@ -147,6 +147,6 @@ Gerado automaticamente por `verdict-stats.mjs` a cada rodada do scanner. Não ed
 | ssrf_risk | Vercel Open Source | 13 | 0 | 13 | 0 | 100% |
 | tainted_data_flow | Vercel Open Source | 1 | 0 | 1 | 0 | 100% |
 | unchecked_call_return | Circle BBP | 10 | 1 | 9 | 0 | 90% |
-| unclamped_scalar_pubkey_mismatch_invalid_signature | OKG | 1 | 0 | 0 | 1 | 0% |
+| unclamped_scalar_pubkey_mismatch_invalid_signature | OKG | 1 | 0 | 1 | 0 | 100% |
 | unguarded_transfer | StackingDAO | 2 | 0 | 2 | 0 | 100% |
 | weak_crypto_risk | OKG | 1 | 0 | 1 | 0 | 100% |

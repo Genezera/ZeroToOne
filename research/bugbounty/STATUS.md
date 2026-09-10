@@ -1,17 +1,11 @@
 # Centro de operações — status
 
-Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-10T14:45:13.279Z.
+Gerado automaticamente por `status-dashboard.mjs` a cada rodada do scanner. Não editar à mão. Última rodada: 2026-09-10T14:51:11.276Z.
 
 ## Alvos ativos
 
 | Linguagem | Programa | Plataforma | Alvo |
 |---|---|---|---|
-| js | Vercel Open Source | HackerOne | vercel/flags |
-| go | Kubernetes | HackerOne | kubernetes/apimachinery |
-| go | Kubernetes | HackerOne | kubernetes/cloud-provider-openstack |
-| go | Kubernetes | HackerOne | kubernetes/code-generator |
-| go | Kubernetes | HackerOne | kubernetes/sample-controller |
-| go | Kubernetes | HackerOne | kubernetes/publishing-bot |
 
 ## Fila de bug bounty
 
