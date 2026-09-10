@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T17:01:11.010Z",
+  "checkedAt": "2026-09-10T17:10:50.712Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "8b62a4fb9cabf7f1795d625165f8ef7ebbaeb2d6",
+      "sha": "5661100ef7f997c6ca15b8d507ac12d871bdd4cf",
       "branch": "master",
-      "parentSha": "90c66cb99bfc27e2b416e7501720a19b4d91775c",
-      "committedAt": "2026-09-10T16:56:35Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/8b62a4fb9cabf7f1795d625165f8ef7ebbaeb2d6",
-      "title": "Merge pull request #37856 from upodroid/bump-argocd-differ",
-      "observedAt": "2026-09-10T17:01:11.010Z",
+      "parentSha": "a1beeffb9444ad2fc1ecb8a5a965da335520069b",
+      "committedAt": "2026-09-10T17:06:43Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/5661100ef7f997c6ca15b8d507ac12d871bdd4cf",
+      "title": "Merge pull request #37846 from shiftstack/cpo-chart-lints",
+      "observedAt": "2026-09-10T17:10:50.712Z",
       "programs": [
         "Kubernetes"
       ],
