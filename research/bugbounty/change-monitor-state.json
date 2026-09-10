@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T15:30:55.243Z",
+  "checkedAt": "2026-09-10T15:40:48.514Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "da6b9945ef12300387e5a9a015cba3bd9d124ebb",
+      "sha": "0f8caf4e0e88f07d0f0f1022d79b44e85c314149",
       "branch": "main",
-      "parentSha": "2b2ad19d937ea2ad3ea2b3adb4fdd54efb0b5c64",
-      "committedAt": "2026-09-10T15:25:37Z",
-      "url": "https://github.com/vercel/eve/commit/da6b9945ef12300387e5a9a015cba3bd9d124ebb",
-      "title": "chore: add chadhietala as CODEOWNER (#3234)",
-      "observedAt": "2026-09-10T15:30:55.243Z",
+      "parentSha": "da6b9945ef12300387e5a9a015cba3bd9d124ebb",
+      "committedAt": "2026-09-10T15:40:35Z",
+      "url": "https://github.com/vercel/eve/commit/0f8caf4e0e88f07d0f0f1022d79b44e85c314149",
+      "title": "Simplify workflow agent calls (#3230)",
+      "observedAt": "2026-09-10T15:40:48.514Z",
       "programs": [
         "Vercel Open Source"
       ],
