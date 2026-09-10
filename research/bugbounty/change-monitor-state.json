@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-09T21:30:41.413Z",
+  "checkedAt": "2026-09-10T14:44:56.653Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -139,39 +139,39 @@
       "languages": []
     },
     "kubernetes/api": {
-      "sha": "73e57b223dd9234bf1ff636031913e692dec7e94",
+      "sha": "ba65e05bfb3c8ac5c40a0f177365fc18233abebf",
       "branch": "master",
-      "parentSha": "baf48de52220941c0253fe70ff07b1e38576b86a",
-      "committedAt": "2026-09-09T15:47:34Z",
-      "url": "https://github.com/kubernetes/api/commit/73e57b223dd9234bf1ff636031913e692dec7e94",
-      "title": "Merge pull request #141881 from liyuerich/commentstartcertificate",
-      "observedAt": "2026-09-09T19:01:01.675Z",
+      "parentSha": "f869d96f268bdff44e8fe4ce23a8ce787f8b3832",
+      "committedAt": "2026-09-10T07:41:34Z",
+      "url": "https://github.com/kubernetes/api/commit/ba65e05bfb3c8ac5c40a0f177365fc18233abebf",
+      "title": "Merge pull request #141260 from krishhna24/dv-node-podcidrs",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
       "languages": []
     },
     "kubernetes/apiextensions-apiserver": {
-      "sha": "7ed09363ccb18cc4f68cb6922539c90a6bee02a9",
+      "sha": "91475bf2d0c8d45d3a7dde00c0445a4a2eb28a16",
       "branch": "master",
-      "parentSha": "211ae6607b420fe9894ecf93bd75f4447e74d3b9",
-      "committedAt": "2026-09-08T22:48:07Z",
-      "url": "https://github.com/kubernetes/apiextensions-apiserver/commit/7ed09363ccb18cc4f68cb6922539c90a6bee02a9",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "189cc54f21823975a8a6e41598491a54636d9fdb",
+      "committedAt": "2026-09-10T08:20:03Z",
+      "url": "https://github.com/kubernetes/apiextensions-apiserver/commit/91475bf2d0c8d45d3a7dde00c0445a4a2eb28a16",
+      "title": "Merge pull request #140135 from Dricmoy/issue-125020-commonmark-quantity-doc",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
       "languages": []
     },
     "kubernetes/apimachinery": {
-      "sha": "4c16d07a1af55193fb5806601a5000c24b1124d9",
+      "sha": "a34869e33a203232380549749e39535ae1efda7f",
       "branch": "master",
-      "parentSha": "fd7334a9ed0c0ed4ca5537c5e3e56f333d6e835b",
-      "committedAt": "2026-09-09T17:28:33Z",
-      "url": "https://github.com/kubernetes/apimachinery/commit/4c16d07a1af55193fb5806601a5000c24b1124d9",
-      "title": "Merge pull request #141305 from thc1006/quantity-checked-accessors",
-      "observedAt": "2026-09-09T21:00:59.483Z",
+      "parentSha": "00f9043922b50e2f96636e893744f0034e16f8f3",
+      "committedAt": "2026-09-10T01:20:34Z",
+      "url": "https://github.com/kubernetes/apimachinery/commit/a34869e33a203232380549749e39535ae1efda7f",
+      "title": "Merge pull request #140135 from Dricmoy/issue-125020-commonmark-quantity-doc",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -180,26 +180,26 @@
       ]
     },
     "kubernetes/apiserver": {
-      "sha": "44b52574aca5af381e805e11546c352e93bc4524",
+      "sha": "fe00a036afeb3d78c595a9cf9688be18a7c1dc5c",
       "branch": "master",
-      "parentSha": "ed7191e948773c5a2f1e99453739cb13f07b946f",
-      "committedAt": "2026-09-09T10:20:13Z",
-      "url": "https://github.com/kubernetes/apiserver/commit/44b52574aca5af381e805e11546c352e93bc4524",
-      "title": "Merge pull request #141896 from richabanker/add-watchevent-watcher-queue-latency",
-      "observedAt": "2026-09-09T11:26:13.291Z",
+      "parentSha": "1094556aa04e69554084609251495960f5b79e45",
+      "committedAt": "2026-09-10T00:03:58Z",
+      "url": "https://github.com/kubernetes/apiserver/commit/fe00a036afeb3d78c595a9cf9688be18a7c1dc5c",
+      "title": "Merge pull request #141947 from Jefftree/apiserver-validate-unsafe-convert",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
       "languages": []
     },
     "kubernetes/autoscaler": {
-      "sha": "c85f5afed954f7ecdbfb9091da2202426806d8d8",
+      "sha": "d5934de91cc0a316b8b4fb3204e9a8a440d4079c",
       "branch": "master",
-      "parentSha": "4efdb5ff9de4d4bd9ee251ae01764a8250d20331",
-      "committedAt": "2026-09-08T21:54:31Z",
-      "url": "https://github.com/kubernetes/autoscaler/commit/c85f5afed954f7ecdbfb9091da2202426806d8d8",
-      "title": "Merge pull request #10171 from pujitha24/auto/issue-10167",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "c85f5afed954f7ecdbfb9091da2202426806d8d8",
+      "committedAt": "2026-09-10T12:56:36Z",
+      "url": "https://github.com/kubernetes/autoscaler/commit/d5934de91cc0a316b8b4fb3204e9a8a440d4079c",
+      "title": "Merge pull request #10274 from ppmechlinski/gce-non-gce-nodes",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -277,13 +277,13 @@
       ]
     },
     "kubernetes/cloud-provider-azure": {
-      "sha": "4cc9f1029687d2112a3f0293c22547c07257ea36",
+      "sha": "5b0fc273240e3bf51e4f709f263cc4747509effc",
       "branch": "master",
-      "parentSha": "af02e24ad56582af57a5e0e1242bfddec4953d50",
-      "committedAt": "2026-09-09T08:54:33Z",
-      "url": "https://github.com/kubernetes-sigs/cloud-provider-azure/commit/4cc9f1029687d2112a3f0293c22547c07257ea36",
-      "title": "chore: fix cves for master (#10929)",
-      "observedAt": "2026-09-09T09:00:55.407Z",
+      "parentSha": "98eff97d731df1fa594dbc4a225a6fabddae0b83",
+      "committedAt": "2026-09-10T08:04:13Z",
+      "url": "https://github.com/kubernetes-sigs/cloud-provider-azure/commit/5b0fc273240e3bf51e4f709f263cc4747509effc",
+      "title": "fix: update Go builders for CVE directive bumps (#10961)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -303,13 +303,13 @@
       "languages": []
     },
     "kubernetes/cloud-provider-openstack": {
-      "sha": "7d532614e7f7bf7b7c0ede253204e3a0910afc78",
+      "sha": "5dade2c7ca9b5e7d78b64f13871bff01a7cbb410",
       "branch": "master",
-      "parentSha": "22e7d73585b308db5a60520140876b986ac5e965",
-      "committedAt": "2026-09-09T17:22:33Z",
-      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/7d532614e7f7bf7b7c0ede253204e3a0910afc78",
-      "title": "fix(manila-csi-plugin): revert to setting cluster id from environment variable (#3157)",
-      "observedAt": "2026-09-09T17:30:45.665Z",
+      "parentSha": "7248bfecd9ace35a49c824c45621afe1667bb926",
+      "committedAt": "2026-09-10T11:20:35Z",
+      "url": "https://github.com/kubernetes/cloud-provider-openstack/commit/5dade2c7ca9b5e7d78b64f13871bff01a7cbb410",
+      "title": "Remove dead targets from Makefile (#3209)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -372,13 +372,13 @@
       "languages": []
     },
     "kubernetes/code-generator": {
-      "sha": "d65beb1a8303b69b5bb3a5c816314ca233ad3d7c",
+      "sha": "c8ab0908ba742864ec7a446efe2c9268d32ef059",
       "branch": "master",
-      "parentSha": "c04c07972931fe941600310fb7e1b7a3451a21c0",
-      "committedAt": "2026-09-09T06:10:35Z",
-      "url": "https://github.com/kubernetes/code-generator/commit/d65beb1a8303b69b5bb3a5c816314ca233ad3d7c",
-      "title": "Merge pull request #141874 from yongruilin/dv-nearest-resolution",
-      "observedAt": "2026-09-09T07:34:59.164Z",
+      "parentSha": "a8c065e7f62f73ea134fc0fd1d54829c93533abc",
+      "committedAt": "2026-09-10T07:49:22Z",
+      "url": "https://github.com/kubernetes/code-generator/commit/c8ab0908ba742864ec7a446efe2c9268d32ef059",
+      "title": "Merge pull request #140135 from Dricmoy/issue-125020-commonmark-quantity-doc",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -471,13 +471,13 @@
       "languages": []
     },
     "kubernetes/enhancements": {
-      "sha": "861cbafd9776e41109ebf931b035a6d8ff985f7b",
+      "sha": "e3ed21fdb51d359a2e73c714257f73cf453e8ba7",
       "branch": "master",
-      "parentSha": "4683520fa7ab7e16a4e01e2e68a7388203ad7061",
-      "committedAt": "2026-09-09T20:26:34Z",
-      "url": "https://github.com/kubernetes/enhancements/commit/861cbafd9776e41109ebf931b035a6d8ff985f7b",
-      "title": "Merge pull request #6334 from SergeyKanzhelev/138assignedapprovers",
-      "observedAt": "2026-09-09T20:30:55.022Z",
+      "parentSha": "861cbafd9776e41109ebf931b035a6d8ff985f7b",
+      "committedAt": "2026-09-10T08:56:35Z",
+      "url": "https://github.com/kubernetes/enhancements/commit/e3ed21fdb51d359a2e73c714257f73cf453e8ba7",
+      "title": "Merge pull request #6299 from pohly/dra-device-taints-1.37",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "bc57a174372d901df2e23916dacb8d5298de8f39",
+      "sha": "f00436edeb78e783d29f388158c4d6c18893b2ff",
       "branch": "main",
-      "parentSha": "7d98d8615d7d6470c21943daec1187f59f99abce",
-      "committedAt": "2026-09-09T20:36:34Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/bc57a174372d901df2e23916dacb8d5298de8f39",
-      "title": "Merge pull request #9914 from pmengelbert/pmengelbert/promote-csi-secrets-store-1.6.1/1",
-      "observedAt": "2026-09-09T20:40:42.526Z",
+      "parentSha": "15504df76777ed10adff15453e716ec65e38c0fa",
+      "committedAt": "2026-09-10T14:06:36Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/f00436edeb78e783d29f388158c4d6c18893b2ff",
+      "title": "Merge pull request #9919 from ElijahQuinones/provider-aws-2.66.0-image-promotion",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -592,26 +592,26 @@
       "languages": []
     },
     "kubernetes/kops": {
-      "sha": "fb9753c3a75552cb1c12986d96859d9e45f8b763",
+      "sha": "b0e54dcaf40c83cce36d2065e3abf37297e02513",
       "branch": "master",
-      "parentSha": "2baf20707486907c42f5a4a325d8d2255a60c74c",
-      "committedAt": "2026-09-09T14:06:27Z",
-      "url": "https://github.com/kubernetes/kops/commit/fb9753c3a75552cb1c12986d96859d9e45f8b763",
-      "title": "Merge pull request #18784 from moshevayner/aws-cni-1.23.1",
-      "observedAt": "2026-09-09T14:10:37.452Z",
+      "parentSha": "fb9753c3a75552cb1c12986d96859d9e45f8b763",
+      "committedAt": "2026-09-10T12:06:36Z",
+      "url": "https://github.com/kubernetes/kops/commit/b0e54dcaf40c83cce36d2065e3abf37297e02513",
+      "title": "Merge pull request #18789 from hakman/codex/fix-terraform-nlb-discovery",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
       "languages": []
     },
     "kubernetes/kube-aggregator": {
-      "sha": "74217b153a528ed2f6220cff8fa98a8da0c3bfc3",
+      "sha": "9926d468ef9ea2a4f3f74481c3b45efbbbfdf0b0",
       "branch": "master",
-      "parentSha": "6c633a1ec0ede99edf65e935dd455eadacebd8b9",
-      "committedAt": "2026-09-09T20:07:08Z",
-      "url": "https://github.com/kubernetes/kube-aggregator/commit/74217b153a528ed2f6220cff8fa98a8da0c3bfc3",
-      "title": "Merge pull request #140888 from Jefftree/openapi-v2-request-metric",
-      "observedAt": "2026-09-09T21:10:34.443Z",
+      "parentSha": "a701d6504b885b9e6870556edd5b4988edb30403",
+      "committedAt": "2026-09-10T08:05:26Z",
+      "url": "https://github.com/kubernetes/kube-aggregator/commit/9926d468ef9ea2a4f3f74481c3b45efbbbfdf0b0",
+      "title": "Merge pull request #140135 from Dricmoy/issue-125020-commonmark-quantity-doc",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -719,13 +719,13 @@
       ]
     },
     "kubernetes/kubectl": {
-      "sha": "c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
+      "sha": "b03ccc9c893b673b5212103f53c2de4be0523115",
       "branch": "master",
-      "parentSha": "89fc081d54e43adcf39a3809a701e072be27b83f",
-      "committedAt": "2026-09-09T18:28:55Z",
-      "url": "https://github.com/kubernetes/kubectl/commit/c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
-      "title": "refactor flags and options in kubectl exec cmd (#141918)",
-      "observedAt": "2026-09-09T19:01:01.675Z",
+      "parentSha": "c4f9919dcbb0b8cb6346051496ee7b9b2df4038e",
+      "committedAt": "2026-09-10T00:49:47Z",
+      "url": "https://github.com/kubernetes/kubectl/commit/b03ccc9c893b673b5212103f53c2de4be0523115",
+      "title": "kubectl: disallow label and annotate modifications when --list is set (#141589)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "6737adf59793fd79cb4a0c65ef36340b66f4643e",
+      "sha": "c891c1f59e9c807c161e57458556cbacc5ab966c",
       "branch": "master",
-      "parentSha": "fd85debf897fa30763442fae65b5c1543fd52af0",
-      "committedAt": "2026-09-09T21:30:33Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/6737adf59793fd79cb4a0c65ef36340b66f4643e",
-      "title": "Merge pull request #141207 from Jefftree/remove-locked-ga-gates-1.38",
-      "observedAt": "2026-09-09T21:30:41.413Z",
+      "parentSha": "6da9f3b462785cdf8566a7464f305686185716da",
+      "committedAt": "2026-09-10T13:50:52Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/c891c1f59e9c807c161e57458556cbacc5ab966c",
+      "title": "Merge pull request #141933 from itzPranshul/cleanup",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -868,26 +868,26 @@
       ]
     },
     "kubernetes/perf-tests": {
-      "sha": "6d049e752c247e8bc254b44f52f73c92563c7263",
+      "sha": "f723d39104797c383f9f4fc4fc2fbaa6fbff2150",
       "branch": "master",
-      "parentSha": "f49fa41e188a139ac7a57bd071e01ba916cb5103",
-      "committedAt": "2026-09-09T08:56:33Z",
-      "url": "https://github.com/kubernetes/perf-tests/commit/6d049e752c247e8bc254b44f52f73c92563c7263",
-      "title": "Merge pull request #4344 from p0lyn0mial/benchmark-list-informer-migration",
-      "observedAt": "2026-09-09T09:00:55.407Z",
+      "parentSha": "2f1c19b75853196efc783119c2f9ac3f81b6c51e",
+      "committedAt": "2026-09-10T12:14:35Z",
+      "url": "https://github.com/kubernetes/perf-tests/commit/f723d39104797c383f9f4fc4fc2fbaa6fbff2150",
+      "title": "Merge pull request #4361 from serathius/etcd-benchmark-exemplar-pod",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
       "languages": []
     },
     "kubernetes/publishing-bot": {
-      "sha": "0d28d64800e40abb56d6579adfd13cd35447835f",
+      "sha": "562c241287c859e8d0246ed88fba945084dd81c5",
       "branch": "master",
-      "parentSha": "9a7ad4025d710c95c9be38afc5cc7e60439e869b",
-      "committedAt": "2026-08-17T20:37:04Z",
-      "url": "https://github.com/kubernetes/publishing-bot/commit/0d28d64800e40abb56d6579adfd13cd35447835f",
-      "title": "Merge pull request #569 from kubernetes/dependabot/go_modules/golang.org/x/mod-0.40.0",
-      "observedAt": "2026-09-05T05:40:36.013Z",
+      "parentSha": "1a27fe99d954db5c72ae38326e2a3462adc3b8f9",
+      "committedAt": "2026-09-10T02:46:33Z",
+      "url": "https://github.com/kubernetes/publishing-bot/commit/562c241287c859e8d0246ed88fba945084dd81c5",
+      "title": "Merge pull request #570 from kubernetes/dependabot/go_modules/golang.org/x/mod-0.41.0",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -896,13 +896,13 @@
       ]
     },
     "kubernetes/release": {
-      "sha": "e3cbf93a5eccfe48e4ab5d862755f5b5dbf79306",
+      "sha": "229cc607f7bd9ac3b354d6dbff1c72315e1ea7c6",
       "branch": "master",
-      "parentSha": "902c4be59a0b5776ff37dc38b70ebac8348d31d0",
-      "committedAt": "2026-09-09T03:00:31Z",
-      "url": "https://github.com/kubernetes/release/commit/e3cbf93a5eccfe48e4ab5d862755f5b5dbf79306",
-      "title": "Merge pull request #4523 from kubernetes/dependabot/go_modules/google.golang.org/grpc-1.83.2",
-      "observedAt": "2026-09-09T03:10:59.200Z",
+      "parentSha": "1c6024cb0533eeafb4fe049294d57170f600f320",
+      "committedAt": "2026-09-10T07:18:34Z",
+      "url": "https://github.com/kubernetes/release/commit/229cc607f7bd9ac3b354d6dbff1c72315e1ea7c6",
+      "title": "Merge pull request #4519 from cpanato/updates",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -922,13 +922,13 @@
       "languages": []
     },
     "kubernetes/sample-apiserver": {
-      "sha": "0479701ac5beb98cc39af40fea3cabde2f43eb94",
+      "sha": "f7f32216d9a1dcff07e9628c0257a432f2cb8fb4",
       "branch": "master",
-      "parentSha": "01e41d5ed46cbe61f2a67368882e60a14749096c",
-      "committedAt": "2026-09-08T22:33:48Z",
-      "url": "https://github.com/kubernetes/sample-apiserver/commit/0479701ac5beb98cc39af40fea3cabde2f43eb94",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "b6e65c1327fe102e9669ec8f827c2a45d61ce04c",
+      "committedAt": "2026-09-10T08:08:07Z",
+      "url": "https://github.com/kubernetes/sample-apiserver/commit/f7f32216d9a1dcff07e9628c0257a432f2cb8fb4",
+      "title": "Merge pull request #140135 from Dricmoy/issue-125020-commonmark-quantity-doc",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -950,13 +950,13 @@
       ]
     },
     "kubernetes/sample-controller": {
-      "sha": "fa95a6d199f2afba284996626fec9bed485ba182",
+      "sha": "473a527804a0b95e2a4a1eccba913378f639d073",
       "branch": "master",
-      "parentSha": "901666e090893f6a3881c03892bc8281364fab74",
-      "committedAt": "2026-09-08T22:42:48Z",
-      "url": "https://github.com/kubernetes/sample-controller/commit/fa95a6d199f2afba284996626fec9bed485ba182",
-      "title": "Merge pull request #141873 from liggitt/kube-openapi",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "e366de9ac5b24b9376b495591acea79c3d5e9511",
+      "committedAt": "2026-09-10T08:15:44Z",
+      "url": "https://github.com/kubernetes/sample-controller/commit/473a527804a0b95e2a4a1eccba913378f639d073",
+      "title": "Merge pull request #140135 from Dricmoy/issue-125020-commonmark-quantity-doc",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -978,13 +978,13 @@
       "languages": []
     },
     "kubernetes/sig-release": {
-      "sha": "9c633c4acaa19975c4e258d78fffb3bb0df4b0b5",
+      "sha": "78b2d73ccf0651e7010b6ea457a7810cc7c11901",
       "branch": "master",
-      "parentSha": "71294a2951e79477104409c71bd4867226e8294e",
-      "committedAt": "2026-09-03T23:16:21Z",
-      "url": "https://github.com/kubernetes/sig-release/commit/9c633c4acaa19975c4e258d78fffb3bb0df4b0b5",
-      "title": "Merge pull request #3095 from SwathiR03/patch-1",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "9c633c4acaa19975c4e258d78fffb3bb0df4b0b5",
+      "committedAt": "2026-09-10T14:26:34Z",
+      "url": "https://github.com/kubernetes/sig-release/commit/78b2d73ccf0651e7010b6ea457a7810cc7c11901",
+      "title": "Merge pull request #3089 from sreeram-venkitesh/create-v1.38-directory-and-schedule",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "1dcc675249e5b4817ea1beb3709b657f595c619f",
+      "sha": "90c66cb99bfc27e2b416e7501720a19b4d91775c",
       "branch": "master",
-      "parentSha": "b8c816dd416e5eedbc32d93425b6e19c45abbcbd",
-      "committedAt": "2026-09-09T17:18:34Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/1dcc675249e5b4817ea1beb3709b657f595c619f",
-      "title": "Merge pull request #37847 from sbueringer/pr-ct-pre",
-      "observedAt": "2026-09-09T17:20:45.678Z",
+      "parentSha": "6459d2abf7e2722ed496891501e2621e91ec056d",
+      "committedAt": "2026-09-10T14:22:38Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/90c66cb99bfc27e2b416e7501720a19b4d91775c",
+      "title": "Merge pull request #37855 from k8s-infra-ci-robot/autobump",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1032,189 +1032,17 @@
       ]
     },
     "kubernetes/website": {
-      "sha": "61ad3bbfabe1e07a613ef691fba85d811df05536",
+      "sha": "215e6fc48d4aeef08a49b56522f86512adf3a7e2",
       "branch": "main",
-      "parentSha": "4e842ff3d93874d8046d818dbb7c3bef606034c3",
-      "committedAt": "2026-09-09T16:36:34Z",
-      "url": "https://github.com/kubernetes/website/commit/61ad3bbfabe1e07a613ef691fba85d811df05536",
-      "title": "[ja] Translate content/en/docs/reference/glossary/resource-quota.md into Japanese (#57076)",
-      "observedAt": "2026-09-09T16:40:50.556Z",
+      "parentSha": "cc576f96d4c602daf62fd3d054150c832cc42097",
+      "committedAt": "2026-09-10T12:00:34Z",
+      "url": "https://github.com/kubernetes/website/commit/215e6fc48d4aeef08a49b56522f86512adf3a7e2",
+      "title": "Merge pull request #57293 from marsboy02/ko/remove-ingress-minikube",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Kubernetes"
       ],
       "languages": []
-    },
-    "mattermost/mattermost-plugin-ai": {
-      "sha": "4a40ad7a7fab25d6b157b4f61d2a26209c620d3e",
-      "branch": "master",
-      "parentSha": "8a4eda3d2dd63a4a680ac8523a5bdea67e1a3284",
-      "committedAt": "2026-09-09T18:59:09Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-agents/commit/4a40ad7a7fab25d6b157b4f61d2a26209c620d3e",
-      "title": "feat(abac): wire ABAC policy editor to agents, services, and MCP (#973)",
-      "observedAt": "2026-09-09T19:01:01.675Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": []
-    },
-    "mattermost/mattermost-plugin-boards": {
-      "sha": "2f692a9e059f8d254e58b6d5bad7545a739cab48",
-      "branch": "main",
-      "parentSha": "4b7dd4b41a73bd70efbdb3406ad5f665d62cfd69",
-      "committedAt": "2026-08-27T07:43:58Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-boards/commit/2f692a9e059f8d254e58b6d5bad7545a739cab48",
-      "title": "M-70411 Addressing attachment validation mismatch (#247)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": []
-    },
-    "mattermost/mattermost-plugin-calls": {
-      "sha": "72fb35a981b0fe7dbe6444d2bfde09d78ba83249",
-      "branch": "main",
-      "parentSha": "89c2aa7e782f9faa6cb5c39675655c69f5ad28b8",
-      "committedAt": "2026-09-09T12:35:36Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-calls/commit/72fb35a981b0fe7dbe6444d2bfde09d78ba83249",
-      "title": "MM-70603: Update E2E report generation workflow conditions (#1290)",
-      "observedAt": "2026-09-09T12:40:39.716Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": []
-    },
-    "mattermost/mattermost-plugin-confluence": {
-      "sha": "aeb4448f0327bf7863377f561eba4de2e8657647",
-      "branch": "master",
-      "parentSha": "43abbda27b4ee1c1c65d2a9d9621a6d0d41d5b7b",
-      "committedAt": "2026-08-28T06:07:40Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-confluence/commit/aeb4448f0327bf7863377f561eba4de2e8657647",
-      "title": "Let connected non-admins manage channel subscriptions on Confluence  (#232)",
-      "observedAt": "2026-09-05T06:07:26.891Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "mattermost/mattermost-plugin-github": {
-      "sha": "c10f09bbeb04434cba59ed4f4ec7d86eea16874c",
-      "branch": "master",
-      "parentSha": "192abb376ab6ab94b27ff06267116c4e23cc22da",
-      "committedAt": "2026-09-09T16:01:55Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-github/commit/c10f09bbeb04434cba59ed4f4ec7d86eea16874c",
-      "title": "Bump js-yaml in /webapp (#1060)",
-      "observedAt": "2026-09-09T16:10:44.004Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "mattermost/mattermost-plugin-gitlab": {
-      "sha": "82b25da19c82e4450966e1857465dd8c47315bfd",
-      "branch": "master",
-      "parentSha": "cbf1b73039a9975acc1eaf563860f130f405cdac",
-      "committedAt": "2026-09-09T14:16:36Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-gitlab/commit/82b25da19c82e4450966e1857465dd8c47315bfd",
-      "title": "Bump js-yaml from 3.14.2 to 3.15.2 in /webapp (#711)",
-      "observedAt": "2026-09-09T14:20:35.643Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "js"
-      ]
-    },
-    "mattermost/mattermost-plugin-jira": {
-      "sha": "0e5b7423fe406e69ef668d301ecfbc7fefc8f710",
-      "branch": "master",
-      "parentSha": "f65d8b9750c4cafbe4fbacd7aa36ca96e19f6b15",
-      "committedAt": "2026-09-09T16:58:58Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-jira/commit/0e5b7423fe406e69ef668d301ecfbc7fefc8f710",
-      "title": "Bump js-yaml in /webapp (#1351)",
-      "observedAt": "2026-09-09T17:01:00.600Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "mattermost/mattermost-plugin-mscalendar": {
-      "sha": "4ff0ae9a277d5520ff2096dec09ee11fd05d6b70",
-      "branch": "master",
-      "parentSha": "42aeea1f50580fa69568fc7719582c6c7156faa0",
-      "committedAt": "2026-09-09T14:19:07Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-mscalendar/commit/4ff0ae9a277d5520ff2096dec09ee11fd05d6b70",
-      "title": "Bump js-yaml in /webapp (#544)",
-      "observedAt": "2026-09-09T14:20:35.643Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "mattermost/mattermost-plugin-msteams": {
-      "sha": "d9ad4dd7030b052bf0fecce0e15a78cd08621975",
-      "branch": "main",
-      "parentSha": "6fe4d295592ecc8767d67e69286cbeec01be3210",
-      "committedAt": "2026-03-04T05:49:27Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-msteams/commit/d9ad4dd7030b052bf0fecce0e15a78cd08621975",
-      "title": "Remove golang-version parameter from CI workflow (#896)",
-      "observedAt": "2026-09-05T06:07:26.891Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "mattermost/mattermost-plugin-msteams-meetings": {
-      "sha": "dba66a9c8e14ade8b2bbf6f66187a2f52b8b6c84",
-      "branch": "master",
-      "parentSha": "64c1602ad739b520a1f3ab7bde1c9f234f9e0d7c",
-      "committedAt": "2026-09-01T11:01:47Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-msteams-meetings/commit/dba66a9c8e14ade8b2bbf6f66187a2f52b8b6c84",
-      "title": "Bump github.com/stretchr/testify from 1.10.0 to 1.12.1 (#179)",
-      "observedAt": "2026-09-05T06:07:26.891Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
-    },
-    "mattermost/mattermost-plugin-playbooks": {
-      "sha": "884853f1e4d8fbb22092e57b54dee3ab31e82921",
-      "branch": "master",
-      "parentSha": "986eaa441827a5fd8f4e19adc0f5fd0b475f4772",
-      "committedAt": "2026-09-03T12:49:25Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-playbooks/commit/884853f1e4d8fbb22092e57b54dee3ab31e82921",
-      "title": "Allow locking tasks so only the assignee can complete them (#2386)",
-      "observedAt": "2026-09-09T01:14:19.711Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": []
-    },
-    "mattermost/mattermost-plugin-zoom": {
-      "sha": "1edae5d8c77fca92795b0d0078721488a98ebfd2",
-      "branch": "master",
-      "parentSha": "e3881bfa0ba18807b71215ff41d4a8afdc1cb607",
-      "committedAt": "2026-09-09T14:20:41Z",
-      "url": "https://github.com/mattermost/mattermost-plugin-zoom/commit/1edae5d8c77fca92795b0d0078721488a98ebfd2",
-      "title": "Bump js-yaml from 3.14.2 to 3.15.2 in /webapp (#491)",
-      "observedAt": "2026-09-09T14:20:35.643Z",
-      "programs": [
-        "Mattermost Public Bug Bounty Engagement "
-      ],
-      "languages": [
-        "go"
-      ]
     },
     "nitrojs/nitro": {
       "sha": "3b8980bb824e8552053426243a4755a71a44b377",
@@ -1385,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "e9795abf6185594ecdde53226c8149f8ea8b288d",
+      "sha": "81ba84cb9e541983d595108c94196586836ebcac",
       "branch": "main",
-      "parentSha": "ef3bac4c174f4650bb03aca0b5783fcfa6232a3b",
-      "committedAt": "2026-09-09T20:18:21Z",
-      "url": "https://github.com/vercel/ai/commit/e9795abf6185594ecdde53226c8149f8ea8b288d",
-      "title": "Version Packages (#20555)",
-      "observedAt": "2026-09-09T20:20:42.419Z",
+      "parentSha": "65666b6f23a90c5ee4f17d1059fc225d1cce7b2a",
+      "committedAt": "2026-09-10T14:39:33Z",
+      "url": "https://github.com/vercel/ai/commit/81ba84cb9e541983d595108c94196586836ebcac",
+      "title": "fix: preserve in-flight host tool results across HarnessAgent suspension and session finalization (#20547)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1426,26 +1254,26 @@
       ]
     },
     "vercel/eve": {
-      "sha": "a24b68c5774bffeb0e4e762c3aab3ec7ab64a179",
+      "sha": "7090a9536d76e2c6cba4bb64380853aa1d129712",
       "branch": "main",
-      "parentSha": "71fbdb832740eacce66f30e8318d99b6a438298c",
-      "committedAt": "2026-09-09T19:56:36Z",
-      "url": "https://github.com/vercel/eve/commit/a24b68c5774bffeb0e4e762c3aab3ec7ab64a179",
-      "title": "fix(eve): export durable callback helper (#2981)",
-      "observedAt": "2026-09-09T20:00:49.698Z",
+      "parentSha": "8c1430c544782b3f9af4c577dd162ae8bed4b07a",
+      "committedAt": "2026-09-10T14:37:50Z",
+      "url": "https://github.com/vercel/eve/commit/7090a9536d76e2c6cba4bb64380853aa1d129712",
+      "title": "chore(eve): update AI SDK dependencies (#3226)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Vercel Open Source"
       ],
       "languages": []
     },
     "vercel/flags": {
-      "sha": "6444210ee954e1a8db1b21ab37e640a36a2235f9",
+      "sha": "a3fc275ed34f064339f4e68396d6d52847e9420f",
       "branch": "main",
-      "parentSha": "e0eebe6fbc296636761eb3dc31f2c4be01a398bf",
-      "committedAt": "2026-09-09T09:26:12Z",
-      "url": "https://github.com/vercel/flags/commit/6444210ee954e1a8db1b21ab37e640a36a2235f9",
-      "title": "Version Packages (#493)",
-      "observedAt": "2026-09-09T09:30:45.956Z",
+      "parentSha": "f923203a0c847edd06353b7b159d1fbeae0ba9cd",
+      "committedAt": "2026-09-10T14:36:37Z",
+      "url": "https://github.com/vercel/flags/commit/a3fc275ed34f064339f4e68396d6d52847e9420f",
+      "title": "docs(flags-core): clarify request-time initialization with OIDC (#496)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1467,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "57a8476086173b1ac88e3595fef99578ed965e96",
+      "sha": "ec62d6a48fde98ccbda4eb884cdbc58cfe585b52",
       "branch": "canary",
-      "parentSha": "9486750ff26ed20da13b15da229da5f1746bdfa0",
-      "committedAt": "2026-09-09T21:11:28Z",
-      "url": "https://github.com/vercel/next.js/commit/57a8476086173b1ac88e3595fef99578ed965e96",
-      "title": "bundle-analyzer: record historical snapshots on each analyze run (#93520)",
-      "observedAt": "2026-09-09T21:15:37.177Z",
+      "parentSha": "1329212686c9558afc37589106618d7382542d24",
+      "committedAt": "2026-09-10T13:06:38Z",
+      "url": "https://github.com/vercel/next.js/commit/ec62d6a48fde98ccbda4eb884cdbc58cfe585b52",
+      "title": "fix(turbopack): add `get_relative_request_to` for paths used as module requests (#98497)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1495,13 +1323,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "f6214c8fafb71224c79d271e66f1abd1a06476fe",
+      "sha": "25fe817c05f0d886316ee7bb5087b1589239b4ae",
       "branch": "main",
-      "parentSha": "9a98e64d4834338b6009bf0f7b32a83ed2025c85",
-      "committedAt": "2026-09-09T21:19:57Z",
-      "url": "https://github.com/vercel/turborepo/commit/f6214c8fafb71224c79d271e66f1abd1a06476fe",
-      "title": "perf: Read child output in bounded chunks instead of per-line (#14026)",
-      "observedAt": "2026-09-09T21:20:35.586Z",
+      "parentSha": "6e8f7fef812a16e98d0e7f51283e20faa9628766",
+      "committedAt": "2026-09-10T14:24:18Z",
+      "url": "https://github.com/vercel/turborepo/commit/25fe817c05f0d886316ee7bb5087b1589239b4ae",
+      "title": "chore: Update with-docker example (#14035)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1523,13 +1351,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "c477cfa3d32bfd9101c751d7b3cff976d6646760",
+      "sha": "d4817ce548216a48b155548be5b123483394f37a",
       "branch": "main",
-      "parentSha": "32a74e3941da0670cf42d2a335f92be1ebcdc7e4",
-      "committedAt": "2026-09-09T19:51:48Z",
-      "url": "https://github.com/vercel/workflow/commit/c477cfa3d32bfd9101c751d7b3cff976d6646760",
-      "title": "Keep one failed publish from taking down the release, and verify what actually reached npm (#3967)",
-      "observedAt": "2026-09-09T20:00:49.698Z",
+      "parentSha": "f5aeaa869c1c15b7604e14047354059b5bd1f5c5",
+      "committedAt": "2026-09-10T14:21:51Z",
+      "url": "https://github.com/vercel/workflow/commit/d4817ce548216a48b155548be5b123483394f37a",
+      "title": "feat(streams): add WebSocket writer lifecycle (#3833)",
+      "observedAt": "2026-09-10T14:44:56.653Z",
       "programs": [
         "Vercel Open Source"
       ],
