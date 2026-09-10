@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T17:40:54.836Z",
+  "checkedAt": "2026-09-10T17:51:04.823Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "39d3afacbeca5074fb54c1af5469ad11d6ddd78e",
+      "sha": "1a1344d7f8256aa6f35267576a1f84f93b7c2080",
       "branch": "master",
-      "parentSha": "5dad21fd448fc757764994681db6960d3027a557",
-      "committedAt": "2026-09-10T14:46:42Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/39d3afacbeca5074fb54c1af5469ad11d6ddd78e",
-      "title": "Merge pull request #141785 from weizhoublue/fix/pr-141340-060827-720936",
-      "observedAt": "2026-09-10T14:50:57.743Z",
+      "parentSha": "39d3afacbeca5074fb54c1af5469ad11d6ddd78e",
+      "committedAt": "2026-09-10T17:50:38Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/1a1344d7f8256aa6f35267576a1f84f93b7c2080",
+      "title": "Merge pull request #142013 from thc1006/quantity-cmp-overflow",
+      "observedAt": "2026-09-10T17:51:04.823Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "c889fd51c2e2cf5c067ca038a8a50790c4d6874a",
+      "sha": "f87010e918e3dcf0841160c031341960cac1033b",
       "branch": "main",
-      "parentSha": "e2dab22e78d74122b3b901845db4cd90dd7bc752",
-      "committedAt": "2026-09-10T17:34:12Z",
-      "url": "https://github.com/vercel/ai/commit/c889fd51c2e2cf5c067ca038a8a50790c4d6874a",
-      "title": "fix: preserve Gladia diarization and utterance details in transcription metadata (#20595)",
-      "observedAt": "2026-09-10T17:40:54.836Z",
+      "parentSha": "c889fd51c2e2cf5c067ca038a8a50790c4d6874a",
+      "committedAt": "2026-09-10T17:41:40Z",
+      "url": "https://github.com/vercel/ai/commit/f87010e918e3dcf0841160c031341960cac1033b",
+      "title": "fix(mistral): update model IDs and reasoning config (#20596)",
+      "observedAt": "2026-09-10T17:51:04.823Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1323,13 +1323,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "b8c7370b7480e69302f7438e22e8efb4b55cdf15",
+      "sha": "17b358add9d9b060f4c6b0c6d70d939ccec3baaa",
       "branch": "main",
-      "parentSha": "3235ec56dca1c6606e1a99971850a72f1246572f",
-      "committedAt": "2026-09-10T17:00:06Z",
-      "url": "https://github.com/vercel/turborepo/commit/b8c7370b7480e69302f7438e22e8efb4b55cdf15",
-      "title": "fix: Include experimentalCI in task hashes (#14038)",
-      "observedAt": "2026-09-10T17:01:11.010Z",
+      "parentSha": "b8c7370b7480e69302f7438e22e8efb4b55cdf15",
+      "committedAt": "2026-09-10T17:45:56Z",
+      "url": "https://github.com/vercel/turborepo/commit/17b358add9d9b060f4c6b0c6d70d939ccec3baaa",
+      "title": "chore: Release Turborepo 2.10.13-canary.4 (#14039)",
+      "observedAt": "2026-09-10T17:51:04.823Z",
       "programs": [
         "Vercel Open Source"
       ],
