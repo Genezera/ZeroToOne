@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T18:18:38.444Z",
+  "checkedAt": "2026-09-10T18:30:51.516Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1351,13 +1351,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "45a307294888a5ad0b50e0b8c05c90f5561059a1",
+      "sha": "7740388d7fe1a744f04974c67fd583d2526658f4",
       "branch": "main",
-      "parentSha": "d4817ce548216a48b155548be5b123483394f37a",
-      "committedAt": "2026-09-10T15:10:57Z",
-      "url": "https://github.com/vercel/workflow/commit/45a307294888a5ad0b50e0b8c05c90f5561059a1",
-      "title": "[core] Fix the python e2e conformance suite after the retention merge (#4022)",
-      "observedAt": "2026-09-10T15:10:51.018Z",
+      "parentSha": "45a307294888a5ad0b50e0b8c05c90f5561059a1",
+      "committedAt": "2026-09-10T18:29:01Z",
+      "url": "https://github.com/vercel/workflow/commit/7740388d7fe1a744f04974c67fd583d2526658f4",
+      "title": "feat(streams): trace first WebSocket writes (#4074)",
+      "observedAt": "2026-09-10T18:30:51.516Z",
       "programs": [
         "Vercel Open Source"
       ],
