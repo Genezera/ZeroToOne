@@ -506,8 +506,9 @@ criaria ciclos infinitos. Sem um scheduler cloud externo, 15 minutos é meta,
 não SLA; a auditoria mantém atraso acima de uma hora como estado unhealthy.
 
 Um HEAD novo é resolvido pelo compare do GitHub para uma lista exata de
-`changedFiles`; compare ausente, caminho inválido ou o limite de 300 arquivos
-faz a rodada falhar fechado sem avançar o cursor. Árvore, arquivo bruto e
+`changedFiles`. Se `compare.files` atinge o limite de 300, o monitor compara
+as duas árvores Git recursivas completas por path + blob SHA; árvore truncada,
+compare ausente ou caminho inválido faz a rodada falhar fechado sem avançar o cursor. Árvore, arquivo bruto e
 manifestos são lidos pelo `introducedCommit` imutável, nunca pela branch que
 pode avançar durante a execução. Apenas esses caminhos chegam ao scan delta;
 um arquivo antigo ainda ausente do cache não pode herdar proveniência nova.

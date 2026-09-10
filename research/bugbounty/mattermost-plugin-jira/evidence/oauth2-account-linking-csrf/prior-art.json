@@ -36,7 +36,7 @@
       "distinguishedFrom": "Different handler/impact (information disclosure), unrelated to OAuth2 state handling."
     }
   ],
-  "conclusion": "These three prior, already-disclosed-and-presumably-fixed CVEs confirm Mattermost's security team actively finds and fixes exactly this bug PATTERN (trusting client-supplied identity over the verified session) in this plugin -- raising confidence the underlying bug class is real and taken seriously by the vendor -- while the absence of any advisory/issue/PR specifically covering server/user_cloud_oauth.go's state handling, despite the flaw still being present at HEAD, indicates this specific instance has not yet been caught or fixed upstream. Net assessment: technically valid, not a known duplicate of any of the three related CVEs found.",
+  "conclusion": "The three disclosed CVEs are related but mechanically distinct from server/user_cloud_oauth.go. No public advisory, issue, or pull request covering this exact callback path was found. This supports only 'no public match found'; private program reports remain unknowable, so novelty and duplicate status are not proven.",
   "verifiedAt": "2026-09-09",
-  "verificationMethod": "4-lens adversarial review (code-truth, duplicate/known-issue, impact/reachability, real-executed-PoC) against a fresh clone at the commit above, independently re-verified line-by-line by a human-directed session (not trusting subagent self-report alone)."
+  "verificationMethod": "Public GitHub issues, commits, advisories, and web search plus component-level execution against the real handler with Atlassian HTTP responses mocked."
 }

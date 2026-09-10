@@ -75,7 +75,8 @@ a strict detection latency is needed.
 3. **Change detection**
    - Poll the current HEAD of each authorized repository.
    - Resolve the GitHub compare result to an exact changed-file list.
-   - Refuse truncated, missing, malformed, or oversized comparisons.
+   - When GitHub's compare list reaches its 300-file cap, compute the exact
+     diff from both complete recursive Git trees; refuse a truncated tree.
 4. **Immutable delta scan**
    - Read the source tree, manifests, and files from the observed full commit
      SHA, never from a moving branch.
@@ -377,7 +378,8 @@ Desktop instance does not stop the cloud pipeline.
 
 - Missing or expired policy: block before source access.
 - Missing exact scope or unknown bounty eligibility: hold for verification.
-- Incomplete GitHub compare: do not scan and do not advance the cursor.
+- Incomplete compare and truncated tree fallback: do not scan and do not
+  advance the cursor.
 - Scanner or publication failure: preserve the previous cursor for retry.
 - Missing impact evidence: stop at `needs_human`.
 - Public prior-art match: hold as known match.

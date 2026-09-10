@@ -40,6 +40,52 @@ async function githubJson(url, { fetchImpl }) {
   return response.json();
 }
 
+function validateRepositoryPath(rawPath, source) {
+  const filePath = String(rawPath || '').replaceAll('\\', '/');
+  if (!filePath || filePath.startsWith('/') || filePath.split('/').includes('..') || /[\u0000\r\n]/.test(filePath)) {
+    throw new Error(`${source} devolveu caminho inválido`);
+  }
+  return filePath;
+}
+
+/** GitHub's compare response exposes at most 300 files. For larger deltas,
+ * compare the two complete recursive Git trees instead. This remains
+ * fail-closed: a truncated tree is never treated as an exact diff. */
+async function fetchRepositoryTreeIndex(target, commitSha, { fetchImpl }) {
+  const base = `https://api.github.com/repos/${target.owner}/${target.repo}`;
+  const commit = await githubJson(`${base}/git/commits/${commitSha}`, { fetchImpl });
+  const treeSha = String(commit?.tree?.sha || '').toLowerCase();
+  if (!/^[0-9a-f]{40}$/.test(treeSha)) throw new Error('GitHub commit não devolveu tree SHA válido');
+  const tree = await githubJson(`${base}/git/trees/${treeSha}?recursive=1`, { fetchImpl });
+  if (tree?.truncated === true) throw new Error('GitHub tree recursiva foi truncada; diff completo não comprovado');
+  if (!Array.isArray(tree?.tree)) throw new Error('GitHub tree não devolveu lista de entradas');
+  const index = new Map();
+  for (const entry of tree.tree) {
+    if (entry?.type !== 'blob') continue;
+    const filePath = validateRepositoryPath(entry.path, 'GitHub tree');
+    const sha = String(entry.sha || '').toLowerCase();
+    if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error('GitHub tree devolveu blob SHA inválido');
+    index.set(filePath, sha);
+  }
+  return index;
+}
+
+async function fetchChangedFilesFromTrees(target, baseSha, headSha, { fetchImpl }) {
+  const [baseTree, headTree] = await Promise.all([
+    fetchRepositoryTreeIndex(target, baseSha, { fetchImpl }),
+    fetchRepositoryTreeIndex(target, headSha, { fetchImpl }),
+  ]);
+  const changedFiles = [];
+  const removedFiles = [];
+  for (const [filePath, sha] of headTree) {
+    if (baseTree.get(filePath) !== sha) changedFiles.push(filePath);
+  }
+  for (const filePath of baseTree.keys()) {
+    if (!headTree.has(filePath)) removedFiles.push(filePath);
+  }
+  return { changedFiles: changedFiles.sort(), removedFiles: removedFiles.sort() };
+}
+
 export async function fetchRepositoryHead(target, { fetchImpl = fetch } = {}) {
   const base = `https://api.github.com/repos/${target.owner}/${target.repo}`;
   let branch = target.branch;
@@ -63,9 +109,9 @@ export async function fetchRepositoryHead(target, { fetchImpl = fetch } = {}) {
 }
 
 /** Resolve the actual paths changed between the last observed head and the
- * new head.  A repository-level head change is not evidence that every
- * uncached file changed.  GitHub caps the file list at 300; hitting that cap
- * fails closed so an incomplete diff can never be labelled as a delta. */
+ * new head. A repository-level head change is not evidence that every
+ * uncached file changed. GitHub caps compare.files at 300, so larger deltas
+ * fall back to an exact recursive-tree comparison. */
 export async function fetchRepositoryChangedFiles(target, baseSha, headSha, { fetchImpl = fetch } = {}) {
   if (!/^[0-9a-f]{40}$/i.test(baseSha || '') || !/^[0-9a-f]{40}$/i.test(headSha || '')) {
     throw new Error('compare exige baseSha e headSha completos');
@@ -74,15 +120,13 @@ export async function fetchRepositoryChangedFiles(target, baseSha, headSha, { fe
   const comparison = await githubJson(url, { fetchImpl });
   if (!Array.isArray(comparison.files)) throw new Error('GitHub compare não devolveu lista de arquivos');
   if (comparison.files.length >= 300) {
-    throw new Error('GitHub compare atingiu o limite de 300 arquivos; diff completo não comprovado');
+    const treeDiff = await fetchChangedFilesFromTrees(target, baseSha, headSha, { fetchImpl });
+    return { ...treeDiff, compareUrl: comparison.html_url || null };
   }
   const changedFiles = [];
   const removedFiles = [];
   for (const file of comparison.files) {
-    const filename = String(file?.filename || '').replaceAll('\\', '/');
-    if (!filename || filename.startsWith('/') || filename.split('/').includes('..') || /[\u0000\r\n]/.test(filename)) {
-      throw new Error('GitHub compare devolveu caminho inválido');
-    }
+    const filename = validateRepositoryPath(file?.filename, 'GitHub compare');
     if (file.status === 'removed') removedFiles.push(filename);
     else changedFiles.push(filename);
   }

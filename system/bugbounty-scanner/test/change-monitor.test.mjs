@@ -20,7 +20,7 @@ test('buildDeltaScanEnvironment entrega repositórios e contexto completo ao sca
   assert.deepEqual(JSON.parse(env.ZERO2ONE_CHANGE_CONTEXT), changes);
 });
 
-test('fetchRepositoryChangedFiles preserva somente caminhos ativos e falha fechado no limite', async () => {
+test('fetchRepositoryChangedFiles preserva somente caminhos ativos e usa árvores exatas no limite', async () => {
   const target = { owner: 'acme', repo: 'api' };
   const result = await fetchRepositoryChangedFiles(target, A, B, { fetchImpl: async () => ({
     ok: true, json: async () => ({ html_url: 'https://github.com/acme/api/compare/a...b', files: [
@@ -30,9 +30,39 @@ test('fetchRepositoryChangedFiles preserva somente caminhos ativos e falha fecha
   }) });
   assert.deepEqual(result.changedFiles, ['src/auth.js']);
   assert.deepEqual(result.removedFiles, ['src/old.js']);
+  const responses = [
+    { files: Array.from({ length: 300 }, (_, i) => ({ filename: `f${i}.js`, status: 'modified' })), html_url: 'https://example/compare' },
+    { tree: { sha: A } }, { tree: { sha: B } },
+    { truncated: false, tree: [
+      { type: 'blob', path: 'same.js', sha: A },
+      { type: 'blob', path: 'changed.js', sha: A },
+      { type: 'blob', path: 'removed.js', sha: A },
+      { type: 'tree', path: 'src', sha: A },
+    ] },
+    { truncated: false, tree: [
+      { type: 'blob', path: 'same.js', sha: A },
+      { type: 'blob', path: 'changed.js', sha: B },
+      { type: 'blob', path: 'added.js', sha: B },
+    ] },
+  ];
+  const large = await fetchRepositoryChangedFiles(target, A, B, { fetchImpl: async () => ({
+    ok: true, json: async () => responses.shift(),
+  }) });
+  assert.deepEqual(large.changedFiles, ['added.js', 'changed.js']);
+  assert.deepEqual(large.removedFiles, ['removed.js']);
+  assert.equal(large.compareUrl, 'https://example/compare');
+});
+
+test('fetchRepositoryChangedFiles falha fechado se o fallback de árvore estiver truncado', async () => {
+  const target = { owner: 'acme', repo: 'api' };
+  const responses = [
+    { files: Array.from({ length: 300 }, (_, i) => ({ filename: `f${i}.js`, status: 'modified' })) },
+    { tree: { sha: A } }, { tree: { sha: B } },
+    { truncated: true, tree: [] }, { truncated: false, tree: [] },
+  ];
   await assert.rejects(() => fetchRepositoryChangedFiles(target, A, B, { fetchImpl: async () => ({
-    ok: true, json: async () => ({ files: Array.from({ length: 300 }, (_, i) => ({ filename: `f${i}.js`, status: 'modified' })) }),
-  }) }), /limite de 300/);
+    ok: true, json: async () => responses.shift(),
+  }) }), /tree recursiva foi truncada/);
 });
 
 test('collectMonitoredRepositories deduplica e exclui programa bloqueado antes da rede', () => {
