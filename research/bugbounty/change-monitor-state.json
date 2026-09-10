@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T20:40:53.385Z",
+  "checkedAt": "2026-09-10T20:50:45.692Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "813bb36f958052c5e5d4718de83cdff0068eeef3",
+      "sha": "00968508b7f47e5b1e7faa0bf001c2288abb8098",
       "branch": "main",
-      "parentSha": "7469a3bc5daf0fd8c535c903f883d730a39de191",
-      "committedAt": "2026-09-10T20:07:17Z",
-      "url": "https://github.com/vercel/ai/commit/813bb36f958052c5e5d4718de83cdff0068eeef3",
-      "title": "fix(provider-utils): avoid detecting plain text prefixes as BMP or GIF images (#20603)",
-      "observedAt": "2026-09-10T20:10:52.535Z",
+      "parentSha": "813bb36f958052c5e5d4718de83cdff0068eeef3",
+      "committedAt": "2026-09-10T20:41:13Z",
+      "url": "https://github.com/vercel/ai/commit/00968508b7f47e5b1e7faa0bf001c2288abb8098",
+      "title": "fix: preserve reasoning streams when provider deltas contain empty tool-call arrays (#20554)",
+      "observedAt": "2026-09-10T20:50:45.692Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1295,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "393de1ebe0993c57e1ddd4d3f4d66a03c7fb1077",
+      "sha": "637b8cfa5ece38cc817db0ea04682647dbcbaad5",
       "branch": "canary",
-      "parentSha": "6fbba169cd7f46cafeaf334a6a0fb3eebba20d2c",
-      "committedAt": "2026-09-10T20:27:36Z",
-      "url": "https://github.com/vercel/next.js/commit/393de1ebe0993c57e1ddd4d3f4d66a03c7fb1077",
-      "title": "skill: add Partial Prefetching optimizer (#96471)",
-      "observedAt": "2026-09-10T20:30:59.670Z",
+      "parentSha": "393de1ebe0993c57e1ddd4d3f4d66a03c7fb1077",
+      "committedAt": "2026-09-10T20:48:29Z",
+      "url": "https://github.com/vercel/next.js/commit/637b8cfa5ece38cc817db0ea04682647dbcbaad5",
+      "title": "Add in warning for workers around the fsevents bug (#98447)",
+      "observedAt": "2026-09-10T20:50:45.692Z",
       "programs": [
         "Vercel Open Source"
       ],
