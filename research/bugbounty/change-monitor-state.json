@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T17:30:52.582Z",
+  "checkedAt": "2026-09-10T17:40:54.836Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "e2dab22e78d74122b3b901845db4cd90dd7bc752",
+      "sha": "c889fd51c2e2cf5c067ca038a8a50790c4d6874a",
       "branch": "main",
-      "parentSha": "74bbd933714d5a549927bad0e85117c7a34fd3cd",
-      "committedAt": "2026-09-10T17:25:40Z",
-      "url": "https://github.com/vercel/ai/commit/e2dab22e78d74122b3b901845db4cd90dd7bc752",
-      "title": "chore(docs): update Geistdocs migration to 1.28.1 (#20581)",
-      "observedAt": "2026-09-10T17:30:52.582Z",
+      "parentSha": "e2dab22e78d74122b3b901845db4cd90dd7bc752",
+      "committedAt": "2026-09-10T17:34:12Z",
+      "url": "https://github.com/vercel/ai/commit/c889fd51c2e2cf5c067ca038a8a50790c4d6874a",
+      "title": "fix: preserve Gladia diarization and utterance details in transcription metadata (#20595)",
+      "observedAt": "2026-09-10T17:40:54.836Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "05d2047f6cab6f2b71cc07b19a7cde4d09a49a22",
+      "sha": "e1dabc2ad97a6b110e28812f72c78395f42c4b5c",
       "branch": "main",
-      "parentSha": "8c00b8e01deb34a03ef4eeaf8738702c959f2039",
-      "committedAt": "2026-09-10T17:15:58Z",
-      "url": "https://github.com/vercel/eve/commit/05d2047f6cab6f2b71cc07b19a7cde4d09a49a22",
-      "title": "fix(eve): repair Vercel sandbox lifecycle (#3235)",
-      "observedAt": "2026-09-10T17:20:49.967Z",
+      "parentSha": "05d2047f6cab6f2b71cc07b19a7cde4d09a49a22",
+      "committedAt": "2026-09-10T17:40:59Z",
+      "url": "https://github.com/vercel/eve/commit/e1dabc2ad97a6b110e28812f72c78395f42c4b5c",
+      "title": "feat(eve): emit multi-agent deployment summaries (#3000)",
+      "observedAt": "2026-09-10T17:40:54.836Z",
       "programs": [
         "Vercel Open Source"
       ],
