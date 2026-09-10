@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T15:40:48.514Z",
+  "checkedAt": "2026-09-10T15:50:48.376Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -978,13 +978,13 @@
       "languages": []
     },
     "kubernetes/sig-release": {
-      "sha": "78b2d73ccf0651e7010b6ea457a7810cc7c11901",
+      "sha": "1a642c1fcbd78a9ccdea1b14213f7a26911ed0c4",
       "branch": "master",
-      "parentSha": "9c633c4acaa19975c4e258d78fffb3bb0df4b0b5",
-      "committedAt": "2026-09-10T14:26:34Z",
-      "url": "https://github.com/kubernetes/sig-release/commit/78b2d73ccf0651e7010b6ea457a7810cc7c11901",
-      "title": "Merge pull request #3089 from sreeram-venkitesh/create-v1.38-directory-and-schedule",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "8ecf59ef3e864841306dce7d0b520816983fc129",
+      "committedAt": "2026-09-10T15:48:35Z",
+      "url": "https://github.com/kubernetes/sig-release/commit/1a642c1fcbd78a9ccdea1b14213f7a26911ed0c4",
+      "title": "Merge pull request #3091 from jenshu/release-cut-handbook-updates-1.37",
+      "observedAt": "2026-09-10T15:50:48.376Z",
       "programs": [
         "Kubernetes"
       ],
