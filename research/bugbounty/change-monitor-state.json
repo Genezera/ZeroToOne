@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T18:40:56.624Z",
+  "checkedAt": "2026-09-10T18:50:52.635Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "03f4e5914aa6cfbef0f3e50f9c55724e0b7c094d",
+      "sha": "0de88864f70b6f02cf89d1625aeb3fece0648a7f",
       "branch": "main",
-      "parentSha": "f87010e918e3dcf0841160c031341960cac1033b",
-      "committedAt": "2026-09-10T18:39:51Z",
-      "url": "https://github.com/vercel/ai/commit/03f4e5914aa6cfbef0f3e50f9c55724e0b7c094d",
-      "title": "chore(provider/gateway): update gateway model settings files (#20590)",
-      "observedAt": "2026-09-10T18:40:56.624Z",
+      "parentSha": "03f4e5914aa6cfbef0f3e50f9c55724e0b7c094d",
+      "committedAt": "2026-09-10T18:47:53Z",
+      "url": "https://github.com/vercel/ai/commit/0de88864f70b6f02cf89d1625aeb3fece0648a7f",
+      "title": "fix(openai): allow providers to disable web search source includes (#20599)",
+      "observedAt": "2026-09-10T18:50:52.635Z",
       "programs": [
         "Vercel Open Source"
       ],
