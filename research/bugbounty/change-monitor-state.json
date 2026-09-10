@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T17:10:50.712Z",
+  "checkedAt": "2026-09-10T17:20:49.967Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -387,13 +387,13 @@
       ]
     },
     "kubernetes/community": {
-      "sha": "f2ac71e2cf1c468a63f1f87459f1c7e1c097e74e",
+      "sha": "e7434895b044237b2a627c703f429d831e3b21ce",
       "branch": "main",
-      "parentSha": "9ab85c42973349cc82d969657e2d4b7800abbcb4",
-      "committedAt": "2026-09-08T08:50:31Z",
-      "url": "https://github.com/kubernetes/community/commit/f2ac71e2cf1c468a63f1f87459f1c7e1c097e74e",
-      "title": "Merge pull request #9148 from mrbobbytables/k-mixin",
-      "observedAt": "2026-09-09T01:14:19.711Z",
+      "parentSha": "648d36b759c603bc9535c576baad2ed1378ece62",
+      "committedAt": "2026-09-10T17:18:46Z",
+      "url": "https://github.com/kubernetes/community/commit/e7434895b044237b2a627c703f429d831e3b21ce",
+      "title": "Merge pull request #9147 from magic-peach/docs/fix-sig-release-reference-doc-links",
+      "observedAt": "2026-09-10T17:20:49.967Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "8c00b8e01deb34a03ef4eeaf8738702c959f2039",
+      "sha": "05d2047f6cab6f2b71cc07b19a7cde4d09a49a22",
       "branch": "main",
-      "parentSha": "8c8888e67bdf0f8a94573c6dc1c90a72a61a8776",
-      "committedAt": "2026-09-10T16:22:44Z",
-      "url": "https://github.com/vercel/eve/commit/8c00b8e01deb34a03ef4eeaf8738702c959f2039",
-      "title": "Attach oversized Slack replies as Markdown files (#3228)",
-      "observedAt": "2026-09-10T16:27:11.783Z",
+      "parentSha": "8c00b8e01deb34a03ef4eeaf8738702c959f2039",
+      "committedAt": "2026-09-10T17:15:58Z",
+      "url": "https://github.com/vercel/eve/commit/05d2047f6cab6f2b71cc07b19a7cde4d09a49a22",
+      "title": "fix(eve): repair Vercel sandbox lifecycle (#3235)",
+      "observedAt": "2026-09-10T17:20:49.967Z",
       "programs": [
         "Vercel Open Source"
       ],
