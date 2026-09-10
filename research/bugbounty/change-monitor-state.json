@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T16:20:51.679Z",
+  "checkedAt": "2026-09-10T16:27:11.783Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "8c8888e67bdf0f8a94573c6dc1c90a72a61a8776",
+      "sha": "8c00b8e01deb34a03ef4eeaf8738702c959f2039",
       "branch": "main",
-      "parentSha": "04aa2f8ae1fe6f9263d3d7c4bd2dbb2582d8743c",
-      "committedAt": "2026-09-10T16:16:24Z",
-      "url": "https://github.com/vercel/eve/commit/8c8888e67bdf0f8a94573c6dc1c90a72a61a8776",
-      "title": "fix(eve): normalize mixed provider tool history (#3204)",
-      "observedAt": "2026-09-10T16:20:51.679Z",
+      "parentSha": "8c8888e67bdf0f8a94573c6dc1c90a72a61a8776",
+      "committedAt": "2026-09-10T16:22:44Z",
+      "url": "https://github.com/vercel/eve/commit/8c00b8e01deb34a03ef4eeaf8738702c959f2039",
+      "title": "Attach oversized Slack replies as Markdown files (#3228)",
+      "observedAt": "2026-09-10T16:27:11.783Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1323,13 +1323,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "25fe817c05f0d886316ee7bb5087b1589239b4ae",
+      "sha": "f3b0fa9f8b467c0bdf1c46e0a7d4d61b721984b5",
       "branch": "main",
-      "parentSha": "6e8f7fef812a16e98d0e7f51283e20faa9628766",
-      "committedAt": "2026-09-10T14:24:18Z",
-      "url": "https://github.com/vercel/turborepo/commit/25fe817c05f0d886316ee7bb5087b1589239b4ae",
-      "title": "chore: Update with-docker example (#14035)",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "25fe817c05f0d886316ee7bb5087b1589239b4ae",
+      "committedAt": "2026-09-10T16:23:23Z",
+      "url": "https://github.com/vercel/turborepo/commit/f3b0fa9f8b467c0bdf1c46e0a7d4d61b721984b5",
+      "title": "perf: Avoid cloning package list in turbo ls (#14036)",
+      "observedAt": "2026-09-10T16:27:11.783Z",
       "programs": [
         "Vercel Open Source"
       ],
