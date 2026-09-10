@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T14:50:57.743Z",
+  "checkedAt": "2026-09-10T15:10:51.018Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "81ba84cb9e541983d595108c94196586836ebcac",
+      "sha": "f87bf07ebe466217464770ee37abe32bda3f2697",
       "branch": "main",
-      "parentSha": "65666b6f23a90c5ee4f17d1059fc225d1cce7b2a",
-      "committedAt": "2026-09-10T14:39:33Z",
-      "url": "https://github.com/vercel/ai/commit/81ba84cb9e541983d595108c94196586836ebcac",
-      "title": "fix: preserve in-flight host tool results across HarnessAgent suspension and session finalization (#20547)",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "81ba84cb9e541983d595108c94196586836ebcac",
+      "committedAt": "2026-09-10T15:04:09Z",
+      "url": "https://github.com/vercel/ai/commit/f87bf07ebe466217464770ee37abe32bda3f2697",
+      "title": "fix: rerank() returns undefined documents for invalid provider ranking indices (#20423)",
+      "observedAt": "2026-09-10T15:10:51.018Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1295,13 +1295,13 @@
       "languages": []
     },
     "vercel/next.js": {
-      "sha": "ec62d6a48fde98ccbda4eb884cdbc58cfe585b52",
+      "sha": "e674165f365590225f61bf80e29a278fcd6fee73",
       "branch": "canary",
-      "parentSha": "1329212686c9558afc37589106618d7382542d24",
-      "committedAt": "2026-09-10T13:06:38Z",
-      "url": "https://github.com/vercel/next.js/commit/ec62d6a48fde98ccbda4eb884cdbc58cfe585b52",
-      "title": "fix(turbopack): add `get_relative_request_to` for paths used as module requests (#98497)",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "dea15ec6036ab6f487adf25d7f58622bbe0b22e0",
+      "committedAt": "2026-09-10T15:02:34Z",
+      "url": "https://github.com/vercel/next.js/commit/e674165f365590225f61bf80e29a278fcd6fee73",
+      "title": "Report incompatible parallel route slots (#97430)",
+      "observedAt": "2026-09-10T15:10:51.018Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1351,13 +1351,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "d4817ce548216a48b155548be5b123483394f37a",
+      "sha": "45a307294888a5ad0b50e0b8c05c90f5561059a1",
       "branch": "main",
-      "parentSha": "f5aeaa869c1c15b7604e14047354059b5bd1f5c5",
-      "committedAt": "2026-09-10T14:21:51Z",
-      "url": "https://github.com/vercel/workflow/commit/d4817ce548216a48b155548be5b123483394f37a",
-      "title": "feat(streams): add WebSocket writer lifecycle (#3833)",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "d4817ce548216a48b155548be5b123483394f37a",
+      "committedAt": "2026-09-10T15:10:57Z",
+      "url": "https://github.com/vercel/workflow/commit/45a307294888a5ad0b50e0b8c05c90f5561059a1",
+      "title": "[core] Fix the python e2e conformance suite after the retention merge (#4022)",
+      "observedAt": "2026-09-10T15:10:51.018Z",
       "programs": [
         "Vercel Open Source"
       ],
