@@ -7702,7 +7702,7 @@
     "pkg/git/mainline.go": "492b211a292e811557d1ce76f93f98f9850cfbab",
     "pkg/git/mapping.go": "455817cb600dd2e48c1fcaaa5a7d14585ade969c",
     "pkg/golang/install.go": "edadc70f1562642f2b794d2f275e2c8a0802cd48",
-    "go.mod": "310b440b82535138b0df42b5ed49ef984ef7bd21"
+    "go.mod": "923f2baf8def52b1c34b63f48b046dfc612bbc68"
   },
   "kubernetes/utils": {
     "buffer/ring_fixed.go": "a104e12a386a540d3b61903c395b4eaba8670d85",
