@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T15:10:51.018Z",
+  "checkedAt": "2026-09-10T15:30:55.243Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1032,13 +1032,13 @@
       ]
     },
     "kubernetes/website": {
-      "sha": "215e6fc48d4aeef08a49b56522f86512adf3a7e2",
+      "sha": "d3b3717171d6dcc6dda41428438c8a7901c48a85",
       "branch": "main",
-      "parentSha": "cc576f96d4c602daf62fd3d054150c832cc42097",
-      "committedAt": "2026-09-10T12:00:34Z",
-      "url": "https://github.com/kubernetes/website/commit/215e6fc48d4aeef08a49b56522f86512adf3a7e2",
-      "title": "Merge pull request #57293 from marsboy02/ko/remove-ingress-minikube",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "215e6fc48d4aeef08a49b56522f86512adf3a7e2",
+      "committedAt": "2026-09-10T15:28:34Z",
+      "url": "https://github.com/kubernetes/website/commit/d3b3717171d6dcc6dda41428438c8a7901c48a85",
+      "title": "Merge pull request #57160 from Caesarsage/docs/reference-release-generation",
+      "observedAt": "2026-09-10T15:30:55.243Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1058,13 +1058,13 @@
       "languages": []
     },
     "nuxt/nuxt": {
-      "sha": "03e9df01a1256d214ac5c5c14514f95803ecb244",
+      "sha": "667c2d563927ac6e89ec4d9eb9b6770d5dd8de46",
       "branch": "main",
-      "parentSha": "1c20ad96e5cda30be9931b410ccc9d333920bec9",
-      "committedAt": "2026-09-09T09:15:03Z",
-      "url": "https://github.com/nuxt/nuxt/commit/03e9df01a1256d214ac5c5c14514f95803ecb244",
-      "title": "docs: strip version prefixes",
-      "observedAt": "2026-09-09T09:20:42.349Z",
+      "parentSha": "03e9df01a1256d214ac5c5c14514f95803ecb244",
+      "committedAt": "2026-09-10T15:11:25Z",
+      "url": "https://github.com/nuxt/nuxt/commit/667c2d563927ac6e89ec4d9eb9b6770d5dd8de46",
+      "title": "perf(nitro): use `flru` for prerender cache (#36340)",
+      "observedAt": "2026-09-10T15:30:55.243Z",
       "programs": [
         "Vercel Open Source"
       ],
@@ -1254,13 +1254,13 @@
       ]
     },
     "vercel/eve": {
-      "sha": "2b2ad19d937ea2ad3ea2b3adb4fdd54efb0b5c64",
+      "sha": "da6b9945ef12300387e5a9a015cba3bd9d124ebb",
       "branch": "main",
-      "parentSha": "7090a9536d76e2c6cba4bb64380853aa1d129712",
-      "committedAt": "2026-09-10T14:49:07Z",
-      "url": "https://github.com/vercel/eve/commit/2b2ad19d937ea2ad3ea2b3adb4fdd54efb0b5c64",
-      "title": "feat(eve): workflow checkpoints - batch model calls (#3034)",
-      "observedAt": "2026-09-10T14:50:57.743Z",
+      "parentSha": "2b2ad19d937ea2ad3ea2b3adb4fdd54efb0b5c64",
+      "committedAt": "2026-09-10T15:25:37Z",
+      "url": "https://github.com/vercel/eve/commit/da6b9945ef12300387e5a9a015cba3bd9d124ebb",
+      "title": "chore: add chadhietala as CODEOWNER (#3234)",
+      "observedAt": "2026-09-10T15:30:55.243Z",
       "programs": [
         "Vercel Open Source"
       ],
