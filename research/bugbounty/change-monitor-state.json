@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T16:50:47.094Z",
+  "checkedAt": "2026-09-10T17:01:11.010Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -193,13 +193,13 @@
       "languages": []
     },
     "kubernetes/autoscaler": {
-      "sha": "d5934de91cc0a316b8b4fb3204e9a8a440d4079c",
+      "sha": "ed3398523f4f303ffcc837234099a1d314807c17",
       "branch": "master",
-      "parentSha": "c85f5afed954f7ecdbfb9091da2202426806d8d8",
-      "committedAt": "2026-09-10T12:56:36Z",
-      "url": "https://github.com/kubernetes/autoscaler/commit/d5934de91cc0a316b8b4fb3204e9a8a440d4079c",
-      "title": "Merge pull request #10274 from ppmechlinski/gce-non-gce-nodes",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "d5934de91cc0a316b8b4fb3204e9a8a440d4079c",
+      "committedAt": "2026-09-10T16:54:39Z",
+      "url": "https://github.com/kubernetes/autoscaler/commit/ed3398523f4f303ffcc837234099a1d314807c17",
+      "title": "Merge pull request #10230 from MatthewGree/cloud-kms-error",
+      "observedAt": "2026-09-10T17:01:11.010Z",
       "programs": [
         "Kubernetes"
       ],
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "f00436edeb78e783d29f388158c4d6c18893b2ff",
+      "sha": "34a7457594fd9e6634f40174d9fc68b1c6ee2048",
       "branch": "main",
-      "parentSha": "15504df76777ed10adff15453e716ec65e38c0fa",
-      "committedAt": "2026-09-10T14:06:36Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/f00436edeb78e783d29f388158c4d6c18893b2ff",
-      "title": "Merge pull request #9919 from ElijahQuinones/provider-aws-2.66.0-image-promotion",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "f00436edeb78e783d29f388158c4d6c18893b2ff",
+      "committedAt": "2026-09-10T16:54:38Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/34a7457594fd9e6634f40174d9fc68b1c6ee2048",
+      "title": "Merge pull request #9921 from upodroid/fix-bugs-in-monitor",
+      "observedAt": "2026-09-10T17:01:11.010Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1004,13 +1004,13 @@
       "languages": []
     },
     "kubernetes/test-infra": {
-      "sha": "90c66cb99bfc27e2b416e7501720a19b4d91775c",
+      "sha": "8b62a4fb9cabf7f1795d625165f8ef7ebbaeb2d6",
       "branch": "master",
-      "parentSha": "6459d2abf7e2722ed496891501e2621e91ec056d",
-      "committedAt": "2026-09-10T14:22:38Z",
-      "url": "https://github.com/kubernetes/test-infra/commit/90c66cb99bfc27e2b416e7501720a19b4d91775c",
-      "title": "Merge pull request #37855 from k8s-infra-ci-robot/autobump",
-      "observedAt": "2026-09-10T14:44:56.653Z",
+      "parentSha": "90c66cb99bfc27e2b416e7501720a19b4d91775c",
+      "committedAt": "2026-09-10T16:56:35Z",
+      "url": "https://github.com/kubernetes/test-infra/commit/8b62a4fb9cabf7f1795d625165f8ef7ebbaeb2d6",
+      "title": "Merge pull request #37856 from upodroid/bump-argocd-differ",
+      "observedAt": "2026-09-10T17:01:11.010Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1323,13 +1323,13 @@
       ]
     },
     "vercel/turborepo": {
-      "sha": "3235ec56dca1c6606e1a99971850a72f1246572f",
+      "sha": "b8c7370b7480e69302f7438e22e8efb4b55cdf15",
       "branch": "main",
-      "parentSha": "f3b0fa9f8b467c0bdf1c46e0a7d4d61b721984b5",
-      "committedAt": "2026-09-10T16:38:50Z",
-      "url": "https://github.com/vercel/turborepo/commit/3235ec56dca1c6606e1a99971850a72f1246572f",
-      "title": "fix: Restore leading flags for implicit run commands (#14037)",
-      "observedAt": "2026-09-10T16:40:46.612Z",
+      "parentSha": "3235ec56dca1c6606e1a99971850a72f1246572f",
+      "committedAt": "2026-09-10T17:00:06Z",
+      "url": "https://github.com/vercel/turborepo/commit/b8c7370b7480e69302f7438e22e8efb4b55cdf15",
+      "title": "fix: Include experimentalCI in task hashes (#14038)",
+      "observedAt": "2026-09-10T17:01:11.010Z",
       "programs": [
         "Vercel Open Source"
       ],
