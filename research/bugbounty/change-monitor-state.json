@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T18:50:52.635Z",
+  "checkedAt": "2026-09-10T19:01:14.462Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -551,13 +551,13 @@
       "languages": []
     },
     "kubernetes/k8s.io": {
-      "sha": "88c0bbb1dadc19ebb863dacbecb5d780a9c6b415",
+      "sha": "d51dbfb68d61c3ec62a5bd8b2ce8a192c6c3d178",
       "branch": "main",
-      "parentSha": "34a7457594fd9e6634f40174d9fc68b1c6ee2048",
-      "committedAt": "2026-09-10T17:30:35Z",
-      "url": "https://github.com/kubernetes/k8s.io/commit/88c0bbb1dadc19ebb863dacbecb5d780a9c6b415",
-      "title": "Merge pull request #9922 from janetkuo/promote-agent-sandbox-v1.0.2",
-      "observedAt": "2026-09-10T17:30:52.582Z",
+      "parentSha": "88c0bbb1dadc19ebb863dacbecb5d780a9c6b415",
+      "committedAt": "2026-09-10T18:56:38Z",
+      "url": "https://github.com/kubernetes/k8s.io/commit/d51dbfb68d61c3ec62a5bd8b2ce8a192c6c3d178",
+      "title": "Merge pull request #9920 from geewynn/bump-datadog-3.244.0",
+      "observedAt": "2026-09-10T19:01:14.462Z",
       "programs": [
         "Kubernetes"
       ],
@@ -747,13 +747,13 @@
       ]
     },
     "kubernetes/kubernetes": {
-      "sha": "1a1344d7f8256aa6f35267576a1f84f93b7c2080",
+      "sha": "47c9a4e78d0b8aec7d4bc78bcf13c1f217213101",
       "branch": "master",
-      "parentSha": "39d3afacbeca5074fb54c1af5469ad11d6ddd78e",
-      "committedAt": "2026-09-10T17:50:38Z",
-      "url": "https://github.com/kubernetes/kubernetes/commit/1a1344d7f8256aa6f35267576a1f84f93b7c2080",
-      "title": "Merge pull request #142013 from thc1006/quantity-cmp-overflow",
-      "observedAt": "2026-09-10T17:51:04.823Z",
+      "parentSha": "1a1344d7f8256aa6f35267576a1f84f93b7c2080",
+      "committedAt": "2026-09-10T18:54:34Z",
+      "url": "https://github.com/kubernetes/kubernetes/commit/47c9a4e78d0b8aec7d4bc78bcf13c1f217213101",
+      "title": "Merge pull request #141519 from pohly/ktesting-graduation",
+      "observedAt": "2026-09-10T19:01:14.462Z",
       "programs": [
         "Kubernetes"
       ],
@@ -1213,13 +1213,13 @@
       ]
     },
     "vercel/ai": {
-      "sha": "0de88864f70b6f02cf89d1625aeb3fece0648a7f",
+      "sha": "7469a3bc5daf0fd8c535c903f883d730a39de191",
       "branch": "main",
-      "parentSha": "03f4e5914aa6cfbef0f3e50f9c55724e0b7c094d",
-      "committedAt": "2026-09-10T18:47:53Z",
-      "url": "https://github.com/vercel/ai/commit/0de88864f70b6f02cf89d1625aeb3fece0648a7f",
-      "title": "fix(openai): allow providers to disable web search source includes (#20599)",
-      "observedAt": "2026-09-10T18:50:52.635Z",
+      "parentSha": "0de88864f70b6f02cf89d1625aeb3fece0648a7f",
+      "committedAt": "2026-09-10T19:00:28Z",
+      "url": "https://github.com/vercel/ai/commit/7469a3bc5daf0fd8c535c903f883d730a39de191",
+      "title": "feat: support image generation requests in batches (#20594)",
+      "observedAt": "2026-09-10T19:01:14.462Z",
       "programs": [
         "Vercel Open Source"
       ],
