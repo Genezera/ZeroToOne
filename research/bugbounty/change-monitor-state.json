@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedAt": "2026-09-10T20:30:59.670Z",
+  "checkedAt": "2026-09-10T20:40:53.385Z",
   "repos": {
     "kiwicom/js-iam-middleware": {
       "sha": "a5ca3d73fb83fab4dfbb347bf6a994da175b1f8e",
@@ -1351,13 +1351,13 @@
       ]
     },
     "vercel/workflow": {
-      "sha": "7740388d7fe1a744f04974c67fd583d2526658f4",
+      "sha": "3aa4c161af5b2fb6830fbd20e1e27e77a25acd76",
       "branch": "main",
-      "parentSha": "45a307294888a5ad0b50e0b8c05c90f5561059a1",
-      "committedAt": "2026-09-10T18:29:01Z",
-      "url": "https://github.com/vercel/workflow/commit/7740388d7fe1a744f04974c67fd583d2526658f4",
-      "title": "feat(streams): trace first WebSocket writes (#4074)",
-      "observedAt": "2026-09-10T18:30:51.516Z",
+      "parentSha": "7740388d7fe1a744f04974c67fd583d2526658f4",
+      "committedAt": "2026-09-10T20:32:01Z",
+      "url": "https://github.com/vercel/workflow/commit/3aa4c161af5b2fb6830fbd20e1e27e77a25acd76",
+      "title": "Add step claim attribution to client spans (#4066)",
+      "observedAt": "2026-09-10T20:40:53.385Z",
       "programs": [
         "Vercel Open Source"
       ],
