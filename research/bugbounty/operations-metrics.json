@@ -1,34 +1,21 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-10T14:44:08.314Z",
+  "generatedAt": "2026-09-10T14:46:16.367Z",
   "coverage": {
     "authorizedRepositories": 99,
-    "monitoredRepositories": 111,
+    "monitoredRepositories": 99,
     "ratio": 1,
     "missing": [],
-    "extra": [
-      "mattermost/mattermost-plugin-ai",
-      "mattermost/mattermost-plugin-boards",
-      "mattermost/mattermost-plugin-calls",
-      "mattermost/mattermost-plugin-confluence",
-      "mattermost/mattermost-plugin-github",
-      "mattermost/mattermost-plugin-gitlab",
-      "mattermost/mattermost-plugin-jira",
-      "mattermost/mattermost-plugin-mscalendar",
-      "mattermost/mattermost-plugin-msteams",
-      "mattermost/mattermost-plugin-msteams-meetings",
-      "mattermost/mattermost-plugin-playbooks",
-      "mattermost/mattermost-plugin-zoom"
-    ]
+    "extra": []
   },
   "latency": {
-    "monitorCheckedAt": "2026-09-09T21:30:41.413Z",
-    "monitorLagMinutes": 1033,
-    "observedDeltas7d": 221,
-    "observedDeltas24h": 91,
-    "directSingleCommit24h": 70,
-    "detectionMinutesP50": 7,
-    "detectionMinutesP95": 193
+    "monitorCheckedAt": "2026-09-10T14:44:56.653Z",
+    "monitorLagMinutes": 1,
+    "observedDeltas7d": 249,
+    "observedDeltas24h": 119,
+    "directSingleCommit24h": 75,
+    "detectionMinutesP50": 8,
+    "detectionMinutesP95": 348
   },
   "evidence": {
     "pending": 0,
@@ -42,12 +29,6 @@
     "total": 849,
     "created24h": 0
   },
-  "activeAlerts": [
-    "monitor_registry_mismatch",
-    "monitor_stale"
-  ],
-  "notificationBaselineAlerts": [
-    "monitor_registry_mismatch",
-    "monitor_stale"
-  ]
+  "activeAlerts": [],
+  "notificationBaselineAlerts": []
 }
