@@ -1,8 +1,56 @@
 {
-  "migratedAt": "2026-09-08T15:59:48.495Z",
-  "total": 846,
+  "migratedAt": "2026-09-13T11:16:15.908Z",
+  "total": 849,
   "driftCorrected": 0,
   "logs": [
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature",
+      "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-08T08:08:21.285Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"canonical_go_verifier\" (2026-09-10T14:48:02.460Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-10T14:48:02.740Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:25.970Z)"
+        },
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/scripts/build-binary.mjs::line:628::path_traversal_risk::commit:c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb",
+      "steps": [
+        {
+          "to": "candidate",
+          "ok": true,
+          "reason": "estado inicial de todo finding migrado"
+        }
+      ],
+      "finalState": "candidate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/scripts/build-binary.mjs::line:626::path_traversal_risk::commit:c628be7835e03a965b93e9cf9e2bd5ac2acbf5eb",
+      "steps": [
+        {
+          "to": "candidate",
+          "ok": true,
+          "reason": "estado inicial de todo finding migrado"
+        }
+      ],
+      "finalState": "candidate"
+    },
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::yaml@1.10.2::known_vulnerable_dependency",
       "steps": [
@@ -400,7 +448,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:18::eval_usage",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:298::eval_usage",
       "steps": [
         {
           "to": "candidate",
@@ -411,7 +459,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:298::eval_usage",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:18::eval_usage",
       "steps": [
         {
           "to": "candidate",
@@ -1214,7 +1262,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::minimatch@10.1.1::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::cross-spawn@6.0.5::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -1225,7 +1273,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::cross-spawn@6.0.5::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::minimatch@10.1.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -1929,7 +1977,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::body-parser@1.19.2::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::cipher-base@1.0.4::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -1940,7 +1988,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::cipher-base@1.0.4::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::body-parser@1.19.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -3307,6 +3355,15 @@
       "id": "Vercel Open Source::vercel/next.js/packages/next/src/server/image-optimizer.ts::fetchExternalImage::ssrf_redirect_allowlist_bypass_risk",
       "steps": [
         {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:07:57.865Z) restaurada da fila"
+        },
+        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -3548,6 +3605,9 @@
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::module.exports::command_injection_risk",
       "steps": [
+        {
+          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:07:57.635Z) restaurada da fila"
+        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -4198,6 +4258,9 @@
       "id": "Circle BBP::arc-remote-signer/internal/app/public/public.go::SignerService.Sign::ai_deep_read_finding",
       "steps": [
         {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
           "to": "duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -4561,6 +4624,18 @@
       "id": "Circle BBP::circlefin/solana-gateway-contracts/programs/gateway-wallet/src/instructions/initiate_withdrawal.rs::initiate_withdrawal_withdraw::ai_deep_read_finding",
       "steps": [
         {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "report restaurado da fila (research/bugbounty/reports/circle-bbp-solana-gateway-denylist-withdrawal.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-08-31T19:25:28.981Z)"
+        },
+        {
           "to": "duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -4825,6 +4900,9 @@
       "id": "Vercel Open Source::vercel-labs/agent-skills/skills/vercel-optimize/lib/verify-claim.mjs::repoPaths::path_traversal_arbitrary_file_read_risk",
       "steps": [
         {
+          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:07:57.414Z) restaurada da fila"
+        },
+        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -4846,6 +4924,9 @@
     {
       "id": "Vercel Open Source::vercel/ai/packages/harness/src/bridge/index.ts::runBridge::timing_attack_risk",
       "steps": [
+        {
+          "note": "validation \"js_ts_manual_review\" (2026-09-04T04:08:16.415Z) restaurada da fila"
+        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -5507,6 +5588,9 @@
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:67::semgrep_detect_child_process",
       "steps": [
         {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
           "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -5595,6 +5679,9 @@
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:64::semgrep_detect_child_process",
       "steps": [
         {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
           "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -5605,6 +5692,9 @@
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:66::semgrep_detect_child_process",
       "steps": [
+        {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
         {
           "to": "false_positive",
           "ok": true,
@@ -5715,6 +5805,9 @@
     {
       "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:32::semgrep_detect_child_process",
       "steps": [
+        {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
         {
           "to": "false_positive",
           "ok": true,
@@ -6351,7 +6444,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol::isValidSignatureNow::unchecked_call_return",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:164::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -6362,7 +6455,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:164::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol::isValidSignatureNow::unchecked_call_return",
       "steps": [
         {
           "to": "false_positive",
@@ -6428,17 +6521,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:41::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:80::semgrep_use_of_unsafe_block",
       "steps": [
         {
@@ -6450,7 +6532,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/types.go::line:27::semgrep_math_random_used",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:41::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -6462,6 +6544,17 @@
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:124::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/types.go::line:27::semgrep_math_random_used",
       "steps": [
         {
           "to": "false_positive",
@@ -6549,7 +6642,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:135::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/core/types.go::line:30::semgrep_math_random_used",
       "steps": [
         {
           "to": "false_positive",
@@ -6560,7 +6653,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/core/types.go::line:30::semgrep_math_random_used",
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:135::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -6758,15 +6851,62 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error",
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/user_cloud_oauth.go::httpOAuth2Complete::oauth2_account_linking_csrf",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"local_go_test_poc\" (2026-09-09T16:36:14.116Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"local_go_test_poc\" (2026-09-09T16:39:07.730Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"local_go_test_poc\" (2026-09-09T16:40:06.245Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"local_go_test_poc\" (2026-09-10T14:40:10.832Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (research/bugbounty/reports/mattermost-plugin-jira-oauth2-account-linking-csrf.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-09T16:40:06.483Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-10T14:40:10.219Z)"
+        },
+        {
+          "to": "scope_verified",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "scope_verified"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/cardano/address.go::NewAddressFromBytes::address_validation_logic_error",
+      "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-08T15:44:53.464Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:13:33.390Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-08T15:51:12.278Z)"
+        },
+        {
+          "to": "inconclusive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "inconclusive"
     },
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/server/kv.go::EnsureRSAKey::weak_rsa_key_size_oauth1_signing",
@@ -6783,23 +6923,59 @@
       "id": "OKG::okx/go-wallet-sdk/coins/tron/tron.go::VerifyMessage+VerifyMessageWithAddress+VerifyMessageV1::unchecked_signature_length_panic",
       "steps": [
         {
-          "to": "corroborated_static",
+          "note": "validation \"go_manual_review\" (2026-09-08T15:28:12.097Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"prior_art_search\" (2026-09-09T11:04:56.735Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"prior_art_search\" (2026-09-09T11:06:27.856Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-09T11:06:56.908Z) restaurada da fila"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-09T11:06:27.856Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:06:58.718Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:24.274Z)"
+        },
+        {
+          "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "corroborated_static"
+      "finalState": "inconclusive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKey.Verify::signature_verification_bypass",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-08T09:04:24.145Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"public_prior_knowledge_review\" (2026-09-09T11:09:58.273Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:09:59.223Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:14.618Z)"
+        },
+        {
+          "to": "known_duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "known_duplicate"
     },
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac",
@@ -6827,60 +7003,103 @@
       "id": "OKG::okx/go-wallet-sdk/coins/filecoin/transaction.go::SignedTx::unchecked_signature_length_panic",
       "steps": [
         {
-          "to": "reproduced_local",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "reproduced_local"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/waves/crypto/crypto.go::Sign::unclamped_scalar_pubkey_mismatch_invalid_signature",
-      "steps": [
+          "note": "deploymentEvidence restaurado da fila"
+        },
         {
-          "to": "reproduced_local",
+          "note": "validation \"go_test_poc\" (2026-09-08T08:33:02.707Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:13:36.080Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:19.117Z)"
+        },
+        {
+          "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "inconclusive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/helium/crypto/nist-p256/nist-p256.go::NISTP256Curve.GenerateKey::unpadded_bigint_key_serialization_corrupts_address",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-08T07:56:59.450Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:13:38.756Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:20.863Z)"
+        },
+        {
+          "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "inconclusive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/helium/keypair/keypair.go::Keypair.Sign::silent_unsigned_result_unimplemented_curve",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-08T07:48:49.252Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:13:41.539Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:22.665Z)"
+        },
+        {
+          "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "inconclusive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/aptos/v2/transactionAuthenticator.go::MultiEd25519TransactionAuthenticator.Verify::ai_deep_read_finding",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-08T07:41:55.131Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:11:32.160Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-09T01:20:17.509Z)"
+        },
+        {
+          "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "inconclusive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/bitcoin/multi_address.go::GenerateAddress::wrong_network_address_generation",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test\" (2026-09-08T07:31:59.684Z) restaurada da fila"
+        },
         {
           "to": "inconclusive",
           "ok": true,
@@ -6892,6 +7111,15 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/nervos/crypto/bech32.go::Bech32Decode::bech32_bech32m_encoding_detection_broken",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_unit_test\" (2026-09-08T01:37:34.498Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-08T01:38:13.863Z)"
+        },
         {
           "to": "reproduced_local",
           "ok": true,
@@ -6915,6 +7143,15 @@
       "id": "Slack::slackhq/nebula/connection_state.go::ConnectionState.Decrypt+VerifyRelay::replay_window_toctou_race",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_race_poc\" (2026-09-08T01:08:53.896Z) restaurada da fila"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-08T04:39:06.260Z)"
+        },
+        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -6926,6 +7163,9 @@
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/server/plugin/utils.go::encrypt/decrypt::unauthenticated_encryption_cfb_no_mac",
       "steps": [
         {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-07T20:48:13.134Z)"
+        },
+        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -6936,6 +7176,15 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zcash/address.go::ValidateAddress::address_validation_logic_error",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-07T18:25:53.977Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T18:27:10.937Z)"
+        },
         {
           "to": "reproduced_local",
           "ok": true,
@@ -6959,6 +7208,15 @@
       "id": "OKG::okx/go-wallet-sdk/coins/stellar/strkey/signed_payload.go::DecodeSignedPayload::ai_deep_read_finding",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-07T18:08:00.349Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T18:14:09.348Z)"
+        },
+        {
           "to": "reproduced_local",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -6970,27 +7228,72 @@
       "id": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiEd25519.go::MultiEd25519PublicKey.Verify::multied25519_bitmap_ignored_index_oob_panic",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-07T12:12:14.835Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"public_prior_knowledge_review\" (2026-09-09T11:10:21.388Z) restaurada da fila"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-07T12:12:59.617Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:10:22.312Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-07T18:35:21.520Z)"
+        },
+        {
+          "to": "known_duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "known_duplicate"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/aptos/v2/crypto/multiKey.go::MultiKeyBitmap.ContainsKey+MultiKey.Verify::multikey_bitmap_signature_verification_bypass",
       "steps": [
         {
-          "to": "reproduced_local",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-07T11:59:29.023Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"public_prior_knowledge_review\" (2026-09-09T11:10:02.876Z) restaurada da fila"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-07T12:09:24.775Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:10:03.769Z)"
+        },
+        {
+          "note": "codeAgeEvidence restaurado da fila (2026-09-07T18:35:22.772Z)"
+        },
+        {
+          "to": "known_duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "reproduced_local"
+      "finalState": "known_duplicate"
     },
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-mscalendar/calendar/engine/notification.go::processNotification::non_constant_time_hmac_comparison",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"timing_benchmark\" (2026-09-07T11:33:38.587Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"manual_review\" (2026-09-07T11:33:56.292Z) restaurada da fila"
+        },
         {
           "to": "reproduced_local",
           "ok": true,
@@ -7003,6 +7306,12 @@
       "id": "OKG::okx/go-wallet-sdk/coins/near/account.go::PrivateKeyToAddr::ai_deep_read_finding",
       "steps": [
         {
+          "note": "validation \"go_test_repro\" (2026-09-07T04:38:03.628Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T04:40:28.813Z)"
+        },
+        {
           "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7013,6 +7322,15 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/oasis/account.go::NewAddress+SignTransaction::ai_deep_read_finding",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-06T21:26:21.546Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T03:55:15.395Z)"
+        },
         {
           "to": "reproduced_local",
           "ok": true,
@@ -7025,6 +7343,12 @@
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-msteams-meetings/server/http.go::completeUserOAuth::oauth2_login_csrf_account_linking",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"manual_review\" (2026-09-07T04:13:13.273Z) restaurada da fila"
+        },
+        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7035,6 +7359,12 @@
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-confluence/server/user.go::CompleteOAuth2::oauth2_login_csrf_account_linking",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"manual_review\" (2026-09-07T04:13:13.187Z) restaurada da fila"
+        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -7047,6 +7377,15 @@
       "id": "OKG::okx/go-wallet-sdk/coins/ton/address.go::NewAddress+VenomNewAddress::ai_deep_read_finding",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-06T11:21:16.940Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T03:55:43.432Z)"
+        },
+        {
           "to": "reproduced_local",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7057,6 +7396,15 @@
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/ed25519/ed25519.go::PrivateKeyFromSeed+PublicKeyFromSeed::ai_deep_read_finding",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-06T11:19:54.862Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T03:55:43.577Z)"
+        },
         {
           "to": "reproduced_local",
           "ok": true,
@@ -7223,6 +7571,18 @@
       "id": "OKG::okx/go-wallet-sdk/coins/polkadot/transaction.go::SignTx::ai_deep_read_finding",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-06T04:58:59.427Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-06T05:01:56.573Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T03:55:43.310Z)"
+        },
+        {
           "to": "reproduced_local",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7234,6 +7594,9 @@
       "id": "Vercel Open Source::nitrojs/nitro/src/dev/vfs.ts::createVFSHandler::html_js_injection_unescaped_interpolation",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
           "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7244,6 +7607,18 @@
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/server/webhook.go::verifyZoomWebhookSignature::non_constant_time_hmac_comparison",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_timing_benchmark\" (2026-09-07T04:04:01.382Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"manual_review\" (2026-09-07T04:13:13.356Z) restaurada da fila"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-07T12:43:52.060Z)"
+        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -7300,6 +7675,12 @@
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-gitlab/server/webhook.go::handleWebhook::non_constant_time_hmac_comparison",
       "steps": [
         {
+          "note": "validation \"timing_benchmark\" (2026-09-05T05:02:00.826Z) restaurada da fila"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-05T11:47:56.942Z)"
+        },
+        {
           "to": "known_duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7355,6 +7736,18 @@
       "id": "OKG::okx/go-wallet-sdk/coins/helium/keypair/address.go::NewAddressable::ai_deep_read_finding",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-05T04:51:03.398Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-05T04:54:21.087Z) restaurada da fila"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-05T11:55:21.382Z)"
+        },
+        {
           "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7365,6 +7758,21 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/helium/helium.go::Sign+NewAddress::ai_deep_read_finding",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-04T18:12:50.038Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\okg-coins-helium-helium-go-ai-deep-read-finding.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-04T19:20:26.425Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-04T19:20:26.392Z)"
+        },
         {
           "to": "inconclusive",
           "ok": true,
@@ -7377,6 +7785,24 @@
       "id": "Kubernetes::kubernetes/publishing-bot/pkg/golang/install.go::line:103::command_injection_risk",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_docker_sandboxed\" (2026-09-04T17:36:54.044Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"go_test_local_no_docker_needed\" (2026-09-04T17:57:34.144Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\kubernetes-kubernetes-publishing-bot-pkg-golang-install-go-command-injection-risk.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-04T18:56:58.128Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-04T17:57:56.942Z)"
+        },
+        {
           "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7387,6 +7813,12 @@
     {
       "id": "Kubernetes::kubernetes/publishing-bot/cmd/publishing-bot/config/rules.go::line:127::insecure_tls",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"manual_code_review\" (2026-09-04T17:50:20.177Z) restaurada da fila"
+        },
         {
           "to": "corroborated_static",
           "ok": true,
@@ -7410,6 +7842,21 @@
       "id": "OKG::okx/go-wallet-sdk/coins/elrond/elrond.go::Transfer::ai_deep_read_finding",
       "steps": [
         {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-04T12:11:00.961Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\okg-coins-elrond-elrond-go-ai-deep-read-finding.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-04T19:20:26.742Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-04T19:20:26.709Z)"
+        },
+        {
           "to": "inconclusive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -7420,6 +7867,21 @@
     {
       "id": "OKG::okx/go-wallet-sdk/coins/solana/base/keys.go::PrivateKeyFromBase58::ai_deep_read_finding",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-04T12:03:15.117Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (E:\\ZeroToOne\\research\\bugbounty\\reports\\okg-coins-solana-base-keys-go-ai-deep-read-finding.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-04T19:20:26.968Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-04T19:20:26.939Z)"
+        },
         {
           "to": "inconclusive",
           "ok": true,
@@ -7432,16 +7894,49 @@
       "id": "OKG::okx/go-wallet-sdk/coins/cardano/crypto/key.go::NewXPrvKeyFromEntropy::ai_deep_read_finding",
       "steps": [
         {
-          "to": "scope_verified",
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_manual_poc\" (2026-09-04T05:01:03.540Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"specification_recheck\" (2026-09-09T11:03:58.195Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (research/bugbounty/reports/okg-go-wallet-sdk-cardano-key-clamp.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-04T12:45:36.000Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-09T11:03:59.099Z)"
+        },
+        {
+          "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "scope_verified"
+      "finalState": "false_positive"
     },
     {
       "id": "Vercel Open Source::vercel/workflow/packages/core/src/workflow.ts::createWorkflowSessionInner::predictable_hook_token_seed_risk",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"local_repro_script\" (2026-09-04T04:21:10.959Z) restaurada da fila"
+        },
+        {
+          "note": "validation \"node_test\" (2026-09-04T04:23:20.123Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (research/bugbounty/reports/vercel-workflow-predictable-hook-token.md)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-04T04:25:20.169Z)"
+        },
         {
           "to": "known_duplicate",
           "ok": true,
@@ -7486,6 +7981,9 @@
     {
       "id": "Vercel Open Source::vercel/chat/packages/adapter-discord/src/index.ts::handleWebhook::ai_deep_read_finding",
       "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
         {
           "to": "false_positive",
           "ok": true,
@@ -8499,6 +8997,24 @@
       "id": "Kiwi.com::kiwicom/js-iam-middleware/src/authorizationDirective.ts::visitFieldDefinition::positional_argument_mismatch",
       "steps": [
         {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"argument_order_poc\" (2026-09-02T20:14:41.922Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (research/bugbounty/reports/kiwicom-js-iam-middleware-argument-mismatch.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-03T22:11:02.863Z)"
+        },
+        {
+          "note": "impactAssessment restaurado da fila (2026-09-03T22:11:02.622Z)"
+        },
+        {
           "to": "duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
@@ -9125,6 +9641,21 @@
     {
       "id": "Kubernetes::kubernetes/cluster-bootstrap/token/jws/jws.go::DetachedTokenIsValid::non_constant_time_hmac_comparison",
       "steps": [
+        {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"timing_benchmark\" (2026-09-02T16:36:01.544Z) restaurada da fila"
+        },
+        {
+          "note": "report restaurado da fila (research/bugbounty/reports/kubernetes-cluster-bootstrap-jws-timing-attack.md)"
+        },
+        {
+          "note": "duplicateCheck restaurado da fila (2026-09-02T16:40:45.833Z)"
+        },
         {
           "to": "duplicate",
           "ok": true,

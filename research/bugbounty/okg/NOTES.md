@@ -3109,3 +3109,53 @@ arquivos de biblioteca criptográfica copiados de projetos upstream já
 estabelecidos (btcsuite, blockwatch/tzgo), sem lógica própria do OKX
 introduzindo desvio. `deep-read-log.json` atualizado com as 3 entradas.
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-13 (rotina agendada, sessão cloud)
+
+`check-program`/`program-policy.json` conferidos antes de qualquer
+clone (passo 0 do CLAUDE.md): `Block Open Source` e `Circle BBP`
+seguem bloqueados, nenhum repo desses dois tocado nesta rodada.
+`migrate-to-v2.mjs` rodado; `list-pending` vazio; `research-plan`
+`actionable: 0` (64 `held`, mesmos motivos já documentados —
+`program_blocked`, `campaign_duplicate_history`,
+`below_campaign_impact`, `outside_campaign_window`,
+`previous_submission`; nada novo).
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`:
+`okx/go-wallet-sdk` segue com mais espaço não lido entre os
+candidatos liberados pela política (14% coberto). Clone público raso
+(`git clone --depth 1`, sem conta/token) para escolher 3 arquivos
+ainda não lidos, priorizando palavras-chave de sign/key/change-pubkey
+(julgamento próprio, não regex):
+
+1. `coins/zkspace/change_public_key.go` — `ChangePubKey.GetTxHash`
+   só serializa/hasheia campos de uma transação `ChangePubKey` de
+   SAÍDA (accountId/account/newPkHash/nonce/ethSignature) que o
+   próprio usuário da carteira vai assinar. Builder de tx client-side,
+   não verificador de assinatura de terceiro. Sem achado.
+2. `coins/zksync/core/change_pub_key.go` — mesma família, vendorizado
+   de `zksync-sdk/zksync-go`: `ChangePubKey.GetTxHash` também só
+   serializa/hasheia campos de uma tx `ChangePubKey` de SAÍDA
+   (accountId/account/newPkHash/feeToken/fee/nonce/timeRange), sem
+   lógica de verificação de assinatura recebida. Sem achado.
+3. `crypto/go-ethereum/types/transaction_signing.go` —
+   `Signer`/`recoverPlain` vendorizado fielmente do go-ethereum
+   upstream; `Sender()` de EIP155/EIP2930/London checa `ChainId`
+   antes de `recoverPlain`, `ValidateSignatureValues` aplicado
+   corretamente em todos os caminhos. Única adição própria da OKX é
+   `SignedWithRSV` (comentário "by xiaolei.jin", ~linha 105), que
+   monta uma tx a partir de R/S/V já fornecidos sem normalizar `S`
+   — mas é usada pelo próprio dono da carteira para montar SUA
+   PRÓPRIA tx assinada externamente (fluxo HSM/remote-signer), não um
+   caminho que verifica assinatura de terceiro; um S não-canônico aí
+   só afetaria o hash da própria tx do usuário, sem ganho para um
+   atacante. Sem achado de segurança.
+
+Nenhum achado novo nesta rodada — resultado normal e válido, os três
+arquivos escolhidos (change-pubkey de duas SDKs L2 irmãs +
+transaction-signing vendorizado do go-ethereum) são todos código de
+construção/assinatura de transação de SAÍDA do próprio usuário, fora
+do modelo de ameaça relevante para bug bounty (que exige um atacante
+externo comprometendo outra vítima, não o usuário atacando a si
+mesmo). `deep-read-log.json` atualizado com as 3 entradas (138→141).
+Clone temporário removido. `export-queue` rodado ao final.
