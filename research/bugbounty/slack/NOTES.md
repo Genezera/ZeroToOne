@@ -708,3 +708,40 @@ lidos): `dns_server.go`, `punchy.go`, `hostmap.go`.
 
 Sem achado novo nos 3. `deep-read-log.json` atualizado (48 entradas agora em
 `slackhq/nebula`, ~25%+ do repo coberto).
+
+## Rodada 2026-09-13 (push automático via GitHub webhook, sessão cloud)
+
+`research-plan`: `actionable` vazio (0), `list-pending` vazio. Checado
+`check-program "Slack"` → `{"blocked": false}` antes de tocar o repo (nota
+pra próxima rodada: usar sempre esse comando direto, não só confiar no
+filtro de `list-deep-read-candidates.mjs`, mesmo que hoje os dois tenham
+batido). `list-deep-read-candidates.mjs` apontou 4 candidatos permitidos;
+`plaid/plaid-ruby` e `plaid/react-plaid-link` já estavam 100% esgotados
+(ver entradas anteriores no log), então leitura profunda desta rodada ficou
+só em `slackhq/nebula` (2 arquivos novos, priorizando os que lidam com
+input de rede não confiável / cálculo de endereço de peer):
+
+- `iputil/packet.go`: hipótese motivada pelo próprio comentário do código em
+  `IPv6FindUpperProtocol` (que se descreve como "single source of truth" e
+  documenta fail-closed contra bypass de firewall). Achei uma inconsistência
+  real: depois de exaurir as 8 iterações do loop de extension headers sem
+  cair no ramo `default:`, o código sai do loop e cai num `return` final que
+  NÃO repete a checagem `offset > len(packet)` que o ramo `default:` tem.
+  Rastreei os 2 únicos chamadores (`outside.go::parseV6` e
+  `iputil/packet.go::ipv6CreateRejectPacket`) e ambos revalidam limites de
+  forma independente antes de qualquer leitura em `data[offset:...]` — a
+  falta da guarda redundante não chega a virar leitura fora dos limites nem
+  bypass de firewall observável. REFUTADO como vulnerabilidade (é um code
+  smell real, não um bug explorável). De passagem, também notei que
+  `CreateRejectPacket` (IPv4) nunca valida `ihl >= ipv4.HeaderLen` antes de
+  fatiar o suposto header TCP — ao contrário de `parseV4`, que exige isso
+  explicitamente — mas é só corretude cosmética do pacote de RST/ICMP de
+  diagnóstico devolvido, sem leitura fora dos limites nem bypass. Sem
+  achado.
+- `calculated_remote.go`: mecanismo de "chute" de endereço de peer
+  (`lighthouse.calculated_remotes`) inteiramente alimentado por config local
+  do operador; o `vpnAddr` usado vem do certificado assinado pela CA, não é
+  forjável por payload de rede. Sem achado.
+
+`deep-read-log.json` atualizado (50 entradas agora em `slackhq/nebula`).
+Nenhum finding novo criado nesta rodada — resultado normal e válido.
