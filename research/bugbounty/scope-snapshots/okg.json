@@ -2,30 +2,33 @@
   "program": "OKG",
   "platform": "HackerOne",
   "officialUrl": "https://hackerone.com/okg",
-  "sourceType": "hackerone_api_live",
-  "sourceDetail": "GET /v1/hackers/programs/okg/structured_scopes",
-  "contentHash": "3d6c3b3aee85cc9bf9e2fe9541e4b032772e4bea126964f98dd97474b926cafb",
-  "capturedAt": "2026-09-08T11:09:00.599Z",
-  "expiresAt": "2026-09-11T11:09:00.599Z",
-  "ttlDays": 3,
-  "confidence": "alta",
+  "sourceType": "community_dataset_structured",
+  "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle okg",
+  "contentHash": "d8a3b8f318b505cfc27e648c581e18b939b2f68e71a65405ee7de8d19c083a81",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
+  "ttlDays": 14,
+  "confidence": "medium",
   "assets": [
     {
-      "assetIdentifier": "*.okx.com",
+      "assetIdentifier": "*.oklink.com",
+      "assetType": "WILDCARD",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
-      "instruction": null
+      "instruction": ""
+    },
+    {
+      "assetIdentifier": "*.okx.com",
+      "assetType": "WILDCARD",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": ""
     },
     {
       "assetIdentifier": "Mac OS Executable",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "https://www.okx.com/download"
-    },
-    {
-      "assetIdentifier": "Windows OS Executable",
+      "assetType": "OTHER",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
@@ -33,20 +36,15 @@
     },
     {
       "assetIdentifier": "OKX Android APK",
+      "assetType": "OTHER",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
       "instruction": "https://play.google.com/store/apps/details?id=com.okinc.okex.gp"
     },
     {
-      "assetIdentifier": "OKX iOS APP",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": "https://apps.apple.com/us/app/okx-buy-bitcoin-btc-crypto/id1327268470"
-    },
-    {
       "assetIdentifier": "OKX Wallet Chrome Extension",
+      "assetType": "OTHER",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
@@ -54,6 +52,7 @@
     },
     {
       "assetIdentifier": "OKX Wallet Edge Add-ons",
+      "assetType": "OTHER",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
@@ -61,69 +60,31 @@
     },
     {
       "assetIdentifier": "OKX Wallet Safari Extension",
+      "assetType": "OTHER",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
       "instruction": "https://apps.apple.com/us/app/okx-wallet/id6463797825"
     },
     {
-      "assetIdentifier": "*.oklink.com",
+      "assetIdentifier": "OKX iOS APP",
+      "assetType": "OTHER",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
-      "instruction": null
+      "instruction": "https://apps.apple.com/us/app/okx-buy-bitcoin-btc-crypto/id1327268470"
     },
     {
-      "assetIdentifier": "*.okg.com",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "https://github.com/okx",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "Agentic Wallet",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "https://web3.okx.com/onchainos",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "okx.ai",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "Testnet faucet / Testnet funds / Testnet",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "OKX Xlayer Faucet",
-      "eligibleForBounty": false,
-      "eligibleForSubmission": false,
-      "maxSeverity": "none",
-      "instruction": null
+      "assetIdentifier": "Windows OS Executable",
+      "assetType": "OTHER",
+      "eligibleForBounty": true,
+      "eligibleForSubmission": true,
+      "maxSeverity": "critical",
+      "instruction": "https://www.okx.com/download"
     },
     {
       "assetIdentifier": "https://github.com/okx/go-wallet-sdk",
+      "assetType": "SOURCE_CODE",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
       "maxSeverity": "critical",
@@ -136,5 +97,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": null
+  "communitySourceNote": "Programa auto-descoberto pelo pipeline de promoção (não um dos 4 alvos originais desta missão) — mesma limitação dos demais HackerOne: página oficial não fetchável sem sessão autenticada. Snapshot criado especificamente para desbloquear check-scope do achado cosmossdk.io/math (okx/go-wallet-sdk), que estava capado em corroborated_static por falta deste arquivo.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

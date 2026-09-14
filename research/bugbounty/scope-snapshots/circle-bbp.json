@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/circle-bbp",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle circle-bbp",
-  "contentHash": "28c56788d8429ba5383b69c65461c92698376fcbd034dff6680ddd0708bc20e1",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "contentHash": "8aa69c94018a277734b8ca81a0d7ef1e03bad137689d66c2b28b1b5f3c9649fd",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
@@ -211,23 +211,7 @@
       "instruction": null
     },
     {
-      "assetIdentifier": "rpc.blockdaemon.testnet.arc.network",
-      "assetType": "URL",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": null
-    },
-    {
       "assetIdentifier": "rpc.drpc.testnet.arc.network",
-      "assetType": "URL",
-      "eligibleForBounty": true,
-      "eligibleForSubmission": true,
-      "maxSeverity": "critical",
-      "instruction": null
-    },
-    {
-      "assetIdentifier": "rpc.quicknode.testnet.arc.network",
       "assetType": "URL",
       "eligibleForBounty": true,
       "eligibleForSubmission": true,
@@ -249,5 +233,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Página oficial HackerOne é SPA renderizada por JS/exige sessão autenticada — WebFetch e WebSearch confirmaram (30/08/2026) que não é possível capturar a prosa de política sem navegador logado. Flags de elegibilidade por ativo (eligible_for_bounty/eligible_for_submission) vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página HackerOne usa."
+  "communitySourceNote": "Página oficial HackerOne é SPA renderizada por JS/exige sessão autenticada — WebFetch e WebSearch confirmaram (30/08/2026) que não é possível capturar a prosa de política sem navegador logado. Flags de elegibilidade por ativo (eligible_for_bounty/eligible_for_submission) vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página HackerOne usa.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

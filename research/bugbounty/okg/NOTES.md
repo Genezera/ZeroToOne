@@ -3693,3 +3693,61 @@ de string próprio aqui; `TryParseBase64` tenta 4 encodings e retorna
 erro explícito se todos falharem, sem fallback silencioso). Nenhum dos
 3 teve o padrão de fallback-silencioso-em-endereço-malformado dos
 achados-irmãos deste repositório. **Sem achado novo nesta rodada.**
+
+## Rodada 2026-09-14 (push automático via GitHub webhook, sessão cloud — 6ª rodada do dia)
+`migrate-to-v2.mjs` + `research-plan`: mesmo estado (`actionable=1`,
+o finding `address_parse_silent_zero_fallback`, ação `verify_scope`;
+`held=65`, mesmos motivos/contagens da rodada anterior).
+
+Diferente das duas tentativas anteriores (que usaram
+`refresh-scope-live`, bloqueado por falta de
+`HACKERONE_USERNAME`/`HACKERONE_API_TOKEN`): desta vez rodei
+`capture-scope-snapshots.mjs` diretamente — esse script usa uma fonte
+**pública e sem autenticação** (`arkadiyt/bounty-targets-data`,
+`hackerone_data.json` via raw.githubusercontent.com), não a API
+autenticada do HackerOne. Isso **funcionou**: gerou snapshot novo pra
+todos os 10 programas cobertos, incluindo OKG (`capturedAt
+2026-09-14T12:29:55Z`, `expiresAt 2026-09-28T12:29:55Z`,
+`sourceType=community_dataset_structured`). O ativo
+`https://github.com/okx/go-wallet-sdk` continua listado
+(`eligibleForBounty=true`, `eligibleForSubmission=true`,
+`maxSeverity=critical`) — `check-scope "OKG" "okx/go-wallet-sdk"`
+agora retorna `allowed=true`. Isso resolve o motivo de bloqueio das
+rodadas #4/#5 (snapshot expirado).
+
+Registrei o `deploymentEvidence` atualizado (mesmo commit
+`12fec6b0616347265efcc23bfc240c155da710eb`) documentando o novo scope
+check, mas **mantive `confidence=unverified`** — o gap estrutural que
+já bloqueava as rodadas anteriores não mudou: `git ls-remote --tags
+https://github.com/okx/go-wallet-sdk` continua vazio (sem nenhuma
+tag/release), e a API do GitHub para releases/tags deste repositório
+não está acessível nesta sessão (fora do escopo de repos autorizados
+— `add_repo` seria necessário, não solicitado). Sem tag/release Git
+vinculável nem confirmação de app cliente real consumindo esta função,
+não há base honesta pra elevar `confidence` além de `unverified`.
+
+Tentei `reproduced_local→scope_verified` mesmo assim, documentando o
+scope agora confirmado — **recusada corretamente** pelo gate
+(`"DeploymentEvidence existe mas confidence=\"unverified\"..."`, exige
+`confidence=high` antes de `scope_verified`). Nenhuma tentativa de
+forçar/contornar — é o sistema funcionando como projetado: escopo
+resolvido não é suficiente sozinho, falta vínculo de deploy real.
+Finding permanece em `reproduced_local`.
+
+Sem candidato `pending`/`candidate` novo na fila → leitura profunda
+proativa (passo 4). `list-deep-read-candidates.mjs` liberou os mesmos
+4 repositórios da rodada anterior; `plaid/plaid-ruby` e
+`plaid/react-plaid-link` seguem esgotados (confirmado no log — sem
+arquivo novo hand-written pra ler). Escolhi `slackhq/nebula` desta vez
+(56→59 no log, 3 arquivos novos, priorizando caminhos de
+envio/criptografia/API pública ainda não lidos): `inside.go` (caminho
+principal local→rede; confirmado que `firewall.Drop` é chamado antes
+de `sendInsideMessage` tanto no caminho direto quanto no de pacote
+cacheado durante handshake — sem bypass), `noiseutil/fips140.go`
+(extração via reflection do AEAD FIPS interno do Go, com self-test de
+roundtrip e de rejeição de nonce reusado no `init()` do pacote — sem
+input de rede direto, superfície interna) e `service/service.go` (API
+gvisor-based de embedding; `Listen`/`tcpHandler` só aceitam porta
+explicitamente registrada, tráfego já passou pelo firewall antes de
+chegar aqui via `device.Pipe()`). **Sem achado novo nesta rodada** em
+nenhum dos 3 arquivos.

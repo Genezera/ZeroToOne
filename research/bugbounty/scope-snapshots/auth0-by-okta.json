@@ -5,8 +5,8 @@
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Auth0 by Okta\"",
   "contentHash": "94085b6fbb8d54b47935d84e7692a64be08deb0596553b0f97a782f8a7cf5d6e",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "low",
   "assets": [
@@ -217,5 +217,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Mesma limitação do Block Open Source: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Sabemos QUE auth0/auth0-java está listado (confirmado ao vivo: \"Auth0 Java SDK (auth0-java)\", um dos 25 ativos em escopo), não a elegibilidade de recompensa por severidade -- precisa confirmação manual na página oficial antes de qualquer submissão real."
+  "communitySourceNote": "Mesma limitação do Block Open Source: Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset público, só a lista de alvo. Sabemos QUE auth0/auth0-java está listado (confirmado ao vivo: \"Auth0 Java SDK (auth0-java)\", um dos 25 ativos em escopo), não a elegibilidade de recompensa por severidade -- precisa confirmação manual na página oficial antes de qualquer submissão real.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

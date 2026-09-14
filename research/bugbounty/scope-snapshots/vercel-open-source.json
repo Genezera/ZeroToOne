@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/vercel-open-source",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle vercel-open-source",
-  "contentHash": "88751180cef1ac5f55f2cc76f713ef785db5bb5c11ce6404272d6be76c3542e6",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "contentHash": "19fc5ee673f63a2ba4bdd01f19f90574e1f08f6fc1d32fe4000a11e1a855e499",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
@@ -169,5 +169,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Mesma limitação do Circle BBP: página oficial não fetchável sem sessão autenticada. Estrutura de tier (Tier 1/2/3 OSS) confirmada pelos próprios rótulos do dataset."
+  "communitySourceNote": "Mesma limitação do Circle BBP: página oficial não fetchável sem sessão autenticada. Estrutura de tier (Tier 1/2/3 OSS) confirmada pelos próprios rótulos do dataset.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

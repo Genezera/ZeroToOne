@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/slack",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle slack",
-  "contentHash": "402b10ae8bf6cff5f55745ef4910e7c63df517bce101503993fd923e3daee010",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "contentHash": "2d7d77bc6c46c99dafdc5678a046caa26ca99bbb878b6411993c34dc87400506",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
@@ -169,5 +169,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada para a prosa completa de política (já lida manualmente e registrada em program-policy.json em 03/09/2026). Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa."
+  "communitySourceNote": "Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada para a prosa completa de política (já lida manualmente e registrada em program-policy.json em 03/09/2026). Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

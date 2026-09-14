@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/kiwicom",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle kiwicom",
-  "contentHash": "f047cc398c0a270bfab5947d462567c384b272fbabc560c2e1189de394598b04",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "contentHash": "05d844c1dd0ff401a4f1eb2f35b293c247d371a58383c63bea7bcc2dcb0b3258",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
@@ -169,5 +169,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa."
+  "communitySourceNote": "Mesma limitação dos demais programas HackerOne desta missão: página oficial é SPA que exige sessão autenticada. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

@@ -5,8 +5,8 @@
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, bugcrowd_data.json, name \"Block Open Source\"",
   "contentHash": "7fe670d4eea193e8c2a451c1d607de459d07e3e22386ba10dac1f3b57e3a3514",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "low",
   "assets": [
@@ -73,5 +73,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset (só a lista de alvo) — diferente do HackerOne. Página oficial também não fetchável sem sessão. Confiança mais baixa: sabemos QUE o repo está listado como alvo, não a elegibilidade de recompensa por severidade."
+  "communitySourceNote": "Bugcrowd não expõe eligible_for_bounty/eligible_for_submission por ativo no dataset (só a lista de alvo) — diferente do HackerOne. Página oficial também não fetchável sem sessão. Confiança mais baixa: sabemos QUE o repo está listado como alvo, não a elegibilidade de recompensa por severidade.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }

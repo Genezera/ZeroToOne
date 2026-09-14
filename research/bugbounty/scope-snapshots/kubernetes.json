@@ -4,9 +4,9 @@
   "officialUrl": "https://hackerone.com/kubernetes",
   "sourceType": "community_dataset_structured",
   "sourceDetail": "arkadiyt/bounty-targets-data, hackerone_data.json, handle kubernetes",
-  "contentHash": "c62bf08bb1215b8dbe46fb6844953b593bde9bb32337fdfd9561c9ad8e4373ba",
-  "capturedAt": "2026-09-08T01:08:10.191Z",
-  "expiresAt": "2026-09-22T01:08:10.191Z",
+  "contentHash": "4e5ab5c7e8dd2e87cde834188d7aa434098064b4697b9106b7abb4f04d8a3d7f",
+  "capturedAt": "2026-09-14T12:29:55.658Z",
+  "expiresAt": "2026-09-28T12:29:55.658Z",
   "ttlDays": 14,
   "confidence": "medium",
   "assets": [
@@ -673,5 +673,7 @@
   "pocRequirements": null,
   "rateLimits": null,
   "disclosurePolicy": null,
-  "communitySourceNote": "Mesma limitação de Circle BBP/Vercel: página oficial HackerOne é SPA que exige sessão autenticada, WebFetch e a aba Browser (sem login) confirmaram isso de novo ao vivo nesta sessão. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa."
+  "communitySourceNote": "Mesma limitação de Circle BBP/Vercel: página oficial HackerOne é SPA que exige sessão autenticada, WebFetch e a aba Browser (sem login) confirmaram isso de novo ao vivo nesta sessão. Flags de elegibilidade por ativo vêm do espelho estruturado do dataset comunitário, que reflete a API pública que a própria página usa.",
+  "programSubmissionState": null,
+  "programSubmissionStateCheckedAt": null
 }
