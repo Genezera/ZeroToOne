@@ -3548,3 +3548,108 @@ genéricas já auditadas como classe: btcd/go-ethereum/dcrec/vrf/abi):
 `deep-read-log.json` atualizado (162→165). Sem achado novo nesta
 rodada. Clones temporários (`nebula-clone`, `gowallet-clone`) ficaram
 só em `/tmp`, nunca tocaram este repositório de pesquisa.
+
+## Rodada 2026-09-14 #4 (push webhook, sessão cloud)
+
+`research-plan`: `actionable` vazio (0 itens). `list-pending`: vazio.
+`change-events.jsonl`: evento mais recente com `changedFiles`+
+`directSingleCommit=true`+`introducedCommit` tem 87.4h — acima da
+janela de 48h exigida, sem alvo novo elegível por essa via.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`: mesmos
+4 candidatos liberados pela política (`plaid/plaid-ruby`,
+`plaid/react-plaid-link` — ambos já esgotados em rodadas anteriores;
+`okx/go-wallet-sdk`, `slackhq/nebula`). Escolhi `okx/go-wallet-sdk`
+novamente (16%→ cobertura mais baixa entre os elegíveis não-esgotados,
+e único com achado real confirmado nesta campanha). Clone raso, mesmo
+SHA `12fec6b0616347265efcc23bfc240c155da710eb` de rodadas anteriores
+(sem tag/release, HEAD estável).
+
+Arquivos lidos, priorizados por palavras-chave key/sign/address/
+verify/valid/auth/credential/crypto (nenhum bate literalmente auth/
+session/crypto/token/login/password/admin/permission/access no nome,
+mesma situação já documentada nas rodadas #2/#3):
+
+- `coins/tezos/types/address.go` (tzgo/Blockwatch vendored) — sem
+  achado, mesma classe já excluída.
+- `coins/solana/system/CreateAccountWithSeed.go` (gagliardetto/
+  solana-go vendored) — instruction builder puro, sem achado.
+- `coins/ton/ton/wallet/address.go` (xssnick/tonutils-go vendored) —
+  derivação de endereço padrão TON, sem achado.
+- `coins/aptos/v2/internal/types/accountAddress.go` +
+  `coins/aptos/v2/internal/types/account.go` — **ACHADO NOVO**:
+  `AccountAddress.ParseStringRelaxed` (account.go linhas 93-120) tem
+  um ramo `else` (input não-hex, `len(x)>=30`) que chama
+  `base58.Decode(x)` e faz `copy((*aa)[:], base58Bytes)` sem checar o
+  tamanho do resultado, retornando `nil` (sucesso) incondicionalmente.
+  `base58.Decode` (btcsuite vendored, `crypto/base58/base58.go`)
+  devolve `[]byte("")` para qualquer caractere fora do alfabeto base58
+  de 58 símbolos (exclui `0`,`O`,`I`,`l` e não-alfanuméricos —
+  confirmado na tabela `b58[256]` de `crypto/base58/alphabet.go`).
+  Como `aa` é sempre `&v2.AccountAddress{}` recém-criado (zero-value),
+  o resultado é `AccountAddress` totalmente zerado (`v2.AccountZero`)
+  devolvido como parse bem-sucedido, sem erro.
+
+  Cadeia de chamada completa confirmada (rastreada até uma API
+  pública exportada real, diferente dos achados-irmãos anteriores que
+  pararam em funções de verificação obscuras): `TransferWithFeePayer`
+  (aptos.go:273) → `BuildTransferWithFeePayerTx` (aptos.go:283) →
+  `parseAccountAddress(to)` (utils.go:179, wrapper fino de
+  `ParseStringRelaxed`) → em caso de endereço malformado, `toAddr`
+  vira o endereço zero sem erro → `v2.CoinTransferPayload(...,
+  *toAddr, amount)` (coins/aptos/v2/coinPayloads.go:11) serializa
+  `toAddr[:]` (32 bytes zerados, sempre "válido" como array Go fixo)
+  como destinatário da entry function `0x1::aptos_account::transfer`
+  → `SignTxV2` assina a transação real. Também confirmei que o
+  caminho irmão `aptos_types.CoinTransferPayload` (usado por
+  `CoinTransferPayload`/`V2` no pacote v1) usa `ExpandAddress`+
+  `BytesFromHex` em vez de `ParseStringRelaxed` — caminho diferente,
+  que descarta erro de hex de forma parecida mas produziria um
+  endereço curto (não 32 bytes), falhando na desserialização BCS
+  on-chain (revert, não redirecionamento silencioso) — efeito bem
+  menos severo, não é o sink usado neste achado. Também confirmei que
+  o caminho alternativo `parseScriptArgument`/`ScriptArgumentAddress`
+  (utils.go:30-56, também usa `ParseStringRelaxed`) é **código morto**
+  — grep completo do repositório não encontra nenhum chamador, nem em
+  testes — descartado como vetor.
+
+  PoC executável real (não apenas leitura estática) — 2 testes Go
+  rodados via `go test` contra o clone real:
+  1. Unitário: `ParseStringRelaxed("invalid-address-placeholder-0Il
+     !!")` → `err=nil`, endereço resultante totalmente zerado.
+  2. Fim-a-fim: `TransferWithFeePayer(from="0x1",
+     to="invalid-address-placeholder-0Il !!", amount=12345,
+     seedHex=<chave de teste local>)` → devolve uma **transação real
+     já assinada** (`err=nil`) cujo payload `aptos_account::transfer`
+     codifica o destinatário como 32 bytes zerados (base64
+     `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=`). PoC nunca
+     transmitiu nada à rede real — só construiu e assinou localmente
+     contra uma chave de teste (`seedHex` = 32 bytes fixos locais,
+     sem fundo real, nunca broadcast).
+
+  Finding criado: `OKG::okx/go-wallet-sdk/coins/aptos/v2/internal/
+  types/account.go::AccountAddress.ParseStringRelaxed::
+  address_parse_silent_zero_fallback`. `weakness`=CWE-20+CWE-390.
+  Avançado `candidate→corroborated_static→reproduced_local` (ambas
+  aceitas pelo CLI). `impactAssessment` registrado com
+  `technicalValidity=confirmed`, `impactScope=other_user` (diferente
+  dos achados-irmãos MultiKey/P2PKH deste repositório, que são
+  `self_request_only` — aqui a vítima plausível é um terceiro real,
+  usuário final cujo endereço de destino foi corrompido/malformado,
+  não o próprio chamador reivindicando algo sobre si mesmo),
+  `severityRating=medium` (integridade alta mas exige input
+  específico e nenhum consumidor de produção confirmado ainda).
+  `deploymentEvidence` registrado com `confidence=unverified` (mesmo
+  padrão dos achados-irmãos: sem tag/release Git, `check-scope`
+  retorna `allowed=false` por scope snapshot expirado em 2026-09-11 e
+  `refresh-scope-live` exige credenciais HackerOne indisponíveis
+  nesta sessão). Tentativa de `scope_verified` **recusada
+  corretamente** pelo gate de scope (snapshot expirado) — não forçado,
+  finding permanece em `reproduced_local`.
+
+`deep-read-log.json` atualizado (165→169, 4 entradas). Clone temporário
+(`gowallet-clone`, SHA `12fec6b0616347265efcc23bfc240c155da710eb`) e os
+2 arquivos de teste PoC (`zzrepro_silent_zero_address_test.go`,
+`zzrepro_transfer_zero_address_test.go`) ficaram só no scratchpad da
+sessão (`/tmp`), nunca tocaram este repositório de pesquisa nem foram
+commitados.
