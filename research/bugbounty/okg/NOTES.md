@@ -3897,3 +3897,28 @@ dados/ordenação, sem decode de input externo).
 e o arquivo de teste PoC (`zzrepro_panic_test.go`) ficaram só no
 scratchpad da sessão, nunca tocaram este repositório de pesquisa nem
 foram commitados. `export-queue` rodado ao final da rodada.
+
+## Rodada 14/09/2026 #9 (push webhook)
+
+`research-plan` seguiu devolvendo o mesmo único `actionable`: o finding
+`address_parse_silent_zero_fallback` (`reproduced_local`) com ação
+`verify_prior_art`. Antes de reabrir a investigação de conteúdo,
+reconfirmei que o bloqueio estrutural documentado na rodada #8
+(`AccountAddress.ParseStringRelaxed`) continua exatamente igual: `curl`
+direto contra `https://api.github.com/search/issues?q=repo:okx/go-wallet-sdk...`
+através do proxy da própria sessão devolve `403` com o mesmo corpo
+(`"sessions are bound to their configured repositories. Use
+repository-scoped endpoints..."`). Nada mudou desde a rodada anterior —
+não repeti a tentativa alternativa via fetch nativo do Node (documentada
+e descartada por contornar a política de proxy pretendida) nem tentei
+forçar/contornar o gate `duplicateCheckGate` de nenhuma outra forma.
+Finding permanece em `reproduced_local`, sem progressão. Este é o mesmo
+limite estrutural já catalogado (busca de prior-art ao vivo pra
+repositório de terceiro indisponível nesta sessão cloud) — não é uma
+falha desta rodada, é a política de rede da sessão funcionando como
+projetada.
+
+`list-pending` vazio de novo → leitura profunda proativa (passo 4). Desta
+vez escolhi `slackhq/nebula` em vez de continuar em `okx/go-wallet-sdk`
+(registro completo no NOTES.md do Slack). Nenhum achado novo neste
+repositório nesta rodada.

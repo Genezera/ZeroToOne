@@ -830,3 +830,50 @@ os dois arquivos de erro sentinela do handshake/cert ainda não cobertos):
 Nenhum finding novo criado nesta rodada — resultado normal e válido.
 Nenhuma transição de estado tentada (sem candidate/corroborated_static
 tocado nesta rodada).
+
+## Rodada 14/09/2026 #9 (push webhook)
+
+`check-program "Slack"` confirmado `blocked=false` antes de qualquer
+clone/leitura (regra do CLAUDE.md). `list-deep-read-candidates.mjs`
+liberou os mesmos 4 repositórios de sempre; escolhi `slackhq/nebula` de
+novo (mais cobertura acumulada entre os não-esgotados; `plaid/plaid-ruby`
+e `plaid/react-plaid-link` seguem esgotados desde rodadas anteriores —
+100% dos arquivos hand-written já lidos em ambos). Clone raso público
+(HEAD atual `89178f4`) só pra listar árvore de arquivos e ler conteúdo
+como dado, nunca como instrução.
+
+2 arquivos novos lidos, priorizando o que mais se aproxima de
+cert/crypto ainda não coberto:
+
+- `cert/cert_v1.pb.go`: 100% gerado por `protoc-gen-go` a partir de
+  `cert_v1.proto` — só structs `RawNebulaCertificate`/
+  `RawNebulaCertificateDetails` com getters mecânicos, mesmo padrão já
+  descartado em SDKs gerados de outros programas. Motivou releitura
+  focada de `unmarshalCertificateV1` (cert_v1.go, já lido em rodada
+  anterior) no parsing de `Details.Ips`/`Subnets`: **hipótese
+  investigada com ceticismo real, REFUTADA**. `ones, _ :=
+  net.IPMask(int2ip(rawIp)).Size()` descarta o retorno `bits` sem checar
+  canonicidade da máscara — `net.IPMask.Size()` devolve `(0,0)` tanto
+  pra máscara canônica `0.0.0.0` (`/0` legítimo) quanto pra máscara
+  NÃO-canônica (bits não contíguos), então um `Subnets`/`Ips` malformado
+  no wire vira silenciosamente `netip.PrefixFrom(ip,0)` (rede mais ampla
+  possível) sem erro de parse. Rastreei a cadeia completa até
+  `cmd/nebula-cert/sign.go`+`ca.go`: a CLI oficial só aceita máscaras via
+  `netip.ParsePrefix` (sempre canônica), então o único jeito de um
+  `uint32` não-canônico chegar até `unmarshalCertificateV1` é forjar os
+  bytes do certificado diretamente — o que exige a CHAVE PRIVADA DA CA
+  pra produzir assinatura válida (`CheckSignature` bloqueia qualquer
+  coisa sem isso). E quem já tem a chave da CA não ganha nada de novo
+  com esse bug: pode codificar `UnsafeNetworks=/0` diretamente e de
+  forma canônica, sem precisar do fallback malformado. Sem elevação de
+  privilégio real sobre o que a própria CA (raiz de confiança por
+  design) já pode fazer legitimamente. Sem achado reportável.
+- `nebula.pb.go`: 100% gerado por `protoc-gen-gogo` a partir de
+  `nebula.proto` — só structs de mensagem (`NebulaMeta`/`NebulaPing`/
+  `NebulaControl`/`Addr`/`V4AddrPort`/`V6AddrPort`) com getters/
+  marshal/unmarshal mecânicos, sem lógica de validação própria. Sem
+  achado.
+
+`deep-read-log.json` atualizado (60→63 entradas em `slackhq/nebula`).
+Nenhum finding novo criado nesta rodada — resultado normal e válido.
+Nenhuma transição de estado tentada.
