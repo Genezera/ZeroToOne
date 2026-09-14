@@ -3253,3 +3253,42 @@ Nenhum achado novo — mesmo padrão das rodadas anteriores: código
 vendored de libs de assinatura amplamente auditadas, sem desvio
 introduzido pela OKX. `deep-read-log.json` atualizado (144→148, 4
 entradas). Clone temporário removido.
+
+## Rodada 2026-09-14 (terceira do dia — disparo por push, gatilho GitHub webhook)
+
+`research-plan` de novo `actionable: 0` (mesmos 36 candidates da fila,
+todos em `held`). `change-events.jsonl` sem evento dentro de 48h
+(máximo ainda 2026-09-10T20:50:45Z). Passo direto pra leitura profunda
+proativa via `list-deep-read-candidates.mjs`: mesmos 4 candidatos
+liberados (plaid-ruby/react-plaid-link esgotados; OKG e nebula/Slack
+com espaço). Nebula ficou sem candidato novo depois de filtrar por
+palavra-chave (auth/session/crypto/token/login/password/admin/
+permission/access) contra o que já foi lido — todo arquivo de segurança
+relevante do nebula já está no log.
+
+Clone raso de `okx/go-wallet-sdk` de novo (150 entradas no log agora),
+3 novos alvos escolhidos por julgamento próprio priorizando código
+autoral OKX/wrapper de alto nível (não mais primitiva criptográfica
+vendored pura, que já esgotou achados nas rodadas anteriores):
+- `coins/solana/token/InitializeMultisig2.go`: builder de instrução SPL
+  Token (vendorizado de `gagliardetto/solana-go`, copyright preservado).
+  `Validate()` confere `M != nil` e `1 <= len(Signers) <= 11`, mas não
+  compara `M <= len(Signers)` no cliente. Investigado com ceticismo:
+  não é vulnerabilidade — é um construtor de transação client-side: um
+  `M` inválido só faz a própria transação do usuário ser rejeitada pelo
+  programa SPL Token on-chain, sem ganho pra um atacante nem bypass de
+  controle de terceiro. Sem achado.
+- `coins/ethereum/token/ethtoken.go`: `Transfer`/`Approve`/`Transfer721`
+  só empacotam calldata ERC20/ERC721 via `abi.Pack`; nenhuma lógica de
+  autenticação, endereço inválido já é rejeitado pelo próprio `Pack`.
+  Sem achado.
+- `coins/cosmos/okc/tx/auth/types/stdtx.go`: `StdSignBytes` monta o
+  documento a assinar incluindo `ChainID` + `AccountNumber` +
+  `Sequence` junto com fee/memo/msgs — replica fielmente o padrão
+  `StdSignBytes` do cosmos-sdk legado, proteção contra replay
+  cross-chain e in-chain presente e correta. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(147→150, 3 entradas). Clone temporário removido. `list-pending`
+continua vazio; nenhuma transição de estado foi tentada nesta rodada
+(nada em `candidate` acionável).
