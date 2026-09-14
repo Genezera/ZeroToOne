@@ -3216,3 +3216,40 @@ desvio identificado do comportamento upstream. `deep-read-log.json`
 atualizado com as 3 entradas (141→144). Clone temporário removido.
 `export-queue` roda ao final da rodada completa (todos os 4
 programas).
+
+## Rodada 2026-09-14 (segunda do dia — disparo por push do commit anterior)
+
+`research-plan` voltou `actionable: 0` (todos os 36 candidates da fila
+em `held`, a maioria por `program_blocked`/`campaign_duplicate_history`).
+`change-events.jsonl` não tinha evento dentro de 48h (mais recente:
+2026-09-10T20:48:29Z, ~4 dias). Sem alvo novo elegível por essas duas
+vias — passo direto pra leitura profunda proativa, único caminho
+liberado por `list-deep-read-candidates.mjs` nesta rodada (plaid-ruby e
+react-plaid-link seguem esgotados; OKG e nebula/Slack são os únicos com
+espaço).
+
+Clone raso de `okx/go-wallet-sdk` novamente (144→148 arquivos), 3 novos
+alvos priorizados por padrão de nome (crypto/key/sign/seed), todos
+código de assinatura/derivação de chave de bibliotecas vendored:
+- `crypto/btcd/v2/btcutil/hdkeychain/extendedkey.go`: implementação
+  BIP32 completa por trás do wrapper `go-bip32/extendedkey.go` já lido
+  antes. `Derive`/`NewMaster`/`NewKeyFromString` conferidos campo a
+  campo contra o algoritmo oficial — checagem de overflow contra a
+  ordem da curva em todos os pontos, rejeição de hardened-from-public
+  antes de derivar, validação de checksum double-SHA256 no parse.
+  Idêntico ao `btcsuite/btcd` upstream. Sem achado.
+- `coins/zksync/zkscrypto/types.go`: só declaração de structs
+  (`PrivateKey`/`PublicKey`/`Signature`/etc.), sem método nenhum. Sem
+  achado.
+- `crypto/go-ethereum/crypto/signature_cgo.go` + `signature_nocgo.go`:
+  par de implementações `Sign`/`VerifySignature`/`Ecrecover` sob build
+  tags opostos (cgo real vs. btcec puro-Go). Variante nocgo confirmada
+  rejeitando assinatura malleable (`sig.S.Cmp(secp256k1halfN) > 0`)
+  antes de aceitar — checagem ausente no btcec puro, presente aqui
+  corretamente. Ambas vendored fielmente do go-ethereum upstream, sem
+  desvio de semântica de segurança entre as duas variantes. Sem achado.
+
+Nenhum achado novo — mesmo padrão das rodadas anteriores: código
+vendored de libs de assinatura amplamente auditadas, sem desvio
+introduzido pela OKX. `deep-read-log.json` atualizado (144→148, 4
+entradas). Clone temporário removido.
