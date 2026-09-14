@@ -3494,3 +3494,57 @@ SHA `12fec6b0616347265efcc23bfc240c155da710eb`) e o arquivo de teste PoC
 (`zzrepro_p2pkh_bip322_bypass_test.go`) ficaram só no scratchpad da
 sessão, nunca tocaram o clone real usado por outra rodada nem foram
 commitados neste repositório de pesquisa.
+
+## Rodada 2026-09-14 #3 (push webhook, sessão cloud)
+
+`research-plan`: `actionable` vazio. `list-pending`: vazio. Único item
+em `held` foi o próprio achado P2PKH/BIP-322 acima
+(`code: below_campaign_impact`, mesmo motivo já registrado — sem
+mudança de evidência, não reaberto). `change-events.jsonl` não tem
+nenhum evento dentro da janela de 48h exigida (o mais recente é
+10/09, > 48h) — sem novo alvo elegível por essa via.
+
+Leitura profunda proativa via `list-deep-read-candidates.mjs`: 4
+candidatos liberados pela política (`plaid/plaid-ruby`,
+`plaid/react-plaid-link`, `okx/go-wallet-sdk`, `slackhq/nebula`); os
+dois repositórios Plaid já estão marcados esgotados em rodadas
+anteriores (todo arquivo hand-written já lido). Escolhi 3 arquivos
+ainda não lidos em `okx/go-wallet-sdk` (16% coberto, o de menor
+cobertura entre os elegíveis, e o único com achado real já confirmado
+nesta campanha), priorizando por julgamento próprio (nenhum arquivo
+não lido bate literalmente as palavras-chave auth/session/crypto/
+token/login/password/admin/permission/access no nome — expandi pra
+key/sign/address/verify/valid/auth/credential e excluí libs vendored
+genéricas já auditadas como classe: btcd/go-ethereum/dcrec/vrf/abi):
+
+- `coins/bitcoin/brc20/address.go` — helpers de construção de endereço
+  Taproot/inscrição BRC20. Ponto suspeito investigado com ceticismo:
+  `CreateInscriptionScript(WithPubKey)` anexa `OP_ENDIF` depois de
+  `.Script()` com comentário do próprio código "to skip
+  txscript.MaxScriptSize 10000" — mas o dado inscrito é sempre
+  fornecido pelo próprio dono da carteira sobre seu próprio conteúdo,
+  nunca input de atacante contra vítima; exceder o limite só quebra a
+  própria tx do chamador no relay (non-standard), autolesão funcional,
+  não vulnerabilidade de segurança contra terceiro. Sem achado.
+- `coins/zil/validator.go` — `IsPublicKey`/`IsPrivateKey`/`IsAddress`/
+  `IsSignature` têm âncora `$` correta (validam a string inteira).
+  `IsBech32` e `IsByteString` não têm `$` final (regex permissivo,
+  CWE-625) — bug de classe real, mas refutado via cadeia de chamada:
+  `IsByteString` não tem nenhum chamador no repositório (código morto);
+  `IsBech32` só é usada como gate preliminar em
+  `transaction.go::SignTransaction` antes de `FromBech32Addr`, que
+  decodifica via `github.com/btcsuite/btcd/btcutil/bech32` — essa lib
+  externa valida o checksum sobre a string inteira de forma
+  independente, então qualquer sufixo que escapasse do gate permissivo
+  é rejeitado de qualquer forma. Sem achado.
+- `crypto/cbor/valid.go` — parser CBOR vendored verbatim de
+  fxamacker/cbor (copyright preservado, sem alteração visível do OKX),
+  usado pela stack Cardano já auditada nesta campanha. Checagens de
+  overflow/profundidade máxima/limites de array-mapa/EOF presentes e
+  consistentes em todos os ramos. Mesmo padrão de lib terceira já
+  fuzzada upstream visto em btcd/go-ethereum/tzgo neste repositório.
+  Sem achado.
+
+`deep-read-log.json` atualizado (162→165). Sem achado novo nesta
+rodada. Clones temporários (`nebula-clone`, `gowallet-clone`) ficaram
+só em `/tmp`, nunca tocaram este repositório de pesquisa.
