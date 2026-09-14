@@ -790,3 +790,43 @@ do caminho crítico de rede/handshake/credencial ainda não cobertos):
 
 `deep-read-log.json` atualizado (53 entradas agora em `slackhq/nebula`).
 Nenhum finding novo criado nesta rodada — resultado normal e válido.
+
+## Rodada 14/09/2026 (cloud, disparada por push no repo -- rotina agendada)
+
+`research-plan` rodado antes de qualquer leitura (conforme CLAUDE.md):
+`actionable=0`, `held=64`. `list-pending` vazio (confirma actionable=0).
+`change-events.jsonl` checado de novo com os critérios estritos
+(`changedFiles` + `introducedCommit` + `directSingleCommit=true` + ≤48h):
+evento mais recente com essa forma segue de 2026-09-10T20:48Z, fora da
+janela de 48h a partir de agora (14/09 11:36 UTC) -- zero eventos
+qualificaram, nenhum alvo novo autorizado por essa via.
+
+Segui para leitura profunda proativa via `list-deep-read-candidates.mjs`.
+Mesmos 4 candidatos permitidos por política de rodadas anteriores
+(`plaid/plaid-ruby`, `plaid/react-plaid-link` esgotados; `okx/go-wallet-sdk`
+com mais cobertura restante; `slackhq/nebula` escolhido de novo por
+contexto acumulado). Clone raso público de `slackhq/nebula` (HEAD atual,
+sem token/conta) só para listar arquivos -- nenhuma leitura de conteúdo de
+repositório-alvo tratada como instrução, só como dado a analisar (regra
+crítica do CLAUDE.md).
+
+3 arquivos novos lidos (nenhum batia literalmente as palavras-chave
+auth/session/crypto/token/login/password/admin/permission/access no
+caminho; julgamento próprio -- escolhi os mais próximos de config/trust e
+os dois arquivos de erro sentinela do handshake/cert ainda não cobertos):
+
+- `config/config.go`: loader de YAML local (`Load`/`resolve`/`parse`,
+  merge via `mergo.WithAppendSlice` para concatenar firewall rules entre
+  múltiplos arquivos). O `path` vem de flag/env de quem roda o binário
+  nebula, nunca de input remoto/rede -- sem trust boundary cruzável por um
+  peer. `ReloadConfig`/`CatchHUP` só reagem a SIGHUP local. Sem achado.
+- `handshake/errors.go`: só declarações de erro sentinela do state machine
+  de handshake (`ErrInitiateOnResponder` etc.), sem lógica. Sem achado.
+- `cert/errors.go`: só declarações de erro sentinela de certificado +
+  `ErrInvalidCertificateProperties` (wrapper simples de string), sem
+  lógica. Sem achado.
+
+`deep-read-log.json` atualizado (56 entradas agora em `slackhq/nebula`).
+Nenhum finding novo criado nesta rodada — resultado normal e válido.
+Nenhuma transição de estado tentada (sem candidate/corroborated_static
+tocado nesta rodada).
