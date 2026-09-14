@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { githubHeaders } from './github-auth.mjs';
+import { githubFetch } from './github-auth.mjs';
 import { getHacktivityPage } from './h1-api.mjs';
 
 const REPOSITORY_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
@@ -22,13 +22,14 @@ export function validatePriorArtConfig(input) {
 }
 
 async function githubJson(url, { fetchImpl }) {
-  const response = await fetchImpl(url, {
+  const response = await githubFetch(url, {
+    fetchImpl,
     redirect: 'error',
     signal: AbortSignal.timeout(20000),
-    headers: githubHeaders({
+    headers: {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
-    }),
+    },
   });
   if (!response.ok) {
     const remaining = response.headers?.get?.('x-ratelimit-remaining');

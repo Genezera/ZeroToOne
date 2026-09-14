@@ -38,10 +38,18 @@ export function githubHeaders(extra = {}) {
 // refaz a chamada sem Authorization se dor 404 -- um 404 de verdade
 // (recurso que não existe) continua 404 na segunda tentativa, então
 // nenhum erro real fica mascarado.
+// Descoberto ao vivo em 14/09/2026 (sessão cloud): a API de busca
+// (/search/issues, /search/commits) devolve 401 -- não 404 -- para o mesmo
+// caso de token escopado a outro repo (genezera/zerotoone) sendo usado
+// contra um repositório de terceiro. Mesma causa raiz do 404 documentado
+// acima, resposta HTTP diferente por endpoint; o retry anônimo cobre os
+// dois casos, nunca mascarando um 401 de credencial de fato inválida
+// porque a segunda tentativa (sem Authorization) falha do mesmo jeito
+// quando o problema é outro (ex.: rate limit vira 403, não 200).
 export async function githubFetch(url, { fetchImpl = fetch, headers: extraHeaders, ...options } = {}) {
   const headers = githubHeaders(extraHeaders);
   const res = await fetchImpl(url, { ...options, headers });
-  if (res.status === 404 && headers.Authorization) {
+  if ((res.status === 404 || res.status === 401) && headers.Authorization) {
     const anonHeaders = { ...headers };
     delete anonHeaders.Authorization;
     return fetchImpl(url, { ...options, headers: anonHeaders });

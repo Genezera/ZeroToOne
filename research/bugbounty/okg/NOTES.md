@@ -6,6 +6,60 @@ data: 2026-08-31
 
 # OKG (okx/go-wallet-sdk) — triagem de 72 achados `known_vulnerable_dependency`
 
+## Rodada 2026-09-14 (push automático via GitHub webhook, sessão cloud — item `verify_prior_art`)
+`research-plan` devolveu 1 único `actionable` nesta rodada: o achado
+`address_parse_silent_zero_fallback` (`ParseStringRelaxed` em
+`coins/aptos/v2/internal/types/account.go`, já em `reproduced_local`
+com PoC Go real passando — `TransferWithFeePayer` assina, sem erro,
+uma transferência real para o endereço zero quando `to` é uma string
+não-hex com caractere fora do alfabeto base58). Ação indicada:
+`verify_prior_art` (estabelecer novidade via `record-duplicate-check`).
+
+Tentei completar via `search-prior-art --finding-id=... --config=...`
+(4 queries reais: `ParseStringRelaxed`, `base58 AccountAddress`,
+`silent zero address aptos`, `TransferWithFeePayer address`) e achei
+dois problemas reais de infraestrutura, não do achado em si:
+
+1. **Corrigido nesta rodada**: `GITHUB_TOKEN` desta sessão é escopado
+   só a `genezera/zerotoone`; contra `api.github.com/search/issues|commits`
+   de repositório de terceiro isso devolve `401` (não `404`), e o
+   fallback anônimo existente (`github-auth.mjs::githubFetch`) só
+   tratava `404`. `prior-art-search.mjs` também fazia a chamada com
+   `fetch` cru + `githubHeaders()`, sem passar pelo fallback nenhum.
+   Corrigido: `githubFetch` agora também refaz sem `Authorization` em
+   `401`, e `prior-art-search.mjs` passou a usar `githubFetch`. Teste
+   novo em `github-auth.test.mjs`; suite completa 45/45 passando.
+2. **Não corrigido, bloqueio real de ambiente**: mesmo com o fallback
+   anônimo funcionando (confirmei chamadas isoladas bem-sucedidas ao
+   endpoint de busca), `/repos/okx/go-wallet-sdk/security-advisories`
+   usa o bucket de rate limit CORE (60/hora por IP anônimo, distinto
+   do bucket de search de 10/min) — e esse bucket estava com
+   `remaining=0` para o IP de saída deste ambiente, com o horário de
+   `reset` avançando entre duas checagens (12:53→13:14 UTC) em vez de
+   recuperar, indicando tráfego concorrente de outro processo/sessão
+   compartilhando o mesmo IP de saída, fora do meu controle. Não
+   contornei (sem troca de User-Agent/IP, sem API alternativa
+   não-oficial, sem inventar resultado de busca).
+
+Nenhum `duplicateCheck` foi gravado — sem ele o gate de novidade
+continua corretamente recusando a transição. `update-finding` deixou
+registrado o que foi tentado, o que foi corrigido e o que falta, para
+a próxima rodada retomar sem repetir a mesma investigação. Mesmo que
+o prior-art se resolva, a transição para `scope_verified` permanece
+estruturalmente bloqueada por `deploymentEvidence.confidence=unverified`
+(sem tags/releases Git, sem app cliente real disponível neste
+repositório) — mesma limitação já documentada nos achados-irmãos.
+
+`list-pending` vazio nesta rodada. Leitura profunda proativa (passo 4)
+revisou 3 arquivos ainda não lidos em `slackhq/nebula` (programa Slack,
+`check-program` confirmou não-bloqueado antes da leitura):
+`noiseutil/nist.go` (DH via `crypto/ecdh` stdlib, sem implementação
+própria), `noiseutil/boring.go`+`notboring.go` (par de build tags que
+só declaram `EncryptLockNeeded`/`CipherAESGCM`; uso real já revisado em
+rodada anterior via `inside.go`/`noiseutil/fips140.go`). Sem achado
+novo — repositório já com 33%+ de cobertura concentrada exatamente nos
+arquivos de cert/handshake/noise mais sensíveis.
+
 ## Rodada 2026-09-08 (push automático via GitHub webhook, sessão cloud)
 `research-plan` apontou 5 `actionable`/`verify_scope`, todos em
 `reproduced_local` (aptos v2 MultiEd25519, filecoin SignedTx, helium
