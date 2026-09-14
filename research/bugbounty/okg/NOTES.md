@@ -3366,3 +3366,49 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 `stellar-go` upstream, usado só pro diff de refutação) removidos.
 Nenhuma transição de estado tentada (nada em `candidate` acionável em
 nenhum dos programas da campanha).
+
+## Rodada 14/09/2026 (deep read proativo, gatilho: push webhook)
+
+`research-plan` devolveu `actionable: []` (só `held`, 44 por
+`program_blocked` + 20 por regra de duplicata/janela/impacto da
+campanha); `list-pending` vazio; `change-events.jsonl` sem nenhum
+evento com `directSingleCommit=true` dentro de 48h (evento mais recente
+do arquivo é de 10/09, já fora da janela) — sem alvo novo autorizado
+por regressão. Segui pra deep read proativo via
+`list-deep-read-candidates.mjs`: `plaid/plaid-ruby` e
+`plaid/react-plaid-link` seguem esgotados (confirmado no log, todo
+arquivo hand-written já coberto); OKG e `slackhq/nebula` são os únicos
+com arquivos restantes. Escolhi 3 arquivos em `coins/solana/token/` e
+`crypto/vrf/` no OKG, priorizando os que batem com as categorias de bug
+já conhecidas neste programa (multisig, escalar não-clampado):
+- `coins/solana/token/InitializeMultisig.go`: vendorizado de
+  `github.com/gagliardetto/solana-go` (copyright próprio no cabeçalho).
+  É só instruction builder client-side — `Validate()` checa presença de
+  campos (M setado, 1–11 signers), não faz verificação criptográfica de
+  assinatura; isso fica no programa on-chain SPL Token, fora do SDK. Sem
+  achado.
+- `crypto/vrf/secp256k1/scalar.go`: vendorizado do VRF da Chainlink
+  (wrapper `go.dedis.ch/kyber`) — o próprio cabeçalho do arquivo já
+  declara "XXX: Do not use in production until this code has been
+  audited" e "XXX: NOT CONSTANT TIME!", limitação conhecida e
+  documentada upstream, não modificada pelo OKX. Toda operação
+  aritmética (`Add`/`Sub`/`Mul`/`Div`/`Inv`) reduz mod `GroupOrder` via
+  `modG()`; nenhum escalar não-clampado visível na leitura. Sem achado
+  novo atribuível ao OKX.
+- `coins/solana/token/accounts.go`: também vendorizado de
+  `gagliardetto/solana-go` — só structs de dados (`Mint`/`Account`/
+  `Multisig`) e `MarshalWithEncoder` para serialização; nenhuma lógica
+  de verificação de assinatura/autoridade. Sem achado.
+
+Padrão que se repete nas últimas rodadas: o que resta não lido em
+`coins/solana/token/*` e `crypto/btcd*`/`crypto/go-ethereum*`/
+`crypto/dcrec*` é majoritariamente código vendorizado de terceiros
+(gagliardetto/solana-go, decred/dcrec, ethereum/go-ethereum,
+btcsuite/btcd) com atribuição própria no cabeçalho, não código do OKX
+propriamente dito — reduz a probabilidade de achado *novo e atribuível*
+ao escopo do programa OKG mesmo quando a leitura acha algo, como já
+visto antes com `coins/stellar/` e `tonutils-go`/`tzgo`. Nenhuma
+transição de estado tentada (nada acionável). `deep-read-log.json`
+atualizado (156→159, 3 entradas). Clone temporário (`go-wallet-sdk`,
+`nebula`) usado só pra listar arquivos ainda não lidos, removido ao
+final.
