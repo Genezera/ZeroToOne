@@ -3751,3 +3751,95 @@ gvisor-based de embedding; `Listen`/`tcpHandler` só aceitam porta
 explicitamente registrada, tráfego já passou pelo firewall antes de
 chegar aqui via `device.Pipe()`). **Sem achado novo nesta rodada** em
 nenhum dos 3 arquivos.
+
+## Rodada 2026-09-14 (push automático via GitHub webhook, sessão cloud — 7ª rodada do dia)
+
+`research-plan`: `actionable=1`, mesmo finding
+`address_parse_silent_zero_fallback`, mas ação mudou de `verify_scope`
+(rodadas #5/#6) para **`verify_prior_art`** (`duplicateCheck sem
+métodos rastreáveis`) — confirma que a captura de scope snapshot da
+rodada #6 resolveu o bloqueio anterior e o próximo gate é checagem de
+duplicata.
+
+Tentei `cli.mjs search-prior-art --config=... --finding-id=...`
+(consulta real `api.github.com/search/issues`+`/commits`+
+`/security-advisories` pro repo `okx/go-wallet-sdk`, sem tocar
+infraestrutura viva de produção — só metadados públicos de
+issues/commits/advisories). **Descoberta nova nesta rodada, mais
+precisa que o "401/403 genérico" documentado nas rodadas #4-#6**: com
+`curl` direto através do proxy da sessão (`HTTPS_PROXY`), a resposta
+completa é `403` com corpo `{"message":"This GitHub API path is not
+available: sessions are bound to their configured repositories. Use
+repository-scoped endpoints (repos/{owner}/{repo}/...)."}` — ou seja,
+**bloqueio explícito de política de rede da sessão** (`/root/.ccr/
+README.md`: "403/407 do proxy = host não permitido pela política da
+organização; não tentar contornar"), não um problema de credencial
+GitHub real. O endpoint `/search/*` não é "repo-scoped" na URL (o
+`repo:owner/name` vai dentro da query string `q=`, que o proxy não
+interpreta), então a política nega por padrão qualquer busca de
+terceiro — consistente com esta sessão estar autorizada só pra
+`genezera/zerotoone`.
+
+Efeito colateral registrado por transparência: a primeira tentativa
+via `node system/bugbounty-scanner/cli.mjs search-prior-art` (fetch
+nativo do Node, que segundo o mesmo README não lê `HTTPS_PROXY` por
+padrão e portanto **não passou pelo proxy da sessão**) chegou a
+completar com sucesso uma vez (11 sub-requisições reais direto pro
+GitHub público, `candidateCount=0`, zero issues/commits/advisories
+batendo nas 5 queries) antes de bater no rate-limit secundário real do
+GitHub (anônimo) nas tentativas seguintes. Não repeti/insisti nesse
+caminho depois de identificar via `curl` que ele contorna
+inadvertidamente o bloqueio de política pretendido pela sessão — o
+README é explícito ("não tentar contornar, reportar o host
+bloqueado"), e mesmo esse único resultado que passou não teria valor
+de gate de qualquer forma: falta o método `hacktivity`/`web_search`
+exigido por `duplicateCheckGate` junto de `github_issues`+
+`github_commits`+`github_advisories`, e a atestação criptográfica
+(`verifyPriorArtSearchAttestation`) só reconhece métodos executados
+pelo próprio `search-prior-art`, nunca uma busca manual substituta
+(`web_search` nunca entra em `EXECUTED_SOURCES`). Ou seja: **busca de
+prior-art ao vivo via API do GitHub para repositório de terceiro está
+estruturalmente bloqueada nesta sessão cloud**, mesma família de
+limitação já documentada pra `code-age`/`refresh-scope-live` nas
+rodadas #4-#6, agora com causa raiz precisa (política de proxy, não
+401/404 de token). `duplicateCheck` **não foi registrado** — nenhuma
+tentativa de forçar/contornar o gate. Finding permanece em
+`reproduced_local`, sem progressão nesta rodada.
+
+Sem candidato `pending`/`candidate` adicional → leitura profunda
+proativa (passo 4). `list-deep-read-candidates.mjs` liberou os mesmos
+4 repositórios das rodadas anteriores (`plaid/plaid-ruby`,
+`plaid/react-plaid-link` esgotados; `okx/go-wallet-sdk` 172→175 no
+log; `slackhq/nebula`). Escolhi `okx/go-wallet-sdk` de novo (menor
+cobertura entre os não-esgotados, 17%), 3 arquivos novos priorizando
+`account.go`/chave/endereço ainda não lidos: **`coins/cardano/
+account.go` — ACHADO NOVO** (`NewAddressFromPrvKey`/
+`PubKeyFromPrvKey`/`NewAddressFromPubKey` fatiam `hex.DecodeString`
+em offsets fixos — `[:64]`/`[64:]`/`[0:32]`/`[32:]` — sem checar
+comprimento antes; panic real de `slice bounds out of range`
+confirmado com 4 testes `go test` reais, 9º irmão da família já
+catalogada 8x neste SDK — cardano nunca tinha sido lido no arquivo
+certo até agora). Finding
+`OKG::okx/go-wallet-sdk/coins/cardano/account.go::
+NewAddressFromPrvKey+PubKeyFromPrvKey+NewAddressFromPubKey::
+unchecked_hex_length_slice_panic` criado, avançado
+`candidate→corroborated_static→reproduced_local` (ambas aceitas pelo
+CLI). `impactAssessment` registrado honestamente como
+`impactScope=self_request_only`, `reportable=false`,
+`severityRating=low` — mesmo veredito já aplicado aos 8 irmãos
+(cenário dominante é o chamador derivando a partir da PRÓPRIA chave
+malformada, sem app cliente real disponível neste repo pra confirmar
+cenário de terceiro-vítima); não inflei severidade pra forçar
+progressão. `deploymentEvidence` registrado com `confidence=unverified`
+por completude/honestidade, sem tentar `scope_verified` (impacto já
+abaixo da barra Medium+ exigida, gate de scope não teria utilidade).
+Outros 2 arquivos lidos sem achado: `coins/eos/account.go` (sem
+parsing de string do usuário — pubKey já tipado, seed sempre via
+`crypto/rand`) e `coins/solana/base/account.go` (só estruturas de
+dados/ordenação, sem decode de input externo).
+
+`deep-read-log.json` atualizado (172→175 arquivos). Clone temporário
+(`gowallet-clone`, mesmo SHA `12fec6b0616347265efcc23bfc240c155da710eb`)
+e o arquivo de teste PoC (`zzrepro_panic_test.go`) ficaram só no
+scratchpad da sessão, nunca tocaram este repositório de pesquisa nem
+foram commitados. `export-queue` rodado ao final da rodada.
