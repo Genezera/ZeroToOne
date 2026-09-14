@@ -3412,3 +3412,85 @@ transição de estado tentada (nada acionável). `deep-read-log.json`
 atualizado (156→159, 3 entradas). Clone temporário (`go-wallet-sdk`,
 `nebula`) usado só pra listar arquivos ainda não lidos, removido ao
 final.
+
+## Rodada 14/09/2026 #2 (push webhook, sessão cloud)
+
+`research-plan` de novo com `actionable: []` (só `held`); `list-pending`
+vazio; `change-events.jsonl` (306 linhas) sem nenhum evento com
+`changedFiles` + `introducedCommit` completo + `directSingleCommit=true`
+dentro de 48h — evento mais recente do arquivo é `2026-09-10T20:48:29Z`,
+já ~4 dias fora da janela. Sem alvo novo autorizado por regressão, então
+segui pra deep read proativo via `list-deep-read-candidates.mjs`
+(mesmos 4 candidatos liberados: plaid-ruby/react-plaid-link esgotados,
+OKG 16% coberto, nebula 32% coberto).
+
+Priorizei OKG desta vez, mas com critério diferente das últimas
+rodadas: em vez de escolher arquivo por diretório de coin ainda não
+tocado, cloneei o repo raso e busquei especificamente por funções
+`Verify*` ainda não lidas — categoria que já rendeu os únicos achados
+de bypass real desta campanha (multiKey.go/multiEd25519.go, Aptos).
+19 arquivos bateram; escolhi 3 não-vendorizados (lógica própria do
+SDK, não porte de lib de terceiro):
+
+- `coins/starknet/message.go` (`VerifyMsgSign`): só wrapper fino sobre
+  `curve.Verify` (`curve.go`, já auditado) — confirmei que `curve.Verify`
+  é porte fiel do algoritmo de referência starkware-libs/cairo-lang
+  (link no próprio comentário) que tenta deliberadamente `+pubY` E
+  `-pubY` antes de rejeitar, então `XToPubKeyErr` computar só uma raiz
+  canônica de Y não é bug — o `Verify` interno já cobre a outra raiz.
+  Sem achado.
+- `coins/sui/sui.go` (`VerifyMessage`/`VerifySign`): ambas com
+  `defer/recover` fail-closed, pubkey de verificação sempre vem do
+  parâmetro confiável do chamador (nunca do blob de assinatura em si).
+  Sem achado — mesmo padrão já catalogado como mais seguro
+  (aptos/nostrassets).
+- `coins/bitcoin/message.go` (`VerifySimpleForBip0322`) — **ACHADO
+  REAL, classe de bug nova** (não a família seed-length já catalogada
+  8x): o dispatch por tipo de script do endereço tem 3 ramos
+  (taproot/segwit/P2PKH); os dois primeiros chamam
+  `sig.Verify(sigHash, pubkey)` de verdade, mas o ramo P2PKH é
+  `// todo` seguido de `return nil` — aceita **qualquer** assinatura
+  (vazia, lixo, o que for) como válida para **qualquer** endereço
+  Bitcoin legado P2PKH, sem executar nenhuma criptografia. A própria
+  suite de testes do pacote (`TestVerifySimpleForBip0322`) só exercita
+  taproot e segwit, nunca P2PKH — o gap nunca foi pego internamente.
+  PoC real (`go test -count=1`, `coins/bitcoin/zzrepro_p2pkh_bip322_bypass_test.go`,
+  PASS) confirma o bypass contra um endereço P2PKH mainnet real
+  (`1LrCJN5FVSNinDvqYtRHeEVnf6Dt5e8HUz`, o mesmo já usado pela própria
+  `TestVerifyMessage` do pacote) com duas assinaturas-lixo distintas.
+  Ver finding
+  `OKG::okx/go-wallet-sdk/coins/bitcoin/message.go::VerifySimpleForBip0322::p2pkh_signature_verification_bypass`.
+  Avançou `candidate → corroborated_static → reproduced_local` nesta
+  rodada (validação `go_test_poc`, resultado `pass`). `scope_verified`
+  tentado e recusado **corretamente**: `check-scope` retornou
+  `allowed=false` porque o snapshot de escopo do OKG está expirado
+  (capturado 08/09, expirou 11/09) e `refresh-scope-live` exige
+  credenciais HackerOne indisponíveis nesta sessão — não é avaliação de
+  escopo desfavorável, é lacuna técnica de credencial; registrado
+  honestamente no `deploymentEvidence.notes`. `deploymentEvidence`
+  também ficou em `confidence=unverified` (repo sem nenhuma tag/release
+  Git, `git ls-remote --tags` vazio — mesmo padrão já documentado pros
+  achados-irmãos deste repositório).
+
+  `impactAssessment` registrado como `reportable=false`/
+  `impactScope=self_request_only`: mantive o MESMO padrão de rigor já
+  aplicado pela campanha aos dois achados-irmãos de bypass de `Verify()`
+  neste repositório (`multiKey.go`/`multiEd25519.go`, ambos
+  `known_duplicate` com o rationale "nenhum consumidor de produção OKX
+  identificado usando esta função como fronteira de autorização"). Não
+  tenho prova de que algum produto real da OKX chama
+  `VerifySimpleForBip0322` como gate de autorização — só a evidência de
+  que a função em si, como escrita, não verifica nada para P2PKH.
+  Severidade técnica documentada como `medium` (bypass 100% completo de
+  uma função cujo propósito explícito é provar posse de endereço sem
+  posse de chave) mas não promovida a reportável sem essa prova, para
+  não inflar severidade artificialmente.
+
+Nenhuma outra transição tentada. `deep-read-log.json` atualizado
+(159→162, 3 entradas, uma corrigida depois por escape de backtick
+perdido no primeiro `node -e` via shell — reescrita com script `.mjs`
+dedicado pra evitar o mesmo problema). Clone temporário (`go-wallet-sdk`,
+SHA `12fec6b0616347265efcc23bfc240c155da710eb`) e o arquivo de teste PoC
+(`zzrepro_p2pkh_bip322_bypass_test.go`) ficaram só no scratchpad da
+sessão, nunca tocaram o clone real usado por outra rodada nem foram
+commitados neste repositório de pesquisa.
