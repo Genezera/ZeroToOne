@@ -3922,3 +3922,42 @@ projetada.
 vez escolhi `slackhq/nebula` em vez de continuar em `okx/go-wallet-sdk`
 (registro completo no NOTES.md do Slack). Nenhum achado novo neste
 repositório nesta rodada.
+
+## Rodada 14/09/2026 #10 (push webhook)
+`research-plan` seguiu devolvendo o mesmo único `actionable`:
+`address_parse_silent_zero_fallback` (`reproduced_local`), ação
+`verify_prior_art`. Reconfirmei o bloqueio ao vivo (não só reli a nota
+da rodada #9): `curl` direto contra
+`https://api.github.com/search/issues?q=repo:okx/go-wallet-sdk+...`
+através do proxy desta sessão devolve `403` idêntico
+(`"sessions are bound to their configured repositories. Use
+repository-scoped endpoints (repos/{owner}/{repo}/...)."`), e o mesmo
+vale para `/repos/okx/go-wallet-sdk` e
+`/repos/okx/go-wallet-sdk/security-advisories` sem repositório anexado
+(`"GitHub access to this repository is not enabled for this session.
+Use add_repo to request access..."`).
+
+Novo nesta rodada: testei explicitamente se `add_repo` resolveria isso.
+`add_repo(owner=okx, repo=go-wallet-sdk, access=read)` confirma que
+leitura via `git clone` já funciona sem anexar nada (repositório
+público, servido anonimamente) — mas o próprio retorno da ferramenta
+deixa explícito que ferramentas de API do GitHub (issues/commits/
+advisories, exatamente o que `search-prior-art` precisa) só funcionam
+com `access=push`, que anexa credenciais reais de escrita ao
+repositório de terceiro. **Decisão: não escalei para `push`.** Não há
+nenhuma necessidade legítima de escrever em `okx/go-wallet-sdk` — só
+pedir isso pra contornar uma restrição de busca somente-leitura seria
+pedir uma credencial mais ampla do que a tarefa justifica, e a mensagem
+de erro do proxy ("sessions are bound to their configured
+repositories") lê como fronteira de segurança deliberada da sessão, não
+bug a rotear. Mesmo julgamento das rodadas #7-#9, agora com a
+alternativa de `add_repo` genuinamente testada e descartada, não só
+presumida indisponível.
+
+`duplicateCheck` continua sem `methods` rastreáveis; gate de novidade
+segue recusando corretamente. Finding permanece `reproduced_local`, sem
+progressão, sem tentativa de forçar/contornar. `list-pending` vazio →
+leitura profunda proativa desta rodada foi em `plaid/plaid-ruby`,
+`plaid/react-plaid-link` (ambos confirmados esgotados) e
+`slackhq/nebula` (3 arquivos novos, sem achado) — registro completo no
+NOTES.md do Slack.

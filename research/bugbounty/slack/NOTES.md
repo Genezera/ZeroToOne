@@ -877,3 +877,26 @@ cert/crypto ainda não coberto:
 `deep-read-log.json` atualizado (60→63 entradas em `slackhq/nebula`).
 Nenhum finding novo criado nesta rodada — resultado normal e válido.
 Nenhuma transição de estado tentada.
+
+## Rodada 14/09/2026 #10 (push webhook)
+`list-pending` vazio; `research-plan` só devolveu o `actionable` de OKG
+(ver NOTES.md do OKG). Leitura profunda proativa (passo 4) avaliou
+`plaid/plaid-ruby` e `plaid/react-plaid-link` primeiro (menor cobertura
+na listagem de `list-deep-read-candidates.mjs`), mas confirmei que
+ambos já estão esgotados: `plaid-ruby` só tem `lib/models/*` restante,
+100% classes de dados geradas por `openapi-generator` (confirmado via
+`plaid.rb`, puro `autoload` mecânico, e grep por
+`webhook|jwt|verify|signature` fora de `models/` não bate em nada além
+dos 4 arquivos não-gerados já lidos); `react-plaid-link` não tem nenhum
+`src/*.ts(x)` não-teste restante (os 8 arquivos já cobertos são o
+pacote inteiro). Voltei para `slackhq/nebula`: 3 arquivos novos —
+`service/listener.go` (`tcpListener` do stack gvisor embutido, só
+mecânica de canal Go sob mutex, sem decisão de autorização própria),
+`cmd/nebula/main.go` (entrypoint — parse de flags e wiring de
+`config.NewC.Load`/`nebula.Main`, já auditados em rodada anterior, sem
+lógica de segurança nova) e `routing/gateway.go`
+(`CalculateBucketsForGateways`, bucketing hash-threshold puramente
+aritmético sobre `gateways`/`weight` vindos da config local do
+operador, sem input de rede/peer remoto). Sem achado novo em nenhum dos
+três. `deep-read-log.json` atualizado (63→66 entradas em
+`slackhq/nebula`).
