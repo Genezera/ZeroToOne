@@ -3159,3 +3159,60 @@ do modelo de ameaça relevante para bug bounty (que exige um atacante
 externo comprometendo outra vítima, não o usuário atacando a si
 mesmo). `deep-read-log.json` atualizado com as 3 entradas (138→141).
 Clone temporário removido. `export-queue` rodado ao final.
+
+## Rodada 2026-09-14 (push automático via GitHub webhook, sessão cloud)
+`node system/bugbounty-scanner/cli.mjs research-plan`: `actionable`
+vazio (64 `held`, principal motivo `program_blocked`). `list-pending`
+vazio. `change-events.jsonl` conferido com os critérios estritos do
+CLAUDE.md (`changedFiles` + `introducedCommit` completo +
+`directSingleCommit=true` + ≤48h): evento mais recente nesse formato é
+de 2026-09-10T20:48Z, já fora da janela de 48h a partir de 2026-09-14
+— nenhum novo alvo autorizado por essa via.
+
+Segui para leitura profunda proativa via `list-deep-read-candidates.mjs`.
+4 candidatos liberados pela política: `plaid/plaid-ruby` e
+`plaid/react-plaid-link` seguem 100% esgotados (documentado em rodadas
+anteriores); `slackhq/nebula` teve rodada de hoje mesma às 11:21 UTC
+(commit `d6cc38f`, o próprio push que disparou esta sessão) — escolhi
+`okx/go-wallet-sdk` desta vez por ter cobertura bem menor (141/~1007
+arquivos, 14%) e por ser onde o único achado real já confirmado desta
+campanha (clamp mask errada em `coins/cardano/crypto/key.go`) foi
+encontrado. Sem arquivo restante batendo literalmente com
+auth/session/crypto/token/login/password/admin/permission/access no
+caminho entre os ainda não lidos — usei julgamento e escolhi 3 arquivos
+do vendored `crypto/btcd/` (Bitcoin script/PSBT signing, mesma classe
+de "corretude criptográfica" do achado Cardano):
+
+- `crypto/btcd/v2/btcutil/psbt/partialsig.go`: `PartialSig.checkValid()`
+  só valida formato (pubkey parseável + assinatura DER válida),
+  documentado explicitamente que não valida a assinatura contra
+  mensagem/pubkey real — delegado a quem monta o PSBT. Sem achado.
+- `crypto/btcd/v2/btcutil/psbt/finalizer.go`: `Finalize()` monta o
+  `sigScript`/witness final a partir de `PartialSigs` sem
+  re-verificar ECDSA contra o sighash da tx — mesmo padrão da lib
+  upstream `btcsuite/btcwallet` psbt (verificação real é
+  responsabilidade de quem assina/atualiza o PSBT antes; um sig
+  inválido aqui só produz uma tx que falha na validação de script
+  on-chain, não desvia fundos). Notei `checkSigHashFlags()` (em
+  `utils.go`) acessando `sig[len(sig)-1]` sem checar `len(sig)>0`
+  antes — panic potencial com `Signature` vazio, mas inalcançável via
+  deserialização normal de PSBT: `partial_input.go:120` já chama
+  `PartialSig.checkValid()` (exige DER válido, que rejeita bytes
+  vazios) antes de qualquer `PartialSig` entrar na lista. Só seria
+  explorável se o código chamador construísse o struct manualmente
+  bypassando o parser — misuse de API interna, não vulnerabilidade de
+  wire-format alcançável por um peer remoto. Sem achado reportável.
+- `crypto/btcd/txscript/sign.go`: `mergeMultiSig` FAZ verificação
+  ECDSA real (`pSig.Verify(hash, pubKey)`) antes de aceitar cada
+  assinatura candidata ao montar o script multisig merged — ao
+  contrário do `finalizer.go` do pacote `psbt/v2`, aqui a verificação
+  criptográfica está presente. Código vendored idêntico ao
+  `btcsuite/btcd` upstream (copyright header original preservado),
+  sem desvio aparente introduzido pela OKX. Sem achado.
+
+Nenhum achado novo nesta rodada — resultado normal e válido; código
+vendored de biblioteca Bitcoin amplamente auditada pela indústria, sem
+desvio identificado do comportamento upstream. `deep-read-log.json`
+atualizado com as 3 entradas (141→144). Clone temporário removido.
+`export-queue` roda ao final da rodada completa (todos os 4
+programas).
