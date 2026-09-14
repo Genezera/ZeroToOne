@@ -745,3 +745,48 @@ input de rede não confiável / cálculo de endereço de peer):
 
 `deep-read-log.json` atualizado (50 entradas agora em `slackhq/nebula`).
 Nenhum finding novo criado nesta rodada — resultado normal e válido.
+
+## Rodada 2026-09-14 (scheduled task, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan`: `actionable` vazio (0), `list-pending`
+vazio (0). Checado `check-program` para os 4 programas mencionados na
+descrição desta task (StackingDAO, Vercel Open Source, Block Open Source,
+Circle BBP) antes de tocar qualquer repositório: Block Open Source e Circle
+BBP seguem `blocked:true` (confirmados de novo, nenhum não tocado); Vercel
+Open Source segue sem nada em `actionable` (todos os findings pendentes
+retidos por `campaign_duplicate_history`/`previous_submission`); StackingDAO
+não tem repositório reconhecido no dataset público atual do
+`list-deep-read-candidates.mjs` (aparece na lista "revise à mão antes de
+ler", não em candidatos nem em excluídos) — não iniciei leitura ali sem uma
+correspondência de escopo real. Também checado `change-events.jsonl` para
+StackingDAO/Vercel Open Source com os critérios estritos do CLAUDE.md
+(`changedFiles` + `introducedCommit` completo + `directSingleCommit=true` +
+≤48h): zero eventos qualificaram (o mais recente com essa forma é de
+2026-09-10T20:48Z, já fora da janela de 48h a partir de 2026-09-14).
+
+Sem candidato de fila e sem novo alvo autorizado por change-event recente,
+segui para leitura profunda proativa via `list-deep-read-candidates.mjs`
+(ferramenta indicada pelo CLAUDE.md para essa seleção, já aplicando
+histórico de campanha). `plaid/plaid-ruby` e `plaid/react-plaid-link`
+seguem 100% esgotados. `okx/go-wallet-sdk` tinha mais cobertura restante,
+mas escolhi `slackhq/nebula` por já ter contexto acumulado desta sessão de
+notas. 3 arquivos novos lidos (nenhum arquivo restante batia literalmente
+com as palavras-chave auth/session/crypto/token/login/password/admin/
+permission/access no caminho — usei julgamento: escolhi os mais próximos
+do caminho crítico de rede/handshake/credencial ainda não cobertos):
+
+- `interface.go`: orquestrador de threads/filas (tun queues, udp writers,
+  batch coalescers, cpu pinning) que liga overlay↔outside e os callbacks de
+  reload de config em runtime (firewall, recv-error mode, contadores). O
+  parsing/decrypt real de pacote vive em `outside.go`/`inside.go`, já
+  auditados em rodadas anteriores. Nenhuma lógica de autenticação/cripto
+  própria aqui. Sem achado.
+- `udp/conn.go`: só a interface `Conn` + `NoopConn` (stub sem I/O real usado
+  em testes/plataformas sem UDP). Sem achado.
+- `cmd/nebula-cert/p11_cgo.go`: 15 linhas, só expõe a flag `--pkcs11` e
+  `p11Supported()=true` sob build tag `cgo+pkcs11`; a lógica real de uso da
+  URI PKCS#11 fica em `pkclient/pkclient_cgo.go`, já auditado em rodada
+  anterior. Sem achado.
+
+`deep-read-log.json` atualizado (53 entradas agora em `slackhq/nebula`).
+Nenhum finding novo criado nesta rodada — resultado normal e válido.

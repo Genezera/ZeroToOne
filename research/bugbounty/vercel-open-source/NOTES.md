@@ -10552,3 +10552,25 @@ lidos, escolhendo 3 arquivos por proximidade com o achado anterior
 Nenhum achado novo, nenhuma transição de estado nesta rodada. Clones
 temporários (`async-sema`, `ms`, `nitro-tree` sparse) removidos do
 scratch dir ao final. `export-queue` rodado ao final.
+
+## Rodada 2026-09-14 (scheduled task, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan`: `actionable` vazio (0),
+`list-pending` vazio (0). `check-program "Vercel Open Source"` confirmado
+`blocked:false` antes de qualquer decisão. Todos os findings pendentes do
+programa em `research-plan.held` seguem retidos por
+`campaign_duplicate_history` (gate exige zero duplicates anteriores
+no programa/repositório, ligados a HackerOne:3990360/3988959) ou
+`previous_submission` (vercel/next.js image-optimizer SSRF, mesmo
+fingerprint já submetido) — nenhum item novo, nada avançou. Também
+checado `research/bugbounty/change-events.jsonl` com os critérios
+estritos do CLAUDE.md pra abrir um alvo novo fora da fila
+(`changedFiles` + `introducedCommit` completo + `directSingleCommit=true`
++ ≤48h): o evento mais recente nessa forma para repositórios deste
+programa é de 2026-09-10T20:48Z, já fora da janela de 48h contada a
+partir de 2026-09-14 — nenhum evento qualificou, nenhum repositório novo
+clonado/lido por essa via. Leitura profunda proativa desta rodada foi
+direcionada a `slackhq/nebula` (ver NOTES.md de Slack/HackerOne pra
+detalhe — 3 arquivos novos: `interface.go`, `udp/conn.go`,
+`cmd/nebula-cert/p11_cgo.go`, sem achado), não a nenhum repositório deste
+programa. Nenhuma transição de estado neste programa.

@@ -1980,3 +1980,19 @@ Leitura profunda proativa desta rodada direcionada a `nitrojs/nitro`
 (ver NOTES.md de Vercel Open Source pra detalhe — 3 arquivos novos:
 `queue-handler.ts`, `isr.ts`, `database.ts`, sem achado). Nenhuma
 transição de estado neste programa.
+
+## Rodada 2026-09-14 (scheduled task, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan`: `actionable` vazio (0),
+`list-pending` vazio (0). `check-program "StackingDAO"` confirmado
+`blocked:false` antes de qualquer decisão. `list-deep-read-candidates.mjs`
+lista `StackingDAO` na seção "sem programa reconhecido no dataset público
+atual -- revise à mão antes de ler" (não em candidatos permitidos nem em
+excluídos) — sem uma correspondência de escopo/repositório real no dataset
+atual, não abri nenhum arquivo aqui nesta rodada (os 15 contratos `.clar`
+já lidos em rodadas anteriores seguem sendo a cobertura vigente, sem
+contrato novo publicado). Leitura profunda proativa desta rodada foi
+direcionada a `slackhq/nebula` (ver NOTES.md de Slack/HackerOne pra
+detalhe — 3 arquivos novos: `interface.go`, `udp/conn.go`,
+`cmd/nebula-cert/p11_cgo.go`, sem achado). Nenhuma transição de estado
+neste programa.
