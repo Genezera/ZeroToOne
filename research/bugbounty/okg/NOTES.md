@@ -3653,3 +3653,43 @@ mesma situação já documentada nas rodadas #2/#3):
 `zzrepro_transfer_zero_address_test.go`) ficaram só no scratchpad da
 sessão (`/tmp`), nunca tocaram este repositório de pesquisa nem foram
 commitados.
+
+## Rodada 2026-09-14 (push automático via GitHub webhook, sessão cloud — 5ª rodada do dia)
+`research-plan`: `actionable=1` (o mesmo finding
+`address_parse_silent_zero_fallback`, ação `verify_scope`), `held=65`
+(44 `program_blocked`, 11 `campaign_duplicate_history`, 8
+`below_campaign_impact`, 1 `outside_campaign_window`, 1
+`previous_submission` — nenhuma mudança de motivo desde a rodada
+anterior).
+
+Ação `verify_scope` só autoriza revisar fontes de escopo, não presumir
+confirmação. Revisei: `check-program "OKG"` → `blocked:false`.
+`check-scope "OKG" "okx/go-wallet-sdk"` → `allowed:false`, mesmo motivo
+(snapshot capturado 2026-09-08, expirado 2026-09-11). Tentei
+`refresh-scope-live "OKG"` para checar se havia como atualizar — falhou
+como esperado (`HACKERONE_USERNAME`/`HACKERONE_API_TOKEN` ausentes
+neste ambiente, confirmado via execução real, não suposição). Tentei a
+transição `reproduced_local→scope_verified` documentando esse contexto
+— **recusada corretamente** pelo gate (mesmo motivo: snapshot
+expirado). Nenhuma tentativa de forçar/contornar. Finding permanece em
+`reproduced_local`, sem novidade além de reconfirmar que o bloqueio
+segue ativo e não há caminho disponível nesta sessão para resolvê-lo
+(falta ferramenta de captura de snapshot fresco sem as credenciais
+HackerOne, e o repositório não tem tag/release Git para ancorar
+`deploymentEvidence` de outra forma).
+
+Sem candidato acionável adicional na fila → leitura profunda proativa
+(passo 4). `list-deep-read-candidates.mjs` liberou 4 repositórios
+(`plaid/plaid-ruby`, `plaid/react-plaid-link`, `okx/go-wallet-sdk`,
+`slackhq/nebula`) após aplicar política+histórico; escolhi continuar em
+`okx/go-wallet-sdk` (169→172 no log, 3 arquivos novos, priorizando
+account/wallet/signer ainda não lidos): `coins/aptos/v2/account.go`
+(reexport fino sem lógica própria), `coins/starknet/cairo1/
+account_cairo1.go` (propagação de erro correta em toda conversão
+hex→BigInt) e `coins/ton/ton/wallet/wallet.go` (maior parte do código
+de rede está comentada/desativada nesta versão offline do SDK;
+builders de mensagem recebem `*address.Address` já tipado, sem parsing
+de string próprio aqui; `TryParseBase64` tenta 4 encodings e retorna
+erro explícito se todos falharem, sem fallback silencioso). Nenhum dos
+3 teve o padrão de fallback-silencioso-em-endereço-malformado dos
+achados-irmãos deste repositório. **Sem achado novo nesta rodada.**
