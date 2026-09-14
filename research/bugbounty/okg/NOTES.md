@@ -3316,3 +3316,53 @@ caminho e ainda não lidos:
 Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (150→153).
 Clone temporário removido. Nenhuma transição de estado tentada (nada em
 `candidate` acionável em nenhum dos 4 programas da campanha).
+
+## Rodada 2026-09-14 (2) (push automático via GitHub webhook, sessão cloud)
+
+`check-program` confirmou Plaid/OKG/Slack liberados antes de qualquer leitura.
+`research-plan` (actionable=0, held=64) e `list-pending` (vazio) confirmados
+de novo. `change-events.jsonl` checado com o filtro exigido pelo CLAUDE.md
+(`changedFiles` + `introducedCommit` completo + `directSingleCommit=true` +
+≤48h): evento mais recente tem ~87h, zero eventos qualificam — sem alvo novo
+por esse caminho. `list-deep-read-candidates.mjs` rodado, mesmos 4
+candidatos liberados de sempre (plaid-ruby/react-plaid-link esgotados,
+go-wallet-sdk 15% coberto, nebula 32%). Escolhidos 3 arquivos ainda não
+lidos em `okx/go-wallet-sdk` por julgamento próprio (chain de
+keypair/assinatura menos comum + encoder ABI hand-rolled, priorizando
+sign/key/token no caminho):
+- `coins/stellar/keypair/{main,full,from_address}.go` +
+  `coins/stellar/strkey/main.go`: **achado real reproduzido com PoC
+  executável** (`go run` local, sem rede/tx real) — `strkey.Decode()` só
+  valida checksum CRC16 e version byte, nunca o comprimento do payload
+  esperado por versão (32 bytes p/ AccountID/Seed). Um strkey `G...`
+  malformado com payload de 5 bytes e checksum válido passa por
+  `ParseAddress()` sem erro; a chamada seguinte a `.Verify()` sofre PANIC
+  real (`ed25519: bad public key length`) porque `crypto/ed25519.Verify` do
+  Go exige exatamente 32 bytes. **Refutação:** `coins/stellar/` tem LICENSE
+  Apache-2.0 próprio — é vendorizado de `github.com/stellar/go` sem
+  modificação nessa lógica. Diff linha a linha contra clone raso de
+  `stellar/go@main` feito nesta rodada confirma `Decode()` byte-a-byte
+  idêntica entre upstream e a cópia OKX (única diferença: caminho de
+  import + 3 `VersionByte` mais novos ausentes na cópia OKX, sem relação
+  com o bug). Mesmo padrão já registrado neste log para `tonutils-go`/
+  `tzgo` vendorizados: bug herdado de biblioteca de terceiros não
+  modificada pelo OKX, não é achado atribuível/novo pro programa OKG. Sem
+  achado novo — documentado por diligência (PoC real rodado, não só
+  leitura). Nenhuma transição de estado tentada (não há finding criado).
+- `crypto/abi/abi.go`: `Arguments.Pack` descarta o erro de
+  `fmt.Errorf("inconsistent number of parameters")` (nunca retornado/
+  checado) e faz type-assertion sem checagem pra `*big.Int`/`string` —
+  bug de robustez real, mas o único caller (`coins/tron/token/token.go`
+  `Transfer(to string, value *big.Int)`) sempre passa os tipos Go corretos
+  do próprio integrador da SDK; sem parsing de payload de rede/terceiro
+  não tipado chegando em `Pack`. Sem achado (robustez ruim, não
+  vulnerabilidade explorável por terceiro).
+- `coins/eos/types/token.go`: `NewTokenTransferAction`/`NewTokenTransfer`
+  só montam a `Action`/`Transfer` struct com os parâmetros do próprio
+  chamador, sem fronteira de confiança cruzada. Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
+(153→156, 3 entradas). Clones temporários (`go-wallet-sdk` e
+`stellar-go` upstream, usado só pro diff de refutação) removidos.
+Nenhuma transição de estado tentada (nada em `candidate` acionável em
+nenhum dos programas da campanha).
