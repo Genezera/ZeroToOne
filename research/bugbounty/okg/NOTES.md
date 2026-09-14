@@ -3292,3 +3292,27 @@ Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado
 (147→150, 3 entradas). Clone temporário removido. `list-pending`
 continua vazio; nenhuma transição de estado foi tentada nesta rodada
 (nada em `candidate` acionável).
+
+## Rodada 2026-09-14 (sessão agendada, cloud)
+
+`research-plan` (actionable=0, held=64) e `list-pending` (vazio) confirmados
+sem nada acionável na fila. Leitura profunda proativa: clone raso de
+`okx/go-wallet-sdk` (153 entradas no log agora), 3 novos alvos escolhidos
+por julgamento próprio priorizando `coins/*` com address/key/sign/derive no
+caminho e ainda não lidos:
+- `coins/ton/address/bit.go`: helpers `setBit`/`clearBit`/`hasBit` puramente
+  aritméticos sobre um byte, sem parsing de input externo. Sem achado.
+- `coins/kaspa/kaspad/util/address.go`: `DecodeAddress` tem `switch(version)`
+  com `default` explícito retornando `ErrUnknownAddressType` (fail-closed,
+  não repete o padrão de bug já visto noutros coins de switch sem default);
+  construtores de endereço (`newAddressPubKey`/`newAddressPubKeyECDSA`/
+  `newAddressScriptHashFromHash`) checam `len()` exato antes de aceitar. Sem
+  achado.
+- `coins/aptos/aptos_types/account_address.go`: `FromHex` rejeita hex
+  decodificado com mais de 32 bytes antes de copiar right-aligned pro array
+  fixo — sem overflow nem colisão de endereço por truncamento silencioso.
+  Sem achado.
+
+Nenhum achado novo nesta rodada. `deep-read-log.json` atualizado (150→153).
+Clone temporário removido. Nenhuma transição de estado tentada (nada em
+`candidate` acionável em nenhum dos 4 programas da campanha).
