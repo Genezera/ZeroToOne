@@ -1182,3 +1182,34 @@ nesta rodada, sem forçar além disso.
 `cmd/nebula/main.go`). Clone temporário e binários compilados (`/tmp/
 nebula-clone`, `/tmp/nebula-poc`) descartados ao final, sem persistir
 nada fora deste repositório de pesquisa. `export-queue` rodado ao final.
+
+## Rodada 15/09/2026 (cloud, agendada)
+
+`list-pending` vazio (0 candidates não retidos). `research-plan` só
+tinha 3 itens `actionable`, todos do programa OKG com ação
+`verify_prior_art` (achados já em `reproduced_local`); `evidence-recipes.json`
+não tem receita `priorArt` pra nenhum dos três IDs, então a própria
+lógica do Evidence Worker devolveria `needs_human` ("faltam três
+queries específicas e programHandle") -- não fabriquei queries/recipe
+pra forçar isso, fica registrado como bloqueio real aguardando alguém
+preencher a receita, não uma tarefa que esta sessão possa completar por
+inferência.
+
+Segui pro passo de leitura profunda proativa. `list-deep-read-candidates.mjs`
+listou `slackhq/nebula` como um dos 4 repositórios liberados (política +
+histórico de campanha OK). Escolhi 3 arquivos ainda não lidos priorizando
+superfície relacionada a segredo/admin: `cmd/nebula-cert/print.go`,
+`cmd/nebula-cert/stdio.go`, `logging/logger.go`. Nenhum achado novo:
+print.go só formata o certificado *público* (nunca chave privada) pra
+saída escolhida pelo operador; stdio.go é só a convenção `-`
+stdin/stdout dos subcomandos, sem path vindo de rede; logger.go é só o
+dispatch slog reconfigurável (level/format/timestamp), não decide o que
+é logado -- o achado real de vazamento de config (`main.go`, bloco
+`configTest`) já estava registrado em rodada anterior e continua em
+`scope_verified`, sem relatório (mesma limitação de gate documentada
+acima: sem input controlado por atacante + programa só aceita Critical
+desde 27/05/2026).
+
+`deep-read-log.json` atualizado (3 entradas novas). Nenhum clone
+persistido fora do scratchpad efêmero da sessão. `export-queue` rodado
+ao final desta rodada.
