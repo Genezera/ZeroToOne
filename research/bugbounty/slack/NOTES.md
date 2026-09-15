@@ -1004,3 +1004,48 @@ a fronteira de I/O de pacote do tun/checksum, ainda não coberta):
 74→78 no total). Clone temporário removido. Nenhum finding novo criado
 nesta rodada — resultado normal e válido. `export-queue` rodado ao
 final.
+
+## Rodada 15/09/2026 (rotina agendada, push webhook 63bc360)
+
+Leitura profunda proativa em `slackhq/nebula`, 3 arquivos novos
+(78→81), focados no caminho de parsing GSO/virtio (segmentação de
+superpacotes TSO/USO no TUN Linux com `IFF_VNET_HDR`):
+
+- `overlay/tio/virtio/header_linux.go`: `Hdr.Decode`/`Encode` leem/
+  escrevem os 10 bytes fixos do `virtio_net_hdr`. Único call site real
+  de `Decode` é sobre `r.readVnetScratch`, um array Go de tamanho fixo
+  10 — sem risco de index-out-of-range mesmo que o `readv` retorne
+  menos bytes (isso já é checado antes, em `readPacket`). Sem achado.
+- `overlay/tio/tio_gso_linux.go`: `Offload.Read`/`readPacket`/
+  `decodeRead`/`Write`/`WriteGSO`. `decodeRead` valida `n>=virtio.Size`
+  antes de fatiar e delega a `virtio.CheckValid`/`CorrectHdrLen` antes
+  de expor `GSOInfo`. `WriteGSO` valida toda a geometria dos iovecs
+  (header vazio, transport header curto, payloads de tamanho desigual
+  exceto o último, overflow de uint16 em `maxSuperpacketLen`) e
+  retorna erro em vez de aceitar silenciosamente — comentário do
+  próprio código já declara essa intenção ("must cause an error, not a
+  silent drop"), confirmado lendo o código. Sem achado.
+- `overlay/tio/virtio/segment_linux.go`: `CheckValid`/`CorrectHdrLen`/
+  `SegmentTCP`/`SegmentUDP`/`FinishChecksum`. Rastreei todo indexing de
+  `pkt[]` contra os bounds validados em `CorrectHdrLen` antes de
+  `SegmentTCP`/`SegmentUDP` serem chamados (confirmado que `GSOInfo`
+  só carrega `HdrLen`/`CsumStart` adiante — `CsumOffset` é descartado
+  logo após `CorrectHdrLen`). ACHADO MENOR investigado e descartado
+  como não-explorável: `CorrectHdrLen` calcula
+  `cSumAt := int(hdr.CsumStart + hdr.CsumOffset)` somando os dois
+  `uint16` ANTES de converter pra `int` (pode dar wraparound mod
+  65536 — contraste com `FinishChecksum`, que converte pra `int` antes
+  de somar, esse sim correto). Em teoria isso podia deixar a checagem
+  `cSumAt+1 >= len(pkt)` passar quando não deveria; na prática é
+  inofensivo porque `CsumOffset` nunca é usado depois desse ponto no
+  branch GSO (não entra em `GSOInfo`, nenhum indexing posterior o usa)
+  — sem caminho de exploração real. Mesmo que fosse explorável, `hdr`
+  vem do `virtio_net_hdr` que o KERNEL LOCAL escreve no TUN read
+  (fronteira de confiança local, mesmo padrão dos achados-irmãos deste
+  repo), não de payload de rede de um peer remoto. Não reportável, não
+  criei finding pra isso.
+
+`deep-read-log.json` atualizado (+3 entradas em `slackhq/nebula`,
+78→81 no total). Clone temporário removido. Nenhum finding novo criado
+nesta rodada — resultado normal e válido. `export-queue` rodado ao
+final.

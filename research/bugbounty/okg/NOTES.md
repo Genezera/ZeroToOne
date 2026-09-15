@@ -4206,3 +4206,26 @@ com fallback silencioso) em código não-vendored ainda não lido —
 direto com o base58.Decode sem checagem do achado Aptos) e
 `coins/starknet/account_constants.go` (só constantes, não aplicável).
 Sem achado novo — resultado normal e válido.
+
+## Rodada 15/09/2026 (rotina agendada, push webhook 63bc360)
+
+`research-plan` confirma que o único item `actionable` do dia inteiro
+continua sendo o mesmo `verify_prior_art` de
+`address_parse_silent_zero_fallback` (Aptos, `reproduced_local`).
+Decisão desta rodada: **não repetir a mesma tentativa de
+`search-prior-art`/`add_repo` de novo** — o bloqueio (API REST/Search
+do GitHub restrita a `genezera/zerotoone` nesta sessão cloud) já foi
+confirmado de forma idêntica em pelo menos 7 rodadas anteriores hoje
+(14/09 #7-#10, 15/09, 15/09b x2, 15/09e), com as duas variantes
+plausíveis (`add_repo(access="read")` e a leitura direta via curl) já
+testadas e descartadas. Repetir a mesma chamada uma oitava vez sem
+nenhuma mudança de ambiente não produz evidência nova, só desperdiça
+esforço — não é isso que "actionable" pede quando a barreira é
+estrutural, não de raciocínio. Nenhuma transição tentada; nenhum campo
+do finding alterado nesta rodada. Requer sessão com acesso GitHub API
+não restrito a repo único (ambiente local do usuário) pra completar
+`verify_prior_art` de verdade.
+
+Leitura profunda proativa desta rodada foi em `slackhq/nebula`, não em
+`okx/go-wallet-sdk` (pra variar a cobertura) — ver NOTES.md do Slack.
+Sem achado novo em nenhum programa. `export-queue` rodado ao final.
