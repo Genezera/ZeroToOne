@@ -4036,3 +4036,52 @@ neste repo, mesmo 403 de escopo de API já documentado acima impedindo
 checar releases via API) e tentei `scope_verified` só para confirmar a
 recusa esperada — recusado corretamente por `confidence != "high"`, sem
 forçar/contornar.
+
+## Rodada 2026-09-15 (scheduled task, sessão cloud, push 089952b->5001a53)
+
+`research-plan` apontou este programa como único item `actionable`
+(`verify_prior_art` sobre
+`OKG::.../account.go::AccountAddress.ParseStringRelaxed::address_parse_silent_zero_fallback`,
+já em `reproduced_local`): `duplicateCheckGate` recusa por
+`duplicateCheck sem métodos rastreáveis` — a validação
+`prior_art_search` anterior só gravou uma atestação-digest, sem os
+campos estruturados (`methods`/`queries`/`foundExisting`/`ts`) que o
+gate exige. Tentei corrigir isso de verdade: montei config com 4
+queries distintas (`ParseStringRelaxed`, `base58 zero address`,
+`AccountAddress silent`, `TransferWithFeePayer address validation`) e
+`programHandle=okg` e rodei
+`cli.mjs search-prior-art --config=... --finding-id=...` (busca real
+via API pública do GitHub — issues/commits/advisories — mais Hacktivity
+pública da HackerOne, não é leitura do repositório-alvo). Resultado:
+`GitHub API HTTP 403 (rate limit esgotado)` — o token desta sessão é
+escopado só a `genezera/zerotoone` (confirmado no comentário de
+`github-auth.mjs`), então a chamada cai pro fallback anônimo de 60
+req/hora, já exaurido. Não retentei em loop nem contornei — é um
+limite real de rede, não um obstáculo da máquina de estados. Achado
+permanece em `reproduced_local`, sem nova transição. Retomar isso numa
+rodada futura (ou com `GITHUB_TOKEN` de acesso público de fato
+disponível) é o próximo passo correto, não uma ação a forçar agora.
+
+`check-program "OKG"` confirmado `blocked:false`. Leitura profunda
+proativa desta rodada (ver critério de prioridade
+auth/session/crypto/token/... do CLAUDE.md): dos 4 candidatos permitidos
+por `list-deep-read-candidates.mjs`, `plaid/plaid-ruby` e
+`plaid/react-plaid-link` já estavam integralmente esgotados (registrado
+em rodadas anteriores) e `slackhq/nebula` tinha acabado de ser coberto
+na rodada de 2026-09-14 — escolhi `okx/go-wallet-sdk` (mesmo SHA
+`12fec6b0616347265efcc23bfc240c155da710eb` já usado nos achados
+existentes). Dos arquivos com nome sensível ainda não lidos, a grande
+maioria é biblioteca criptográfica vendored de terceiros (btcd,
+go-ethereum, dcrec — baixa prioridade, mesma causa raiz não seria
+exclusiva deste SDK) ou builders de instrução Solana gerados
+mecanicamente a partir do padrão `gagliardetto/solana-go`. Li 3 destes
+últimos por julgamento próprio (mesma classe de bug já confirmada
+alhures neste repo — validação de endereço/parâmetro antes de assinar):
+`coins/solana/system/AssignWithSeed.go`,
+`coins/solana/associated-token-account/instructions.go`,
+`coins/solana/token/InitializeMint.go` — todos boilerplate gerado com
+`Validate()` limitado a nil-checks de ponteiro, `PublicKey` sempre
+struct fixa (nunca string parseada nesta camada), serialização
+`COption` correta. Sem achado novo. `deep-read-log.json` atualizado
+(181 → 184 arquivos). Nenhuma transição de estado neste programa nesta
+rodada.

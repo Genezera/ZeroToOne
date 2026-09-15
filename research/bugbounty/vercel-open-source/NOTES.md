@@ -10574,3 +10574,21 @@ direcionada a `slackhq/nebula` (ver NOTES.md de Slack/HackerOne pra
 detalhe — 3 arquivos novos: `interface.go`, `udp/conn.go`,
 `cmd/nebula-cert/p11_cgo.go`, sem achado), não a nenhum repositório deste
 programa. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-15 (scheduled task, sessão cloud, push 089952b->5001a53)
+
+`migrate-to-v2.mjs` + `research-plan`: `actionable` = 1 item, mas fora
+desta missão (`OKG`, `verify_prior_art` — ver NOTES.md de OKG).
+`list-pending` vazio. `check-program "Vercel Open Source"` confirmado
+`blocked:false`. `held` continua composto pelos mesmos motivos das
+rodadas anteriores (`campaign_duplicate_history` ligado a
+HackerOne:3990360/3988959, `previous_submission` do SSRF do image
+optimizer) — nenhum item novo. `change-events.jsonl` conferido com o
+critério estrito do CLAUDE.md — nenhum evento dentro da janela de 48h
+a partir de 2026-09-15 (o mais recente qualificável continua sendo
+2026-09-10T20:48Z) — nenhum repositório novo aberto por essa via.
+
+Leitura profunda proativa desta rodada foi direcionada a
+`okx/go-wallet-sdk` (ver NOTES.md de OKG para detalhe — 3 arquivos
+novos, builders Solana gerados, sem achado), não a nenhum repositório
+deste programa. Nenhuma transição de estado neste programa.
