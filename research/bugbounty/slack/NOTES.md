@@ -1049,3 +1049,52 @@ superpacotes TSO/USO no TUN Linux com `IFF_VNET_HDR`):
 78→81 no total). Clone temporário removido. Nenhum finding novo criado
 nesta rodada — resultado normal e válido. `export-queue` rodado ao
 final.
+
+## Rodada 15/09/2026 (continuação, push webhook 8d31de9, sessão cloud)
+
+`list-pending` vazio; `research-plan` só apontava itens `actionable`
+em OKG (ver `research/bugbounty/okg/NOTES.md`). Leitura profunda
+proativa (passo 4) escolheu `slackhq/nebula` via
+`list-deep-read-candidates.mjs` (81 arquivos já lidos, 46% coberto,
+único repositório Slack liberado pela política nesta rodada).
+
+Clone raso temporário para listar árvore completa de `.go` não-teste
+e comparar contra `deep-read-log.json`. Nenhum arquivo restante batia
+literalmente com as palavras-chave auth/session/crypto/token/login/
+password/admin/permission/access no nome — critério aplicado com
+julgamento próprio (não regex): escolhi os 3 arquivos remanescentes
+mais próximos de superfície sensível ainda não lidos, o código
+Windows-only de driver/adaptador TUN (`wintun/`, `overlay/tun_windows.go`),
+por tocar carregamento de driver e permissões de interface de rede.
+
+- `wintun/device.go`: só a interface `Device` (File/Read/Write/Flush/
+  Name/Close), fork direto do wireguard-go sem alteração. Nenhuma
+  lógica executável. Sem achado.
+- `wintun/tun.go`: `NativeTun.Read/Write/Close`, fork do wireguard-go
+  (wrapper do driver Wintun). `Read` faz
+  `copy(buff[offset:], packet)` — `copy()` do Go trunca para
+  `min(len(dst),len(src))`, sem risco de overflow mesmo se `packet`
+  for maior que o espaço restante em `buff`. `rateJuggler` é só
+  telemetria de throughput via atomics. Sem achado.
+- `overlay/tun_windows.go`: `newTun`/`Activate`/`addRoutes`/`setMTU`/
+  `Close`. IPs/rotas aplicados vêm do CONFIG LOCAL do operador
+  (`tun.routes`/`tun.unsafe_routes`, já auditado em `overlay/route.go`
+  de rodada anterior) via `winipcfg` (lib oficial wireguard-windows),
+  não de input de rede remoto. `checkWinTunExists()` carrega
+  `wintun.dll` via `syscall.LoadDLL` com CAMINHO ABSOLUTO construído
+  a partir de `os.Executable()` (diretório do próprio binário) +
+  `dist/windows/wintun/bin/<arch>/wintun.dll` — caminho totalmente
+  qualificado, não relativo/dependente de search-order do Windows
+  (mesmo padrão usado pelo próprio WireGuard upstream); não
+  caracteriza DLL hijacking clássico, depende só da ACL do diretório
+  de instalação (fora do escopo deste SDK). `generateGUIDByDeviceName`
+  usa MD5(label+deviceName) só como gerador determinístico de GUID de
+  interface, não como controle de segurança — uso correto para essa
+  finalidade. `bypassWDF`/`installInterfaceBypass` já avaliado e
+  refutado em rodada anterior (`wfp/wfp_windows.go`, comportamento
+  documentado publicamente). Sem achado.
+
+`deep-read-log.json` atualizado (+3 entradas em `slackhq/nebula`,
+81→84 no total). Clone temporário removido. Nenhum finding novo criado
+nesta rodada — resultado normal e válido. `export-queue` rodado ao
+final.

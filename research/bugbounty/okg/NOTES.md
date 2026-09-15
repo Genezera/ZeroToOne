@@ -4358,3 +4358,42 @@ leitura, sem achado).
 
 `deep-read-log.json` atualizado (7 entradas novas). `export-queue`
 rodado ao final desta rodada.
+
+## Rodada 15/09/2026g (rotina agendada, push webhook 8d31de9, sessão cloud)
+
+`research-plan` apontava 3 itens `actionable`, todos `verify_prior_art`
+em `reproduced_local`: Aptos (`address_parse_silent_zero_fallback`,
+já com 6+ tentativas idênticas documentadas), Ethereum
+(`NewEthDynamicFeeTx`, primeira tentativa) e Kaspa
+(`bech32_empty_payload_index_panic`, primeira tentativa).
+
+Para os dois últimos (primeira vez que `verify_prior_art` era tentado
+neles): rodei `search-prior-art` de verdade com config real (3 queries
+distintas cada) — ambos falharam com `Erro: GitHub API HTTP 403 (rate
+limit esgotado)`. Confirmado via `curl` direto contra
+`api.github.com/search/issues` que o 403 real não é rate-limit: o
+corpo é `"This GitHub API path is not available: sessions are bound to
+their configured repositories"` — a sessão cloud está escopada só a
+`genezera/zerotoone`, mesma restrição estrutural já documentada 6+
+vezes no achado-irmão Aptos. `duplicateCheck` permanece
+ausente/insuficiente por essa razão, não por decisão de pesquisa.
+
+Também tentei `transition -> scope_verified` direto nos dois (com
+`scopeGateResult` de um `check-scope` real, `allowed=true`/
+`bountyEligible=true`/`maxSeverity=critical`): recusado nos dois com
+razão explícita e mais direta que o bloqueio de `duplicateCheck` —
+`"DeploymentEvidence existe mas confidence=unverified — modo
+profissional exige vínculo real commit↔release↔deploy com
+confidence=high antes de scope_verified"`. Ou seja, mesmo que
+`duplicateCheck` fosse satisfeito, o gate de deployment evidence
+(sem tag/release Git em `okx/go-wallet-sdk`, sem app cliente real
+disponível neste repo) já bloqueia sozinho — consistente com os
+3 achados-irmãos deste programa. `reasoning` de ambos atualizado com
+o ADENDO completo (corpo do 403 + razão exata da recusa de
+transição). Nenhuma transição forçada. Estado de todos os 3
+permanece `reproduced_local`.
+
+Leitura profunda proativa desta rodada (passo 4) foi para
+`slackhq/nebula` (Slack), não OKG — ver `research/bugbounty/slack/NOTES.md`.
+
+`export-queue` rodado ao final desta rodada.
