@@ -4507,3 +4507,57 @@ maioria código gerado). Alternando com a rodada anterior (que cobriu
 (`sensitive_config_logged_in_test_mode`, alcançou `scope_verified`).
 
 `export-queue` rodado ao final desta rodada.
+
+## Rodada 15/09/2026j (rotina agendada, push webhook 4b953a6..798e38b)
+
+`list-pending` vazio (nenhum `candidate`). `research-plan` reconfirmou
+os mesmos 3 `actionable` de sempre: `verify_prior_art` sobre os 3
+achados-irmãos `address_parse_silent_zero_fallback`/
+`bech32_empty_payload_index_panic` (Aptos/Ethereum/Kaspa, todos
+`reproduced_local`). **Não retentado** — o bloqueio estrutural (API
+REST/Search do GitHub desta sessão cloud restrita a
+`genezera/zerotoone`, `add_repo(access="read")` só habilita
+`git clone`/`raw.githubusercontent.com`, não `search/issues|commits`)
+já está confirmado e documentado de forma idêntica em 10+ rodadas
+anteriores (14/09 #7–#10, 15/09 a-i), sem nenhuma mudança de ambiente
+entre elas. Repetir de novo sem evidência nova só desperdiça esforço.
+
+Leitura profunda proativa (passo 4): alternando com a rodada anterior
+(que cobriu `slackhq/nebula`), esta foi para `okx/go-wallet-sdk`.
+Cloney via `git clone` (mesmo SHA
+`12fec6b0616347265efcc23bfc240c155da710eb`) e diff contra
+`deep-read-log.json` pra listar os 809 arquivos `.go` ainda não lidos
+de `coins/`+`crypto/` — a grande maioria (`crypto/btcd/*`,
+`crypto/go-ethereum/*`, `crypto/dcrec/*`, `crypto/cbor/*`,
+`crypto/go-bip39/wordlists/*`) é biblioteca vendored de terceiro sem
+qualquer commit próprio da OKX, baixa prioridade (mesmo julgamento já
+aplicado em rodadas anteriores: causa raiz não seria exclusiva deste
+SDK). Escolhi 3 arquivos de código próprio da OKX ainda não cobertos,
+na mesma classe de "construção/assinatura de transação a partir de
+endereço textual" do padrão já confirmado nos achados-irmãos:
+`coins/tezos/tx.go`, `coins/nervos/transaction.go`,
+`coins/zcash/transaction.go`. Nenhum achado novo:
+- `tezos/tx.go`: todo `NewTransaction`/`NewDelegationTransaction`/
+  `AddTransferOpTransaction` chama `types.ParseAddress` e checa erro
+  E `IsValid()` antes de qualquer `op.With*` — fail-closed, consistente
+  com `types/address.go` já lido em rodada anterior. Nota separada (não
+  finding de segurança): `BuildTransaction` lê `opts.MaxFee` (linha 204)
+  fora do bloco que trata `opts==nil` (linha 189) — se um integrador
+  chamar com `opts=nil`, gera panic de nil-pointer-dereference. Mas
+  `opts` é fornecido pelo próprio código integrador (app carteira), não
+  por dado on-chain/atacante externo — não atinge a barra de
+  "attacker-controlled input" da campanha (mesmo padrão de descarte já
+  aplicado a bugs de robustez sem vetor de atacante real). Documentado
+  e descartado, não virou achado.
+- `nervos/transaction.go`: opera sobre `types.CellInput`/`OutPoint` já
+  estruturados, sem parsing de endereço textual nesta camada; erros de
+  `Serialize`/`ComputeHash`/`Sign` propagados corretamente. Sem achado.
+- `zcash/transaction.go`: só decodifica hex e delega pra
+  `zec.DeserializeTx`, que já propaga erro; função de leitura
+  (`CalTxHash`), não de assinatura/construção. Sem achado.
+
+`deep-read-log.json` atualizado (207 → 210 arquivos únicos). Nenhuma
+transição de estado em nenhum finding nesta rodada — nem forçada, nem
+recusada (nenhuma tentativa feita, pela mesma razão do
+`verify_prior_art` acima). `export-queue` rodado ao final desta
+rodada.
