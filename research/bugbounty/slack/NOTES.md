@@ -1098,3 +1098,87 @@ por tocar carregamento de driver e permissões de interface de rede.
 81→84 no total). Clone temporário removido. Nenhum finding novo criado
 nesta rodada — resultado normal e válido. `export-queue` rodado ao
 final.
+
+## Rodada 15/09/2026i (rotina agendada, push webhook 4b953a6, sessão cloud)
+
+Leitura profunda proativa (passo 4, alternando com `okx/go-wallet-sdk` da
+rodada anterior): `slackhq/nebula` seguia com mais superfície não coberta
+(21% vs 47%, e os dois repos Plaid já esgotados). Lido `main.go` (código
+não lido em rodadas anteriores) e, como parte da cadeia cross-file,
+revisitados `config/config.go`, `pki.go` (ambos já lidos antes, agora
+citados de novo como evidência do achado) e `cmd/nebula/main.go`.
+
+**ACHADO NOVO, `scope_verified`:**
+`Slack::slackhq/nebula/main.go::Main::sensitive_config_logged_in_test_mode`
+(CWE-532). A flag oficial documentada `-test` (`cmd/nebula/main.go:36`,
+"Test the config and print the end result") faz `main.go:49-58` logar
+`yaml.Marshal(c.Settings)` inteiro via `l.Info(string(b))`, sem nenhuma
+redação de campo sensível. `c.Settings` é o YAML de config sem
+sanitização (`config/config.go`), e `pki.key` aceita explicitamente PEM
+inline como alternativa documentada a um caminho de arquivo (`pki.go:304
+-306`, uso real p/ ex. Kubernetes Secret injetado direto na config).
+Resultado: se o operador usa `pki.key` inline (padrão suportado, não
+exótico) e roda `-test` (fluxo normal de validação de config, comum em
+CI/CD e `systemd ExecStartPre`), a chave privada X25519 completa do nó
+vaza em texto plano pra STDOUT/log — canal tipicamente menos restrito
+(journald, logs de CI, agregadores como Splunk/CloudWatch) do que o
+arquivo de config original (chmod 600 típico).
+
+PoC real executada, não teórica: `go build ./cmd/nebula-cert ./cmd/nebula`
+a partir do clone real do repositório; gerei CA e chave/certificado de
+host de teste **locais** (`nebula-cert ca`/`sign`, chave de teste, nunca
+usada em rede real); montei `config.yaml` com `pki.key` inline (bloco PEM
+completo) e `tun.disabled: true`; rodei `./nebula -test -config
+config.yaml`. Saída real capturada (exit code 0, sucesso normal): a
+primeira linha do log é `level=INFO msg="listen:\n... pki:\n... key:
+|\n    -----BEGIN NEBULA X25519 PRIVATE KEY-----\n    <base64>\n
+-----END NEBULA X25519 PRIVATE KEY-----\n..."` — a chave privada completa,
+sem nenhum erro/aviso. `record-validation type=go_test_poc result=pass`.
+Avançado `candidate → corroborated_static → reproduced_local`.
+
+`check-scope("Slack","slackhq/nebula")` confirma `allowed=true`,
+`bountyEligible=true`. Confirmei também que o defeito já existe na
+release publicada real `v1.9.7` (`git ls-remote --tags`, depois `git show
+v1.9.7:main.go`/`pki.go` — mesmo comportamento, só trocou `l.Println`
+(logrus) por `l.Info` (slog) até o HEAD atual) — `deploymentEvidence`
+registrado com `confidence="high"` (não `"unverified"`, diferente da
+maioria dos achados deste programa: aqui há tag real e o código-fonte
+citado nela foi conferido diretamente, não só o commit HEAD). Transição
+`reproduced_local → scope_verified` **aceita** pela máquina de estados
+(critério mecânico dessa aresta: só escopo+deployment confidence=high,
+não usa `impactAssessment`).
+
+**`impactAssessment` registrado com ceticismo — e é aqui que a rodada
+para, sem forçar nada.** Diferente dos achados de input malformado
+(OKG, `to`/`payer` zerado por string não-hex), este NÃO tem entrada
+controlada por atacante: quem aciona o vazamento é o próprio operador
+legítimo, com o próprio segredo dele, num fluxo normal/documentado.
+Marquei `attackerControlledInput=false` — seria desonesto forçar `true`
+só pra satisfazer o `reportabilityGate` (que exige isso pra
+`submissionReadinessGate`, embora essa aresta específica não tenha sido
+testada nesta rodada, já que o passo não chegou lá). Isso é uma
+limitação real e documentada do modelo do gate desta campanha pra essa
+classe de achado (CWE-532/segredo em log), não um defeito do achado em
+si — categoria amplamente aceita e paga em bug bounty maduro quando o
+segredo é genuinamente sensível e o caminho é alcançável via uso normal
+da ferramenta (confirmado aqui por PoC real).
+
+**Segundo motivo, independente do primeiro, pra não escrever rascunho de
+relatório agora: o snapshot de escopo do próprio `slackhq/nebula` traz a
+instrução "Accepting Critical severity ONLY as of 2026-05-27" — mesma
+restrição já documentada nesta mesma NOTES.md pro achado
+`replay_window_toctou_race` (`connection_state.go`, rodada anterior).**
+Minha avaliação honesta de severidade é Medium (confidencialidade alta,
+mas escopado a um nó por vazamento, condicional a `pki.key` inline +
+`-test` + destino de log acessível a quem não tem o arquivo de config).
+Não infli para Critical só pra bater essa barra. Seguindo o mesmo
+precedente já registrado no achado irmão: **nenhum rascunho de relatório
+escrito**, nenhuma transição a `human_ready` tentada — o achado fica
+documentado e íntegro em `scope_verified`, teto real e honesto alcançado
+nesta rodada, sem forçar além disso.
+
+`deep-read-log.json` atualizado (5 entradas novas: `main.go` +
+`config/config.go`/`pki.go` revisitados como parte da cadeia +
+`cmd/nebula/main.go`). Clone temporário e binários compilados (`/tmp/
+nebula-clone`, `/tmp/nebula-poc`) descartados ao final, sem persistir
+nada fora deste repositório de pesquisa. `export-queue` rodado ao final.

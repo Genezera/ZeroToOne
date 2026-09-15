@@ -4463,3 +4463,47 @@ não forçada.
 `deep-read-log.json` atualizado (5 entradas novas: os 3 da varredura
 inicial + `coins/flow/core/base.go` e `coins/flow/account.go` lidos
 durante a investigação). `export-queue` rodado ao final desta rodada.
+
+## Rodada 15/09/2026i (rotina agendada, push webhook 4b953a6, sessão cloud)
+
+`research-plan` apontava 4 itens `actionable`: `assess_impact` no achado
+Flow novo da rodada anterior (`CreateNewAccountTx`,
+`address_parse_silent_zero_fallback`, `reproduced_local`) e o mesmo
+`verify_prior_art` de sempre em Aptos/Ethereum/Kaspa.
+
+**`assess_impact` executado com ceticismo genuíno sobre o achado Flow —
+refutação real, não achado inflado pra bater o gate.** A leitura inicial
+sugeria impacto Medium (mesmo padrão dos irmãos: `payer`/`publicKeyHex`
+zerados silenciosamente). Antes de registrar isso como fato, pesquisei a
+documentação pública do Cadence (`cadence-lang.org/docs/language/crypto`,
+`onflow/cadence#1268`, não o repositório-alvo) pra checar se a hipótese
+mais severa (conta nova permanentemente inutilizável, taxa perdida por
+terceiro pagador) se sustenta no protocolo real — **não se sustenta**: o
+construtor `PublicKey()` do Cadence valida a chave on-curve na construção
+e ABORTA a transação se inválida; uma chave de 64 bytes zero não é ponto
+válido em nenhuma curva suportada. Ou seja, mesmo com o defeito real no
+SDK (ausência de validação client-side, confirmada e ainda válida), a
+rede Flow reverteria antes de qualquer dano comitado contra um terceiro —
+diferente dos irmãos Aptos/Ethereum, onde o endereço de destino zerado É
+aceito e comitado on-chain com sucesso. `impactAssessment` registrado:
+`technicalValidity=confirmed`, `attackerControlledInput=true`,
+`confidentiality=none`, `integrity=none` (refutado), `availability=low`,
+`impactScope=self_request_only`, `reportable=false`. `research-plan`
+agora classifica corretamente este achado como `held/below_campaign_impact`
+— nenhuma transição forçada, estado permanece `reproduced_local`.
+
+Os 3 `verify_prior_art` (Aptos/Ethereum/Kaspa): **não reexecutado**, 10+
+rodadas confirmando o mesmo bloqueio estrutural (sessão cloud escopada só
+a `genezera/zerotoone`, `"sessions are bound to their configured
+repositories"`). Sem evidência nova de mudança de ambiente.
+
+Leitura profunda proativa (passo 4): `plaid/plaid-ruby` e
+`plaid/react-plaid-link` seguem esgotados (confirmado via
+`list-deep-read-candidates.mjs`, cobertura completa já documentada em
+rodadas anteriores apesar do número baixo de arquivos — repos pequenos,
+maioria código gerado). Alternando com a rodada anterior (que cobriu
+`okx/go-wallet-sdk`), esta foi para `slackhq/nebula` — ver
+`research/bugbounty/slack/NOTES.md` pro achado novo dessa rodada
+(`sensitive_config_logged_in_test_mode`, alcançou `scope_verified`).
+
+`export-queue` rodado ao final desta rodada.
