@@ -4229,3 +4229,60 @@ não restrito a repo único (ambiente local do usuário) pra completar
 Leitura profunda proativa desta rodada foi em `slackhq/nebula`, não em
 `okx/go-wallet-sdk` (pra variar a cobertura) — ver NOTES.md do Slack.
 Sem achado novo em nenhum programa. `export-queue` rodado ao final.
+
+## Rodada 15/09/2026f (rotina agendada, push webhook 744a6e7)
+
+`research-plan` confirma de novo que o único `actionable` do dia é o
+mesmo `verify_prior_art` de `address_parse_silent_zero_fallback`
+(Aptos, `reproduced_local`). Mesma decisão das rodadas anteriores:
+**não repetir a tentativa de `search-prior-art`/`add_repo`** — o
+bloqueio estrutural (API REST/Search do GitHub restrita a
+`genezera/zerotoone` nesta sessão cloud) já foi confirmado de forma
+idêntica em pelo menos 8 rodadas anteriores, com as variantes
+plausíveis já testadas e descartadas. Nenhuma transição tentada nesta
+entrada.
+
+Leitura profunda proativa desta rodada foi em `okx/go-wallet-sdk` (pra
+variar a cobertura, alternando com `slackhq/nebula` da rodada
+anterior). Primeiros 3 arquivos (`coins/stellar/keypair/main.go`,
+`coins/cosmos/okc/tx/auth/types/codec.go`,
+`crypto/go-ethereum/common/types.go`) sem achado isolado — mas o
+último, sendo o `Address`/`Hash` vendored do go-ethereum upstream (com
+`SetBytes` fazendo crop/pad silencioso, comportamento documentado e
+esperado do próprio go-ethereum), levou a checar os CHAMADORES dessa
+função dentro do pacote `coins/ethereum` próprio da OKX (não vendored)
+— e aí sim havia o mesmo padrão de bug já confirmado no achado-irmão
+Aptos (`address_parse_silent_zero_fallback`).
+
+**ACHADO NOVO, `reproduced_local`:**
+`OKG::okx/go-wallet-sdk/coins/ethereum/tx_dynamic_fee.go::NewEthDynamicFeeTx::address_parse_silent_zero_fallback`.
+`NewEthDynamicFeeTx` (EIP-1559) e `NewEthTransaction` (legacy) chamam
+`HexToAddress`/`util.DecodeHexStringPad` sobre o parâmetro público `to`
+sem checar erro (`hex.DecodeString` falha silenciosamente descartada
+via `_`) e sem chamar o validador `IsHexAddress`/`IsEthHexAddress` já
+existente no próprio pacote. Resultado: uma string `to` não-hex
+malformada produz, sem erro em lugar nenhum da cadeia (a própria
+`NewEthDynamicFeeTx` nem tem retorno de erro na assinatura), uma
+transação REAL assinada e pronta pra broadcast — no caminho EIP-1559,
+enviando `value` pro endereço zero; no caminho legado, pior ainda,
+`To` vazio é o marcador RLP canônico de CRIAÇÃO DE CONTRATO, travando
+`value` num contrato recém-criado sem nenhuma lógica de resgate.
+Confirmado com 2 testes Go reais executados (não apenas leitura
+estática) — `TestZeroToOne_MalformedToAddressSilentlyZeroed` e
+`TestZeroToOne_LegacyTx_MalformedToBecomesContractCreation`, ambos
+`PASS`, registrados como `go_test_poc` no finding. Avançado via CLI até
+`reproduced_local` (`candidate` → `corroborated_static` →
+`reproduced_local`). `check-scope("OKG","okx/go-wallet-sdk")` confirma
+`allowed=true`/`bountyEligible=true`/`maxSeverity=critical`.
+`record-deployment-evidence` registrado com `confidence="unverified"`
+— mesma lacuna estrutural do achado-irmão Aptos: `git ls-remote --tags`
+vazio (sem tag/release) e API de releases do GitHub não acessível
+nesta sessão. Tentativa de `scope_verified` corretamente RECUSADA pelo
+gate (`DeploymentEvidence existe mas confidence="unverified"`) — não
+forçada, é o sistema funcionando como esperado. Requer confirmação de
+deploy real (tag/release ou consumidor cliente confirmado) numa sessão
+com acesso mais amplo pra avançar além de `reproduced_local`.
+
+`deep-read-log.json` atualizado (8 entradas novas, incluindo os
+arquivos lidos durante a investigação do achado, além dos 3 da
+varredura inicial). `export-queue` rodado ao final.
