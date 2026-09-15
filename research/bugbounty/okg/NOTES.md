@@ -4085,3 +4085,39 @@ struct fixa (nunca string parseada nesta camada), serialização
 `COption` correta. Sem achado novo. `deep-read-log.json` atualizado
 (181 → 184 arquivos). Nenhuma transição de estado neste programa nesta
 rodada.
+
+## Rodada 15/09/2026 (push webhook)
+`check-program "OKG"` reconfirmado `blocked:false`. `research-plan`
+devolveu o único `actionable` de toda a fila (`action: verify_prior_art`)
+sobre o achado `address_parse_silent_zero_fallback` (`reproduced_local`).
+Tentei de novo `search-prior-art --finding-id=... --config=...` com 4
+queries distintas (`ParseStringRelaxed`, `base58.Decode AccountAddress`,
+`aptos zero address transfer`, `AccountZero silent`) contra
+`okx/go-wallet-sdk`. Mesmo resultado prático da rodada de 14/09, mas
+desta vez isolei a causa raiz de verdade com `curl` direto: não é
+rate-limit real do GitHub (`api.github.com/rate_limit` mostra
+`search.remaining=30`) — é o proxy desta sessão cloud recusando
+qualquer chamada de API do GitHub (inclusive `repos/{owner}/{repo}/
+security-advisories`, endpoint repo-scoped) para um repositório que não
+está anexado à sessão, com a mensagem `"GitHub access to this
+repository is not enabled for this session. Use add_repo..."`. Testei
+`add_repo(owner=okx, repo=go-wallet-sdk, access=read)`: confirma que
+leitura via `git clone`/`raw.githubusercontent.com` já funciona sem
+anexar nada (é assim que consigo ler os arquivos do SDK normalmente),
+mas as ferramentas de API do GitHub (search/advisories) só funcionam
+anexando com `access=push` (credenciais). Decidi NÃO fazer isso: anexar
+credenciais de push a um repositório de terceiro só para satisfazer uma
+busca de leitura (duplicate-check) é desproporcional ao objetivo e
+amplia escopo de acesso sem necessidade — e não há usuário ao vivo
+nesta rodada agendada para aprovar essa escalada de permissão. Achado
+permanece em `reproduced_local`; reasoning atualizado documentando o
+bloqueio estrutural para quem rodar isso num ambiente com acesso pleno
+à API do GitHub (ex.: scanner local do usuário). Nenhuma transição
+tentada/forçada.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` mostrou
+`plaid/plaid-ruby`/`plaid/react-plaid-link` esgotados (já registrado em
+rodadas anteriores) e `okx/go-wallet-sdk` só 18% coberto, mas escolhi
+`slackhq/nebula` nesta rodada (ver NOTES.md do Slack) por ter ficado de
+fora nas duas rodadas anteriores de 14/09. Nenhum arquivo novo de
+`okx/go-wallet-sdk` lido nesta rodada.

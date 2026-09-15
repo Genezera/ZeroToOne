@@ -900,3 +900,48 @@ aritmético sobre `gateways`/`weight` vindos da config local do
 operador, sem input de rede/peer remoto). Sem achado novo em nenhum dos
 três. `deep-read-log.json` atualizado (63→66 entradas em
 `slackhq/nebula`).
+
+## Rodada 15/09/2026 (push webhook)
+`list-pending` vazio; `research-plan` só devolveu o `actionable` de OKG
+(ver NOTES.md do OKG). Leitura profunda proativa: 5 arquivos novos em
+`slackhq/nebula` (66→71 no `deep-read-log.json`), escolhidos por
+julgamento próprio já que não sobrou nenhum caminho batendo literalmente
+com as palavras-chave do CLAUDE.md (auth/session/crypto/token/...) —
+priorizei superfícies de segurança do host (firewall/debug endpoint):
+`pprof_debug.go`/`pprof_nodebug.go` (servidor pprof, bind fixo em
+`localhost:6060`, atrás de build tag `debug` — não exposto por padrão;
+sem achado), `noiseutil/fips140enforce.go` (guarda de build que só faz
+panic se FIPS não estiver de fato forçado; sem achado) e, com mais
+profundidade, `wfp/wfp_windows.go` + seus dois chamadores
+(`overlay/tun_bypass_windows.go`, `udp/udp_bypass_windows.go`).
+
+Esse último grupo levantou uma HIPÓTESE séria antes de eu refutar:
+`PermitUDPPort` instala um filtro WFP `PERMIT` **global** (todas as
+interfaces, não só a interface virtual do nebula) para a porta UDP do
+listener, com `FWPM_FILTER_FLAG_CLEAR_ACTION_RIGHT` (derruba a
+prioridade de regras concorrentes do Windows Defender Firewall na mesma
+sublayer), e o gate fica em `listen.windows_bypass_wdf: true` por
+padrão — ou seja, *opt-out*, não *opt-in*, sem nenhum prompt de
+consentimento do usuário no momento em que acontece. Cheguei a
+levantar isso como possível redução silenciosa da postura de firewall
+local. REFUTEI ao confirmar que é comportamento **conhecido e
+documentado publicamente**: `CHANGELOG.md` (entrada do PR #1710) avisa
+explicitamente sobre o efeito e já ensina como desativar via
+`tun.windows_bypass_wdf`/`listen.windows_bypass_wdf: false`, e
+`examples/config.yml` tem o mesmo aviso comentado ao lado da opção. O
+próprio código deixa explícito que o padrão de tipos/constantes foi
+"derived from the wireguard-windows firewall package (MIT)" — é a
+mesma solução estabelecida de um projeto de VPN irmão pro mesmo
+problema estrutural (WFP fica abaixo do WDF; sem isso o daemon nem
+consegue receber o handshake inicial de forma confiável). Não é
+vulnerabilidade não-divulgada; é feature documentada com opt-out
+disponível. Sem achado reportável.
+
+`overlay/route.go` (`parseRoutes`/`parseUnsafeRoutes`): entrada vem do
+próprio arquivo de config YAML local do operador (`tun.routes`/
+`tun.unsafe_routes`), nunca de peer remoto — fora do modelo de ameaça
+do projeto. Validação de containment correta nos dois sentidos. Sem
+achado.
+
+Nenhum achado novo nesta rodada — resultado normal e válido. Nenhuma
+transição de estado tentada.
