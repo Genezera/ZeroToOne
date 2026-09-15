@@ -4286,3 +4286,75 @@ com acesso mais amplo pra avançar além de `reproduced_local`.
 `deep-read-log.json` atualizado (8 entradas novas, incluindo os
 arquivos lidos durante a investigação do achado, além dos 3 da
 varredura inicial). `export-queue` rodado ao final.
+
+---
+
+## Rodada 15/09/2026 (continuação, mesmo dia, sessão cloud, webhook push)
+
+`research-plan` apontava 2 itens `actionable`: `assess_impact` no achado
+Ethereum (`address_parse_silent_zero_fallback`, `NewEthDynamicFeeTx`) e
+`verify_prior_art` no achado-irmão Aptos.
+
+**Impact assessment registrado** no achado Ethereum:
+`technicalValidity=confirmed`, `attackerControlledInput=true`,
+`reportable=true`, `severityRating=medium`, `impactScope=other_system`
+(CIA: confidencialidade none, integridade high, disponibilidade high —
+perda de fundos por endereço zero/contract-creation silencioso).
+Tentativa de `scope_verified` corretamente RECUSADA (mesma lacuna de
+`deploymentEvidence.confidence=unverified` já documentada — não
+forçada).
+
+**`verify_prior_art` (achado Aptos) NÃO reexecutado** nesta rodada: já
+documentado de forma idêntica em 6+ rodadas anteriores no mesmo dia —
+`api.github.com` desta sessão cloud está restrito a
+`genezera/zerotoone` (confirmado pelo próprio contexto de escopo desta
+sessão), bloqueando `github_issues`/`github_commits`/`github_advisories`
+exigidos por `duplicateCheckGate`. Repetir a tentativa só reproduziria
+o mesmo 403 sem evidência nova — registrado um adendo curto no achado
+Ethereum (que herdou o mesmo `action=verify_prior_art` nesta rodada)
+em vez de repetir o teste real.
+
+**ACHADO NOVO, `reproduced_local` (leitura profunda proativa, passo 4):**
+`OKG::okx/go-wallet-sdk/coins/kaspa/kaspad/util/bech32/bech32.go::Decode::bech32_empty_payload_index_panic`.
+Classe DIFERENTE da família Aptos/Ethereum (não é fund-loss silencioso
+— é negação de serviço): `bech32.Decode` aceita sem erro qualquer
+string bech32 com checksum válido e payload de comprimento ZERO
+(trivialmente computável offline, ex.: `"kaspa:3xjng3c9"`), e a linha
+`version := converted[0]` sofre `panic: index out of range` sobre um
+slice vazio em vez de devolver erro. Cadeia completa confirmada:
+`kaspa.Transfer` (entrypoint público de mais alto nível) →
+`TransferWithNetParams` → `util.DecodeAddress(txData.ToAddress,...)`
+→ `bech32.Decode` → panic, sem nenhum `recover()` em nenhum ponto do
+caminho. PoC Go real em DOIS níveis, ambos `PASS`: (1) direto no
+pacote `bech32`; (2) `kaspa.Transfer` reusando o fixture exato do teste
+`TestTransfer` já existente e passando neste repositório, trocando só
+`ToAddress` — isola o efeito com precisão. Primeira tentativa do PoC
+nível 2 com dados de fixture inventados retornou erro limpo em vez de
+panic (não assumi que a hipótese estava confirmada; investiguei a causa
+real — `TxId` de tamanho errado disparando uma checagem anterior — e
+corrigi usando fixture real do repo). Avançado via CLI até
+`reproduced_local`. `check-scope` confirma `allowed=true`/
+`bountyEligible=true`/`maxSeverity=critical`. `impactAssessment`
+registrado: `severityRating=medium`, `impactScope=other_system`
+(disponibilidade high, mas dependente de o processo chamador ter ou
+não isolamento de panic por requisição — variável fora do controle
+deste SDK e não confirmável neste repositório). Tentativa de
+`scope_verified` corretamente RECUSADA pela mesma lacuna estrutural de
+`deploymentEvidence.confidence=unverified` dos achados-irmãos — não
+forçada.
+
+Também lidos nesta rodada, SEM achado (checagem com ceticismo,
+descartados corretamente como fail-closed ou não-alcançáveis):
+`coins/zil/transaction.go` (`SignTransaction` valida bech32 ANTES de
+assinar — fail-closed, diferente do padrão Aptos/Ethereum),
+`coins/zil/account.go` (checksum bech32 via lib externa auditada,
+gap residual de baixa severidade não perseguido: não checa payload
+==20 bytes, mas endereço de tamanho errado provavelmente causa revert
+on-chain no Zilliqa, não sucesso silencioso local),
+`coins/zil/util/util.go` (`DecodeHex` descarta erro mas só usado
+internamente sobre endereço já validado), `coins/solana/base/decode.go`
+(desserializador com checagens de comprimento explícitas em toda
+leitura, sem achado).
+
+`deep-read-log.json` atualizado (7 entradas novas). `export-queue`
+rodado ao final desta rodada.
