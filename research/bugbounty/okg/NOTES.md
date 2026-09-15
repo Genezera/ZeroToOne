@@ -3961,3 +3961,78 @@ leitura profunda proativa desta rodada foi em `plaid/plaid-ruby`,
 `plaid/react-plaid-link` (ambos confirmados esgotados) e
 `slackhq/nebula` (3 arquivos novos, sem achado) — registro completo no
 NOTES.md do Slack.
+
+## Rodada 15/09/2026 #11 (rotina agendada)
+`research-plan` seguiu devolvendo o mesmo único `actionable`:
+`address_parse_silent_zero_fallback` (`reproduced_local`), ação
+`verify_prior_art`. Reconfirmei o bloqueio ao vivo mais uma vez (mesmo
+403 de escopo de sessão do GitHub API contra `okx/go-wallet-sdk`, tanto
+em `/search/issues` quanto em `/repos/okx/go-wallet-sdk` e
+`/security-advisories`) e cheguei independentemente à mesma decisão já
+registrada na rodada #10: `add_repo(access=read)` não muda nada (leitura
+via `git clone` já funciona, confirmado de novo com um clone raso real);
+`add_repo(access=push)` resolveria o acesso à API mas exigiria anexar
+credencial de escrita a um repositório de terceiro só para contornar uma
+restrição de busca — não escalei. Finding permanece `reproduced_local`,
+sem progressão, sem tentativa de forçar/contornar.
+
+`list-pending` vazio → leitura profunda proativa desta rodada foi em
+`slackhq/nebula` (avaliação por nome de arquivo apenas — os 114 arquivos
+ainda não lidos são quase todos plumbing especifico de plataforma sem
+relevância de segurança: `overlay/tun_*.go`, `udp/udp_*.go`,
+`cpupick/*`, `cmd/nebula-*/main.go`; os dois únicos com nome
+"criptográfico" (`pkclient/pkclient_stub.go`,
+`cmd/nebula-cert/p11_stub.go`) são stubs de build vazios — a
+implementação real (`pkclient_cgo.go`, `pkclient.go`) já foi lida e
+descartada em rodada anterior; **nenhum arquivo novo lido/logado aqui,
+nenhuma mudança em deep-read-log.json para nebula desta vez** — só
+julguei por nome antes de decidir não vale a pena) e depois em
+`okx/go-wallet-sdk` (175→181 arquivos logados, 6 novos, achado aberto
+— ver abaixo).
+
+**Achado novo:** `address_length_validation_bypass`
+(`coins/cosmos/okc/tx/common/types/address.go::AccAddressFromHex`).
+Mesma família do achado-irmão Aptos (`ParseStringRelaxed`) mas em
+`okc` (OKX Chain, cosmos-sdk-style): `AccAddressFromBech32ByPrefix`
+retorna `AccAddress{}, nil` pra string vazia sem checagem nenhuma, e
+`AccAddressFromHex` decodifica hex e retorna sucesso incondicional
+SEM chamar `VerifyAddressFormat` (que o ramo bech32 vizinho, no mesmo
+arquivo, chama corretamente) — aceita qualquer comprimento de bytes,
+não só os 20 exigidos. Diferente do caso Aptos, aqui a cadeia de
+alcançabilidade é ainda mais forte: o teste `TestTransfer` do próprio
+repositório (`okc_test.go`, comentado como "Ordinary transfer") é o
+exemplo OFICIAL documentado de uso — `AccAddressFromBech32(toString)`
+-> `token.NewMsgTokenSend` -> `tx.BuildStdTx` -> assinatura ECDSA real
+-> `tx.MarshalStdTx`. Confirmei com 4 testes Go reais executados
+(`go test`, saída real capturada, incluindo um teste fim-a-fim que
+reproduz literalmente `TestTransfer` trocando só o destinatário por
+`"0xAABBCC"`) que essa cadeia produz uma transação REALMENTE ASSINADA
+com um `to_address` de 3 bytes em vez de 20. Também confirmei por grep
+completo da árvore que `MsgSend.ValidateBasic()` (que pegaria pelo
+menos o caso vazio) nunca é chamado por `tx.BuildStdTx` nem por
+nenhum outro ponto do próprio SDK.
+
+Avancei o finding até `corroborated_static` -> `reproduced_local` com
+essa evidência real (não simulada). Impact assessment honesto:
+severidade=**low**, não Medium — decisão deliberada de não inflar.
+Diferença chave do achado-irmão Aptos: lá o endereço malformado vira um
+formato VÁLIDO on-chain (`AccountZero`, 32 bytes zero, reconhecido pela
+chain — perda de fundos plausível e documentada). Aqui o endereço
+resultante tem TAMANHO INVÁLIDO (não é formato de conta cosmos-sdk
+reconhecível); sem node real da exchain/okc disponível (e sem
+autorização pra transmitir), não consigo confirmar se o
+ante-handler/CheckTx da chain rejeitaria essa transação antes de
+qualquer efeito — o que é o comportamento padrão esperado em apps
+cosmos-sdk (validação de endereço também no lado do módulo bank,
+independente deste SDK cliente). Registrei essa incerteza explicitamente
+no `impactAssessment` em vez de presumir perda de fundos. `reportable`
+segue `true` (bug real, CWE-20, PoC executável), mas o gate profissional
+desta campanha não avança Low — fica documentado em `reproduced_local`,
+sem tentativa de forçar.
+
+Registrei `deploymentEvidence` com `confidence="unverified"` (mesma
+lacuna estrutural: sem tag/release Git, sem app cliente real disponível
+neste repo, mesmo 403 de escopo de API já documentado acima impedindo
+checar releases via API) e tentei `scope_verified` só para confirmar a
+recusa esperada — recusado corretamente por `confidence != "high"`, sem
+forçar/contornar.
