@@ -4121,3 +4121,37 @@ rodadas anteriores) e `okx/go-wallet-sdk` só 18% coberto, mas escolhi
 `slackhq/nebula` nesta rodada (ver NOTES.md do Slack) por ter ficado de
 fora nas duas rodadas anteriores de 14/09. Nenhum arquivo novo de
 `okx/go-wallet-sdk` lido nesta rodada.
+
+## Rodada 15/09/2026c (rotina agendada, mesmo push webhook)
+Nova execução da rotina sobre o mesmo evento de push (HEAD já trazia o
+commit da rodada anterior, "15/09/2026b", quando esta sessão começou).
+`research-plan` reconfirmou o mesmo (e único) `actionable` da fila
+inteira: `verify_prior_art` sobre `address_parse_silent_zero_fallback`.
+Refiz o diagnóstico de forma independente (sem reler NOTES.md antes de
+testar) e cheguei à mesma causa raiz já registrada: `curl` direto contra
+`api.github.com/search/issues` e `api.github.com/repos/octocat/Hello-World`
+devolve 403 "GitHub access to this repository is not enabled for this
+session"/"sessions are bound to their configured repositories" —
+não é rate-limit real (confirmado também via `git clone` e
+`raw.githubusercontent.com` de `octocat/Hello-World`, que funcionam
+normalmente). Ou seja: este bloqueio já persiste por várias rodadas
+seguidas (#7–#10 em 14/09, "15/09/2026" e "15/09/2026b" já registradas
+aqui) sem nenhuma mudança de ambiente entre elas — `verify_prior_art`
+não vai progredir em nenhuma sessão cloud futura enquanto o proxy desta
+conta permanecer escopado a `genezera/zerotoone`. Desta vez registrei
+esse diagnóstico *dentro do próprio finding* (campo `reasoning`, via
+`update-finding`), não só em prosa aqui no NOTES.md — nas rodadas
+anteriores só o NOTES.md tinha o relato, o que faz cada rodada nova
+"descobrir" o mesmo bloqueio do zero. Estado permanece `reproduced_local`;
+nenhuma transição tentada.
+
+Leitura profunda proativa: 3 arquivos novos em `slackhq/nebula`, todos
+sem sobreposição com os 5 já lidos na rodada anterior —
+`pkclient/pkclient_stub.go` (stub sob build tag `!cgo||!pkcs11`, todo
+método retorna `notImplemented`, sem lógica real), `config/default.go`
+(resolve `config.yaml`/`.yml` a partir do diretório do próprio
+executável via `os.Executable()`, não de entrada remota) e
+`cmd/nebula-service/service.go` (wrapper fino sobre
+`github.com/kardianos/service`, delega para `nebula.Main`/`Control` já
+auditados; `configPath` vem de flag CLI local ou `config.DefaultPath`).
+Sem achado em nenhum dos três — resultado normal e válido.

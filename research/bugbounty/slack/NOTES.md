@@ -945,3 +945,15 @@ achado.
 
 Nenhum achado novo nesta rodada — resultado normal e válido. Nenhuma
 transição de estado tentada.
+
+## Rodada 15/09/2026c (rotina agendada, mesmo push webhook)
+`check-program`/`program-policy.json` reconfirmados (`roeReviewed`,
+`aiResearchBanned: false`, programa liberado). Mais 3 arquivos de
+`slackhq/nebula` lidos via leitura profunda proativa (nenhum
+sobreposto com a rodada anterior): `pkclient/pkclient_stub.go`,
+`config/default.go`, `cmd/nebula-service/service.go` — nenhum tem
+lógica própria relevante (stub vazio, resolução de caminho local a
+partir do próprio executável, wrapper de serviço OS sobre lib de
+terceiros já reputada). Sem achado. Ver NOTES.md do OKG para o
+diagnóstico (repetido, mesma causa raiz) do bloqueio estrutural de
+`verify_prior_art`.
