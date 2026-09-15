@@ -957,3 +957,50 @@ partir do próprio executável, wrapper de serviço OS sobre lib de
 terceiros já reputada). Sem achado. Ver NOTES.md do OKG para o
 diagnóstico (repetido, mesma causa raiz) do bloqueio estrutural de
 `verify_prior_art`.
+
+## Rodada 15/09/2026d (scheduled task, sessão cloud)
+
+`check-program "Slack"`/`check-program "Plaid"` reconfirmados
+(`blocked:false` nos dois) antes de qualquer clone. `research-plan`
+trouxe o mesmo único `actionable` do sistema inteiro
+(`verify_prior_art` do OKG — ver NOTES.md do OKG, mesmo bloqueio
+estrutural de proxy já documentado, sem novidade). `list-deep-read-
+candidates.mjs` confirmou `plaid/plaid-ruby` e `plaid/react-plaid-link`
+100% esgotados (nenhum arquivo hand-written restante fora de
+`/models/` gerado e `/spec/`/`*.test.tsx`).
+
+Leitura profunda proativa em `slackhq/nebula` (4 arquivos novos, sem
+sobreposição com as 74 entradas já no log; nenhum caminho restante
+batia literalmente com as palavras-chave auth/session/crypto/token/
+login/password/admin/permission/access — julgamento próprio priorizou
+a fronteira de I/O de pacote do tun/checksum, ainda não coberta):
+
+- `overlay/user.go`: implementação de tun userspace via `io.Pipe`,
+  usada só em testes/embedding (`Read`/`Write`/`Close`/`Queues` são
+  wrappers finos, sem parsing de pacote nem lógica de autorização).
+  Sem achado.
+- `overlay/tio/tio.go`: só definições de interface
+  (`QueueSet`/`Queue`/`Packet`/`GSOInfo`) e helpers de delegação
+  (`Clone`/`SupportsGSO`) — nenhuma lógica executável de parsing. Sem
+  achado.
+- `cmd/nebula-cert/p11_stub.go`: stub sob build tag `!cgo || !pkcs11`,
+  espelha `pkclient/pkclient_stub.go` já lido (`p11Supported` sempre
+  `false`, `p11Flag` retorna ponteiro pra string vazia). Sem achado.
+- `iputil/checksum.go`: `SetTransportChecksum`/`setTransportChecksum4`/
+  `6` recalculam o checksum TCP/UDP de pacote vindo do tun antes de
+  reinjetá-lo (kernel entrega com checksum de transporte incompleto
+  quando offloaded pro NIC). Tentei refutar via limites: todo slice
+  (`packet[ihl:end]`, `transport[:ulen]`, `transport[at:at+2]`) é
+  precedido por checagem contra `len(packet)`/`len(transport)`
+  (`ihl<ipv4.HeaderLen`, `end<ihl||end>len(packet)`,
+  `ulen<udpHeaderLen||ulen>len(transport)`,
+  `len(transport)<minLen`) antes de qualquer leitura/escrita;
+  fragmento IPv4 (`flags&0x3fff!=0`) e caminho IPv6 com
+  `anyFragment`/`offset>=end` são descartados cedo, sem alcançar os
+  slices. Sem overflow nem escrita fora dos limites — REFUTADO. Sem
+  achado.
+
+`deep-read-log.json` atualizado (+4 entradas em `slackhq/nebula`,
+74→78 no total). Clone temporário removido. Nenhum finding novo criado
+nesta rodada — resultado normal e válido. `export-queue` rodado ao
+final.

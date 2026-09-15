@@ -4155,3 +4155,23 @@ executável via `os.Executable()`, não de entrada remota) e
 `github.com/kardianos/service`, delega para `nebula.Main`/`Control` já
 auditados; `configPath` vem de flag CLI local ou `config.DefaultPath`).
 Sem achado em nenhum dos três — resultado normal e válido.
+
+## Rodada 15/09/2026d (scheduled task, sessão cloud)
+
+`research-plan` reconfirmou o mesmo (e único) `actionable` do sistema
+inteiro: `verify_prior_art` sobre `address_parse_silent_zero_fallback`.
+Não repeti a investigação do zero desta vez — o `reasoning` do próprio
+finding (atualizado na rodada "15/09/2026c" anterior) já documenta a
+causa raiz exata (`api.github.com` desta sessão escoped só a
+`genezera/zerotoone`, confirmado de forma independente por 2 rodadas
+seguidas antes desta). O bloco "Repository Scope" no início desta
+sessão confirma de novo, sem precisar de nenhum `curl`: a lista de
+repositórios habilitados pra esta sessão é literalmente só
+`genezera/zerotoone` — mesma restrição, ambiente ainda não mudou.
+Nenhuma releitura de arquivo do repositório-alvo foi necessária (só
+consulta ao estado já persistido); nenhuma transição tentada. Estado
+permanece `reproduced_local`.
+
+Leitura profunda proativa desta rodada foi para `slackhq/nebula` (ver
+NOTES.md do Slack, rodada "15/09/2026d") — 4 arquivos novos, sem
+achado.
