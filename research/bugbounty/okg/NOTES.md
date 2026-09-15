@@ -4175,3 +4175,34 @@ permanece `reproduced_local`.
 Leitura profunda proativa desta rodada foi para `slackhq/nebula` (ver
 NOTES.md do Slack, rodada "15/09/2026d") — 4 arquivos novos, sem
 achado.
+
+## Rodada 15/09/2026e (rotina agendada, mesmo push webhook d9de09e)
+
+Esta é a 4ª+ rodada de hoje no mesmo evento de push (ver commits
+15/09/2026b×2, c, d já registrados). `research-plan` segue devolvendo
+o mesmo único `actionable`: `verify_prior_art` sobre
+`address_parse_silent_zero_fallback`. Testei desta vez uma variante
+não tentada antes: `add_repo(owner=okx, repo=go-wallet-sdk,
+access="read")` (rodadas anteriores só tinham testado
+`access="push"`). Resultado: `status="read_available"` — confirma que
+leitura anônima via `git clone`/proxy já funciona sem anexar nada (o
+que já sabíamos), mas a própria resposta da ferramenta reafirma
+textualmente que GitHub API tools (busca/issues/commits, necessários
+pro `duplicateCheckGate`) exigem `access="push"` — ou seja, mesma
+escolha já avaliada e descartada nas rodadas anteriores (anexar
+credencial com capacidade de escrita só para uma busca somente-leitura
+é escalação desproporcional). Nenhuma evidência nova que mude a
+conclusão; não vale reescrever o `reasoning` do finding inteiro de
+novo — a causa raiz e a decisão continuam as mesmas já documentadas.
+Estado permanece `reproduced_local`; nenhuma transição tentada.
+
+Leitura profunda proativa desta rodada foi em `okx/go-wallet-sdk` (não
+`slackhq/nebula`, para variar a cobertura): 3 arquivos novos,
+priorizando o mesmo padrão de bug já confirmado (parsing de endereço
+com fallback silencioso) em código não-vendored ainda não lido —
+`coins/stellar/xdr/account_id.go` e `coins/stellar/xdr/muxed_account.go`
+(ambos fail-closed: checagem explícita de tamanho após
+`strkey.Decode`, que já propaga erro de checksum/formato — contraste
+direto com o base58.Decode sem checagem do achado Aptos) e
+`coins/starknet/account_constants.go` (só constantes, não aplicável).
+Sem achado novo — resultado normal e válido.
