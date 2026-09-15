@@ -4397,3 +4397,69 @@ Leitura profunda proativa desta rodada (passo 4) foi para
 `slackhq/nebula` (Slack), não OKG — ver `research/bugbounty/slack/NOTES.md`.
 
 `export-queue` rodado ao final desta rodada.
+
+## Rodada 15/09/2026h (rotina agendada, push webhook ed3efd7, sessão cloud)
+
+`research-plan` apontava os mesmos 3 itens `actionable` de sempre
+(`verify_prior_art` em Aptos/Ethereum/Kaspa, todos `reproduced_local`).
+**Nenhum reexecutado**: já confirmado de forma idêntica (403 real —
+`"sessions are bound to their configured repositories"`, sessão cloud
+restrita a `genezera/zerotoone`) em 8+ rodadas anteriores para Aptos e
+na própria rodada anterior (15/09/2026g) para Ethereum/Kaspa. Repetir
+sem evidência nova de mudança de ambiente não é o que `actionable`
+pede quando a barreira é estrutural — mesma decisão de sempre.
+
+Leitura profunda proativa (passo 4) foi para `okx/go-wallet-sdk` (pra
+variar a cobertura, alternando com `slackhq/nebula` da rodada
+anterior). 3 arquivos da varredura inicial: `coins/avax/tx.go`
+(`AddInput`/`AddOutput` checam erro de decode corretamente, fail-closed,
+sem achado), `coins/eos/tx.go` (`SignTransactionWithWIFs` usa
+`continue` em vez de propagar erro quando um WIF é inválido, deixando
+`requiredKeys[i]` como chave zero-value — investigado o downstream
+`Signer.Sign`: `keyMap[key.String()]` falha com erro explícito pra
+chave zero, então é fail-closed na prática, só sinalização tardia/
+confusa; não atinge a barra de impacto Medium+ da campanha, sem
+achado) e `coins/flow/transaction.go`, que levou a um achado novo.
+
+**ACHADO NOVO, `reproduced_local`:**
+`OKG::okx/go-wallet-sdk/coins/flow/transaction.go::CreateNewAccountTx::address_parse_silent_zero_fallback`.
+MESMO PADRÃO dos achados-irmãos Aptos/Ethereum/Kaspa deste programa:
+`CreateNewAccountTx`/`CreateTransferFlowTx`/`CreateTx` (todas exportadas,
+sem retorno de erro) chamam `core.HexToAddress(payer)`
+[`coins/flow/core/base.go:142-149`], que descarta o erro de
+`hex.DecodeString` e produz o endereço zero silenciosamente para
+`Payer`/`ProposalKey.Address`/`Authorizers[0]` de qualquer transação
+construída por essas funções. `CreateNewAccountTx` tem uma SEGUNDA
+instância do mesmo padrão, sink ainda mais específico: decodifica
+`publicKeyHex` também descartando erro e repassa pra
+`core.FlowPublicKey.FromBytes` [`base.go:183-193`], que, quando o
+tamanho não é exatamente 64 bytes, devolve o receiver zero-value
+inalterado (chave pública toda zero) sem sinalizar nada — essa chave
+zerada é serializada e embutida como argumento Cadence da transação de
+criação de conta. Confirmado que existe validador correto no mesmo
+pacote (`ValidateAddress`, `coins/flow/account.go:72-75`, propaga erro
+de decode E checa `len==8`) mas não é chamado por nenhuma das funções
+de construção/assinatura de transação (nem por `SignTx`, que tem o
+mesmo problema para `signerAddr`). PoC Go real, 2 testes `PASS`
+(`TestZeroToOne_MalformedPayerSilentlyZeroed`,
+`TestZeroToOne_MalformedPublicKeySilentlyZeroed`), rodados de fato via
+`go test ./... -run TestZeroToOne -v` dentro do módulo próprio
+`coins/flow` (dependências baixadas via proxy, sem rede de produção
+Flow tocada, sem chave real). Avançado via CLI até `reproduced_local`
+(`candidate` → `corroborated_static` → `reproduced_local`).
+`check-scope("OKG","okx/go-wallet-sdk")` confirma `allowed=true`/
+`bountyEligible=true`/`maxSeverity=critical`. `impactAssessment`
+registrado: `severityRating=medium`, `impactScope=other_system`
+(integridade high, disponibilidade none — diferente do achado Kaspa,
+que é disponibilidade; aqui não há crash, é redirecionamento/zeragem
+silenciosa). `record-deployment-evidence` registrado com
+`confidence="unverified"` — mesma lacuna estrutural dos 3
+achados-irmãos: sem tag/release Git (`git ls-remote --tags` vazio,
+mesmo commit `12fec6b0...` dos outros) e sem app cliente real
+disponível nesta sessão. Tentativa de `scope_verified` corretamente
+RECUSADA (`DeploymentEvidence existe mas confidence="unverified"`) —
+não forçada.
+
+`deep-read-log.json` atualizado (5 entradas novas: os 3 da varredura
+inicial + `coins/flow/core/base.go` e `coins/flow/account.go` lidos
+durante a investigação). `export-queue` rodado ao final desta rodada.
