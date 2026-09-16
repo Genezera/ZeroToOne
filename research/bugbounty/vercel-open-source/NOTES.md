@@ -10592,3 +10592,27 @@ Leitura profunda proativa desta rodada foi direcionada a
 `okx/go-wallet-sdk` (ver NOTES.md de OKG para detalhe — 3 arquivos
 novos, builders Solana gerados, sem achado), não a nenhum repositório
 deste programa. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-16 (scheduled task, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan`: `actionable` = 3 itens, todos
+`OKG`/`verify_prior_art` (fora deste programa — ver NOTES.md de OKG).
+`list-pending` vazio. `check-program "Vercel Open Source"` confirmado
+`blocked:false` como passo zero. `held` para este programa continua
+com os mesmos 10 itens das rodadas anteriores, mesma composição:
+`campaign_duplicate_history` (gate exige zero duplicates anteriores no
+programa/repositório — `nitrojs/nitro/vfs.ts`, `agent-skills/.../verify-claim.mjs`,
+`vercel/ai/.../bridge/index.ts`, `vercel/vercel/.../build-binary.mjs` x2,
+`vercel/vercel/.../mcp.ts` x3, `vercel/vercel/utils/update-remix-run-dev.js`)
+e `previous_submission` (`vercel/next.js` image-optimizer SSRF, mesmo
+fingerprint já submetido) — nenhum item novo, nada avançou.
+`change-events.jsonl` conferido com o critério estrito do CLAUDE.md —
+nenhum evento dentro da janela de 48h a partir de 2026-09-16 (mais
+recente qualificável continua 2026-09-10T20:48Z) — nenhum repositório
+novo aberto por essa via.
+
+Leitura profunda proativa desta rodada foi direcionada a
+`slackhq/nebula` (ver NOTES.md de Slack/HackerOne para detalhe — 3
+arquivos novos: `cmd/nebula-cert/main.go`, `cmd/nebula-service/main.go`,
+`cert_test/cert.go`, sem achado), não a nenhum repositório deste
+programa. Nenhuma transição de estado neste programa.

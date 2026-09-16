@@ -2019,3 +2019,30 @@ Leitura profunda proativa desta rodada foi direcionada a
 `okx/go-wallet-sdk` (ver NOTES.md de OKG para detalhe — 3 arquivos
 novos, builders Solana gerados, sem achado), não a nenhum repositório
 deste programa. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-16 (scheduled task, sessão cloud)
+
+`migrate-to-v2.mjs` + `research-plan`: `actionable` = 3 itens, todos
+`OKG`/`verify_prior_art` (fora deste programa — ver NOTES.md de OKG).
+`list-pending` vazio. `check-program "StackingDAO"` confirmado
+`blocked:false` como passo zero, antes de qualquer decisão.
+`change-events.jsonl` conferido com o critério estrito do CLAUDE.md
+(`changedFiles` + `introducedCommit` completo + `directSingleCommit=true`
++ ≤48h a partir de 2026-09-16): o evento mais recente no arquivo
+continua sendo 2026-09-10T20:4x, já bem fora da janela — nenhum
+repositório novo aberto por essa via. `list-deep-read-candidates.mjs`
+continua listando `StackingDAO` em "sem programa reconhecido no
+dataset público atual -- revise à mão antes de ler" (mesma situação
+das rodadas de 09-14/09-15) — sem correspondência de escopo/repositório
+confirmada no dataset comunitário atual, nenhum arquivo aberto aqui
+nesta rodada. `scope-snapshots/stackingdao.json` (capturado 2026-09-14,
+válido até 2026-10-14) segue com os mesmos 13 assets; os 15 contratos
+`.clar` já lidos continuam cobrindo 100%, sem contrato novo publicado
+(contratos Clarity deployados são imutáveis, não há novo código a
+esperar aqui sem novo deploy).
+
+Leitura profunda proativa desta rodada foi direcionada a
+`slackhq/nebula` (ver NOTES.md de Slack/HackerOne para detalhe — 3
+arquivos novos: `cmd/nebula-cert/main.go`, `cmd/nebula-service/main.go`,
+`cert_test/cert.go`, sem achado), não a nenhum repositório deste
+programa. Nenhuma transição de estado neste programa.

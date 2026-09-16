@@ -1213,3 +1213,27 @@ desde 27/05/2026).
 `deep-read-log.json` atualizado (3 entradas novas). Nenhum clone
 persistido fora do scratchpad efêmero da sessão. `export-queue` rodado
 ao final desta rodada.
+
+## Rodada 2026-09-16 (scheduled task, sessão cloud)
+
+`list-pending` vazio. `research-plan` só tinha 3 itens `actionable`,
+todos do programa OKG (`verify_prior_art` — ver NOTES.md de OKG).
+`list-deep-read-candidates.mjs` voltou a listar `slackhq/nebula` como
+um dos 4 repositórios liberados (política + histórico de campanha OK,
+91 de 179 arquivos `.go` não-teste já lidos, 51% coberto). Diff contra
+`deep-read-log.json` (clone raso local, comparado contra os 91 arquivos
+já registrados) mostrou que a maior parte do restante é código de
+plataforma específica (TUN/UDP por OS: darwin/linux/windows/bsd,
+offload/checksum, CPU pinning) sem superfície de
+auth/sessão/cripto/token nova. Dos poucos arquivos com nome relevante
+(`cert` no path), escolhi 3: `cmd/nebula-cert/main.go`,
+`cmd/nebula-service/main.go` (dispatchers de CLI/serviço, delegam para
+funções já auditadas em rodadas anteriores, sem lógica própria de
+auth/crypto) e `cert_test/cert.go` (package `cert_test`: só helpers de
+fixture usados pelos próprios testes do repositório, não compilado no
+binário de produção). Nenhum achado novo nos três.
+
+`deep-read-log.json` atualizado (3 entradas novas em `slackhq/nebula`,
+91 → 94). Clone temporário removido do scratchpad ao final. Nenhuma
+transição de estado neste programa. `export-queue` rodado ao final
+desta rodada.

@@ -4561,3 +4561,73 @@ transição de estado em nenhum finding nesta rodada — nem forçada, nem
 recusada (nenhuma tentativa feita, pela mesma razão do
 `verify_prior_art` acima). `export-queue` rodado ao final desta
 rodada.
+
+## Rodada 2026-09-16 (scheduled task, sessão cloud)
+
+`research-plan`: `actionable` = 3 itens, todos deste programa,
+`verify_prior_art`, os mesmos três achados `reproduced_local` já
+documentados em rodadas anteriores (Aptos `ParseStringRelaxed`,
+Ethereum `NewEthDynamicFeeTx`, Kaspa `bech32.Decode`). Só o achado
+Aptos já tinha o addendum de bloqueio ambiental registrado; os outros
+dois (Ethereum, Kaspa) ainda não. Confirmei que o mesmo bloqueio
+estrutural documentado nas rodadas de 14-15/09 continua valendo nesta
+sessão (Repository Scope do próprio system prompt: GitHub API/Search
+restrita a `genezera/zerotoone`, `git clone`/`raw.githubusercontent.com`
+seguem funcionando) e apliquei o mesmo addendum, sem repetir toda a
+tentativa (evitar retrabalho redundante já confirmado de forma idêntica
+6+ vezes) — apenas registrei explicitamente que a condição persiste
+para os dois achados que ainda não tinham essa nota. Nenhuma transição
+tentada (mesmo motivo, `duplicateCheckGate` permanece insatisfeito).
+
+**Nota operacional 1**: no primeiro `update-finding` do achado Ethereum,
+usei por engano uma flag `--append-reasoning` que não existe no CLI —
+`--patch='{"reasoning":"<só o addendum>"}'` SUBSTITUIU o campo
+`reasoning` inteiro (4778 → 1319 caracteres), apagando a narrativa
+original da cadeia de chamada/PoC daquele achado no banco local.
+Detectado imediatamente ao conferir o resultado (`get` mostrou tamanho
+menor que o esperado). Como `export-queue` ainda não tinha rodado
+nesta rodada, `research/bugbounty/queue.jsonl` (rastreado pelo Git)
+ainda continha o `reasoning` original intacto — recuperei de lá,
+reconstituí `original + addendum` e reapliquei `update-finding` com o
+texto completo (verificado logo depois: 6142 caracteres, ambas as
+partes presentes). Lição: `update-finding --patch` sempre faz merge
+raso (sobrescreve o campo inteiro), nunca existiu `--append-*`;
+qualquer edição de `reasoning` precisa incluir o texto anterior
+completo no patch.
+
+**Nota operacional 2, mais séria — bug real de pipeline, não erro de
+digitação**: depois de corrigir a Nota 1 e confirmar via `get` que
+ambos os achados (Ethereum, Kaspa) tinham o `reasoning` combinado
+correto no banco local, rodei `cli.mjs research-plan` de novo (só pra
+conferir os itens `held` do Vercel Open Source, sem intenção de mexer
+em estado). `research-plan` está na lista de comandos que disparam
+`migrateAll()` no topo do CLI (`cli.mjs` linha ~820, junto com
+`list-pending`) — ou seja, ele **re-hidrata o banco SQLite local a
+partir do `queue.jsonl` em disco**, que nesse ponto ainda
+era a versão ANTIGA (sem os dois addenda, já que `export-queue` só
+roda no fim da rodada). Isso silenciosamente reverteu as duas correções
+que eu tinha acabado de aplicar e confirmado — sem erro, sem aviso,
+sem eu perceber até conferir de novo antes do commit. Reapliquei os
+dois `update-finding` uma terceira vez e desta vez fui direto para
+`export-queue` sem nenhum `research-plan`/`list-pending` no meio —
+confirmado no `queue.jsonl` exportado: Ethereum 6142 chars com ADENDO,
+Kaspa 4806 chars com ADENDO. **Implicação pra rodadas futuras (própria
+ou de outra sessão)**: qualquer `update-finding`/`record-*` feito no
+meio de uma rodada é apagado por uma chamada subsequente a
+`research-plan` ou `list-pending` antes do `export-queue` rodar — a
+ordem segura é sempre terminar TODAS as escritas no banco antes de
+qualquer nova consulta desses dois comandos, ou simplesmente não
+rechamá-los depois da primeira vez na rodada. Isto muito provavelmente
+explica por que o commit `ed3efd7` (15/09, 12:33 UTC) já tinha
+adicionado exatamente este mesmo addendum a estes dois achados, mas o
+`queue.jsonl` no commit seguinte (`798e38b`, 12:55 UTC, mesma sessão)
+já não tinha mais essa alteração — o padrão bate exatamente com este
+bug. Não é um achado de segurança do programa (é um defeito no próprio
+`system/bugbounty-scanner`, ferramenta interna deste pipeline, fora do
+escopo de qualquer bug bounty) — registrado aqui como conhecimento
+operacional, não abri finding pra isso.
+
+Deep read proativo desta rodada foi para `slackhq/nebula`, não para
+este programa (ver NOTES.md de Slack). Nenhuma transição de estado
+neste programa. `export-queue` rodado ao final desta rodada (depois
+da terceira e definitiva aplicação dos dois `update-finding`).
