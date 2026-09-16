@@ -4631,3 +4631,34 @@ Deep read proativo desta rodada foi para `slackhq/nebula`, não para
 este programa (ver NOTES.md de Slack). Nenhuma transição de estado
 neste programa. `export-queue` rodado ao final desta rodada (depois
 da terceira e definitiva aplicação dos dois `update-finding`).
+
+## Rodada 2026-09-16 (push webhook 051b038, sessão cloud) — observação de operação do pipeline, não de segurança do programa
+
+`research-plan` devolveu os mesmos 3 `actionable` de sempre
+(Aptos/Ethereum/Kaspa, `verify_prior_art`), já com o addendum de
+bloqueio ambiental de 16/09 aplicado pela rodada anterior (commit
+`051b038`, mesmo push que disparou esta sessão). Não retentei
+`search-prior-art`/`add_repo` pela enésima vez: o bloqueio (API
+REST/Search do GitHub restrita a `genezera/zerotoone` nesta sessão
+cloud) já foi confirmado de forma idêntica em 12+ rodadas desde
+14/09, sem nenhuma mudança de ambiente entre elas — repetir de novo
+não produz evidência nova, só reafirma o já documentado no
+`reasoning` de cada achado-irmão.
+
+**Observação mais importante desta rodada, sobre o próprio pipeline,
+não sobre os 3 programas**: `git log` mostra 32 commits desde
+2026-09-14, e o `github-trigger-context` desta sessão confirma que
+ela foi disparada por um webhook de `push` cujo Head SHA é
+exatamente o commit da rodada anterior (`051b038`, autor `Claude
+<noreply@anthropic.com>`). Isso indica um padrão de auto-disparo:
+push do commit de uma rodada -> webhook `push` -> nova sessão cloud
+-> novo commit/push -> novo webhook -> ..., rodando continuamente há
+mais de 2 dias, em intervalos de ~5-15 min mesmo fora de qualquer
+janela clara de agendamento humano. As últimas ~15 rodadas (desde
+15/09 11:29 UTC) não produziram nenhum achado novo reportável nem
+progresso no único item `actionable` (estruturalmente bloqueado,
+como acima) -- ou seja, o loop está rodando repetidamente sem
+produzir valor incremental. Não é algo que esta sessão possa corrigir
+sozinha (não tenho como desabilitar o trigger do webhook nem ampliar
+o escopo de API do GitHub desta sessão) -- registrado aqui e
+sinalizado ao usuário via notificação fora deste repositório.
