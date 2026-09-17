@@ -1288,3 +1288,41 @@ já fez a montante; sem achado).
 102 → 104). Clone temporário removido do scratchpad ao final. Nenhuma
 transição de estado neste programa. `export-queue` rodado ao final
 desta rodada.
+
+## Rodada 2026-09-17f (sessão cloud, disparada por push no GitHub)
+
+`list-pending` vazio; `research-plan` sem nenhum `actionable` para Slack
+nesta rodada (só OKG, ver `okg/NOTES.md`). Leitura profunda proativa em
+`slackhq/nebula` (104 → 108 arquivos, ainda o único candidato liberado
+com maior espaço restante junto de `okx/go-wallet-sdk`; `plaid/plaid-ruby`
+e `plaid/react-plaid-link` seguem esgotados). Clone raso próprio via
+`git clone --depth 1` para diff contra `deep-read-log.json` e selecionar
+3 arquivos `.go` não-teste ainda não lidos, priorizando a superfície
+alcançável por peer remoto ANTES da autenticação Noise (caminho UDP):
+
+- `udp/udp_linux.go` (recepção via `recvmmsg(2)` bruto: `ListenOut`/
+  `deliverSegments`/`parseRecvCmsg`). Revisado com ceticismo real por
+  indexação fora dos limites em `parseRecvCmsg` (parsing manual de
+  cmsg ancilar, classe de bug comum em C/Go que mexe com `unsafe`) e
+  por reuso de `Controllen` encolhido entre chamadas sucessivas de
+  `recvmmsg` (bug clássico dessa API) — confirmado que o código já
+  reseta `Controllen` antes de cada chamada (linha 258-262) e que todo
+  slicing em `parseRecvCmsg`/`deliverSegments`/`getFrom` fica dentro de
+  limites fixos ou checados. Sem achado.
+- `udp/udp_linux_64.go` (definição de `iovec`/`msghdr`/`rawMessage`,
+  lida junto para confirmar o layout binário batendo com as structs do
+  kernel Linux 64-bit, incluindo padding de alinhamento). Sem achado.
+- `udp/udp_linux_writebatch.go` (caminho de transmissão via
+  `sendmmsg(2)`/UDP-GSO). Modelo de ameaça mais fraco que a recepção
+  (dados já são pacotes cifrados pela própria nebula, tamanho/destino
+  decididos pela própria lógica de roteamento local, não input bruto
+  de peer remoto). `planRun` limita `runLen` a
+  `min(iovBudget, maxGSOSegments)` antes de qualquer indexação em
+  `w.iovs`; `entry` sempre `< len(w.msgs)` pela condição do próprio
+  loop de empacotamento. Sem achado.
+- `overlay/device.go` (só a interface `Device`, sem lógica executável).
+  Sem achado.
+
+`deep-read-log.json` atualizado (104 → 108). Clone temporário removido
+do scratchpad ao final. Nenhuma transição de estado neste programa.
+`export-queue` rodado ao final desta rodada.

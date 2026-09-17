@@ -5309,6 +5309,24 @@ achado-irmão aptos (topologia de produção não verificável, nenhum
 crash real induzido). Nenhum rascunho de relatório escrito (barra de
 `scope_verified` de verdade não alcançada).
 
+## Rodada 2026-09-17f (sessão cloud, disparada por push no GitHub)
+
+`list-pending` vazio. `research-plan` devolveu 7 `actionable`, todos
+OKG `reproduced_local`/`verify_prior_art` (os mesmos 6 achados-irmãos
+de rodadas anteriores + o novo `zec/tx.go::ZecDecode` da rodada
+2026-09-17e). Tentativa real de `search-prior-art` (config com 3
+queries contra `okx/go-wallet-sdk`, achado `aptos ParseStringRelaxed`)
+reconfirmou ao vivo o mesmo bloqueio estrutural de dezenas de rodadas:
+`GitHub API HTTP 403 (rate limit esgotado)` — `GITHUB_TOKEN` desta
+sessão é escopado só a `genezera/zerotoone`, então a chamada cai pro
+fallback anônimo (60 req/hora), já esgotado. Sem evidência nova; não
+repetido individualmente para os outros 6 achados (mesmo bloqueio de
+endpoint, não específico de finding). Nenhuma transição de estado
+tentada além dessa. Leitura profunda proativa desta rodada foi em
+`slackhq/nebula` (ver `slack/NOTES.md`), não em `okx/go-wallet-sdk`
+(sem candidato novo priorizado desta vez). `export-queue` rodado ao
+final.
+
 Também lido `coins/bitcoin/wire.go` (só o leitor de varint em si,
 sem `make()` próprio) — callers em `message.go` (já lido em rodada
 anterior) aplicam bounds check corretamente em ambos os pontos
