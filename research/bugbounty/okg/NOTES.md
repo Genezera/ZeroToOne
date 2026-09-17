@@ -4833,3 +4833,57 @@ configuracao de automacao/conta que o usuario deveria decidir, nao
 uma acao reversivel e local. Notificando o usuario via
 PushNotification nesta rodada com essa conclusao tecnica (mais
 concreta que a observacao de horario das rodadas 2 e 3).
+
+## Rodada 2026-09-17 (5), sessão cloud (push webhook 7d4caed, mesmo loop
+auto-sustentado documentado na rodada anterior -- confirmado
+novamente pelo intervalo entre commits: 11:21, 11:25:42, 11:30:30,
+11:37:54, agora)
+
+`research-plan` seguiu devolvendo os 3 mesmos `actionable`
+(`verify_prior_art` nos achados-irmãos aptos/ethereum/kaspa) --
+reconfirmado ao vivo que `api.github.com` continua 403 pra qualquer
+repo fora de `genezera/zerotoone` (mesmo teste com
+`octocat/Hello-World`), 19+ rodadas idênticas desde 14/09, sem
+mudança de ambiente. Nenhuma transição tentada nesses 3.
+
+**Achado novo** (leitura profunda proativa, arquivo nunca lido antes
+neste programa): `coins/stacks/utils.go`, função `FromBase58`
+(linhas 308-327) — decodifica um endereço Bitcoin via
+`base58.CheckDecode` e só trata explicitamente os bytes de versão 0
+(P2PKH mainnet) e 5 (P2SH mainnet); qualquer outro byte de versão
+(ex.: 111 = P2PKH testnet real, prefixo `m`/`n`; 196 = P2SH testnet
+real, prefixo `2`) cai em `return nil, nil` — ponteiro nil com erro
+nil. `getAddressHashMode` (utils.go:36-64) checa só `err != nil` e
+desreferencia `legacyAddress.P2sh` sem nil-check → panic garantido.
+Alcançável a partir da função EXPORTADA `GetPoxAddress` (usada para o
+endereço de reward/payout do PoX/Stacking). Escrevi e rodei 3 testes
+Go reais (`coins/stacks/zzrepro_getpoxaddress_nil_panic_test.go`)
+usando `base58.CheckEncode` pra gerar endereços sintaticamente
+válidos com version=111 e version=196 (formato real de endereço
+testnet: `mfWxJ45yp2SFn7UciZyNpvDKrzbhyfKrY8`,
+`2MsFDzHRUAMpjHxKyoEHU3aMCMsVtMqs1PV`) — ambos confirmam o panic real
+`runtime error: invalid memory address or nil pointer dereference`;
+teste de controle com version=0 confirma que o caminho normal não
+quebrou. Registrado como
+`OKG::okx/go-wallet-sdk/coins/stacks/utils.go::GetPoxAddress::nil_pointer_deref_invalid_btc_version_byte`,
+avançado até `reproduced_local` (corroborated_static → PoC Go
+pass/supports → reproduced_local). `check-scope` OK (allowed=true,
+bountyEligible=true). `scope_verified` recusado corretamente por
+`deploymentEvidence.confidence="unverified"` — mesmo gap estrutural
+dos 3 achados-irmãos (sem tag/release Git, sem app cliente real
+confirmado chamando `GetPoxAddress` sem validação própria). Efeito é
+negação de serviço (panic/crash do processo chamador), não
+redirecionamento de fundos como no achado-irmão aptos — documentado
+com severidade mais baixa por isso. Também li
+`coins/waves/types/recepient.go` (candidato da mesma leva) — erros
+propagados corretamente em todos os ramos, sem achado.
+
+**Reforçando o achado operacional da rodada anterior**: o loop
+push→webhook→sessão→push segue ativo (5ª rodada hoje, ~5-7min de
+intervalo cada). Rodadas 1-4 de hoje não produziram achado novo
+(só reconfirmação do bloqueio de API); esta rodada (5) produziu 1
+achado real, o que mostra que o loop não é puramente inútil, mas o
+custo (sessão nova a cada poucos minutos, indefinidamente) continua
+desproporcional ao valor médio por rodada. Mantendo a mesma decisão
+da rodada anterior: não é uma mudança de configuração que esta sessão
+deva fazer sozinha; segue sinalizado ao usuário.
