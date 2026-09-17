@@ -5165,3 +5165,72 @@ sem checagem de tamanho).
 
 `deep-read-log.json` atualizado (238 → 241). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-17d (sessão cloud)
+
+`list-pending` vazio. `research-plan` reconfirmou os mesmos 5
+`verify_prior_art` de OKG como único `actionable`; tentativa real de
+`cli.mjs search-prior-art` (config de teste com 3 queries contra
+`okx/go-wallet-sdk`) devolveu de novo `GitHub API HTTP 403 (rate limit
+esgotado)` — mesmo bloqueio estrutural, sem evidência nova, nenhuma
+notificação repetida.
+
+Leitura profunda proativa: `list-deep-read-candidates.mjs` continua
+listando `okx/go-wallet-sdk` como candidato permitido (24%→25%
+coberto). Descartei de propósito os arquivos `crypto/btcd/*`,
+`crypto/dcrec/*`, `crypto/go-ethereum/*` e `crypto/cbor/decode.go` do
+topo da lista por palavra-chave (`sign`/`verify`/`crypto`) — cabeçalho
+de copyright confirma que são cópias vendored de btcsuite/decred/
+go-ethereum/fxamacker, não código próprio da okx; qualquer bug ali
+seria upstream, já auditado por projetos bem maiores, baixa
+probabilidade de novidade real.
+
+**ACHADO NOVO** (`OKG::okx/go-wallet-sdk/coins/aptos/v2/bcs/deserializer.go::ReadBytes+DeserializeSequenceWithFunction::unbounded_allocation_from_untrusted_length_prefix`):
+`Deserializer.ReadBytes()` e `DeserializeSequenceWithFunction[T]`
+(`coins/aptos/v2/bcs/deserializer.go`) fazem `make([]byte, length)` /
+`make([]T, length)` com `length` vindo de um `Uleb128()` NÃO validado
+(até `0xFFFFFFFF`, ~4.29GB) ANTES de checar quantos bytes realmente
+sobram no buffer — o teto só é aplicado depois, dentro de
+`readBytes()`, quando a alocação inteira já aconteceu. Cadeia
+rastreada até um entrypoint público de fato (`aptos.NewTxFromParam`/
+`NewTxFromRaw` em `coins/aptos/aptos.go`, comentado no próprio
+código-fonte como `// API for TEE`): pega hex do chamador →
+`bcs2.NewDeserializer(txBytes)` → `payload.UnmarshalBCS(der)` →
+`EntryFunction.UnmarshalBCS` (`coins/aptos/v2/transactionPayload.go`)
+empilha MAIS duas alocações não checadas na mesma chamada
+(`sf.Args = make([][]byte, alen)` com `alen` também de Uleb128 cru, e
+`bcs.DeserializeSequence[TypeTag]`). Confirmado com teste Go real
+(não hipótese, `go_test_poc`, ver saída literal registrada no
+finding): input de 5 bytes força ~500MB de alocação real
+(`runtime.MemStats.TotalAlloc` delta = 500_007_768) e input de 4
+bytes força ~256MB com elemento de 32 bytes (delta = 256_000_952).
+Também documentado um segundo defeito menor na mesma função:
+`ReadBytes()` não confere `des.Error()` depois do próprio
+`readBytes()` interno, então devolve a fatia gigante zero-preenchida
+no tamanho reivindicado pelo atacante em vez de `nil`, mesmo já tendo
+marcado erro.
+
+Progressão: `upsert-finding` → `update-finding` (campos estruturados
+`weakness`/`rootCause`/`attackerInput`/`securitySink`/
+`missingControl`/`expectedFix` preenchidos em prosa própria, não
+extraídos do `reasoning`) → `corroborated_static` (aceito) →
+`record-validation --type=go_test_poc --result=pass` (saída real do
+teste acima) → `reproduced_local` (aceito) → `check-scope("OKG",
+"okx/go-wallet-sdk")` confirmou `allowed=true, bountyEligible=true,
+maxSeverity=critical` → `record-deployment-evidence`
+(confidence="unverified": HEAD `main`=`12fec6b0616347` confirmado via
+clone raso nesta rodada, mas repositório sem nenhuma
+tag/release Git — mesma limitação epistêmica de todos os
+achados-irmãos OKG anteriores, sem forma honesta de ancorar qual
+build publicado da OKX Wallet embarca este commit exato) → tentativa
+de `scope_verified` **recusada corretamente**: "DeploymentEvidence
+existe mas confidence=\"unverified\" — modo profissional exige
+vínculo real commit↔release↔deploy com confidence=\"high\" antes de
+scope_verified". Nenhuma alegação de impacto Medium+ foi registrada
+como confirmada — fica para avaliação humana (`assess_impact`), sem
+forçar severidade para satisfazer o gate. Nenhum rascunho de relatório
+foi escrito (barra de `scope_verified` de verdade não alcançada).
+
+`deep-read-log.json` atualizado (241 → 246: 5 arquivos, sendo 1 achado
+novo + 4 lidos como parte da cadeia de rastreamento do mesmo achado).
+`export-queue` rodado ao final.
