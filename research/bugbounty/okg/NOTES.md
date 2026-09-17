@@ -4662,3 +4662,22 @@ produzir valor incremental. Não é algo que esta sessão possa corrigir
 sozinha (não tenho como desabilitar o trigger do webhook nem ampliar
 o escopo de API do GitHub desta sessão) -- registrado aqui e
 sinalizado ao usuário via notificação fora deste repositório.
+
+## Rodada 2026-09-17 (scheduled task, sessão cloud)
+
+Gap de ~24h desde o último commit (16/09 11:28 UTC) -- o padrão de
+auto-disparo do webhook a cada 5-15 min sinalizado na rodada anterior
+não se repetiu; cadência voltou ao normal de uma rotina agendada
+diária. Não repito a notificação sobre isso.
+
+`research-plan` continua com os mesmos 3 `actionable` (Aptos/Ethereum/
+Kaspa, `verify_prior_art`). Reli os 3 achados: mesmo bloqueio
+estrutural (API REST/Search do GitHub desta sessão escopada só a
+`genezera/zerotoone`, confirmado pelo próprio Repository Scope do
+system prompt) -- 15+ rodadas idênticas desde 14/09, sem mudança de
+ambiente. Não retentei `search-prior-art`/`add_repo` de novo (não
+produziria evidência nova) nem adicionei mais um addendum idêntico ao
+`reasoning` (já teria zero informação nova). Nenhuma transição
+tentada. Deep-read proativo desta rodada foi para `slackhq/nebula`
+(ver NOTES.md do Slack) em vez de `okx/go-wallet-sdk` -- variando o
+alvo entre os 4 repositórios liberados, como de costume.

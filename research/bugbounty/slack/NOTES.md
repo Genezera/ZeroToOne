@@ -1237,3 +1237,29 @@ binário de produção). Nenhum achado novo nos três.
 91 → 94). Clone temporário removido do scratchpad ao final. Nenhuma
 transição de estado neste programa. `export-queue` rodado ao final
 desta rodada.
+
+## Rodada 2026-09-17 (scheduled task, sessão cloud)
+
+`list-pending` vazio; `research-plan` só tinha 3 `actionable`, todos
+OKG (`verify_prior_art`, mesmo bloqueio estrutural de ambiente já
+documentado no NOTES.md do OKG — reconfirmado nesta rodada sem
+mudança). `list-deep-read-candidates.mjs` voltou a listar
+`slackhq/nebula` (94 de 179 arquivos `.go` não-teste já lidos, 53%
+coberto). Diff contra `deep-read-log.json` mostrou 86 arquivos
+restantes, quase todos código de plataforma específica sem nome
+auth/sessão/cripto/token. Escolhi por julgamento próprio (superfície
+de integridade de pacote, não por keyword no nome): `overlay/tun.go`
+(helpers de CIDR/rota, sem I/O nem achado), `routing/balance.go` (hash
+determinístico de multipath, fallback documentado como intencional) e
+o subsistema novo `overlay/batch/{coalesce_core,tcp_coalesce,udp_coalesce}.go`
+(coalescer TSO/USO que agrupa segmentos TCP/UDP já decifrados pelo
+Noise antes de escrever no TUN local — analisado com ceticismo por
+bypass de checksum/corrupção de header entregue ao kernel local;
+bounds e regras de admissão (seq contígua, ECN/DF/ID, tamanho máximo
+65535) espelham exatamente o GRO do kernel Linux, cobertura de teste
+extensa (1287+536 linhas de teste). Nenhum achado.
+
+`deep-read-log.json` atualizado (3 entradas novas em `slackhq/nebula`,
+94 → 97). Clone temporário removido do scratchpad ao final. Nenhuma
+transição de estado neste programa. `export-queue` rodado ao final
+desta rodada.
