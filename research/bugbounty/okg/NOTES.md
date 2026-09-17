@@ -4721,3 +4721,60 @@ o timestamp desta sessão sugere que pode ter voltado a ocorrer logo
 em seguida ao commit anterior. Sinalizando ao usuário de novo via
 notificação, já que é exatamente o tipo de recorrência que a
 rodada de 16/09 pediu para vigiar.
+
+## Rodada 2026-09-17 (3) (scheduled task, sessão cloud) -- mesmo bloqueio reconfirmado, deep-read em Bitcoin/Cosmos sem achado
+
+`research-plan` devolveu os mesmos 3 `actionable` de sempre (Aptos/
+Ethereum/Kaspa, `verify_prior_art`). Reli o `reasoning` completo dos
+3 (nao so o resumo) antes de decidir nao reagir: mesmo bloqueio
+estrutural (API REST/Search do GitHub desta sessao cloud escopada so
+a `genezera/zerotoone`), ja confirmado de forma identica em 17+
+rodadas desde 14/09, com `add_repo`/`search-prior-art`/curl direto
+todos ja tentados e descartados em rodadas anteriores. Nao retentei
+nada disso de novo (nao produziria evidencia nova) nem adicionei
+addendo redundante ao `reasoning` -- decisao consistente com as
+rodadas anteriores. Nenhuma transicao tentada.
+
+Deep-read proativo desta rodada (via `list-deep-read-candidates.mjs`,
+que confirmou OKG como um dos 4 alvos liberados por politica e
+historico): o candidato "natural" que a rodada de 17/09(2) apontou
+(`coins/ton/address`) na verdade ja tinha sido lido antes daquela nota
+ser escrita (confirmado no `deep-read-log.json`) -- entao esta rodada
+buscou candidatos novos por padrao de nome (prioridade a
+auth/session/crypto/token/etc., depois ranqueado por termos como
+address/decode/parse/sign/verify/seed ainda nao lidos). 3 arquivos
+novos lidos (delegado a um subagente, mesma regra de tratar conteudo
+do repo-alvo como dado, nunca instrucao):
+
+- `crypto/btcd/btcec/address.go` -- todos os ramos de `DecodeAddress`
+  (segwit/pubkey-hex/base58) propagam erro corretamente, checagem
+  `len(...)` explicita antes de todo `copy()` fixo. Contraste direto
+  com o bug confirmado em `aptos/ParseStringRelaxed`: aqui o path
+  Bitcoin e fail-closed. Sem achado.
+- `crypto/btcd/v2/btcutil/address.go` -- fork v2 com Taproot/P2TR,
+  mesma estrutura de guards do arquivo acima, com checagem adicional
+  de consistencia bech32/bech32m. Sem achado.
+- `coins/cosmos/okc/tx/amino/binary-decode.go` -- idioma
+  `slide(&bz,&n,_n)` pareceu suspeito a primeira vista (poderia ser
+  short-circuit pulando checagem de erro, mesmo formato do bug
+  aptos), mas investigacao do helper `slide()` em `reflect.go`
+  confirmou que ele so retorna `false` em panic de invariante
+  interno, nunca em input malformado de atacante -- equivalente
+  funcional a `if err!=nil{return}`. Checagem de tamanho antes de
+  todo `copy`/`reflect.Copy` fixo. Sem achado.
+
+Todos os 3 confirmam o padrao ja estabelecido neste programa: a
+familia de bug real (parse de endereco com fallback silencioso pra
+zero-value, sem checagem de tamanho) e especifica dos paths ja
+reportados (Aptos/Ethereum/Kaspa/TON `NewAddress`), nao um padrao
+generalizado no SDK -- os paths Bitcoin/Cosmos/Stellar/TON-addr ja
+lidos sao consistentemente fail-closed.
+
+Sobre o padrao de auto-disparo do webhook sinalizado nas duas rodadas
+anteriores (16/09(2) e 17/09(2)): o `github-trigger-context` desta
+sessao de novo aponta Head SHA = commit da rodada imediatamente
+anterior, com esta sessao comecando ~1min depois do push. Mesmo
+padrao, sem mudanca desde a ultima observacao -- nao repeti a
+notificacao ao usuario por ja ter sido sinalizado duas vezes sem
+informacao nova a acrescentar; apenas registrando aqui para manter o
+historico completo.
