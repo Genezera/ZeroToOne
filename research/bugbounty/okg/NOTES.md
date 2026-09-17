@@ -4681,3 +4681,43 @@ produziria evidência nova) nem adicionei mais um addendum idêntico ao
 tentada. Deep-read proativo desta rodada foi para `slackhq/nebula`
 (ver NOTES.md do Slack) em vez de `okx/go-wallet-sdk` -- variando o
 alvo entre os 4 repositórios liberados, como de costume.
+
+## Rodada 2026-09-17 (2) (scheduled task, sessão cloud) — mesmo bloqueio, e sinal de possível retorno do auto-disparo do webhook
+
+`research-plan` devolveu os mesmos 3 `actionable` de sempre (Aptos/
+Ethereum/Kaspa, `verify_prior_art`). Confirmado de novo via `curl`
+direto a `api.github.com/repos/octocat/Hello-World` (403, mesma
+mensagem de sempre) que o bloqueio estrutural (API REST/Search do
+GitHub restrita a `genezera/zerotoone` nesta sessão) continua
+idêntico -- 16+ rodadas desde 14/09 sem nenhuma mudança de ambiente.
+Não retentei `search-prior-art`/`add_repo`, não adicionei addendum
+redundante ao `reasoning` dos 3 achados (nada novo a registrar), e
+nenhuma transição foi tentada -- consistente com a decisão já tomada
+em rodadas anteriores de não repetir uma tentativa sem evidência nova
+que mude a conclusão.
+
+Deep-read proativo desta rodada: 3 arquivos novos em
+`okx/go-wallet-sdk` (`coins/ton/ton/wallet/v4r2.go`, `v5r1.go`,
+`coins/ton/ton/jetton/wallet.go` -- porte de `xssnick/tonutils-go`,
+construção/assinatura de mensagem TON). Sem achado: nenhum parsing de
+endereço nesta camada (recebem `*address.Address` já tipado), a
+assinatura é sempre aplicada corretamente quando há chave, e o
+caminho `key==nil` é uso explícito de inspeção sem chave, não um
+caminho de produção. `coins/ton/address` (onde mora o
+`address.ParseAddr` real que estes arquivos apenas consomem) continua
+não lido -- é o candidato natural pra próxima rodada, dado que o
+padrão confirmado neste programa (Aptos/Ethereum/Kaspa) é exatamente
+parsing de endereço com fallback silencioso.
+
+**Observação operacional, não de segurança de programa**: o
+`github-trigger-context` desta sessão aponta `Head SHA` igual ao
+commit da rodada anterior (`fe7797d`, criado às 11:21:05Z), e esta
+sessão começou às ~11:22Z -- ou seja, menos de 2 minutos depois. Isso
+bate com o padrão de auto-disparo já documentado e sinalizado ao
+usuário na rodada de 16/09 (`1a18e7d`): push do commit de uma rodada
+-> webhook `push` -> nova sessão cloud. Aquela rodada tinha registrado
+que o padrão parecia ter parado (gap de ~24h até este commit) -- mas
+o timestamp desta sessão sugere que pode ter voltado a ocorrer logo
+em seguida ao commit anterior. Sinalizando ao usuário de novo via
+notificação, já que é exatamente o tipo de recorrência que a
+rodada de 16/09 pediu para vigiar.
