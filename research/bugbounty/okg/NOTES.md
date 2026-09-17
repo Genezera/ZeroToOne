@@ -5440,3 +5440,39 @@ exposto).
 
 `deep-read-log.json` atualizado (254 → 257). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-17i (sessão cloud, disparada por push no GitHub, HEAD 6edbb35)
+
+`list-pending` vazio; `research-plan` devolveu os mesmos 7 `actionable`
+de rodadas anteriores (todos OKG `reproduced_local`/`verify_prior_art`).
+Tentativa real de `search-prior-art` (config com 3 queries, programHandle=okg,
+achado cardano `NewAddressFromBytes::empty_bytes_index_out_of_range_panic`)
+reconfirmou ao vivo `GitHub API HTTP 403 (rate limit esgotado)` -- mesmo
+bloqueio estrutural documentado em 20+ rodadas desde 14/09 (isolado na
+rodada h ao bucket `core` anônimo, não ao bucket `search`). Chamada
+falhou antes de gravar `validationsHistory` (confirmado:
+`len(validationsHistory)==0` após a tentativa) -- nenhuma evidência
+fabricada; só ADENDO em prosa adicionado ao `reasoning` via
+`update-finding`. Não repetido para os outros 6 achados-irmãos (mesmo
+bloqueio de endpoint, não específico de finding). Nenhuma transição de
+estado tentada.
+
+Leitura profunda proativa (clone raso próprio de `okx/go-wallet-sdk`
+HEAD atual, 3 entradas): `coins/ton/ton/wallet/regular.go` +
+`lockup.go` + `highloadv2r2.go` (specs de assinatura de wallet TON --
+`BuildMessage` assina uma mensagem outbound com a própria chave do
+wallet e `Message[]` fornecidos pelo chamador da lib; sem parsing de
+bytes/proof externos untrusted, fora da classe de bug já confirmada
+neste programa). `coins/cosmos/secret/secret.go` (wrapper de 2 linhas
+sobre `cosmos.NewAddress`/`cosmos.ValidateAddress` já auditados).
+`crypto/vrf/secp256k1/point.go` + `field.go` (dois leads plausíveis
+investigados e refutados com ceticismo: `UnmarshalBinary` parecia
+acessar `buf[32]` antes de checar `len(buf)`, mas o `if` seguinte tem
+guarda curto-circuito `err == nil && ...`; `Data()::b[0]` parecia
+vulnerável a index-out-of-range se `P.X` fosse zero, mas
+`fieldElt.Bytes()` sempre retorna um array fixo `[32]byte` com
+zero-padding, nunca um slice de tamanho variável -- biblioteca VRF
+estilo Chainlink, bem revisada). Nenhum achado novo.
+
+`deep-read-log.json` atualizado (257 → 260). `export-queue` rodado ao
+final.
