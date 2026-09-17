@@ -1504,3 +1504,31 @@ como o credential provider plugin é configurado pelo próprio admin do
 cluster (binário local, não input de pod/usuário), isso não abre
 superfície de ataque nova, só reduz a robustez de uma rede de segurança
 best-effort contra plugin mal-comportado. Não virou finding.
+
+## Rodada 2026-09-17 (6), sessão cloud (loop push→webhook→sessão ativo, ver
+research/bugbounty/okg/NOTES.md desta mesma rodada)
+
+Deep-read proativo em `kubernetes/apiserver` (repo com boa cobertura prévia
+em `pkg/authentication`/`pkg/authorization`, mas ainda com lacunas — ver
+`deep-read-log.json`). 3 arquivos novos lidos:
+
+- `pkg/authentication/request/anonymous/anonymous.go` — checagem de path
+  contra allowlist exata (map de string) antes de autenticar como usuário
+  anônimo. Investiguei risco de confusão de normalização de path (path
+  cru vs. path efetivamente roteado após clean/redirect do mux), mas o
+  authenticator só CONCEDE anônimo em match exato — qualquer divergência
+  cai pra cadeia normal de autenticadores (fail-closed na direção de
+  negar anônimo, não de conceder indevidamente a rota sensível). Sem
+  achado.
+- `pkg/authentication/token/tokenfile/tokenfile.go` — lookup exato em
+  map Go (não tempo-constante), mas é mecanismo legado já documentado
+  como desencorajado pelo próprio k8s; sem exposição de rede que torne
+  o timing de lookup em memória mensurável. Sem achado novo.
+- `pkg/authentication/serviceaccount/util.go` — `MatchesUsername` e
+  `SplitUsername` fazem parsing de `system:serviceaccount:<ns>:<nome>`
+  com checagem sequencial de prefixo; como namespace/nome de
+  ServiceAccount são validados contra DNS-1123 (sem `:`), não há
+  ambiguidade de onde o separador cai. Sem achado.
+
+Nenhuma transição de estado tentada neste programa nesta rodada (nenhum
+achado novo). `deep-read-log.json` atualizado.

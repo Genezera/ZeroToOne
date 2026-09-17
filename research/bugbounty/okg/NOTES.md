@@ -4887,3 +4887,45 @@ custo (sessão nova a cada poucos minutos, indefinidamente) continua
 desproporcional ao valor médio por rodada. Mantendo a mesma decisão
 da rodada anterior: não é uma mudança de configuração que esta sessão
 deva fazer sozinha; segue sinalizado ao usuário.
+
+## Rodada 2026-09-17 (6), sessão cloud (loop push→webhook→sessão ainda
+ativo — 6ª rodada hoje; não repetindo a notificação sobre o loop em si,
+já sinalizada na rodada 4, sem mudança nova a acrescentar sobre ele)
+
+`research-plan` apontou `assess_impact` como topo de prioridade pro
+achado novo da rodada anterior (`GetPoxAddress` nil pointer deref).
+Preenchido `impactAssessment` estruturado via
+`record-impact-assessment` (não `update-finding` — essa é a chamada
+certa, `update-finding` sozinho não persiste no local que o gate lê).
+Avaliação honesta: efeito real é DoS (panic) limitado ao processo
+chamador; sem evidência confirmada de deployment multi-tenant
+compartilhado onde o crash de um chamador afetaria outros usuários
+(mesma lacuna estrutural dos 3 achados-irmãos — SDK Go puro, sem app
+cliente neste repo). `impactScope=self_request_only`,
+`reportable=false`, severidade `low` — sem inflar pra passar o gate.
+`reportabilityGate` corretamente moveu o achado pra `held` com
+`below_campaign_impact`, mesmo tratamento dos outros 10 achados OKG já
+nesse estado. Nenhuma transição de estado forçada.
+
+`verify_prior_art` dos 3 achados-irmãos (aptos/ethereum/kaspa):
+403 reconfirmado ao vivo em `api.github.com/repos/okx/go-wallet-sdk`
+(20+ rodadas idênticas desde 14/09). **Novidade real desta rodada**:
+testado via subagente (só diagnóstico, nenhuma ação além disso)
+`mcp__Claude_Code_Remote__add_repo(owner=okx, repo=go-wallet-sdk,
+access=read)` — resposta confirma que leitura/clone público já
+funciona sem attach (é o método que esta campanha já usa), mas que as
+ferramentas de API do GitHub (issues/commits/advisories — exatamente o
+que `duplicateCheckGate` exige) só ficam disponíveis se o repo for
+anexado com `access=push` (credenciais de escrita). Ou seja: o
+bloqueio não é "GitHub API indisponível", é "GitHub API só cobre repos
+anexados, e anexar exige pedir credencial de escrita pra um
+repositório de terceiros que esta sessão não tem nenhum motivo
+legítimo de escrever". Decisão desta sessão: **não** chamar `add_repo`
+com `access=push` sem aprovação do usuário — é expansão de acesso
+fora do raio de alcance deste repositório de pesquisa, não uma ação
+local reversível. Adicionado adendo mínimo ao `reasoning` dos 3
+achados com essa causa raiz exata (não reescrevi o reasoning inteiro,
+nada mudou na investigação em si). Nenhuma transição tentada. Usuário
+notificado com essa descoberta pra decidir se autoriza `access=push`
+ou se o gate de duplicate-check devia ter um caminho alternativo pra
+esta campanha.
