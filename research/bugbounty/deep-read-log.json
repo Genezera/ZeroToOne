@@ -1656,7 +1656,10 @@
     "coins/cardano/transaction.go",
     "coins/cardano/tx_test.go",
     "coins/polkadot/address.go",
-    "crypto/ss58/ss58.go"
+    "crypto/ss58/ss58.go",
+    "coins/ton/ton/wallet/v3.go (SpecV3.BuildMessage -- constroi mensagem assinada de wallet TON v3 a partir de Message[] fornecidos pelo proprio chamador/app, sem indexacao de bytes de terceiro; len(messages)>4 checado explicitamente antes do loop. Sem achado)",
+    "coins/ton/ton/wallet/highloadv3.go (SpecHighloadV3.BuildMessage/packActions -- TTL/queryID validados com bounds explicitos (>=1<<22, <=5, >=1<<23); packActions recursivo em blocos de 253 mensagens usa messages[:253]/messages[253:] com o limite ja garantido pelo if guard (len(messages)>253) antes de fatiar, sem OOB. messages vem do proprio app chamador (lista de saidas da propria wallet), nao de payload externo desserializado. Sem achado)",
+    "coins/solana/token/Transfer.go (vendorizado gagliardetto/solana-go, mesmo padrao ja confirmado em ApproveChecked.go: Validate() checa nil em Accounts[0]/[1]/[2] e MAX_SIGNERS antes de Build(); ValidateAndBuild() chama Validate() primeiro. Fail-closed. Sem achado)"
   ],
   "kubernetes/apiserver": [
     "pkg/authorization/union/union.go (unionAuthzHandler.Authorize/ConditionsAwareAuthorize/EvaluateConditions -- authorizer que encadeia multiplos sub-authorizers, retorna a primeira decisao Allow/Deny e propaga o err junto; short-circuit correto, NoOpinion sempre continua a cadeia. Achado em potencial investigado: linha 92-93 retorna `decision, reason, err` mesmo quando decision==Allow com err!=nil -- mas pkg/endpoints/filters/authorization.go:78-79 documenta e trata isso deliberadamente (\"an authorizer like RBAC could encounter evaluation errors and still allow the request, so authorizer decision is checked before error here\"), comportamento intencional e ja documentado no ponto de consumo, nao introduzido por union.go. Sem achado)",

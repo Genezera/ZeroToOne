@@ -5109,3 +5109,59 @@ três caminhos; sem achado.
 
 `deep-read-log.json` atualizado (230 → 238). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-17 (cloud, sessão automática)
+
+`list-pending` vazio (0 candidates com tarefa acionável). `research-plan`
+tinha 5 `actionable`: 2 `structure_identity` (cardano
+`NewAddressFromBytes` e nervos `Parse`, ambos já `reproduced_local`
+com reasoning/PoC completos de rodadas anteriores, só faltando os
+campos estruturados) e 3 `verify_prior_art` (aptos
+`ParseStringRelaxed`, ethereum `NewEthDynamicFeeTx`, kaspa
+`bech32.Decode`).
+
+`structure_identity` resolvido para os 2 achados: preenchido
+`weakness`/`rootCause`/`attackerInput`/`securitySink`/
+`missingControl`/`expectedFix` em prosa própria (não extraído
+automaticamente do `reasoning` existente) via `update-finding`.
+Gotcha operacional descoberto ao vivo: `research-plan`/`list-pending`
+rodam `migrateAll()` (re-hidratam o banco a partir de `queue.jsonl`)
+antes de qualquer leitura — chamar qualquer um dos dois entre um
+`update-finding` e o `export-queue` correspondente descarta o patch
+ainda não exportado. Corrigido rodando `export-queue` logo após os
+dois `update-finding`, antes de qualquer nova chamada a
+`research-plan`/`list-pending`; confirmado com `research-plan` depois
+que os 2 achados saíram de `structure_identity` e foram para
+`verify_prior_art` junto com os outros 3.
+
+`verify_prior_art` (agora 5 achados, os 2 anteriores incluídos):
+tentativa real de `search-prior-art --config=...` contra
+`api.github.com/search/issues` — `GitHub API HTTP 403 (rate limit
+esgotado)`. Mesmo bloqueio estrutural de dezenas de rodadas
+anteriores (API pública sem `GITHUB_TOKEN` utilizável contra
+repositório de terceiro nesta sessão), agora confirmado também no
+endpoint de busca usado por `search-prior-art` (não só nas ferramentas
+MCP do GitHub já documentadas antes). Sem evidência nova
+desde a última verificação — notificação não repetida, decisão de não
+solicitar `add_repo access=push` mantida sem aprovação do usuário.
+
+Leitura profunda proativa (3 arquivos novos, nenhum lido antes):
+`coins/ton/ton/wallet/v3.go` (`SpecV3.BuildMessage` — mensagem TON
+assinada construída a partir de `Message[]` fornecido pelo próprio
+chamador, sem indexação de bytes de terceiro; `len(messages)>4`
+checado antes do loop); `coins/ton/ton/wallet/highloadv3.go`
+(`SpecHighloadV3.BuildMessage`/`packActions` — TTL/queryID com bounds
+explícitos, recursão em blocos de 253 mensagens usa
+`messages[:253]`/`messages[253:]` com o limite já garantido pelo guard
+anterior, sem OOB; `messages` vem do próprio app chamador, não de
+payload externo desserializado); `coins/solana/token/Transfer.go`
+(vendorizado `gagliardetto/solana-go`, mesmo padrão já confirmado em
+`ApproveChecked.go`: `Validate()` checa nil em todas as contas antes
+de `Build()`, fail-closed). Nenhum achado novo — os três operam sobre
+dados fornecidos pelo próprio chamador/app, não payload externo
+desserializado sem checagem, então não se encaixam no padrão de bug já
+confirmado neste SDK (decodificação de endereço/payload de terceiro
+sem checagem de tamanho).
+
+`deep-read-log.json` atualizado (238 → 241). `export-queue` rodado ao
+final.
