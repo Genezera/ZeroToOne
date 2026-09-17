@@ -4929,3 +4929,30 @@ nada mudou na investigação em si). Nenhuma transição tentada. Usuário
 notificado com essa descoberta pra decidir se autoriza `access=push`
 ou se o gate de duplicate-check devia ter um caminho alternativo pra
 esta campanha.
+
+## Rodada 2026-09-17 (7), sessão cloud
+
+`list-pending` vazio; `research-plan` repetiu os mesmos 3 `actionable`
+(`verify_prior_art`, aptos/ethereum/kaspa) -- mesmo bloqueio estrutural
+já documentado nas rodadas 5-6 (duplicate-check exige GitHub API que só
+fica disponível com `add_repo access=push`, não solicitado sem
+aprovação do usuário). Não repetindo a tentativa nem a notificação --
+sem evidência nova que mude essa decisão.
+
+Deep-read proativo (`list-deep-read-candidates.mjs` continua liberando
+4 repos: plaid-ruby e react-plaid-link esgotados, go-wallet-sdk e
+nebula com capacidade). Clone raso de `okx/go-wallet-sdk`, diff contra
+`deep-read-log.json` (218 lidos): escolhi `coins/aptos/v2/internal/types/account.go`
+(mesmo arquivo do achado-irmão `ParseStringRelaxed` já confirmado --
+nunca tinha sido registrado neste log com este nome exato, só o
+arquivo irmão `accountAddress.go`; `ParseStringWithPrefixRelaxed` no
+mesmo arquivo faz o mesmo right-align mas só aceita prefixo `0x`, sem
+o branch base58 problemático -- sem achado novo além do já conhecido),
+`coins/oracle/vrf/vrf.go` (gerador de prova VRF sobre chave/seed do
+próprio chamador, sem superfície remota -- sem achado) e
+`coins/near/serialize/serialize.go` (TryParsePubKey/Signature/BlockHash
+checam comprimento explicitamente após decode, fail-closed -- sem
+achado). `deep-read-log.json` atualizado (218 → 221).
+
+Nenhuma transição de estado neste programa nesta rodada. `export-queue`
+rodado ao final.

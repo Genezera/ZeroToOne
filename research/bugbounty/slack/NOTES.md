@@ -1263,3 +1263,28 @@ extensa (1287+536 linhas de teste). Nenhum achado.
 94 → 97). Clone temporário removido do scratchpad ao final. Nenhuma
 transição de estado neste programa. `export-queue` rodado ao final
 desta rodada.
+
+## Rodada 2026-09-17 (2) (scheduled task, sessão cloud)
+
+`list-pending` vazio; `research-plan` só teve os 3 `actionable` de
+sempre, todos OKG (`verify_prior_art`, bloqueio estrutural já
+documentado, ver NOTES.md do OKG). `list-deep-read-candidates.mjs`
+listou `slackhq/nebula` de novo (102 de 179 arquivos já lidos, 58%
+coberto). Diff contra `deep-read-log.json` mostrou 82 restantes,
+essencialmente todos código de plataforma (TUN/UDP por OS, cpupick,
+checksum offload) sem nome auth/sessão/cripto/token. Escolhi por
+julgamento próprio (completar o subsistema de coalescer TSO/USO já
+parcialmente revisado em rodada anterior): `overlay/batch/tx_batch.go`
+(SendBatch -- só acumula pacotes UDP já criptografados e faz flush via
+WriteBatch, sem lógica de auth/parsing; sem achado) e
+`overlay/batch/multi_coalesce.go` (MultiCoalescer -- reordena pacotes
+plaintext já autenticados pelo Noise por epoch+counter, que é o próprio
+contador anti-replay já validado na camada AEAD antes de chegar aqui;
+reordenação é só de entrega local ao TUN, não reabre janela de replay
+nem faz parsing inseguro adicional além do que `firewall.ParsedPacket`
+já fez a montante; sem achado).
+
+`deep-read-log.json` atualizado (3 entradas novas em `slackhq/nebula`,
+102 → 104). Clone temporário removido do scratchpad ao final. Nenhuma
+transição de estado neste programa. `export-queue` rodado ao final
+desta rodada.
