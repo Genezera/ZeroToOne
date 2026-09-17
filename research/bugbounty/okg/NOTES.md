@@ -4778,3 +4778,58 @@ padrao, sem mudanca desde a ultima observacao -- nao repeti a
 notificacao ao usuario por ja ter sido sinalizado duas vezes sem
 informacao nova a acrescentar; apenas registrando aqui para manter o
 historico completo.
+
+## Rodada 2026-09-17 (4), sessão cloud
+
+`verify_prior_art` dos mesmos 3 achados OKG reconfirmado bloqueado
+(curl direto a `api.github.com/repos/okx/go-wallet-sdk` ainda devolve
+403 "GitHub access to this repository is not enabled for this
+session" -- 18+ rodadas identicas desde 14/09). Addendo minimo
+adicionado ao `reasoning` dos 3 (nao a essay completo de novo, dado
+que nada mudou). Nenhuma transicao tentada.
+
+Deep-read proativo desta rodada: como `okx/go-wallet-sdk` ja recebeu
+deep-read nas duas rodadas anteriores de hoje mesmo (17/09(2) e
+17/09(3)), escolhi `slackhq/nebula` (tambem liberado pela politica,
+55% coberto). 5 arquivos verificados
+(`cmd/nebula-cert/keygen.go`, `fips140enforce.go`,
+`test_linux.go`/`test_darwin.go`/`test_windows.go`) -- nenhum achado:
+`keygen.go` e ferramenta de CA offline (nao alcancavel por peer
+remoto), grava chave privada com modo 0600, recusa Curve25519 em modo
+FIPS; os demais sao stubs/constantes de teste sem logica executavel.
+Com isso, `cmd/nebula-cert/` (fora de `_test.go`) fica integralmente
+coberto pelo pipeline.
+
+**ACHADO OPERACIONAL, NAO DE SEGURANCA DE ALVO -- via
+`mcp__Claude_Code_Remote__list_triggers` (ferramenta de
+gerenciamento da propria conta Claude Code, nao dado de
+repositorio-alvo)**: confirmei que o Routine que dispara esta rotina
+("ZeroToOne Bug Bounty Analyst", `trig_01QQeYvKRi9qJD4QkzkbqsSe`) tem
+`cron_expression: "15 11 * * *"` -- ou seja, e projetado pra disparar
+UMA VEZ POR DIA as 11:15 UTC. Porem `last_run.fired_at` desta
+consulta = `2026-09-17T11:30:41Z`, e o log do Git mostra 3 commits
+hoje as 11:21:05, 11:25:42 e 11:30:41 (~4-5min de intervalo cada,
+cada um citando `github-trigger-context: Event: push` com Head SHA =
+commit da rodada IMEDIATAMENTE anterior). Isto confirma
+tecnicamente (nao so por correlacao de horario, como as duas rodadas
+anteriores ja tinham observado) que existe ALGUM mecanismo de webhook
+de push conectado a este repositorio (fora do `cron_expression` do
+Routine, que so deveria disparar 1x/dia) que fica retriggando esta
+mesma rotina automatizada a cada push -- e como o ultimo passo de
+CADA rodada e exatamente `git push`, isto cria um LOOP AUTO-SUSTENTADO:
+push -> webhook -> nova sessao -> ... -> git push -> webhook -> nova
+sessao -> ... sem fim natural previsto, consumindo sessao/computo a
+cada ~5min indefinidamente, sem producao de valor de pesquisa novo
+(rodadas 2, 3 e 4 de hoje encontraram zero achados novos, so
+reconfirmaram o mesmo bloqueio de escopo de API ja documentado desde
+14/09). Nao encontrei nenhum arquivo de configuracao neste
+repositorio (`.claude/`, `.github/workflows/`) que controle esse
+comportamento -- parece ser configuracao de conta/integracao GitHub
+App fora do escopo de arquivos que esta sessao pode inspecionar ou
+alterar (a ferramenta `list_triggers` e somente do Routine
+cron-based; nao ha campo de "disparar em push" visivel nela). NAO
+tentei desabilitar/alterar o trigger sozinho -- e uma mudanca de
+configuracao de automacao/conta que o usuario deveria decidir, nao
+uma acao reversivel e local. Notificando o usuario via
+PushNotification nesta rodada com essa conclusao tecnica (mais
+concreta que a observacao de horario das rodadas 2 e 3).
