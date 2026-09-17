@@ -4957,6 +4957,45 @@ achado). `deep-read-log.json` atualizado (218 → 221).
 Nenhuma transição de estado neste programa nesta rodada. `export-queue`
 rodado ao final.
 
+## Rodada 2026-09-17 (9), sessão cloud
+
+`list-pending` vazio. `research-plan` repetiu os mesmos 3 `actionable`
+(`verify_prior_art`, aptos/ethereum/kaspa) -- mesmo bloqueio estrutural
+de acesso à API do GitHub já documentado nas rodadas 5-8, sem evidência
+nova; não repetida a tentativa nem a notificação desta vez (HEAD já
+refletia a rodada 8 reconfirmando exatamente isso para este mesmo
+push).
+
+Deep-read proativo encontrou achado novo real: **`coins/ton/tvm/cell/parse.go`,
+`parseCells`/`FromBOCMultiRoot`** -- `rootsIndex[i]` é lido diretamente
+dos bytes de um BOC (`dynInt`, sem validação contra `cellsNum`) e usado
+para indexar `cells[idx]` sem bounds-check, ao contrário do caminho
+irmão de `refsIndex` 30 linhas abaixo (que TEM `if id >= len(cells) {
+return error }`). Escrevi e rodei um teste Go real
+(`go test ./tvm/cell/... -run ZZRepro -v`, PASS) provando panic
+`index out of range` por dois caminhos: `cell.FromBOC` direto, e via
+`(*Cell).UnmarshalJSON` (hook automático de `encoding/json` para
+qualquer struct externo com campo `cell.Cell`) -- superfície de
+desserialização mais ampla que o achado-irmão `GetPoxAddress`, mas sem
+prova, dentro deste repositório (SDK Go puro, sem app cliente), de um
+consumidor real processando dados de OUTRO usuário/contraparte.
+Avançado honestamente até `reproduced_local` (corroborated_static ->
+reproduced_local via `go_test_repro` real, não simulado) e então
+`record-impact-assessment` com `impactScope=self_request_only`,
+`reportable=false` -- research-plan confirma que caiu corretamente em
+`held/below_campaign_impact`, mesmo padrão já estabelecido para
+`GetPoxAddress`, sem inflar severidade para satisfazer o gate.
+
+Além disso, `coins/tezos/types/crypto.go` (decrypt/sign de chave
+Tezos, `secretbox.Open` checa `ok` corretamente, fail-closed -- sem
+achado) e `coins/zil/keytools/secp256k1.go` (geração/derivação de
+chave/endereço Zilliqa, sem parsing de entrada externa -- sem achado)
+lidos sem achado adicional. `deep-read-log.json` atualizado (223 →
+230, incluindo os arquivos de rastreio de cadeia `cell.go`, `reader.go`,
+`transaction.go`, `wallet.go`).
+
+`export-queue` rodado ao final.
+
 ## Rodada 2026-09-17 (8), sessão cloud
 
 `list-pending` vazio (0 candidatos). `research-plan` repetiu os mesmos
