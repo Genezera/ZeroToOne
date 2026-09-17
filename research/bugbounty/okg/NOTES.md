@@ -5234,3 +5234,93 @@ foi escrito (barra de `scope_verified` de verdade não alcançada).
 `deep-read-log.json` atualizado (241 → 246: 5 arquivos, sendo 1 achado
 novo + 4 lidos como parte da cadeia de rastreamento do mesmo achado).
 `export-queue` rodado ao final.
+
+## Rodada 2026-09-17e (sessão cloud, disparada por push no GitHub)
+
+`list-pending` vazio. `research-plan` tinha 6 `actionable`, todos OKG,
+todos `reproduced_local`: 1 `assess_impact` (aptos
+`ReadBytes+DeserializeSequenceWithFunction`) e 5 `verify_prior_art`
+(aptos `ParseStringRelaxed`, cardano `NewAddressFromBytes`, ethereum
+`NewEthDynamicFeeTx`, kaspa `bech32.Decode`, nervos `Parse`).
+
+`verify_prior_art`: tentativa real de `search-prior-art` (aptos
+`ParseStringRelaxed`) contra `api.github.com` devolveu de novo
+`GitHub API HTTP 403 (rate limit esgotado)` — mesmo bloqueio
+estrutural de dezenas de rodadas anteriores, reconfirmado ao vivo
+nesta rodada (não presumido), sem evidência nova. Os outros 4
+compartilham o mesmo bloqueio (endpoint de busca, não específico de
+finding); não repetido individualmente.
+
+`assess_impact` (aptos `unbounded_allocation_from_untrusted_length_prefix`):
+`record-impact-assessment` completo com ceticismo genuíno — reli o
+código-fonte nesta sessão (clone raso próprio) para confirmar de forma
+independente que `NewTxFromParam`/`NewTxFromRaw` ficam dentro do bloco
+literal `// API for TEE ... API for TEE END` nos próprios autores do
+SDK (não inferido do reasoning anterior). `technicalValidity=confirmed`,
+`attackerControlledInput=true`, `impactScope=other_system`,
+`availability=high`, `confidentiality=none`, `integrity=none`,
+`reportable=true`, `severityRating=medium` — não elevado a High/Critical
+porque a topologia real de produção do backend TEE (isolamento por
+requisição, limites de memória por request) não é verificável a partir
+do repositório público, e nenhum crash/OOM real foi induzido (só o PoC
+sintético seguro já registrado em rodada anterior). `scope_verified`
+tentado e **recusado corretamente** (deploymentEvidence
+confidence=unverified) — gate funcionando, não contornado.
+
+**ACHADO NOVO** (`OKG::okx/go-wallet-sdk/crypto/zec/tx.go::ZecDecode::unbounded_allocation_from_untrusted_length_prefix`),
+via leitura profunda proativa: `crypto/zec/tx.go` é adaptado de
+`decred/dcrdex` (cabeçalho do próprio arquivo documenta a modificação
+da okx para ler parâmetros de consenso da própria transação em vez de
+hardcoded — não é cópia vendored inerte, ao contrário de
+`crypto/btcd`/`crypto/dcrec`/`crypto/go-ethereum`/`crypto/rlp`, que
+continuam descartados por serem cópias não modificadas). `Tx.ZecDecode`
+lê `txInCount`/`txOutCount` de `wire.ReadVarInt` (varint estilo
+Bitcoin, até 9 bytes cobrindo todo `uint64`) e faz
+`tx.TxIn = make([]*wire.TxIn, 0, txInCount)` /
+`tx.TxOut = make([]*wire.TxOut, 0, txOutCount)` /
+`tx.VJoinSplit = make([]*JoinSplit, 0, tx.NJoinSplit)` **antes** de
+checar quantos bytes realmente restam no buffer — mesma classe CWE-770
+já confirmada no achado-irmão `aptos/bcs/deserializer.go`, mas em
+arquivo/entrypoint diferente. Contraste direto no MESMO arquivo:
+`readScript()` faz a checagem certa (`count > wire.MaxMessagePayload`)
+antes do seu próprio `make([]byte, count)` — os autores conheciam o
+padrão defensivo correto e não o aplicaram nos três `make()` de slice
+de ponteiro/struct acima. Rastreado até entrypoint público exportado
+de fato: `zcash.CalTxHash(rawTx string)` (`coins/zcash/transaction.go`)
+— pega hex do chamador sem limite de tamanho antes de
+`zec.DeserializeTx`. Confirmado com teste Go real (`go_test_poc`,
+não hipótese): input de 9 bytes (versão=1 + varint 0xfe+uint32
+codificando `txInCount=50_000_000`) força alocação real de
+400.007.552 bytes (~381.5MB, `runtime.MemStats.TotalAlloc` delta)
+antes de detectar EOF no buffer truncado.
+
+Progressão honesta: `upsert-finding` → `update-finding` (campos
+estruturados em prosa própria) → `corroborated_static` (aceito) →
+`record-validation --type=go_test_poc --result=pass` → `reproduced_local`
+(aceito) → `check-scope("OKG","okx/go-wallet-sdk")` confirmou
+`allowed=true, bountyEligible=true, maxSeverity=critical` →
+`record-deployment-evidence` (`confidence=unverified`: mesmo HEAD
+`12fec6b0616347` de rodadas anteriores, sem tags/releases) →
+`scope_verified` **recusado corretamente** pelo mesmo motivo do
+achado-irmão. `record-impact-assessment` completo:
+`severityRating=medium`, `impactScope=other_system`,
+`availability=high`, mesma calibração e mesmas ressalvas honestas do
+achado-irmão aptos (topologia de produção não verificável, nenhum
+crash real induzido). Nenhum rascunho de relatório escrito (barra de
+`scope_verified` de verdade não alcançada).
+
+Também lido `coins/bitcoin/wire.go` (só o leitor de varint em si,
+sem `make()` próprio) — callers em `message.go` (já lido em rodada
+anterior) aplicam bounds check corretamente em ambos os pontos
+(`witCount > maxWitnessItemsPerInput`, `count > maxAllowed`, ambos
+antes do `make()` correspondente). Sem achado. Grep dirigido por
+`make([]` em `coins/aptos/v2/{script,typetag,rawTransaction,
+typeConversion,nodeClient,transactionInnerPayload}.go` (mesmo pacote
+do achado-irmão aptos) não encontrou nenhum outro padrão de alocação
+não verificada — todos os `make()` ali usam capacidade zero ou
+`len()` de dado já computado/bounded, não um count cru de
+deserialização.
+
+`deep-read-log.json` atualizado (246 → 249: `crypto/zec/tx.go` +
+`coins/zcash/transaction.go`, sendo o achado novo, + `coins/bitcoin/wire.go`
+sem achado). `export-queue` rodado ao final (863 findings).

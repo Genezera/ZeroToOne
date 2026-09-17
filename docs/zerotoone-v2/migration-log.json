@@ -1,10 +1,49 @@
 {
-  "migratedAt": "2026-09-17T12:18:45.731Z",
-  "total": 861,
+  "migratedAt": "2026-09-17T12:36:02.445Z",
+  "total": 862,
   "driftCorrected": 0,
   "logs": [
     {
+      "id": "OKG::okx/go-wallet-sdk/coins/aptos/v2/bcs/deserializer.go::ReadBytes+DeserializeSequenceWithFunction::unbounded_allocation_from_untrusted_length_prefix",
+      "steps": [
+        {
+          "note": "deploymentEvidence restaurado da fila"
+        },
+        {
+          "note": "validation \"go_test_poc\" (2026-09-17T12:33:23.616Z) restaurada da fila"
+        },
+        {
+          "to": "reproduced_local",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "reproduced_local"
+    },
+    {
       "id": "OKG::okx/go-wallet-sdk/crypto/btcd/txscript/opcode.go::line:1972::semgrep_use_of_sha1",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::ifAdmin::slither_incorrect_return",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeToAndCall::slither_incorrect_return",
       "steps": [
         {
           "to": "false_positive",
@@ -32,18 +71,7 @@
       "finalState": "reproduced_local"
     },
     {
-      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeToAndCall::slither_incorrect_return",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::ifAdmin::slither_incorrect_return",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:81::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -66,17 +94,6 @@
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:47::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:81::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -122,7 +139,7 @@
       "finalState": "scope_verified"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:125::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeTo::slither_incorrect_return",
       "steps": [
         {
           "to": "false_positive",
@@ -144,18 +161,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:106::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::upgradeTo::slither_incorrect_return",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:125::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -177,18 +183,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::changeAdmin::slither_incorrect_return",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/amino.go::line:467::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:106::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -210,18 +205,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:49::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:38::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-cctp-contracts/src/proxy/AdminUpgradableProxy.sol::changeAdmin::slither_incorrect_return",
       "steps": [
         {
           "to": "false_positive",
@@ -243,7 +227,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:36::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:49::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -254,7 +238,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:135::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/amino.go::line:467::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -276,7 +260,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:130::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:36::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -287,7 +271,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/core/types.go::line:30::semgrep_math_random_used",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:38::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -309,7 +293,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:159::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:130::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -320,7 +304,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-cctp-contracts/lib/openzeppelin-contracts/contracts/proxy/UpgradeableProxy.sol::constructor::unchecked_call_return",
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:135::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -342,7 +326,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:61::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/zkscrypto/zkscrypto.go::line:159::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -353,7 +337,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:15::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/core/types.go::line:30::semgrep_math_random_used",
       "steps": [
         {
           "to": "false_positive",
@@ -375,7 +359,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/types.go::line:27::semgrep_math_random_used",
+      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/okc/tx/amino/uitl.go::line:61::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -386,18 +370,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:37::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:116::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-cctp-contracts/lib/openzeppelin-contracts/contracts/proxy/UpgradeableProxy.sol::constructor::unchecked_call_return",
       "steps": [
         {
           "to": "false_positive",
@@ -419,7 +392,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:40::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:37::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -430,7 +403,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:41::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/types.go::line:27::semgrep_math_random_used",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/common/bitutil/bitutil.go::line:15::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -452,7 +436,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:115::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:40::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:116::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -485,6 +480,39 @@
       "finalState": "false_positive"
     },
     {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:115::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/scalar_mult_cgo.go::line:41::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:131::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:132::semgrep_use_of_unsafe_block",
       "steps": [
         {
@@ -507,7 +535,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:131::semgrep_use_of_unsafe_block",
+      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/middleware/http_proxy.py::line:151::semgrep_httpsconnection_detected",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_requireValidRefundSig::slither_encode_packed_collision",
       "steps": [
         {
           "to": "false_positive",
@@ -540,29 +579,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-cpn-contracts/src/PaymentSettlementV2.sol::_requireValidRefundSig::slither_encode_packed_collision",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::mulDiv::slither_incorrect_exp",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/middleware/http_proxy.py::line:151::semgrep_httpsconnection_detected",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::_checkNonPayable::slither_msg_value_in_nonpayable",
       "steps": [
         {
           "to": "false_positive",
@@ -584,18 +601,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol::token::slither_uninitialized_local",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::_checkNonPayable::slither_msg_value_in_nonpayable",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/utils/math/Math.sol::mulDiv::slither_incorrect_exp",
       "steps": [
         {
           "to": "false_positive",
@@ -628,7 +634,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:159::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Burns.sol::token::slither_uninitialized_local",
       "steps": [
         {
           "to": "false_positive",
@@ -639,7 +645,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:146::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint::reentrancy_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -661,7 +667,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeToAndCall::unchecked_call_return",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:146::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -672,7 +678,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::gatewayMint::reentrancy_risk",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:159::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -705,7 +711,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:143::semgrep_use_of_unsafe_block",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeToAndCall::unchecked_call_return",
       "steps": [
         {
           "to": "false_positive",
@@ -738,7 +744,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/evals/run.ts::line:111::semgrep_detect_child_process",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:143::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::invMod::slither_divide_before_multiply",
       "steps": [
         {
           "to": "false_positive",
@@ -771,7 +788,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::invMod::slither_divide_before_multiply",
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/evals/run.ts::line:111::semgrep_detect_child_process",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:118::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -804,26 +832,15 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/rust/src/lib/start-dev-server.ts::line:145::semgrep_detect_child_process",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::_mint::unchecked_call_return",
       "steps": [
         {
-          "to": "false_positive",
+          "to": "corroborated_static",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go-ethereum/crypto/secp256k1/secp256.go::line:118::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
+      "finalState": "corroborated_static"
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:469::semgrep_detect_child_process",
@@ -837,40 +854,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/util/agent/auto-install-agentic.ts::line:295::semgrep_detect_child_process",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/minter/Mints.sol::_mint::unchecked_call_return",
-      "steps": [
-        {
-          "to": "corroborated_static",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "corroborated_static"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/packages/node/src/bun-helpers.ts::line:12::semgrep_detect_child_process",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/packages/ruby/src/start-dev-server.ts::line:148::semgrep_detect_child_process",
+      "id": "Vercel Open Source::vercel/vercel/packages/rust/src/lib/start-dev-server.ts::line:145::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -892,7 +876,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/routing/rules.py::line:737::semgrep_exec_detected",
+      "id": "Vercel Open Source::vercel/vercel/packages/node/src/bun-helpers.ts::line:12::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -903,7 +887,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/click/_termui_impl.py::line:451::semgrep_subprocess_shell_true",
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/util/agent/auto-install-agentic.ts::line:295::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -925,7 +909,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeBeaconToAndCall::unchecked_call_return",
+      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/routing/rules.py::line:737::semgrep_exec_detected",
       "steps": [
         {
           "to": "false_positive",
@@ -936,7 +920,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/container/src/util.ts::line:139::semgrep_detect_child_process",
+      "id": "Vercel Open Source::vercel/vercel/packages/ruby/src/start-dev-server.ts::line:148::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -958,7 +942,51 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/lib/openzeppelin-contracts/contracts/proxy/ERC1967/ERC1967Utils.sol::upgradeBeaconToAndCall::unchecked_call_return",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/click/_termui_impl.py::line:451::semgrep_subprocess_shell_true",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Circle BBP::circlefin/evm-cpn-contracts/node_modules/@openzeppelin/contracts/utils/math/Math.sol::mulDiv::slither_divide_before_multiply",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/packages/container/src/util.ts::line:139::semgrep_detect_child_process",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/click/_termui_impl.py::line:595::semgrep_subprocess_shell_true",
       "steps": [
         {
           "to": "false_positive",
@@ -991,17 +1019,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/click/_termui_impl.py::line:595::semgrep_subprocess_shell_true",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Vercel Open Source::vercel/vercel/uv.lock::click@8.3.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -1024,7 +1041,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:1115::semgrep_detect_child_process",
+      "id": "Vercel Open Source::vercel/vercel/test-cursor-detection.js::line:5::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -1046,18 +1063,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:524::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/test-cursor-detection.js::line:5::semgrep_detect_child_process",
+      "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:1115::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -1090,18 +1096,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:459::semgrep_detect_child_process",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:115::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:524::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1126,7 +1121,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/debug/console.py::line:177::semgrep_exec_detected",
+      "id": "Vercel Open Source::vercel/vercel/packages/python/src/start-dev-server.ts::line:459::semgrep_detect_child_process",
       "steps": [
         {
           "to": "false_positive",
@@ -1138,6 +1133,39 @@
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/fs-detectors/src/detect-framework.ts::line:317::semgrep_detect_child_process",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/werkzeug/debug/console.py::line:177::semgrep_exec_detected",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:115::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/wsproto/utilities.py::line:92::semgrep_insecure_hash_algorithm_sha1",
       "steps": [
         {
           "to": "false_positive",
@@ -1162,28 +1190,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:137::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/python/vercel-runtime/src/vercel_runtime/_vendor/wsproto/utilities.py::line:92::semgrep_insecure_hash_algorithm_sha1",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/api/apitesting/fuzzer/fuzzer.go::line:22::semgrep_math_random_used",
       "steps": [
         {
@@ -1195,11 +1201,8 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:64::semgrep_detect_child_process",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:137::semgrep_use_of_unsafe_block",
       "steps": [
-        {
-          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
-        },
         {
           "to": "false_positive",
           "ok": true,
@@ -1231,7 +1234,21 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1beta1/conversion.go::line:44::semgrep_use_of_unsafe_block",
+      "id": "Vercel Open Source::vercel/vercel/utils/update-remix-run-dev.js::line:64::semgrep_detect_child_process",
+      "steps": [
+        {
+          "note": "platformOutcome restaurado da fila (state=\"duplicate\")"
+        },
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:134::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1253,18 +1270,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:257::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/internalversion/zz_generated.conversion.go::line:134::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1beta1/conversion.go::line:44::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1289,7 +1295,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:165::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:257::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1311,7 +1317,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:338::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:165::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1333,7 +1339,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/time_fuzz.go::line:22::semgrep_math_random_used",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/zz_generated.conversion.go::line:338::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1366,18 +1372,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1beta1/conversion.go::line:37::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:240::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1/time_fuzz.go::line:22::semgrep_math_random_used",
       "steps": [
         {
           "to": "false_positive",
@@ -1399,7 +1394,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:267::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:240::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1410,7 +1405,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider/config/v1alpha1/zz_generated.conversion.go::line:204::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/meta/v1beta1/conversion.go::line:37::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1432,7 +1427,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider/volume/helpers/zones.go::line:22::semgrep_math_random_used",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:267::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -1454,7 +1449,29 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider/app/testing/testserver.go::line:250::semgrep_avoid_bind_to_all_interfaces",
+      "id": "Kubernetes::kubernetes/cloud-provider/volume/helpers/zones.go::line:22::semgrep_math_random_used",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/cloud-provider/config/v1alpha1/zz_generated.conversion.go::line:204::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/cloud-provider-aws/go.mod::golang.org/x/crypto@v0.54.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1476,7 +1493,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider-aws/go.mod::golang.org/x/crypto@v0.54.0::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/cloud-provider/app/testing/testserver.go::line:250::semgrep_avoid_bind_to_all_interfaces",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::github.com/google/cel-go@v0.29.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1509,28 +1537,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::github.com/google/cel-go@v0.29.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/cloud-provider-aws/pkg/controllers/tagging/tagging_controller.go::line:454::semgrep_use_of_md5",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Kubernetes::kubernetes/apimachinery/pkg/util/rand/rand.go::line:21::semgrep_math_random_used",
       "steps": [
         {
@@ -1542,7 +1548,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:241::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/cloud-provider-aws/pkg/controllers/tagging/tagging_controller.go::line:454::semgrep_use_of_md5",
       "steps": [
         {
           "to": "false_positive",
@@ -1575,7 +1581,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:155::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:241::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/code-generator/go.mod::golang.org/x/mod@v0.37.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1597,7 +1614,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/code-generator/go.mod::golang.org/x/mod@v0.37.0::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/apis/testapigroup/v1/zz_generated.conversion.go::line:155::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/code-generator/cmd/validation-gen/testscheme/testscheme.go::line:27::semgrep_math_random_used",
       "steps": [
         {
           "to": "false_positive",
@@ -1630,7 +1658,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/code-generator/cmd/validation-gen/testscheme/testscheme.go::line:27::semgrep_math_random_used",
+      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::k8s.io/client-go@v0.0.0-20260829005942-d4060b1a90a3::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1652,7 +1680,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::k8s.io/client-go@v0.0.0-20260829005942-d4060b1a90a3::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/code-generator/examples/go.mod::k8s.io/apimachinery@v0.0.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1685,28 +1713,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/code-generator/examples/go.mod::k8s.io/apimachinery@v0.0.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/cli-runtime/go.mod::k8s.io/apimachinery@v0.0.0-20260829005050-50d9b4a672b4::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Kubernetes::kubernetes/cloud-provider/go.mod::k8s.io/apimachinery@v0.0.0-20260829005050-50d9b4a672b4::known_vulnerable_dependency",
       "steps": [
         {
@@ -1729,18 +1735,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:467::command_injection_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/runtime/serializer/cbor/collections.go::line:24::semgrep_math_random_used",
+      "id": "Kubernetes::kubernetes/cli-runtime/go.mod::k8s.io/apimachinery@v0.0.0-20260829005050-50d9b4a672b4::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1762,7 +1757,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::k8s.io/apiserver@v0.0.0-20260829012249-61371f43144c::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/runtime/serializer/cbor/collections.go::line:24::semgrep_math_random_used",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:467::command_injection_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -1774,6 +1780,28 @@
     },
     {
       "id": "Kubernetes::kubernetes/cloud-provider-openstack/pkg/csi/csi.go::line:21::semgrep_math_random_used",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::k8s.io/apiserver@v0.0.0-20260829012249-61371f43144c::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/code-generator/go.mod::k8s.io/apimachinery@v0.0.0-20260830211405-7dc327f6cd52::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1806,18 +1834,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/code-generator/go.mod::k8s.io/apimachinery@v0.0.0-20260830211405-7dc327f6cd52::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/cloud-provider-aws/go.mod::golang.org/x/mod@v0.37.0::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::go.etcd.io/etcd/client/pkg/v3@v3.7.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1839,18 +1856,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/code-generator/examples/go.mod::k8s.io/client-go@v0.0.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/cloud-provider/go.mod::go.etcd.io/etcd/client/pkg/v3@v3.7.0::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/cloud-provider-aws/go.mod::golang.org/x/mod@v0.37.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1862,6 +1868,17 @@
     },
     {
       "id": "Kubernetes::kubernetes/gengo/examples/defaulter-gen/output_tests/go.mod::golang.org/x/mod@v0.10.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/code-generator/examples/go.mod::k8s.io/client-go@v0.0.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -1894,17 +1911,6 @@
       "finalState": "corroborated_static"
     },
     {
-      "id": "Vercel Open Source::vercel-labs/agent-skills/scripts/build-discovery-index.mjs::line:59::redos_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Kubernetes::kubernetes/gengo/examples/defaulter-gen/output_tests/go.mod::golang.org/x/sys@v0.10.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -1916,7 +1922,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol::run::reentrancy_risk",
+      "id": "Vercel Open Source::vercel-labs/agent-skills/scripts/build-discovery-index.mjs::line:59::redos_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -1949,29 +1955,18 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/103_DeployColdStorageAddressBookPlugin.s.sol::run::reentrancy_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Vercel Open Source::vercel/vercel/packages/cli/evals/experiments/cli.ts::line:108::eval_usage",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/csi-translation-lib/go.mod::k8s.io/apimachinery@v0.0.0-20260829005050-50d9b4a672b4::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:349::command_injection_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -1993,6 +1988,28 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Kubernetes::kubernetes/csi-translation-lib/go.mod::k8s.io/apimachinery@v0.0.0-20260829005050-50d9b4a672b4::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:116::unchecked_call_return",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Circle BBP::circlefin/stablecoin-evm/contracts/v2/NativeFiatTokenV2_2.sol::transfer_transferFrom_mint_authorization::ai_deep_read_finding",
       "steps": [
         {
@@ -2004,7 +2021,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::line:116::unchecked_call_return",
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:349::command_injection_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:471::command_injection_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2029,6 +2057,17 @@
       "finalState": "corroborated_static"
     },
     {
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/scripts/build-binary.mjs::line:431::path_traversal_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Circle BBP::circlefin/buidl-wallet-contracts/script/bytecode-deploy/104_DeployWeightedWebauthnMultisigPlugin.s.sol::run::reentrancy_risk",
       "steps": [
         {
@@ -2040,18 +2079,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:471::command_injection_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/scripts/build-binary.mjs::line:431::path_traversal_risk",
+      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2076,7 +2104,7 @@
       "finalState": "corroborated_static"
     },
     {
-      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-java-protos/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@1.3.20::known_vulnerable_dependency",
+      "id": "Block Open Source::misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt::getQueryStringWithHints::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -2098,7 +2126,7 @@
       "finalState": "inconclusive"
     },
     {
-      "id": "Block Open Source::misk-hibernate/src/main/kotlin/misk/hibernate/vitess/VitessQueryHintHandler.kt::getQueryStringWithHints::ai_deep_read_finding",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:81::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2131,7 +2159,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-launchdarkly/src/provider/index.ts::line:81::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2153,28 +2181,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:345::command_injection_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/evaluate.ts::line:677::prototype_pollution_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Circle BBP::circlefin/evm-gateway-contracts/script/004_UpgradeGatewayWallet.sol::run::reentrancy_risk",
       "steps": [
         {
@@ -2186,7 +2192,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel-labs/agent-skills/packages/react-best-practices-build/src/parser.ts::line:145::redos_risk",
+      "id": "Vercel Open Source::vercel/vercel/packages/cli/src/commands/mcp/mcp.ts::line:345::command_injection_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2208,18 +2214,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel-labs/skills/src/frontmatter.ts::line:5::eval_usage",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding",
+      "id": "Vercel Open Source::vercel-labs/agent-skills/packages/react-best-practices-build/src/parser.ts::line:145::redos_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2241,7 +2236,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk",
+      "id": "Block Open Source::afterpay/sdk-ios::JWT.decode::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel-labs/skills/src/frontmatter.ts::line:5::eval_usage",
       "steps": [
         {
           "to": "false_positive",
@@ -2263,7 +2269,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/flags/packages/vercel-flags-core/src/controller/fetch-datafile.ts::line:35::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2285,7 +2291,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk",
+      "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23-ksp/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.10::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2297,6 +2303,39 @@
     },
     {
       "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:176::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-optimizely/src/provider/index.ts::line:77::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:157::ssrf_risk",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency",
       "steps": [
         {
           "to": "false_positive",
@@ -2330,18 +2369,7 @@
       "finalState": "duplicate"
     },
     {
-      "id": "StackingDAO::ststx-token.clar::set-token-uri::auth_arg_inconsistency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-growthbook/src/provider/index.ts::line:157::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_pollution_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2363,18 +2391,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-vercel/src/index.ts::line:74::prototype_pollution_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:157::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:192::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2396,18 +2413,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/flow/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:192::ssrf_risk",
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-statsig/src/provider/index.ts::line:157::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2419,6 +2425,17 @@
     },
     {
       "id": "Block Open Source::square/wire/wire-gradle-plugin/src/test/projects/kotlin-project-kotlin-protos-kgp23/build.gradle::org.jetbrains.kotlin:kotlin-gradle-plugin@2.3.20::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/flow/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2462,17 +2479,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessage/verify::ai_deep_read_finding",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Vercel Open Source::packages/cli-auth/sso.ts::waitForVerification::ai_deep_read_finding",
       "steps": [
         {
@@ -2484,7 +2490,7 @@
       "finalState": "inconclusive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "id": "Circle BBP::arc-remote-signer/internal/enclave/common/crypto/bls/bls.go::VerifySignedMessage/verify::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -2506,7 +2512,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/crypto/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2528,7 +2534,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Block Open Source::cashapp/hermit/go.mod::github.com/cloudflare/circl@v1.3.8::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/crypto/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2550,15 +2556,15 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
+      "id": "Block Open Source::cashapp/hermit/go.mod::github.com/cloudflare/circl@v1.3.8::known_vulnerable_dependency",
       "steps": [
         {
-          "to": "known_duplicate",
+          "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "known_duplicate"
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/oracle/vrf/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
@@ -2572,7 +2578,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/stacks/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "id": "Circle BBP::circlefin/evm-gateway-contracts/src/modules/wallet/Withdrawals.sol::initiateWithdrawal_withdraw::ai_deep_read_finding",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk",
       "steps": [
         {
           "to": "false_positive",
@@ -2594,40 +2611,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cardano/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Vercel Open Source::vercel/flags/packages/adapter-posthog/src/provider/index.ts::line:92::ssrf_risk",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/zkspace/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/aptos/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/stacks/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2649,6 +2633,28 @@
       "finalState": "false_positive"
     },
     {
+      "id": "OKG::okx/go-wallet-sdk/coins/zkspace/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/cardano/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "OKG::okx/go-wallet-sdk/coins/tron/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -2660,7 +2666,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding",
+      "id": "OKG::okx/go-wallet-sdk/coins/aptos/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2672,6 +2678,17 @@
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/harmony/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "StackingDAO::data-stbtc-v1.clar::compute-ratio::ai_deep_read_finding",
       "steps": [
         {
           "to": "false_positive",
@@ -2718,6 +2735,17 @@
       "finalState": "false_positive"
     },
     {
+      "id": "OKG::okx/go-wallet-sdk/coins/avax/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "OKG::okx/go-wallet-sdk/coins/harmony/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -2729,18 +2757,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/avax/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/bitcoin/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2762,7 +2779,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/bitcoin/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/zksync/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2795,7 +2823,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zksync/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/waves/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2828,28 +2856,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/waves/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/waves/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "OKG::okx/go-wallet-sdk/coins/avax/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -2872,7 +2878,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/oracle/vrf/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/waves/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2905,7 +2911,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/flow/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/oracle/vrf/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2938,29 +2944,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zkspace/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/oracle/vrf/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/flow/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2982,7 +2966,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/bitcoin/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/oracle/vrf/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -2993,7 +2977,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/example/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/zkspace/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3015,7 +2999,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/harmony/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/bitcoin/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3026,7 +3010,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/ton/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3048,7 +3032,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/zkspace/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/harmony/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/example/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3060,6 +3055,39 @@
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/zksync/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/zkspace/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/ton/go.mod::golang.org/x/crypto@v0.36.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::github.com/ethereum/go-ethereum@v1.12.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3092,7 +3120,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::github.com/ethereum/go-ethereum@v1.12.2::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/tron/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3125,28 +3153,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/tron/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "OKG::okx/go-wallet-sdk/coins/polkadot/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "OKG::okx/go-wallet-sdk/coins/kaspa/go.mod::golang.org/x/crypto@v0.14.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -3169,7 +3175,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/elrond/go.mod::golang.org/x/sys@v0.0.0-20200814200057-3d37ad5750ed::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/polkadot/go.mod::golang.org/x/sys@v0.31.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3202,7 +3208,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cardano/go.mod::filippo.io/edwards25519@v1.1.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/elrond/go.mod::golang.org/x/sys@v0.0.0-20200814200057-3d37ad5750ed::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3214,6 +3220,17 @@
     },
     {
       "id": "OKG::okx/go-wallet-sdk/crypto/go.mod::github.com/ethereum/go-ethereum@v1.16.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/cardano/go.mod::filippo.io/edwards25519@v1.1.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3249,17 +3266,6 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "OKG::okx/go-wallet-sdk/coins/elrond/go.mod::golang.org/x/crypto@v0.0.0-20200622213623-75b288015ac9::known_vulnerable_dependency",
       "steps": [
         {
@@ -3271,7 +3277,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/kubeadm/kinder/pkg/cluster/manager/actions/waiter.go::line:22::semgrep_math_random_used",
+      "id": "OKG::okx/go-wallet-sdk/coins/ethereum/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3293,7 +3299,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::github.com/btcsuite/btcd@v0.23.0::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/kubeadm/kinder/pkg/cluster/manager/actions/waiter.go::line:22::semgrep_math_random_used",
       "steps": [
         {
           "to": "false_positive",
@@ -3313,6 +3319,17 @@
         }
       ],
       "finalState": "corroborated_static"
+    },
+    {
+      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::github.com/btcsuite/btcd@v0.23.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/starknet/go.mod::golang.org/x/crypto@v0.12.0::known_vulnerable_dependency",
@@ -3337,7 +3354,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::golang.org/x/sys@v0.11.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/example/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3348,7 +3365,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/example/go.mod::github.com/consensys/gnark-crypto@v0.18.0::known_vulnerable_dependency",
+      "id": "OKG::okx/go-wallet-sdk/coins/cosmos/go.mod::golang.org/x/sys@v0.11.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3381,6 +3398,17 @@
       "finalState": "corroborated_static"
     },
     {
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:66::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Kubernetes::kubernetes/kube-openapi/pkg/spec3/fuzz.go::line:4::semgrep_math_random_used",
       "steps": [
         {
@@ -3392,7 +3420,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:66::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/apimachinery/pkg/util/proxy/dial.go::line:71::insecure_tls",
       "steps": [
         {
           "to": "false_positive",
@@ -3414,7 +3442,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/apimachinery/pkg/util/proxy/dial.go::line:71::insecure_tls",
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/custom_metrics/v1beta2/zz_generated.conversion.go::line:93::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3447,7 +3475,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/custom_metrics/v1beta2/zz_generated.conversion.go::line:93::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:64::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3480,7 +3508,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:64::semgrep_use_of_unsafe_block",
+      "id": "OKG::okx/go-wallet-sdk/coins/eos/go.mod::golang.org/x/crypto@v0.14.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "false_positive",
@@ -3511,17 +3539,6 @@
       "finalState": "corroborated_static"
     },
     {
-      "id": "OKG::okx/go-wallet-sdk/coins/eos/go.mod::golang.org/x/crypto@v0.14.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:130::semgrep_use_of_unsafe_block",
       "steps": [
         {
@@ -3544,15 +3561,15 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::y18n@4.0.0::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:94::semgrep_use_of_unsafe_block",
       "steps": [
         {
-          "to": "known_duplicate",
+          "to": "false_positive",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "known_duplicate"
+      "finalState": "false_positive"
     },
     {
       "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:80::semgrep_use_of_unsafe_block",
@@ -3566,29 +3583,29 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1beta1/zz_generated.conversion.go::line:94::semgrep_use_of_unsafe_block",
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::y18n@4.0.0::known_vulnerable_dependency",
       "steps": [
         {
-          "to": "false_positive",
+          "to": "known_duplicate",
           "ok": true,
           "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
         }
       ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:94::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
+      "finalState": "known_duplicate"
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/solana/go.mod::filippo.io/edwards25519@v1.0.0-rc.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1beta1/zz_generated.conversion.go::line:94::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3621,6 +3638,17 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:103::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1beta1/zz_generated.conversion.go::line:189::semgrep_use_of_unsafe_block",
       "steps": [
         {
@@ -3633,17 +3661,6 @@
     },
     {
       "id": "OKG::okx/go-wallet-sdk/coins/kaspa/go.mod::google.golang.org/protobuf@v1.31.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/external_metrics/v1beta1/zz_generated.conversion.go::line:103::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3687,6 +3704,17 @@
       "finalState": "false_positive"
     },
     {
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:141::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
       "id": "Kubernetes::kubernetes/kubeadm/kinder/go.mod::golang.org/x/oauth2@v0.23.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -3698,7 +3726,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:141::semgrep_use_of_unsafe_block",
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:152::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3720,29 +3748,18 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/custom_metrics/v1beta1/zz_generated.conversion.go::line:100::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:152::semgrep_use_of_unsafe_block",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
       "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:104::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/custom_metrics/v1beta1/zz_generated.conversion.go::line:100::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3819,29 +3836,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ua-parser-js@0.7.32::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/k8s-vault-operator/controllers/vaultsecret_controller.go::line:25::semgrep_math_random_used",
-      "steps": [
-        {
-          "to": "false_positive",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "false_positive"
-    },
-    {
-      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1beta1/zz_generated.conversion.go::line:141::semgrep_use_of_unsafe_block",
       "steps": [
         {
           "to": "false_positive",
@@ -3863,7 +3858,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::minimatch@5.1.0::known_vulnerable_dependency",
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ua-parser-js@0.7.32::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -3875,6 +3870,28 @@
     },
     {
       "id": "Kubernetes::kubernetes/org/go.mod::google.golang.org/protobuf@v1.30.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1beta1/zz_generated.conversion.go::line:141::semgrep_use_of_unsafe_block",
+      "steps": [
+        {
+          "to": "false_positive",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "false_positive"
+    },
+    {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::minimatch@5.1.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -3929,17 +3946,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::immutable@3.7.6::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kubernetes::kubernetes/metrics/pkg/apis/metrics/v1/zz_generated.conversion.go::line:178::semgrep_use_of_unsafe_block",
       "steps": [
         {
@@ -3960,6 +3966,17 @@
         }
       ],
       "finalState": "false_positive"
+    },
+    {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::immutable@3.7.6::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
     },
     {
       "id": "Kubernetes::kubernetes/utils/inotify/inotify_linux.go::line:193::semgrep_use_of_unsafe_block",
@@ -4006,6 +4023,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ws@7.5.9::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Kubernetes::kubernetes/org/go.mod::golang.org/x/oauth2@v0.8.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -4018,17 +4046,6 @@
     },
     {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ws@7.4.5::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ws@7.5.9::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4061,40 +4078,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::pacote@13.6.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::tar@6.1.12::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kubernetes::kubernetes/org/go.mod::github.com/sirupsen/logrus@v1.9.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kubernetes::kubernetes/org/go.mod::github.com/go-git/go-git/v5@v5.6.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4116,6 +4100,28 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kubernetes::kubernetes/org/go.mod::github.com/sirupsen/logrus@v1.9.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::pacote@13.6.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Kubernetes::kubernetes/utils/trace/trace.go::line:23::semgrep_math_random_used",
       "steps": [
         {
@@ -4127,7 +4133,7 @@
       "finalState": "false_positive"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ini@1.3.5::known_vulnerable_dependency",
+      "id": "Kubernetes::kubernetes/org/go.mod::github.com/go-git/go-git/v5@v5.6.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4150,6 +4156,17 @@
     },
     {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::js-yaml@3.13.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ini@1.3.5::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4204,28 +4221,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::flatted@3.2.7::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::semver@5.7.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::brace-expansion@1.1.11::known_vulnerable_dependency",
       "steps": [
         {
@@ -4237,7 +4232,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::flatted@3.2.7::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::semver@7.3.8::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::semver@5.7.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4270,28 +4287,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::form-data@4.0.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::js-yaml@4.1.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::node-fetch@2.6.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -4303,7 +4298,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::form-data@4.0.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::webpack-dev-middleware@3.7.3::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::js-yaml@4.1.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4336,28 +4353,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ansi-regex@5.0.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::path-to-regexp@0.1.7::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::semver@5.5.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -4369,7 +4364,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ansi-regex@5.0.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::json5@2.2.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::path-to-regexp@0.1.7::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4402,28 +4419,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::@babel/traverse@7.12.13::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::semver@7.3.5::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::http-cache-semantics@4.1.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -4435,7 +4430,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::@babel/traverse@7.12.13::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::body-parser@1.20.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::semver@7.3.5::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4468,29 +4485,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::uuid@3.4.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::json5@2.2.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::glob-parent@5.1.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::uuid@3.4.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4523,18 +4529,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::terser@4.8.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::parse-url@6.0.0::known_vulnerable_dependency",
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::json5@2.2.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4556,7 +4551,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::terser@4.8.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::semver@6.3.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::parse-url@6.0.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4589,17 +4606,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::serialize-javascript@4.0.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::ansi-regex@4.1.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -4622,18 +4628,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::semver@5.7.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::cross-spawn@7.0.1::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::serialize-javascript@4.0.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4655,7 +4650,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::prismjs@1.17.1::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::semver@5.7.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4677,6 +4672,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Kiwi.com::kiwicom/js-iam-middleware/yarn.lock::cross-spawn@7.0.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::postcss@7.0.39::known_vulnerable_dependency",
       "steps": [
         {
@@ -4688,7 +4694,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::loader-utils@2.0.2::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::prismjs@1.17.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4721,6 +4727,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::loader-utils@2.0.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::minimatch@0.2.14::known_vulnerable_dependency",
       "steps": [
         {
@@ -4743,28 +4760,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::js-yaml@3.14.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::sha.js@2.4.11::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Vercel Open Source::vercel/flags/pnpm-lock.yaml::browserslist@4.28.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -4776,7 +4771,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::js-yaml@3.14.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Kubernetes::kubernetes/cloud-provider/go.mod::google.golang.org/grpc@v1.82.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::sha.js@2.4.11::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4809,28 +4826,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::body-parser@1.19.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::form-data@3.0.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::braces@3.0.2::known_vulnerable_dependency",
       "steps": [
         {
@@ -4842,7 +4837,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::growl@1.8.1::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::body-parser@1.19.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4864,7 +4859,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::form-data@3.0.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Plaid::plaid/react-plaid-link/yarn.lock::brace-expansion@1.1.11::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::growl@1.8.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4941,29 +4958,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::nanoid@3.3.8::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::minimatch@9.0.5::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::browserslist@4.28.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::nanoid@3.3.8::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -4985,7 +4991,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::loader-utils@1.2.3::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::minimatch@9.0.5::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5018,6 +5024,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::loader-utils@1.2.3::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::uuid@9.0.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -5040,6 +5057,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::vitest@2.0.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::tar-fs@3.0.6::known_vulnerable_dependency",
       "steps": [
         {
@@ -5051,7 +5079,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::vitest@2.0.1::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/uv.lock::urllib3@2.6.3::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5084,6 +5112,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::postcss@8.4.49::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel-labs/skills/pnpm-lock.yaml::nanoid@3.3.15::known_vulnerable_dependency",
       "steps": [
         {
@@ -5095,18 +5134,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/uv.lock::urllib3@2.6.3::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::postcss@8.4.49::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::braces@2.3.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5139,39 +5167,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::cross-spawn@7.0.3::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::braces@2.3.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::browserslist@4.20.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Vercel Open Source::vercel/vercel/scripts/node_bench/pnpm-lock.yaml::body-parser@1.19.2::known_vulnerable_dependency",
       "steps": [
         {
@@ -5183,18 +5178,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Plaid::plaid/react-plaid-link/yarn.lock::@babel/plugin-transform-modules-systemjs@7.17.8::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::glob@10.4.5::known_vulnerable_dependency",
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::cross-spawn@7.0.3::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5216,7 +5200,51 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::@babel/plugin-transform-modules-systemjs@7.17.8::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Plaid::plaid/react-plaid-link/yarn.lock::browserslist@4.20.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::uuid@8.3.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::glob@10.4.5::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::tar@7.5.7::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5249,40 +5277,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::vitest@2.1.4::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::tar@7.5.7::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::js-yaml@4.1.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::uuid@10.0.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::vitest@2.1.4::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5304,7 +5310,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::mysql2@3.14.2::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/scripts/internal-dependency-trace/pnpm-lock.yaml::js-yaml@4.1.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5348,6 +5354,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::mysql2@3.14.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::linkify-it@5.0.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -5370,17 +5387,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::tar-fs@1.16.3::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::uuid@9.0.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -5393,6 +5399,17 @@
     },
     {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::tar-fs@1.16.5::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::tar-fs@1.16.3::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5447,7 +5464,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::js-yaml@3.14.1::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::js-yaml@4.1.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5469,18 +5486,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::glob@10.3.16::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::js-yaml@4.1.1::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::js-yaml@3.14.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5492,6 +5498,28 @@
     },
     {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::minimatch@3.1.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::glob@10.3.16::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::minimatch@5.0.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5514,17 +5542,6 @@
     },
     {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::js-yaml@4.1.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::minimatch@5.0.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5579,7 +5596,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::cross-spawn@6.0.5::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::is-url@1.2.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5601,7 +5618,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::path-to-regexp@6.2.1::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::cross-spawn@6.0.5::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5612,7 +5629,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::is-url@1.2.2::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::path-to-regexp@6.2.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5645,7 +5662,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::cross-spawn@7.0.3::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::@auth/core@0.37.4::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::defu@2.0.4::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5667,18 +5706,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::cross-spawn@7.0.3::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::defu@2.0.4::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::brace-expansion@1.1.15::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5701,17 +5729,6 @@
     },
     {
       "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::minimatch@3.1.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::brace-expansion@1.1.15::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5766,7 +5783,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::postcss@8.5.3::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::js-yaml@3.14.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5788,7 +5805,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::js-yaml@3.14.1::known_vulnerable_dependency",
+      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::postcss@8.5.3::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/mock_oauth_server/package-lock.json::path-to-regexp@0.1.12::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5811,17 +5839,6 @@
     },
     {
       "id": "Vercel Open Source::vercel/vercel/pnpm-lock.yaml::adm-zip@0.5.17::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/mock_oauth_server/package-lock.json::path-to-regexp@0.1.12::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5898,28 +5915,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::@babel/plugin-transform-modules-systemjs@7.28.5::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::flatted@3.3.3::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::js-yaml@3.14.2::known_vulnerable_dependency",
       "steps": [
         {
@@ -5931,7 +5926,29 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-zoom/webapp/package-lock.json::@babel/plugin-transform-modules-systemjs@7.28.5::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/flags/pnpm-lock.yaml::sharp@0.34.5::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::flatted@3.3.3::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -5986,7 +6003,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/go.mod::golang.org/x/crypto@v0.51.0::known_vulnerable_dependency",
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::fast-uri@3.1.4::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6008,18 +6025,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/webapp/package-lock.json::brace-expansion@1.1.12::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::fast-uri@3.1.4::known_vulnerable_dependency",
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/go.mod::golang.org/x/crypto@v0.51.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6031,6 +6037,17 @@
     },
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::semver@7.5.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/webapp/package-lock.json::brace-expansion@1.1.12::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6063,6 +6080,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::brace-expansion@1.1.11::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::fast-uri@3.1.4::known_vulnerable_dependency",
       "steps": [
         {
@@ -6075,17 +6103,6 @@
     },
     {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::path-to-regexp@0.1.12::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Vercel Open Source::vercel/vercel/packages/config/pnpm-lock.yaml::brace-expansion@1.1.11::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6118,28 +6135,6 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::nanoid@3.3.17::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::js-yaml@3.15.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
       "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/go.mod::google.golang.org/grpc@v1.82.1::known_vulnerable_dependency",
       "steps": [
         {
@@ -6151,18 +6146,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::serialize-javascript@6.0.2::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::semver@5.7.1::known_vulnerable_dependency",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::nanoid@3.3.17::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6184,7 +6168,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::undici@7.28.0::known_vulnerable_dependency",
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::serialize-javascript@6.0.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::js-yaml@3.15.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6206,18 +6201,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::js-yaml@4.1.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::fast-uri@3.1.5::known_vulnerable_dependency",
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-github/e2e/playwright/package-lock.json::semver@5.7.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6239,7 +6223,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::uuid@8.3.2::known_vulnerable_dependency",
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::js-yaml@4.1.1::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6250,7 +6234,18 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::brace-expansion@1.1.12::known_vulnerable_dependency",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::undici@7.28.0::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::fast-uri@3.1.5::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6272,18 +6267,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::@babel/plugin-transform-modules-systemjs@7.27.1::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::uuid@7.0.3::known_vulnerable_dependency",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::uuid@8.3.2::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6305,6 +6289,39 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::@babel/plugin-transform-modules-systemjs@7.27.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::brace-expansion@1.1.12::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::brace-expansion@2.1.2::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Vercel Open Source::vercel/flags/pnpm-lock.yaml::fflate@0.8.2::known_vulnerable_dependency",
       "steps": [
         {
@@ -6316,18 +6333,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:734::redos_risk",
-      "steps": [
-        {
-          "to": "candidate",
-          "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        }
-      ],
-      "finalState": "candidate"
-    },
-    {
-      "id": "Mattermost Public Bug Bounty Engagement ::mattermost/mattermost-plugin-jira/webapp/package-lock.json::brace-expansion@2.1.2::known_vulnerable_dependency",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::uuid@7.0.3::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6349,15 +6355,15 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/auth0-spa-js/.github/actions/lint-pr-title/package-lock.json::fast-uri@3.1.3::known_vulnerable_dependency",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:734::redos_risk",
       "steps": [
         {
-          "to": "known_duplicate",
+          "to": "candidate",
           "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+          "reason": "estado inicial de todo finding migrado"
         }
       ],
-      "finalState": "known_duplicate"
+      "finalState": "candidate"
     },
     {
       "id": "Auth0 by Okta::auth0/auth0-spa-js/package-lock.json::brace-expansion@1.1.14::known_vulnerable_dependency",
@@ -6382,6 +6388,28 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Auth0 by Okta::auth0/auth0-spa-js/.github/actions/lint-pr-title/package-lock.json::fast-uri@3.1.3::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
+      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::image-size@1.2.1::known_vulnerable_dependency",
+      "steps": [
+        {
+          "to": "known_duplicate",
+          "ok": true,
+          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
+        }
+      ],
+      "finalState": "known_duplicate"
+    },
+    {
       "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:140::redos_risk",
       "steps": [
         {
@@ -6393,7 +6421,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/yarn.lock::image-size@1.2.1::known_vulnerable_dependency",
+      "id": "Auth0 by Okta::auth0/auth0-spa-js/package-lock.json::trim-newlines@1.0.0::known_vulnerable_dependency",
       "steps": [
         {
           "to": "known_duplicate",
@@ -6415,6 +6443,17 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:18::eval_usage",
+      "steps": [
+        {
+          "to": "candidate",
+          "ok": true,
+          "reason": "estado inicial de todo finding migrado"
+        }
+      ],
+      "finalState": "candidate"
+    },
+    {
       "id": "Auth0 by Okta::auth0/auth0-spa-js/.github/actions/lint-pr-title/package-lock.json::js-yaml@4.3.0::known_vulnerable_dependency",
       "steps": [
         {
@@ -6426,18 +6465,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/auth0-spa-js/package-lock.json::trim-newlines@1.0.0::known_vulnerable_dependency",
-      "steps": [
-        {
-          "to": "known_duplicate",
-          "ok": true,
-          "reason": "linha da fila já vinha com `state` de uma exportação v2 anterior — só sincronizado, não reprocessado"
-        }
-      ],
-      "finalState": "known_duplicate"
-    },
-    {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:18::eval_usage",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:299::eval_usage",
       "steps": [
         {
           "to": "candidate",
@@ -6470,29 +6498,7 @@
       "finalState": "known_duplicate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:299::eval_usage",
-      "steps": [
-        {
-          "to": "candidate",
-          "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        }
-      ],
-      "finalState": "candidate"
-    },
-    {
       "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:146::command_injection_risk",
-      "steps": [
-        {
-          "to": "candidate",
-          "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        }
-      ],
-      "finalState": "candidate"
-    },
-    {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:290::prototype_pollution_risk",
       "steps": [
         {
           "to": "candidate",
@@ -6514,7 +6520,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:140::tainted_data_flow",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:290::prototype_pollution_risk",
       "steps": [
         {
           "to": "candidate",
@@ -6536,7 +6542,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:247::tainted_data_flow",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:140::tainted_data_flow",
       "steps": [
         {
           "to": "candidate",
@@ -6558,7 +6564,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:284::prototype_pollution_risk",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:247::tainted_data_flow",
       "steps": [
         {
           "to": "candidate",
@@ -6591,18 +6597,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:298::eval_usage",
-      "steps": [
-        {
-          "to": "candidate",
-          "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        }
-      ],
-      "finalState": "candidate"
-    },
-    {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:398::prototype_pollution_risk",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:284::prototype_pollution_risk",
       "steps": [
         {
           "to": "candidate",
@@ -6624,7 +6619,40 @@
       "finalState": "known_duplicate"
     },
     {
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:298::eval_usage",
+      "steps": [
+        {
+          "to": "candidate",
+          "ok": true,
+          "reason": "estado inicial de todo finding migrado"
+        }
+      ],
+      "finalState": "candidate"
+    },
+    {
       "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:395::tainted_data_flow",
+      "steps": [
+        {
+          "to": "candidate",
+          "ok": true,
+          "reason": "estado inicial de todo finding migrado"
+        }
+      ],
+      "finalState": "candidate"
+    },
+    {
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:398::prototype_pollution_risk",
+      "steps": [
+        {
+          "to": "candidate",
+          "ok": true,
+          "reason": "estado inicial de todo finding migrado"
+        }
+      ],
+      "finalState": "candidate"
+    },
+    {
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:266::prototype_pollution_risk",
       "steps": [
         {
           "to": "candidate",
@@ -6657,7 +6685,7 @@
       "finalState": "candidate"
     },
     {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:266::prototype_pollution_risk",
+      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:269::prototype_pollution_risk",
       "steps": [
         {
           "to": "candidate",
@@ -6680,17 +6708,6 @@
     },
     {
       "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:400::tainted_data_flow",
-      "steps": [
-        {
-          "to": "candidate",
-          "ok": true,
-          "reason": "estado inicial de todo finding migrado"
-        }
-      ],
-      "finalState": "candidate"
-    },
-    {
-      "id": "Auth0 by Okta::auth0/react-native-auth0/.yarn/releases/yarn-4.11.0.cjs::line:269::prototype_pollution_risk",
       "steps": [
         {
           "to": "candidate",
