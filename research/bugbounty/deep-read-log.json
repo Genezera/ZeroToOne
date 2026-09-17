@@ -1648,7 +1648,15 @@
     "coins/ton/tvm/cell/cell.go",
     "coins/ton/tvm/cell/reader.go",
     "coins/ton/transaction.go",
-    "coins/ton/ton/wallet/wallet.go"
+    "coins/ton/ton/wallet/wallet.go",
+    "coins/nervos/address.go",
+    "coins/nervos/crypto/bech32.go",
+    "coins/nervos/builder.go",
+    "coins/cardano/address.go",
+    "coins/cardano/transaction.go",
+    "coins/cardano/tx_test.go",
+    "coins/polkadot/address.go",
+    "crypto/ss58/ss58.go"
   ],
   "kubernetes/apiserver": [
     "pkg/authorization/union/union.go (unionAuthzHandler.Authorize/ConditionsAwareAuthorize/EvaluateConditions -- authorizer que encadeia multiplos sub-authorizers, retorna a primeira decisao Allow/Deny e propaga o err junto; short-circuit correto, NoOpinion sempre continua a cadeia. Achado em potencial investigado: linha 92-93 retorna `decision, reason, err` mesmo quando decision==Allow com err!=nil -- mas pkg/endpoints/filters/authorization.go:78-79 documenta e trata isso deliberadamente (\"an authorizer like RBAC could encounter evaluation errors and still allow the request, so authorizer decision is checked before error here\"), comportamento intencional e ja documentado no ponto de consumo, nao introduzido por union.go. Sem achado)",

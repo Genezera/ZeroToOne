@@ -5026,3 +5026,86 @@ não precisam de nova entrada (achado inexistente, sem mudança).
 
 Nenhuma transição de estado neste programa nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-17b (rotina agendada, push webhook a175c323, sessão cloud)
+
+`research-plan` no início: 3 `actionable` (`verify_prior_art`,
+aptos/ethereum/kaspa), mesmo bloqueio estrutural das rodadas 5-8
+(duplicate-check exige GitHub API só disponível com
+`add_repo access=push`, não solicitado). Reconfirmado sem novo teste
+de curl (redundante após 20+ rodadas idênticas 14/09-17/09) — usei o
+próprio system-reminder de escopo desta sessão, que já declara
+`GitHub access... scoped to: genezera/zerotoone`, como evidência de
+que o ambiente não mudou. Addendum curto registrado em cada um dos 3
+achados; nenhuma transição tentada; nenhuma notificação repetida ao
+usuário (mesma prática já adotada na rodada 9 anterior).
+
+`list-pending` global vazio de novo. Deep-read proativo: clone raso
+de `okx/go-wallet-sdk`, diff contra `deep-read-log.json` (230 lidos),
+priorizando arquivos de parsing de endereço/crypto ainda não lidos
+(`coins/nervos/address.go`, `coins/cardano/address.go`,
+`coins/polkadot/address.go` — mesma classe de arquivo que já produziu
+achados reais neste programa: silent-zero-fallback e index-panic em
+decodificação de endereço).
+
+**2 achados novos reais, ambos confirmados por PoC Go executada de
+verdade (não simulada) e avançados honestamente até `reproduced_local`
+com `reportable=true`/`medium` (mesma calibração do achado-irmão
+`kaspa.Transfer`/`bech32_empty_payload_index_panic`, já `reportable=true`
+neste programa):**
+
+1. **`coins/nervos/address.go::Parse`** — os branches `"00"`
+   (FullBech32m) e `"02"`/`"04"` (FullBech32) fatiam `payload[2:66]`/
+   `payload[66:68]`/`payload[68:]` sem checar `len(payload)` antes,
+   diferente do branch `"01"` (Short) que valida corretamente. Um
+   endereço bech32m mínimo (`"ckb1qqptjaeq"`, só o byte de header)
+   causa panic `slice bounds out of range`. PoC confirmou em 3 níveis:
+   `Parse()` direto, `ValidateAddress()` (que deveria ser checagem
+   booleana segura, mas propaga o panic — só captura `error`, não tem
+   `recover()`), e o entrypoint público de mais alto nível do pacote
+   `TransactionBuilder.AddOutput(address, amount)` (`builder.go:64`),
+   que chama `Parse()` como primeira linha do corpo. Tentei refutar o
+   branch `"02"` com o mesmo payload mínimo — não reproduziu (a
+   checagem interna de encoding bech32-vs-bech32m rejeitou antes de
+   fatiar) — documentado para não superestimar o alcance; só `"00"`
+   confirmado vulnerável.
+2. **`coins/cardano/address.go::NewAddressFromBytes`** — lê
+   `bytes[0]` (linhas 49-50) ANTES de qualquer checagem de
+   comprimento, ao contrário de todos os branches do switch abaixo
+   (que checam `len(bytes)` explicitamente). `bytes` vazio causa panic
+   `index out of range [0]`. PoC confirmou em 4 níveis: direto
+   (`nil`), via `NewAddress()` com endereço bech32 de payload vazio
+   (`"addr1mykd6t"`), via `UnmarshalCBOR()` com um CBOR byte-string
+   vazio (`0x40` — caminho mais amplo, não depende de sintaxe bech32
+   nenhuma, relevante porque o pacote também importa
+   `veraison/go-cose` para mensagens assinadas COSE/CBOR em
+   `message.go`), e via `CreateTxBuilder(txData)` — o entrypoint
+   público de mais alto nível de construção de transação
+   (`transaction.go:60`, `txData.ToAddress` direto do chamador, mesmo
+   padrão estrutural do `TxData.ToAddress` do achado-irmão kaspa) —
+   usando fixture real do próprio repositório (mesma forma de
+   `tx_test.go::TestMinFee`), só trocando `ToAddress`.
+
+Ambos: `record-impact-assessment` com `attackerControlledInput=true`,
+`impactScope=other_system`, `availability=high`, `reportable=true`,
+`severityRating=medium` (não High/Critical: o impacto concreto
+depende de isolamento de panic por requisição no processo chamador,
+variável fora do controle/visibilidade deste SDK — mesma ressalva já
+documentada no achado-irmão kaspa). `record-deployment-evidence` com
+`confidence=unverified` (SDK puro, sem app cliente OKX Wallet neste
+repositório para confirmar consumidor real) — como esperado,
+`transition scope_verified` foi recusado corretamente pelo gate
+(“DeploymentEvidence existe mas confidence=unverified”); estado final
+desta rodada é `reproduced_local` para ambos, entraram no
+`research-plan` como `actionable`/`verify_prior_art`, mesmo bloqueio
+estrutural de GitHub API dos 3 achados-irmãos já documentados acima —
+não solicitado `add_repo access=push`, mesma decisão já registrada.
+
+`coins/polkadot/address.go` e `crypto/ss58/ss58.go` também lidos
+(cadeia completa `PubKeyToAddress`/`AddressToPublicKey`/
+`ValidateAddress` → `ss58.Encode`/`DecodeToPub`/`VerityAddress`) —
+`ss58` checa `len(data) != 35` antes de qualquer fatia em todos os
+três caminhos; sem achado.
+
+`deep-read-log.json` atualizado (230 → 238). `export-queue` rodado ao
+final.
