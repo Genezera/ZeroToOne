@@ -5382,3 +5382,61 @@ como alvo desta rodada por esse motivo, não por descuido.
 
 `deep-read-log.json` atualizado (249 → 254). `export-queue` rodado ao
 final (863 findings).
+
+## Rodada 2026-09-17h (sessão cloud, disparada por push no GitHub, HEAD 85600c0)
+
+`list-pending` vazio; `research-plan` devolveu os mesmos 7 `actionable`
+de rodadas anteriores (todos OKG `reproduced_local`/`verify_prior_art`).
+Tentativa real de `search-prior-art` (config com 3 queries, achado
+aptos `ReadBytes+DeserializeSequenceWithFunction`) reconfirmou
+`GitHub API HTTP 403 (rate limit esgotado)`. Diferente das rodadas
+anteriores, desta vez a causa foi isolada em detalhe (não só
+reconfirmada às cegas): diagnóstico direto com `node -e` chamando
+`fetch()` fora do CLI mostrou que `/search/issues` e `/search/commits`
+funcionam normalmente sem Authorization (200, bucket `search` do
+GitHub com folga, 10/min); quem bloqueia é a chamada seguinte de
+`listAllRepositoryAdvisories` a `/repos/okx/go-wallet-sdk/security-advisories`
+(bucket `core`, não `search`), que devolveu 403 real do GitHub (não do
+proxy do ambiente) com corpo `"API rate limit exceeded for
+35.254.30.98"` e `x-ratelimit-remaining=0`/`limit=60` — o IP de saída
+compartilhado deste ambiente já estava com o bucket `core` anônimo
+(60/hora) esgotado por outro tráfego antes desta tentativa (reset
+~13:29 UTC). Também confirmado que `GITHUB_TOKEN` desta sessão, batido
+direto contra o `api.github.com` real (fora do CLI/proxy), volta 401
+`"Bad credentials"` — não é um PAT válido para REST direto, só serve
+para o proxy/MCP interno; o retry anônimo de `githubFetch` cobre isso
+corretamente, mas cai no mesmo bucket `core` compartilhado e já raso.
+Não é causa nova (mesma conclusão de "fallback anônimo já esgotado" de
+20+ rodadas desde 14/09), só a confirmação de qual bucket específico
+(`core`, não `search`) é o gargalo real — registrado como ADENDO em
+prosa no `reasoning` do achado aptos via `update-finding`, sem fabricar
+evidência nem repetir a tentativa individualmente para os outros 6
+achados-irmãos (mesmo bloqueio de endpoint, não específico de finding).
+Nenhuma transição de estado tentada.
+
+Leitura profunda proativa (clone raso próprio de `okx/go-wallet-sdk`
+HEAD atual): `crypto/rlp/decode.go` (vendored go-ethereum; o próprio
+doc comment do upstream já avisa que `Decode` sem limite de input pode
+alocar de forma perigosa a partir de `size` não verificado — mas
+`DecodeBytes`/`NewStream(r, len(b))` seta `s.limited=true`, que checa
+`s.size` contra `s.remaining`/`tos.size-tos.pos` antes de qualquer
+`make()`; grep confirmou que nenhum código do wallet-sdk usa a API
+insegura documentada (`rlp.Decode`/`rlp.NewStream` com reader
+ilimitado) — mesma categoria de exclusão dos outros forks go-ethereum
+já catalogados, sem achado). `coins/kaspa/transaction.go::deserialize`
++ `CalTxHash` (entrypoint público real, mas o `make([]*DomainTransactionInput,
+len(tx.Inputs))` usa `len()` de um slice já populado por
+`json.Unmarshal`, não um length-prefix cru estilo BCS/Uleb128 — JSON
+não permite declarar uma contagem grande sem incluir os elementos, sem
+amplificação possível; cadeia seguida até `transactionid.FromBytes`/
+`subnetworks.FromString` → `externalapi.NewDomainHashFromByteSlice`,
+que checa `len(hashBytes)!=32` antes do `copy` — fail-closed, sem
+achado). `coins/kaspa/.../utxo/serialization.go::DeserializeUTXO`
+(grep confirmou zero chamadores dentro de `coins/kaspa` — código
+vendored do node `kaspad` completo, inalcançável a partir de qualquer
+API pública do wallet-sdk; não investigado a fundo por esse motivo,
+consistente com a regra de só seguir cadeia até um entrypoint de fato
+exposto).
+
+`deep-read-log.json` atualizado (254 → 257). `export-queue` rodado ao
+final.
