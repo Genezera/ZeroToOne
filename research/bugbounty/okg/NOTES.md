@@ -5342,3 +5342,43 @@ deserialização.
 `deep-read-log.json` atualizado (246 → 249: `crypto/zec/tx.go` +
 `coins/zcash/transaction.go`, sendo o achado novo, + `coins/bitcoin/wire.go`
 sem achado). `export-queue` rodado ao final (863 findings).
+
+## Rodada 2026-09-17g (sessão cloud, disparada por push no GitHub, HEAD 6f7ec7a)
+
+`list-pending` vazio; `research-plan` devolveu os mesmos 7 `actionable`
+de rodadas anteriores (todos OKG `reproduced_local`/`verify_prior_art`).
+Tentativa real de `search-prior-art` (config com 3 queries, achado aptos
+`ParseStringRelaxed`) reconfirmou ao vivo `GitHub API HTTP 403 (rate
+limit esgotado)` — mesmo bloqueio estrutural documentado em 20+ rodadas
+desde 14/09, sem mudança de ambiente. Chamada falhou antes de gravar
+qualquer `validationsHistory` nova (confirmado inspecionando os
+timestamps do finding — nenhum registro novo de 17/09 foi criado por
+essa tentativa), então só foi adicionado um ADENDO em prosa ao
+`reasoning` via `update-finding`, sem fabricar evidência. Não repetido
+individualmente para os outros 6 achados-irmãos (mesmo bloqueio de
+endpoint). Nenhuma transição de estado tentada.
+
+Leitura profunda proativa (5 arquivos, todos ainda não lidos neste
+programa): `coins/solana/base/bin.go` (só o lado `Encoder`, escreve —
+não lê — dados; `TypeIDFromBytes` usa `copy()` limitado a array fixo
+`[8]byte`), `coins/kaspa/kaspad/domain/consensus/utils/subnetworks/from_bytes.go`
+(checa `len(subnetworkIDBytes) != DomainSubnetworkIDSize` antes do
+`copy`), `coins/oasis/cbor/cbor.go` (wrapper próprio, não vendored,
+sobre `crypto/cbor` com limites explícitos documentados para input
+untrusted — `MaxArrayElements`/`MaxMapPairs=10_000_000` — exemplo de
+código defensivo bem desenhado, ao contrário dos achados-irmãos
+confirmados; `UnmarshalTrusted` de limites relaxados existe mas não
+tem nenhum chamador dentro do pacote `oasis`), `coins/tezos/types/base58.go`
+(`CheckDecode` checa `len(decoded) < 4+vlen` antes de fatiar), e
+`coins/nervos/types/common.go` + `input.go::Hash.SetBytes` (padrão
+go-ethereum: trunca `b` pros últimos `HashLength` bytes antes do
+`copy` final, nunca estoura o array `[32]byte`). Nenhum achado novo —
+todos bounds-checked corretamente ou não processam input externo.
+
+Também confirmado (via `list-deep-read-candidates.mjs`) que
+`plaid/plaid-ruby` e `plaid/react-plaid-link` seguem esgotados (todo
+código hand-written já coberto em rodadas anteriores) — não escolhidos
+como alvo desta rodada por esse motivo, não por descuido.
+
+`deep-read-log.json` atualizado (249 → 254). `export-queue` rodado ao
+final (863 findings).
