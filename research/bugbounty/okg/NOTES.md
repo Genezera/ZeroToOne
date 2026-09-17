@@ -4956,3 +4956,34 @@ achado). `deep-read-log.json` atualizado (218 → 221).
 
 Nenhuma transição de estado neste programa nesta rodada. `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-17 (8), sessão cloud
+
+`list-pending` vazio (0 candidatos). `research-plan` repetiu os mesmos
+3 `actionable` (`verify_prior_art`, aptos/ethereum/kaspa) -- mesmo
+bloqueio estrutural já documentado nas rodadas 5-7 (duplicate-check
+exige GitHub API que só fica disponível com `add_repo access=push`,
+não solicitado sem aprovação do usuário; confirmado de novo lendo o
+`reasoning` já salvo no achado aptos, 20+ rodadas idênticas desde
+14/09). Não repetida a tentativa nem a notificação -- sem evidência
+nova.
+
+Deep-read proativo: clone raso de `okx/go-wallet-sdk`, diff contra
+`deep-read-log.json` (221 lidos). `coins/solana/token/ApproveChecked.go`
+(builder SPL Token vendorizado de gagliardetto/solana-go -- Validate()
+completo, chamador real `sol.go:AppendTokenApproveCheckedInstruction`
+usa `base.MustPublicKeyFromBase58`, confirmado que `PublicKeyFromBase58`
+é fail-closed (checa comprimento pós-base58.Decode, erro se não bater)
+-- ao contrário do padrão silent-zero-fallback já reportado em outros
+coins deste SDK, aqui endereço inválido causa panic, não substituição
+silenciosa; sem achado) e `coins/zksync/core/token.go` (helpers de
+formatação/lookup, sem parsing de entrada não confiável nem sink de
+fundos; sem achado). Nota operacional: por engano também reabri
+`coins/solana/token/SetAuthority.go` e `instruction.go` a partir de
+listagem manual de diretório em vez do diff do log -- ambos já
+constavam em `deep-read-log.json` de rodada anterior; confirmado que
+não precisam de nova entrada (achado inexistente, sem mudança).
+`deep-read-log.json` atualizado (221 → 223).
+
+Nenhuma transição de estado neste programa nesta rodada. `export-queue`
+rodado ao final.
