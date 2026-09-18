@@ -5546,3 +5546,78 @@ formalizado.
 
 `deep-read-log.json` atualizado (260 → 263). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-18 (push automático via GitHub webhook, sessão cloud)
+
+`research-plan` devolveu 8 `actionable`, todos OKG (nenhum dos outros 3
+programas ativos tinha item actionable nesta rodada): 1 `assess_impact`
+(stacks `DeserializeCV::forged_length_slice_bounds_panic`, criado na
+rodada anterior) + 7 `verify_prior_art` (aptos BCS, aptos
+ParseStringRelaxed, cardano NewAddressFromBytes, ethereum
+address_parse_silent_zero_fallback, kaspa bech32 Decode, nervos bech32m
+Decode, zec ZecDecode — todos já `reproduced_local`).
+
+**assess_impact (DeserializeCV)**: avaliação estruturada registrada via
+`record-impact-assessment`. `technicalValidity=confirmed`,
+`attackerControlledInput=true` (o bug e a PoC da rodada anterior são
+reais), mas `impactScope=self_request_only` e `reportable=false`:
+`DeserializeCV` não tem chamador wireado dentro do próprio repositório
+(só os testes do pacote), então o único efeito demonstrado é derrubar o
+próprio processo de quem decide chamar a função sobre dado não
+confiável — não há vítima/sistema de terceiro confirmado, mesmo padrão
+já aplicado aos 14 achados-irmãos OKG que `research-plan` já mantém em
+`below_campaign_impact` (cardano/kaspa/nervos/etc., todos DoS/panic em
+função exportada do mesmo SDK sem reachability interna comprovada).
+Consistência deliberada com o CLAUDE.md do projeto: não aumentar
+severidade só pra satisfazer o gate. O achado passa a aparecer como
+`held/below_campaign_impact` na próxima leitura de `research-plan`.
+
+**verify_prior_art (7 achados)**: `search-prior-art` tentado de verdade
+contra `okx/go-wallet-sdk` (config real, 3 queries distintas) — falhou
+com `GitHub API HTTP 403 (rate limit esgotado)`. Investigação confirmou
+que não é cota do GitHub: é o proxy de rede desta sessão bloqueando
+`api.github.com` pra repositório fora do escopo anexado à sessão
+(`curl` direto devolveu corpo "GitHub access to this repository is not
+enabled for this session"). `add_repo(owner=okx, repo=go-wallet-sdk,
+access=read)` confirma leitura/clone git anônimo já funciona sem
+anexar nada, mas "GitHub API tools ... do not cover unattached
+repositories" — só `access=push` libera a API de busca, o que
+anexaria credenciais de escrita a um repositório de terceiro só pra
+viabilizar uma busca de leitura; decidido não fazer isso (excede o
+mandato razoável desta rodada). Separadamente, mesmo com acesso à API,
+existe uma lacuna estrutural em `novelty-risk.mjs`/`cli.mjs`:
+`cmdRecordDuplicateCheck` sempre sobrescreve `noveltyStatus` com o
+resultado de `assessNoveltyRisk()` (que só devolve
+`public_match`/`regression`/`private_unknown`), então o valor
+`low_competition_reviewed` que o caminho relaxado de
+`duplicateCheckGate` espera (ativado pra OKG via
+`competitionLevel:'low'`) nunca é alcançável pela CLI como está escrita
+hoje — consertar isso é fora do escopo de uma rodada de triagem de
+achados. Nota registrada em cada um dos 7 achados via `update-finding`
+(desta vez em todos, não só num representativo, pra cada achado se
+auto-documentar). Nenhuma transição forçada, nenhum método/queries
+fictícios registrados.
+
+**Leitura profunda proativa** (4 arquivos/áreas, clone raso próprio de
+`okx/go-wallet-sdk` HEAD `12fec6b0`, mesmo commit da rodada anterior):
+`crypto/vrf/secp256k1/{suite,curve,field}.go` — vendored ChainLink
+(`go.dedis.ch/kyber`), cabeçalho de copyright + aviso do próprio
+upstream "não usar em produção sem auditoria" e "NOT CONSTANT TIME";
+descartado por vendored/baixa novidade, mesma política já aplicada a
+kaspa/kaspad. `crypto/ronin/types/{sponsored_tx,hashing}.go` —
+`SponsoredTx` é só struct/copy/rlp (sem verificação de assinatura, que
+fica no validador da rede); `hashing.go` é vendored go-ethereum
+core/types; sem achado. `coins/starknet/token.go` — só 4 constantes de
+endereço, zero lógica. `coins/cosmos/osmo/tx/tokenfactory.go` — lido na
+íntegra (800 linhas): módulo Osmosis tokenfactory
+(`MsgCreateDenom/MsgMint/MsgBurn/MsgChangeAdmin`), interessante por
+envolver conceito de admin, mas é só (de)serialização protobuf
+gogoproto-gerada do lado do cliente; verifiquei especificamente o
+padrão de bounds-check em todos os 4 métodos `Unmarshal` (mesma classe
+de superfície que gerou o achado real de `DeserializeCV`) — aqui todo
+campo de comprimento variável tem o par completo `postIndex > l` +
+overflow check (9/9), padrão correto de `protoc-gen-gogo`. Sem achado
+novo nesta rodada — resultado válido, não forçado.
+
+`deep-read-log.json` atualizado (263 → 267). `export-queue` rodado ao
+final.
