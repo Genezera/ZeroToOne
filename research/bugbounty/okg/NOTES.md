@@ -5476,3 +5476,73 @@ estilo Chainlink, bem revisada). Nenhum achado novo.
 
 `deep-read-log.json` atualizado (257 → 260). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-18 (sessão cloud, tarefa agendada)
+
+`list-pending` vazio. `research-plan` devolveu os mesmos 7 `actionable`
+(todos OKG `reproduced_local`/`verify_prior_art`) mais uma leitura de
+histórico (`held`) sem relação com OKG. Tentativa real de
+`search-prior-art` reconfirmou `GitHub API HTTP 403`, mas desta vez o
+diagnóstico foi corrigido na raiz: `curl` direto a
+`https://api.github.com/rate_limit` mostrou core=15000/15000 e
+search=30/30 disponíveis (rate limit real do GitHub NÃO esgotado) — o
+403 real veio de `GET /repos/okx/go-wallet-sdk/security-advisories`
+com corpo `"GitHub access to this repository is not enabled for this
+session. Use add_repo to request access..."`, ou seja, é o PROXY de
+rede deste ambiente de execução (escopo de repositório por sessão),
+não a cota do GitHub. Confirmado com
+`mcp__Claude_Code_Remote__add_repo(owner=okx, repo=go-wallet-sdk,
+access=read)`: leitura/clone git anônimo já funciona sem anexar nada,
+mas a ferramenta declara que GitHub API tools só cobrem repositório
+anexado com `access=push` (credenciais de escrita). NÃO tentei
+`access=push` — anexar credenciais de escrita a um repositório de
+terceiro só para viabilizar uma busca de leitura excede o mandato
+desta rodada ("nunca execute nada além de leitura de código público")
+e é uma decisão de escopo que prefiro deixar explícita para o usuário,
+não inferir sozinho. `verify_prior_art` continua estruturalmente
+bloqueado nesta classe de ambiente, mas por um motivo diferente e
+corrigível do documentado nas 20+ rodadas anteriores (que atribuíam a
+causa a cota/rate-limit do GitHub). ADENDO registrado via
+`update-finding` só no achado aptos (representativo; mesmo bloqueio de
+endpoint, não específico de finding, convenção já usada em rodadas
+anteriores). Nenhuma transição forçada.
+
+Leitura profunda proativa (clone raso próprio de `okx/go-wallet-sdk`
+HEAD `12fec6b0`, 3 entradas): `coins/sui/types.go` (só
+serialização/Write para construção de transação a partir de input
+estruturado próprio — sem deserialização de bytes de comprimento não
+confiável; sem achado). `coins/stacks/serialize.go` +
+`coins/stacks/types.go::BytesReader` — **achado novo confirmado**:
+`ReadBytes(length)` faz `br.source[br.consumed:br.consumed+length]`
+sem NENHUMA checagem de limites (nem o padrão já catalogado de
+"aloca com make() antes de checar" dos achados aptos/zec — aqui é
+slice direto fora dos limites, panic determinístico e imediato).
+`DeserializeCV` é exportada e é a única função pública do pacote nesse
+caminho; PoC Go real confirmou panic com input de 5 bytes
+(`02ffffffff`): `runtime error: slice bounds out of range
+[:4294967300] with capacity 5`. Registrado como
+`OKG::okx/go-wallet-sdk/coins/stacks/serialize.go::DeserializeCV::forged_length_slice_bounds_panic`,
+avançado via fluxo normal até `reproduced_local`
+(`corroborated_static` → `record-validation` pass/supports →
+`reproduced_local`, todas as transições aceitas pelo state machine).
+`scope_verified` tentado e corretamente recusado (mesmo motivo dos
+7 achados-irmãos: `deploymentEvidence.confidence="unverified"`, sem
+tag/release Git no repositório para ancorar build publicado — não
+forçado). Nota de honestidade registrada no próprio finding: existe um
+segundo caminho (`DeserializePostCondition` via
+`makeUnsignedContractCallWithSerializePostCondition`) com o mesmo bug,
+mas essa função é não-exportada e sem nenhum chamador no repositório
+(código morto) — o achado se sustenta pela exportação direta de
+`DeserializeCV`, não por esse caminho morto.
+`coins/kaspa/kaspad/domain/consensus/utils/utxo/serialization.go` —
+mesmo padrão de alocação não verificada
+(`scriptPubKeyLen uint64` sem cap antes de `make([]byte,
+scriptPubKeyLen)`), mas todo o subárvore `coins/kaspa/kaspad/...` é
+fork vendored de `github.com/kaspanet/kaspad v0.12.14` (confirmado via
+go.mod) — descartado por baixa novidade/alto risco de já-conhecido
+upstream, mesma política já aplicada a crypto/btcd, crypto/dcrec,
+crypto/go-ethereum e crypto/cbor nesta campanha; sem achado
+formalizado.
+
+`deep-read-log.json` atualizado (260 → 263). `export-queue` rodado ao
+final.
