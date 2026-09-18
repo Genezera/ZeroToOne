@@ -1696,7 +1696,10 @@
     "coins/stellar/txnbuild/preconditions.go (uso de SetAddress em ExtraSigners -- segunda reachability externa)",
     "coins/stellar/txnbuild/transaction.go (usa SafeUnmarshalBase64, caminho seguro -- contraste)",
     "coins/cosmos/okc/tx/amino/decode.go (DecodeByteSlice/DecodeByteSliceToWriter -- checagem correta: len(bz)<count ANTES de make(), sem achado)",
-    "coins/kaspa/kaspad/util/binaryserializer/binaryserializer.go (Uint8/16/32/64 -- so leituras de tamanho fixo via buffer de 8 bytes do free-list, sem alocacao dependente de input, sem achado)"
+    "coins/kaspa/kaspad/util/binaryserializer/binaryserializer.go (Uint8/16/32/64 -- so leituras de tamanho fixo via buffer de 8 bytes do free-list, sem alocacao dependente de input, sem achado)",
+    "coins/stellar/strkey/internal/crc16/main.go (Checksum/Validate -- implementacao XMODEM CRC16 vendored do stellar-core, tabela de 256 entradas padrao, comparacao direta uint16 sem short-circuit perigoso. Sem achado)",
+    "crypto/abi/big.go (vendored go-ethereum common/math -- ParseBig256/PaddedBigBytes/U256/S256/Exp, aritmetica big.Int padrao com BitLen>256 checado explicitamente em ParseBig256. Sem achado)",
+    "coins/solana/token/types.go (apenas constantes MINT_SIZE/MAX_SIGNERS e enums AuthorityType/AccountState, zero logica de parsing/validacao. Nao aplicavel)"
   ],
   "kubernetes/apiserver": [
     "pkg/authorization/union/union.go (unionAuthzHandler.Authorize/ConditionsAwareAuthorize/EvaluateConditions -- authorizer que encadeia multiplos sub-authorizers, retorna a primeira decisao Allow/Deny e propaga o err junto; short-circuit correto, NoOpinion sempre continua a cadeia. Achado em potencial investigado: linha 92-93 retorna `decision, reason, err` mesmo quando decision==Allow com err!=nil -- mas pkg/endpoints/filters/authorization.go:78-79 documenta e trata isso deliberadamente (\"an authorizer like RBAC could encounter evaluation errors and still allow the request, so authorizer decision is checked before error here\"), comportamento intencional e ja documentado no ponto de consumo, nao introduzido por union.go. Sem achado)",

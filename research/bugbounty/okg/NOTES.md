@@ -5692,3 +5692,46 @@ dependente de input).
 `deep-read-log.json` atualizado (267 → 274, incluindo os arquivos lidos
 pra rastrear a cadeia de chamada do achado acima). `export-queue`
 rodado ao final.
+
+## Rodada 2026-09-18ii, sessão cloud (push trigger)
+
+Continuação da rodada anterior mesmo dia: `research-plan` apontou
+`assess_impact` como próximo passo para o achado novo
+`coins/stellar/strkey/signed_payload.go::DecodeSignedPayload`
+(alocação não limitada via length-prefix XDR de 4 bytes, já em
+`reproduced_local` com PoC `go_test_poc` real). Avaliação de impacto
+registrada via `record-impact-assessment`: `technicalValidity=confirmed`,
+`attackerControlledInput=true`, mas `impactScope=self_request_only`,
+`reportable=false`, `severityRating=low` -- mesma disciplina já aplicada
+a 14+ achados-irmãos OKG. Diferença deliberada em relação ao achado
+aptos `bcs/deserializer.go` (que ficou `other_system`/`medium`): clonei
+o repositório de novo (raso, HEAD ainda `12fec6b0`) e grepei
+`TEE|API for` dentro de `coins/stellar` -- vazio. O README raiz do
+próprio SDK descreve o produto como "offline transaction signing"
+("Ensure security with local signing"), e `txnbuild` é a implementação
+vendored da Stellar Development Foundation cujo uso pretendido
+documentado é montar/assinar UMA transação localmente antes de
+submeter via `horizonclient` -- sem o rótulo textual de API de backend
+compartilhado que justificou `other_system` no caso aptos. Sem essa
+evidência, a vítima honesta é o próprio chamador que decidiu parsear o
+endereço de signer não confiável, não um terceiro alheio à chamada --
+por isso o achado fica held por `below_campaign_impact`, não avança
+para `scope_verified`.
+
+`verify_prior_art` para os 7 achados-irmãos: reconfirmado AO VIVO nesta
+rodada (não só por herança) -- tentativa real via
+`search-prior-art --config=...` contra `okx/go-wallet-sdk` devolveu
+`GitHub API HTTP 403 (rate limit esgotado)`, mesmo bloqueio estrutural
+documentado desde 14/09. Nenhuma transição tentada nesses achados.
+
+**Leitura profunda proativa** (3 arquivos novos, mesmo clone raso HEAD
+`12fec6b0`): `coins/stellar/strkey/internal/crc16/main.go` (CRC16
+XMODEM vendored do stellar-core, tabela padrão de 256 entradas,
+`Validate` compara `actual != expected` sem short-circuit perigoso --
+sem achado); `crypto/abi/big.go` (vendored go-ethereum
+`common/math`, `ParseBig256` checa `BitLen()>256` explicitamente antes
+de aceitar -- sem achado); `coins/solana/token/types.go` (só
+constantes/enums, zero lógica de parsing -- não aplicável).
+
+`deep-read-log.json` atualizado (274 → 277). `export-queue` rodado ao
+final.
