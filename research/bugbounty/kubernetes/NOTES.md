@@ -1532,3 +1532,41 @@ em `pkg/authentication`/`pkg/authorization`, mas ainda com lacunas — ver
 
 Nenhuma transição de estado tentada neste programa nesta rodada (nenhum
 achado novo). `deep-read-log.json` atualizado.
+
+## Rodada 2026-09-18iii, sessão cloud (push webhook)
+
+`list-pending` vazio; `research-plan` só devolveu os 7 achados-irmãos
+OKG (`verify_prior_art`, ver `research/bugbounty/okg/NOTES.md`).
+Deep-read proativo desta rodada foi em `kubernetes/kubernetes` (chave
+separada de `kubernetes/apiserver` no `deep-read-log.json`, mesmo
+conteúdo vendored em `staging/src/k8s.io/apiserver/` — só 23/865
+arquivos lidos até então nesta chave, ainda com lacunas reais na cadeia
+de auth apesar de `kubernetes/apiserver` já estar quase esgotado).
+Sparse-clone raso de `staging/src/k8s.io/apiserver/pkg/authentication/`
++ `authorization/` + `pkg/serviceaccount/` + `pkg/kubelet/token/`
+(git sparse-checkout, sem baixar o monorepo inteiro). 3 arquivos novos:
+
+- `staging/src/k8s.io/apiserver/pkg/authentication/token/tokenfile/tokenfile.go`
+  — mesmo padrão já visto em `kubernetes/apiserver` (lookup de map sem
+  `subtle.ConstantTimeCompare`), mas autenticador legado
+  `--token-auth-file` já documentado como desencorajado; sem
+  regressão, sem achado novo.
+- `staging/src/k8s.io/apiserver/pkg/authentication/token/jwt/jwt.go` —
+  trivial, só `CredentialIDForJTI` (concatenação de string). Sem
+  achado.
+- `pkg/serviceaccount/legacy.go` (arquivo genuinamente novo, fora do
+  vendor tree de `apiserver`) — `legacyValidator.Validate` usa
+  `subtle.ConstantTimeCompare` corretamente pra comparar token contra
+  secret, reconfirma UID de ServiceAccount e `DeletionTimestamp` antes
+  de aceitar. Sem achado.
+- `pkg/serviceaccount/claims.go` (também novo) — `validator.Validate`
+  reconfirma UID de ServiceAccount/Pod/Secret/Node/Webhook contra o
+  cluster ao vivo antes de aceitar cada claim de binding; caso
+  pod-bound com node info anexada, não re-checa UID do node ao vivo,
+  mas isso não é bypass -- o campo só existe dentro de claims privadas
+  de um JWT já assinado (integridade da assinatura cobre esse campo
+  igual aos demais). Sem achado.
+
+Nenhuma transição de estado tentada (nenhum achado novo).
+`deep-read-log.json` atualizado (chave `kubernetes/kubernetes`, 23 →
+27 arquivos).

@@ -5796,3 +5796,25 @@ Leitura profunda proativa desta rodada: ver
 `tun_linux.go`/`tun_darwin.go`/`netchange_darwin.go` do nebula, sem
 achado. `export-queue` rodado ao final; nenhum estado mudou neste
 programa nesta rodada.
+
+## Rodada 2026-09-18iii, sessão cloud (push webhook)
+
+Terceira rodada do mesmo dia com o mesmo resultado: `research-plan`
+devolveu de novo os 7 achados-irmãos `reproduced_local` como único
+`actionable` (`verify_prior_art`). `env | grep -i hackerone` continua
+vazio nesta sessão -- reconfirmado o bloqueio estrutural sem gastar
+nova tentativa ao vivo do `search-prior-art` (mesma lógica das duas
+rodadas anteriores hoje: nenhuma das duas causas raiz mudou desde o
+último teste real). Nenhuma transição tentada. Leitura profunda
+proativa desviada para `kubernetes/kubernetes` desta vez (ver
+`research/bugbounty/kubernetes/NOTES.md`, rodada 2026-09-18iii) --
+`export-queue` rodado ao final; nenhum estado mudou neste programa
+nesta rodada.
+
+Nota operacional: este é o terceiro round consecutivo hoje disparado
+por `push webhook`, e os dois anteriores (`2026-09-18`, `2026-09-18ii`)
+também terminaram em commit+push sem achado novo -- ou seja, cada
+commit desta rotina parece estar re-disparando o próprio webhook que
+inicia a rodada seguinte. Sinalizado ao usuário via notificação fora
+deste NOTES.md; não é algo que este pipeline consiga corrigir sozinho
+(está fora do escopo de `program-policy.json`/`state-machine.mjs`).
