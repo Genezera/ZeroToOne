@@ -1326,3 +1326,37 @@ alcançável por peer remoto ANTES da autenticação Noise (caminho UDP):
 `deep-read-log.json` atualizado (104 → 108). Clone temporário removido
 do scratchpad ao final. Nenhuma transição de estado neste programa.
 `export-queue` rodado ao final desta rodada.
+
+## Rodada 2026-09-18, sessão cloud (push webhook)
+
+`list-pending`/`research-plan` sem nenhum item novo neste programa
+(todos os itens OKG bloqueados por `verify_prior_art`, ver
+`research/bugbounty/okg/NOTES.md`). Leitura profunda proativa: 3
+arquivos `.go` não-teste ainda não lidos, desta vez priorizando por
+nome de caminho (`ssh`/`session`/`pki` batem em
+auth/session/crypto/login/admin), via `git clone --depth 1` novo em
+`/tmp` (removido ao final):
+
+- `ssh.go` (console de debug SSH embutido -- `configSSH` carrega host
+  key/CAs/authorized_users de config local do operador, não de peer
+  remoto; `attachCommands` registra os subcomandos do console). Já
+  existe `sshSanitizeFilePath` (adicionada em rodada anterior de
+  hardening do próprio projeto, não descoberta agora) que resolve o
+  argumento de path de `start-cpu-profile`/`save-heap-profile`/
+  `save-mutex-profile` relativo a `sandboxDir` e rejeita qualquer
+  caminho fora dele via `filepath.Clean`+`HasPrefix` antes de
+  `os.Create` -- path traversal aqui já está mitigado, não é achado
+  novo. Sem achado.
+- `sshd/session.go` (`handleRequests`/`dispatchCommand` -- tokeniza a
+  linha do terminal/`exec` payload via `shlex.Split` e despacha para o
+  `Callback` já registrado via radix tree; autenticação por chave
+  pública contra `trusted_cas`/`authorized_keys` já acontece na camada
+  de conexão SSH, antes de uma `session` existir). Sem achado.
+- `pki.go` (carregamento de certificado/chave/CA-pool a partir de
+  `pki.key`/`pki.cert`/`pki.ca`, sempre config local do operador, não
+  input de peer remoto -- `loadCertificate` rejeita cert expirado/sem
+  redes/CA-como-host-cert, `VerifyPrivateKey` confere par pub/priv
+  antes de aceitar). Sem achado.
+
+`deep-read-log.json` atualizado (108 → 111). Nenhuma transição de
+estado neste programa. `export-queue` rodado ao final.

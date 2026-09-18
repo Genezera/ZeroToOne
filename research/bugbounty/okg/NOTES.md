@@ -5735,3 +5735,37 @@ constantes/enums, zero lógica de parsing -- não aplicável).
 
 `deep-read-log.json` atualizado (274 → 277). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-18, sessão cloud (push webhook)
+
+`research-plan` devolveu os mesmos 7 achados-irmãos `reproduced_local`
+como `actionable`/`verify_prior_art` (`duplicateCheck sem métodos
+rastreáveis`) -- nenhum achado novo em `list-pending` fora desses.
+Tentei `search-prior-art` de novo, desta vez até o fim (não parei no
+primeiro erro): o comando falha ANTES de sequer chegar no GitHub
+Search API, porque `HACKERONE_USERNAME`/`HACKERONE_API_TOKEN` não
+estão setados nesta sessão cloud (a checagem de hacktivity roda
+primeiro). Testei o GitHub Search API isoladamente via `curl` direto
+(fora do CLI) contra `api.github.com/search/issues` -- também 403,
+mas com corpo de erro diferente do "rate limit esgotado" registrado em
+rodadas anteriores: `"This GitHub API path is not available: sessions
+are bound to their configured repositories. Use repository-scoped
+endpoints"`. Ou seja, o diagnóstico correto (pelo menos para ESTA
+sessão cloud) não é rate-limit do bucket anônimo do GitHub -- é o
+próprio proxy de rede deste ambiente Claude Code restringindo chamadas
+de API a `Genezera/ZeroToOne` (o repo configurado da sessão), nunca
+liberando acesso a `api.github.com/search/*` para outro repositório.
+`git clone` via HTTPS de `okx/go-wallet-sdk` continua funcionando
+normalmente (protocolo git, não API REST) -- por isso a leitura de
+código nunca foi afetada, só a busca de prior art. Duas causas
+estruturais empilhadas e independentes, nenhuma removível por esta
+sessão: (1) credenciais HackerOne ausentes neste ambiente cloud, (2)
+API REST/Search do GitHub sandboxed ao repo configurado da sessão.
+Nenhuma transição tentada nos 7 achados-irmãos.
+
+Leitura profunda proativa desviada para `slackhq/nebula` (OKG está em
+28% de cobertura mas os achados pendentes ali já esgotaram o gate
+disponível; nebula tinha mais sinal auth/session/crypto não lido) --
+ver `research/bugbounty/slack/NOTES.md` para o resumo dessa rodada.
+`export-queue` rodado ao final; nenhum estado mudou neste programa
+nesta rodada.
