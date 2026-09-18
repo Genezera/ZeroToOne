@@ -1360,3 +1360,49 @@ auth/session/crypto/login/admin), via `git clone --depth 1` novo em
 
 `deep-read-log.json` atualizado (108 → 111). Nenhuma transição de
 estado neste programa. `export-queue` rodado ao final.
+
+## Rodada 2026-09-18ii, sessão cloud (push webhook)
+
+`list-pending` vazio de novo (só os 7 achados-irmãos OKG em
+`verify_prior_art`, ver `research/bugbounty/okg/NOTES.md`). Leitura
+profunda proativa: `list-deep-read-candidates.mjs` confirmou nebula
+como o único repositório liberado com cobertura não-esgotada (63% →
+agora maior; plaid-ruby e react-plaid-link já esgotados, OKG coberto em
+rodadas anteriores no próprio dia). Clone raso novo em `/tmp`
+(`3fc627e`, removido ao final) usado só para diff contra
+`deep-read-log.json` e achar os 76 arquivos `.go` não-teste ainda não
+lidos -- maioria é driver de plataforma (tio/checksum/cpupick/udp por
+SO) sem sinal auth/crypto. Priorizei por julgamento (não regex) os 3
+com maior chance de superfície privilegiada: configuração de interface
+TUN/rota, que em outras VPNs é fonte clássica de path/command
+injection via shell-out.
+
+- `overlay/tun_linux.go` (`Activate`/`addIPs`/`setDefaultRoute`/
+  `addRoutes`/`removeRoutes`/`watchRoutes`) -- toda a superfície usa
+  netlink direto (`github.com/vishvananda/netlink`), grep negativo por
+  `exec.Command`/`ifconfig`/`/sbin/` confirma zero shell-out. Dados
+  programados (`t.vpnNetworks`, `t.Routes`) vêm só de `config.C` local
+  do operador ou da tabela de rotas do próprio kernel local
+  (`use_system_route_table`) -- nenhum campo alcançável por payload de
+  peer remoto. Sem achado.
+- `overlay/tun_darwin.go` (equivalente BSD via socket `AF_ROUTE` cru,
+  `unix.Write` de `netroute.RouteMessage`) -- mesmo padrão, grep
+  negativo confirmado também em `tun_freebsd.go`/`tun_openbsd.go`
+  (não lidos linha a linha, só grep de shell-out). `Read`/`Write` do
+  tun (`tunReadv`/`tunWritev` via `go:linkname`) só manipulam os 4
+  bytes de cabeçalho AF_INET/AF_INET6 locais. Sem achado.
+- `udp/netchange_darwin.go` (`watchNetworkChanges`/`isNetworkChange`)
+  -- socket `AF_ROUTE` cru só recebe mensagens do kernel local
+  (`RTM_NEWADDR`/`RTM_DELADDR`/`RTM_IFINFO`), nunca de peer remoto;
+  `isNetworkChange` valida `len(msg)>=4` e `msglen<=len(msg)` antes de
+  indexar. Sem achado.
+
+Padrão reconfirmado: toda a camada `overlay`/`udp` de gerência de
+interface é local-trust-boundary (config do operador ou kernel local),
+nunca alcançável por um peer nebula remoto -- consistente com todos os
+arquivos dessa camada já lidos em rodadas anteriores
+(`overlay/tun.go`, `overlay/device.go`, `overlay/route.go`,
+`overlay/user.go`, `overlay/tun_windows.go`).
+
+`deep-read-log.json` atualizado (111 → 114). Nenhuma transição de
+estado neste programa. `export-queue` rodado ao final.

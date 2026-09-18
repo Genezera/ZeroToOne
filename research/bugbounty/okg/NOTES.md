@@ -5769,3 +5769,30 @@ disponível; nebula tinha mais sinal auth/session/crypto não lido) --
 ver `research/bugbounty/slack/NOTES.md` para o resumo dessa rodada.
 `export-queue` rodado ao final; nenhum estado mudou neste programa
 nesta rodada.
+
+## Rodada 2026-09-18ii, sessão cloud (push webhook)
+
+`research-plan` devolveu de novo os mesmos 7 achados-irmãos
+`reproduced_local` como único `actionable` (`verify_prior_art`,
+`duplicateCheck sem métodos rastreáveis`). Confirmei rapidamente que
+nada mudou no ambiente desde a última rodada ao vivo: `env | grep -i
+hackerone` continua vazio (nenhuma credencial `HACKERONE_USERNAME`/
+`HACKERONE_API_TOKEN` nesta sessão cloud) e o próprio system prompt
+desta sessão declara explicitamente o segundo bloqueio estrutural
+("GitHub access for this session is currently scoped to:
+genezera/zerotoone... calls targeting them will be denied"), reforçando
+por uma fonte independente (não só o teste de API já feito em rodada
+anterior) que `search-prior-art` via GitHub Search API para
+`okx/go-wallet-sdk` seguiria falhando pelo mesmo motivo. Decidi não
+gastar uma nova tentativa ao vivo do comando nesta rodada -- mesma
+lógica já registrada em 2026-09-18 ("não presumido sem necessidade de
+gastar uma tentativa"), já que nenhuma das duas causas raiz (ausência
+de credencial, sandboxing de API por sessão) é removível por esta
+sessão nem mudou desde o último teste real. Nenhuma transição tentada
+nos 7 achados-irmãos.
+
+Leitura profunda proativa desta rodada: ver
+`research/bugbounty/slack/NOTES.md` (rodada 2026-09-18ii) --
+`tun_linux.go`/`tun_darwin.go`/`netchange_darwin.go` do nebula, sem
+achado. `export-queue` rodado ao final; nenhum estado mudou neste
+programa nesta rodada.
