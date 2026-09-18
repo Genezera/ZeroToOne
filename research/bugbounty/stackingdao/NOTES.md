@@ -2046,3 +2046,17 @@ Leitura profunda proativa desta rodada foi direcionada a
 arquivos novos: `cmd/nebula-cert/main.go`, `cmd/nebula-service/main.go`,
 `cert_test/cert.go`, sem achado), não a nenhum repositório deste
 programa. Nenhuma transição de estado neste programa.
+
+## Rodada 2026-09-18iv, sessão cloud (push webhook)
+
+`check-program "StackingDAO"` confirmado `blocked:false` no passo
+zero. `scope-snapshots/stackingdao.json` (capturado 2026-09-14, válido
+até 2026-10-14) ainda dentro da validade, mesmos 13 assets; os 15
+contratos `.clar` já lidos seguem cobrindo 100%, sem contrato novo
+publicado (Clarity deployado é imutável). `list-deep-read-candidates.mjs`
+continua listando `StackingDAO` em "sem programa reconhecido no
+dataset público atual -- revise à mão antes de ler" — nenhum arquivo
+aberto aqui nesta rodada. Leitura profunda proativa desviada de novo
+para `slackhq/nebula` (ver NOTES.md de Slack/HackerOne, rodada
+2026-09-18iv — pacote `overlay/batch/` completado, sem achado).
+Nenhuma transição de estado neste programa.

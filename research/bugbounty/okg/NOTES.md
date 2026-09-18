@@ -5818,3 +5818,37 @@ commit desta rotina parece estar re-disparando o próprio webhook que
 inicia a rodada seguinte. Sinalizado ao usuário via notificação fora
 deste NOTES.md; não é algo que este pipeline consiga corrigir sozinho
 (está fora do escopo de `program-policy.json`/`state-machine.mjs`).
+
+## Rodada 2026-09-18iv, sessão cloud (push webhook)
+
+Quarta rodada consecutiva do mesmo dia, mesmo padrão de novo: HEAD ao
+iniciar já era o commit da rodada `iii` (`5d19b37`), confirmando que
+esse commit re-disparou o webhook por conta própria. `migrate-to-v2.mjs`
++ `list-pending` (vazio) + `research-plan` rodados: mesmos 7
+achados-irmãos `reproduced_local` em `verify_prior_art` como único
+`actionable`. Desta vez testei `search-prior-art` ao vivo de novo (não
+só herdado -- config real com 3 queries contra `okx/go-wallet-sdk`,
+sem `--finding-id`, indo direto pro GitHub Search API): devolveu
+`GitHub API HTTP 403 (rate limit esgotado)`, mesmo bloqueio estrutural
+documentado desde 14/09 (>25 rodadas). `check-program` reconfirmado no
+passo zero: `StackingDAO`/`Vercel Open Source` liberados,
+`Block Open Source`/`Circle BBP` bloqueados -- nenhum arquivo desses
+dois tocado. `change-events.jsonl` conferido com o critério estrito do
+CLAUDE.md: evento mais recente continua `2026-09-10T20:48Z`, já bem
+fora da janela de 48h -- nenhum repositório novo por essa via.
+`StackingDAO` segue com os mesmos 15 contratos `.clar` cobrindo 100%
+dos 13 assets do scope-snapshot, sem contrato novo (imutável sem novo
+deploy). Nenhuma transição tentada nos 7 achados-irmãos.
+
+Leitura profunda proativa desviada de novo para `slackhq/nebula` (ver
+`research/bugbounty/slack/NOTES.md`, rodada `2026-09-18iv`) --
+completei o pacote `overlay/batch/` (3 arquivos que faltavam:
+`udp_coalesce.go`, `tcp_coalesce.go`, `passthrough.go`), sem achado.
+
+Nota operacional (continuação): quarto round consecutivo hoje com o
+mesmo resultado -- nenhuma notificação nova enviada ao usuário nesta
+rodada porque nada mudou desde a notificação já registrada na rodada
+`iii` (mesmo loop de auto-disparo via push webhook, mesmo bloqueio
+estrutural de `verify_prior_art` por falta de credencial HackerOne
+nesta sessão cloud). `export-queue` rodado ao final; nenhum estado
+mudou neste programa nesta rodada.

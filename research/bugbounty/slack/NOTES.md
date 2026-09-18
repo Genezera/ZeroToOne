@@ -1406,3 +1406,47 @@ arquivos dessa camada já lidos em rodadas anteriores
 
 `deep-read-log.json` atualizado (111 → 114). Nenhuma transição de
 estado neste programa. `export-queue` rodado ao final.
+
+## Rodada 2026-09-18iv, sessão cloud (push webhook)
+
+Quarta rodada consecutiva do mesmo dia (o commit da rodada `iii`
+disparou este mesmo webhook de novo — ver nota operacional de
+`research/bugbounty/okg/NOTES.md` na rodada `iii`, já sinalizada ao
+usuário via notificação fora do NOTES.md; não repetida aqui pois nada
+mudou desde então). `list-pending` vazio, `research-plan` com os
+mesmos 7 achados-irmãos OKG em `verify_prior_art` como único
+`actionable`. Diff de arquivo (clone raso `/tmp/nebula-check`, HEAD do
+momento, removido ao final) contra `deep-read-log.json` (parseando o
+nome do arquivo antes do primeiro espaço/parêntese de cada entrada,
+não um match exato de string) mostrou 73 arquivos `.go` não-teste
+ainda sem entrada — a maioria stub de plataforma
+(cpupick/checksum/windows/bsd) sem sinal de auth/crypto. Completei o
+pacote `overlay/batch/` (faltavam 3 dos 6 arquivos; `coalesce_core.go`,
+`multi_coalesce.go` e `tx_batch.go` já cobertos em rodada anterior),
+por ser o resto do código de manuseio de pacote pós-decrypt (caminho
+de escrita pro TUN local, dado potencialmente influenciado pelo peer
+remoto autenticado) mais próximo de superfície sensível do que os
+stubs de plataforma restantes:
+
+- `overlay/batch/udp_coalesce.go` — `parseTail` valida
+  `len(pkt)>=ipHdrLen+8` e `8<=udpLen<=len(pkt)-ipHdrLen` antes de
+  qualquer slice; `seed`/`canAppend` limitam `hdrLen+payLen` (e o
+  acumulado `totalPay`) a `udpCoalesceBufSize` (65535) antes de
+  `appendPayload` indexar `pkt[hdrLen:hdrLen+payLen]` — a aritmética
+  de `udpLen` garante que esse slice sempre cabe em `len(pkt)`.
+  `flushSlot` faz `uint16(total)` só depois desse cap já garantido
+  (sem overflow silencioso). Sem achado.
+- `overlay/batch/tcp_coalesce.go` — mesmo padrão para TCP/TSO:
+  `parseTail` valida `len(pkt)>=ipHdrLen+20`, `20<=tcpOff<=60` e
+  `len(pkt)>=ipHdrLen+tcpOff`; `canAppend` fecha a cadeia por seq
+  gap/PSH/ECE instável/tamanho antes de `appendPayload` indexar;
+  `headersMatch` só compara `a[tcp+18:]`/`b[tcp+18:]` depois de
+  `hdrLen` já confirmado igual dos dois lados (nunca index OOB). Sem
+  achado.
+- `overlay/batch/passthrough.go` — lane verbatim trivial do
+  `MultiCoalescer`, só `enqueue`/`Flush` sem parsing. Sem achado.
+
+Com isso o pacote `overlay/batch/` (6/6 arquivos não-teste) está
+integralmente coberto. `deep-read-log.json` atualizado (114 → 117).
+Nenhuma transição de estado neste programa. `export-queue` rodado ao
+final.
