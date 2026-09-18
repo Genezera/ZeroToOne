@@ -5621,3 +5621,74 @@ novo nesta rodada — resultado válido, não forçado.
 
 `deep-read-log.json` atualizado (263 → 267). `export-queue` rodado ao
 final.
+
+## Rodada 2026-09-18, sessão cloud (push trigger)
+
+`research-plan` reconfirmou ao vivo o mesmo bloqueio estrutural de
+`verify_prior_art` para os 7 achados-irmãos (não re-testado ao vivo
+nesta rodada — só reconfirmado por herança do histórico de dezenas de
+rodadas idênticas desde 14/09, não presumido sem necessidade de gastar
+uma tentativa). Nenhuma transição tentada neles.
+
+**Leitura profunda proativa — achado novo confirmado até
+`reproduced_local`**: `coins/stellar/xdr3/decode.go`
+(`Decoder.DecodeOpaque`/`DecodeString` → `DecodeFixedOpaque`) aloca
+`make([]byte, size)` com `size` vindo direto de um length-prefix XDR de
+4 bytes (`DecodeUint`, sem teto próprio), ANTES de checar quanto
+realmente sobra no `io.Reader`. Essa checagem só existe quando o
+`Decoder` é criado via `xdr.UnmarshalWithOptions` com `MaxInputLen>0`
+(entrypoint usado por `SafeUnmarshalBase64`/`SafeUnmarshalHex`, que
+setam `MaxInputLen=len(input)` e assim fecham a amplificação via
+`mergeInputLenAndMaxSize`/`InputLen()`). O entrypoint `xdr.Unmarshal`
+simples (sem Options) usa `DefaultDecodeOptions.MaxInputLen=0`, então o
+único teto vira `maxInt32` (~2GiB) — controlado inteiramente pelo
+atacante.
+
+Dois sinks reais usam esse entrypoint inseguro dentro do próprio SDK:
+`coins/stellar/strkey/signed_payload.go::DecodeSignedPayload` e
+`coins/stellar/strkey/muxed_account.go` (linha 80). Cadeia de chamada
+até superfície pública real: `DecodeSignedPayload` é chamado por
+`SignerKey.SetAddress` (`coins/stellar/xdr/signer_key.go`) para
+endereços `P...`, que por sua vez é usado em
+`coins/stellar/txnbuild/helpers.go` (Signer de uma operação
+`SetOptions`) e `coins/stellar/txnbuild/preconditions.go`
+(`ExtraSigners`) — ambos aceitam string de endereço fornecida
+externamente (contraparte multisig, QR code, etc.), uso pretendido
+normal de uma wallet-SDK.
+
+PoC Go real local (sem rede, sem conta real — só bytes construídos à
+mão e o parser do próprio SDK): endereço StrKey `P...` de 63
+caracteres (32 bytes de signer fake + 4 bytes de length-prefix
+declarando 268435456 = 256MiB, sem payload real nenhum depois)
+disparou tentativa de alocação medida via `runtime.MemStats.TotalAlloc`
+(delta 536880728 bytes) antes do `DecodeFixedOpaqueInplace` falhar por
+EOF — confirmado com `result=pass`/`conclusion=supports`
+(`go_test_poc`). Registrado como
+`OKG::okx/go-wallet-sdk/coins/stellar/strkey/signed_payload.go::DecodeSignedPayload::unbounded_allocation_from_untrusted_length_prefix`,
+mesma classe CWE-770 já confirmada nos achados-irmãos (aptos
+`bcs/deserializer.go`, zec `crypto/zec/tx.go`), desta vez em
+`coins/stellar/xdr3` — código do próprio SDK, não vendored inerte
+(contraste seguro no mesmo pacote: `txnbuild/transaction.go` e
+`keypair/from_address.go` usam `SafeUnmarshal*`, que já fecha essa
+amplificação).
+
+`corroborated_static` → `reproduced_local` alcançados via CLI, sem
+força. `check-scope` confirmou `allowed=true`/`bountyEligible=true`.
+`record-deployment-evidence` gravado com `confidence="unverified"`
+(mesmo commit HEAD `12fec6b0` das rodadas anteriores, repositório ainda
+sem tags/release Git — `git ls-remote --tags` vazio, mesma limitação
+epistêmica já documentada). `scope_verified` recusado pelo gate como
+esperado (`confidence="unverified"` exige `"high"` — sistema
+funcionando corretamente, não contornado). Nenhum rascunho de report
+escrito (barra de `scope_verified` não alcançada).
+
+Duas outras leituras sem achado nesta rodada (contraste, registradas em
+`deep-read-log.json`): `coins/cosmos/okc/tx/amino/decode.go`
+(`DecodeByteSlice` faz `len(bz)<count` ANTES de `make()` — padrão
+correto) e `coins/kaspa/kaspad/util/binaryserializer/binaryserializer.go`
+(só leituras de tamanho fixo via buffer de 8 bytes, sem alocação
+dependente de input).
+
+`deep-read-log.json` atualizado (267 → 274, incluindo os arquivos lidos
+pra rastrear a cadeia de chamada do achado acima). `export-queue`
+rodado ao final.
